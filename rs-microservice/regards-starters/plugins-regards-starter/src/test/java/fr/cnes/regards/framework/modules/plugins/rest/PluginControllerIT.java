@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.framework.modules.plugins.rest;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,12 +33,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.restdocs.payload.PayloadDocumentation;
+import org.springframework.restdocs.request.RequestDocumentation;
+import org.springframework.restdocs.snippet.Attributes;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.collect.Sets;
+
+import fr.cnes.regards.framework.geojson.PluginConfigurationFieldDescriptors;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -49,7 +58,6 @@ import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Test class for REST endpoints to manage plugin entities.
@@ -97,9 +105,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
 
         pluginParameters = PluginParametersFactory.build()
                 .addDynamicParameter("param31", "value31", Arrays.asList("red", "green", "blue"))
-                .addParameter("param32", "value32").addParameter("param33", "value33")
-                .addParameter("param34", "value34").addParameter("param35", "value35")
-                .addParameter("isActive", "true").getParameters();
+                .addParameter("param32", "value32").addParameter("isActive", "true").getParameters();
 
         manageDefaultSecurity(PluginController.PLUGINS, RequestMethod.GET);
 
@@ -117,6 +123,8 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         manageDefaultSecurity(PluginController.PLUGINS_CONFIGID, RequestMethod.GET);
         manageDefaultSecurity(PluginController.PLUGINS_CONFIGS, RequestMethod.GET);
 
+        manageDefaultSecurity(PluginController.PLUGINS_CACHE, RequestMethod.DELETE);
+
         token = generateToken(DEFAULT_USER_EMAIL, DEFAULT_ROLE);
     }
 
@@ -125,6 +133,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_STAR, Matchers.hasSize(3)));
+
         performGet(PluginController.PLUGINS, token, requestBuilderCustomizer, "unable to load all plugins");
     }
 
@@ -132,50 +141,58 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_CMP_PLG_500")
     @Purpose("The system allows to list all the plugins of a specific plugin's type")
     public void getPluginOneType() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isOk());
         final String pluginType = ISamplePlugin.class.getCanonicalName();
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_STAR, Matchers.hasSize(2)));
-        performDefaultGet(PluginController.PLUGINS + "?pluginType=" + pluginType,
-                          expectations,
-                          String.format("unable to load plugins of type <%s>", pluginType));
+
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(status().isOk());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_STAR, Matchers.hasSize(2)));
+        requestBuilderCustomizer.customizeRequestParam().param("pluginType", pluginType);
+
+        performGet(PluginController.PLUGINS, token, requestBuilderCustomizer,
+                   String.format("unable to load plugins of type <%s>", ISamplePlugin.class.getCanonicalName()),
+                   pluginType);
     }
 
     @Test
     public void getPluginOneUnknownType() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isUnprocessableEntity());
         final String pluginType = "hello";
-        performDefaultGet(PluginController.PLUGINS + "?pluginType=" + pluginType,
-                          expectations,
-                          String.format("unable to load plugins of unknown type", pluginType));
+
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(status().isUnprocessableEntity());
+        requestBuilderCustomizer.customizeRequestParam().param("pluginType", pluginType);
+
+        performGet(PluginController.PLUGINS, token, requestBuilderCustomizer,
+                   String.format("unable to load plugins of type <%s>", ISamplePlugin.class.getCanonicalName()),
+                   pluginType);
     }
 
     @Test
     public void getOnePlugin() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isOk());
         final String pluginId = pluginService.getPlugins().get(0).getPluginId();
-        performDefaultGet(PluginController.PLUGINS_PLUGINID,
-                          expectations,
-                          String.format("unable to load plugin id <%s>", pluginId),
-                          pluginId);
+
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(status().isOk());
+
+        performGet(PluginController.PLUGINS_PLUGINID, token, requestBuilderCustomizer,
+                   String.format("unable to load plugin id <%s>", pluginId), pluginId);
     }
 
     @Test
     @Requirement("REGARDS_DSL_CMP_PLG_400")
     @Purpose("The system allows to list all the plugin's type of a microservice")
     public void getAllPluginTypes() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
-        expectations.add(MockMvcResultMatchers
-                                 .jsonPath(JSON_PATH_STAR, Matchers.hasSize(pluginService.getPluginTypes().size())));
-        performDefaultGet(PluginController.PLUGIN_TYPES, expectations, "unable to load all plugin types");
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(status().isOk());
+        requestBuilderCustomizer
+                .addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
+                .jsonPath(JSON_PATH_STAR, Matchers.hasSize(pluginService.getPluginTypes().size())));
+
+        performGet(PluginController.PLUGIN_TYPES, token, requestBuilderCustomizer, "unable to load all plugin types");
     }
 
     @Test
-    public void getPluginConfigurationsForOnePluginId() throws ModuleException {
+    public void getPluginConfigurationsForOnePluginId() throws ModuleException, MalformedURLException {
         // Add a PluginConfiguration with the PluginService
         PluginConfiguration aPluginConfiguration = createPluginConfiguration(LABEL);
 
@@ -192,15 +209,13 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$..content.parameters[1].dynamic",
                                                                                Matchers.hasToString("[false]")));
 
-        performGet(PluginController.PLUGINS_PLUGINID_CONFIGS,
-                   token,
-                   requestBuilderCustomizer,
+        performGet(PluginController.PLUGINS_PLUGINID_CONFIGS, token, requestBuilderCustomizer,
                    "unable to load all plugin configuration of a specific plugin id",
                    aPluginConfiguration.getPluginId());
     }
 
     @Test
-    public void getPluginConfiguration() throws ModuleException {
+    public void getPluginConfiguration() throws ModuleException, MalformedURLException {
         PluginConfiguration aPluginConfiguration = createPluginConfiguration(LABEL);
 
         // Get the added PluginConfiguration
@@ -215,17 +230,14 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$..content.parameters[1].dynamic",
                                                                                Matchers.hasToString("[false]")));
 
-        performGet(PluginController.PLUGINS_CONFIGID,
-                   token,
-                   requestBuilderCustomizer,
-                   "unable to load a plugin configuration",
-                   aPluginConfiguration.getId());
+        performGet(PluginController.PLUGINS_CONFIGID, token, requestBuilderCustomizer,
+                   "unable to load a plugin configuration", aPluginConfiguration.getId());
     }
 
     @Test
     @Requirement("REGARDS_DSL_SYS_ARC_210")
     @Purpose("When a HTTP request GET is successed, the HTTP return code is 200")
-    public void getAllPluginConfiguration() throws ModuleException {
+    public void getAllPluginConfiguration() throws ModuleException, MalformedURLException {
 
         createPluginConfiguration(LABEL);
         createPluginConfiguration(LABEL + " - second");
@@ -243,14 +255,12 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         //        expectations
         //                .add(MockMvcResultMatchers.jsonPath("$.[0].content.parameters[0].dynamic", Matchers.hasToString(TRUE)));
 
-        performGet(PluginController.PLUGINS_CONFIGS,
-                   token,
-                   requestBuilderCustomizer,
+        performGet(PluginController.PLUGINS_CONFIGS, token, requestBuilderCustomizer,
                    "unable to load all plugin configuration");
     }
 
     @Test
-    public void getAllPluginConfigurationForOneSpecificType() throws ModuleException {
+    public void getAllPluginConfigurationForOneSpecificType() throws ModuleException, MalformedURLException {
         PluginConfiguration aPluginConfiguration = createPluginConfiguration(LABEL);
 
         // Get the added PluginConfiguration
@@ -258,20 +268,18 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addExpectation(status().isOk());
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.[0].content.pluginId",
-                                                                               Matchers.hasToString(aPluginConfiguration
-                                                                                                            .getPluginId())));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
+                .jsonPath("$.[0].content.pluginId", Matchers.hasToString(aPluginConfiguration.getPluginId())));
+        requestBuilderCustomizer.customizeRequestParam().param("pluginType", ISamplePlugin.class.getCanonicalName());
 
-        performGet(PluginController.PLUGINS_CONFIGS + "?pluginType=" + ISamplePlugin.class.getCanonicalName(),
-                   token,
-                   requestBuilderCustomizer,
+        performGet(PluginController.PLUGINS_CONFIGS, token, requestBuilderCustomizer,
                    "unable to load all plugin configuration");
     }
 
     @Test
     @Requirement("REGARDS_DSL_SYS_ARC_220")
     @Purpose("When a HTTP request GET an unknown entity, the HTTP return code is 404")
-    public void getAllPluginConfigurationByTypeError() throws ModuleException {
+    public void getAllPluginConfigurationByTypeError() throws ModuleException, MalformedURLException {
         PluginConfiguration aPluginConfiguration = createPluginConfiguration(LABEL);
 
         // Get the added PluginConfiguration
@@ -279,12 +287,10 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addExpectation(status().isNotFound());
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
+        requestBuilderCustomizer.customizeRequestParam().param("pluginType", "HelloWorld");
 
-        performGet(PluginController.PLUGINS_CONFIGS + "?pluginType=HelloWorld",
-                   token,
-                   requestBuilderCustomizer,
-                   "unable to load all plugin configuration",
-                   aPluginConfiguration.getPluginId());
+        performGet(PluginController.PLUGINS_CONFIGS, token, requestBuilderCustomizer,
+                   "unable to load all plugin configuration", aPluginConfiguration.getPluginId());
     }
 
     @Test
@@ -292,12 +298,9 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         // Get an unknown PluginConfiguration
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(status().isNotFound());
-        performGet(PluginController.PLUGINS_PLUGINID_CONFIGID,
-                   token,
-                   requestBuilderCustomizer,
-                   "unable to load a plugin configuration",
-                   "PLUGIN_ID_FAKE",
-                   157L);
+
+        performGet(PluginController.PLUGINS_PLUGINID_CONFIGID, token, requestBuilderCustomizer,
+                   "unable to load a plugin configuration", "PLUGIN_ID_FAKE", 157L);
     }
 
     @Test
@@ -307,26 +310,23 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         // Get an unknown PluginConfiguration
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(status().isNotFound());
-        performGet(PluginController.PLUGINS_CONFIGID,
-                   token,
-                   requestBuilderCustomizer,
-                   "unable to load a plugin configuration",
-                   156L);
+
+        performGet(PluginController.PLUGINS_CONFIGID, token, requestBuilderCustomizer,
+                   "unable to load a plugin configuration", 156L);
     }
 
     @Test
     @Requirement("REGARDS_DSL_SYS_ARC_210")
     @Purpose("When a HTTP request PUT is successed, the HTTP return code is 200")
-    public void updatePluginConfiguration() throws ModuleException {
+    public void updatePluginConfiguration() throws ModuleException, MalformedURLException {
         PluginConfiguration aPluginConfiguration = createPluginConfiguration(LABEL);
 
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(status().isOk());
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.pluginId",
-                                                                               Matchers.hasToString(aPluginConfiguration
-                                                                                                            .getPluginId())));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
+                .jsonPath("$.content.pluginId", Matchers.hasToString(aPluginConfiguration.getPluginId())));
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.jsonPath("$.content.version", Matchers.hasToString(VERSION)));
         requestBuilderCustomizer
@@ -335,87 +335,76 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
                                                                                Matchers.hasToString(TRUE)));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.parameters[1].dynamic",
                                                                                Matchers.hasToString(FALSE)));
+        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation
+                .pathParameters(RequestDocumentation.parameterWithName(PluginController.REQUEST_PARAM_PLUGIN_ID)
+                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
+                        .description("Plugin identifier"), RequestDocumentation
+                                .parameterWithName(PluginController.REQUEST_PARAM_CONFIG_ID)
+                                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_NUMBER_TYPE))
+                                .description("Plugin configuration identifier")));
+
+        documentPluginConfRequestBody(requestBuilderCustomizer, true);
 
         // Update the added PluginConfiguration
-        performPut(PluginController.PLUGINS_PLUGINID_CONFIGID,
-                   token,
-                   aPluginConfiguration,
-                   requestBuilderCustomizer,
-                   "unable to update a plugin configuration",
-                   aPluginConfiguration.getPluginId(),
+        performPut(PluginController.PLUGINS_PLUGINID_CONFIGID, token, aPluginConfiguration, requestBuilderCustomizer,
+                   "unable to update a plugin configuration", aPluginConfiguration.getPluginId(),
                    aPluginConfiguration.getId());
     }
 
     @Test
-    public void updatePluginConfigurationErrorId() throws ModuleException {
+    public void updatePluginConfigurationErrorId() throws ModuleException, MalformedURLException {
         PluginConfiguration aPluginConfiguration = createPluginConfiguration(LABEL);
 
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(status().isNotFound());
 
         // Update the added PluginConfiguration
-        performPut(PluginController.PLUGINS_PLUGINID_CONFIGID,
-                   token,
-                   aPluginConfiguration,
-                   requestBuilderCustomizer,
-                   "unable to update a plugin configuration",
-                   aPluginConfiguration.getPluginId(),
-                   9989L);
+        performPut(PluginController.PLUGINS_PLUGINID_CONFIGID, token, aPluginConfiguration, requestBuilderCustomizer,
+                   "unable to update a plugin configuration", aPluginConfiguration.getPluginId(), 9989L);
     }
 
     @Test
-    public void updatePluginConfigurationErrorPluginId() throws ModuleException {
+    public void updatePluginConfigurationErrorPluginId() throws ModuleException, MalformedURLException {
         PluginConfiguration aPluginConfiguration = createPluginConfiguration(LABEL + "tttttt");
         aPluginConfiguration.setPluginId("hello-toulouse");
 
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isNotFound());
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(status().isNotFound());
 
         // Update the added PluginConfiguration
-        performDefaultPut(PluginController.PLUGINS_PLUGINID_CONFIGID,
-                          aPluginConfiguration,
-                          expectations,
-                          "unable to update a plugin configuration",
-                          aPluginConfiguration.getPluginId(),
-                          9999L);
+        performPut(PluginController.PLUGINS_PLUGINID_CONFIGID, token, aPluginConfiguration, requestBuilderCustomizer,
+                   "unable to update a plugin configuration", aPluginConfiguration.getPluginId(), 9999L);
     }
 
     @Test
     public void updateUnknownPluginConfigurationError() {
-        final PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(),
-                                                                                 LABEL,
-                                                                                 pluginParameters,
-                                                                                 0);
+        final PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
+                pluginParameters, 0);
         aPluginConfiguration.setId(133L);
 
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isNotFound());
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(status().isNotFound());
 
         // Update the added PluginConfiguration
-        performDefaultPut(PluginController.PLUGINS_PLUGINID_CONFIGID,
-                          aPluginConfiguration,
-                          expectations,
-                          "unable to update a plugin configuration",
-                          aPluginConfiguration.getPluginId(),
-                          aPluginConfiguration.getId());
+        performPut(PluginController.PLUGINS_PLUGINID_CONFIGID, token, aPluginConfiguration, requestBuilderCustomizer,
+                   "unable to update a plugin configuration", aPluginConfiguration.getPluginId(),
+                   aPluginConfiguration.getId());
     }
 
     @Test
     @Requirement("REGARDS_DSL_SYS_ARC_210")
     @Purpose("When a HTTP request POST is successed, the HTTP return code is 201")
-    public void savePluginConfiguration() {
-        final PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(),
-                                                                                 LABEL,
-                                                                                 pluginParameters,
-                                                                                 0);
+    public void savePluginConfiguration() throws MalformedURLException {
+        final PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
+                pluginParameters, 0);
+        aPluginConfiguration.setIconUrl(new URL("http://google.fr/svg/logo.svg"));
 
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(status().isCreated());
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.pluginId",
-                                                                               Matchers.hasToString(aPluginConfiguration
-                                                                                                            .getPluginId())));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
+                .jsonPath("$.content.pluginId", Matchers.hasToString(aPluginConfiguration.getPluginId())));
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.jsonPath("$.content.version", Matchers.hasToString(VERSION)));
         requestBuilderCustomizer
@@ -425,73 +414,69 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.parameters[1].dynamic",
                                                                                Matchers.hasToString(FALSE)));
 
-        performPost(PluginController.PLUGINS_PLUGINID_CONFIGS,
-                    token,
-                    aPluginConfiguration,
-                    requestBuilderCustomizer,
-                    "unable to save a plugin configuration",
-                    aPluginConfiguration.getPluginId());
+        documentPluginConfRequestBody(requestBuilderCustomizer, false);
+
+        performPost(PluginController.PLUGINS_PLUGINID_CONFIGS, token, aPluginConfiguration, requestBuilderCustomizer,
+                    "unable to save a plugin configuration", aPluginConfiguration.getPluginId());
     }
 
-    @Test
-    @Requirement("REGARDS_DSL_SYS_ARC_210")
-    @Purpose("When a HTTP request POST is successed, the HTTP return code is 201")
-    public void savePluginConfigurationMissinAParameter() {
-        final PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(),
-                                                                                 LABEL,
-                                                                                 pluginParameters,
-                                                                                 0);
+    private void documentPluginConfRequestBody(RequestBuilderCustomizer requestBuilderCustomizer, boolean update) {
+        List<FieldDescriptor> lfd = new ArrayList<FieldDescriptor>();
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(status().isCreated());
-        requestBuilderCustomizer
-                .addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.pluginId",
-                                                                               Matchers.hasToString(aPluginConfiguration
-                                                                                                            .getPluginId())));
-        requestBuilderCustomizer
-                .addExpectation(MockMvcResultMatchers.jsonPath("$.content.version", Matchers.hasToString(VERSION)));
-        requestBuilderCustomizer
-                .addExpectation(MockMvcResultMatchers.jsonPath("$.content.active", Matchers.hasToString(TRUE)));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.parameters[0].dynamic",
-                                                                               Matchers.hasToString(TRUE)));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.parameters[1].dynamic",
-                                                                               Matchers.hasToString(FALSE)));
+        PluginConfigurationFieldDescriptors pluginConfDescriptors = new PluginConfigurationFieldDescriptors();
+        lfd.addAll(pluginConfDescriptors.build(update));
 
-        performPost(PluginController.PLUGINS_PLUGINID_CONFIGS,
-                    token,
-                    aPluginConfiguration,
-                    requestBuilderCustomizer,
-                    "unable to save a plugin configuration",
-                    aPluginConfiguration.getPluginId());
+        requestBuilderCustomizer.addDocumentationSnippet(PayloadDocumentation
+                .relaxedRequestFields(Attributes
+                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE)
+                                .value("Plugin configuration")), lfd.toArray(new FieldDescriptor[lfd.size()])));
     }
 
     @Test
     @Requirement("REGARDS_DSL_SYS_ARC_230")
     @Purpose("If a HTTP request POST is unsupported or mal-formatted, the HTTP return code is 400")
     public void savePluginConfigurationErrorConfNull() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isBadRequest());
-        performDefaultPost(PluginController.PLUGINS_PLUGINID_CONFIGS,
-                           null,
-                           expectations,
-                           "unable to save a plugin configuration",
-                           "badPluginId");
+
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(status().isBadRequest());
+
+        performPost(PluginController.PLUGINS_PLUGINID_CONFIGS, token, null, requestBuilderCustomizer,
+                    "unable to save a plugin configuration", "badPluginId");
+
     }
 
     @Test
     @Requirement("REGARDS_DSL_SYS_ARC_210")
     @Purpose("When a HTTP request DELETE is successed, the HTTP return code is 204")
-    public void deletePluginConfiguration() throws ModuleException {
+    public void deletePluginConfiguration() throws ModuleException, MalformedURLException {
         PluginConfiguration aPluginConfiguration = createPluginConfiguration(LABEL);
 
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isNoContent());
-        performDefaultDelete(PluginController.PLUGINS_PLUGINID_CONFIGID,
-                             expectations,
-                             "unable to delete a plugin configuration",
-                             aPluginConfiguration.getPluginId(),
-                             aPluginConfiguration.getId());
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(status().isNoContent());
+
+        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation
+                .pathParameters(RequestDocumentation.parameterWithName(PluginController.REQUEST_PARAM_PLUGIN_ID)
+                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
+                        .description("Plugin identifier"), RequestDocumentation
+                                .parameterWithName(PluginController.REQUEST_PARAM_CONFIG_ID)
+                                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_NUMBER_TYPE))
+                                .description("Plugin configuration identifier")));
+
+        performDelete(PluginController.PLUGINS_PLUGINID_CONFIGID, token, requestBuilderCustomizer,
+                      "unable to delete a plugin configuration", aPluginConfiguration.getPluginId(),
+                      aPluginConfiguration.getId());
+    }
+
+    @Test
+    @Purpose("When a HTTP request DELETE is successed, the HTTP return code is 204")
+    public void emptyPluginsCahe() throws ModuleException, MalformedURLException {
+        createPluginConfiguration(LABEL);
+
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(status().isNoContent());
+
+        performDelete(PluginController.PLUGINS_CACHE, token, requestBuilderCustomizer,
+                      "unable to empty a cache plugin");
     }
 
     private PluginMetaData getPluginMetaData() {
@@ -501,6 +486,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         pluginMetaData.setPluginId(PLUGIN_ID);
         pluginMetaData.setAuthor(AUTHOR);
         pluginMetaData.setVersion(VERSION);
+
         return pluginMetaData;
     }
 
@@ -510,11 +496,10 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     // Add a PluginConfiguration with the PluginService
-    private PluginConfiguration createPluginConfiguration(String label) throws ModuleException {
-        PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(),
-                                                                           label,
-                                                                           pluginParameters,
-                                                                           0);
+    private PluginConfiguration createPluginConfiguration(String label) throws ModuleException, MalformedURLException {
+        PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), label,
+                pluginParameters, 0);
+        aPluginConfiguration.setIconUrl(new URL("http://google.fr/svg/logo.svg"));
         return pluginService.savePluginConfiguration(aPluginConfiguration);
     }
 

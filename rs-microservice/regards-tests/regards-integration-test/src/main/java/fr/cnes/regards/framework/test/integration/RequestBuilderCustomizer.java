@@ -51,6 +51,21 @@ public class RequestBuilderCustomizer {
     private static final HttpHeaders DEFAULT_HEADERS = new HttpHeaders();
 
     /**
+     * Documentation snippet constraint fields
+     */
+    public static final String PARAM_CONSTRAINTS = "constraints";
+
+    /**
+     * Documentation snippet field type
+     */
+    public static final String PARAM_TYPE = "type";
+
+    /**
+     * Documentation snippet fields doc title
+     */
+    public static final String PARAM_TITLE = "title";
+
+    /**
      * Headers
      */
     private final HttpHeaders headers = new HttpHeaders();
@@ -335,13 +350,13 @@ public class RequestBuilderCustomizer {
      * @param httpMethod
      */
     protected void checkCustomizationCoherence(HttpMethod httpMethod) {
-        // constaints are only on DELETE, PUT and POST, for now, as they cannot have request parameters
+        // constraints are only on DELETE, PUT and POST, for now, as they cannot have request parameters
         switch (httpMethod) {
             case DELETE:
             case PUT:
             case POST:
                 if (!requestParamBuilder.getParameters().isEmpty()) {
-                    throw new IllegalStateException(String.format("Method %s cannot have request parameters"));
+                    throw new IllegalStateException(String.format("Method %s cannot have request parameters", httpMethod));
                 }
                 break;
             default:
@@ -369,5 +384,4 @@ public class RequestBuilderCustomizer {
             return headers;
         }
     }
-
 }

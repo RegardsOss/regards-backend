@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginDestroy;
@@ -163,10 +164,8 @@ public final class PluginUtils {
 
         // Search the plugin type of the plugin class : i.e. the interface that has the @PluginInterface annotation
         final List<String> pluginInterfaces = PluginInterfaceUtils.getInterfaces(prefixes);
-        List<String> types = new ArrayList<>(); // FIXME: is really used?
 
         for (Class<?> aInterface : TypeToken.of(pluginClass).getTypes().interfaces().rawTypes()) {
-            types.add(aInterface.getCanonicalName());
             if (pluginInterfaces.contains(aInterface.getCanonicalName())) {
                 pluginMetaData.getInterfaceNames().add(aInterface.getCanonicalName());
             }
@@ -196,8 +195,8 @@ public final class PluginUtils {
     public static <T> T getPlugin(PluginConfiguration pluginConf, PluginMetaData pluginMetadata,
             IPluginUtilsBean pluginUtilsBean, List<String> prefixes, Map<Long, Object> instantiatedPluginMap,
             PluginParameter... dynamicPluginParameters) {
-        return PluginUtils
-                .getPlugin(pluginConf, pluginMetadata, prefixes, instantiatedPluginMap, dynamicPluginParameters);
+        return PluginUtils.getPlugin(pluginConf, pluginMetadata, prefixes, instantiatedPluginMap,
+                                     dynamicPluginParameters);
     }
 
     /**
@@ -220,21 +219,20 @@ public final class PluginUtils {
 
             if (PluginUtilsBean.getInstance() != null) {
                 // Post process parameters in Spring context
-                PluginParameterUtils
-                        .postProcess(PluginUtilsBean.getInstance().getGson(), returnPlugin, pluginConf, prefixes,
-                                     instantiatedPluginMap, dynamicPluginParameters);
+                PluginParameterUtils.postProcess(PluginUtilsBean.getInstance().getGson(), returnPlugin, pluginConf,
+                                                 prefixes, instantiatedPluginMap, dynamicPluginParameters);
                 PluginUtilsBean.getInstance().processAutowiredBean(returnPlugin);
             } else {
                 // Post process parameters without Spring
-                PluginParameterUtils
-                        .postProcess(Optional.empty(), returnPlugin, pluginConf, prefixes, instantiatedPluginMap,
-                                     dynamicPluginParameters);
+                PluginParameterUtils.postProcess(Optional.empty(), returnPlugin, pluginConf, prefixes,
+                                                 instantiatedPluginMap, dynamicPluginParameters);
             }
 
             // Launch init method if detected
             doInitPlugin(returnPlugin);
 
-        } catch (InstantiationException | IllegalAccessException | NoSuchElementException | IllegalArgumentException | SecurityException | ClassNotFoundException e) {
+        } catch (InstantiationException | IllegalAccessException | NoSuchElementException | IllegalArgumentException
+                | SecurityException | ClassNotFoundException e) {
             throw new PluginUtilsRuntimeException(String.format(CANNOT_INSTANTIATE, pluginClassName), e);
         }
 
@@ -292,7 +290,8 @@ public final class PluginUtils {
                     method.invoke(pluginInstance);
                 } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                     LOGGER.error(String.format("Exception while invoking destroy method on plugin class <%s>.",
-                                               pluginInstance.getClass()), e);
+                                               pluginInstance.getClass()),
+                                 e);
                     throw new PluginUtilsRuntimeException(e);
                 }
             }
@@ -314,7 +313,8 @@ public final class PluginUtils {
                     method.invoke(pluginInstance);
                 } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                     LOGGER.error(String.format("Exception while invoking init method on plugin class <%s>.",
-                                               pluginInstance.getClass()), e);
+                                               pluginInstance.getClass()),
+                                 e);
                     if (e.getCause() instanceof PluginUtilsRuntimeException) {
                         throw (PluginUtilsRuntimeException) e.getCause();
                     } else {
@@ -354,9 +354,8 @@ public final class PluginUtils {
             return new EntityInvalidException(validationErrors);
         }
         if (pluginConfiguration.getPriorityOrder() == null) {
-            validationErrors
-                    .add(String.format("The plugin configuration priority order is required (pluginId: %s).",
-                                       pluginConfiguration.getPluginId()));
+            validationErrors.add(String.format("The plugin configuration priority order is required (pluginId: %s).",
+                                               pluginConfiguration.getPluginId()));
         }
         if (Strings.isNullOrEmpty(pluginConfiguration.getLabel())) {
             validationErrors.add(String.format("The plugin configuration label is required (pluginId: %s).",
@@ -402,9 +401,9 @@ public final class PluginUtils {
             //    the plugin configuration should not have any reference to plugin parameters that are only dynamic
             //    lets check that all remaining parameters are correctly given
             for (PluginParameterType plgParamMeta : pluginParametersFromMeta) {
-                if (!plgParamMeta.isOptional() && !plgParamMeta.getUnconfigurable() && (
-                        pluginConfiguration.getParameter(plgParamMeta.getName()) == null
-                                && plgParamMeta.getDefaultValue() == null)) {
+                if (!plgParamMeta.isOptional() && !plgParamMeta.getUnconfigurable()
+                        && ((pluginConfiguration.getParameter(plgParamMeta.getName()) == null)
+                                && (plgParamMeta.getDefaultValue() == null))) {
                     validationErrors.add(String.format("Plugin Parameter %s is missing.", plgParamMeta.getName()));
                 }
             }

@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.test.integration;
 
+import org.junit.Rule;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,7 @@ import com.google.gson.GsonBuilder;
 import fr.cnes.regards.framework.jpa.multitenant.test.DefaultDaoTestConfiguration;
 import fr.cnes.regards.framework.jpa.multitenant.test.MockAmqpConfiguration;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.test.util.JUnitLogRule;
 
 /**
  * Base class to realize integration tests using JWT and MockMvc. Should hold all the configurations to be considred by
@@ -82,6 +84,9 @@ public abstract class AbstractRegardsServiceIT {
 
     @Value("${regards.tenant:PROJECT}")
     private String defaultTenant;
+
+    @Rule
+    public JUnitLogRule rule = new JUnitLogRule();
 
     /**
      * JWT service
