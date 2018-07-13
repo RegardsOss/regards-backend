@@ -166,6 +166,10 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
     protected Map<String, AbstractEntity<?>> astroObjects = new HashedMap<>();
 
+    protected SearchEngineConfiguration openSearchEngineConf;
+
+    protected PluginConfiguration openSearchPluginConf;
+
     protected void initIndex(String index) {
         if (esRepository.indexExists(index)) {
             esRepository.deleteIndex(index);
@@ -320,10 +324,10 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
                 .addParameter(OpenSearchEngine.ENGINE_PARAMETERS, engineConfiguration).getParameters();
         PluginConfiguration opensearchConf = PluginUtils.getPluginConfiguration(parameters, OpenSearchEngine.class,
                                                                                 Lists.newArrayList());
-        opensearchConf = pluginService.savePluginConfiguration(opensearchConf);
+        openSearchPluginConf = pluginService.savePluginConfiguration(opensearchConf);
         SearchEngineConfiguration seConfOS = new SearchEngineConfiguration();
-        seConfOS.setConfiguration(opensearchConf);
-        searchEngineService.createConf(seConfOS);
+        seConfOS.setConfiguration(openSearchPluginConf);
+        openSearchEngineConf = searchEngineService.createConf(seConfOS);
     }
 
     /**

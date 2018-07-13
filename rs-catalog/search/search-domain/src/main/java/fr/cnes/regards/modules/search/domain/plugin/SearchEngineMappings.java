@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.search.domain.plugin;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+
 /**
  * Mappings for search engine controller and client
  *
@@ -171,5 +174,11 @@ public final class SearchEngineMappings {
 
     private SearchEngineMappings() {
         // Nothing to do
+    }
+
+    public static HttpHeaders getJsonHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_UTF8_VALUE);
+        return headers;
     }
 }

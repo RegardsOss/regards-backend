@@ -24,6 +24,8 @@ import java.util.Optional;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
@@ -35,7 +37,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.entities.client.IDatasetClient;
 import fr.cnes.regards.modules.entities.domain.event.BroadcastEntityEvent;
 import fr.cnes.regards.modules.entities.domain.event.EventType;
 import fr.cnes.regards.modules.search.dao.ISearchEngineConfRepository;
@@ -59,9 +60,6 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
-    @Autowired
-    private IDatasetClient datasetClient;
-
     @PostConstruct
     public void listenForDatasetEvents() {
         // Subscribe to entity events in order to delete links to deleted dataset.
@@ -75,10 +73,10 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
 
     @Override
     public SearchEngineConfiguration updateConf(SearchEngineConfiguration conf) throws ModuleException {
-        if (conf.getConfId() == null) {
+        if (conf.getId() == null) {
             throw new EntityOperationForbiddenException("Cannot update entity does not exists");
         } else {
-            retrieveConf(conf.getConfId());
+            retrieveConf(conf.getId());
         }
         return repository.save(conf);
     }
@@ -137,6 +135,16 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
                     }
                 }
             }
+        }
+    }
+
+    @Override
+    public Page<SearchEngineConfiguration> retrieveConfs(Optional<String> engineType, Pageable page)
+            throws ModuleException {
+        if (engineType.isPresent()) {
+            return repository.findByConfigurationPluginId(engineType.get(), page);
+        } else {
+            return repository.findAll(page);
         }
     }
 }

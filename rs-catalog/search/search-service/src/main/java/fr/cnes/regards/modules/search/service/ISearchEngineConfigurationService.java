@@ -20,6 +20,9 @@ package fr.cnes.regards.modules.search.service;
 
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
@@ -51,6 +54,13 @@ public interface ISearchEngineConfigurationService {
      * @throws ModuleException
      */
     void deleteConf(Long confId) throws ModuleException;
+
+    /**
+     * Retrieve all {@link SearchEngineConfiguration} matching the given engineType
+     * @param engineType engine type of the {@link SearchEngineConfiguration}s to search for
+     * @throws ModuleException
+     */
+    Page<SearchEngineConfiguration> retrieveConfs(Optional<String> engineType, Pageable page) throws ModuleException;
 
     /**
      * Retrieve a {@link SearchEngineConfiguration} by his id.

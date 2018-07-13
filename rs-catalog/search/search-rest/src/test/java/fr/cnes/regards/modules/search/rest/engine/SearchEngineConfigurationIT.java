@@ -1,0 +1,109 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
+package fr.cnes.regards.modules.search.rest.engine;
+
+import java.util.UUID;
+
+import org.hamcrest.Matchers;
+import org.junit.Test;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
+import fr.cnes.regards.modules.search.rest.SearchEngineConfigurationController;
+import fr.cnes.regards.modules.search.rest.engine.plugin.legacy.LegacySearchEngine;
+
+/**
+ * {@link SearchEngineConfiguration} tests
+ * @author Sébastien Binda
+ */
+@TestPropertySource(locations = { "classpath:test.properties" },
+        properties = { "regards.tenant=opensearch", "spring.jpa.properties.hibernate.default_schema=opensearch" })
+@MultitenantTransactional
+public class SearchEngineConfigurationIT extends AbstractEngineIT {
+
+    @Test
+    public void retrieveConfs() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.customizeRequestParam().param("page", "0");
+        customizer.customizeRequestParam().param("size", "10");
+        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.equalTo(2)));
+        performDefaultGet(SearchEngineConfigurationController.TYPE_MAPPING, customizer, "Search all error");
+    }
+
+    @Test
+    public void retrieveConfByEngine() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.customizeRequestParam().param("page", "0");
+        customizer.customizeRequestParam().param("size", "10");
+        customizer.customizeRequestParam().param(SearchEngineConfigurationController.ENGINE_TYPE,
+                                                 LegacySearchEngine.PLUGIN_ID);
+        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.equalTo(1)));
+        performDefaultGet(SearchEngineConfigurationController.TYPE_MAPPING, customizer, "Search by engine type error");
+    }
+
+    @Test
+    public void createConf() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+        SearchEngineConfiguration conf = new SearchEngineConfiguration();
+        conf.setConfiguration(openSearchPluginConf);
+        conf.setDatasetUrn("URN:AIP:" + EntityType.DATASET.toString() + ":PROJECT:" + UUID.randomUUID() + ":V1");
+        performDefaultPost(SearchEngineConfigurationController.TYPE_MAPPING, conf, customizer,
+                           "Search by engine type error");
+    }
+
+    @Test
+    public void updateConf() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        openSearchEngineConf
+                .setDatasetUrn("URN:AIP:" + EntityType.DATASET.toString() + ":PROJECT:" + UUID.randomUUID() + ":V2");
+        performDefaultPut(SearchEngineConfigurationController.TYPE_MAPPING
+                + SearchEngineConfigurationController.CONF_ID_PATH, openSearchEngineConf, customizer,
+                          "Search by engine type error", openSearchEngineConf.getId());
+
+        customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isUnprocessableEntity());
+        performDefaultPut(SearchEngineConfigurationController.TYPE_MAPPING
+                + SearchEngineConfigurationController.CONF_ID_PATH, openSearchEngineConf, customizer,
+                          "Search by engine type error", 0L);
+    }
+
+    @Test
+    public void deleteConf() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        performDefaultDelete(SearchEngineConfigurationController.TYPE_MAPPING
+                + SearchEngineConfigurationController.CONF_ID_PATH, customizer, "Search all error",
+                             openSearchEngineConf.getId());
+
+        customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isNotFound());
+        performDefaultGet(SearchEngineConfigurationController.TYPE_MAPPING
+                + SearchEngineConfigurationController.CONF_ID_PATH, customizer, "Conf should deleted",
+                          openSearchEngineConf.getId());
+    }
+
+}

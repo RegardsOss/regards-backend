@@ -42,7 +42,7 @@ public class SearchEngineConfiguration {
     @Id
     @SequenceGenerator(name = "searchEnginConfSequence", initialValue = 1, sequenceName = "seq_search_engine_conf")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "searchEnginConfSequence")
-    private Long confId;
+    private Long id;
 
     @NotNull
     @ManyToOne
@@ -52,12 +52,12 @@ public class SearchEngineConfiguration {
     @Column(name = "dataset_urn", nullable = true, length = 256)
     private String datasetUrn;
 
-    public Long getConfId() {
-        return confId;
+    public Long getId() {
+        return id;
     }
 
-    public void setConfId(Long confId) {
-        this.confId = confId;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public PluginConfiguration getConfiguration() {
