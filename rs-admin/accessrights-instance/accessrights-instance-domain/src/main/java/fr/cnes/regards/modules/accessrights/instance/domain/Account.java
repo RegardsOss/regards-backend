@@ -96,7 +96,7 @@ public class Account implements IIdentifiable<Long> {
     private LocalDateTime passwordUpdateDate;
 
     @NotNull
-    @Column(name = "status", length = 10)
+    @Column(name = "status", length = 20)
     @Enumerated(value = EnumType.STRING)
     private AccountStatus status;
 

@@ -351,7 +351,7 @@ public class AccountsController implements IResourceController<Account> {
     }
 
     /**
-     * Change the passord of an {@link Account}.
+     * Change the password of an {@link Account}.
      *
      * @param pAccountEmail
      *            The {@link Account}'s <code>email</code>

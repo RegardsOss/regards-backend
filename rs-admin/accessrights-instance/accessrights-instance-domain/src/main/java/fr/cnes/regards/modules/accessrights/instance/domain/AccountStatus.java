@@ -22,12 +22,17 @@ package fr.cnes.regards.modules.accessrights.instance.domain;
  * Defines the different statuses/states for an account
  *
  * @author Xavier-Alexandre Brochard
+ * @author Christophe Mertz
  */
 public enum AccountStatus {
     /**
      * Account is inactive
      */
     INACTIVE,
+    /**
+     * Account is inactive, the password is out of date
+     */
+    INACTIVE_PASSWORD,
     /**
      * Account is active
      */
