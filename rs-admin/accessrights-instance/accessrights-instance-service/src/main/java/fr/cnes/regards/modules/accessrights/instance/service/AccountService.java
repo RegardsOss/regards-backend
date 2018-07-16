@@ -301,7 +301,7 @@ public class AccountService implements IAccountService {
     @Scheduled(cron = "${regards.accounts.validity.check.cron}")
     @Override
     public void checkAccountValidity() {
-        LOG.info("Starting to check accounts for inactivity");
+        LOG.info("Start checking accounts inactivity");
         final Set<Account> toCheck = accountRepository.findAllByStatusNot(AccountStatus.INACTIVE);
 
         // Account#equals being on email, we create a fake Account with the INSTANCE_ADMIN login and we remove it from the database result.
