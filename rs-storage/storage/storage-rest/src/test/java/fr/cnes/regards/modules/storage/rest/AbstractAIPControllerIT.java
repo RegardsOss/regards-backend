@@ -1,6 +1,30 @@
 package fr.cnes.regards.modules.storage.rest;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.util.Comparator;
+import java.util.List;
+import java.util.UUID;
+
+import org.junit.After;
+import org.junit.Before;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.MimeType;
+
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -35,27 +59,6 @@ import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultAllocat
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.service.DataStorageEventHandler;
 import fr.cnes.regards.modules.storage.service.IPrioritizedDataStorageService;
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
-import org.junit.After;
-import org.junit.Before;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.util.MimeType;
 
 /**
  * @author Léo Mieulet
@@ -74,8 +77,6 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
     private static final String DATA_STORAGE_CONF_LABEL = "AIPControllerIT_DATA_STORAGE";
 
     private static final String CATALOG_SECURITY_DELEGATION_LABEL = "AIPControllerIT_SECU_DELEG";
-
-    private static final int MAX_WAIT = 60000;
 
     private static final String SESSION = "Session123";
 
@@ -117,7 +118,7 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
     protected AIP aip;
 
     @Before
-    public void init() throws IOException, ModuleException, URISyntaxException {
+    public void init() throws IOException, ModuleException, URISyntaxException, InterruptedException {
         cleanUp();
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         // first of all, lets get an AIP with accessible dataObjects and real checksums
@@ -125,14 +126,14 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
         // second, lets storeAndCreate a plugin configuration for IAllocationStrategy
         PluginMetaData allocationMeta = PluginUtils
                 .createPluginMetaData(DefaultAllocationStrategyPlugin.class,
-                        DefaultAllocationStrategyPlugin.class.getPackage().getName());
+                                      DefaultAllocationStrategyPlugin.class.getPackage().getName());
         PluginConfiguration allocationConfiguration = new PluginConfiguration(allocationMeta, ALLOCATION_CONF_LABEL);
         allocationConfiguration.setIsActive(true);
         pluginService.savePluginConfiguration(allocationConfiguration);
         // third, lets storeAndCreate a plugin configuration of IDataStorage with the highest priority
         PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
-                IDataStorage.class.getPackage().getName(),
-                IOnlineDataStorage.class.getPackage().getName());
+                                                                      IDataStorage.class.getPackage().getName(),
+                                                                      IOnlineDataStorage.class.getPackage().getName());
         baseStorageLocation = new URL("file", "", Paths.get("target/AIPControllerIT").toFile().getAbsolutePath());
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
         List<PluginParameter> parameters = PluginParametersFactory.build()
@@ -147,15 +148,14 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
         pluginService.addPluginPackage(FakeSecurityDelegation.class.getPackage().getName());
         PluginMetaData catalogSecuDelegMeta = PluginUtils
                 .createPluginMetaData(FakeSecurityDelegation.class, FakeSecurityDelegation.class.getPackage().getName(),
-                        ISecurityDelegation.class.getPackage().getName());
+                                      ISecurityDelegation.class.getPackage().getName());
         PluginConfiguration catalogSecuDelegConf = new PluginConfiguration(catalogSecuDelegMeta,
                 CATALOG_SECURITY_DELEGATION_LABEL);
         pluginService.savePluginConfiguration(catalogSecuDelegConf);
     }
 
-
     @After
-    public void cleanUp() throws URISyntaxException, IOException {
+    public void cleanUp() throws URISyntaxException, IOException, InterruptedException {
         runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
         subscriber.purgeQueue(DataStorageEvent.class, DataStorageEventHandler.class);
         jobInfoRepo.deleteAll();
@@ -192,13 +192,13 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
 
         String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
         aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5",
-                "de89a907d33a9716d11765582102b2e0");
+                                                                "de89a907d33a9716d11765582102b2e0");
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", MimeType.valueOf("text/plain"));
         aipBuilder.addContentInformation();
         aipBuilder.getPDIBuilder().setAccessRightInformation("public");
         aipBuilder.getPDIBuilder().setFacility("CS");
         aipBuilder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event",
-                OffsetDateTime.now());
+                                                                 OffsetDateTime.now());
         aipBuilder.addTags(tags);
         return aipBuilder.build();
     }
