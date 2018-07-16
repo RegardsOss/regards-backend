@@ -62,16 +62,11 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 
 /**
- *
- * Class Oauth2AuthenticationManager
- *
  * Authentication Manager. This class provide the authentication process to check user/password and retrieve user
  * account.
  *
  * @author Sébastien Binda
  * @author Christophe Mertz
- *
- * @since 1.0-SNPASHOT
  */
 public class Oauth2AuthenticationManager implements AuthenticationManager, BeanFactoryAware {
 
@@ -131,7 +126,8 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         String requestLink = "";
         final String scope;
         if (details instanceof Map) {
-            @SuppressWarnings("unchecked") final Map<String, String> detailsMap = (Map<String, String>) details;
+            @SuppressWarnings("unchecked")
+            final Map<String, String> detailsMap = (Map<String, String>) details;
             scope = detailsMap.get("scope");
             if (scope == null) {
                 final String message = "Attribute scope is missing";
@@ -188,22 +184,23 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         // Before returning generating token, check user status.
         AuthenticationStatus status = checkUserStatus(response.getEmail(), pScope);
         // If authentication is granted and user does not exists and plugin is not the regards internal authentication.
-        if (response.getAccessGranted() && (status.equals(AuthenticationStatus.USER_UNKNOWN) || status
-                .equals(AuthenticationStatus.ACCOUNT_UNKNOWN)) && (!response.getPluginClassName()
-                .equals(defaultAuthenticationPlugin.getClass().getName()))) {
+        if (response.getAccessGranted()
+                && (status.equals(AuthenticationStatus.USER_UNKNOWN)
+                        || status.equals(AuthenticationStatus.ACCOUNT_UNKNOWN))
+                && (!response.getPluginClassName().equals(defaultAuthenticationPlugin.getClass().getName()))) {
             this.createMissingProjectUser(response.getEmail(), pOrigineUrl, pRequestLink);
             status = checkUserStatus(response.getEmail(), pScope);
         }
 
         if (!status.equals(AuthenticationStatus.ACCESS_GRANTED)) {
-            final String message = String
-                    .format("Access denied for user %s. cause : user status is %s", response.getEmail(), status.name());
+            final String message = String.format("Access denied for user %s. cause : user status is %s",
+                                                 response.getEmail(), status.name());
             throw new AuthenticationException(message, status);
         }
 
         if (!response.getAccessGranted()) {
-            final String message = String
-                    .format("Access denied for user %s. cause: %s", response.getEmail(), response.getErrorMessage());
+            final String message = String.format("Access denied for user %s. cause: %s", response.getEmail(),
+                                                 response.getErrorMessage());
             throw new AuthenticationException(message, AuthenticationStatus.ACCOUNT_UNKNOWN);
         }
 
@@ -243,9 +240,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         final Iterator<PluginConfiguration> it = pluginConfigurations.iterator();
         while (it.hasNext() && !pluginResponse.getAccessGranted()) {
             try {
-                pluginResponse = doPluginAuthentication(pluginService.getPlugin(it.next().getId()),
-                                                        pLogin,
-                                                        pPassword,
+                pluginResponse = doPluginAuthentication(pluginService.getPlugin(it.next().getId()), pLogin, pPassword,
                                                         pScope);
             } catch (final ModuleException e) {
                 LOG.error(e.getMessage(), e);
@@ -292,14 +287,8 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             throw new BadCredentialsException(message);
         }
         LOG.info("Creating new account for user email=" + pUserEmail);
-        client.requestAccess(new AccessRequestDto(pUserEmail,
-                                                  pUserEmail,
-                                                  pUserEmail,
-                                                  DefaultRole.PUBLIC.name(),
-                                                  null,
-                                                  null,
-                                                  pOrigineUrl,
-                                                  pRequestLink));
+        client.requestAccess(new AccessRequestDto(pUserEmail, pUserEmail, pUserEmail, DefaultRole.PUBLIC.name(), null,
+                null, pOrigineUrl, pRequestLink));
     }
 
     /**
@@ -348,6 +337,9 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
                     case INACTIVE:
                         status = AuthenticationStatus.ACCOUNT_INACTIVE;
                         break;
+                    case INACTIVE_PASSWORD:
+                        status = AuthenticationStatus.ACCOUNT_INACTIVE_PASSWORD;
+                        break;
                     case LOCKED:
                         status = AuthenticationStatus.ACCOUNT_LOCKED;
                         break;
@@ -364,8 +356,8 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
         // Check for project user status if the tenant to access is not instance and the user logged is not instance
         // root user.
-        if (status.equals(AuthenticationStatus.ACCESS_GRANTED) && (pTenant != null) && !runTimeTenantResolver
-                .isInstance() && !pUserEmail.equals(staticRootLogin)) {
+        if (status.equals(AuthenticationStatus.ACCESS_GRANTED) && (pTenant != null)
+                && !runTimeTenantResolver.isInstance() && !pUserEmail.equals(staticRootLogin)) {
             // Retrieve user projectUser
             try {
                 FeignSecurityManager.asSystem();
@@ -472,7 +464,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         } else {
             // Unauthorized access to instance tenant for authenticated user.
             throw new AuthenticationException("Access denied to REGARDS instance administration for user " + pUserName,
-                                              AuthenticationStatus.INSTANCE_ACCESS_DENIED);
+                    AuthenticationStatus.INSTANCE_ACCESS_DENIED);
         }
         grantedAuths.add(new SimpleGrantedAuthority(userDetails.getRole()));
         return new UsernamePasswordAuthenticationToken(userDetails, pUserPassword, grantedAuths);
@@ -510,8 +502,8 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
                     user.setName(projectUser.getEmail());
                     user.setRole(projectUser.getRole().getName());
                 } else {
-                    final String message = String
-                            .format("Remote administration request error. Returned code %s", response.getStatusCode());
+                    final String message = String.format("Remote administration request error. Returned code %s",
+                                                         response.getStatusCode());
                     LOG.error(message);
                     throw new EntityNotFoundException(pEmail, ProjectUser.class);
                 }
