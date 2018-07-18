@@ -27,9 +27,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.entities.domain.Dataset;
 
 /**
  * Configuration POJO for {@link ISearchEngine} plugins.
@@ -45,12 +47,19 @@ public class SearchEngineConfiguration {
     private Long id;
 
     @NotNull
+    @Column(name = "label", nullable = false, length = 256)
+    private String label;
+
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "plugin_conf_id", referencedColumnName = "id")
     private PluginConfiguration configuration;
 
     @Column(name = "dataset_urn", nullable = true, length = 256)
     private String datasetUrn;
+
+    @Transient
+    private Dataset dataset;
 
     public Long getId() {
         return id;
@@ -74,6 +83,22 @@ public class SearchEngineConfiguration {
 
     public void setDatasetUrn(String datasetUrn) {
         this.datasetUrn = datasetUrn;
+    }
+
+    public Dataset getDataset() {
+        return dataset;
+    }
+
+    public void setDataset(Dataset dataset) {
+        this.dataset = dataset;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
     }
 
 }

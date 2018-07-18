@@ -82,6 +82,7 @@ public class SearchEngineDispatcherIT extends AbstractRegardsTransactionalIT {
                                                                             Lists.newArrayList());
         engineConf = pluginService.savePluginConfiguration(engineConf);
         SearchEngineConfiguration seConf = new SearchEngineConfiguration();
+        seConf.setLabel("Engine for dataset1");
         seConf.setConfiguration(engineConf);
         seConf.setDatasetUrn(DATASET1_URN);
         searchEngineService.createConf(seConf);
@@ -92,6 +93,7 @@ public class SearchEngineDispatcherIT extends AbstractRegardsTransactionalIT {
                                                                              Lists.newArrayList());
         engineConf2 = pluginService.savePluginConfiguration(engineConf2);
         seConf = new SearchEngineConfiguration();
+        seConf.setLabel("Engine for dataset2");
         seConf.setConfiguration(engineConf2);
         seConf.setDatasetUrn(DATASET2_URN);
         searchEngineService.createConf(seConf);
@@ -102,6 +104,7 @@ public class SearchEngineDispatcherIT extends AbstractRegardsTransactionalIT {
                                         Lists.newArrayList());
         engineConf3 = pluginService.savePluginConfiguration(engineConf3);
         seConf = new SearchEngineConfiguration();
+        seConf.setLabel("Engine for all datasets");
         seConf.setConfiguration(engineConf3);
         searchEngineService.createConf(seConf);
 

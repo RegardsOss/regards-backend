@@ -23,11 +23,17 @@ import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 
+import org.assertj.core.util.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import feign.FeignException;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -37,6 +43,8 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.entities.client.IDatasetClient;
+import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.entities.domain.event.BroadcastEntityEvent;
 import fr.cnes.regards.modules.entities.domain.event.EventType;
 import fr.cnes.regards.modules.search.dao.ISearchEngineConfRepository;
@@ -51,6 +59,8 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 @MultitenantTransactional
 public class SearchEngineConfigurationService implements ISearchEngineConfigurationService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(SearchEngineConfigurationService.class);
+
     @Autowired
     private ISearchEngineConfRepository repository;
 
@@ -60,6 +70,9 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    @Autowired
+    private IDatasetClient datasetClient;
+
     @PostConstruct
     public void listenForDatasetEvents() {
         // Subscribe to entity events in order to delete links to deleted dataset.
@@ -68,7 +81,7 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
 
     @Override
     public SearchEngineConfiguration createConf(SearchEngineConfiguration conf) {
-        return repository.save(conf);
+        return addDatasetLabel(repository.save(conf), Lists.newArrayList());
     }
 
     @Override
@@ -78,7 +91,7 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
         } else {
             retrieveConf(conf.getId());
         }
-        return repository.save(conf);
+        return addDatasetLabel(repository.save(conf), Lists.newArrayList());
     }
 
     @Override
@@ -93,7 +106,7 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
         if (conf == null) {
             throw new EntityNotFoundException(confId, SearchEngineConfiguration.class);
         }
-        return conf;
+        return addDatasetLabel(conf, Lists.newArrayList());
     }
 
     @Override
@@ -114,7 +127,8 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
             throw new EntityNotFoundException(String.format("SearchType=%s and Dataset=%s", pluginId, ds),
                     SearchEngineConfiguration.class);
         }
-        return conf;
+
+        return addDatasetLabel(conf, Lists.newArrayList());
     }
 
     /**
@@ -141,10 +155,39 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
     @Override
     public Page<SearchEngineConfiguration> retrieveConfs(Optional<String> engineType, Pageable page)
             throws ModuleException {
+        Page<SearchEngineConfiguration> confs;
         if (engineType.isPresent()) {
-            return repository.findByConfigurationPluginId(engineType.get(), page);
+            confs = repository.findByConfigurationPluginId(engineType.get(), page);
         } else {
-            return repository.findAll(page);
+            confs = repository.findAll(page);
         }
+        List<Dataset> cachedDatasets = Lists.newArrayList();
+        confs.getContent().forEach(c -> addDatasetLabel(c, cachedDatasets));
+        return confs;
+    }
+
+    public SearchEngineConfiguration addDatasetLabel(SearchEngineConfiguration conf, List<Dataset> cachedDatasets) {
+        if (conf.getDatasetUrn() != null) {
+            // First check if dataset is already in cache
+            Optional<Dataset> oDs = cachedDatasets.stream()
+                    .filter(ds -> ds.getIpId().toString().equals(conf.getDatasetUrn())).findFirst();
+            if (oDs.isPresent()) {
+                conf.setDataset(oDs.get());
+            } else {
+                // Retrieve dataset from dam
+                try {
+                    ResponseEntity<Resource<Dataset>> response = datasetClient.retrieveDataset(conf.getDatasetUrn());
+                    if ((response != null) && (response.getBody() != null)
+                            && (response.getBody().getContent() != null)) {
+                        conf.setDataset(response.getBody().getContent());
+                        // Add new retrieved dataset into cached ones
+                        cachedDatasets.add(response.getBody().getContent());
+                    }
+                } catch (FeignException e) {
+                    LOGGER.error(String.format("Error retrieving dataset with ipId %s", conf.getDatasetUrn()), e);
+                }
+            }
+        }
+        return conf;
     }
 }

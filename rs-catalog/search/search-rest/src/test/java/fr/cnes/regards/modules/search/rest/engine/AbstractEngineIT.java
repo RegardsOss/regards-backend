@@ -278,6 +278,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
                                         Lists.newArrayList());
         legacyConf = pluginService.savePluginConfiguration(legacyConf);
         SearchEngineConfiguration seConf = new SearchEngineConfiguration();
+        seConf.setLabel("Legacy conf for all datasets");
         seConf.setConfiguration(legacyConf);
         searchEngineService.createConf(seConf);
 
@@ -327,6 +328,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         openSearchPluginConf = pluginService.savePluginConfiguration(opensearchConf);
         SearchEngineConfiguration seConfOS = new SearchEngineConfiguration();
         seConfOS.setConfiguration(openSearchPluginConf);
+        seConfOS.setLabel("Opensearch conf for all datasets");
         openSearchEngineConf = searchEngineService.createConf(seConfOS);
     }
 
