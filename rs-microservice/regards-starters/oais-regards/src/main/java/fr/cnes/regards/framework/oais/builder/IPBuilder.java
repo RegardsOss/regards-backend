@@ -323,13 +323,25 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
     }
 
     /**
-     * Set the data object to the underlying content information builder thanks to the given parameters.
-     * @param dataType
-     * @param filename
-     * @param algorithm
-     * @param checksum
-     * @param fileSize
-     * @param urls
+     * Set <b>required</b> data object properties for a data object reference<br/>
+     * Use this method to reference an external data object that will not be managed by archival storage (i.e. physical
+     * file will not be stored by the system)<br/>
+     * @param dataType {@link DataType}
+     * @param filename filename
+     * @param url external url
+     */
+    public void setDataObjectReference(DataType dataType, String filename, URL url) {
+        ipPropertiesBuilder.setDataObjectReference(dataType, filename, url);
+    }
+
+    /**
+     * Set <b>required</b> data object properties<br/>
+     * @param dataType {@link DataType}
+     * @param filename filename
+     * @param algorithm checksum algorithm
+     * @param checksum the checksum
+     * @param fileSize <b>optional</b> file size
+     * @param urls references to the physical file
      */
     public void setDataObject(DataType dataType, String filename, String algorithm, String checksum, Long fileSize,
             URL... urls) {
@@ -337,12 +349,13 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
     }
 
     /**
-     * Set the data object to the underlying content information builder thanks to the given parameters.
-     * @param dataType
-     * @param filename
-     * @param algorithm
-     * @param checksum
-     * @param fileSize
+     * Set <b>required</b> data object properties
+     * @param dataType {@link DataType}
+     * @param filePath reference to the physical file
+     * @param filename filename
+     * @param algorithm checksum algorithm
+     * @param checksum the checksum
+     * @param fileSize file size
      */
     public void setDataObject(DataType dataType, Path filePath, String filename, String algorithm, String checksum,
             Long fileSize) {
@@ -350,63 +363,23 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
     }
 
     /**
-     * Set the data object to the underlying content information builder thanks to the given parameters.
-     * @param dataType
-     * @param url
-     * @param filename
-     * @param checksum
-     * @param fileSize
-     */
-    public void setDataObject(DataType dataType, URL url, String filename, String checksum, Long fileSize) {
-        ipPropertiesBuilder.setDataObject(dataType, url, filename, checksum, fileSize);
-    }
-
-    /**
-     * Set the data object to the underlying content information builder thanks to the given parameters.
-     * @param dataType
-     * @param filename
-     * @param checksum
-     * @param fileSize
-     */
-    public void setDataObject(DataType dataType, Path filePath, String filename, String checksum, Long fileSize) {
-        ipPropertiesBuilder.setDataObject(dataType, filePath, filename, checksum, fileSize);
-    }
-
-    /**
-     * Set the data object to the underlying content information builder thanks to the given parameters.
-     * @param dataType
-     * @param url
-     * @param algorithm
-     * @param checksum
-     */
-    public void setDataObject(DataType dataType, URL url, String algorithm, String checksum) {
-        ipPropertiesBuilder.setDataObject(dataType, url, algorithm, checksum);
-    }
-
-    /**
-     * Set the data object to the underlying content information builder thanks to the given parameters.
-     * @param dataType
-     * @param algorithm
-     * @param checksum
+     * Alias for {@link ContentInformationBuilder#setDataObject(DataType, Path, String, String, String, Long)} (no
+     * file size)
+     * @param dataType {@link DataType}
+     * @param filePath reference to the physical file
+     * @param algorithm checksum algorithm
+     * @param checksum the checksum
      */
     public void setDataObject(DataType dataType, Path filePath, String algorithm, String checksum) {
         ipPropertiesBuilder.setDataObject(dataType, filePath, algorithm, checksum);
     }
 
     /**
-     * Set the data object to the underlying content information builder thanks to the given parameters.
-     * @param dataType
-     * @param url
-     * @param checksum
-     */
-    public void setDataObject(DataType dataType, URL url, String checksum) {
-        ipPropertiesBuilder.setDataObject(dataType, url, checksum);
-    }
-
-    /**
-     * Set the data object to the underlying content information builder thanks to the given parameters.
-     * @param dataType
-     * @param checksum
+     * Alias for {@link ContentInformationBuilder#setDataObject(DataType, Path, String, String, String, Long)} (no file
+     * size and MD5 default checksum algorithm)
+     * @param dataType {@link DataType}
+     * @param filePath reference to the physical file
+     * @param checksum the checksum
      */
     public void setDataObject(DataType dataType, Path filePath, String checksum) {
         ipPropertiesBuilder.setDataObject(dataType, filePath, checksum);
