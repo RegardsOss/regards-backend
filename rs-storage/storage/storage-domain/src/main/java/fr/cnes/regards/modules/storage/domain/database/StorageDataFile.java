@@ -1,5 +1,9 @@
 package fr.cnes.regards.modules.storage.domain.database;
 
+import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -21,14 +25,12 @@ import javax.persistence.NamedSubgraph;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.Min;
-import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.springframework.util.MimeType;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.jpa.converter.SetStringCsvConverter;
@@ -46,9 +48,10 @@ import fr.cnes.regards.modules.storage.domain.AIP;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Entity
-@Table(name = "t_data_file", indexes = { @Index(name = "idx_data_file_checksum", columnList = "checksum"),
-        @Index(name = "idx_data_file_state", columnList = "state"),
-        @Index(name = "idx_data_file_aip", columnList = "aip_ip_id") })
+@Table(name = "t_data_file",
+        indexes = { @Index(name = "idx_data_file_checksum", columnList = "checksum"),
+                @Index(name = "idx_data_file_state", columnList = "state"),
+                @Index(name = "idx_data_file_aip", columnList = "aip_ip_id") })
 // @formatter:off
 @NamedEntityGraph(name = "graph.datafile.full", attributeNodes = { @NamedAttributeNode("aipEntity"),
         @NamedAttributeNode(value = "prioritizedDataStorages", subgraph = "graph.datafile.prioritizedDataStorages") },
@@ -65,7 +68,8 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 public class StorageDataFile {
 
     /**
-     * length used as the checksum column definition. Why 128? it allows to use sha-512. That should limit issues with checksum length for a few years
+     * length used as the checksum column definition. Why 128? it allows to use sha-512. That should limit issues with
+     * checksum length for a few years
      */
     public static final int CHECKSUM_MAX_LENGTH = 128;
 
@@ -150,11 +154,12 @@ public class StorageDataFile {
      * Data storage plugin configuration used to store the file
      */
     @ManyToMany
-    @JoinTable(name = "ta_data_file_plugin_conf", joinColumns = @JoinColumn(name = "data_file_id",
-            foreignKey = @ForeignKey(name = "fk_data_file_plugin_conf_data_file")),
+    @JoinTable(name = "ta_data_file_plugin_conf",
+            joinColumns = @JoinColumn(name = "data_file_id",
+                    foreignKey = @ForeignKey(name = "fk_data_file_plugin_conf_data_file")),
             inverseJoinColumns = @JoinColumn(name = "data_storage_conf_id",
                     foreignKey = @ForeignKey(name = "fk_plugin_conf_data_file_plugin_conf")))
-    private Set<PrioritizedDataStorage> prioritizedDataStorages = new HashSet<>();
+    private final Set<PrioritizedDataStorage> prioritizedDataStorages = new HashSet<>();
 
     /**
      * Reversed mapping compared to reality. This is because it is easier to work like this.
@@ -185,16 +190,8 @@ public class StorageDataFile {
      * @param aip
      */
     public StorageDataFile(OAISDataObject file, MimeType mimeType, AIP aip, AIPSession aipSession) {
-        this(file.getUrls(),
-             file.getChecksum(),
-             file.getAlgorithm(),
-             file.getRegardsDataType(),
-             file.getFileSize(),
-             mimeType,
-             aip,
-             aipSession,
-             null,
-             null);
+        this(file.getUrls(), file.getChecksum(), file.getAlgorithm(), file.getRegardsDataType(), file.getFileSize(),
+             mimeType, aip, aipSession, null, null);
         String name = file.getFilename();
         if (Strings.isNullOrEmpty(name)) {
             String[] pathParts = file.getUrls().iterator().next().getPath().split("/");
@@ -236,8 +233,11 @@ public class StorageDataFile {
         Set<StorageDataFile> dataFiles = Sets.newHashSet();
         for (ContentInformation ci : aip.getProperties().getContentInformations()) {
             OAISDataObject file = ci.getDataObject();
-            MimeType mimeType = ci.getRepresentationInformation().getSyntax().getMimeType();
-            dataFiles.add(new StorageDataFile(file, mimeType, aip, aipSession));
+            if (!file.isReference()) {
+                // Only non reference data object is managed by storage
+                MimeType mimeType = ci.getRepresentationInformation().getSyntax().getMimeType();
+                dataFiles.add(new StorageDataFile(file, mimeType, aip, aipSession));
+            }
         }
         return dataFiles;
     }
