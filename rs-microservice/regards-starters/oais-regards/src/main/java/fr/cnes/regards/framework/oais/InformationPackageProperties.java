@@ -1,14 +1,13 @@
 package fr.cnes.regards.framework.oais;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
-
-import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.oais.adapter.InformationPackageMap;
 
@@ -25,7 +24,7 @@ public class InformationPackageProperties {
      */
     @NotEmpty(message = "At least one content information is required")
     @Valid
-    private Set<ContentInformation> contentInformations;
+    private List<ContentInformation> contentInformations;
 
     /**
      * The preservation and description information
@@ -47,9 +46,9 @@ public class InformationPackageProperties {
     /**
      * @return the content information
      */
-    public Set<ContentInformation> getContentInformations() {
+    public List<ContentInformation> getContentInformations() {
         if (contentInformations == null) {
-            contentInformations = Sets.newHashSet();
+            contentInformations = new ArrayList<>();
         }
         return contentInformations;
     }

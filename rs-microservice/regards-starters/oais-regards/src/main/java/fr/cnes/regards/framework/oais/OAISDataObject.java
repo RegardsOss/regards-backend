@@ -171,6 +171,10 @@ public class OAISDataObject {
         this.fileSize = fileSize;
     }
 
+    public Boolean getReference() {
+        return reference;
+    }
+
     public Boolean isReference() {
         return reference;
     }
