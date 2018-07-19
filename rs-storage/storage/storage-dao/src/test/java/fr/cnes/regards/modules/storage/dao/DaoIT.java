@@ -60,9 +60,9 @@ import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 /**
  * @author Sylvain Vissiere-Guerinet
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=projectdb",
-        "spring.application.name=storage", "spring.jmx.enabled=false" })
-@ContextConfiguration(classes = { DAOTestConfiguration.class })
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=projectdb", "spring.application.name=storage" })
+@ContextConfiguration(classes = DAOTestConfiguration.class)
 public class DaoIT extends AbstractDaoTransactionalTest {
 
     @SuppressWarnings("unused")
@@ -211,7 +211,7 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         Random random = new Random();
         int listSize = random.nextInt(listMaxSize) + 1;
         for (int i = 0; i < listSize; i++) {
-            ippBuilder.getContentInformationBuilder().setDataObject(DataType.OTHER, null, "SHA1", sha1("blahblah"),
+            ippBuilder.getContentInformationBuilder().setDataObject(DataType.OTHER, "bla", "SHA1", sha1("blahblah"),
                                                                     new Long((new Random()).nextInt(10000000)),
                                                                     new URL("ftp://bla"));
             ippBuilder.getContentInformationBuilder().setSyntaxAndSemantic("NAME", "SYNTAX_DESCRIPTION",
@@ -267,6 +267,7 @@ public class DaoIT extends AbstractDaoTransactionalTest {
 
     @Test
     public void testFindByState() {
+
         Page<AIP> result = dao.findAllByState(AIPState.DELETED, new PageRequest(0, 10));
         Assert.assertFalse(result.getContent().contains(aip1));
         Assert.assertFalse(result.getContent().contains(aip2));

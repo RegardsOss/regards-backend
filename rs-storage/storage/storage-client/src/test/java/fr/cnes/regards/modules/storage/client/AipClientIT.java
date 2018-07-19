@@ -117,6 +117,7 @@ public class AipClientIT extends AbstractRegardsWebIT {
     /**
      * Class logger
      */
+    @SuppressWarnings("unused")
     private static final Logger LOG = LoggerFactory.getLogger(AipClientIT.class);
 
     private static final String CATALOG_SECURITY_DELEGATION_LABEL = "AipClientIT";
@@ -193,7 +194,7 @@ public class AipClientIT extends AbstractRegardsWebIT {
                                           new TokenClientProvider<>(IAipClient.class,
                                                   "http://" + serverAddress + ":" + getPort(), feignSecurityManager),
                                           gson);
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         FeignSecurityManager.asSystem();
         initDb();
 
@@ -266,9 +267,8 @@ public class AipClientIT extends AbstractRegardsWebIT {
     @Test
     public void testCreateAIP() throws IOException, NoSuchAlgorithmException, InterruptedException {
         // Create new AIP
-        AIPBuilder builder = new AIPBuilder(
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, DEFAULT_TENANT, UUID.randomUUID(), 1),
-                "clientAipTest", EntityType.DATA, "Session 1");
+        AIPBuilder builder = new AIPBuilder(new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
+                getDefaultTenant(), UUID.randomUUID(), 1), "clientAipTest", EntityType.DATA, "Session 1");
         // Init a test file to add with the new AIP.
         Path file = initTestFile();
 
@@ -276,9 +276,8 @@ public class AipClientIT extends AbstractRegardsWebIT {
         try (FileInputStream is = new FileInputStream(file.toFile())) {
             fileChecksum = ChecksumUtils.computeHexChecksum(is, "MD5");
         }
-        builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA,
-                                                             new URL("file://" + file.toFile().getAbsolutePath()),
-                                                             "MD5", fileChecksum);
+        builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, file.toAbsolutePath(), "MD5",
+                                                             fileChecksum);
         builder.getContentInformationBuilder().setSyntax("application/text", "text",
                                                          MimeType.valueOf("application/text"));
         builder.addContentInformation();

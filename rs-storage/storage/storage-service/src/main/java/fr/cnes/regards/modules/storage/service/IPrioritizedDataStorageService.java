@@ -1,11 +1,9 @@
 package fr.cnes.regards.modules.storage.service;
 
-import javax.annotation.Nullable;
-
 import java.util.List;
 
-import com.google.common.collect.Multimap;
-import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
+import javax.annotation.Nullable;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;

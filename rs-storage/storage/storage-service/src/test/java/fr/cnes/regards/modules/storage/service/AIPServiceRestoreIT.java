@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.service;
 
-import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -91,6 +90,7 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.CachedFile;
 import fr.cnes.regards.modules.storage.domain.database.CachedFileState;
 import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
@@ -204,7 +204,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
 
     @Before
     public void init() throws Exception {
-        tenantResolver.forceTenant(DEFAULT_TENANT);
+        tenantResolver.forceTenant(getDefaultTenant());
         initCacheDir();
         this.cleanUp();
         subscriber.subscribeTo(DataFileEvent.class, dataHandler, true);
@@ -504,12 +504,12 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
                           cachedFileRepository.findAllByState(CachedFileState.AVAILABLE).isEmpty());
         // Simulate cache size full by adding files with big size.
         Long fileSize = ((this.cacheSizeLimitKo * 1024) / 3);
-        fillCache(aip, aipSession, "dataFile4", "dataFile4", fileSize, OffsetDateTime.now().plusDays(10), OffsetDateTime.now(),
-                  "target/cache");
-        fillCache(aip, aipSession, "dataFile5", "dataFile5", fileSize, OffsetDateTime.now().plusDays(10), OffsetDateTime.now(),
-                  "target/cache");
-        fillCache(aip, aipSession, "dataFile6", "dataFile6", fileSize, OffsetDateTime.now().plusDays(10), OffsetDateTime.now(),
-                  "target/cache");
+        fillCache(aip, aipSession, "dataFile4", "dataFile4", fileSize, OffsetDateTime.now().plusDays(10),
+                  OffsetDateTime.now(), "target/cache");
+        fillCache(aip, aipSession, "dataFile5", "dataFile5", fileSize, OffsetDateTime.now().plusDays(10),
+                  OffsetDateTime.now(), "target/cache");
+        fillCache(aip, aipSession, "dataFile6", "dataFile6", fileSize, OffsetDateTime.now().plusDays(10),
+                  OffsetDateTime.now(), "target/cache");
 
         // All files to restore should be initialized in QUEUED state waiting for available size into cache
         AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "dataFile1",
@@ -595,8 +595,8 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         fillCache(aip, aipSession, file2.getFileName().toString(), file2.getFileName().toString(), fileSize,
                   OffsetDateTime.now().minusDays(2), OffsetDateTime.now(), cacheDir.toFile().getAbsolutePath());
         Path file3 = Files.createFile(Paths.get(cacheDir.toString(), "dataFile3"));
-        fillCache(aip, aipSession, file3.getFileName().toString(), file3.getFileName().toString(), fileSize, OffsetDateTime.now(),
-                  OffsetDateTime.now(), cacheDir.toFile().getAbsolutePath());
+        fillCache(aip, aipSession, file3.getFileName().toString(), file3.getFileName().toString(), fileSize,
+                  OffsetDateTime.now(), OffsetDateTime.now(), cacheDir.toFile().getAbsolutePath());
         Path file4 = Paths.get(cacheDir.toString(), "dataFile4");
         fillCache(aip, aipSession, file4.getFileName().toString(), file4.getFileName().toString(), fileSize,
                   OffsetDateTime.now().plusDays(1), OffsetDateTime.now(), cacheDir.toFile().getAbsolutePath());
@@ -640,22 +640,22 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         Assert.assertTrue("Initialization error. The test shouldn't start with cache files in AVAILABLE status.",
                           cachedFileRepository.findAllByState(CachedFileState.AVAILABLE).isEmpty());
         // Simulate files in cache
-        // 1. expirationDate: now+1day    requestDate : now-2days
+        // 1. expirationDate: now+1day requestDate : now-2days
         Path file1 = Files.createFile(Paths.get(cacheDir.toString(), "dataFile1"));
         fillCache(aip, aipSession, file1.getFileName().toString(), file1.getFileName().toString(), fileSize,
                   OffsetDateTime.now().plusDays(1), OffsetDateTime.now().minusDays(2),
                   cacheDir.toFile().getAbsolutePath());
-        // 2. expirationDate: now+2day    requestDate : now-5days
+        // 2. expirationDate: now+2day requestDate : now-5days
         Path file2 = Files.createFile(Paths.get(cacheDir.toString(), "dataFile2"));
         fillCache(aip, aipSession, file2.getFileName().toString(), file2.getFileName().toString(), fileSize,
                   OffsetDateTime.now().plusDays(2), OffsetDateTime.now().minusDays(5),
                   cacheDir.toFile().getAbsolutePath());
-        // 3. expirationDate: now+3day    requestDate : now-4days
+        // 3. expirationDate: now+3day requestDate : now-4days
         Path file3 = Files.createFile(Paths.get(cacheDir.toString(), "dataFile3"));
         fillCache(aip, aipSession, file3.getFileName().toString(), file3.getFileName().toString(), fileSize,
                   OffsetDateTime.now().plusDays(3), OffsetDateTime.now().minusDays(4),
                   cacheDir.toFile().getAbsolutePath());
-        // 3. expirationDate: now+4day    requestDate : now-3days
+        // 3. expirationDate: now+4day requestDate : now-3days
         Path file4 = Files.createFile(Paths.get(cacheDir.toString(), "dataFile4"));
         fillCache(aip, aipSession, file4.getFileName().toString(), file4.getFileName().toString(), fileSize,
                   OffsetDateTime.now().plusDays(4), OffsetDateTime.now().minusDays(3),
@@ -710,7 +710,8 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         LOG.info("Start test testStoreQueuedFiles ...");
 
         int nbFiles = 5;
-        // Simulare 5 files for an AIP at STORED state with size calculated to full the restoration cache directory if restored.
+        // Simulare 5 files for an AIP at STORED state with size calculated to full the restoration cache directory if
+        // restored.
         float fullFileSize = ((this.cacheSizeLimitKo * 1024) / nbFiles) - 1;
         Long fileSize = (long) Math.ceil(fullFileSize);
         int nbFilesToDeleteToReachLimit = 3;
@@ -858,8 +859,8 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
      * @param location
      * @throws MalformedURLException
      */
-    private void fillCache(AIP aip, AIPSession aipSession, String fileName, String checksum, Long fileSize, OffsetDateTime expiration,
-                           OffsetDateTime lastRequestDate, String location) throws MalformedURLException {
+    private void fillCache(AIP aip, AIPSession aipSession, String fileName, String checksum, Long fileSize,
+            OffsetDateTime expiration, OffsetDateTime lastRequestDate, String location) throws MalformedURLException {
         // Simulate cache files to force cache limit size reached before restoring new files.
         // First create StorageDataFile
         StorageDataFile df = new StorageDataFile(Sets.newHashSet(new URL("file://test/" + fileName)), checksum, "MD5",
@@ -965,7 +966,8 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
             String fileName = String.format("file%d.txt", i + 1);
             URL url = Paths.get("src/test/resources/income/" + fileName).toUri().toURL();
             StorageDataFile df = new StorageDataFile(Sets.newHashSet(url), String.format("%s%d", checksumPrefix, i + 1),
-                    "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"), aip, aipSession, fileName, null);
+                    "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"), aip, aipSession, fileName,
+                    null);
             df.addDataStorageUsed(nearlineDataStorageConf);
             df.addDataStorageUsed(nearlineNoRetrieveDataStorageConf);
             datafiles.add(df);
@@ -981,11 +983,11 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
     private AIP getAIP() throws MalformedURLException {
 
         AIPBuilder aipBuilder = new AIPBuilder(
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT, UUID.randomUUID(), 1),
+                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, getDefaultTenant(), UUID.randomUUID(), 1),
                 null, EntityType.DATA, SESSION);
 
-        String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
-        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5",
+        Path path = Paths.get("src", "test", "resources", "data.txt");
+        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, path, "MD5",
                                                                 "de89a907d33a9716d11765582102b2e0");
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", MediaType.valueOf("text/plain"));
         aipBuilder.addContentInformation();

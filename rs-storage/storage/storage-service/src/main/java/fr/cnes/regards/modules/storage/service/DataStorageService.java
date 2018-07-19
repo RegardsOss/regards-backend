@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.storage.service;
 
-import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
@@ -271,8 +270,12 @@ public class DataStorageService implements IDataStorageService {
         }
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.storage.service.IPlop#handleRestorationAction(fr.cnes.regards.modules.storage.domain.event.StorageEventType, fr.cnes.regards.modules.storage.domain.event.DataStorageEvent)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * fr.cnes.regards.modules.storage.service.IPlop#handleRestorationAction(fr.cnes.regards.modules.storage.domain.
+     * event.StorageEventType, fr.cnes.regards.modules.storage.domain.event.DataStorageEvent)
      */
     @Override
     public void handleRestorationAction(StorageEventType type, DataStorageEvent event) {
@@ -295,8 +298,12 @@ public class DataStorageService implements IDataStorageService {
         }
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.storage.service.IPlop#handleDeletionAction(fr.cnes.regards.modules.storage.domain.event.StorageEventType, fr.cnes.regards.modules.storage.domain.event.DataStorageEvent)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * fr.cnes.regards.modules.storage.service.IPlop#handleDeletionAction(fr.cnes.regards.modules.storage.domain.event.
+     * StorageEventType, fr.cnes.regards.modules.storage.domain.event.DataStorageEvent)
      */
     @Override
     public void handleDeletionAction(StorageEventType type, DataStorageEvent event) {
@@ -323,8 +330,11 @@ public class DataStorageService implements IDataStorageService {
         }
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.storage.service.IPlop#handleDeletionSuccess(fr.cnes.regards.modules.storage.domain.database.StorageDataFile, java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see fr.cnes.regards.modules.storage.service.IPlop#handleDeletionSuccess(fr.cnes.regards.modules.storage.domain.
+     * database.StorageDataFile, java.lang.String)
      */
     @Override
     public void handleDeletionSuccess(StorageDataFile dataFileDeleted, URL deletedUrl, String checksumOfDeletedFile) {
@@ -410,8 +420,12 @@ public class DataStorageService implements IDataStorageService {
         }
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.storage.service.IPlop#handleStoreAction(fr.cnes.regards.modules.storage.domain.event.StorageEventType, fr.cnes.regards.modules.storage.domain.event.DataStorageEvent)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * fr.cnes.regards.modules.storage.service.IPlop#handleStoreAction(fr.cnes.regards.modules.storage.domain.event.
+     * StorageEventType, fr.cnes.regards.modules.storage.domain.event.DataStorageEvent)
      */
     @Override
     public void handleStoreAction(StorageEventType type, DataStorageEvent event) {
@@ -443,8 +457,13 @@ public class DataStorageService implements IDataStorageService {
         }
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.storage.service.IPlop#handleStoreSuccess(fr.cnes.regards.modules.storage.domain.database.StorageDataFile, java.lang.String, java.net.URL, java.lang.Long, java.lang.Long, java.lang.Integer, java.lang.Integer, fr.cnes.regards.modules.storage.domain.AIP)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * fr.cnes.regards.modules.storage.service.IPlop#handleStoreSuccess(fr.cnes.regards.modules.storage.domain.database.
+     * StorageDataFile, java.lang.String, java.net.URL, java.lang.Long, java.lang.Long, java.lang.Integer,
+     * java.lang.Integer, fr.cnes.regards.modules.storage.domain.AIP)
      */
     @Override
     public void handleStoreSuccess(StorageDataFile storedDataFile, String storedFileChecksum, URL storedFileNewURL,
@@ -519,8 +538,12 @@ public class DataStorageService implements IDataStorageService {
         }
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.storage.service.IPlop#handleStoreFailed(fr.cnes.regards.modules.storage.domain.database.StorageDataFile, fr.cnes.regards.modules.storage.domain.AIP, java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * fr.cnes.regards.modules.storage.service.IPlop#handleStoreFailed(fr.cnes.regards.modules.storage.domain.database.
+     * StorageDataFile, fr.cnes.regards.modules.storage.domain.AIP, java.lang.String)
      */
     @Override
     public void handleStoreFailed(StorageDataFile storeFailFile, AIP associatedAIP, String failureCause) {

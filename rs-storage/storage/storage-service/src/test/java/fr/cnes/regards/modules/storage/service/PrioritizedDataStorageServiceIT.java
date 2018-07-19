@@ -84,7 +84,7 @@ public class PrioritizedDataStorageServiceIT extends AbstractRegardsTransactiona
 
     @Before
     public void init() {
-        tenantResolver.forceTenant(DEFAULT_TENANT);
+        tenantResolver.forceTenant(getDefaultTenant());
     }
 
     @Test
@@ -154,6 +154,5 @@ public class PrioritizedDataStorageServiceIT extends AbstractRegardsTransactiona
         public INotificationClient notificationClient() {
             return Mockito.mock(INotificationClient.class);
         }
-
     }
 }

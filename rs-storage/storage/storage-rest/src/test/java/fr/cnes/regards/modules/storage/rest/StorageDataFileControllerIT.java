@@ -1,5 +1,15 @@
 package fr.cnes.regards.modules.storage.rest;
 
+import java.net.MalformedURLException;
+import java.time.OffsetDateTime;
+import java.util.HashSet;
+
+import org.hamcrest.Matchers;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.util.MimeType;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.DataType;
@@ -9,22 +19,10 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
-import fr.cnes.regards.modules.storage.service.IAIPService;
-import java.net.MalformedURLException;
-import java.time.OffsetDateTime;
-import java.util.HashSet;
-import org.hamcrest.Matchers;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.util.MimeType;
 
 public class StorageDataFileControllerIT extends AbstractAIPControllerIT {
 
     private final String SESSION_NAME = "Test session";
-
-    @Autowired
-    private IAIPService aipService;
 
     @Autowired
     private IDataFileDao dao;
@@ -37,7 +35,7 @@ public class StorageDataFileControllerIT extends AbstractAIPControllerIT {
         aipSession.setLastActivationDate(OffsetDateTime.now());
         aipSession = aipSessionRepo.save(aipSession);
         // Create some waiting AIP
-        AIP aipWaiting1= getNewAip(aipSession);
+        AIP aipWaiting1 = getNewAip(aipSession);
         aipWaiting1.setState(AIPState.STORING_METADATA);
         aipWaiting1 = aipDao.save(aipWaiting1, aipSession);
         OAISDataObject file = new OAISDataObject();
@@ -59,8 +57,9 @@ public class StorageDataFileControllerIT extends AbstractAIPControllerIT {
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.jsonPath("$.[0].content.name", Matchers.is(filename)));
 
-        performDefaultGet(StorageDataFileController.TYPE_MAPPING + StorageDataFileController.AIP_PATH, requestBuilderCustomizer,
-                "we should have the list of session", aipWaiting1.getId().toString());
+        performDefaultGet(StorageDataFileController.TYPE_MAPPING + StorageDataFileController.AIP_PATH,
+                          requestBuilderCustomizer, "we should have the list of session",
+                          aipWaiting1.getId().toString());
     }
 
 }

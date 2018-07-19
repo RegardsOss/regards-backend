@@ -18,12 +18,12 @@
  */
 package fr.cnes.regards.modules.storage.plugins.datastorage.allocation.strategy;
 
-import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
@@ -63,6 +63,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
@@ -158,11 +159,11 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
     private AIP getAIP() throws MalformedURLException {
 
         AIPBuilder aipBuilder = new AIPBuilder(
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT, UUID.randomUUID(), 1),
+                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, getDefaultTenant(), UUID.randomUUID(), 1),
                 null, EntityType.DATA, SESSION);
 
-        String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
-        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5",
+        Path path = Paths.get(System.getProperty("user.dir"), "/src/test/resources/data.txt");
+        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, path, "MD5",
                                                                 "de89a907d33a9716d11765582102b2e0");
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", MimeType.valueOf("text/plain"));
         aipBuilder.addContentInformation();
@@ -222,7 +223,8 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
      * Test nominal use case.
      * - Multiple storage defined in each AIP into the misc.storage properties
      * - FromSIPAllocationStrategyPlugin configured to select one configuration for the one plugin type
-     * - As no plugin configuration identifier is defined for the scond plugin type, the dataFiles are not dispatch to be store with it.
+     * - As no plugin configuration identifier is defined for the scond plugin type, the dataFiles are not dispatch to
+     * be store with it.
      * @throws ModuleException
      * @throws IOException
      * @throws URISyntaxException
@@ -255,7 +257,8 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
      * Test nominal use case.
      * - Multiple storage defined in each AIP into the misc.storage properties
      * - FromSIPAllocationStrategyPlugin not configured
-     * - As there is only one configuration for each plugin type, each file is dispatched to be stored using the only one configuration.
+     * - As there is only one configuration for each plugin type, each file is dispatched to be stored using the only
+     * one configuration.
      * @throws ModuleException
      * @throws IOException
      * @throws URISyntaxException

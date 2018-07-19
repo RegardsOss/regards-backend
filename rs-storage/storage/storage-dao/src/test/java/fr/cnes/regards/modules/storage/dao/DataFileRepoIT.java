@@ -43,9 +43,9 @@ import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage",
-        "spring.application.name=storage", "spring.jmx.enabled=false" })
-@ContextConfiguration(classes = { DAOTestConfiguration.class })
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=storage", "spring.application.name=storage" })
+@ContextConfiguration(classes = DAOTestConfiguration.class)
 public class DataFileRepoIT extends AbstractDaoTransactionalTest {
 
     @Autowired
@@ -235,7 +235,7 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
         Random random = new Random();
         int listSize = random.nextInt(listMaxSize) + 1;
         for (int i = 0; i < listSize; i++) {
-            ippBuilder.getContentInformationBuilder().setDataObject(DataType.OTHER, null, "SHA1", sha1("blahblah"),
+            ippBuilder.getContentInformationBuilder().setDataObject(DataType.OTHER, "blah", "SHA1", sha1("blahblah"),
                                                                     new Long((new Random()).nextInt(10000000)),
                                                                     new URL("ftp://bla"));
             ippBuilder.getContentInformationBuilder().setSyntaxAndSemantic("NAME", "SYNTAX_DESCRIPTION",

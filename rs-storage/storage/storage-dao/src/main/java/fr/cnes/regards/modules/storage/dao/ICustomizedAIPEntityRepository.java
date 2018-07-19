@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.storage.dao;
 
 import java.util.List;
 
-
 public interface ICustomizedAIPEntityRepository {
 
     /**
