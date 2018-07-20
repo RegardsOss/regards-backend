@@ -72,7 +72,8 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_test",
         "regards.storage.cache.path=target/cache", "regards.storage.cache.minimum.time.to.live.hours=1",
         "regards.tenants=PROJECT", "regards.tenant=PROJECT", "regards.amqp.enabled=true",
-        "regards.storage.check.aip.metadata.delay=5000", "spring.jpa.show-sql=false" })
+        "regards.storage.store.delay=5000", "regards.storage.check.aip.metadata.delay=5000",
+        "spring.jpa.show-sql=false" })
 // Storage uses AMQP to synchronize storage
 @ActiveProfiles({ "testAmqp" })
 @DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE, classMode = ClassMode.BEFORE_CLASS)
