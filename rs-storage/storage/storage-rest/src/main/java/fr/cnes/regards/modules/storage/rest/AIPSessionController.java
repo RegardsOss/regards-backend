@@ -18,8 +18,16 @@
  */
 package fr.cnes.regards.modules.storage.rest;
 
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
+import fr.cnes.regards.modules.storage.domain.job.AIPQueryFilters;
+import fr.cnes.regards.modules.storage.service.IAIPService;
 import java.time.OffsetDateTime;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,14 +42,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.hateoas.LinkRels;
-import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.modules.storage.domain.database.AIPSession;
-import fr.cnes.regards.modules.storage.service.IAIPService;
 
 /**
  * @author Léo Mieulet
@@ -93,9 +93,18 @@ public class AIPSessionController implements IResourceController<AIPSession> {
      */
     @ResourceAccess(description = "Get one session using its name.")
     @RequestMapping(value = ID_PATH, method = RequestMethod.GET)
-    public ResponseEntity<Resource<AIPSession>> getSipSession(@PathVariable(name = "id") String id) {
+    public ResponseEntity<Resource<AIPSession>> getAipSession(@PathVariable(name = "id") String id) {
         AIPSession session = aipService.getSessionWithStats(id);
         return new ResponseEntity<>(toResource(session), HttpStatus.OK);
+    }
+
+    @ResourceAccess(description = "Delete all AIP having that session name.")
+    @RequestMapping(value = ID_PATH, method = RequestMethod.DELETE)
+    public ResponseEntity<Void> deleteAipEntityBySessionId(@PathVariable("id") String id) throws ModuleException {
+        AIPQueryFilters filter = new AIPQueryFilters();
+        filter.setSession(id);
+        aipService.deleteAIPsByQuery(filter);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
