@@ -28,8 +28,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -86,7 +88,7 @@ public class SearchEngineConfigurationController implements IResourceController<
     @RequestMapping(method = RequestMethod.GET, value = CONF_ID_PATH)
     @ResourceAccess(description = "Retrieve a search engine configuration", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Resource<SearchEngineConfiguration>> retrieveConf(
-            @PathVariable(CONF_ID_PARAMETER_NAME) final Long confId) throws ModuleException {
+            @PathVariable(CONF_ID_PARAMETER_NAME) Long confId) throws ModuleException {
         final SearchEngineConfiguration conf = service.retrieveConf(confId);
         return new ResponseEntity<>(toResource(conf), HttpStatus.OK);
     }
@@ -129,6 +131,20 @@ public class SearchEngineConfigurationController implements IResourceController<
         resourceService.addLink(resource, this.getClass(), "updateConf", LinkRels.UPDATE,
                                 MethodParamFactory.build(Long.class, element.getId()),
                                 MethodParamFactory.build(SearchEngineConfiguration.class));
+        if (element.getDatasetUrn() == null) {
+            resourceService.addLink(resource, SearchEngineController.class, "searchAll", "search",
+                                    MethodParamFactory.build(String.class, element.getConfiguration().getPluginId()),
+                                    MethodParamFactory.build(HttpHeaders.class),
+                                    MethodParamFactory.build(MultiValueMap.class),
+                                    MethodParamFactory.build(Pageable.class));
+        } else {
+            resourceService.addLink(resource, SearchEngineController.class, "searchSingleDataset", "search",
+                                    MethodParamFactory.build(String.class, element.getConfiguration().getPluginId()),
+                                    MethodParamFactory.build(String.class, element.getDatasetUrn()),
+                                    MethodParamFactory.build(HttpHeaders.class),
+                                    MethodParamFactory.build(MultiValueMap.class),
+                                    MethodParamFactory.build(Pageable.class));
+        }
         return resource;
     }
 

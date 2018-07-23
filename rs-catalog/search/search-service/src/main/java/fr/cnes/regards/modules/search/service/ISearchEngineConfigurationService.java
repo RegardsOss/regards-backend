@@ -34,11 +34,17 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 public interface ISearchEngineConfigurationService {
 
     /**
+     * Initialize searchengines for the given project.
+     * @param tenant
+     */
+    void initDefaultSearchEngine(Class<?> legacySearchEnginePluginClass);
+
+    /**
      * Creates a new {@link SearchEngineConfiguration}.
      * @param conf {@link SearchEngineConfiguration}
      * @return new {@link SearchEngineConfiguration} created.
      */
-    SearchEngineConfiguration createConf(SearchEngineConfiguration conf);
+    SearchEngineConfiguration createConf(SearchEngineConfiguration conf) throws ModuleException;
 
     /**
      * Update the given {@link SearchEngineConfiguration}

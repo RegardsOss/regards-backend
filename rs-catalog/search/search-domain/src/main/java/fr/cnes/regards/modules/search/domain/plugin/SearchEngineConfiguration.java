@@ -28,6 +28,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -38,7 +39,8 @@ import fr.cnes.regards.modules.entities.domain.Dataset;
  * @author Sébastien Binda
  */
 @Entity
-@Table(name = "t_search_engine_conf")
+@Table(name = "t_search_engine_conf",
+        uniqueConstraints = { @UniqueConstraint(columnNames = { "plugin_conf_id", "dataset_urn" }) })
 public class SearchEngineConfiguration {
 
     @Id

@@ -40,4 +40,6 @@ public interface ISearchEngineConfRepository extends JpaRepository<SearchEngineC
 
     Page<SearchEngineConfiguration> findByConfigurationPluginId(String string, Pageable page);
 
+    Page<SearchEngineConfiguration> findByConfigurationId(Long pluginConfId, Pageable page);
+
 }

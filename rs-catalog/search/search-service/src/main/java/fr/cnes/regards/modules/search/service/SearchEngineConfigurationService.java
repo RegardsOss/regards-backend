@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
@@ -38,17 +39,22 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.entities.client.IDatasetClient;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.entities.domain.event.BroadcastEntityEvent;
 import fr.cnes.regards.modules.entities.domain.event.EventType;
 import fr.cnes.regards.modules.search.dao.ISearchEngineConfRepository;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
+import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 
 /**
  * Service to handle {@link SearchEngineConfiguration} entities.
@@ -63,6 +69,9 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
 
     @Autowired
     private ISearchEngineConfRepository repository;
+
+    @Autowired
+    private IPluginService pluginService;
 
     @Autowired
     private ISubscriber subscriber;
@@ -80,7 +89,38 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
     }
 
     @Override
-    public SearchEngineConfiguration createConf(SearchEngineConfiguration conf) {
+    public void initDefaultSearchEngine(Class<?> legacySearchEnginePluginClass) {
+        // Initialize the mandatory legacy searchengine if it does not exists yet.
+        SearchEngineConfiguration conf = repository
+                .findByDatasetUrnIsNullAndConfigurationPluginId(SearchEngineMappings.LEGACY_PLUGIN_ID);
+        if (conf == null) {
+            // Create the new one
+            conf = new SearchEngineConfiguration();
+            conf.setLabel("REGARDS search protocol");
+            conf.setConfiguration(PluginUtils.getPluginConfiguration(PluginParametersFactory.build().getParameters(),
+                                                                     legacySearchEnginePluginClass,
+                                                                     Lists.newArrayList()));
+            try {
+                createConf(conf);
+            } catch (ModuleException e) {
+                LOGGER.error("Error initializing legacy search engine", e);
+            }
+        }
+    }
+
+    @Override
+    public SearchEngineConfiguration createConf(SearchEngineConfiguration conf) throws ModuleException {
+        // First check if associated conf exists.
+        if (conf.getConfiguration() == null) {
+            throw new EntityInvalidException("Plugin configuration can not be null for new SearchEngineConfiguration");
+        } else {
+            // Check if a conf does already exists for the given engine and dataset
+            checkConfAlreadyExists(conf);
+            if (conf.getConfiguration().getId() == null) {
+                // If plugin conf is a new one create it first.
+                conf.setConfiguration(pluginService.savePluginConfiguration(conf.getConfiguration()));
+            }
+        }
         return addDatasetLabel(repository.save(conf), Lists.newArrayList());
     }
 
@@ -90,14 +130,22 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
             throw new EntityOperationForbiddenException("Cannot update entity does not exists");
         } else {
             retrieveConf(conf.getId());
+            checkConfAlreadyExists(conf);
         }
         return addDatasetLabel(repository.save(conf), Lists.newArrayList());
     }
 
     @Override
     public void deleteConf(Long confId) throws ModuleException {
-        retrieveConf(confId);
+        SearchEngineConfiguration confToDelete = retrieveConf(confId);
         repository.delete(confId);
+        // If after deleting conf, no other reference the associated pluginConf so delete it too.
+        Page<SearchEngineConfiguration> otherConfs = repository
+                .findByConfigurationId(confToDelete.getConfiguration().getId(), new PageRequest(0, 1));
+        if (otherConfs.getContent().isEmpty()) {
+            pluginService.deletePluginConfiguration(confToDelete.getConfiguration().getId());
+        }
+
     }
 
     @Override
@@ -129,6 +177,29 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
         }
 
         return addDatasetLabel(conf, Lists.newArrayList());
+    }
+
+    /**
+     * Check if a conf does already exists for the given engine and dataset
+     * @param conf
+     * @throws EntityInvalidException
+     */
+    private void checkConfAlreadyExists(SearchEngineConfiguration conf) throws EntityInvalidException {
+        SearchEngineConfiguration foundConf = null;
+        if (conf.getDatasetUrn() != null) {
+            foundConf = repository.findByDatasetUrnAndConfigurationPluginId(conf.getDatasetUrn(),
+                                                                            conf.getConfiguration().getPluginId());
+
+        } else {
+            foundConf = repository
+                    .findByDatasetUrnIsNullAndConfigurationPluginId(conf.getConfiguration().getPluginId());
+        }
+
+        if ((foundConf != null) && (!foundConf.getId().equals(conf.getId()))) {
+            throw new EntityInvalidException(
+                    String.format("Search engine already defined for engine <%s> and dataset <%s>",
+                                  conf.getConfiguration().getPluginId(), conf.getDatasetUrn()));
+        }
     }
 
     /**

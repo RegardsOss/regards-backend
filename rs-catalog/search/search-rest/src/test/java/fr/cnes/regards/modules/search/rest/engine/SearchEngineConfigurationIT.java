@@ -18,16 +18,25 @@
  */
 package fr.cnes.regards.modules.search.rest.engine;
 
+import java.util.List;
 import java.util.UUID;
 
+import org.assertj.core.util.Lists;
 import org.hamcrest.Matchers;
+import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 import fr.cnes.regards.modules.search.rest.SearchEngineConfigurationController;
 import fr.cnes.regards.modules.search.rest.engine.plugin.legacy.LegacySearchEngine;
@@ -67,11 +76,23 @@ public class SearchEngineConfigurationIT extends AbstractEngineIT {
     public void createConf() {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+
+        List<PluginParameter> parameters = PluginParametersFactory.build().getParameters();
+        PluginConfiguration pluginConf = PluginUtils.getPluginConfiguration(parameters, LegacySearchEngine.class,
+                                                                            Lists.newArrayList());
+
         SearchEngineConfiguration conf = new SearchEngineConfiguration();
-        conf.setConfiguration(openSearchPluginConf);
+        conf.setLabel("Test create new search engine");
+        conf.setConfiguration(pluginConf);
         conf.setDatasetUrn("URN:AIP:" + EntityType.DATASET.toString() + ":PROJECT:" + UUID.randomUUID() + ":V1");
         performDefaultPost(SearchEngineConfigurationController.TYPE_MAPPING, conf, customizer,
                            "Search by engine type error");
+
+        // Try to create same conf. Should be error.
+        customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isUnprocessableEntity());
+        performDefaultPost(SearchEngineConfigurationController.TYPE_MAPPING, conf, customizer,
+                           "The service must not allow to create two same conf.");
     }
 
     @Test
@@ -104,6 +125,19 @@ public class SearchEngineConfigurationIT extends AbstractEngineIT {
         performDefaultGet(SearchEngineConfigurationController.TYPE_MAPPING
                 + SearchEngineConfigurationController.CONF_ID_PATH, customizer, "Conf should deleted",
                           openSearchEngineConf.getId());
+
+        // Check plugin configuration is also delete
+        try {
+            pluginService.getPluginConfiguration(openSearchEngineConf.getId());
+            Assert.fail("Plugin Configuration should be deleted as no other SearchEngine is associated to");
+        } catch (EntityNotFoundException e) {
+            // Nothing to do.
+        }
+    }
+
+    @Override
+    protected String getDefaultRole() {
+        return DefaultRole.PROJECT_ADMIN.toString();
     }
 
 }

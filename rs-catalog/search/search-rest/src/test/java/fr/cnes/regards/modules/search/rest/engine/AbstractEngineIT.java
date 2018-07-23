@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.apache.commons.collections4.map.HashedMap;
 import org.assertj.core.util.Lists;
@@ -330,6 +331,13 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         seConfOS.setConfiguration(openSearchPluginConf);
         seConfOS.setLabel("Opensearch conf for all datasets");
         openSearchEngineConf = searchEngineService.createConf(seConfOS);
+
+        SearchEngineConfiguration seConfOSdataset = new SearchEngineConfiguration();
+        seConfOSdataset.setConfiguration(openSearchPluginConf);
+        seConfOSdataset.setLabel("Opensearch conf for one dataset");
+        seConfOSdataset
+                .setDatasetUrn("URN:AIP:" + EntityType.DATASET.toString() + ":PROJECT:" + UUID.randomUUID() + ":V1");
+        searchEngineService.createConf(seConfOSdataset);
     }
 
     /**
