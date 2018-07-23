@@ -44,4 +44,9 @@ public class MultiPoint extends AbstractGeometry<Positions> {
     public <T> T accept(IGeometryVisitor<T> visitor) {
         return visitor.visitMultiPoint(this);
     }
+
+    @Override
+    public String toString() {
+        return "MULTI POINTS ( " + getCoordinates().toString() + " )";
+    }
 }

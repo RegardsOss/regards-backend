@@ -41,4 +41,9 @@ public class LineString extends MultiPoint {
     public <T> T accept(IGeometryVisitor<T> visitor) {
         return visitor.visitLineString(this);
     }
+
+    @Override
+    public String toString() {
+        return "LINE STRING ( " + getCoordinates().toString() + " )";
+    }
 }

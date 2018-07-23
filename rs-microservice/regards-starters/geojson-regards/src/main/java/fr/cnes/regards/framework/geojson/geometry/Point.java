@@ -38,4 +38,9 @@ public class Point extends AbstractGeometry<Position> {
     public <T> T accept(IGeometryVisitor<T> visitor) {
         return visitor.visitPoint(this);
     }
+
+    @Override
+    public String toString() {
+        return "POINT ( " + getCoordinates().toString() + " )";
+    }
 }

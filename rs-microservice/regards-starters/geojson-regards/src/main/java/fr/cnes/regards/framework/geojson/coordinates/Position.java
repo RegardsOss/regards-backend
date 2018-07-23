@@ -107,4 +107,13 @@ public class Position {
         }
         return true;
     }
+
+    @Override
+    public String toString() {
+        if (altitude != null) {
+            return getLongitude() + ", " + getLatitude() + ", " + getAltitude();
+        } else {
+            return getLongitude() + ", " + getLatitude();
+        }
+    }
 }
