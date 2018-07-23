@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.storage.domain.database;
 
-import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.oais.Event;
@@ -8,11 +7,8 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import java.time.OffsetDateTime;
-import java.util.Set;
-import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.Convert;
-import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -78,15 +74,6 @@ public class AIPEntity {
     private String sipId;
 
     /**
-     * The aip metadata tags
-     */
-    @ElementCollection
-    @CollectionTable(name = "t_aip_tag", joinColumns = @JoinColumn(name = "aip_id"),
-            foreignKey = @javax.persistence.ForeignKey(name = "fk_aip_tag_aip_id"))
-    @Column(name = "value", length = 200)
-    private Set<String> tags;
-
-    /**
      * AIP state
      */
     @Column(length = 32)
@@ -140,7 +127,6 @@ public class AIPEntity {
     public AIPEntity(AIP aip, AIPSession aipSession) {
         this.ipId = aip.getId().toString();
         this.sipId = aip.getSipId();
-        this.tags = Sets.newHashSet(aip.getTags());
         this.state = aip.getState();
         this.lastEvent = aip.getLastEvent();
         this.submissionDate = aip.getSubmissionEvent().getDate();
@@ -191,21 +177,6 @@ public class AIPEntity {
      */
     public void setSipId(String sipId) {
         this.sipId = sipId;
-    }
-
-    /**
-     * @return the tags
-     */
-    public Set<String> getTags() {
-        return tags;
-    }
-
-    /**
-     * Set the tags
-     * @param tags
-     */
-    public void setTags(Set<String> tags) {
-        this.tags = tags;
     }
 
     /**

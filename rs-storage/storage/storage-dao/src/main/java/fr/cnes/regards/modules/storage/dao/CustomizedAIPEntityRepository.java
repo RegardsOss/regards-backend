@@ -18,10 +18,16 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
+import java.math.BigInteger;
+import java.util.Collection;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -40,4 +46,32 @@ public class CustomizedAIPEntityRepository implements ICustomizedAIPEntityReposi
         List<String> resultList = q.getResultList();
         return resultList;
     }
+
+    @Override
+    public Page<AIPEntity> findAll(String sqlQuery, Pageable pPageable) {
+        Long numberResults = countNumberOfResults(sqlQuery);
+
+        Query q = entityManager.createNativeQuery(sqlQuery, AIPEntity.class);
+        q.setFirstResult(pPageable.getOffset());
+        q.setMaxResults(pPageable.getPageSize());
+        List<AIPEntity> resultList = q.getResultList();
+        Page<AIPEntity> result = new PageImpl(resultList, pPageable, numberResults);
+        return result;
+    }
+
+    private Long countNumberOfResults(String sqlQuery) {
+        StringBuilder request = new StringBuilder("SELECT COUNT(*) as total FROM (").append(sqlQuery).append(") as sub");
+        Query qCount = entityManager.createNativeQuery(request.toString());
+        Long totalResults = ((BigInteger) qCount.getSingleResult()).longValue();
+        return totalResults;
+    }
+
+    @Override
+    public Collection<AIPEntity> findAll(String sqlQuery) {
+        Query q = entityManager.createNativeQuery(sqlQuery, AIPEntity.class);
+        List<AIPEntity> resultList = q.getResultList();
+        return resultList;
+    }
+
+
 }

@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 /**
@@ -155,13 +154,13 @@ public class AIPDao implements IAIPDao {
     }
 
     @Override
-    public Page<AIP> findAll(Specification<AIPEntity> query, Pageable pPageable) {
-        return repo.findAll(query, pPageable).map(this::buildAipFromAIPEntity);
+    public Page<AIP> findAll(String sqlQuery, Pageable pPageable) {
+        return custoRepo.findAll(sqlQuery, pPageable).map(this::buildAipFromAIPEntity);
     }
 
     @Override
-    public Set<AIP> findAll(Specification<AIPEntity> query) {
-        return repo.findAll(query).stream().map(this::buildAipFromAIPEntity).collect(Collectors.toSet());
+    public Set<AIP> findAll(String sqlQuery) {
+        return custoRepo.findAll(sqlQuery).stream().map(this::buildAipFromAIPEntity).collect(Collectors.toSet());
     }
 
     @Override

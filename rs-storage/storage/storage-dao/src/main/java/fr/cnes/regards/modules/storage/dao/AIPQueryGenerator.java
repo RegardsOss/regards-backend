@@ -22,16 +22,12 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Set;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Predicate;
-import org.springframework.data.jpa.domain.Specification;
 
 
 /**
@@ -39,43 +35,22 @@ import org.springframework.data.jpa.domain.Specification;
  *
  * @author Léo Mieulet
  */
-public class AIPSpecification {
-    private AIPSpecification() {
+public class AIPQueryGenerator {
+    private AIPQueryGenerator() {
     }
 
     /**
-     * Filter on given attributes and return a Specification that contains all query filters
+     * Return an SQL query that retrieve all entities matching provided criteria
      */
-    public static Specification<AIPEntity> search(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags, AIPSession session, Set<String> aipIds, Set<String> aipIdsExcluded) {
-        return (root, query, cb) -> {
-            Set<Predicate> predicates = Sets.newHashSet();
-            if (state != null) {
-                predicates.add(cb.equal(root.get("state"), state));
-            }
-            if (from != null) {
-                predicates.add(cb.greaterThan(root.get("submissionDate"), from.minusNanos(1)));
-            }
-            if (to != null) {
-                predicates.add(cb.lessThan(root.get("lastEvent").get("date"), to.plusSeconds(1)));
-            }
-            if (session != null) {
-                predicates.add(cb.equal(root.get("session"), session));
-            }
-            if (aipIds != null && !aipIds.isEmpty()) {
-                predicates.add(root.get("ipId").in(aipIds.toArray()));
-            }
-            if (aipIdsExcluded != null && !aipIdsExcluded.isEmpty()) {
-                predicates.add(root.get("ipId").in(aipIdsExcluded.toArray()).not());
-            }
-            if (tags != null && !tags.isEmpty()) {
-                Expression<Set<String>> tagsExpr = root.get("tags");
-                for (String tag : tags) {
-                    predicates.add(cb.isMember(tag, tagsExpr));
-                }
-            }
-
-            return cb.and(predicates.toArray(new Predicate[predicates.size()]));
-        };
+    public static String search(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags, AIPSession session, Set<String> aipIds, Set<String> aipIdsExcluded) {
+        StringBuilder request = new StringBuilder("SELECT * " +
+                "FROM {h-schema}t_aip ");
+        Set<String> predicates = generatePredicates(state, from, to, tags, session, aipIds, aipIdsExcluded);
+        if (!predicates.isEmpty()) {
+            request.append("WHERE ");
+            Joiner.on(" AND ").appendTo(request, predicates);
+        }
+        return request.toString();
     }
 
 
@@ -83,9 +58,18 @@ public class AIPSpecification {
      * Return an SQL query that retrieve all tags used by a set of entities
      */
     public static String searchAipTagsUsingSQL(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags, AIPSession session, Set<String> aipIds, Set<String> aipIdsExcluded) {
+        StringBuilder request = new StringBuilder("SELECT distinct jsonb_array_elements_text(json_aip->'properties'->'pdi'->'contextInformation'->'tags') " +
+                "FROM {h-schema}t_aip ");
+        Set<String> predicates = generatePredicates(state, from, to, tags, session, aipIds, aipIdsExcluded);
+        if (!predicates.isEmpty()) {
+            request.append("WHERE ");
+            Joiner.on(" AND ").appendTo(request, predicates);
+        }
+        return request.toString();
+    }
+
+    private static Set<String> generatePredicates(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags, AIPSession session, Set<String> aipIds, Set<String> aipIdsExcluded) {
         Set<String> predicates = Sets.newHashSet();
-        StringBuilder request = new StringBuilder("select distinct t_aip_tag.value from storage.t_aip left outer join " +
-                "storage.t_aip_tag on t_aip.id=t_aip_tag.aip_id ");
         if (state != null) {
             predicates.add("(state = '" + state.getName() + "')");
         }
@@ -115,18 +99,13 @@ public class AIPSpecification {
             predicates.add("(ip_id not in (" + String.join(" , ", aipExcludedPredicates) + "))");
         }
         if (tags != null && !tags.isEmpty()) {
-            int i = 0;
+            Set<String> tagPredicates = Sets.newHashSet();
             for (String tag : tags) {
-                predicates.add("('" + tag + "' in (select tags" + i + ".value " +
-                        "from storage.t_aip_tag tags" + i + " where t_aip.id=tags" + i + ".aip_id))");
-                i++;
+                tagPredicates.add("'" + tag + "'");
             }
+            predicates.add("(json_aip->'properties'->'pdi'->'contextInformation'->'tags' @> jsonb_build_array(" + String.join(" , ", tagPredicates) + "))");
         }
-        if (!predicates.isEmpty()) {
-            request.append("WHERE ");
-            Joiner.on(" AND ").appendTo(request, predicates);
-        }
-        return request.toString();
+        return predicates;
     }
 
 

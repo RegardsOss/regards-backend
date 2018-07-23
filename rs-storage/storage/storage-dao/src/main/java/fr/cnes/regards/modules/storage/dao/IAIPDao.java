@@ -31,7 +31,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 
 /**
  * DAO to access {@link AIP} entities by requesting {@link AIPEntity}.
@@ -156,17 +155,17 @@ public interface IAIPDao {
 
     /**
      * Allow to make a research
-     * @param query     A query specification
+     * @param query     A SQL query
      * @param pPageable
      * @return
      */
-    Page<AIP> findAll(Specification<AIPEntity> query, Pageable pPageable);
+    Page<AIP> findAll(String query, Pageable pPageable);
 
     /**
      * Retrieve all aips
      * @return aips
      */
-    Set<AIP> findAll(Specification<AIPEntity> query);
+    Set<AIP> findAll(String query);
 
     /**
      * Count number of {@link AIP} associated to a given session
