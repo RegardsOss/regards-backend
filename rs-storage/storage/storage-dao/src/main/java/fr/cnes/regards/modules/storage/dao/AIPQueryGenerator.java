@@ -75,7 +75,7 @@ public class AIPQueryGenerator {
         }
         if (from != null) {
             Timestamp time = Timestamp.valueOf(from.minusNanos(1).atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime());
-            predicates.add("(submission_date > '" + time.toString() + "')");
+            predicates.add("(date > '" + time.toString() + "')");
         }
         if (to != null) {
             Timestamp time = Timestamp.valueOf(to.plusSeconds(1).atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime());
