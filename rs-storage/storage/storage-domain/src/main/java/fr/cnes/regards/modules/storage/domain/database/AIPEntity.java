@@ -20,8 +20,6 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedAttributeNode;
-import javax.persistence.NamedEntityGraph;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -44,7 +42,6 @@ import org.hibernate.annotations.TypeDefs;
                 @Index(name = "idx_aip_last_event_date", columnList = "date")},
         uniqueConstraints = {@UniqueConstraint(name = "uk_aip_ipId", columnNames = "ip_id")})
 @TypeDefs({@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)})
-@NamedEntityGraph(name = "graph.aip.tags", attributeNodes = {@NamedAttributeNode("tags")})
 public class AIPEntity {
 
     /**

@@ -76,15 +76,6 @@ public interface IAIPDao {
             OffsetDateTime fromLastUpdateDate, Pageable pageable);
 
     /**
-     * Retrieve a page of aip which state is the one provided and contains at least one of the provided tags
-     * @param state
-     * @param tags
-     * @param pageable
-     * @return a page of aip which state is the one provided and contains at least one of the provided tags
-     */
-    Page<AIP> findAllByStateAndTagsIn(AIPState state, Set<String> tags, Pageable pageable);
-
-    /**
      * Retrieve all existing {@link AIP}s with given starting ipId {@link String}
      * @param ipIdWithoutVersion starting ipId {@link String}
      * @return {@link AIP}s

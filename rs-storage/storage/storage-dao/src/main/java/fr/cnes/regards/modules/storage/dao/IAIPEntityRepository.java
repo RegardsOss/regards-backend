@@ -67,7 +67,7 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      * @return a page of aip which state is the one provided and contains the provided tags and which last event
      * occurred after the given date
      */
-    @Query(value = "select * from {h-schema}t_aip where json_tags @> jsonb_build_array(:tags) "+
+    @Query(value = "select * from {h-schema}t_aip where json_aip->'properties'->'pdi'->'contextInformation'->'tags' @> jsonb_build_array(:tags) "+
         "AND state=:state AND date > :lastUpdate "+
       "ORDER BY ip_id DESC \n-- #pageable\n", nativeQuery = true)
     Page<AIPEntity> findAllByStateAndTagsInAndLastEventDateAfter(@Param("state") String state,@Param("tags") Set<String> tags,
@@ -79,12 +79,6 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
         Timestamp date = new OffsetDateTimeAttributeConverter().convertToDatabaseColumn(fromLastUpdateDate);
         return findAllByStateAndTagsInAndLastEventDateAfter(state.getName(), tags, date, pageable);
     }
-    /**
-     * Retrieve a page of aip which state is the one provided and contains the provided tags
-     * @return a page of aip which state is the one provided and contains the provided tags
-     */
-    Page<AIPEntity> findAllByStateAndTagsIn(AIPState state, Set<String> tags, Pageable pageable);
-
     /**
      * Retrieve all aips which ip id starts with the provided string
      * @return aips respecting the constraints

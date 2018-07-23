@@ -545,7 +545,7 @@ public class AIPService implements IAIPService {
             if ((tags == null) || tags.isEmpty()) {
                 aips = aipDao.findAllByState(state, pageable);
             } else {
-                aips = aipDao.findAllByStateAndTagsIn(state, tags, pageable);
+                aips = aipDao.findAll(AIPQueryGenerator.search(state, null, null, new ArrayList(tags),null, null, null), pageable);
             }
         } else {
             if ((tags == null) || tags.isEmpty()) {
