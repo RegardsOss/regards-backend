@@ -168,4 +168,9 @@ public class JobInfoService implements IJobInfoService {
         // Remove all these jobs
         jobInfoRepository.delete(jobs);
     }
+
+    @Override
+    public Long retrieveJobsCount(String className, JobStatus... statuses) {
+        return jobInfoRepository.countByClassNameAndByStatusStatusIn(className, statuses);
+    }
 }
