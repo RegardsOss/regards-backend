@@ -95,7 +95,7 @@ import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.notification.domain.NotificationType;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
 import fr.cnes.regards.modules.storage.dao.AIPSessionSpecifications;
-import fr.cnes.regards.modules.storage.dao.AIPSpecification;
+import fr.cnes.regards.modules.storage.dao.AIPQueryGenerator;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IAIPSessionRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
@@ -532,7 +532,7 @@ public class AIPService implements IAIPService {
             throw new EntityOperationForbiddenException("Only Admins can access this feature.");
         }
         AIPSession aipSession = getSession(session, false);
-        return aipDao.findAll(AIPSpecification.search(state, from, to, tags, aipSession, null, null), pageable);
+        return aipDao.findAll(AIPQueryGenerator.search(state, from, to, tags, aipSession, null, null), pageable);
     }
 
     @Override
@@ -893,6 +893,12 @@ public class AIPService implements IAIPService {
     @Override
     public AIP updateAip(String ipId, AIP updated)
             throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException {
+        return updateAip(ipId, updated,  "AIP metadata has been updated.");
+    }
+
+    @Override
+    public AIP updateAip(String ipId, AIP updated, String updateMessage)
+            throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException {
         Optional<AIP> oldAipOpt = aipDao.findOneByIpId(ipId);
         // first lets check for issues
         if (!oldAipOpt.isPresent()) {
@@ -987,7 +993,7 @@ public class AIPService implements IAIPService {
         }
 
         // Add update event
-        updatingBuilder.addEvent(EventType.UPDATE.toString(), "AIP metadata has been updated.", OffsetDateTime.now());
+        updatingBuilder.addEvent(EventType.UPDATE.toString(), updateMessage, OffsetDateTime.now());
         // now that all updates are set into the builder, lets build and save the updatedAip. Update event is added
         // once the metadata are stored
         AIP updatedAip = updatingBuilder.build();
@@ -1086,7 +1092,8 @@ public class AIPService implements IAIPService {
         AIPBuilder updateBuilder = new AIPBuilder(toUpdate);
         updateBuilder.addTags(tagsToAdd.toArray(new String[tagsToAdd.size()]));
         toUpdate = updateBuilder.build();
-        updateAip(toUpdate.getId().toString(), toUpdate);
+        String updateMessage = String.format("Add tags [%s].", String.join(" , ", tagsToAdd));
+        updateAip(toUpdate.getId().toString(), toUpdate, updateMessage);
     }
 
     @Override
@@ -1102,7 +1109,8 @@ public class AIPService implements IAIPService {
         AIPBuilder updateBuilder = new AIPBuilder(toUpdate);
         updateBuilder.removeTags(tagsToRemove.toArray(new String[tagsToRemove.size()]));
         toUpdate = updateBuilder.build();
-        updateAip(toUpdate.getId().toString(), toUpdate);
+        String updateMessage = String.format("Remove tags [%s].", String.join(" , ", tagsToRemove));
+        updateAip(toUpdate.getId().toString(), toUpdate, updateMessage);
     }
 
     private Set<UUID> scheduleDeletion(Set<StorageDataFile> dataFilesToDelete) throws ModuleException {
@@ -1427,7 +1435,7 @@ public class AIPService implements IAIPService {
     @Override
     public List<String> retrieveAIPTagsByQuery(AIPQueryFilters request) {
         AIPSession aipSession = getSession(request.getSession(), false);
-        return aipDao.findAllByCustomQuery(AIPSpecification
+        return aipDao.findAllByCustomQuery(AIPQueryGenerator
                 .searchAipTagsUsingSQL(request.getState(), request.getFrom(), request.getTo(), request.getTags(),
                                        aipSession, request.getAipIds(), request.getAipIdsExcluded()));
     }

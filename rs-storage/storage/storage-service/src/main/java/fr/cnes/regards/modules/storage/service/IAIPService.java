@@ -219,6 +219,22 @@ public interface IAIPService {
     AIP updateAip(String ipId, AIP updated)
             throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException;
 
+
+    /**
+     * Update PDI and descriptive information of an aip according to updated. To add/remove ContentInformation,
+     * storeAndCreate a
+     * new aip with a different version and use storeAndCreate method.
+     * @param ipId information package identifier of the aip
+     * @param updated object containing changes
+     * @param updateMessage the message saved inside the AIP
+     * @return aip stored into the system after changes have been propagated
+     * @throws EntityNotFoundException if no aip with ipId as identifier can be found
+     * @throws EntityInconsistentIdentifierException if ipId and updated ipId are different
+     * @throws EntityOperationForbiddenException if aip in the system is not in the right state
+     */
+    AIP updateAip(String ipId, AIP updated, String updateMessage)
+            throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException;
+
     /**
      * Updates all AIP metadta to update.
      */
