@@ -36,4 +36,9 @@ public class LineString extends MultiPoint {
     public LineString() {
         super(GeoJsonType.LINESTRING);
     }
+
+    @Override
+    public <T> T accept(IGeometryVisitor<T> visitor) {
+        return visitor.visitLineString(this);
+    }
 }

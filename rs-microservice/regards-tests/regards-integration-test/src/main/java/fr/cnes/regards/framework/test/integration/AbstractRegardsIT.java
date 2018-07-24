@@ -45,6 +45,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
+
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 
 /**
@@ -95,6 +96,23 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
     protected static final Path CONTRACT_REPOSITORY = Paths.get("src", "test", "resources", "contracts");
 
     /**
+     * JSON type for API documentation
+     */
+    protected static final String JSON_ARRAY_TYPE = "Array";
+
+    protected static final String JSON_BOOLEAN_TYPE = "Boolean";
+
+    protected static final String JSON_OBJECT_TYPE = "Object";
+
+    protected static final String JSON_NUMBER_TYPE = "Number";
+
+    protected static final String JSON_NULL_TYPE = "Null";
+
+    protected static final String JSON_STRING_TYPE = "String";
+
+    protected static final String JSON_VARIES_TYPE = "Varies";
+
+    /**
      * Authorization service method
      */
     @Autowired
@@ -108,7 +126,7 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * @deprecated Deprecated in favor of
-     * {@link AbstractRegardsIT#performPost(String, String, Object, RequestBuilderCustomizer, String, Object...)}
+     *             {@link AbstractRegardsIT#performPost(String, String, Object, RequestBuilderCustomizer, String, Object...)}
      */
     @Deprecated
     protected ResultActions performPostWithContentType(String urlTemplate, String authToken, Object content,
@@ -122,7 +140,7 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * @deprecated Deprecated in favor of
-     * {@link AbstractRegardsIT#performPut(String, String, Object, RequestBuilderCustomizer, String, Object...)}
+     *             {@link AbstractRegardsIT#performPut(String, String, Object, RequestBuilderCustomizer, String, Object...)}
      */
     @Deprecated
     protected ResultActions performPutWithContentType(String urlTemplate, String authToken, Object content,
@@ -138,12 +156,13 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * @deprecated Deprecated in favor of
-     * {@link AbstractRegardsIT#performGet(String, String, RequestBuilderCustomizer, String, Object...)}
+     *             {@link AbstractRegardsIT#performGet(String, String, RequestBuilderCustomizer, String, Object...)}
      */
     @Deprecated
     protected ResultActions performDefaultGet(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
             RequestParamBuilder requestParams, Object... urlVariables) {
-        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.GET);
+        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.GET, getDefaultUserEmail(),
+                                    getDefaultRole());
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectations(matchers);
         for (Map.Entry<String, List<String>> requestParam : requestParams.getParameters().entrySet()) {
@@ -159,8 +178,9 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
      */
     protected ResultActions performDefaultGet(String urlTemplate, RequestBuilderCustomizer requestBuilderCustomizer,
             String errorMsg, Object... urlVariables) {
-        return performGet(urlTemplate, manageDefaultSecurity(urlTemplate, RequestMethod.GET), requestBuilderCustomizer,
-                          errorMsg, urlVariables);
+        return performGet(urlTemplate, manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.GET,
+                                                      getDefaultUserEmail(), getDefaultRole()),
+                          requestBuilderCustomizer, errorMsg, urlVariables);
     }
 
     /**
@@ -173,12 +193,13 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * @deprecated Deprecated in favor of
-     * {@link AbstractRegardsIT#performGet(String, String, RequestBuilderCustomizer, String, Object...)}
+     *             {@link AbstractRegardsIT#performGet(String, String, RequestBuilderCustomizer, String, Object...)}
      */
     @Deprecated
     protected ResultActions performDefaultGet(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
             Object... urlVariables) {
-        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.GET);
+        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.GET, getDefaultUserEmail(),
+                                    getDefaultRole());
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectations(matchers);
         return performGet(urlTemplate, jwt, requestBuilderCustomizer, errorMsg, urlVariables);
@@ -186,12 +207,13 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * @deprecated Deprecated in favor of
-     * {@link AbstractRegardsIT#performDefaultGet(String, RequestBuilderCustomizer, String, Object...)}
+     *             {@link AbstractRegardsIT#performDefaultGet(String, RequestBuilderCustomizer, String, Object...)}
      */
     @Deprecated
     protected ResultActions performDefaultGet(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
             HttpHeaders headers, Object... urlVariables) {
-        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.GET);
+        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.GET, getDefaultUserEmail(),
+                                    getDefaultRole());
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectations(matchers);
         for (Map.Entry<String, List<String>> header : headers.entrySet()) {
@@ -202,12 +224,13 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * @deprecated Deprecated in favor of
-     * {@link AbstractRegardsIT#performDefaultPost(String, Object, RequestBuilderCustomizer, String, Object...)}
+     *             {@link AbstractRegardsIT#performDefaultPost(String, Object, RequestBuilderCustomizer, String, Object...)}
      */
     @Deprecated
     protected ResultActions performDefaultPost(String urlTemplate, Object content, List<ResultMatcher> matchers,
             String errorMsg, Object... urlVariables) {
-        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.POST);
+        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.POST, getDefaultUserEmail(),
+                                    getDefaultRole());
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectations(matchers);
         return performPost(urlTemplate, jwt, content, requestBuilderCustomizer, errorMsg, urlVariables);
@@ -218,8 +241,9 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
      */
     protected ResultActions performDefaultPost(String urlTemplate, Object content,
             RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
-        return performPost(urlTemplate, manageDefaultSecurity(urlTemplate, RequestMethod.POST), content,
-                           requestBuilderCustomizer, errorMsg, urlVariables);
+        return performPost(urlTemplate, manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.POST,
+                                                       getDefaultUserEmail(), getDefaultRole()),
+                           content, requestBuilderCustomizer, errorMsg, urlVariables);
     }
 
     /**
@@ -232,12 +256,13 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * @deprecated Deprecated in favor of
-     * {@link AbstractRegardsIT#performDefaultPut(String, Object, RequestBuilderCustomizer, String, Object...)}
+     *             {@link AbstractRegardsIT#performDefaultPut(String, Object, RequestBuilderCustomizer, String, Object...)}
      */
     @Deprecated
     protected ResultActions performDefaultPut(String urlTemplate, Object content, List<ResultMatcher> matchers,
             String errorMsg, Object... urlVariables) {
-        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.PUT);
+        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.PUT, getDefaultUserEmail(),
+                                    getDefaultRole());
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectations(matchers);
         return performPut(urlTemplate, jwt, content, requestBuilderCustomizer, errorMsg, urlVariables);
@@ -248,8 +273,9 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
      */
     protected ResultActions performDefaultPut(String urlTemplate, Object content,
             RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
-        return performPut(urlTemplate, manageDefaultSecurity(urlTemplate, RequestMethod.PUT), content,
-                          requestBuilderCustomizer, errorMsg, urlVariables);
+        return performPut(urlTemplate, manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.PUT,
+                                                      getDefaultUserEmail(), getDefaultRole()),
+                          content, requestBuilderCustomizer, errorMsg, urlVariables);
     }
 
     /**
@@ -262,34 +288,37 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * @deprecated Deprecated in favor of
-     * {@link AbstractRegardsIT#performDefaultPost(String, Object, RequestBuilderCustomizer, String, Object...)}
+     *             {@link AbstractRegardsIT#performDefaultPost(String, Object, RequestBuilderCustomizer, String, Object...)}
      */
     @Deprecated
     protected ResultActions performDefaultPostWithContentType(String urlTemplate, Object content, String contentType,
             List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
-        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.POST);
+        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.POST, getDefaultUserEmail(),
+                                    getDefaultRole());
         return performPostWithContentType(urlTemplate, jwt, content, contentType, matchers, errorMsg, urlVariables);
     }
 
     /**
      * @deprecated Deprecated in favor of
-     * {@link AbstractRegardsIT#performDefaultPut(String, Object, RequestBuilderCustomizer, String, Object...)}
+     *             {@link AbstractRegardsIT#performDefaultPut(String, Object, RequestBuilderCustomizer, String, Object...)}
      */
     @Deprecated
     protected ResultActions performDefaultPutWithContentType(String urlTemplate, Object content, String contentType,
             List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
-        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.PUT);
+        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.PUT, getDefaultUserEmail(),
+                                    getDefaultRole());
         return performPutWithContentType(urlTemplate, jwt, content, contentType, matchers, errorMsg, urlVariables);
     }
 
     /**
      * @deprecated Deprecated in favor of
-     * {@link AbstractRegardsIT#performDefaultDelete(String, RequestBuilderCustomizer, String, Object...)}
+     *             {@link AbstractRegardsIT#performDefaultDelete(String, RequestBuilderCustomizer, String, Object...)}
      */
     @Deprecated
     protected ResultActions performDefaultDelete(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
             Object... urlVariables) {
-        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.DELETE);
+        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.DELETE, getDefaultUserEmail(),
+                                    getDefaultRole());
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectations(matchers);
         return performDelete(urlTemplate, jwt, requestBuilderCustomizer, errorMsg, urlVariables);
@@ -300,7 +329,9 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
      */
     protected ResultActions performDefaultDelete(String urlTemplate, RequestBuilderCustomizer requestBuilderCustomizer,
             String errorMsg, Object... urlVariables) {
-        return performDelete(urlTemplate, manageDefaultSecurity(urlTemplate, RequestMethod.DELETE),
+        return performDelete(urlTemplate,
+                             manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.DELETE,
+                                            getDefaultUserEmail(), getDefaultRole()),
                              requestBuilderCustomizer, errorMsg, urlVariables);
     }
 
@@ -314,12 +345,13 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * @deprecated Deprecated in favor of
-     * {@link AbstractRegardsIT#performDefaultFileUpload(String, Path, RequestBuilderCustomizer, String, Object...)}
+     *             {@link AbstractRegardsIT#performDefaultFileUpload(String, Path, RequestBuilderCustomizer, String, Object...)}
      */
     @Deprecated
     protected ResultActions performDefaultFileUpload(String urlTemplate, Path pFilePath, List<ResultMatcher> matchers,
             String errorMsg, Object... urlVariables) {
-        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.POST);
+        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.POST, getDefaultUserEmail(),
+                                    getDefaultRole());
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectations(matchers);
         return performFileUpload(urlTemplate, jwt, pFilePath, requestBuilderCustomizer, errorMsg, urlVariables);
@@ -330,18 +362,20 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
      */
     protected ResultActions performDefaultFileUpload(String urlTemplate, Path pFilePath,
             RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
-        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.POST);
+        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.POST, getDefaultUserEmail(),
+                                    getDefaultRole());
         return performFileUpload(urlTemplate, jwt, pFilePath, requestBuilderCustomizer, errorMsg, urlVariables);
     }
 
     /**
      * @deprecated Deprecated in favor of
-     * {@link AbstractRegardsIT#performDefaultFileUpload(String, List, RequestBuilderCustomizer, String, Object...)}
+     *             {@link AbstractRegardsIT#performDefaultFileUpload(String, List, RequestBuilderCustomizer, String, Object...)}
      */
     @Deprecated
     protected ResultActions performDefaultFileUpload(String urlTemplate, List<MockMultipartFile> pFileList,
             List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
-        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.POST);
+        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.POST, getDefaultUserEmail(),
+                                    getDefaultRole());
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectations(matchers);
         return performFileUpload(urlTemplate, jwt, pFileList, requestBuilderCustomizer, errorMsg, urlVariables);
@@ -352,7 +386,8 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
      */
     protected ResultActions performDefaultFileUpload(String urlTemplate, List<MockMultipartFile> pFileList,
             RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
-        String jwt = manageDefaultSecurity(urlTemplate, RequestMethod.POST);
+        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.POST, getDefaultUserEmail(),
+                                    getDefaultRole());
         return performFileUpload(urlTemplate, jwt, pFileList, requestBuilderCustomizer, errorMsg, urlVariables);
     }
 
@@ -414,13 +449,21 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
     // CHECKSTYLE:OFF
 
     /**
-     * Set authorities for default tenant
-     * @param pUrlPath endpoint
-     * @param pMethod HTTP method
-     * @param pRoleNames list of roles
+     * Set authorities for specified tenant
+     * @param tenant related tenant
+     * @param urlPath endpoint
+     * @param method HTTP method
+     * @param roleNames list of roles
      */
-    protected void setAuthorities(String pUrlPath, RequestMethod pMethod, String... pRoleNames) {
-        authService.setAuthorities(DEFAULT_TENANT, pUrlPath, "osef", pMethod, pRoleNames);
+    protected void setAuthorities(String tenant, String urlPath, RequestMethod method, String... roleNames) {
+        authService.setAuthorities(tenant, urlPath, "osef", method, roleNames);
+    }
+
+    /**
+     * Use {@link #setAuthorities(String, String, RequestMethod, String...)} instead.
+     */
+    protected void setAuthorities(String urlPath, RequestMethod method, String... roleNames) {
+        authService.setAuthorities(getDefaultTenant(), urlPath, "osef", method, roleNames);
     }
 
     /**
@@ -431,52 +474,50 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
      * </ul>
      * The helper generates a JWT using its configuration and grants access to the endpoint for the specified role
      * role.
+     * @param tenant related tenant
      * @param pUrlPath target endpoint
      * @param pMethod target HTTP method
      * @return security token to authenticate user
      */
-    protected String manageSecurity(String pUrlPath, RequestMethod pMethod, String email, String roleName) {
+    protected String manageSecurity(String tenant, String pUrlPath, RequestMethod pMethod, String email,
+            String roleName) {
 
         String path = pUrlPath;
         if (pUrlPath.contains("?")) {
             path = path.substring(0, pUrlPath.indexOf('?'));
         }
         String jwt = generateToken(email, roleName);
-        setAuthorities(path, pMethod, roleName);
+        setAuthorities(tenant, path, pMethod, roleName);
         return jwt;
     }
 
     /**
-     * Helper method to manage default security with :
-     * <ul>
-     * <li>a default user</li>
-     * <li>a default role</li>
-     * </ul>
-     * The helper generates a JWT using its default configuration and grants access to the endpoint for the default
-     * role.
-     * @param pUrlPath target endpoint
-     * @param pMethod target HTTP method
-     * @return security token to authenticate user
+     * Use #man
+     * @param pUrlPath
+     * @param pMethod
+     * @param email
+     * @param roleName
+     * @return
      */
-    protected String manageDefaultSecurity(String pUrlPath, RequestMethod pMethod) {
-        return manageSecurity(pUrlPath, pMethod, DEFAULT_USER_EMAIL, getDefaultRole());
+    @Deprecated
+    protected String manageSecurity(String pUrlPath, RequestMethod pMethod, String email, String roleName) {
+        return manageSecurity(getDefaultTenant(), pUrlPath, pMethod, email, roleName);
     }
 
     /**
-     * Helper method to manage default security with :
-     * <ul>
-     * <li>a specific user</li>
-     * <li>a default role</li>
-     * </ul>
-     * The helper generates a JWT using its default configuration and grants access to the endpoint for the default
-     * role.
-     * @param userEmail specific user
-     * @param pUrlPath target endpoint
-     * @param pMethod target HTTP method
-     * @return security token to authenticate user
+     * Use {@link #manageSecurity(String, String, RequestMethod, String, String)} instead.
      */
+    @Deprecated
+    protected String manageDefaultSecurity(String pUrlPath, RequestMethod pMethod) {
+        return manageDefaultSecurity(getDefaultUserEmail(), pUrlPath, pMethod);
+    }
+
+    /**
+     * Use {@link #manageSecurity(String, String, RequestMethod, String, String)} instead.
+     */
+    @Deprecated
     protected String manageDefaultSecurity(String userEmail, String pUrlPath, RequestMethod pMethod) {
-        return manageSecurity(pUrlPath, pMethod, userEmail, getDefaultRole());
+        return manageSecurity(getDefaultTenant(), pUrlPath, pMethod, userEmail, getDefaultRole());
     }
 
     /**

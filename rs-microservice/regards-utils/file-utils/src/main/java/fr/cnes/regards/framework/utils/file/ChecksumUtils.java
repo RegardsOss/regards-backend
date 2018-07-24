@@ -1,5 +1,6 @@
 package fr.cnes.regards.framework.utils.file;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.DigestInputStream;
@@ -11,7 +12,8 @@ import java.security.NoSuchAlgorithmException;
  */
 public final class ChecksumUtils {
 
-    private ChecksumUtils() {}
+    private ChecksumUtils() {
+    }
 
     /**
      * transform a byte array to an hexadecimal string
@@ -41,5 +43,14 @@ public final class ChecksumUtils {
         }
         dis.close();
         return getHexChecksum(dis.getMessageDigest().digest());
+    }
+
+    /**
+     * @return checksum for specified text and algorithm
+     */
+    public static String computeHexChecksum(String text, String checksumAlgorithm)
+            throws NoSuchAlgorithmException, IOException {
+        InputStream inputStream = new ByteArrayInputStream(text.getBytes());
+        return ChecksumUtils.computeHexChecksum(inputStream, checksumAlgorithm);
     }
 }

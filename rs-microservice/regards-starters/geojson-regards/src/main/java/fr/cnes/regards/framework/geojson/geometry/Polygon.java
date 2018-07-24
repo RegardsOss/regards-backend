@@ -40,4 +40,9 @@ public class Polygon extends AbstractGeometry<PolygonPositions> {
         super(GeoJsonType.POLYGON);
         coordinates = new PolygonPositions();
     }
+
+    @Override
+    public <T> T accept(IGeometryVisitor<T> visitor) {
+        return visitor.visitPolygon(this);
+    }
 }

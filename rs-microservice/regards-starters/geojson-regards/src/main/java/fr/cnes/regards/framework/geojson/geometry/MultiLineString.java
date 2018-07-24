@@ -39,4 +39,9 @@ public class MultiLineString extends AbstractGeometry<List<Positions>> {
         super(GeoJsonType.MULTILINESTRING);
         coordinates = new ArrayList<>();
     }
+
+    @Override
+    public <T> T accept(IGeometryVisitor<T> visitor) {
+        return visitor.visitMultiLineString(this);
+    }
 }

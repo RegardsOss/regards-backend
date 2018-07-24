@@ -76,4 +76,16 @@ public class GeometryCollection extends AbstractGeoJsonObject implements IGeomet
         }
         return true;
     }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends IGeometry> T withCrs(String crs) {
+        this.setCrs(crs);
+        return (T) this;
+    }
+
+    @Override
+    public <T> T accept(IGeometryVisitor<T> visitor) {
+        return visitor.visitGeometryCollection(this);
+    }
 }

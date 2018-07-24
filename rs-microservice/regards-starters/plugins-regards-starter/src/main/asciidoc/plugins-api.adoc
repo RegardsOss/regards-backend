@@ -1,0 +1,163 @@
+= Plugins module API
+
+[[overview]]
+== Overview
+
+ This API allows to submit REGARDS's plugins.
+ 
+== Plugins management
+
+=== Get all plugins type
+
+Get in the classpath all the interfaces identified with the Java annotation @PluginInterface.
+
+:TestClass: PluginControllerIT
+:TestMethod: getAllPluginTypes 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+=== Get all plugins metadata
+
+Get in the classpath all the classes identified with the Java annotation @Plugin.
+
+:TestClass: PluginControllerIT
+:TestMethod: getAllPlugins 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+=== Get all the plugins metadata for a plugin's interface
+
+:TestClass: PluginControllerIT
+:TestMethod: getPluginOneType 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+include::{snippets}/{TestClass}/getPluginOneUnknownType/http-response.adoc[]
+
+=== Get a plugin metadata
+
+:TestClass: PluginControllerIT
+:TestMethod: getOnePlugin 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+== Plugin configuration management
+
+=== Create a plugin configuration
+
+Submits a REGARDS plugin configuration as a POST request.
+
+:TestClass: PluginControllerIT
+:TestMethod: savePluginConfiguration 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-fields.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+include::{snippets}/{TestClass}/savePluginConfigurationErrorConfNull/http-response.adoc[]
+
+=== Get a plugin configuration
+
+:TestClass: PluginControllerIT
+:TestMethod: getPluginConfiguration 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+=== Update a plugin configuration
+
+Submits a REGARDS plugin configuration as a PUT request.
+
+:TestClass: PluginControllerIT
+:TestMethod: updatePluginConfiguration 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/path-parameters.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-fields.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+=== Delete a plugin configuration
+
+:TestClass: PluginControllerIT
+:TestMethod: deletePluginConfiguration 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+=== Get all plugins configuration
+
+:TestClass: PluginControllerIT
+:TestMethod: getAllPluginConfiguration 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+=== Get all plugins configuration for a specific plugin
+
+:TestClass: PluginControllerIT
+:TestMethod: getPluginConfigurationsForOnePluginId 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+include::{snippets}/{TestClass}/getAllPluginConfigurationByTypeError/http-response.adoc[]
+
+=== Get all plugins configuration for a specific interface
+
+:TestClass: PluginControllerIT
+:TestMethod: getAllPluginConfigurationForOneSpecificType 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+
+=== Empty the runtime cache plugin
+
+:TestClass: PluginControllerIT
+:TestMethod: emptyPluginsCahe 
+
+include::{snippets}/{TestClass}/{TestMethod}/http-request.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/request-body.adoc[]
+
+include::{snippets}/{TestClass}/{TestMethod}/http-response.adoc[]
+

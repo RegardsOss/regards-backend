@@ -11,28 +11,47 @@ import org.springframework.util.Assert;
  * REGARDS customization of {@link HttpRequestSnippet}.
  *
  * @author Sylvain VISSIERE-GUERINET
+ * @author Marc Sordi
  */
 public class RegardsHttpRequestSnippet extends HttpRequestSnippet {
 
-    /**
-     * Override path attribute from {@link HttpRequestSnippet#createModel(Operation)}.
-     * We do want the template and not the value.
-     * @param operation
-     * @return
-     */
+    private static final String REQUEST_BODY = "requestBody";
+
+    private static final String URL_TEMPLATE = "urlTemplate";
+
     @Override
     public Map<String, Object> createModel(Operation operation) {
         Map<String, Object> model = super.createModel(operation);
-        model.put("path", extractUrlTemplate(operation));
+        extractUrlTemplate(model, operation);
+        cleanRequestBody(model);
         return model;
     }
 
-    private String extractUrlTemplate(Operation operation) {
+    private void extractUrlTemplate(Map<String, Object> model, Operation operation) {
         String urlTemplate = (String) operation.getAttributes()
                 .get(RestDocumentationGenerator.ATTRIBUTE_NAME_URL_TEMPLATE);
-        Assert.notNull(urlTemplate,
-                       "urlTemplate not found. If you are using MockMvc did "
-                               + "you use RestDocumentationRequestBuilders to build the request?");
-        return urlTemplate;
+        Assert.notNull(urlTemplate, "urlTemplate not found. If you are using MockMvc did "
+                + "you use RestDocumentationRequestBuilders to build the request?");
+        model.put(URL_TEMPLATE, urlTemplate);
+    }
+
+    /**
+     * If request body not useful, remove it for good Mustache template rendering
+     */
+    private void cleanRequestBody(Map<String, Object> model) {
+
+        if (model.containsKey(REQUEST_BODY)) {
+            Object body = model.get(REQUEST_BODY);
+            if (body == null) {
+                model.remove(REQUEST_BODY);
+            } else {
+                if (body instanceof String) {
+                    String stringBody = (String) body;
+                    if (stringBody.isEmpty()) {
+                        model.remove(REQUEST_BODY);
+                    }
+                }
+            }
+        }
     }
 }
