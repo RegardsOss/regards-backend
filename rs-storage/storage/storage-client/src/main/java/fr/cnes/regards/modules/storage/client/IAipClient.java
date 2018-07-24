@@ -33,12 +33,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import feign.Response;
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPCollection;
 import fr.cnes.regards.modules.storage.domain.AIPState;
@@ -61,7 +65,7 @@ public interface IAipClient {
     /**
      * Client base path
      */
-    String AIP_PATH = "/aips";
+    public static final String AIP_PATH = "/aips";
 
     /**
      * Controller path for bulk aip requests deletion
@@ -71,32 +75,32 @@ public interface IAipClient {
     /**
      * Client path for indexing
      */
-    String INDEXING_PATH = "/indexing";
+    public static final String INDEXING_PATH = "/indexing";
 
     /**
      * Client path to retry the storage of multiple aips
      */
-    String RETRY_STORE_PATH = "/retry";
+    public static final String RETRY_STORE_PATH = "/retry";
 
     /**
      * Client path to put in cache files
      */
-    String PREPARE_DATA_FILES = "/dataFiles";
+    public static final String PREPARE_DATA_FILES = "/dataFiles";
 
     /**
      * Client path using an aip ip id as path variable
      */
-    String ID_PATH = "/{ip_id}";
+    public static final String ID_PATH = "/{ip_id}";
 
     /**
      * Client path used to retry the storage of an aip
      */
-    String IP_ID_RETRY_STORE_PATH = ID_PATH + RETRY_STORE_PATH;
+    public static final String IP_ID_RETRY_STORE_PATH = ID_PATH + RETRY_STORE_PATH;
 
     /**
      * Client path used to download files
      */
-    String OBJECT_LINK_PATH = ID_PATH + "/objectlinks";
+    public static final String OBJECT_LINK_PATH = ID_PATH + "/objectlinks";
 
     /**
      * Client path used to get the history of the versions of an aip
@@ -106,7 +110,7 @@ public interface IAipClient {
     /**
      * Client path using aip ip id and file checksum as path variable
      */
-    String DOWLOAD_AIP_FILE = "/{ip_id}/files/{checksum}";
+    public static final String DOWNLOAD_AIP_FILE = "/{ip_id}/files/{checksum}";
 
     /**
      * Retrieve a page of aip metadata according to the given parameters
@@ -158,6 +162,12 @@ public interface IAipClient {
     public ResponseEntity<List<RejectedSip>> deleteAipFromSips(@RequestBody Set<String> sipIpIds);
 
     /**
+     * Delete an aip, represented by its ip id
+     */
+    @RequestMapping(value = ID_PATH, method = RequestMethod.DELETE)
+    public ResponseEntity<String> deleteAip(@PathVariable(name = "ip_id") String ipId);
+
+    /**
      * Retrieve the meta data of files associated to an aip, represented by its ip id
      * @return list of files meta data associated to an aip
      */
@@ -181,7 +191,15 @@ public interface IAipClient {
     @RequestMapping(path = PREPARE_DATA_FILES, method = RequestMethod.POST)
     ResponseEntity<AvailabilityResponse> makeFilesAvailable(@RequestBody AvailabilityRequest availabilityRequest);
 
-    @RequestMapping(path = DOWLOAD_AIP_FILE, method = RequestMethod.GET,
+    @RequestMapping(path = DOWNLOAD_AIP_FILE, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     Response downloadFile(@PathVariable("ip_id") String aipId, @PathVariable("checksum") String checksum);
+
+    /**
+     * Update an aip, represented by its ip id, thanks to the provided pojo
+     * @return updated aip
+     */
+    @RequestMapping(value = ID_PATH, method = RequestMethod.PUT,
+            consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
+    public ResponseEntity<AIP> updateAip(@PathVariable(name = "ip_id") String ipId, @RequestBody @Valid AIP updated);
 }

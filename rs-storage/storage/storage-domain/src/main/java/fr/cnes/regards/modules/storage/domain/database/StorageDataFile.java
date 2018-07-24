@@ -68,7 +68,8 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 public class StorageDataFile {
 
     /**
-     * length used as the checksum column definition. Why 128? it allows to use sha-512. That should limit issues with checksum length for a few years
+     * length used as the checksum column definition. Why 128? it allows to use sha-512. That should limit issues with
+     * checksum length for a few years
      */
     public static final int CHECKSUM_MAX_LENGTH = 128;
 
@@ -112,14 +113,14 @@ public class StorageDataFile {
     /**
      * Data type
      */
-    @Column
+    @Column(name = "data_type")
     @Enumerated(EnumType.STRING)
     private DataType dataType;
 
     /**
      * File size
      */
-    @Column
+    @Column(name = "file_size")
     private Long fileSize;
 
     /**
@@ -132,7 +133,7 @@ public class StorageDataFile {
     /**
      * File mime type
      */
-    @Column(nullable = false)
+    @Column(nullable = false, name = "mime_type")
     @Convert(converter = MimeTypeConverter.class)
     private MimeType mimeType;
 
@@ -146,7 +147,7 @@ public class StorageDataFile {
      * Directory to use for storage. Can be null.
      * This parameter should be set by the IAllocationStrategy plugin during storage dispatch.
      */
-    @Column
+    @Column(name = "storage_directory")
     private String storageDirectory;
 
     /**
@@ -188,9 +189,9 @@ public class StorageDataFile {
      * @param mimeType
      * @param aip
      */
-    public StorageDataFile(OAISDataObject file, MimeType mimeType, AIP aip) {
+    public StorageDataFile(OAISDataObject file, MimeType mimeType, AIP aip, AIPSession aipSession) {
         this(file.getUrls(), file.getChecksum(), file.getAlgorithm(), file.getRegardsDataType(), file.getFileSize(),
-             mimeType, aip, null, null);
+             mimeType, aip, aipSession, null, null);
         String name = file.getFilename();
         if (Strings.isNullOrEmpty(name)) {
             String[] pathParts = file.getUrls().iterator().next().getPath().split("/");
@@ -211,14 +212,14 @@ public class StorageDataFile {
      * @param name
      */
     public StorageDataFile(Set<URL> urls, String checksum, String algorithm, DataType type, Long fileSize,
-            MimeType mimeType, AIP aip, String name, String storageDirectory) {
+            MimeType mimeType, AIP aip, AIPSession aipSession, String name, String storageDirectory) {
         this.urls = urls;
         this.checksum = checksum;
         this.algorithm = algorithm;
         this.dataType = type;
         this.fileSize = fileSize;
         this.mimeType = mimeType;
-        this.aipEntity = new AIPEntity(aip);
+        this.aipEntity = new AIPEntity(aip, aipSession);
         this.name = name;
         this.storageDirectory = storageDirectory;
     }
@@ -228,12 +229,15 @@ public class StorageDataFile {
      * @param aip
      * @return extracted data files
      */
-    public static Set<StorageDataFile> extractDataFiles(AIP aip) {
+    public static Set<StorageDataFile> extractDataFiles(AIP aip, AIPSession aipSession) {
         Set<StorageDataFile> dataFiles = Sets.newHashSet();
         for (ContentInformation ci : aip.getProperties().getContentInformations()) {
             OAISDataObject file = ci.getDataObject();
-            MimeType mimeType = ci.getRepresentationInformation().getSyntax().getMimeType();
-            dataFiles.add(new StorageDataFile(file, mimeType, aip));
+            if (!file.isReference()) {
+                // Only non reference data object is managed by storage
+                MimeType mimeType = ci.getRepresentationInformation().getSyntax().getMimeType();
+                dataFiles.add(new StorageDataFile(file, mimeType, aip, aipSession));
+            }
         }
         return dataFiles;
     }
@@ -417,8 +421,8 @@ public class StorageDataFile {
      * Set the associated aip
      * @param aip
      */
-    public void setAip(AIP aip) {
-        this.aipEntity = new AIPEntity(aip);
+    public void setAip(AIP aip, AIPSession aipSession) {
+        this.aipEntity = new AIPEntity(aip, aipSession);
     }
 
     public Integer getHeight() {

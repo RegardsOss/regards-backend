@@ -78,6 +78,7 @@ import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
@@ -144,7 +145,7 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
 
     @Before
     public void init() throws IOException, URISyntaxException, ModuleException {
-        tenantResolver.forceTenant(DEFAULT_TENANT);
+        tenantResolver.forceTenant(getDefaultTenant());
         // first lets get some parameters for the job ...
         // ... dataStorage ...
         baseStorageLocation = new URL("file", "", System.getProperty("user.dir") + "/target/StoreJobIT");
@@ -162,8 +163,12 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
         URL source = new URL("file", "", Paths.get("src", "test", "resources", "data.txt").toAbsolutePath().toString());
         AIP aip = getAipFromFile(false);
         aip.addEvent(EventType.SUBMISSION.name(), "submission into our beautiful system");
+        AIPSession aipSession = new AIPSession();
+        aipSession.setLastActivationDate(OffsetDateTime.now());
+        aipSession.setId(aip.getSession());
+
         df = new StorageDataFile(Sets.newHashSet(source), "de89a907d33a9716d11765582102b2e0", "MD5", DataType.OTHER, 0L,
-                new MimeType("text", "plain"), aip, "data.txt", null);
+                new MimeType("text", "plain"), aip, aipSession, "data.txt", null);
         workingSubset = new LocalWorkingSubset(Sets.newHashSet(df));
         // now that we have some parameters, lets storeAndCreate the job
         parameters = Sets.newHashSet();
@@ -174,7 +179,7 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
     @Test
     public void storeDataFilesJobTest() throws IOException, URISyntaxException, ModuleException {
 
-        JobInfo toTest = new JobInfo(false, 0, parameters, DEFAULT_USER_EMAIL, StoreDataFilesJob.class.getName());
+        JobInfo toTest = new JobInfo(false, 0, parameters, getDefaultUserEmail(), StoreDataFilesJob.class.getName());
         StoreDataFilesJob job = (StoreDataFilesJob) runJob(toTest);
         // now that we synchronously ran the job, lets do some asserts
         StorageJobProgressManager progressManager = job.getProgressManager();
@@ -187,8 +192,12 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
                 Paths.get("src", "test", "resources", "quicklook.png").toAbsolutePath().toString());
         AIP aip = getAipFromFile(true);
         aip.addEvent(EventType.SUBMISSION.name(), "submission into our beautiful system");
+        AIPSession aipSession = new AIPSession();
+        aipSession.setLastActivationDate(OffsetDateTime.now());
+        aipSession.setId(aip.getSession());
+
         StorageDataFile df = new StorageDataFile(Sets.newHashSet(source), "540e72d5ac22f25c70d9c72b9b36fb96", "MD5",
-                DataType.QUICKLOOK_SD, 0L, new MimeType("image", "png"), aip, "quicklook.png", null);
+                DataType.QUICKLOOK_SD, 0L, new MimeType("image", "png"), aip, aipSession, "quicklook.png", null);
         IWorkingSubset workingSubset = new LocalWorkingSubset(Sets.newHashSet(df));
 
         Set<JobParameter> jobParameters = Sets.newHashSet();
@@ -196,7 +205,7 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
                 .add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, localStorageConf.getId()));
         jobParameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
 
-        JobInfo toTest = new JobInfo(false, 0, jobParameters, DEFAULT_USER_EMAIL, StoreDataFilesJob.class.getName());
+        JobInfo toTest = new JobInfo(false, 0, jobParameters, getDefaultUserEmail(), StoreDataFilesJob.class.getName());
         StoreDataFilesJob job = (StoreDataFilesJob) runJob(toTest);
         // now that we synchronously ran the job, lets do some asserts
         StorageJobProgressManager progressManager = job.getProgressManager();
@@ -210,13 +219,15 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
 
     @Test
     public void storeMetadataFilesJobTest() {
-        JobInfo toTest = new JobInfo(false, 0, parameters, DEFAULT_USER_EMAIL, StoreMetadataFilesJob.class.getName());
+        JobInfo toTest = new JobInfo(false, 0, parameters, getDefaultUserEmail(),
+                StoreMetadataFilesJob.class.getName());
         StoreMetadataFilesJob job = (StoreMetadataFilesJob) runJob(toTest);
         // now that we synchronously ran the job, lets do some asserts
         StorageJobProgressManager progressManager = job.getProgressManager();
         Assert.assertFalse("there was a problem during the job", progressManager.isProcessError());
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected IJob runJob(JobInfo jobInfo) {
         try {
 
@@ -268,7 +279,7 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
 
     @After
     public void after() throws URISyntaxException, IOException {
-        tenantResolver.forceTenant(DEFAULT_TENANT);
+        tenantResolver.forceTenant(getDefaultTenant());
         Files.walk(Paths.get(baseStorageLocation.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile)
                 .forEach(File::delete);
         jobInfoRepo.deleteAll();

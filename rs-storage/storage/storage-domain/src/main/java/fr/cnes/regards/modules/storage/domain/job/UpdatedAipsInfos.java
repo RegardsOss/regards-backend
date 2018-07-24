@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,8 +16,28 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
+package fr.cnes.regards.modules.storage.domain.job;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
- * @author Sylvain Vissiere-Guerinet
- *
+ * This object is used at the end of the UpdateAIPsTagJob to save how many entities were updated
+ * @author Léo Mieulet
  */
-package fr.cnes.regards.modules.storage.dao;
+public class UpdatedAipsInfos {
+    private int nbErrors;
+    private int nbUpdated;
+
+    public UpdatedAipsInfos(AtomicInteger nbErrors, AtomicInteger nbEntityUpdated) {
+        this.nbErrors = nbErrors.get();
+        this.nbUpdated = nbEntityUpdated.get();
+    }
+
+    public int getNbErrors() {
+        return nbErrors;
+    }
+
+    public int getNbUpdated() {
+        return nbUpdated;
+    }
+}

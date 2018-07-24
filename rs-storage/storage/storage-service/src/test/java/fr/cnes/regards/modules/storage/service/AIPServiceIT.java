@@ -95,6 +95,7 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AIPCollection;
 import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
@@ -128,6 +129,8 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
     private static final String DATA_STORAGE_2_CONF_LABEL = "AIPServiceIT_DATA_STORAGE_LOCAL2";
 
     private static final int WAITING_TIME_MS = 1000;
+
+    private static final String SESSION = "Session 1";
 
     @Autowired
     private IAIPService aipService;
@@ -177,7 +180,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
     @Before
     public void init() throws IOException, ModuleException, URISyntaxException, InterruptedException {
-        tenantResolver.forceTenant(DEFAULT_TENANT);
+        tenantResolver.forceTenant(getDefaultTenant());
         cleanUp();
         mockEventHandler.clear();
         subscriber.subscribeTo(AIPEvent.class, mockEventHandler, true);
@@ -198,7 +201,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         Set<AIPEvent> events = mockEventHandler.getReceivedEvents().stream().filter(e -> e.getAipState().equals(state))
                 .collect(Collectors.toSet());
         int waitCount = 0;
-        while ((events.size() < nbExpectedEvents) && (waitCount < 5)) {
+        while ((events.size() < nbExpectedEvents) && (waitCount < 10)) {
             Thread.sleep(WAITING_TIME_MS);
             mockEventHandler.log();
             events = mockEventHandler.getReceivedEvents().stream().filter(e -> e.getAipState().equals(state))
@@ -428,7 +431,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
-    @Requirements({ @Requirement("REGARDS_DSL_STO_ARC_100") })
+    @Requirements({ @Requirement("REGARDS_DSL_STO_ARC_100"), @Requirement("REGARDS_DSL_STO_AIP_310") })
     public void testPartialDeleteAip() throws InterruptedException, ModuleException, URISyntaxException {
         createSuccessTest();
         String aipIpId = aip.getId().toString();
@@ -540,7 +543,8 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
             EntityOperationForbiddenException, EntityInconsistentIdentifierException {
         AIP aip = getAIP();
         aip.setState(AIPState.STORED);
-        aip = aipDao.save(aip);
+        AIPSession aipSession = aipService.getSession(aip.getSession(), true);
+        aip = aipDao.save(aip, aipSession);
         // we are going to add an update event, so lets get the old event
         int oldHistorySize = aip.getHistory().size();
         AIPBuilder updated = new AIPBuilder(aip);
@@ -554,11 +558,11 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
     private AIP getAIP() throws MalformedURLException {
 
         AIPBuilder aipBuilder = new AIPBuilder(
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT, UUID.randomUUID(), 1),
-                null, EntityType.DATA);
+                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, getDefaultTenant(), UUID.randomUUID(), 1),
+                null, EntityType.DATA, SESSION);
 
-        String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
-        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5",
+        Path path = Paths.get("src", "test", "resources", "data.txt");
+        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, path, "MD5",
                                                                 "de89a907d33a9716d11765582102b2e0");
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", MimeType.valueOf("text/plain"));
         aipBuilder.addContentInformation();

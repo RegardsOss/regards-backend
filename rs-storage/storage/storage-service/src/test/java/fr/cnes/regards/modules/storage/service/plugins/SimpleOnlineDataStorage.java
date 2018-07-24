@@ -119,6 +119,7 @@ public class SimpleOnlineDataStorage implements IOnlineDataStorage<LocalWorkingS
     /**
      * storage base location as url
      */
+    @SuppressWarnings("unused")
     private URL baseStorageLocation;
 
     /**
@@ -132,7 +133,8 @@ public class SimpleOnlineDataStorage implements IOnlineDataStorage<LocalWorkingS
     @Override
     public WorkingSubsetWrapper<LocalWorkingSubset> prepare(Collection<StorageDataFile> dataFiles,
             DataStorageAccessModeEnum mode) {
-        // We choose to use a simple parallel stream to store file on file system, so for now we treat everything at once
+        // We choose to use a simple parallel stream to store file on file system, so for now we treat everything at
+        // once
         WorkingSubsetWrapper<LocalWorkingSubset> wrapper = new WorkingSubsetWrapper<>();
         wrapper.getWorkingSubSets().add(new LocalWorkingSubset(Sets.newHashSet(dataFiles)));
         return wrapper;

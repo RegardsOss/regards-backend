@@ -23,6 +23,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
@@ -62,6 +63,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.DispatchErrors;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
@@ -93,6 +95,8 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
     private StorageDataFile dataFile1;
 
     private StorageDataFile dataFile2;
+
+    private static final String SESSION = "Session 1";
 
     @Before
     public void init() throws ModuleException, MalformedURLException {
@@ -140,22 +144,27 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
     private void initDataFiles() throws MalformedURLException {
         dataFiles = Sets.newHashSet();
         AIP aip = getAIP();
+
+        AIPSession aipSession = new AIPSession();
+        aipSession.setId(SESSION);
+        aipSession.setLastActivationDate(OffsetDateTime.now());
+
         dataFile1 = new StorageDataFile(Sets.newHashSet(new URL("file", "", "fichier1.json")), "checksum", "MD5",
-                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aip, "fichier1", null);
+                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aip, aipSession, "fichier1", null);
         dataFiles.add(dataFile1);
         dataFile2 = new StorageDataFile(Sets.newHashSet(new URL("file", "", "fichier2.json")), "checksum2", "MD5",
-                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aip, "fichier2", null);
+                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aip, aipSession, "fichier2", null);
         dataFiles.add(dataFile2);
     }
 
     private AIP getAIP() throws MalformedURLException {
 
         AIPBuilder aipBuilder = new AIPBuilder(
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT, UUID.randomUUID(), 1),
-                null, EntityType.DATA);
+                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, getDefaultTenant(), UUID.randomUUID(), 1),
+                null, EntityType.DATA, SESSION);
 
-        String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
-        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5",
+        Path path = Paths.get(System.getProperty("user.dir"), "/src/test/resources/data.txt");
+        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, path, "MD5",
                                                                 "de89a907d33a9716d11765582102b2e0");
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", MimeType.valueOf("text/plain"));
         aipBuilder.addContentInformation();
@@ -215,7 +224,8 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
      * Test nominal use case.
      * - Multiple storage defined in each AIP into the misc.storage properties
      * - FromSIPAllocationStrategyPlugin configured to select one configuration for the one plugin type
-     * - As no plugin configuration identifier is defined for the scond plugin type, the dataFiles are not dispatch to be store with it.
+     * - As no plugin configuration identifier is defined for the scond plugin type, the dataFiles are not dispatch to
+     * be store with it.
      * @throws ModuleException
      * @throws IOException
      * @throws URISyntaxException
@@ -248,7 +258,8 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
      * Test nominal use case.
      * - Multiple storage defined in each AIP into the misc.storage properties
      * - FromSIPAllocationStrategyPlugin not configured
-     * - As there is only one configuration for each plugin type, each file is dispatched to be stored using the only one configuration.
+     * - As there is only one configuration for each plugin type, each file is dispatched to be stored using the only
+     * one configuration.
      * @throws ModuleException
      * @throws IOException
      * @throws URISyntaxException

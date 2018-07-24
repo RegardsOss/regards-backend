@@ -40,6 +40,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.util.Pair;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpHeaders;
@@ -88,6 +89,9 @@ import fr.cnes.regards.modules.storage.domain.DataFileDto;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
 import fr.cnes.regards.modules.storage.domain.RejectedSip;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
+import fr.cnes.regards.modules.storage.domain.job.AIPQueryFilters;
+import fr.cnes.regards.modules.storage.domain.job.AddAIPTagsFilters;
+import fr.cnes.regards.modules.storage.domain.job.RemoveAIPTagsFilters;
 import fr.cnes.regards.modules.storage.service.IAIPService;
 
 /**
@@ -172,6 +176,21 @@ public class AIPController implements IResourceController<AIP> {
     public static final String DOWNLOAD_AIP_FILE = "/{ip_id}/files/{checksum}";
 
     /**
+     * Controller path to manage tags of multiple AIPs
+     */
+    public static final String TAG_MANAGEMENT_PATH = "/tags";
+
+    /**
+     * Endpoint path to delete tags of multiple AIPs
+     */
+    public static final String TAG_DELETION_PATH = TAG_MANAGEMENT_PATH + "/delete";
+
+    /**
+     * Controller path to search used tags by multiple AIPs
+     */
+    public static final String TAG_SEARCH_PATH = TAG_MANAGEMENT_PATH + "/search";
+
+    /**
      * {@link IResourceService} instance
      */
     @Autowired
@@ -210,6 +229,7 @@ public class AIPController implements IResourceController<AIP> {
      * @param pState state the aips should be in
      * @param from date(UTC) after which the aip should have been added to the system
      * @param to date(UTC) before which the aip should have been added to the system
+     * @param session {@link String}
      * @return page of aip metadata respecting the constraints
      */
     @RequestMapping(method = RequestMethod.GET)
@@ -217,10 +237,14 @@ public class AIPController implements IResourceController<AIP> {
     @ResourceAccess(description = "send a page of aips")
     public ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(
             @RequestParam(name = "state", required = false) AIPState pState,
-            @RequestParam(name = "from", required = false) OffsetDateTime from,
-            @RequestParam(name = "to", required = false) OffsetDateTime to, final Pageable pPageable,
+            @RequestParam(name = "from",
+                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
+            @RequestParam(name = "to",
+                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to,
+            @RequestParam(name = "tags", required = false) List<String> tags,
+            @RequestParam(name = "session", required = false) String session, final Pageable pPageable,
             final PagedResourcesAssembler<AIP> pAssembler) throws ModuleException {
-        Page<AIP> aips = aipService.retrieveAIPs(pState, from, to, pPageable);
+        Page<AIP> aips = aipService.retrieveAIPs(pState, from, to, tags, session, pPageable);
         return new ResponseEntity<>(toPagedResources(aips, pAssembler), HttpStatus.OK);
     }
 
@@ -417,6 +441,17 @@ public class AIPController implements IResourceController<AIP> {
     }
 
     /**
+     * Add tags to a list of aips
+     */
+    @RequestMapping(value = TAG_MANAGEMENT_PATH, method = RequestMethod.POST)
+    @ResourceAccess(description = "allow to add multiple tags to several aips")
+    @ResponseBody
+    public ResponseEntity<Void> addTagsByQuery(@RequestBody AddAIPTagsFilters request) {
+        aipService.addTagsByQuery(request);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
      * Remove tags from a given aip, represented by its ip id
      */
     @RequestMapping(value = TAG_PATH, method = RequestMethod.DELETE)
@@ -426,7 +461,28 @@ public class AIPController implements IResourceController<AIP> {
             @RequestBody Set<String> tagsToRemove)
             throws EntityNotFoundException, EntityOperationForbiddenException, EntityInconsistentIdentifierException {
         aipService.removeTags(ipId, tagsToRemove);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
+     * Remove tags from a list of aips
+     */
+    @RequestMapping(value = TAG_DELETION_PATH, method = RequestMethod.POST)
+    @ResourceAccess(description = "allow to remove multiple tags to several aips")
+    @ResponseBody
+    public ResponseEntity<Void> removeTagsByQuery(@RequestBody RemoveAIPTagsFilters request) {
+        aipService.removeTagsByQuery(request);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * Retrieve common tags from a list of aips
+     */
+    @RequestMapping(value = TAG_SEARCH_PATH, method = RequestMethod.POST)
+    @ResourceAccess(description = "allow to search tags used by aips")
+    public ResponseEntity<List<String>> retrieveAIPTags(@RequestBody AIPQueryFilters request) {
+        List<String> aipTags = aipService.retrieveAIPTagsByQuery(request);
+        return new ResponseEntity<>(aipTags, HttpStatus.OK);
     }
 
     /**
@@ -525,15 +581,21 @@ public class AIPController implements IResourceController<AIP> {
     @Override
     public Resource<AIP> toResource(AIP pElement, Object... pExtras) {
         Resource<AIP> resource = resourceService.toResource(pElement);
-        resourceService
-                .addLink(resource, this.getClass(), "retrieveAIPs", LinkRels.LIST,
-                         MethodParamFactory.build(AIPState.class), MethodParamFactory.build(OffsetDateTime.class),
-                         MethodParamFactory.build(OffsetDateTime.class), MethodParamFactory.build(Pageable.class),
-                         MethodParamFactory.build(PagedResourcesAssembler.class));
+        resourceService.addLink(resource, this.getClass(), "retrieveAIPs", LinkRels.LIST,
+                                MethodParamFactory.build(AIPState.class),
+                                MethodParamFactory.build(OffsetDateTime.class),
+                                MethodParamFactory.build(OffsetDateTime.class), MethodParamFactory.build(List.class),
+                                MethodParamFactory.build(String.class), MethodParamFactory.build(Pageable.class),
+                                MethodParamFactory.build(PagedResourcesAssembler.class));
         resourceService.addLink(resource, this.getClass(), "retrieveAip", LinkRels.SELF,
                                 MethodParamFactory.build(String.class, pElement.getId().toString()));
         resourceService.addLink(resource, this.getClass(), "storeRetryUnit", "retry",
                                 MethodParamFactory.build(String.class, pElement.getId().toString()));
+        // If the AIP is not being deleted, add the hateoas delete key
+        if (!AIPState.DELETED.equals(pElement.getState())) {
+            resourceService.addLink(resource, this.getClass(), "deleteAip", "delete",
+                                    MethodParamFactory.build(String.class, pElement.getId().toString()));
+        }
         return resource;
     }
 
