@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.geojson.coordinates;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 /**
  * Not in RFC 7946 -August 2016<br/>
@@ -52,5 +53,10 @@ public class Positions extends ArrayList<Position> {
         Position first = get(0);
         Position latest = get(size() - 1);
         return first.equals(latest);
+    }
+
+    @Override
+    public String toString() {
+        return stream().map(Position::toString).collect(Collectors.joining(" } , { ", "{ ", " }"));
     }
 }

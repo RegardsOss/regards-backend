@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.geojson.coordinates;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import fr.cnes.regards.framework.geojson.validator.PolygonPositionsConstraints;
 
@@ -47,5 +48,17 @@ public class PolygonPositions extends ArrayList<Positions> {
             return subList(1, size());
         }
         return Collections.emptyList();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder();
+        buf.append("EXTERIOR ( ").append(getExteriorRing().toString()).append(" )");
+        List<Positions> holes = getHoles();
+        if (!holes.isEmpty()) {
+            buf.append(", HOLES ( ");
+            buf.append(holes.stream().map(Positions::toString).collect(Collectors.joining(", ", "HOLE ( ", " )")));
+        }
+        return buf.toString();
     }
 }

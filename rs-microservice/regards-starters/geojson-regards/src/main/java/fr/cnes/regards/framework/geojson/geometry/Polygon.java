@@ -45,4 +45,9 @@ public class Polygon extends AbstractGeometry<PolygonPositions> {
     public <T> T accept(IGeometryVisitor<T> visitor) {
         return visitor.visitPolygon(this);
     }
+
+    @Override
+    public String toString() {
+        return "POLYGON ( " + getCoordinates().toString() + " )";
+    }
 }
