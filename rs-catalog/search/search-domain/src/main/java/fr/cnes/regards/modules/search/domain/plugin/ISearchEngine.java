@@ -25,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 
@@ -43,6 +44,8 @@ import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
  * @param V property values
  *
  */
+@PluginInterface(
+        description = "Plugin to define a search engine. A Searh engine define the format of queries and format of response from a search request.")
 public interface ISearchEngine<R, E, T, V extends Collection<?>> {
 
     /**

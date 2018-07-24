@@ -24,7 +24,6 @@ import java.util.StringJoiner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.Errors;
@@ -33,10 +32,11 @@ import org.springframework.validation.Validator;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
-import fr.cnes.regards.modules.search.rest.engine.plugin.legacy.LegacySearchEngine;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchEngine;
+import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
+import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
 
 /**
  * Search engine service dispatcher.<br/>
@@ -59,9 +59,11 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
     @Autowired
     private Validator validator;
 
-    // FIXME remove replace with plugin service init
     @Autowired
-    private AutowireCapableBeanFactory beanFactory;
+    private IPluginService pluginService;
+
+    @Autowired
+    private ISearchEngineConfigurationService searchEngineService;
 
     @SuppressWarnings("unchecked")
     @Override
@@ -123,20 +125,9 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
         }
     }
 
-    // FIXME Retrieve search engine plugin from search context
-    // This implementation is only for testing purpose
     private ISearchEngine<?, ?, ?, ?> getSearchEngine(SearchContext context) throws ModuleException {
-
-        ISearchEngine<?, ?, ?, ?> engine;
-        if ("legacy".equals(context.getEngineType())) {
-            engine = new LegacySearchEngine();
-        } else if ("opensearch".equals(context.getEngineType())) {
-            engine = new OpenSearchEngine();
-        } else {
-            throw new UnsupportedOperationException("Engine type not supported : " + context.getEngineType());
-        }
-        // return new OpenSearchEngine();
-        beanFactory.autowireBean(engine);
-        return engine;
+        SearchEngineConfiguration conf = searchEngineService.retrieveConf(context.getDatasetUrn(),
+                                                                          context.getEngineType());
+        return pluginService.getPlugin(conf.getConfiguration().getId());
     }
 }

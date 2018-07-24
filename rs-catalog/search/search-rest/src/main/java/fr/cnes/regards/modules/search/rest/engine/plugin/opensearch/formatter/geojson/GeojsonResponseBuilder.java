@@ -18,7 +18,9 @@
  */
 package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.geojson;
 
+import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.compress.utils.Lists;
@@ -74,8 +76,8 @@ public class GeojsonResponseBuilder implements IResponseBuilder<FeatureWithPrope
     }
 
     @Override
-    public void addEntity(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,
-            List<Link> entityLinks) {
+    public void addEntity(EntityFeature entity, Optional<OffsetDateTime> entityLastUpdate,
+            List<ParameterConfiguration> paramConfigurations, List<Link> entityLinks) {
         Feature feature = new Feature();
         feature.setId(entity.getId().toString());
         // All links are alternate links here in geo json format
@@ -86,8 +88,9 @@ public class GeojsonResponseBuilder implements IResponseBuilder<FeatureWithPrope
                                                    GeoJsonMediaType.APPLICATION_GEOJSON_VALUE))
                 .collect(Collectors.toList()));
         feature.setTitle(entity.getLabel());
-        // TODO : Handle updated date
-        // feature.setUpdated();
+        if (entityLastUpdate.isPresent()) {
+            feature.setUpdated(entityLastUpdate.get());
+        }
         // Handle extensions
         for (IOpenSearchExtension extension : extensions) {
             if (extension.isActivated()) {

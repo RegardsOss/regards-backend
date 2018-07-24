@@ -18,7 +18,9 @@
  */
 package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter;
 
+import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.hateoas.Link;
 
@@ -54,10 +56,12 @@ public interface IResponseBuilder<R> {
     /**
      * Add a new response entity to the builder. An entity is a {@link AbstractEntity} from an catalog search response.
      * @param entity {@link AbstractEntity}
+     * @param entityLastUpdate last update of the current entity to add
      * @param paramConfigurations {@link ParameterConfiguration}s
      * @parma entityLinks {@link Link}s of the entity
      */
-    void addEntity(EntityFeature entity, List<ParameterConfiguration> paramConfigurations, List<Link> entityLinks);
+    void addEntity(EntityFeature entity, Optional<OffsetDateTime> entityLastUpdate,
+            List<ParameterConfiguration> paramConfigurations, List<Link> entityLinks);
 
     /**
      * Clear all added {@link AbstractEntity}s to the current builder.

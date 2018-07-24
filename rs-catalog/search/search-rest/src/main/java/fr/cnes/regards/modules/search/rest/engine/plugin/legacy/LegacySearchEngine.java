@@ -42,6 +42,7 @@ import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
+import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResources;
 import fr.cnes.regards.modules.search.rest.SearchEngineController;
@@ -53,10 +54,13 @@ import fr.cnes.regards.modules.search.service.IBusinessSearchService;
  * @author Marc Sordi
  *
  */
-@Plugin(id = "legacy", author = "REGARDS Team", contact = "regards@c-s.fr", description = "Legacy search engine",
-        licence = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss", version = "1.0.0")
+@Plugin(id = LegacySearchEngine.PLUGIN_ID, author = "REGARDS Team", contact = "regards@c-s.fr",
+        description = "Legacy search engine", licence = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss",
+        version = "1.0.0")
 public class LegacySearchEngine implements
         ISearchEngine<FacettedPagedResources<Resource<EntityFeature>>, Void, Resource<EntityFeature>, List<String>> {
+
+    public static final String PLUGIN_ID = SearchEngineMappings.LEGACY_PLUGIN_ID;
 
     /**
      * Query parameter for facets

@@ -30,6 +30,7 @@ import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.amqp.IPoller;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dataaccess.client.IAccessGroupClient;
 import fr.cnes.regards.modules.dataaccess.client.IAccessRightClient;
@@ -39,6 +40,7 @@ import fr.cnes.regards.modules.entities.client.IDatasetClient;
 import fr.cnes.regards.modules.entities.domain.Dataset;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
 import fr.cnes.regards.modules.models.client.IModelAttrAssocClient;
+import fr.cnes.regards.modules.models.domain.Model;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
@@ -53,8 +55,15 @@ public class EngineConfiguration {
     @Bean
     public IDatasetClient datasetClient() {
         IDatasetClient client = Mockito.mock(IDatasetClient.class);
-        Mockito.when(client.retrieveDataset(1L))
-                .thenReturn(new ResponseEntity<Resource<Dataset>>(HateoasUtils.wrap(new Dataset()), HttpStatus.OK));
+        Model mockedModel = new Model();
+        mockedModel.setName("MockedModel");
+        Dataset mockDataset = new Dataset(mockedModel, "tenant",
+                "Mocked dataset response from mock dataset dam client");
+        mockDataset.setId(1L);
+        mockDataset.setIpId(UniformResourceName
+                .fromString("URN:AIP:DATASET:tenant:27de606c-a6cd-411f-a5ba-bd1b2f29c965:V1"));
+        Mockito.when(client.retrieveDataset(Mockito.anyString()))
+                .thenReturn(new ResponseEntity<Resource<Dataset>>(HateoasUtils.wrap(mockDataset), HttpStatus.OK));
         return client;
     }
 
