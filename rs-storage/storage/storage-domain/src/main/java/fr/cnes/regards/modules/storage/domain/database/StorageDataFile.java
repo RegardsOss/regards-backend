@@ -542,6 +542,8 @@ public class StorageDataFile {
     }
 
     public void addFailureCause(String failureCause) {
-        this.failureCauses.add(failureCause);
+        if (failureCause != null) {
+            this.failureCauses.add(failureCause);
+        }
     }
 }

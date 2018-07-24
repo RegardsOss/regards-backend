@@ -61,6 +61,7 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
+import fr.cnes.regards.modules.storage.domain.plugin.DispatchErrors;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
@@ -195,7 +196,7 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
     @Test
     public void testOk() throws ModuleException {
         PropertyMappingAllocationStrategy allocStrat = pluginService.getPlugin(propertyMappingAllocStratConf.getId());
-        Multimap<Long, StorageDataFile> result = allocStrat.dispatch(dataFiles);
+        Multimap<Long, StorageDataFile> result = allocStrat.dispatch(dataFiles, new DispatchErrors());
         Assert.assertTrue("dispatch should have mapped propertyDataFile to the data storage conf id",
                           result.containsEntry(mappedDataStorageConfId, propertyDataFile));
         Assert.assertFalse("dispatch should not have mapped otherDataFile to any data storage conf id",

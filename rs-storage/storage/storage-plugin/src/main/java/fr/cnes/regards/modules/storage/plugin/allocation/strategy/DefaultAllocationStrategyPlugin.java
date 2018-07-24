@@ -25,11 +25,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+
 import fr.cnes.regards.framework.microservice.maintenance.MaintenanceException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
+import fr.cnes.regards.modules.storage.domain.plugin.DispatchErrors;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
@@ -53,7 +55,8 @@ public class DefaultAllocationStrategyPlugin implements IAllocationStrategy {
     private IPluginService pluginService;
 
     @Override
-    public Multimap<Long, StorageDataFile> dispatch(Collection<StorageDataFile> dataFilesToHandle) {
+    public Multimap<Long, StorageDataFile> dispatch(Collection<StorageDataFile> dataFilesToHandle,
+            DispatchErrors errors) {
         // first lets get the plugin configuration of type IDataStorage, then lets get only the active ones,
         // eventually order them and choose the one with the highest priority
         PluginConfiguration dataStorageConfToUse = pluginService.getPluginConfigurationsByType(IDataStorage.class)
