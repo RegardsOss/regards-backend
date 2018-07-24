@@ -110,8 +110,13 @@ public class AIPSessionController implements IResourceController<AIPSession> {
     @Override
     public Resource<AIPSession> toResource(AIPSession sipSession, Object... pExtras) {
         final Resource<AIPSession> resource = resourceService.toResource(sipSession);
-        resourceService.addLink(resource, this.getClass(), "getSipSession", LinkRels.SELF,
-                                MethodParamFactory.build(String.class, sipSession.getId()));
+        resourceService.addLink(resource, this.getClass(), "getAipSession", LinkRels.SELF,
+                MethodParamFactory.build(String.class, sipSession.getId()));
+        // If the session has some deletable AIPS, add the delete key
+        if (sipSession.getStoredAipsCount() + sipSession.getQueuedAipsCount() > 0) {
+            resourceService.addLink(resource, this.getClass(), "deleteAipEntityBySessionId", LinkRels.DELETE,
+                    MethodParamFactory.build(String.class, sipSession.getId()));
+        }
         return resource;
     }
 }
