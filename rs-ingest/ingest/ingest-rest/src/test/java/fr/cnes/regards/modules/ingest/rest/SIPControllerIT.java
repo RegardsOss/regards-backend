@@ -395,7 +395,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         // Store SIP entity
         SIPSession session = sessionService.getSession("session", true);
 
-        SIPEntity sipEntity = SIPEntityBuilder.build(DEFAULT_TENANT, session, sip,
+        SIPEntity sipEntity = SIPEntityBuilder.build(getDefaultTenant(), session, sip,
                                                      IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, "me", 1,
                                                      SIPState.INVALID, EntityType.DATA);
         sipEntity.setChecksum("12332323f2ds3d6g6df");
@@ -411,7 +411,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     private SIPBuilder buildSipOne(String sipId, String fileName) {
         SIPBuilder sipBuilder = new SIPBuilder(sipId);
         sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get(fileName),
-                                                                Paths.get(fileName).getFileName().toString(),
+                                                                Paths.get(fileName).getFileName().toString(), "MD5",
                                                                 "b463726cfbb52d47e432bedf08edbec3", new Long(12345));
         sipBuilder.setSyntax("FITS(FlexibleImageTransport)",
                              "http://www.iana.org/assignments/media-types/application/fits",

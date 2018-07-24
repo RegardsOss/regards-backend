@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.ingest.domain;
 
 import java.nio.file.Paths;
-import java.util.Set;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -32,6 +32,7 @@ import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfig
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.DataType;
@@ -91,7 +92,7 @@ public class SIPBuilderTest {
         Assert.assertTrue(sipId.equals(one.getId()));
         Assert.assertNotNull(one.getProperties());
 
-        Set<ContentInformation> cisOne = one.getProperties().getContentInformations();
+        List<ContentInformation> cisOne = one.getProperties().getContentInformations();
         Assert.assertNotNull(cisOne);
         Assert.assertTrue(cisOne.size() == 1);
 
@@ -103,8 +104,7 @@ public class SIPBuilderTest {
         OAISDataObject dataObject = ciOne.getDataObject();
         Assert.assertEquals(dataType, dataObject.getRegardsDataType());
         Assert.assertTrue(dataObject.getUrls().stream().map(url -> url.getPath())
-                                  .filter(path -> path.equals(Paths.get(fileName).toAbsolutePath().toString()))
-                                  .findFirst().isPresent());
+                .filter(path -> path.equals(Paths.get(fileName).toAbsolutePath().toString())).findFirst().isPresent());
         Assert.assertEquals(algorithm, dataObject.getAlgorithm());
         Assert.assertEquals(checksum, dataObject.getChecksum());
     }

@@ -24,7 +24,6 @@ import java.nio.file.Paths;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.request.ParameterDescriptor;
@@ -43,7 +42,6 @@ import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.microservice.rest.MicroserviceConfigurationController;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
@@ -71,21 +69,19 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
      */
     private static String token = "";
 
-    @Autowired
-    private IRuntimeTenantResolver tenantResolver;
-
     @Before
     public void init() {
-        tenantResolver.forceTenant(DEFAULT_TENANT);
+        manageSecurity(getDefaultTenant(),
+                       IngestProcessingChainController.TYPE_MAPPING + IngestProcessingChainController.NAME_PATH,
+                       RequestMethod.POST, getDefaultUserEmail(), getDefaultRole());
+        manageSecurity(getDefaultTenant(),
+                       IngestProcessingChainController.TYPE_MAPPING + IngestProcessingChainController.NAME_PATH,
+                       RequestMethod.PUT, getDefaultUserEmail(), getDefaultRole());
+        manageSecurity(getDefaultTenant(),
+                       IngestProcessingChainController.TYPE_MAPPING + IngestProcessingChainController.NAME_PATH,
+                       RequestMethod.DELETE, getDefaultUserEmail(), getDefaultRole());
 
-        manageDefaultSecurity(IngestProcessingChainController.TYPE_MAPPING + IngestProcessingChainController.NAME_PATH,
-                              RequestMethod.POST);
-        manageDefaultSecurity(IngestProcessingChainController.TYPE_MAPPING + IngestProcessingChainController.NAME_PATH,
-                              RequestMethod.PUT);
-        manageDefaultSecurity(IngestProcessingChainController.TYPE_MAPPING + IngestProcessingChainController.NAME_PATH,
-                              RequestMethod.DELETE);
-
-        token = generateToken(DEFAULT_USER_EMAIL, DEFAULT_ROLE);
+        token = generateToken(getDefaultUserEmail(), getDefaultRole());
     }
 
     @Test
