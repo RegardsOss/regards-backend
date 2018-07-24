@@ -311,7 +311,7 @@ public class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         planet.getFiles().put(DataType.THUMBNAIL, thumbnail);
 
         DataFile rawdata = DataFile.build(DataType.RAWDATA, "test.nc", "http://regards/test.nc",
-                                          MediaType.APPLICATION_OCTET_STREAM, Boolean.TRUE);
+                                          MediaType.APPLICATION_OCTET_STREAM, Boolean.TRUE, Boolean.FALSE);
         planet.getFiles().put(rawdata.getDataType(), rawdata);
 
         planet.setGeometry(IGeometry.polygon(IGeometry.toPolygonCoordinates(IGeometry
