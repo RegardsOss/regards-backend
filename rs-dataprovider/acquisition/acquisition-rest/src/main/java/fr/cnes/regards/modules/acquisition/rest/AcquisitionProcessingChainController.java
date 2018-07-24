@@ -77,7 +77,9 @@ public class AcquisitionProcessingChainController implements IResourceController
 
     public static final String TYPE_PATH = "/chains";
 
-    public static final String CHAIN_PATH = "/{chainId}";
+    public static final String CHAIN_PATH_PARAM = "chainId";
+
+    public static final String CHAIN_PATH = "/{" + CHAIN_PATH_PARAM + "}";
 
     public static final String START_MANUAL_CHAIN_PATH = CHAIN_PATH + "/start";
 
