@@ -104,13 +104,6 @@ public class PreservationDescriptionInformation {
         return fixityInformation;
     }
 
-    /**
-     * @return the access right information
-     */
-    public AccessRightInformation getAccesRightInformation() {
-        return accessRightInformation;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
