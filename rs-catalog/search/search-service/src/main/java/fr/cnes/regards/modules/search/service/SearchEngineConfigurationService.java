@@ -23,7 +23,6 @@ import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 
-import org.assertj.core.util.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +32,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import com.google.common.collect.Lists;
 
 import feign.FeignException;
 import fr.cnes.regards.framework.amqp.ISubscriber;
@@ -203,10 +204,10 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
     }
 
     /**
-    * Class DeleteEntityEventHandler
-    * Handler to delete {@link SearchEngineConfiguration} for deleted datasets.
-    * @author Sébastien Binda
-    */
+     * Class DeleteEntityEventHandler
+     * Handler to delete {@link SearchEngineConfiguration} for deleted datasets.
+     * @author Sébastien Binda
+     */
     private class DeleteEntityEventHandler implements IHandler<BroadcastEntityEvent> {
 
         @Override
