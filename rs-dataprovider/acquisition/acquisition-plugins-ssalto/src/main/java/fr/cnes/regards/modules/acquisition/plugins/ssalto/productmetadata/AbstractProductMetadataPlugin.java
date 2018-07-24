@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -541,17 +540,11 @@ public abstract class AbstractProductMetadataPlugin extends AbstractGenerateSIPP
     @Override
     protected void addDataObjectsToSip(SIPBuilder sipBuilder, List<AcquisitionFile> acqFiles) throws ModuleException {
         for (AcquisitionFile af : acqFiles) {
-            try {
-                sipBuilder.getContentInformationBuilder().setDataObject(af.getFileInfo().getDataType(),
-                                                                        af.getFilePath().toAbsolutePath().toUri()
-                                                                                .toURL(),
-                                                                        af.getChecksumAlgorithm(), af.getChecksum());
-                sipBuilder.getContentInformationBuilder().setSyntax(af.getFileInfo().getMimeType());
-                sipBuilder.addContentInformation();
-            } catch (MalformedURLException e) {
-                LOGGER.error(e.getMessage(), e);
-                throw new EntityInvalidException(e.getMessage());
-            }
+            sipBuilder.getContentInformationBuilder().setDataObject(af.getFileInfo().getDataType(),
+                                                                    af.getFilePath().toAbsolutePath(),
+                                                                    af.getChecksumAlgorithm(), af.getChecksum());
+            sipBuilder.getContentInformationBuilder().setSyntax(af.getFileInfo().getMimeType());
+            sipBuilder.addContentInformation();
         }
     }
 

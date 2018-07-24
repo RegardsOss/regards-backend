@@ -18,12 +18,9 @@
  */
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
-import java.net.MalformedURLException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
@@ -53,17 +50,11 @@ public class FixedStorageSIPGeneration extends AbstractMiscStorageInformation im
 
         // Fill SIP with product information
         for (AcquisitionFile af : product.getActiveAcquisitionFiles()) {
-            try {
-                sipBuilder.getContentInformationBuilder().setDataObject(af.getFileInfo().getDataType(),
-                                                                        af.getFilePath().toAbsolutePath().toUri()
-                                                                                .toURL(),
-                                                                        af.getChecksumAlgorithm(), af.getChecksum());
-                sipBuilder.getContentInformationBuilder().setSyntax(af.getFileInfo().getMimeType());
-                sipBuilder.addContentInformation();
-            } catch (MalformedURLException e) {
-                LOGGER.error(e.getMessage(), e);
-                throw new EntityInvalidException(e.getMessage());
-            }
+            sipBuilder.getContentInformationBuilder().setDataObject(af.getFileInfo().getDataType(),
+                                                                    af.getFilePath().toAbsolutePath(),
+                                                                    af.getChecksumAlgorithm(), af.getChecksum());
+            sipBuilder.getContentInformationBuilder().setSyntax(af.getFileInfo().getMimeType());
+            sipBuilder.addContentInformation();
         }
 
         // Add optional storage information into misc section

@@ -19,7 +19,6 @@
 
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
-import java.net.MalformedURLException;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Random;
@@ -70,16 +69,10 @@ public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements 
     @Override
     protected void addDataObjectsToSip(SIPBuilder sipBuilder, List<AcquisitionFile> acqFiles) throws ModuleException {
         for (AcquisitionFile af : acqFiles) {
-            try {
-                sipBuilder.getContentInformationBuilder()
-                        .setDataObject(DataType.RAWDATA, af.getFilePath().toAbsolutePath().toUri().toURL(),
-                                       af.getChecksumAlgorithm(), af.getChecksum());
-                sipBuilder.getContentInformationBuilder().setSyntax(af.getFileInfo().getMimeType());
-                sipBuilder.addContentInformation();
-            } catch (MalformedURLException e) {
-                LOGGER.error(e.getMessage(), e);
-                throw new ModuleException(e.getMessage());
-            }
+            sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, af.getFilePath().toAbsolutePath(),
+                                                                    af.getChecksumAlgorithm(), af.getChecksum());
+            sipBuilder.getContentInformationBuilder().setSyntax(af.getFileInfo().getMimeType());
+            sipBuilder.addContentInformation();
         }
     }
 
