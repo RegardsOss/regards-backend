@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.order.service;
 
 import javax.annotation.PostConstruct;
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;

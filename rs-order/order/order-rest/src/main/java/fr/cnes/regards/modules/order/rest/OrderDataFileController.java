@@ -50,7 +50,7 @@ import io.jsonwebtoken.MalformedJwtException;
 @RequestMapping("")
 public class OrderDataFileController implements IResourceController<OrderDataFile> {
 
-    public static final String ORDERS_AIPS_AIP_ID_FILES_ID = "/orders/aips/{aipId}/files/{id}";
+    public static final String ORDERS_AIPS_AIP_ID_FILES_ID = "/orders/aips/{aipId}/files/{dataFileId}";
 
     public static final String ORDERS_FILES_DATA_FILE_ID = "/orders/files/{dataFileId}";
 
@@ -112,8 +112,8 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
             role = DefaultRole.PUBLIC)
     @RequestMapping(method = RequestMethod.GET, path = ORDERS_AIPS_AIP_ID_FILES_ID)
     public ResponseEntity<StreamingResponseBody> publicDownloadFile(@PathVariable("aipId") String aipId,
-            @PathVariable("id") Long dataFileId, @RequestParam(name = IOrderService.ORDER_TOKEN) String token,
-            HttpServletResponse response) throws NoSuchElementException, IOException {
+            @PathVariable("dataFileId") Long dataFileId, @RequestParam(name = IOrderService.ORDER_TOKEN) String token,
+            HttpServletResponse response) throws NoSuchElementException {
         OrderDataFile dataFile;
         String user;
         String role;

@@ -64,6 +64,9 @@ public class OrderConfiguration {
     public ISearchClient searchClient() {
         ISearchClient searchClient = Mockito.mock(ISearchClient.class);
         DocFilesSummary summary = new DocFilesSummary();
+        summary.addDocumentsCount(0l);
+        summary.addFilesCount(0l);
+        summary.addFilesSize(0l);
         Mockito.when(searchClient.computeDatasetsSummary(Mockito.anyMap(), Mockito.anyString(), Mockito.anyVararg()))
                 .thenReturn(ResponseEntity.ok(summary));
         return searchClient;
