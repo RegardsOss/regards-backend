@@ -77,7 +77,7 @@ public class BasketSelectionRequest {
             ipIdsOpenSearch = ipIds.stream().map(ipId -> "ipId:\"" + ipId + "\"").collect(Collectors.joining(" OR "));
         } else if (selectAllOpenSearchRequest == null) {
             throw new BadBasketSelectionRequestException(
-                    "If opensearch request is null, at least on IP_ID must be provided");
+                    "If opensearch request is null, at least one IP_ID must be provided");
         } else { // no IpIds specified => selectAll
             return selectAllOpenSearchRequest;
         }

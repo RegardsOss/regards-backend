@@ -32,6 +32,7 @@ import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
@@ -79,6 +80,15 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
 
         orderRepository.deleteAll();
         dataFileRepository.deleteAll();
+    }
+
+    @Test
+    public void testDownloadFileFailed() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isNotFound());
+
+        performDefaultGet(OrderDataFileController.ORDERS_FILES_DATA_FILE_ID, customizer, "Should return result",
+                          6465465);
     }
 
     @Test
