@@ -132,6 +132,8 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
     private static final int WAITING_TIME_MS = 1000;
 
+    private static final String SESSION = "Session 1";
+
     private static final String CHECKSUM = "de89a907d33a9716d11765582102b2e0";
 
     @Autowired
@@ -166,7 +168,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private IPrioritizedDataStorageRepository prioritizedDataStorageRepository;
-    
+
     private PluginConfiguration catalogSecuDelegConf;
 
     @Autowired
@@ -217,10 +219,10 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
     private void initDb() throws ModuleException, IOException, URISyntaxException {
         clearDb();
-        
+
         // first of all, lets get an AIP with accessible dataObjects and real checksums
         aip = getAIP();
-        
+
         // second, lets storeAndCreate a plugin configuration of IDataStorage with the highest priority
         PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
                                                                       IDataStorage.class.getPackage().getName(),
@@ -235,9 +237,9 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
                 parameters, 0);
         dataStorageConf.setIsActive(true);
         PrioritizedDataStorage pds = prioritizedDataStorageService.create(dataStorageConf);
-        
+
         Set<Long> dataStorageIds = Sets.newHashSet(pds.getId());
-        
+
         // third, lets create a second local storage
         baseStorage2Location = new URL("file", "", Paths.get("target/AIPServiceIT/Local2").toFile().getAbsolutePath());
         Files.createDirectories(Paths.get(baseStorage2Location.toURI()));
@@ -249,7 +251,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         dsConfWithDeleteDisabled.setIsActive(true);
         pds = prioritizedDataStorageService.create(dsConfWithDeleteDisabled);
         dataStorageIds.add(pds.getId());
-        
+
         // forth, lets create a plugin configuration for IAllocationStrategy
         PluginMetaData allocationMeta = PluginUtils
                 .createPluginMetaData(DefaultMultipleAllocationStrategy.class,
@@ -262,8 +264,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
                 allocationParameter, 0);
         allocationConfiguration.setIsActive(true);
         pluginService.savePluginConfiguration(allocationConfiguration);
-        
-        
+
         PluginMetaData catalogSecuDelegMeta = PluginUtils
                 .createPluginMetaData(CatalogSecurityDelegationTestPlugin.class,
                                       CatalogSecurityDelegationTestPlugin.class.getPackage().getName(),
@@ -518,7 +519,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
     @Test
     @Requirements({ @Requirement("REGARDS_DSL_STO_ARC_100") })
-    public void testDeleteSip() throws ModuleException, InterruptedException, MalformedURLException  {
+    public void testDeleteSip() throws ModuleException, InterruptedException, MalformedURLException {
 
         dsConfWithDeleteDisabled.getParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION)
                 .setValue(Boolean.TRUE.toString());
@@ -533,21 +534,21 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         AIP newAip = getAIP();
         newAip.setSipId(aip.getSipId());
         storeAIP(newAip, true);
-        
+
         // delete the two AIP with the same sipId
         aipService.deleteAipFromSip(aip.getSipId());
 
         Thread.sleep(5000);
-        
+
         boolean exceptionThrow = false;
-        
+
         // the data files should be deleted
         try {
             aipService.getAIPDataFile(aipIpId, CHECKSUM);
         } catch (EntityNotFoundException | IOException e) {
-            exceptionThrow=true;
+            exceptionThrow = true;
         }
-        
+
         Assert.assertTrue(exceptionThrow);
 
         // delete the AIP metadata
@@ -621,9 +622,8 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
                 new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, getDefaultTenant(), UUID.randomUUID(), 1),
                 null, EntityType.DATA, SESSION);
 
-        String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
-        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5",
-                                                                CHECKSUM);
+        Path path = Paths.get("src", "test", "resources", "data.txt");
+        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, path, "MD5", CHECKSUM);
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", MimeType.valueOf("text/plain"));
         aipBuilder.addContentInformation();
         aipBuilder.getPDIBuilder().setAccessRightInformation("public");
