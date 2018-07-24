@@ -171,6 +171,6 @@ public class JobInfoService implements IJobInfoService {
 
     @Override
     public Long retrieveJobsCount(String className, JobStatus... statuses) {
-        return jobInfoRepository.countByClassNameAndByStatusStatusIn(className, statuses);
+        return jobInfoRepository.countByClassNameAndStatusStatusIn(className, statuses);
     }
 }

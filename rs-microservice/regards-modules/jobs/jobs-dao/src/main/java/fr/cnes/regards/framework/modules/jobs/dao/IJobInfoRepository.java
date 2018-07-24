@@ -66,7 +66,7 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
     /**
      * Count the number of jobs with provided statuses
      */
-    Long countByClassNameAndByStatusStatusIn(String className, JobStatus... statuses);
+    Long countByClassNameAndStatusStatusIn(String className, JobStatus... statuses);
 
     Long countByStatusStatusIn(JobStatus... statuses);
 
