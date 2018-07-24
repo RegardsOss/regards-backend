@@ -7,7 +7,7 @@
     "features": [
         {
             "type": "Feature",
-            "id": "sipId1",
+            "id": "sipId31",
             "ipType": "DATA",
             "geometry": null,
             "properties": {
@@ -39,7 +39,7 @@
         },
         {
             "type": "Feature",
-            "id": "sipId1",
+            "id": "sipId32",
             "geometry": null,
             "properties": {
                 "contentInformations": [

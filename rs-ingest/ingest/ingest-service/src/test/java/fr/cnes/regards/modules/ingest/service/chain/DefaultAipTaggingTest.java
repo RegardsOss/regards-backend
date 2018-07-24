@@ -114,7 +114,8 @@ public class DefaultAipTaggingTest {
         String sipId = "sipId1";
         String filename = "test.netcdf";
         String md5 = "plifplafplouf";
-        AIPBuilder builder = new AIPBuilder(UniformResourceName.fromString(urn), sipId, EntityType.DATA);
+        String session = "session 1";
+        AIPBuilder builder = new AIPBuilder(UniformResourceName.fromString(urn), sipId, EntityType.DATA, session);
         builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("target", filename), md5);
         builder.addContentInformation();
         AIP single = builder.build();

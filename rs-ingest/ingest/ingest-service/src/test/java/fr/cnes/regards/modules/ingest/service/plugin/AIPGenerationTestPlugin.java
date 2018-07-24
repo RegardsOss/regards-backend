@@ -50,7 +50,7 @@ public class AIPGenerationTestPlugin implements IAipGeneration {
         if (AIPGenerationTestPlugin.class.equals(errorSimulator.getSimulateErrorForStep())) {
             throw new AIPGenerationException("Simulated exception for step AIPGenerationTestPlugin");
         }
-        AIPBuilder builder = new AIPBuilder(ipId, sipId, EntityType.DATA);
+        AIPBuilder builder = new AIPBuilder(ipId, sipId, EntityType.DATA, "session 1");
         // Propagate BBOX
         if (sip.getBbox().isPresent()) {
             builder.setBbox(sip.getBbox().get(), sip.getCrs().orElse(null));

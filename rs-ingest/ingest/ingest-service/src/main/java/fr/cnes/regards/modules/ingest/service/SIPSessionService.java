@@ -84,7 +84,7 @@ public class SIPSessionService implements ISIPSessionService {
 
     /**
      * Create a {@link SIPSession} for the session id.
-     * @param sessionId
+     * @param session
      * @return {@link SIPSession}
      */
     private SIPSession addSessionSipInformations(SIPSession session) {
@@ -98,12 +98,15 @@ public class SIPSessionService implements ISIPSessionService {
                                             Sets.newHashSet(SIPState.AIP_CREATED, SIPState.STORED, SIPState.INDEXED,
                                                             SIPState.INCOMPLETE, SIPState.STORE_ERROR));
         long errorSipsCount = sipRepository.countBySessionIdAndStateIn(session.getId(), Sets
-                .newHashSet(SIPState.AIP_GEN_ERROR, SIPState.REJECTED, SIPState.STORE_ERROR));
+                .newHashSet(SIPState.AIP_GEN_ERROR, SIPState.REJECTED, SIPState.STORE_ERROR, SIPState.INVALID));
+        long deletedSipsCount = sipRepository.countBySessionIdAndStateIn(session.getId(), Sets
+                .newHashSet(SIPState.DELETED));
         session.setErrorSipsCount(errorSipsCount);
         session.setGeneratedSipsCount(generatedSipsCount);
         session.setIndexedSipsCount(indexedSipsCount);
         session.setStoredSipsCount(storedSipsCount);
         session.setSipsCount(sipsCount);
+        session.setDeletedSipsCount(deletedSipsCount);
         return session;
     }
 

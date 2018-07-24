@@ -18,42 +18,29 @@
  */
 package fr.cnes.regards.modules.ingest.service.plugin;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.SIP;
+import fr.cnes.regards.modules.ingest.domain.exception.AIPGenerationException;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
 import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 
 /**
- * Default AIP generation plugin. The plugin automatically build a single AIP based on SIP information.
- *
- * @author Marc Sordi
+ * Fake plugin for the processing chains.
+ * 
+ * @author Christophe Mertz
  */
-@Plugin(author = "REGARDS Team", description = "Default single AIP generation", id = "DefaultSingleAIPGeneration",
+@Plugin(author = "REGARDS Team", description = "Fake plugin for AIP generation", id = "FakeAIPGenerationTestPlugin",
         version = "1.0.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
-public class DefaultSingleAIPGeneration implements IAipGeneration {
+public class FakeAIPGenerationTestPlugin implements IAipGeneration {
 
     @Override
-    public List<AIP> generate(SIP sip, UniformResourceName ipId, final String sipId) {
+    public List<AIP> generate(SIP sip, UniformResourceName ipId, String sipId) throws AIPGenerationException {
 
-        AIPBuilder builder = new AIPBuilder(ipId, sipId, EntityType.DATA, sip.getProperties().getPdi().getProvenanceInformation().getSession());
-        // Propagate BBOX
-        if (sip.getBbox().isPresent()) {
-            builder.setBbox(sip.getBbox().get(), sip.getCrs().orElse(null));
-        }
-        // Propagate geometry
-        builder.setGeometry(sip.getGeometry());
-        // Propagate properties
-        AIP aip = builder.build(sip.getProperties());
-
-        List<AIP> aips = new ArrayList<>();
-        aips.add(aip);
-        return aips;
+        return null;
     }
+
 }

@@ -117,19 +117,33 @@ public class IngestProcessingJob extends AbstractJob<Void> {
             // Step 3 : required AIP generation
             IProcessingStep<SIP, List<AIP>> generationStep = new GenerationStep(this);
             List<AIP> aips = generationStep.execute(sip);
-            // Step 4 : optional AIP tagging
+            // Step 4 : Save the session inside the AIP - no plugin involved
+            aips = setSessionOnAips(aips);
+            // Step 5 : optional AIP tagging
             IProcessingStep<List<AIP>, Void> taggingStep = new TaggingStep(this);
             taggingStep.execute(aips);
-            // Step 5
+            // Step 6
             IProcessingStep<List<AIP>, Void> storeStep = new StoreStep(this);
             storeStep.execute(aips);
-            // Step 6 : optional postprocessing
+            // Step 7 : optional postprocessing
             IProcessingStep<SIP, Void> postprocessingStep = new PostprocessingStep(this);
             postprocessingStep.execute(sip);
         } catch (ProcessingStepException e) {
             super.logger.error("Business error", e);
             throw new JobRuntimeException(e);
         }
+    }
+
+    /**
+     * Save the current session inside AIPs provenance info
+     * @param aips list of aips
+     * @return the updated list
+     */
+    private List<AIP> setSessionOnAips(List<AIP> aips) {
+        for (AIP aip : aips) {
+            aip.getProperties().getPdi().getProvenanceInformation().setSession(entity.getSession().getId());
+        }
+        return aips;
     }
 
     @Override
