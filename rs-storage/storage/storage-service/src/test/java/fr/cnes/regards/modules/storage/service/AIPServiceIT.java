@@ -104,8 +104,10 @@ import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultMultipleAllocationStrategy;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
+import fr.cnes.regards.modules.storage.service.plugins.CatalogSecurityDelegationTestPlugin;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -130,7 +132,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
     private static final int WAITING_TIME_MS = 1000;
 
-    private static final String SESSION = "Session 1";
+    private static final String CHECKSUM = "de89a907d33a9716d11765582102b2e0";
 
     @Autowired
     private IAIPService aipService;
@@ -164,6 +166,8 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private IPrioritizedDataStorageRepository prioritizedDataStorageRepository;
+    
+    private PluginConfiguration catalogSecuDelegConf;
 
     @Autowired
     private IJobInfoService jobInfoService;
@@ -213,8 +217,10 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
     private void initDb() throws ModuleException, IOException, URISyntaxException {
         clearDb();
+        
         // first of all, lets get an AIP with accessible dataObjects and real checksums
         aip = getAIP();
+        
         // second, lets storeAndCreate a plugin configuration of IDataStorage with the highest priority
         PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
                                                                       IDataStorage.class.getPackage().getName(),
@@ -229,7 +235,9 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
                 parameters, 0);
         dataStorageConf.setIsActive(true);
         PrioritizedDataStorage pds = prioritizedDataStorageService.create(dataStorageConf);
+        
         Set<Long> dataStorageIds = Sets.newHashSet(pds.getId());
+        
         // third, lets create a second local storage
         baseStorage2Location = new URL("file", "", Paths.get("target/AIPServiceIT/Local2").toFile().getAbsolutePath());
         Files.createDirectories(Paths.get(baseStorage2Location.toURI()));
@@ -241,6 +249,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         dsConfWithDeleteDisabled.setIsActive(true);
         pds = prioritizedDataStorageService.create(dsConfWithDeleteDisabled);
         dataStorageIds.add(pds.getId());
+        
         // forth, lets create a plugin configuration for IAllocationStrategy
         PluginMetaData allocationMeta = PluginUtils
                 .createPluginMetaData(DefaultMultipleAllocationStrategy.class,
@@ -253,6 +262,14 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
                 allocationParameter, 0);
         allocationConfiguration.setIsActive(true);
         pluginService.savePluginConfiguration(allocationConfiguration);
+        
+        
+        PluginMetaData catalogSecuDelegMeta = PluginUtils
+                .createPluginMetaData(CatalogSecurityDelegationTestPlugin.class,
+                                      CatalogSecurityDelegationTestPlugin.class.getPackage().getName(),
+                                      ISecurityDelegation.class.getPackage().getName());
+        catalogSecuDelegConf = new PluginConfiguration(catalogSecuDelegMeta, "AIPServiceIT");
+        catalogSecuDelegConf = pluginService.savePluginConfiguration(catalogSecuDelegConf);
     }
 
     private void waitForJobsFinished() throws InterruptedException {
@@ -486,7 +503,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
         aipService.removeDeletedAIPMetadatas();
 
-        // Wait for AIP deleteion
+        // Wait for AIP deletion
         Set<AIPEvent> events = waitForEventsReceived(AIPState.DELETED, 1);
         Assert.assertEquals("There should been only one AIP delete event ", 1, events.size());
         Assert.assertFalse("AIP should not be referenced in the database", aipDao.findOneByIpId(aipIpId).isPresent());
@@ -499,7 +516,50 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         }
     }
 
-    @Test(timeout = 30000)
+    @Test
+    @Requirements({ @Requirement("REGARDS_DSL_STO_ARC_100") })
+    public void testDeleteSip() throws ModuleException, InterruptedException, MalformedURLException  {
+
+        dsConfWithDeleteDisabled.getParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION)
+                .setValue(Boolean.TRUE.toString());
+        pluginService.updatePluginConfiguration(dsConfWithDeleteDisabled);
+
+        // store a first AIP
+        aip.setSipId("hello");
+        storeAIP(aip, true);
+        String aipIpId = aip.getId().toString();
+
+        // store a second AIP with the same sipId
+        AIP newAip = getAIP();
+        newAip.setSipId(aip.getSipId());
+        storeAIP(newAip, true);
+        
+        // delete the two AIP with the same sipId
+        aipService.deleteAipFromSip(aip.getSipId());
+
+        Thread.sleep(5000);
+        
+        boolean exceptionThrow = false;
+        
+        // the data files should be deleted
+        try {
+            aipService.getAIPDataFile(aipIpId, CHECKSUM);
+        } catch (EntityNotFoundException | IOException e) {
+            exceptionThrow=true;
+        }
+        
+        Assert.assertTrue(exceptionThrow);
+
+        // delete the AIP metadata
+        aipService.removeDeletedAIPMetadatas();
+
+        // Wait for AIP deletion events
+        Set<AIPEvent> events = waitForEventsReceived(AIPState.DELETED, 2);
+        Assert.assertEquals("There should been only one AIP delete event ", 2, events.size());
+        Assert.assertFalse("AIP should not be referenced in the database", aipDao.findOneByIpId(aipIpId).isPresent());
+    }
+
+    @Test
     public void testDeleteErrorAip() throws InterruptedException, ModuleException, URISyntaxException {
         dsConfWithDeleteDisabled.getParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION)
                 .setValue(Boolean.TRUE.toString());
@@ -561,9 +621,9 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
                 new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, getDefaultTenant(), UUID.randomUUID(), 1),
                 null, EntityType.DATA, SESSION);
 
-        Path path = Paths.get("src", "test", "resources", "data.txt");
-        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, path, "MD5",
-                                                                "de89a907d33a9716d11765582102b2e0");
+        String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
+        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5",
+                                                                CHECKSUM);
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", MimeType.valueOf("text/plain"));
         aipBuilder.addContentInformation();
         aipBuilder.getPDIBuilder().setAccessRightInformation("public");

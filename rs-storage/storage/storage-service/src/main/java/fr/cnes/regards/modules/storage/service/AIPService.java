@@ -243,6 +243,9 @@ public class AIPService implements IAIPService {
     @Autowired
     private ICachedFileService cachedFileService;
 
+    @Autowired
+    private IDataStorageService datastorageService;
+
     /**
      * {@link Validator} instance
      */
