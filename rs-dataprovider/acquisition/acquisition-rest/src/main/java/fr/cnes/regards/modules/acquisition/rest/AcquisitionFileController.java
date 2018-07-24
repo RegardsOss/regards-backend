@@ -50,6 +50,16 @@ public class AcquisitionFileController implements IResourceController<Acquisitio
 
     public static final String TYPE_PATH = "/acquisition-files";
 
+    public static final String REQUEST_PARAM_FILEPATH = "filePath";
+
+    public static final String REQUEST_PARAM_STATE = "state";
+
+    public static final String REQUEST_PARAM_PRODUCT_ID = "productId";
+
+    public static final String REQUEST_PARAM_CHAIN_ID = "chainId";
+
+    public static final String REQUEST_PARAM_FROM = "from";
+
     @Autowired
     private IAcquisitionFileService fileService;
 
@@ -72,11 +82,11 @@ public class AcquisitionFileController implements IResourceController<Acquisitio
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Search for acquisition files", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<PagedResources<Resource<AcquisitionFile>>> search(
-            @RequestParam(name = "filePath", required = false) String filePath,
-            @RequestParam(name = "state", required = false) List<AcquisitionFileState> state,
-            @RequestParam(name = "productId", required = false) Long productId,
-            @RequestParam(name = "chainId", required = false) Long chainId,
-            @RequestParam(name = "from",
+            @RequestParam(name = REQUEST_PARAM_FILEPATH, required = false) String filePath,
+            @RequestParam(name = REQUEST_PARAM_STATE, required = false) List<AcquisitionFileState> state,
+            @RequestParam(name = REQUEST_PARAM_PRODUCT_ID, required = false) Long productId,
+            @RequestParam(name = REQUEST_PARAM_CHAIN_ID, required = false) Long chainId,
+            @RequestParam(name = REQUEST_PARAM_FROM,
                     required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
             Pageable pageable, PagedResourcesAssembler<AcquisitionFile> assembler) {
         Page<AcquisitionFile> files = fileService.search(filePath, state, productId, chainId, from, pageable);

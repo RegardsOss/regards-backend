@@ -40,6 +40,7 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Type;
+import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
@@ -92,6 +93,7 @@ public class AcquisitionFile {
     /**
      * Acquisition date of the data file
      */
+    @NotNull(message = "Acquisition date is required")
     @Column(name = "acquisition_date")
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime acqDate;
@@ -99,6 +101,7 @@ public class AcquisitionFile {
     /**
      * Data file checksum
      */
+    @NotBlank(message = "Checksum is required")
     @Column(name = "checksum", length = 255)
     private String checksum;
 
@@ -106,9 +109,11 @@ public class AcquisitionFile {
      * Algorithm used to calculate the checksum
      * see {@link MessageDigest}
      */
+    @NotBlank(message = "Checksum algorithm is required")
     @Column(name = "checksumAlgorithm", length = 16)
     private String checksumAlgorithm;
 
+    @GsonIgnore
     @NotNull(message = "Acquisition file information is required")
     @ManyToOne
     @JoinColumn(name = "acq_file_info_id", foreignKey = @ForeignKey(name = "fk_acq_file_info_id"), updatable = false)
