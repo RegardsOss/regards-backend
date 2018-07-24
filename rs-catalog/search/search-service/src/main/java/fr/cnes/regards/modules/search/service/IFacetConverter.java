@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.search.service;
 
+import java.util.List;
 import java.util.Map;
 
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
@@ -30,5 +31,5 @@ import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
  */
 public interface IFacetConverter {
 
-    Map<String, FacetType> convert(String[] propertyNames);
+    Map<String, FacetType> convert(List<String> propertyNames);
 }

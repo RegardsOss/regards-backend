@@ -23,10 +23,9 @@
 
 	<groupId>fr.cnes.regards.microservices.catalog</groupId>
 	<artifactId>bootstrap-catalog</artifactId>
-	<version>2.1.0-SNAPSHOT</version>
+	<version>3.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	
-	<name>Boostrap Catalog</name>
 	<description>Boots the Catalog microservice</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
@@ -52,7 +51,7 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-boot-parent</artifactId>
-		<version>2.1.0-SNAPSHOT</version>
+		<version>3.0.0-SNAPSHOT</version>
 		<relativePath></relativePath>
 	</parent>
 

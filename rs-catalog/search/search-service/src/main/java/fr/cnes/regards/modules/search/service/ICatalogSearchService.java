@@ -18,13 +18,16 @@
  */
 package fr.cnes.regards.modules.search.service;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
+import org.elasticsearch.search.aggregations.Aggregation;
 import org.springframework.data.domain.Pageable;
+import org.springframework.util.MultiValueMap;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
 import fr.cnes.regards.modules.entities.domain.DataObject;
@@ -32,8 +35,12 @@ import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.SearchKey;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
+import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
+import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
+import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 
 /**
  * Catalog search service interface. Service façade to DAM search module (directly included by catalog).
@@ -50,25 +57,56 @@ public interface ICatalogSearchService {
      * @return the page of elements matching the query
      * @throws SearchException when an error occurs while parsing the query
      */
-    <S, R extends IIndexable> FacetPage<R> search(Map<String, String> allParams, SearchKey<S, R> searchKey,
-            String[] facets, Pageable pageable) throws SearchException;
+    @Deprecated // Only use method with ICriterion
+    <S, R extends IIndexable> FacetPage<R> search(MultiValueMap<String, String> allParams, SearchKey<S, R> searchKey,
+            List<String> facets, Pageable pageable) throws SearchException;
 
     /**
-     * Same as previous but giving directly criterions
+     * Perform a business request on specified entity type
+     * @param criterion business criterions
+     * @param searchKey the search key containing the search type and the result type
+     * @param facets applicable facets, may be <code>null</code>
+     * @param pageable pagination properties
+     * @return the page of elements matching the criterions
      */
-    <S, R extends IIndexable> FacetPage<R> search(ICriterion criterion, SearchKey<S, R> searchKey,
-            String[] facets, Pageable pageable) throws SearchException;
+    <S, R extends IIndexable> FacetPage<R> search(ICriterion criterion, SearchKey<S, R> searchKey, List<String> facets,
+            Pageable pageable) throws SearchException;
+
+    /**
+     * Same as below but using {@link SearchType}
+     */
+    <R extends IIndexable> FacetPage<R> search(ICriterion criterion, SearchType searchType, List<String> facets,
+            Pageable pageable) throws SearchException;
 
     /**
      * Compute summary for given request
      * @param allParams OpenSearch request
      * @param searchKey search key
-     * @param datasetIpId dataset ipId concerned by the request
-     * @param fileTypes File types on which to compute summary
+     * @param dataset dataset concerned by the request
+     * @param dataTypes file types on which to compute summary
      * @return summary
      */
-    DocFilesSummary computeDatasetsSummary(Map<String, String> allParams, SimpleSearchKey<DataObject> searchKey,
-            String datasetIpId, String[] fileTypes) throws SearchException;
+    @Deprecated // Only use method with ICriterion
+    DocFilesSummary computeDatasetsSummary(MultiValueMap<String, String> allParams,
+            SimpleSearchKey<DataObject> searchKey, UniformResourceName dataset, List<DataType> dataTypes)
+            throws SearchException;
+
+    /**
+     * Compute summary for given request
+     * @param criterion business criterions
+     * @param searchKey search key
+     * @param dataset restriction to a specified dataset
+     * @param dataTypes file types on which to compute summary
+     * @return summary
+     */
+    DocFilesSummary computeDatasetsSummary(ICriterion criterion, SimpleSearchKey<DataObject> searchKey,
+            UniformResourceName dataset, List<DataType> dataTypes) throws SearchException;
+
+    /**
+     * Same as below but using {@link SearchType}
+     */
+    DocFilesSummary computeDatasetsSummary(ICriterion criterion, SearchType searchType, UniformResourceName dataset,
+            List<DataType> dataTypes) throws SearchException;
 
     /**
      * Retrieve entity
@@ -76,17 +114,53 @@ public interface ICatalogSearchService {
      * @param <E> concrete type of AbstractEntity
      * @return the entity
      */
-    <E extends AbstractEntity> E get(UniformResourceName urn)
+    <E extends AbstractEntity<?>> E get(UniformResourceName urn)
             throws EntityOperationForbiddenException, EntityNotFoundException;
 
     /**
-     * Retrieve given STRING property enumerated values (limited by maxCount, partial text contains and dataobjects
+     * Retrieve given STRING property enumerated values (limited by maxCount, partial text contains and
      * openSearch request from allParams (as usual)).
      * @param propertyPath concerned STRING property path
      * @param allParams opensearch request
      * @param partialText text that property should contains (can be null)
      * @param maxCount maximum result count
      */
-    List<String> retrieveEnumeratedPropertyValues(Map<String, String> allParams, SimpleSearchKey<DataObject> searchKey,
-            String propertyPath, int maxCount, String partialText) throws SearchException;
+    @Deprecated // Only use method with ICriterion
+    <T extends IIndexable> List<String> retrieveEnumeratedPropertyValues(MultiValueMap<String, String> allParams,
+            SearchKey<T, T> searchKey, String propertyPath, int maxCount, String partialText)
+            throws SearchException, OpenSearchUnknownParameter;
+
+    /**
+     * Retrieve property values for specified property name
+     * @param criterion business criterions
+     * @param searchKey the search key containing the search type and the result type
+     * @param propertyPath target propertu
+     * @param maxCount maximum result count
+     * @param partialText text that property should contains (can be null)
+     */
+    <T extends IIndexable> List<String> retrieveEnumeratedPropertyValues(ICriterion criterion,
+            SearchKey<T, T> searchKey, String propertyPath, int maxCount, String partialText)
+            throws SearchException, OpenSearchUnknownParameter;
+
+    /**
+     * Retrieve property values for specified property name
+     * @param criterion business criterions
+     * @param searchType the search type containing the search type and the result type
+     * @param propertyPath target propertu
+     * @param maxCount maximum result count
+     * @param partialText text that property should contains (can be null)
+     */
+    List<String> retrieveEnumeratedPropertyValues(ICriterion criterion, SearchType searchType, String propertyPath,
+            int maxCount, String partialText) throws SearchException, OpenSearchUnknownParameter;
+
+    /**
+     * Retrieve statistics for given attribute from a search context with search criterions and searcType.
+     * @param criterion {@link ICriterion}s for search context
+     * @param searchType {@link SearchType} for searc context
+     * @param attributes {@link AttributeModel}s to retrieve statistics on.
+     * @return {@link QueryableAttribute}s for each attribute
+     * @throws SearchException
+     */
+    List<Aggregation> retrievePropertiesStats(ICriterion criterion, SearchType searchType,
+            Collection<QueryableAttribute> attributes) throws SearchException;
 }

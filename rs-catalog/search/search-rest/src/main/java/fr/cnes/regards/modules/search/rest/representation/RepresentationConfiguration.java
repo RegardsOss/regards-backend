@@ -29,6 +29,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -62,6 +63,7 @@ public class RepresentationConfiguration implements BeanFactoryAware, Applicatio
     /**
      * Bean factory
      */
+    @SuppressWarnings("unused")
     private BeanFactory beanFactory;
 
     /**
@@ -95,7 +97,8 @@ public class RepresentationConfiguration implements BeanFactoryAware, Applicatio
      * @throws ClassNotFoundException
      * @throws InstantiationException
      */
-    public void configureRepresentationMessageConverter(
+    @SuppressWarnings({ "unused", "deprecation" })
+    private void configureRepresentationMessageConverter(
             RepresentationHttpMessageConverter representationHttpMessageConverter)
             throws IllegalAccessException, ClassNotFoundException, InstantiationException {
         LOG.info("starting to configure http message converters");
@@ -117,13 +120,10 @@ public class RepresentationConfiguration implements BeanFactoryAware, Applicatio
             // that's ok it just means that the configuration is not there, so we have to create it
         }
         // create a pluginConfiguration for GeoJson
-        PluginMetaData geoJsonMeta = PluginUtils.createPluginMetaData(GeoJsonRepresentation.class,
-                                                                      Lists.newArrayList(IRepresentation.class
-                                                                                                 .getPackage()
-                                                                                                 .getName(),
-                                                                                         GeoJsonRepresentation.class
-                                                                                                 .getPackage()
-                                                                                                 .getName()));
+        PluginMetaData geoJsonMeta = PluginUtils
+                .createPluginMetaData(GeoJsonRepresentation.class,
+                                      Lists.newArrayList(IRepresentation.class.getPackage().getName(),
+                                                         GeoJsonRepresentation.class.getPackage().getName()));
 
         PluginConfiguration geoJsonConf = new PluginConfiguration(geoJsonMeta, DEFAULT_GEO_JSON_CONFIGURATION_LABEL);
 
@@ -139,15 +139,16 @@ public class RepresentationConfiguration implements BeanFactoryAware, Applicatio
         this.beanFactory = beanFactory;
     }
 
+    @Deprecated // Use search engine plugin instead
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        RepresentationHttpMessageConverter representationHttpMessageConverter = beanFactory
-                .getBean(RepresentationHttpMessageConverter.class);
-        try {
-            configureRepresentationMessageConverter(representationHttpMessageConverter);
-        } catch (IllegalAccessException | ClassNotFoundException | InstantiationException e) {
-            LOG.error("Could not initialize RepresentationHttpMessageConverter", e);
-            Runtime.getRuntime().exit(1);
-        }
+        // RepresentationHttpMessageConverter representationHttpMessageConverter = beanFactory
+        // .getBean(RepresentationHttpMessageConverter.class);
+        // try {
+        // configureRepresentationMessageConverter(representationHttpMessageConverter);
+        // } catch (IllegalAccessException | ClassNotFoundException | InstantiationException e) {
+        // LOG.error("Could not initialize RepresentationHttpMessageConverter", e);
+        // Runtime.getRuntime().exit(1);
+        // }
     }
 }

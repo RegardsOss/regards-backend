@@ -94,9 +94,10 @@ public class SearchClientTestUtils {
      * A dummy list of facets
      */
     public static final List<String> FACETS = Lists
-            .newArrayList(INTEGER_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.PROPERTIES), STRING_ATTRIBUTE_NAME,
-                          DATE_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.PROPERTIES),
-                          EXTRA_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.PROPERTIES));
+            .newArrayList(INTEGER_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.FEATURE_PROPERTIES),
+                          STRING_ATTRIBUTE_NAME,
+                          DATE_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.FEATURE_PROPERTIES),
+                          EXTRA_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.FEATURE_PROPERTIES));
 
     /**
      * The dummy list of facets as array

@@ -30,12 +30,12 @@ import org.springframework.http.MediaType;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
-import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources;
-import fr.cnes.regards.modules.search.rest.representation.IRepresentation;
+import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResources;
 
 /**
  * @author Sylvain Vissiere-Guerinet
  */
+@Deprecated // Use search engine instead
 @Plugin(author = "REGARDS Team", contact = "regards@c-s.fr",
         description = "represnetation plugin for test purpose, doesn't even really serialize to markdown",
         id = "MarkdownRepresentation", licence = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss",

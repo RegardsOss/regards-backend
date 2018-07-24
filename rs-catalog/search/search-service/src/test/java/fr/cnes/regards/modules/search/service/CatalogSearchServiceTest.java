@@ -30,13 +30,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.dataaccess.client.IAccessRightClient;
 import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
@@ -112,7 +113,7 @@ public class CatalogSearchServiceTest {
 
         // Instanciate the tested class
         catalogSearchService = new CatalogSearchService(searchService, openSearchService, accessRightFilter,
-                                                        facetConverter);
+                facetConverter);
     }
 
     /**
@@ -126,8 +127,9 @@ public class CatalogSearchServiceTest {
         // Prepare test
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(EntityType.DATA);
         searchKey.setSearchIndex(SampleDataUtils.TENANT);
-        Map<String, String> q = new HashMap<>();
-        q.put("q=", URLEncoder.encode(SampleDataUtils.QUERY, "UTF-8"));
+        MultiValueMap<String, String> q = new LinkedMultiValueMap<>();
+        q.add("q=", URLEncoder.encode(SampleDataUtils.QUERY, "UTF-8"));
+
         PagedResourcesAssembler<DataObject> assembler = SampleDataUtils.ASSEMBLER_DATAOBJECT;
         Pageable pageable = SampleDataUtils.PAGEABLE;
 
@@ -161,8 +163,9 @@ public class CatalogSearchServiceTest {
         // Prepare test
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(EntityType.DATA);
         searchKey.setSearchIndex(SampleDataUtils.TENANT);
-        Map<String, String> q = new HashMap<>();
-        q.put("q=", "whatever");
+        MultiValueMap<String, String> q = new LinkedMultiValueMap<>();
+        q.add("q=", "whatever");
+
         Map<String, FacetType> facets = new HashMap<>();
         PagedResourcesAssembler<DataObject> assembler = SampleDataUtils.ASSEMBLER_DATAOBJECT;
         Pageable pageable = SampleDataUtils.PAGEABLE;

@@ -32,7 +32,7 @@ import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.entities.domain.AbstractEntity;
-import fr.cnes.regards.modules.search.rest.assembler.resource.FacettedPagedResources;
+import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResources;
 
 /**
  * Representation plugin allowing to serialize data to GeoJson format
