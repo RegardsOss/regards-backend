@@ -46,6 +46,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.oais.adapter.InformationPackageMap;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
+import fr.cnes.regards.modules.storage.domain.plugin.DispatchErrors;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 
@@ -155,7 +156,8 @@ public class AIPMiscAllocationStrategyPlugin implements IAllocationStrategy {
     }
 
     @Override
-    public Multimap<Long, StorageDataFile> dispatch(Collection<StorageDataFile> dataFilesToHandle) {
+    public Multimap<Long, StorageDataFile> dispatch(Collection<StorageDataFile> dataFilesToHandle,
+            DispatchErrors errors) {
         Multimap<Long, StorageDataFile> dispatched = HashMultimap.create();
         for (StorageDataFile file : dataFilesToHandle) {
             InformationPackageMap misc = file.getAip().getProperties().getMiscInformation();
@@ -164,11 +166,13 @@ public class AIPMiscAllocationStrategyPlugin implements IAllocationStrategy {
                 // 1. Read storage information from misc section
                 Set<AIPMiscStorageInformation> infos = readMiscStorageInformations(misc);
                 // 2. Select the unique plugin configuration for each storage defined
-                infos.forEach(info -> pluginConfigurations.addAll(getPluginConfsForFile(info, file)));
+                infos.forEach(info -> pluginConfigurations.addAll(getPluginConfsForFile(info, file, errors)));
                 // 3. Handle special online mandatory files
                 handleMandatoryOnlineFile(file, pluginConfigurations);
                 // 4. Add each plugin conf to the global result map
                 pluginConfigurations.forEach(pluginConf -> dispatched.put(pluginConf.getId(), file));
+            } else {
+                errors.addDispatchError(file, "Unable to define the storage information from the miscInformation bloc");
             }
         }
         return dispatched;
@@ -179,19 +183,28 @@ public class AIPMiscAllocationStrategyPlugin implements IAllocationStrategy {
      * to the given {@link AIPMiscStorageInformation}.
      * @param info {@link AIPMiscStorageInformation} storage information
      * @param file {link StorageDataFile} file to dispatc
+     * @param errors {@link DispatchErrors} error during dispatch process
      */
-    private List<PluginConfiguration> getPluginConfsForFile(AIPMiscStorageInformation info, StorageDataFile file) {
+    private List<PluginConfiguration> getPluginConfsForFile(AIPMiscStorageInformation info, StorageDataFile file,
+            DispatchErrors errors) {
         List<PluginConfiguration> pluginConfs = Lists.newArrayList();
         if (info.getPluginId() != null) {
             // 1. Check that pluginId match an existing plugin
             PluginMetaData plugin = pluginService.getPluginMetaDataById(info.getPluginId());
             if (plugin == null) {
-                LOG.error("StorageDataFile \"{}\" not dispatched. Cause : pluginId {} does  not match an existing plugin",
-                          file.getName(), info.getPluginId());
+                String failureCause = String
+                        .format("StorageDataFile \"%s\" not dispatched. Cause : pluginId %s does  not match an existing plugin",
+                                file.getName(), info.getPluginId());
+                errors.addDispatchError(file, failureCause);
+                LOG.error(failureCause);
                 return pluginConfs;
             }
         } else {
-            LOG.error("StorageDataFile \"{}\" not dispatched. Cause : pluginId to use is not defined", file.getName());
+            String failureCause = String
+                    .format("StorageDataFile \"%s\" not dispatched. Cause : pluginId to use is not defined",
+                            file.getName());
+            errors.addDispatchError(file, failureCause);
+            LOG.error(failureCause);
             return pluginConfs;
         }
 
@@ -205,8 +218,11 @@ public class AIPMiscAllocationStrategyPlugin implements IAllocationStrategy {
             if (confs.size() == 1) {
                 addPluginConfiguration(info, file, confs.get(0), pluginConfs);
             } else {
-                LOG.error("StorageDataFile \"{}\" not dispatched. Cause : Unable to determine the plugin configuration to use for plugin id \"{}\"",
-                          file.getName(), info.getPluginId());
+                String failureCause = String
+                        .format("StorageDataFile \"%s\" not dispatched. Cause : Unable to determine the plugin configuration to use for plugin id \"%s\"",
+                                file.getName(), info.getPluginId());
+                LOG.error(failureCause);
+                errors.addDispatchError(file, failureCause);
             }
         } else {
             // For each configured conf, check if the conf exists and is active, then dispatch StorageDataFile with each ones.

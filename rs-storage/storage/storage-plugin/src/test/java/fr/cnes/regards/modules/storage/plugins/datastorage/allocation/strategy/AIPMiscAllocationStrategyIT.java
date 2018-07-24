@@ -63,6 +63,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
+import fr.cnes.regards.modules.storage.domain.plugin.DispatchErrors;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
@@ -201,7 +202,7 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
         PluginConfiguration allocationStrategyConf = initAllocation("allocation", mapping);
 
         AIPMiscAllocationStrategyPlugin allocationStrategy = pluginService.getPlugin(allocationStrategyConf.getId());
-        Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles);
+        Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles, new DispatchErrors());
         Assert.assertTrue(result.containsEntry(nearConf1.getId(), dataFile1));
         Assert.assertFalse(result.containsKey(nearConf2.getId()));
         Assert.assertTrue(result.containsEntry(localConf1.getId(), dataFile1));
@@ -235,7 +236,7 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
         PluginConfiguration allocationStrategyConf = initAllocation("allocation", mapping);
 
         AIPMiscAllocationStrategyPlugin allocationStrategy = pluginService.getPlugin(allocationStrategyConf.getId());
-        Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles);
+        Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles, new DispatchErrors());
         Assert.assertTrue(result.containsEntry(nearConf1.getId(), dataFile1));
         Assert.assertTrue(result.containsEntry(nearConf1.getId(), dataFile2));
         Assert.assertFalse(result.containsKey(nearConf2.getId()));
@@ -262,7 +263,7 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
         PluginConfiguration allocationStrategyConf = initAllocation("allocation", null);
 
         AIPMiscAllocationStrategyPlugin allocationStrategy = pluginService.getPlugin(allocationStrategyConf.getId());
-        Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles);
+        Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles, new DispatchErrors());
         Assert.assertTrue(result.containsEntry(nearConf1.getId(), dataFile1));
         Assert.assertTrue(result.containsEntry(localConf1.getId(), dataFile1));
         Assert.assertTrue(result.containsEntry(nearConf1.getId(), dataFile2));
@@ -287,7 +288,7 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
         PluginConfiguration allocationStrategyConf = initAllocation("allocation", null);
 
         AIPMiscAllocationStrategyPlugin allocationStrategy = pluginService.getPlugin(allocationStrategyConf.getId());
-        Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles);
+        Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles, new DispatchErrors());
         Assert.assertFalse(result.containsKey(nearConf1.getId()));
         Assert.assertFalse(result.containsKey(nearConf2.getId()));
         Assert.assertTrue(result.containsEntry(localConf.getId(), dataFile1));
@@ -313,7 +314,7 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
         PluginConfiguration allocationStrategyConf = initAllocation("allocation", null);
 
         AIPMiscAllocationStrategyPlugin allocationStrategy = pluginService.getPlugin(allocationStrategyConf.getId());
-        Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles);
+        Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles, new DispatchErrors());
         Assert.assertTrue(result.isEmpty());
     }
 }

@@ -40,6 +40,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
+import fr.cnes.regards.modules.storage.domain.plugin.DispatchErrors;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
@@ -118,7 +119,8 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
     }
 
     @Override
-    public Multimap<Long, StorageDataFile> dispatch(Collection<StorageDataFile> dataFilesToHandle) {
+    public Multimap<Long, StorageDataFile> dispatch(Collection<StorageDataFile> dataFilesToHandle,
+            DispatchErrors errors) {
         Multimap<Long, StorageDataFile> dispatch = HashMultimap.create();
         // First lets construct a map, which is way better to manipulate
         Map<String, Long> valueConfIdMap = propertyDataStorageMappings.stream().collect(Collectors
@@ -134,19 +136,22 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
                     String propertyValue = JsonPath.read(gson.toJson(dataFile.getAip()), propertyPath);
                     Long chosenOne = valueConfIdMap.get(propertyValue);
                     if (chosenOne == null) {
-                        LOG.error(String.format(
-                                                "File(urls: %s) could not be associated to any data storage the allocation strategy do not have any mapping for the value of the property.",
-                                                dataFile.getUrls()));
+                        String failureCause = String
+                                .format("File(urls: %s) could not be associated to any data storage the allocation strategy do not have any mapping for the value of the property.",
+                                        dataFile.getUrls());
+                        LOG.error(failureCause);
+                        errors.addDispatchError(dataFile, failureCause);
                     } else {
                         //This allocation strategy only allows files to be stored into 1 DataStorage
                         dataFile.increaseNotYetStoredBy();
                         dispatch.put(chosenOne, dataFile);
                     }
                 } catch (PathNotFoundException e) {
-                    LOG.error(String.format(
-                                            "File(url: %s) could not be associated to any data storage because the aip associated(ipId: %s) do not have the following property: %s",
-                                            dataFile.getUrls(), dataFile.getAip().getId(), propertyPath),
-                              e);
+                    String failureCause = String
+                            .format("File(url: %s) could not be associated to any data storage because the aip associated(ipId: %s) do not have the following property: %s",
+                                    dataFile.getUrls(), dataFile.getAip().getId(), propertyPath);
+                    LOG.error(failureCause, e);
+                    errors.addDispatchError(dataFile, failureCause);
                 }
             }
         }

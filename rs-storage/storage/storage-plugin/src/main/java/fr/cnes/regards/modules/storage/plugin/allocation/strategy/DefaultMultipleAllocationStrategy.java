@@ -27,6 +27,7 @@ import com.google.common.collect.Multimap;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
+import fr.cnes.regards.modules.storage.domain.plugin.DispatchErrors;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 
 /**
@@ -48,7 +49,8 @@ public class DefaultMultipleAllocationStrategy implements IAllocationStrategy {
     private Set<Long> dataStorageIds;
 
     @Override
-    public Multimap<Long, StorageDataFile> dispatch(Collection<StorageDataFile> dataFilesToHandle) {
+    public Multimap<Long, StorageDataFile> dispatch(Collection<StorageDataFile> dataFilesToHandle,
+            DispatchErrors errors) {
         Multimap<Long, StorageDataFile> dispatched = HashMultimap.create(dataStorageIds.size(),
                                                                          dataFilesToHandle.size());
         for (Long dataStorageId : dataStorageIds) {

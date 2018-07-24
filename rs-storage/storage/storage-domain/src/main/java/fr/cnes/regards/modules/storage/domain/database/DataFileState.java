@@ -12,6 +12,9 @@ public enum DataFileState {
      * storage process ended, successfully or not
      */
     STORED,
+    /**
+     * Error during storage process
+     */
     ERROR;
 
     @Override

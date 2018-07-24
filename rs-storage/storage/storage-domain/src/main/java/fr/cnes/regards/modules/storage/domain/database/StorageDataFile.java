@@ -1,5 +1,9 @@
 package fr.cnes.regards.modules.storage.domain.database;
 
+import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -21,14 +25,12 @@ import javax.persistence.NamedSubgraph;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.Min;
-import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.springframework.util.MimeType;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.jpa.converter.SetStringCsvConverter;
@@ -46,9 +48,10 @@ import fr.cnes.regards.modules.storage.domain.AIP;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Entity
-@Table(name = "t_data_file", indexes = { @Index(name = "idx_data_file_checksum", columnList = "checksum"),
-        @Index(name = "idx_data_file_state", columnList = "state"),
-        @Index(name = "idx_data_file_aip", columnList = "aip_ip_id") })
+@Table(name = "t_data_file",
+        indexes = { @Index(name = "idx_data_file_checksum", columnList = "checksum"),
+                @Index(name = "idx_data_file_state", columnList = "state"),
+                @Index(name = "idx_data_file_aip", columnList = "aip_ip_id") })
 // @formatter:off
 @NamedEntityGraph(name = "graph.datafile.full", attributeNodes = { @NamedAttributeNode("aipEntity"),
         @NamedAttributeNode(value = "prioritizedDataStorages", subgraph = "graph.datafile.prioritizedDataStorages") },
@@ -150,11 +153,12 @@ public class StorageDataFile {
      * Data storage plugin configuration used to store the file
      */
     @ManyToMany
-    @JoinTable(name = "ta_data_file_plugin_conf", joinColumns = @JoinColumn(name = "data_file_id",
-            foreignKey = @ForeignKey(name = "fk_data_file_plugin_conf_data_file")),
+    @JoinTable(name = "ta_data_file_plugin_conf",
+            joinColumns = @JoinColumn(name = "data_file_id",
+                    foreignKey = @ForeignKey(name = "fk_data_file_plugin_conf_data_file")),
             inverseJoinColumns = @JoinColumn(name = "data_storage_conf_id",
                     foreignKey = @ForeignKey(name = "fk_plugin_conf_data_file_plugin_conf")))
-    private Set<PrioritizedDataStorage> prioritizedDataStorages = new HashSet<>();
+    private final Set<PrioritizedDataStorage> prioritizedDataStorages = new HashSet<>();
 
     /**
      * Reversed mapping compared to reality. This is because it is easier to work like this.
@@ -185,15 +189,8 @@ public class StorageDataFile {
      * @param aip
      */
     public StorageDataFile(OAISDataObject file, MimeType mimeType, AIP aip) {
-        this(file.getUrls(),
-             file.getChecksum(),
-             file.getAlgorithm(),
-             file.getRegardsDataType(),
-             file.getFileSize(),
-             mimeType,
-             aip,
-             null,
-             null);
+        this(file.getUrls(), file.getChecksum(), file.getAlgorithm(), file.getRegardsDataType(), file.getFileSize(),
+             mimeType, aip, null, null);
         String name = file.getFilename();
         if (Strings.isNullOrEmpty(name)) {
             String[] pathParts = file.getUrls().iterator().next().getPath().split("/");
@@ -541,6 +538,8 @@ public class StorageDataFile {
     }
 
     public void addFailureCause(String failureCause) {
-        this.failureCauses.add(failureCause);
+        if (failureCause != null) {
+            this.failureCauses.add(failureCause);
+        }
     }
 }

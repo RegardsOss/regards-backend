@@ -116,6 +116,7 @@ import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.domain.event.StorageAction;
 import fr.cnes.regards.modules.storage.domain.event.StorageEventType;
 import fr.cnes.regards.modules.storage.domain.plugin.DataStorageAccessModeEnum;
+import fr.cnes.regards.modules.storage.domain.plugin.DispatchErrors;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
@@ -402,11 +403,13 @@ public class AIPService implements IAIPService {
             throws ModuleException {
         IAllocationStrategy allocationStrategy = getAllocationStrategy();
         // Now lets ask to the strategy to dispatch dataFiles between possible DataStorages
-        Multimap<Long, StorageDataFile> storageWorkingSetMap = allocationStrategy.dispatch(dataFilesToStore);
+        DispatchErrors dispatchErrors = new DispatchErrors();
+        Multimap<Long, StorageDataFile> storageWorkingSetMap = allocationStrategy.dispatch(dataFilesToStore,
+                                                                                           dispatchErrors);
         LOGGER.trace("{} data objects has been dispatched between {} data storage by allocation strategy",
                      dataFilesToStore.size(), storageWorkingSetMap.keySet().size());
         // as we are trusty people, we check that the dispatch gave us back all DataFiles into the WorkingSubSets
-        checkDispatch(dataFilesToStore, storageWorkingSetMap);
+        checkDispatch(dataFilesToStore, storageWorkingSetMap, dispatchErrors);
         // now that those who should be in error are handled, lets save into DB those to be stored (mainly because of
         // "notYetStoredBy")
         dataFileDao.save(storageWorkingSetMap.values());
@@ -605,9 +608,10 @@ public class AIPService implements IAIPService {
      * status.
      * @param dataFilesToStore {@link StorageDataFile}s
      * @param storageWorkingSetMap {@link Multimap}<{@link PluginConfiguration}, {@link StorageDataFile}>
+     * @param {@link DispatchErrors} errors during files dispatch
      */
     private void checkDispatch(Set<StorageDataFile> dataFilesToStore,
-            Multimap<Long, StorageDataFile> storageWorkingSetMap) {
+            Multimap<Long, StorageDataFile> storageWorkingSetMap, DispatchErrors dispatchErrors) {
         Set<StorageDataFile> dataFilesInSubSet = storageWorkingSetMap.entries().stream().map(entry -> entry.getValue())
                 .collect(Collectors.toSet());
         if (dataFilesToStore.size() != dataFilesInSubSet.size()) {
@@ -615,6 +619,7 @@ public class AIPService implements IAIPService {
             notSubSetDataFiles.removeAll(dataFilesInSubSet);
             for (StorageDataFile prepareFailed : notSubSetDataFiles) {
                 prepareFailed.setState(DataFileState.ERROR);
+                prepareFailed.addFailureCause(dispatchErrors.get(prepareFailed).orElse(null));
                 AIP aip = prepareFailed.getAip();
                 aip.setState(AIPState.STORAGE_ERROR);
                 dataFileDao.save(prepareFailed);
