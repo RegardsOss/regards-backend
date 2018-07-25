@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.order.service;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -33,11 +32,13 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.MimeType;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -120,17 +121,19 @@ public class OrderServiceIT {
 
     private static final String USER_EMAIL = "leo.mieulet@margoulin.com";
 
+    private static SimpleMailMessage mailMessage;
+
     public static final UniformResourceName DS1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DS2_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DO1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DO2_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     @Before
     public void init() {
@@ -215,9 +218,12 @@ public class OrderServiceIT {
         ds1SubOrder1Task.setOwner(USER_EMAIL);
         DataFile dataFile1 = new DataFile();
         dataFile1.setUri(new URI("staff://toto/titi/tutu"));
+        dataFile1.setDataType(DataType.RAWDATA);
+        dataFile1.setMimeType(MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM.toString()));
         dataFile1.setOnline(true);
-        dataFile1.setSize(1_000_000l);
-        dataFile1.setName("tutu");
+        dataFile1.setFilesize(1_000_000l);
+        dataFile1.setFilename("tutu");
+        dataFile1.setReference(false);
         OrderDataFile df1 = new OrderDataFile(dataFile1, DO1_IP_ID, order.getId());
         // dataFile is ONLINE, its state will be AVAILABLE after asking Storage
         df1.setState(FileState.AVAILABLE);
@@ -228,8 +234,11 @@ public class OrderServiceIT {
         DataFile dataFile2 = new DataFile();
         dataFile2.setUri(new URI("staff://toto2/titi2/tutu2"));
         dataFile2.setOnline(false);
-        dataFile2.setSize(1l);
-        dataFile2.setName("tutu2");
+        dataFile2.setFilesize(1l);
+        dataFile2.setFilename("tutu2");
+        dataFile2.setReference(false);
+        dataFile2.setMimeType(MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM.toString()));
+        dataFile2.setDataType(DataType.RAWDATA);
         OrderDataFile df2 = new OrderDataFile(dataFile2, DO2_IP_ID, order.getId());
         dataFileRepos.save(df2);
         ds1SubOrder1Task.addFile(df2);
@@ -336,8 +345,7 @@ public class OrderServiceIT {
 
     @Test
     @Ignore
-    public void testPauseResume()
-            throws InterruptedException, CannotResumeOrderException, CannotPauseOrderException {
+    public void testPauseResume() throws InterruptedException, CannotResumeOrderException, CannotPauseOrderException {
 
         Basket basket = new Basket("tulavu@qui.fr");
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
@@ -362,7 +370,7 @@ public class OrderServiceIT {
         Set<JobInfo> jobInfos = order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
                 .map(FilesTask::getJobInfo).collect(Collectors.toSet());
         Assert.assertTrue(jobInfos.stream().map(jobInfo -> jobInfo.getStatus().getStatus())
-                                  .allMatch(JobStatus::isFinished));
+                .allMatch(JobStatus::isFinished));
         // Sometime, pause/resume has been asked toolate (and so percent is at 100 %)
         Assert.assertTrue(order.getPercentCompleted() <= 100);
 
@@ -402,7 +410,7 @@ public class OrderServiceIT {
         jobInfos = order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
                 .map(FilesTask::getJobInfo).collect(Collectors.toSet());
         Assert.assertTrue(jobInfos.stream().map(jobInfo -> jobInfo.getStatus().getStatus())
-                                  .allMatch(status -> status == JobStatus.SUCCEEDED));
+                .allMatch(status -> status == JobStatus.SUCCEEDED));
 
         Assert.assertTrue(order.getPercentCompleted() == 100);
     }
@@ -443,7 +451,7 @@ public class OrderServiceIT {
         order.setStatus(OrderStatus.DONE);
         orderRepos.save(order);
 
-//        orderService.sendPeriodicNotifications();
+        //        orderService.sendPeriodicNotifications();
 
         // F%$king test which functions when thez want
         if (mailMessage != null) {
@@ -451,32 +459,14 @@ public class OrderServiceIT {
             Assert.assertEquals(order.getOwner(), mailMessage.getTo()[0]);
             // Check that email text has been interpreted before being sent
             SimpleDateFormat sdf = new SimpleDateFormat("d MMM yyyy HH:mm:ss z");
-            Assert.assertTrue(mailMessage.getText().contains(sdf.format(Date.from(order.getExpirationDate().toInstant()))));
-            Assert.assertTrue(mailMessage.getText().contains(sdf.format(Date.from(order.getCreationDate().toInstant()))));
+            Assert.assertTrue(mailMessage.getText()
+                    .contains(sdf.format(Date.from(order.getExpirationDate().toInstant()))));
+            Assert.assertTrue(mailMessage.getText()
+                    .contains(sdf.format(Date.from(order.getCreationDate().toInstant()))));
 
             Assert.assertFalse(mailMessage.getText().contains("${order}"));
         }
 
     }
 
-    private static SimpleMailMessage mailMessage;
-
-    private OrderDataFile createOrderDataFile(Order order, UniformResourceName aipId, String filename, boolean online)
-            throws URISyntaxException {
-        OrderDataFile dataFile1 = new OrderDataFile();
-        dataFile1.setUrl("file:///test/files/" + filename);
-        dataFile1.setName(filename);
-        dataFile1.setIpId(aipId);
-        if (online) {
-            dataFile1.setOnline(true);
-        } else {
-            dataFile1.setOnline(false);
-            dataFile1.setState(FileState.AVAILABLE);
-        }
-        dataFile1.setChecksum(filename);
-        dataFile1.setSize(new File("src/test/resources/files/", filename).length());
-        dataFile1.setOrderId(order.getId());
-        dataFile1.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
-        return dataFile1;
-    }
 }

@@ -1,12 +1,10 @@
 package fr.cnes.regards.modules.order.rest;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,13 +21,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-import org.springframework.web.util.UriUtils;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -81,7 +77,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
         List<OrderDataFile> dataFiles = new ArrayList<>();
         for (FilesTask filesTask : dsTask.getReliantTasks()) {
             for (OrderDataFile dataFile : filesTask.getFiles()) {
-                if ((cpt >= pageRequest.getOffset()) && (cpt < pageRequest.getOffset() + pageRequest.getPageSize())) {
+                if ((cpt >= pageRequest.getOffset()) && (cpt < (pageRequest.getOffset() + pageRequest.getPageSize()))) {
                     dataFiles.add(dataFile);
                 }
                 cpt++;
@@ -97,9 +93,8 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
         // Throws a NoSuchElementException if not found
         OrderDataFile dataFile = dataFileService.load(dataFileId);
         // External files haven't necessarily a file name (but they have an URL)
-        String filename = (dataFile.getName() != null) ?
-                dataFile.getName() :
-                dataFile.getUrl().substring(dataFile.getUrl().lastIndexOf('/') + 1);
+        String filename = (dataFile.getFilename() != null) ? dataFile.getFilename()
+                : dataFile.getUrl().substring(dataFile.getUrl().lastIndexOf('/') + 1);
         response.addHeader("Content-disposition", "attachment;filename=" + filename);
         if (dataFile.getMimeType() != null) {
             response.setContentType(dataFile.getMimeType().toString());
@@ -119,7 +114,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
         String role;
         try {
             Claims claims = jwtService.parseToken(token, secret);
-            Long orderId = Long.parseLong(claims.get(IOrderService.ORDER_ID_KEY, String.class));
+            Long.parseLong(claims.get(IOrderService.ORDER_ID_KEY, String.class));
             user = claims.get(JWTService.CLAIM_SUBJECT).toString();
             role = claims.get(JWTService.CLAIM_ROLE).toString();
             // Throws a NoSuchElementException if not found
@@ -128,9 +123,8 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        String filename = (dataFile.getName() != null) ?
-                dataFile.getName() :
-                dataFile.getUrl().substring(dataFile.getUrl().lastIndexOf('/') + 1);
+        String filename = (dataFile.getFilename() != null) ? dataFile.getFilename()
+                : dataFile.getUrl().substring(dataFile.getUrl().lastIndexOf('/') + 1);
         response.addHeader("Content-disposition", "attachment;filename=" + filename);
         if (dataFile.getMimeType() != null) {
             response.setContentType(dataFile.getMimeType().toString());
@@ -154,10 +148,6 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
                     }
                 }, HttpStatus.OK);
         }
-    }
-
-    private static UniformResourceName decodeUrn(String aipId) throws UnsupportedEncodingException {
-        return UniformResourceName.fromString(UriUtils.decode(aipId, Charset.defaultCharset().name()));
     }
 
     @Override

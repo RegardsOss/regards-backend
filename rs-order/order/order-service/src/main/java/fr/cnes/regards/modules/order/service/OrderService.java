@@ -1,13 +1,5 @@
 package fr.cnes.regards.modules.order.service;
 
-import javax.annotation.PostConstruct;
-import javax.transaction.Transactional;
-import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.SchemaFactory;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,6 +31,15 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import javax.annotation.PostConstruct;
+import javax.transaction.Transactional;
+import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.SchemaFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +47,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -54,6 +54,8 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriUtils;
 import org.xml.sax.SAXException;
 
@@ -63,6 +65,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.TreeMultimap;
 import com.google.common.io.ByteStreams;
+
 import feign.Response;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -81,7 +84,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.file.DownloadUtils;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
-import fr.cnes.regards.modules.entities.domain.DataObject;
+import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.notification.domain.NotificationType;
@@ -112,7 +115,9 @@ import fr.cnes.regards.modules.order.service.job.UserJobParameter;
 import fr.cnes.regards.modules.order.service.job.UserRoleJobParameter;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
-import fr.cnes.regards.modules.search.client.ISearchClient;
+import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
+import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
+import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResources;
 import fr.cnes.regards.modules.storage.client.IAipClient;
 import fr.cnes.regards.modules.templates.service.TemplateService;
 import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
@@ -149,7 +154,7 @@ public class OrderService implements IOrderService {
     private IOrderJobService orderJobService;
 
     @Autowired
-    private ISearchClient searchClient;
+    private ILegacySearchEngineClient searchClient;
 
     @Autowired
     private IAipClient aipClient;
@@ -227,11 +232,10 @@ public class OrderService implements IOrderService {
         // Compute storageBucketSize from storageBucketSizeMb filled by Spring
         storageBucketSize = storageBucketSizeMb * 1024l * 1024l;
         LOGGER.info("OrderService created/refreshed with storageBucketSize: {}, orderValidationPeriodDays: {}"
-                            + ", daysBeforeSendingNotifEmail: {}...", storageBucketSize, orderValidationPeriodDays,
+                + ", daysBeforeSendingNotifEmail: {}...", storageBucketSize, orderValidationPeriodDays,
                     daysBeforeSendingNotifEmail);
-        proxy = (Strings.isNullOrEmpty(proxyHost)) ?
-                Proxy.NO_PROXY :
-                new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+        proxy = (Strings.isNullOrEmpty(proxyHost)) ? Proxy.NO_PROXY
+                : new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
 
     }
 
@@ -282,38 +286,31 @@ public class OrderService implements IOrderService {
 
                 // Execute opensearch request
                 int page = 0;
-                List<DataObject> objects = searchDataObjects(dsTask.getOpenSearchRequest(), page);
-                while (!objects.isEmpty()) {
+                List<EntityFeature> features = searchDataObjects(dsTask.getOpenSearchRequest(), page);
+                while (!features.isEmpty()) {
                     // For each DataObject
-                    for (DataObject object : objects) {
-                        // Data object of which files are managed by Storage
-                        if (object.isInternal()) {
-                            addInternalFilesToStorageBucket(basket, order, role, storageBucketFiles, object);
-
-                            // If sum of files size > storageBucketSize, add a new bucket
-                            if (storageBucketFiles.stream().mapToLong(DataFile::getSize).sum() >= storageBucketSize) {
-                                internalFilesCount += storageBucketFiles.size();
-                                // Create all bucket data files at once
-                                dataFileService.create(storageBucketFiles);
-                                createStorageSubOrder(basket, dsTask, storageBucketFiles, order, role, priority);
-                                storageBucketFiles.clear();
-                            }
-                        } else { // Data object of which files are external
-                            addExternalFilesToExternalBucket(order, externalBucketFiles, object);
-
-                            // If external bucket files count > MAX_EXTERNAL_BUCKET_FILE_COUNT, add a new bucket
-                            if (externalBucketFiles.size() > MAX_EXTERNAL_BUCKET_FILE_COUNT) {
-                                externalFilesCount += externalBucketFiles.size();
-                                // Create all bucket data files at once
-                                dataFileService.create(externalBucketFiles);
-                                createExternalSubOrder(basket, dsTask, externalBucketFiles, order);
-                                externalBucketFiles.clear();
-                            }
-
+                    for (EntityFeature feature : features) {
+                        dispatchFeatureFilesInBuckets(basket, order, role, feature, storageBucketFiles,
+                                                      externalBucketFiles);
+                        // If sum of files size > storageBucketSize, add a new bucket
+                        if (storageBucketFiles.stream().mapToLong(DataFile::getFilesize).sum() >= storageBucketSize) {
+                            internalFilesCount += storageBucketFiles.size();
+                            // Create all bucket data files at once
+                            dataFileService.create(storageBucketFiles);
+                            createStorageSubOrder(basket, dsTask, storageBucketFiles, order, role, priority);
+                            storageBucketFiles.clear();
+                        }
+                        // If external bucket files count > MAX_EXTERNAL_BUCKET_FILE_COUNT, add a new bucket
+                        if (externalBucketFiles.size() > MAX_EXTERNAL_BUCKET_FILE_COUNT) {
+                            externalFilesCount += externalBucketFiles.size();
+                            // Create all bucket data files at once
+                            dataFileService.create(externalBucketFiles);
+                            createExternalSubOrder(basket, dsTask, externalBucketFiles, order);
+                            externalBucketFiles.clear();
                         }
                     }
                     page++;
-                    objects = searchDataObjects(dsSel.getOpenSearchRequest(), page);
+                    features = searchDataObjects(dsSel.getOpenSearchRequest(), page);
                 }
                 // Manage remaining files on each type of buckets
                 if (!storageBucketFiles.isEmpty()) {
@@ -378,49 +375,46 @@ public class OrderService implements IOrderService {
         }
     }
 
-    private void addExternalFilesToExternalBucket(Order order, Set<OrderDataFile> externalBucketFiles,
-            DataObject object) {
-        // For each asked DataTypes
-        Multimap<DataType, DataFile> filesMultimap = object.getFiles();
-        for (DataType dataType : DATA_TYPES) {
-            for (DataFile file : filesMultimap.get(dataType)) {
-                // Only DataFile which can be externally donwloaded are taken into account
-                if (file.canBeExternallyDownloaded()) {
-                    OrderDataFile orderDataFile = new OrderDataFile(file, object.getIpId(), order.getId());
-                    // An external file is immediately set to AVAILABLE status because it needs
-                    // nothing more to be doswnloaded
-                    orderDataFile.setState(FileState.AVAILABLE);
-                    externalBucketFiles.add(orderDataFile);
-                }
+    /**
+     * Dispatch {@link DataFile}s of given {@link EntityFeature} into internal or external buckets.
+     */
+    private void dispatchFeatureFilesInBuckets(Basket basket, Order order, String role, EntityFeature feature,
+            Set<OrderDataFile> storageBucketFiles, Set<OrderDataFile> externalBucketFiles) {
+        for (DataFile dataFile : feature.getFiles().values()) {
+            if (dataFile.isReference()) {
+                addInternalFileToStorageBucket(basket, order, role, storageBucketFiles, dataFile, feature);
+            } else {
+                addExternalFileToExternalBucket(order, externalBucketFiles, dataFile, feature);
             }
         }
     }
 
-    private void addInternalFilesToStorageBucket(Basket basket, Order order, String role,
-            Set<OrderDataFile> storageBucketFiles, DataObject object) {
-        // For each asked DataTypes
-        Multimap<DataType, DataFile> filesMultimap = object.getFiles();
-        for (DataType dataType : DATA_TYPES) {
-            for (DataFile file : filesMultimap.get(dataType)) {
-                // Only DataFile physically available (ie managed by storgae) are taken into account
-                if (file.isPhysicallyAvailable()) {
-                    OrderDataFile orderDataFile = new OrderDataFile(file, object.getIpId(), order.getId());
-                    storageBucketFiles.add(orderDataFile);
-                    // Send a very useful notification if file is bigger than bucket size
-                    if (orderDataFile.getSize() > storageBucketSize) {
-                        // To send a notification, NotificationClient needs it
-                        FeignSecurityManager.asSystem();
-                        NotificationDTO notif = new NotificationDTO(
-                                String.format("File \"%s\" is bigger than sub-order size", orderDataFile.getName()),
-                                Collections.emptySet(), Collections.singleton(DefaultRole.PROJECT_ADMIN.name()),
-                                microserviceName, "Order creation", NotificationType.WARNING);
-                        notificationClient.createNotification(notif);
-                        FeignSecurityManager.reset();
-                        // To search objects with SearchClient
-                        FeignSecurityManager.asUser(basket.getOwner(), role);
-                    }
-                }
-            }
+    private void addExternalFileToExternalBucket(Order order, Set<OrderDataFile> externalBucketFiles, DataFile datafile,
+            EntityFeature feature) {
+        OrderDataFile orderDataFile = new OrderDataFile(datafile, feature.getId(), order.getId());
+        // An external file is immediately set to AVAILABLE status because it needs
+        // nothing more to be doswnloaded
+        orderDataFile.setState(FileState.AVAILABLE);
+        externalBucketFiles.add(orderDataFile);
+
+    }
+
+    private void addInternalFileToStorageBucket(Basket basket, Order order, String role,
+            Set<OrderDataFile> storageBucketFiles, DataFile dataFile, EntityFeature feature) {
+        OrderDataFile orderDataFile = new OrderDataFile(dataFile, feature.getId(), order.getId());
+        storageBucketFiles.add(orderDataFile);
+        // Send a very useful notification if file is bigger than bucket size
+        if (orderDataFile.getFilesize() > storageBucketSize) {
+            // To send a notification, NotificationClient needs it
+            FeignSecurityManager.asSystem();
+            NotificationDTO notif = new NotificationDTO(
+                    String.format("File \"%s\" is bigger than sub-order size", orderDataFile.getFilename()),
+                    Collections.emptySet(), Collections.singleton(DefaultRole.PROJECT_ADMIN.name()), microserviceName,
+                    "Order creation", NotificationType.WARNING);
+            notificationClient.createNotification(notif);
+            FeignSecurityManager.reset();
+            // To search objects with SearchClient
+            FeignSecurityManager.asUser(basket.getOwner(), role);
         }
     }
 
@@ -429,10 +423,9 @@ public class OrderService implements IOrderService {
      * order data files)
      */
     private String generateToken4PublicEndpoint(Order order) {
-        return jwtService
-                .generateToken(runtimeTenantResolver.getTenant(), authResolver.getUser(), authResolver.getRole(),
-                               order.getExpirationDate(),
-                               Collections.singletonMap(ORDER_ID_KEY, order.getId().toString()), secret, true);
+        return jwtService.generateToken(runtimeTenantResolver.getTenant(), authResolver.getUser(),
+                                        authResolver.getRole(), order.getExpirationDate(),
+                                        Collections.singletonMap(ORDER_ID_KEY, order.getId().toString()), secret, true);
     }
 
     private void sendOrderCreationEmail(Order order) {
@@ -451,9 +444,8 @@ public class OrderService implements IOrderService {
         dataMap.put("expiration_date", order.getExpirationDate().toString());
         dataMap.put("project", runtimeTenantResolver.getTenant());
         dataMap.put("order_id", order.getId().toString());
-        dataMap.put("metalink_download_url",
-                    urlStart + "/user/orders/metalink/download?" + tokenRequestParam + "&scope=" + runtimeTenantResolver
-                            .getTenant());
+        dataMap.put("metalink_download_url", urlStart + "/user/orders/metalink/download?" + tokenRequestParam
+                + "&scope=" + runtimeTenantResolver.getTenant());
         dataMap.put("regards_downloader_url", "https://github.com/RegardsOss/RegardsDownloader/releases");
         dataMap.put("orders_url", host + order.getFrontendUrl());
 
@@ -529,16 +521,15 @@ public class OrderService implements IOrderService {
         dsTask.addReliantTask(currentFilesTask);
     }
 
-    private List<DataObject> searchDataObjects(String openSearchRequest, int page) {
-        Map<String, String> requestMap = Collections.singletonMap("q", openSearchRequest);
-
-        ResponseEntity<PagedResources<Resource<DataObject>>> pagedResourcesResponseEntity = searchClient
-                .searchDataobjects(requestMap, page, MAX_PAGE_SIZE);
+    private List<EntityFeature> searchDataObjects(String openSearchRequest, int page) {
+        MultiValueMap<String, String> requestMap = new LinkedMultiValueMap<>();
+        requestMap.add("q", openSearchRequest);
+        ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> pagedResourcesResponseEntity = searchClient
+                .searchAllDataobjects(SearchEngineMappings.getJsonHeaders(), requestMap, page, MAX_PAGE_SIZE);
         // It is mandatory to check NOW, at creation instant of order from basket, if data object files are still downloadable
-        Collection<Resource<DataObject>> objects = pagedResourcesResponseEntity.getBody().getContent();
+        Collection<Resource<EntityFeature>> objects = pagedResourcesResponseEntity.getBody().getContent();
         // If a lot of objects, parallelisation is very useful, if not we don't really care
-        return objects.parallelStream().map(resource -> resource.getContent())
-                .filter(dataObject -> dataObject.getAllowingDownload()).collect(Collectors.toList());
+        return objects.parallelStream().map(Resource::getContent).collect(Collectors.toList());
     }
 
     @Override
@@ -620,9 +611,9 @@ public class OrderService implements IOrderService {
     private boolean orderEffectivelyInPause(Order order) {
         // No associated jobInfo or all associated jobs finished
         return (order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
-                .filter(ft -> ft.getJobInfo() != null).count() == 0) || order.getDatasetTasks().stream()
-                .flatMap(dsTask -> dsTask.getReliantTasks().stream()).map(ft -> ft.getJobInfo().getStatus().getStatus())
-                .allMatch(JobStatus::isFinished);
+                .filter(ft -> ft.getJobInfo() != null).count() == 0)
+                || order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
+                        .map(ft -> ft.getJobInfo().getStatus().getStatus()).allMatch(JobStatus::isFinished);
     }
 
     @Override
@@ -668,8 +659,7 @@ public class OrderService implements IOrderService {
     @Override
     public void writeAllOrdersInCsv(BufferedWriter writer) throws IOException {
         List<Order> orders = repos.findAll();
-        writer.append(
-                "ORDER_ID;CREATION_DATE;EXPIRATION_DATE;OWNER;STATUS;STATUS_DATE;PERCENT_COMPLETE;FILES_IN_ERROR");
+        writer.append("ORDER_ID;CREATION_DATE;EXPIRATION_DATE;OWNER;STATUS;STATUS_DATE;PERCENT_COMPLETE;FILES_IN_ERROR");
         writer.newLine();
         for (Order order : orders) {
             writer.append(order.getId().toString()).append(';');
@@ -702,21 +692,21 @@ public class OrderService implements IOrderService {
         try (ZipOutputStream zos = new ZipOutputStream(os)) {
             // A multiset to manage multi-occurrences of files
             Multiset<String> dataFiles = HashMultiset.create();
-            for (Iterator<OrderDataFile> i = availableFiles.iterator(); i.hasNext(); ) {
+            for (Iterator<OrderDataFile> i = availableFiles.iterator(); i.hasNext();) {
                 OrderDataFile dataFile = i.next();
                 // Externally downloadable
-                if (dataFile.canBeExternallyDownloaded()) {
+                if (dataFile.isReference()) {
                     // Connection timeout
                     int timeout = 10_000;
                     String dataObjectIpId = dataFile.getIpId().toString();
                     dataFile.setDownloadError(null);
-                    try (InputStream is = DownloadUtils
-                            .getInputStreamThroughProxy(new URL(dataFile.getUrl()), proxy, timeout)) {
+                    try (InputStream is = DownloadUtils.getInputStreamThroughProxy(new URL(dataFile.getUrl()), proxy,
+                                                                                   timeout)) {
                         readInputStreamAndAddToZip(downloadErrorFiles, zos, dataFiles, i, dataFile, dataObjectIpId, is);
                     } catch (IOException e) {
-                        LOGGER.error(
-                                String.format("Error while downloading external file (url : %s)", dataFile.getUrl()),
-                                e);
+                        LOGGER.error(String.format("Error while downloading external file (url : %s)",
+                                                   dataFile.getUrl()),
+                                     e);
                         StringWriter sw = new StringWriter();
                         e.printStackTrace(new PrintWriter(sw));
                         dataFile.setDownloadError("Error while downloading external file\n" + sw.toString());
@@ -734,8 +724,8 @@ public class OrderService implements IOrderService {
                         LOGGER.error("Error while downloading file from Archival Storage", e);
                         StringWriter sw = new StringWriter();
                         e.printStackTrace(new PrintWriter(sw));
-                        dataFile.setDownloadError(
-                                "Error while downloading file from Archival Storage\n" + sw.toString());
+                        dataFile.setDownloadError("Error while downloading file from Archival Storage\n"
+                                + sw.toString());
                     }
                     // Unable to download file from storage
                     if ((response == null) || (response.status() != HttpStatus.OK.value())) {
@@ -743,9 +733,8 @@ public class OrderService implements IOrderService {
                         i.remove();
                         LOGGER.warn("Cannot retrieve data file from storage (aip : {}, checksum : {})", aip,
                                     dataFile.getChecksum());
-                        dataFile.setDownloadError(
-                                "Cannot retrieve data file from storage, feign downloadFile method returns " + ((
-                                        response == null) ? "null" : response.toString()));
+                        dataFile.setDownloadError("Cannot retrieve data file from storage, feign downloadFile method returns "
+                                + ((response == null) ? "null" : response.toString()));
                         continue;
                     } else { // Download ok
                         try (InputStream is = response.body().asInputStream()) {
@@ -775,7 +764,7 @@ public class OrderService implements IOrderService {
             Multiset<String> dataFiles, Iterator<OrderDataFile> i, OrderDataFile dataFile, String dataObjectIpId,
             InputStream is) throws IOException {
         // Add filename to multiset
-        String filename = dataFile.getName();
+        String filename = dataFile.getFilename();
         if (filename == null) {
             filename = dataFile.getUrl().substring(dataFile.getUrl().lastIndexOf('/') + 1);
         }
@@ -796,16 +785,15 @@ public class OrderService implements IOrderService {
         long copiedBytes = ByteStreams.copy(is, zos);
         zos.closeEntry();
         // We can only check copied bytes if we know expected size (ie if file is internal)
-        if (dataFile.getSize() != null) {
+        if (dataFile.getFilesize() != null) {
             // Check that file has been completely been copied
-            if (copiedBytes != dataFile.getSize()) {
+            if (copiedBytes != dataFile.getFilesize()) {
                 downloadErrorFiles.add(dataFile);
                 i.remove();
                 LOGGER.warn("Cannot completely download data file (data object IP_ID: {}, file name: {})",
-                            dataObjectIpId, dataFile.getName());
-                dataFile.setDownloadError(
-                        "Cannot completely download data file from storage, only " + copiedBytes + "/" + dataFile
-                                .getSize() + " bytes");
+                            dataObjectIpId, dataFile.getFilename());
+                dataFile.setDownloadError("Cannot completely download data file from storage, only " + copiedBytes + "/"
+                        + dataFile.getFilesize() + " bytes");
             }
         }
     }
@@ -831,12 +819,11 @@ public class OrderService implements IOrderService {
         // For all data files
         for (OrderDataFile file : files) {
             FileType xmlFile = factory.createFileType();
-            String filename = (file.getName() != null) ?
-                    file.getName() :
-                    file.getUrl().substring(file.getUrl().lastIndexOf('/') + 1);
+            String filename = (file.getFilename() != null) ? file.getFilename()
+                    : file.getUrl().substring(file.getUrl().lastIndexOf('/') + 1);
             xmlFile.setIdentity(filename);
-            if (file.getSize() != null) {
-                xmlFile.setSize(BigInteger.valueOf(file.getSize()));
+            if (file.getFilesize() != null) {
+                xmlFile.setSize(BigInteger.valueOf(file.getFilesize()));
             }
             if (file.getMimeType() != null) {
                 xmlFile.setMimetype(file.getMimeType().toString());
@@ -887,7 +874,7 @@ public class OrderService implements IOrderService {
     private static String encode4Uri(String str) {
         try {
             return new String(UriUtils.encode(str, Charset.defaultCharset().name()).getBytes(),
-                              StandardCharsets.US_ASCII);
+                    StandardCharsets.US_ASCII);
         } catch (UnsupportedEncodingException e) {
             // Will never occurs
             throw new RsRuntimeException(e);
@@ -936,8 +923,8 @@ public class OrderService implements IOrderService {
     public void sendTenantPeriodicNotifications() {
         List<Order> asideOrders = repos.findAsideOrders(daysBeforeSendingNotifEmail);
 
-        Multimap<String, Order> orderMultimap = TreeMultimap
-                .create(Comparator.naturalOrder(), Comparator.comparing(Order::getCreationDate));
+        Multimap<String, Order> orderMultimap = TreeMultimap.create(Comparator.naturalOrder(),
+                                                                    Comparator.comparing(Order::getCreationDate));
         asideOrders.forEach(o -> orderMultimap.put(o.getOwner(), o));
 
         // For each owner

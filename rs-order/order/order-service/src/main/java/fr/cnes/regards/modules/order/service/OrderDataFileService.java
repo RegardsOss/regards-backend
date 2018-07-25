@@ -1,7 +1,5 @@
 package fr.cnes.regards.modules.order.service;
 
-import javax.annotation.PostConstruct;
-import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -20,6 +18,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.base.Strings;
 import com.google.common.io.ByteStreams;
+
 import feign.Response;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -81,9 +82,8 @@ public class OrderDataFileService implements IOrderDataFileService {
 
     @PostConstruct
     public void init() {
-        proxy = (Strings.isNullOrEmpty(proxyHost)) ?
-                Proxy.NO_PROXY :
-                new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+        proxy = (Strings.isNullOrEmpty(proxyHost)) ? Proxy.NO_PROXY
+                : new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
     }
 
     @Override
@@ -98,9 +98,8 @@ public class OrderDataFileService implements IOrderDataFileService {
         FilesTask filesTask = filesTasksRepository.findDistinctByFilesIn(dataFile);
         // In case FilesTask does not yet exist
         if (filesTask != null) {
-            if (filesTask.getFiles().stream().allMatch(
-                    f -> (f.getState() == FileState.DOWNLOADED) || (f.getState() == FileState.ERROR) || (f.getState()
-                            == FileState.DOWNLOAD_ERROR))) {
+            if (filesTask.getFiles().stream().allMatch(f -> (f.getState() == FileState.DOWNLOADED)
+                    || (f.getState() == FileState.ERROR) || (f.getState() == FileState.DOWNLOAD_ERROR))) {
                 filesTask.setEnded(true);
             }
             // ...and if it is waiting for user
@@ -108,8 +107,8 @@ public class OrderDataFileService implements IOrderDataFileService {
             filesTasksRepository.save(filesTask);
             // Update then associated information to order
             Order order = orderRepository.findSimpleById(filesTask.getOrderId());
-            order.setWaitingForUser(
-                    filesTasksRepository.findByOrderId(filesTask.getOrderId()).anyMatch(t -> t.isWaitingForUser()));
+            order.setWaitingForUser(filesTasksRepository.findByOrderId(filesTask.getOrderId())
+                    .anyMatch(t -> t.isWaitingForUser()));
             orderRepository.save(order);
         }
         return dataFile;
@@ -123,9 +122,8 @@ public class OrderDataFileService implements IOrderDataFileService {
         Long orderId = null;
         // Update all these FileTasks
         for (FilesTask filesTask : filesTasks) {
-            if (filesTask.getFiles().stream().allMatch(
-                    f -> (f.getState() == FileState.DOWNLOADED) || (f.getState() == FileState.ERROR) || (f.getState()
-                            == FileState.DOWNLOAD_ERROR))) {
+            if (filesTask.getFiles().stream().allMatch(f -> (f.getState() == FileState.DOWNLOADED)
+                    || (f.getState() == FileState.ERROR) || (f.getState() == FileState.DOWNLOAD_ERROR))) {
                 filesTask.setEnded(true);
             }
             // Save order id for later
@@ -178,10 +176,10 @@ public class OrderDataFileService implements IOrderDataFileService {
         dataFile.setDownloadError(null);
         boolean error = false;
         int timeout = 10_000;
-        if (dataFile.canBeExternallyDownloaded()) {
-            try (InputStream is = DownloadUtils
-                    .getInputStreamThroughProxy(new URL(dataFile.getUrl()), proxy, timeout)) {
-                long copiedBytes = ByteStreams.copy(is, os);
+        if (dataFile.isReference()) {
+            try (InputStream is = DownloadUtils.getInputStreamThroughProxy(new URL(dataFile.getUrl()), proxy,
+                                                                           timeout)) {
+                ByteStreams.copy(is, os);
                 os.close();
             } catch (IOException e) {
                 LOGGER.error("Error while downloading file", e);
@@ -204,11 +202,10 @@ public class OrderDataFileService implements IOrderDataFileService {
                     long copiedBytes = ByteStreams.copy(is, os);
                     os.close();
                     // File has not completly been copied
-                    if (copiedBytes != dataFile.getSize()) {
+                    if (copiedBytes != dataFile.getFilesize()) {
                         error = true;
-                        dataFile.setDownloadError(
-                                "Cannot completely retrieve data file from storage, only " + copiedBytes + "/"
-                                        + dataFile.getSize() + " bytes");
+                        dataFile.setDownloadError("Cannot completely retrieve data file from storage, only "
+                                + copiedBytes + "/" + dataFile.getFilesize() + " bytes");
                     }
                 }
             }
@@ -246,8 +243,8 @@ public class OrderDataFileService implements IOrderDataFileService {
         // Map { order_id -> treated files size  }
         Map<Long, Long> treatedSizeMap = repos
                 .selectSumSizesByOrderIdAndStates(now, FileState.AVAILABLE, FileState.DOWNLOADED,
-                                                  FileState.DOWNLOAD_ERROR, FileState.ERROR).stream()
-                .collect(Collectors.toMap(getOrderIdFct, getValueFct));
+                                                  FileState.DOWNLOAD_ERROR, FileState.ERROR)
+                .stream().collect(Collectors.toMap(getOrderIdFct, getValueFct));
         // Map { order_id -> files in error count } Files with status DOWNLOAD_ERROR are not taken into account
         // because they are not considered as errors (available from storage)
         Map<Long, Long> errorCountMap = repos.selectCountFilesByOrderIdAndStates(now, FileState.ERROR).stream()
@@ -263,9 +260,8 @@ public class OrderDataFileService implements IOrderDataFileService {
             order.setPercentCompleted((int) Math.floorDiv(100l * treatedSize, totalSize));
             long errorCount = errorCountMap.containsKey(order.getId()) ? errorCountMap.get(order.getId()) : 0l;
             order.setFilesInErrorCount((int) errorCount);
-            long availableCount = availableCountMap.containsKey(order.getId()) ?
-                    availableCountMap.get(order.getId()) :
-                    0l;
+            long availableCount = availableCountMap.containsKey(order.getId()) ? availableCountMap.get(order.getId())
+                    : 0l;
             // If number of available files has changed...
             if (order.getAvailableFilesCount() != availableCount) {
                 order.setAvailableFilesCount((int) availableCount);
