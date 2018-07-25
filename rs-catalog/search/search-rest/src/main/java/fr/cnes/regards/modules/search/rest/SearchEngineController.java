@@ -90,8 +90,6 @@ public class SearchEngineController {
 
     private static final String GET_DATASET_METHOD = "getDataset";
 
-    private static final String GET_DATASET_DESCRIPTION_METHOD = "getDatasetDescription";
-
     private static final String SEARCH_ALL_DATAOBJECTS_METHOD = "searchAllDataobjects";
 
     private static final String GET_DATAOBJECT_METHOD = "getDataobject";
@@ -695,15 +693,6 @@ public class SearchEngineController {
                                                   MethodParamFactory.build(HttpHeaders.class),
                                                   MethodParamFactory.build(MultiValueMap.class),
                                                   MethodParamFactory.build(Pageable.class)));
-                // Add link to DATASET description
-                addLink(links,
-                        resourceService.buildLink(SearchEngineController.class,
-                                                  SearchEngineController.GET_DATASET_DESCRIPTION_METHOD,
-                                                  LINK_TO_DATASET_DESCRIPTION,
-                                                  MethodParamFactory.build(String.class, context.getEngineType()),
-                                                  MethodParamFactory.build(UniformResourceName.class, id),
-                                                  MethodParamFactory.build(String.class),
-                                                  MethodParamFactory.build(HttpHeaders.class)));
                 break;
             case DOCUMENT:
                 addLink(links,

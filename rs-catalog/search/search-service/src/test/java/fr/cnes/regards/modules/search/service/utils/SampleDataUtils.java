@@ -39,6 +39,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.dataaccess.client.IUserClient;
 import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
@@ -52,6 +53,7 @@ import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
+import fr.cnes.regards.modules.models.domain.Model;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeModelBuilder;
 import fr.cnes.regards.modules.models.domain.attributes.AttributeType;
@@ -256,20 +258,26 @@ public class SampleDataUtils {
      */
     public static final Collection COLLECTION = new Collection();
 
+    public static final Model DATAOBJET_MODEL = Model.build("dataObjectModel", "dataObjectModel", EntityType.DATA);
+
+    public static final Model DATASET_MODEL = Model.build("dataSetModel", "dataSetModel", EntityType.DATASET);
+
+    public static final Model DOCUMENT_MODEL = Model.build("docModel", "docModel", EntityType.DOCUMENT);
+
     /**
      * A dummy dataobject
      */
-    public static final DataObject DATAOBJECT = new DataObject();
+    public static final DataObject DATAOBJECT = new DataObject(DATAOBJET_MODEL, "tenant", "DO1");
 
     /**
      * A dummy dataset
      */
-    public static final Dataset DATASET = new Dataset();
+    public static final Dataset DATASET = new Dataset(DATASET_MODEL, "tenant", "DS1");
 
     /**
      * A dummy document
      */
-    public static final Document DOCUMENT = new Document();
+    public static final Document DOCUMENT = new Document(DOCUMENT_MODEL, "tenant", "DOC1");
 
     /**
      * A dummy list of facets

@@ -56,7 +56,8 @@ public class SearchEngineConfigurationIT extends AbstractEngineIT {
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         customizer.customizeRequestParam().param("page", "0");
         customizer.customizeRequestParam().param("size", "10");
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.equalTo(2)));
+        // 2 conf initialized in test + 1 conf initialized by default in tenant
+        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.equalTo(3)));
         performDefaultGet(SearchEngineConfigurationController.TYPE_MAPPING, customizer, "Search all error");
     }
 
