@@ -61,4 +61,12 @@ public class PolygonPositions extends ArrayList<Positions> {
         }
         return buf.toString();
     }
+
+    /**
+     * Return polygon position as double[][][] (array of positions as double[][] where first is exterion ring and others
+     * holes)
+     */
+    public double[][][] toArray() {
+        return this.stream().map(Positions::toArray).toArray(n -> new double[n][][]);
+    }
 }

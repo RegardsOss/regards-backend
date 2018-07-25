@@ -59,4 +59,11 @@ public class Positions extends ArrayList<Position> {
     public String toString() {
         return stream().map(Position::toString).collect(Collectors.joining(" } , { ", "{ ", " }"));
     }
+
+    /**
+     * Return positions as double[][] (array of positions as double[] { longitude, latitude })
+     */
+    public double[][] toArray() {
+        return this.stream().map(Position::toArray).toArray(n -> new double[n][]);
+    }
 }

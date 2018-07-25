@@ -50,4 +50,8 @@ public class Polygon extends AbstractGeometry<PolygonPositions> {
     public String toString() {
         return "POLYGON ( " + getCoordinates().toString() + " )";
     }
+
+    public double[][][] toArray() {
+        return coordinates.toArray();
+    }
 }

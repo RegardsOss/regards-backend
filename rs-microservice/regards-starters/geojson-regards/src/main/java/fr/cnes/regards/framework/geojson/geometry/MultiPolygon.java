@@ -42,4 +42,8 @@ public class MultiPolygon extends AbstractGeometry<List<PolygonPositions>> {
     public <T> T accept(IGeometryVisitor<T> visitor) {
         return visitor.visitMultiPolygon(this);
     }
+
+    public double[][][][] toArray() {
+        return coordinates.stream().map(PolygonPositions::toArray).toArray(n -> new double[n][][][]);
+    }
 }

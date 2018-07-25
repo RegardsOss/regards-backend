@@ -116,4 +116,11 @@ public class Position {
             return getLongitude() + ", " + getLatitude();
         }
     }
+
+    /**
+     * Return position as double[] where first index is longitude and seconde latitude
+     */
+    public double[] toArray() {
+        return new double[] { longitude, latitude };
+    }
 }

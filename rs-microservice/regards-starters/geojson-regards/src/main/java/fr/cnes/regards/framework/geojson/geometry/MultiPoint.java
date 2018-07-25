@@ -49,4 +49,8 @@ public class MultiPoint extends AbstractGeometry<Positions> {
     public String toString() {
         return "MULTI POINTS ( " + getCoordinates().toString() + " )";
     }
+
+    public double[][] toArray() {
+        return coordinates.toArray();
+    }
 }

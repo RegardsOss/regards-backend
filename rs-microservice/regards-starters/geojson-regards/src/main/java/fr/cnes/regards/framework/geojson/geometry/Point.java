@@ -43,4 +43,8 @@ public class Point extends AbstractGeometry<Position> {
     public String toString() {
         return "POINT ( " + getCoordinates().toString() + " )";
     }
+
+    public double[] toArray() {
+        return coordinates.toArray();
+    }
 }

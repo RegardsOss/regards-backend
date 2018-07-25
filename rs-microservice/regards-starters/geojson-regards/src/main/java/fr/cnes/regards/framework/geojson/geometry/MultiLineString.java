@@ -44,4 +44,8 @@ public class MultiLineString extends AbstractGeometry<List<Positions>> {
     public <T> T accept(IGeometryVisitor<T> visitor) {
         return visitor.visitMultiLineString(this);
     }
+
+    public double[][][] toArray() {
+        return  coordinates.stream().map(Positions::toArray).toArray(n -> new double[n][][]);
+    }
 }
