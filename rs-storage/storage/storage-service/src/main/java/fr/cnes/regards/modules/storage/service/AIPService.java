@@ -330,7 +330,7 @@ public class AIPService implements IAIPService {
 
     /**
      * Validate submitted AIPs
-     * @param aips AIP collection to validate
+     * @param aips         AIP collection to validate
      * @param rejectedAips invalid AIPs
      * @return valid AIPs
      */
@@ -351,7 +351,9 @@ public class AIPService implements IAIPService {
             Errors errors = new BeanPropertyBindingResult(aip, "aip");
             validator.validate(aip, errors);
             if (errors.hasErrors()) {
-                errors.getAllErrors().forEach(oe -> rejectionReasons.add(oe.getDefaultMessage()));
+                errors.getFieldErrors().forEach(oe ->
+                        rejectionReasons.add(String.format("Property %s is invalid: %s", oe.getField(), oe.getDefaultMessage()))
+                );
                 // now lets handle validation issues
                 rejected = true;
             }
@@ -389,18 +391,18 @@ public class AIPService implements IAIPService {
             }
             long aipUpdateStateTime = System.currentTimeMillis();
             LOGGER.debug("Updating AIP state of {} AIP(s) for {} tenant took {} ms", aips.size(),
-                         runtimeTenantResolver.getTenant(), aipUpdateStateTime - startTime);
+                    runtimeTenantResolver.getTenant(), aipUpdateStateTime - startTime);
             // Dispatch and check data files
             Multimap<Long, StorageDataFile> storageWorkingSetMap = dispatchAndCheck(dataFilesToStore);
             long dispatchTime = System.currentTimeMillis();
             LOGGER.debug("Dispatching {} StorageDataFile(s) for {} tenant tooks {} ms", dataFilesToStore.size(),
-                         runtimeTenantResolver.getTenant(), dispatchTime - startTime);
+                    runtimeTenantResolver.getTenant(), dispatchTime - startTime);
             // Schedule storage jobs
             scheduleStorage(storageWorkingSetMap, true);
 
             long scheduleTime = System.currentTimeMillis();
             LOGGER.info("Scheduling storage jobs of {} AIP(s) for {} tenant (scheduling time : {} ms)", aips.size(),
-                        runtimeTenantResolver.getTenant(), scheduleTime - startTime);
+                    runtimeTenantResolver.getTenant(), scheduleTime - startTime);
         }
     }
 
@@ -430,9 +432,9 @@ public class AIPService implements IAIPService {
         // Now lets ask to the strategy to dispatch dataFiles between possible DataStorages
         DispatchErrors dispatchErrors = new DispatchErrors();
         Multimap<Long, StorageDataFile> storageWorkingSetMap = allocationStrategy.dispatch(dataFilesToStore,
-                                                                                           dispatchErrors);
+                dispatchErrors);
         LOGGER.trace("{} data objects has been dispatched between {} data storage by allocation strategy",
-                     dataFilesToStore.size(), storageWorkingSetMap.keySet().size());
+                dataFilesToStore.size(), storageWorkingSetMap.keySet().size());
         // as we are trusty people, we check that the dispatch gave us back all DataFiles into the WorkingSubSets
         checkDispatch(dataFilesToStore, storageWorkingSetMap, dispatchErrors);
         // now that those who should be in error are handled, lets save into DB those to be stored (mainly because of
@@ -474,9 +476,9 @@ public class AIPService implements IAIPService {
         // As a file can be associated to multiple AIP, we have to compare their checksums.
         Set<String> checksumsWithoutAccess = Sets
                 .difference(dataFiles.stream().map(df -> df.getChecksum()).collect(Collectors.toSet()),
-                            dataFilesWithAccess.stream().map(df -> df.getChecksum()).collect(Collectors.toSet()));
+                        dataFilesWithAccess.stream().map(df -> df.getChecksum()).collect(Collectors.toSet()));
         checksumsWithoutAccess.forEach(cs -> LOGGER.error("User {} does not have access to file with checksum {}.",
-                                                          authResolver.getUser(), cs));
+                authResolver.getUser(), cs));
         errors.addAll(checksumsWithoutAccess);
 
         Set<StorageDataFile> onlineFiles = Sets.newHashSet();
@@ -613,9 +615,9 @@ public class AIPService implements IAIPService {
      * If it's true, nothing is done.<br/>
      * If not, the associated {@link AIP}s of given {@link StorageDataFile}s are set to {@link AIPState#STORAGE_ERROR}
      * status.
-     * @param dataFilesToStore {@link StorageDataFile}s
+     * @param dataFilesToStore     {@link StorageDataFile}s
      * @param storageWorkingSetMap {@link Multimap}<{@link PluginConfiguration}, {@link StorageDataFile}>
-     * @param {@link DispatchErrors} errors during files dispatch
+     * @param {@link               DispatchErrors} errors during files dispatch
      */
     private void checkDispatch(Set<StorageDataFile> dataFilesToStore,
             Multimap<Long, StorageDataFile> storageWorkingSetMap, DispatchErrors dispatchErrors) {
