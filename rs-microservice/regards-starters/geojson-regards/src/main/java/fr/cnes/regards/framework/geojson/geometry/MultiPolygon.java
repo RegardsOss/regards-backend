@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.geojson.geometry;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import fr.cnes.regards.framework.geojson.GeoJsonType;
@@ -27,9 +28,7 @@ import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
 /**
  * RFC 7946 -August 2016<br/>
  * GeoJson MultiPolygon representation<br/>
- *
  * @author Marc Sordi
- *
  */
 public class MultiPolygon extends AbstractGeometry<List<PolygonPositions>> {
 
@@ -41,5 +40,21 @@ public class MultiPolygon extends AbstractGeometry<List<PolygonPositions>> {
     @Override
     public <T> T accept(IGeometryVisitor<T> visitor) {
         return visitor.visitMultiPolygon(this);
+    }
+
+    public double[][][][] toArray() {
+        return coordinates.stream().map(PolygonPositions::toArray).toArray(n -> new double[n][][][]);
+    }
+
+    /**
+     * Create a MultiPolygon from array { { { { longitude, latitude }, {}, ... } } }
+     * <B>NOTE: the goal of this method is to ease creation/transformation/computation of geometries so no check is
+     * done concerning input values.</B>
+     */
+    public static MultiPolygon fromArray(double[][][][] lonLatsArrays) {
+        MultiPolygon multiPolygon = new MultiPolygon();
+        multiPolygon.coordinates.addAll(Arrays.asList(
+                Arrays.stream(lonLatsArrays).map(PolygonPositions::fromArray).toArray(n -> new PolygonPositions[n])));
+        return multiPolygon;
     }
 }

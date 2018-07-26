@@ -116,4 +116,20 @@ public class Position {
             return getLongitude() + ", " + getLatitude();
         }
     }
+
+    /**
+     * Return position as double[] where first index is longitude and seconde latitude
+     */
+    public double[] toArray() {
+        return new double[] { longitude, latitude };
+    }
+
+    /**
+     * Create a Position from array { longitude, latitude }
+     * <B>NOTE: the goal of this method is to ease creation/transformation/computation of geometries so no check is
+     * done concerning input values.</B>
+     */
+    public static Position fromArray(double[] lonLat) {
+        return new Position(lonLat[0], lonLat[1]);
+    }
 }

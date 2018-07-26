@@ -43,4 +43,20 @@ public class Point extends AbstractGeometry<Position> {
     public String toString() {
         return "POINT ( " + getCoordinates().toString() + " )";
     }
+
+    public double[] toArray() {
+        return coordinates.toArray();
+    }
+
+    /**
+     * Create a Point from array  { longitude, latitude }
+     * <B>NOTE: the goal of this method is to ease creation/transformation/computation of geometries so no check is
+     * done concerning input values.</B>
+     */
+    public static Point fromArray(double[] lonLat) {
+        Point point = new Point();
+        point.coordinates = Position.fromArray(lonLat);
+        return point;
+    }
+
 }
