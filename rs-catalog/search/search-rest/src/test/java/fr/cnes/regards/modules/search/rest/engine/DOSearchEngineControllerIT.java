@@ -26,7 +26,6 @@ import java.util.Set;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -114,13 +113,15 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
-    @Ignore
-    public void dataAccessGranted() {
+    public void dataAccessGranted() throws InterruptedException {
 
         // Add access to mercury
         DataObject mercury = getAstroObject(MERCURY);
         mercury.getMetadata().addGroup(ACCESS_GROUP, "datasetid", true);
         indexerService.saveEntity(getDefaultTenant(), mercury);
+
+        // Wait until index is really up to date!
+        Thread.sleep(1000L);
 
         String json = payload(searchDataobjects());
 
