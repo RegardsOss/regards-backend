@@ -24,7 +24,6 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,7 +114,6 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
-    @Ignore
     public void searchDataAtomWithGeoBboxParams() throws XPathExpressionException {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
@@ -144,7 +142,6 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
-    @Ignore
     public void searchDataJsonWithGeoBboxParams() {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
@@ -158,7 +155,6 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
-    @Ignore
     public void searchDataJsonWithGeoCircleParams() {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());

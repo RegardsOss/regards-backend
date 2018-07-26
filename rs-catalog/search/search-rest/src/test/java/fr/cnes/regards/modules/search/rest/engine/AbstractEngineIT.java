@@ -40,6 +40,7 @@ import org.springframework.util.MimeType;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
+import fr.cnes.regards.framework.geojson.geometry.Polygon;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
@@ -417,10 +418,12 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
                                           MediaType.APPLICATION_OCTET_STREAM, Boolean.TRUE, Boolean.FALSE);
         planet.getFiles().put(rawdata.getDataType(), rawdata);
 
-        planet.setGeometry(IGeometry.polygon(IGeometry.toPolygonCoordinates(IGeometry
+        Polygon geo = IGeometry.polygon(IGeometry.toPolygonCoordinates(IGeometry
                 .toLinearRingCoordinates(IGeometry.position(10.0, 10.0), IGeometry.position(10.0, 30.0),
                                          IGeometry.position(30.0, 30.0), IGeometry.position(30.0, 10.0),
-                                         IGeometry.position(10.0, 10.0)))));
+                                         IGeometry.position(10.0, 10.0))));
+        planet.setGeometry(geo);
+        planet.setWgs84(geo);
         planet.addProperty(AttributeBuilder
                 .buildObject("TimePeriod", AttributeBuilder.buildDate(START_DATE, OffsetDateTime.now()),
                              AttributeBuilder.buildDate(STOP_DATE, OffsetDateTime.now().plusMonths(36))));

@@ -106,11 +106,6 @@ public class SearchEngineController {
     private static final String LINK_TO_DATAOBJECTS = "dataobjects";
 
     /**
-     * HATEOAS link to reach dataset description
-     */
-    private static final String LINK_TO_DATASET_DESCRIPTION = "description";
-
-    /**
      * Pagination property
      */
     private static final String PAGE_NUMBER = "page";
