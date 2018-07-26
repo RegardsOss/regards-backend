@@ -16,6 +16,8 @@
                         "dataObject": {
                             "regardsDataType": "RAWDATA",
                             "urls": ["file:/home/test.xml"],
+                            "reference": false,
+                            "filename": "test.xml",
                             "algorithm": "MD5"
                         }
                     }
@@ -40,6 +42,8 @@
                             "regardsDataType": "RAWDATA",
                             "urls": ["file:/home/test.xml"],
                             "checksum": "sdfsd455sdfdsgdfg4dgdfg",
+                            "reference": false,
+                            "filename": "test.xml",
                             "algorithm": "FAKE"
                         }
                     }

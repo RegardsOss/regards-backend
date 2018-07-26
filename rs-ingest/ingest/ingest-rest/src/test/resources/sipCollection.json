@@ -15,6 +15,8 @@
 					"regardsDataType": "RAWDATA",
 					"urls": ["file:/home/test.xml"],
 					"checksum": "c8a5f0b675909fc265395b9ab50a5755",
+					"reference": false,
+					"filename": "test.xml",
 					"algorithm": "MD5"
 				},
 				"representationInformation": {
