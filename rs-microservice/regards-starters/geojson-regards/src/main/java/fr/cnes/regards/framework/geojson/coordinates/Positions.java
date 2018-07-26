@@ -58,7 +58,7 @@ public class Positions extends ArrayList<Position> {
 
     @Override
     public String toString() {
-        return stream().map(Position::toString).collect(Collectors.joining(" } , { ", "{ ", " }"));
+        return stream().map(Position::toString).collect(Collectors.joining(" ] , [ ", "[ ", " ]"));
     }
 
     /**
