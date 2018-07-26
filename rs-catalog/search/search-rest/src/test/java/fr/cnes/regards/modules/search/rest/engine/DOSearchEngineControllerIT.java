@@ -34,6 +34,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
+import org.springframework.test.annotation.DirtiesContext.MethodMode;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -53,8 +56,9 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
  * @author Marc Sordi
  *
  */
+@DirtiesContext(methodMode = MethodMode.BEFORE_METHOD, hierarchyMode = HierarchyMode.EXHAUSTIVE)
 @TestPropertySource(locations = { "classpath:test.properties" },
-        properties = { "regards.tenant=legacy", "spring.jpa.properties.hibernate.default_schema=legacy" })
+        properties = { "regards.tenant=dosearch", "spring.jpa.properties.hibernate.default_schema=dosearch" })
 @MultitenantTransactional
 public class DOSearchEngineControllerIT extends AbstractEngineIT {
 
