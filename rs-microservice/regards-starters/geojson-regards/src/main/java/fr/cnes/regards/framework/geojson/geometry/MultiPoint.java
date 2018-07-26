@@ -53,4 +53,16 @@ public class MultiPoint extends AbstractGeometry<Positions> {
     public double[][] toArray() {
         return coordinates.toArray();
     }
+
+    /**
+     * Create a MultiPoint from array  { { longitude, latitude }, {}, ... }
+     * <B>NOTE: the goal of this method is to ease creation/transformation/computation of geometries so no check is
+     * done concerning input values.</B>
+     */
+    public static MultiPoint fromArray(double[][] lonLats) {
+        MultiPoint multiPoint = new MultiPoint();
+        multiPoint.coordinates = Positions.fromArray(lonLats);
+        return multiPoint;
+    }
+
 }

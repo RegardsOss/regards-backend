@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.geojson.geometry;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import fr.cnes.regards.framework.geojson.GeoJsonType;
@@ -28,9 +29,7 @@ import fr.cnes.regards.framework.geojson.validator.MultiLineStringConstraints;
 /**
  * RFC 7946 -August 2016<br/>
  * GeoJson MultiLineString representation
- *
  * @author Marc Sordi
- *
  */
 @MultiLineStringConstraints
 public class MultiLineString extends AbstractGeometry<List<Positions>> {
@@ -46,6 +45,19 @@ public class MultiLineString extends AbstractGeometry<List<Positions>> {
     }
 
     public double[][][] toArray() {
-        return  coordinates.stream().map(Positions::toArray).toArray(n -> new double[n][][]);
+        return coordinates.stream().map(Positions::toArray).toArray(n -> new double[n][][]);
     }
+
+    /**
+     * Create a MultiLineString from array { { { longitude, latitude }, {}, ... } } (first is exterior ring, others holes)
+     * <B>NOTE: the goal of this method is to ease creation/transformation/computation of geometries so no check is
+     * done concerning input values.</B>
+     */
+    public static MultiLineString fromArray(double[][][] lonLatsArray) {
+        MultiLineString multiLineString = new MultiLineString();
+        multiLineString.coordinates.addAll(Arrays.asList(
+                Arrays.stream(lonLatsArray).map(Positions::fromArray).toArray(n -> new Positions[n])));
+        return multiLineString;
+    }
+
 }

@@ -54,4 +54,15 @@ public class Polygon extends AbstractGeometry<PolygonPositions> {
     public double[][][] toArray() {
         return coordinates.toArray();
     }
+
+    /**
+     * Create a PolygonPositions from array { { { longitude, latitude }, {}, ... } } (first is exterior ring, others holes)
+     * <B>NOTE: the goal of this method is to ease creation/transformation/computation of geometries so no check is
+     * done concerning input values.</B>
+     */
+    public static Polygon fromArray(double[][][] lonLatsArray) {
+        Polygon polygon = new Polygon();
+        polygon.coordinates = PolygonPositions.fromArray(lonLatsArray);
+        return polygon;
+    }
 }

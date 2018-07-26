@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.geojson.coordinates;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 /**
@@ -65,5 +66,16 @@ public class Positions extends ArrayList<Position> {
      */
     public double[][] toArray() {
         return this.stream().map(Position::toArray).toArray(n -> new double[n][]);
+    }
+
+    /**
+     * Create a Positions from array { { longitude, latitude }, {}, ... }
+     * <B>NOTE: the goal of this method is to ease creation/transformation/computation of geometries so no check is
+     * done concerning input values.</B>
+     */
+    public static Positions fromArray(double[][] lonLats) {
+        Positions positions = new Positions();
+        Arrays.stream(lonLats).forEach(lonLat -> positions.add(Position.fromArray(lonLat)));
+        return positions;
     }
 }
