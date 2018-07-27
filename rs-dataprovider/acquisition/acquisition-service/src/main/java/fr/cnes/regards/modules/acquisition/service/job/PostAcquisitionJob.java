@@ -67,11 +67,11 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        logger.info("Start POST acquisition SIP job for the product <{}>", sipEvent.getIpId());
+        logger.info("Start POST acquisition SIP job for the product <{}>", sipEvent.getSipId());
 
         try {
             // Load product
-            Optional<Product> oProduct = productService.searchProduct(sipEvent.getIpId());
+            Optional<Product> oProduct = productService.searchProduct(sipEvent.getSipId());
 
             if (oProduct.isPresent()) {
                 Product product = oProduct.get();
@@ -90,7 +90,7 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
                     postProcessPlugin.postProcess(product);
                 }
             } else {
-                logger.debug("No product associated to SIP id\"{}\"", sipEvent.getIpId());
+                logger.debug("No product associated to SIP id\"{}\"", sipEvent.getSipId());
             }
         } catch (ModuleException pse) {
             logger.error("Business error", pse);
