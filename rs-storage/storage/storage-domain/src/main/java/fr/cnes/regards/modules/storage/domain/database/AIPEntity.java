@@ -133,6 +133,7 @@ public class AIPEntity {
     public AIPEntity(AIP aip, AIPSession aipSession) {
         this.aipId = aip.getId().toString();
         this.sipId = aip.getSipId();
+        this.providerId = aip.getProviderId();
         this.state = aip.getState();
         this.lastEvent = aip.getLastEvent();
         this.submissionDate = aip.getSubmissionEvent().getDate();
