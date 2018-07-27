@@ -1,4 +1,27 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.order.domain;
+
+import java.time.OffsetDateTime;
+import java.util.Comparator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -18,10 +41,6 @@ import javax.persistence.NamedSubgraph;
 import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import java.time.OffsetDateTime;
-import java.util.Comparator;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.hibernate.annotations.SortNatural;
 
@@ -37,7 +56,7 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
 @NamedEntityGraphs({ @NamedEntityGraph(name = "graph.order.complete",
         attributeNodes = @NamedAttributeNode(value = "datasetTasks", subgraph = "graph.order.complete.datasetTasks"),
         subgraphs = { @NamedSubgraph(name = "graph.order.complete.datasetTasks",
-                                     attributeNodes = @NamedAttributeNode(value = "reliantTasks"))} ),
+                attributeNodes = @NamedAttributeNode(value = "reliantTasks")) }),
         @NamedEntityGraph(name = "graph.order.simple", attributeNodes = @NamedAttributeNode(value = "datasetTasks")) })
 public class Order implements IIdentifiable<Long>, Comparable<Order> {
 
@@ -87,7 +106,7 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "order_id", foreignKey = @ForeignKey(name = "fk_order"))
     @SortNatural
-    private SortedSet<DatasetTask> datasetTasks = new TreeSet<>(Comparator.naturalOrder());
+    private final SortedSet<DatasetTask> datasetTasks = new TreeSet<>(Comparator.naturalOrder());
 
     @Column(name = "waiting_for_user", nullable = false)
     private boolean waitingForUser = false;
@@ -216,7 +235,7 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
         }
 
@@ -231,7 +250,7 @@ public class Order implements IIdentifiable<Long>, Comparable<Order> {
     @Override
     public int hashCode() {
         int result = owner.hashCode();
-        result = 31 * result + creationDate.hashCode();
+        result = (31 * result) + creationDate.hashCode();
         return result;
     }
 }

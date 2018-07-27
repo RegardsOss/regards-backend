@@ -1,4 +1,25 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.order.domain;
+
+import java.util.Comparator;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -7,19 +28,26 @@ import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
-import java.util.Comparator;
+import javax.validation.Valid;
 
+import org.assertj.core.util.Lists;
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractReliantTask;
+import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 
 /**
  * Dataset specific order task. This task is linked to optional processing task and to all sub-orders (files tasks) of
  * this dataset
  * @author oroussel
+ * @author Sébastien Binda
  */
 @Entity
 @Table(name = "t_dataset_task")
+@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @PrimaryKeyJoinColumn(foreignKey = @ForeignKey(name = "fk_task_id"))
 @NamedEntityGraph(name = "graph.datasetTask.complete", attributeNodes = @NamedAttributeNode(value = "reliantTasks"))
 public class DatasetTask extends AbstractReliantTask<FilesTask> implements Comparable<DatasetTask> {
@@ -38,9 +66,10 @@ public class DatasetTask extends AbstractReliantTask<FilesTask> implements Compa
     /**
      * Selection request determined from BasketDatasetSelection
      */
-    @Column(name = "opensearch_request")
-    @Type(type = "text")
-    private String openSearchRequest;
+    @Valid
+    @Type(type = "jsonb")
+    @Column(columnDefinition = "jsonb", name = "selection_requests")
+    private final List<BasketSelectionRequest> selectionRequests = Lists.newArrayList();
 
     @Column(name = "objects_count")
     private int objectsCount = 0;
@@ -71,14 +100,6 @@ public class DatasetTask extends AbstractReliantTask<FilesTask> implements Compa
 
     public void setDatasetLabel(String datasetLabel) {
         this.datasetLabel = datasetLabel;
-    }
-
-    public String getOpenSearchRequest() {
-        return openSearchRequest;
-    }
-
-    public void setOpenSearchRequest(String openSearchRequest) {
-        this.openSearchRequest = openSearchRequest;
     }
 
     public int getObjectsCount() {
@@ -116,5 +137,9 @@ public class DatasetTask extends AbstractReliantTask<FilesTask> implements Compa
     @Override
     public int compareTo(DatasetTask o) {
         return COMPARATOR.compare(this, o);
+    }
+
+    public void addSelectionRequest(BasketSelectionRequest selectionRequest) {
+        selectionRequests.add(selectionRequest);
     }
 }

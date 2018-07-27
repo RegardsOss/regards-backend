@@ -1,36 +1,45 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.order.test;
 
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.junit.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.MultiValueMap;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.ObjectArrays;
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
@@ -45,16 +54,16 @@ import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.FilesSummary;
 import fr.cnes.regards.modules.models.domain.Model;
-import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
+import fr.cnes.regards.modules.search.client.IComplexSearchClient;
+import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResources;
 
 /**
  * Mock of ISearchClient to be used by ServiceConfiguration
  * @author oroussel
+ * @author Sébastien Binda
  */
-public class SearchClientMock implements ILegacySearchEngineClient {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SearchClientMock.class);
+public class SearchClientMock implements IComplexSearchClient {
 
     public static final UniformResourceName DS1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
             "ORDER", UUID.randomUUID(), 1);
@@ -88,16 +97,10 @@ public class SearchClientMock implements ILegacySearchEngineClient {
         ds3.setIpId(DS3_IP_ID);
     }
 
-    private static final Map<UniformResourceName, DatasetFeature> DS_MAP = new ImmutableMap.Builder<UniformResourceName, DatasetFeature>()
+    public static final String QUERY_DS2_DS3 = "tags:(" + DS2_IP_ID.toString() + " OR " + DS3_IP_ID.toString() + ")";
+
+    public static final Map<UniformResourceName, DatasetFeature> DS_MAP = new ImmutableMap.Builder<UniformResourceName, DatasetFeature>()
             .put(DS1_IP_ID, ds1.getFeature()).put(DS2_IP_ID, ds2.getFeature()).put(DS3_IP_ID, ds3.getFeature()).build();
-
-    private static OffsetDateTime[] dates = new OffsetDateTime[0];
-
-    private static final Pattern PATTERN = Pattern.compile(".*creationDate:\\[\\* TO ([^\\]]+)\\].*");
-
-    public static void addLandmark(OffsetDateTime date) {
-        dates = ObjectArrays.concat(dates, date);
-    }
 
     /**
      * DS1 => 2 documents, 2 RAWDATA files (+ 6 QUICKLOOKS 2 x 3 of each size), 1 Mb each RAW file
@@ -215,24 +218,6 @@ public class SearchClientMock implements ILegacySearchEngineClient {
         return summary;
     }
 
-    private int retrieveLandmarkIdx(MultiValueMap<String, String> allParams) {
-        List<String> opensearcReqs = allParams.get("q");
-        Assert.assertEquals("Can not handle multiple q parameter in opensearch request", 1, opensearcReqs.size());
-        String opensearcReq = opensearcReqs.get(0);
-        Matcher matcher = PATTERN.matcher(opensearcReq);
-        if (!matcher.matches()) {
-            throw new RuntimeException("Opensearch request doesn't contain creation:[* TO <date>]");
-        }
-        String reqDateStr = matcher.group(1);
-        OffsetDateTime reqDate = OffsetDateTimeAdapter.parse(reqDateStr);
-        int idxFound = Arrays.binarySearch(dates, reqDate);
-        if (idxFound >= 0) {
-            LOGGER.error("INDEX POSITIF !!!!!");
-            return idxFound;
-        }
-        return -idxFound - 1;
-    }
-
     private static DataType getDataType(String filename) {
         if (filename.endsWith("ql_hd.txt")) {
             return DataType.QUICKLOOK_HD;
@@ -246,70 +231,33 @@ public class SearchClientMock implements ILegacySearchEngineClient {
     }
 
     @Override
-    public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchAll(HttpHeaders headers,
-            MultiValueMap<String, String> queryParams, int page, int size) {
-        return null;
+    public ResponseEntity<DocFilesSummary> computeDatasetsSummary(
+            Collection<ComplexSearchRequest> complexSearchRequests) {
+        Assert.assertFalse("Cannot handle empty complex search", complexSearchRequests.isEmpty());
+        ComplexSearchRequest request = complexSearchRequests.stream().findFirst().get();
+        String query = request.getSearchParameters().get("q").stream().findFirst().orElse(null);
+        String datasetUrn = request.getDatasetUrn();
+
+        if (datasetUrn == null) {
+            if (QUERY_DS2_DS3.equals(query)) {
+                return new ResponseEntity<>(createSummaryForDs2Ds3AllFilesFirstCall(), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>(createSummaryForAllDsAllFiles(), HttpStatus.OK);
+            }
+        } else if (datasetUrn.equals(DS1_IP_ID.toString())) {
+            return new ResponseEntity<>(createSummaryForDs1AllFiles(), HttpStatus.OK);
+        } else if (datasetUrn.equals(DS2_IP_ID.toString())) {
+            return new ResponseEntity<>(createSummaryForDs2AllFiles(), HttpStatus.OK);
+        } else if (datasetUrn.equals(DS3_IP_ID.toString())) {
+            return new ResponseEntity<>(createSummaryForDs3AllFiles(), HttpStatus.OK);
+        } else {
+            throw new RuntimeException("Someone completely shit out this test ! Investigate and kick his ass !");
+        }
     }
 
     @Override
-    public ResponseEntity<Resource<EntityFeature>> getEntity(UniformResourceName urn, HttpHeaders headers) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchAllCollections(HttpHeaders headers,
-            MultiValueMap<String, String> queryParams, int page, int size) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<List<String>> searchCollectionPropertyValues(String propertyName, HttpHeaders headers,
-            MultiValueMap<String, String> queryParams, int maxCount) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<Resource<EntityFeature>> getCollection(UniformResourceName urn, HttpHeaders headers) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchAllDocuments(HttpHeaders headers,
-            MultiValueMap<String, String> queryParams, int page, int size) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<List<String>> searchDocumentPropertyValues(String propertyName, HttpHeaders headers,
-            MultiValueMap<String, String> queryParams, int maxCount) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<Resource<EntityFeature>> getDocument(UniformResourceName urn, HttpHeaders headers) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchAllDatasets(HttpHeaders headers,
-            MultiValueMap<String, String> queryParams, int page, int size) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<List<String>> searchDatasetPropertyValues(String propertyName, HttpHeaders headers,
-            MultiValueMap<String, String> queryParams, int maxCount) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<Resource<EntityFeature>> getDataset(UniformResourceName urn, HttpHeaders headers) {
-        return new ResponseEntity<>(new Resource<>(DS_MAP.get(urn)), HttpStatus.OK);
-    }
-
-    @Override
-    public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchAllDataobjects(HttpHeaders headers,
-            MultiValueMap<String, String> queryParams, int page, int size) {
+    public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> search(
+            Collection<ComplexSearchRequest> complexSearchRequests, int page, int size) {
         if (page == 0) {
             try {
                 List<Resource<EntityFeature>> list = new ArrayList<>();
@@ -343,99 +291,5 @@ public class SearchClientMock implements ILegacySearchEngineClient {
         }
         return ResponseEntity.ok(new FacettedPagedResources<>(Sets.newHashSet(), Collections.emptyList(),
                 new PagedResources.PageMetadata(0, 0, 0)));
-    }
-
-    @Override
-    public ResponseEntity<List<String>> searchDataobjectPropertyValues(String propertyName, HttpHeaders headers,
-            MultiValueMap<String, String> queryParams, int maxCount) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<Resource<EntityFeature>> getDataobject(UniformResourceName urn, HttpHeaders headers) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<DocFilesSummary> computeDatasetsSummary(HttpHeaders headers,
-            MultiValueMap<String, String> queryParams, String[] fileTypes) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchSingleDataset(String datasetUrn,
-            HttpHeaders headers, MultiValueMap<String, String> queryParams, int page, int size) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<List<String>> searchDataobjectPropertyValuesOnDataset(String datasetUrn, String propertyName,
-            HttpHeaders headers, MultiValueMap<String, String> queryParams, int maxCount) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<DocFilesSummary> computeDatasetsSummary(String datasetUrn, HttpHeaders headers,
-            MultiValueMap<String, String> queryParams, String[] fileTypes) {
-        // Thanks to landmark dates and requestion creation date range, determine call index oif this method
-        int insertionIdx = retrieveLandmarkIdx(queryParams);
-        DocFilesSummary summary = null;
-        switch (insertionIdx) {
-            case 0:
-                if (datasetUrn.equals(DS1_IP_ID.toString())) {
-                    // First and second call : empty opensearch request (only creationDate range), datasetIpId = DS1_IP_ID and all files
-                    if (fileTypes.length == 4) {
-                        summary = createSummaryForDs1AllFiles();
-                    } else {
-                        throw new RuntimeException(
-                                "Someone completely shit out this test ! Investigate and kick his ass !");
-                    }
-                } else {
-                    throw new RuntimeException(
-                            "Someone completely shit out this test ! Investigate and kick his ass !");
-                }
-                break;
-            case 2:
-                // When adding a selection on DS2 and DS3 (All files)
-                if ((datasetUrn == null) && (fileTypes.length == 4)) {
-                    summary = createSummaryForDs2Ds3AllFilesFirstCall();
-                } else if ((datasetUrn.equals(DS2_IP_ID.toString())) && (fileTypes.length == 4)) {
-                    // same selection adding process, recomputing DS2 selection with default type (ie ALL)
-                    summary = createSummaryForDs2AllFiles();
-                } else if ((datasetUrn.equals(DS3_IP_ID.toString())) && (fileTypes.length == 4)) {
-                    // same selection adding process, recomputing DS3 selection with default type (ie ALL)
-                    summary = createSummaryForDs3AllFiles();
-                } else {
-                    throw new RuntimeException(
-                            "Someone completely shit out this test ! Investigate and kick his ass !");
-                }
-                break;
-            case 5:
-                // Adding a selection on everything
-                if ((datasetUrn == null) && (fileTypes.length == 4)) {
-                    summary = createSummaryForAllDsAllFiles();
-                } else if (datasetUrn.equals(DS1_IP_ID.toString())) {
-                    summary = createSummaryForDs1AllFiles();
-                } else if (datasetUrn.equals(DS2_IP_ID.toString())) {
-                    // same selection adding process, recomputing DS2 selection with default type (ie RAWADATA)
-                    summary = createSummaryForDs2AllFiles();
-                } else if (datasetUrn.equals(DS3_IP_ID.toString())) {
-                    // same selection adding process, recomputing DS3 selection with default type (ie RAWADATA)
-                    summary = createSummaryForDs3AllFiles();
-                } else {
-                    throw new RuntimeException(
-                            "Someone completely shit out this test ! Investigate and kick his ass !");
-                }
-                break;
-        }
-
-        addLandmark(OffsetDateTime.now());
-        return new ResponseEntity<>(summary, HttpStatus.OK);
-    }
-
-    @Override
-    public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchDataobjectsReturnDatasets(
-            HttpHeaders headers, MultiValueMap<String, String> queryParams, int page, int size) {
-        return null;
     }
 }

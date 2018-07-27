@@ -1,4 +1,27 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.order.domain;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -9,10 +32,6 @@ import javax.persistence.NamedEntityGraph;
 import javax.persistence.OneToMany;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import fr.cnes.regards.framework.modules.jobs.domain.LeafTask;
 
@@ -29,7 +48,7 @@ public class FilesTask extends LeafTask {
 
     @OneToMany // dataFiles used on more than one DataObjects are considered as not identical.
     @JoinColumn(name = "files_task_id", foreignKey = @ForeignKey(name = "fk_files_task"))
-    private Set<OrderDataFile> files = new HashSet<>();
+    private final Set<OrderDataFile> files = new HashSet<>();
 
     /**
      * Does this task ended ? (=> jobInfo terminated and no file to be downloaded)
@@ -107,7 +126,7 @@ public class FilesTask extends LeafTask {
                 .filter(f -> (f.getState() != FileState.ERROR) && (f.getState() != FileState.DOWNLOAD_ERROR))
                 .collect(Collectors.toSet());
         // Not in error nor download_error files are all available
-        this.waitingForUser = !notInErrorFiles.isEmpty() && notInErrorFiles.stream()
-                .allMatch(f -> f.getState() == FileState.AVAILABLE);
+        this.waitingForUser = !notInErrorFiles.isEmpty()
+                && notInErrorFiles.stream().allMatch(f -> f.getState() == FileState.AVAILABLE);
     }
 }

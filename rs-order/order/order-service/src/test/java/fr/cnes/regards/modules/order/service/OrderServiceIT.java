@@ -1,3 +1,21 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.order.service;
 
 import java.io.IOException;
@@ -32,7 +50,9 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MimeType;
+import org.springframework.util.MultiValueMap;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -61,6 +81,7 @@ import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
+import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
 import fr.cnes.regards.modules.order.service.job.FilesJobParameter;
@@ -161,6 +182,27 @@ public class OrderServiceIT {
         staticTemplateService = templateService;
     }
 
+    private BasketSelectionRequest createBasketSelectionRequest(String query) {
+        BasketSelectionRequest request = new BasketSelectionRequest();
+        request.setEngineType("engine");
+        MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
+        parameters.add("q", query);
+        request.setSearchParameters(parameters);
+        return request;
+    }
+
+    private BasketDatedItemsSelection createDatasetItemSelection(long filesSize, int filesCount, int objectsCount,
+            String query) {
+
+        BasketDatedItemsSelection item = new BasketDatedItemsSelection();
+        item.setFilesSize(filesSize);
+        item.setFilesCount(filesCount);
+        item.setObjectsCount(objectsCount);
+        item.setDate(OffsetDateTime.now());
+        item.setSelectionRequest(createBasketSelectionRequest(query));
+        return item;
+    }
+
     // Reactivate this if you test template
     //    @AfterClass
     //    public static void cleanAfterAll() {
@@ -173,24 +215,14 @@ public class OrderServiceIT {
         basket.setOwner(USER_EMAIL);
 
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
-        dsSelection.setOpenSearchRequest("someone:something");
         dsSelection.setDatasetLabel("DS1");
         dsSelection.setDatasetIpid(DS1_IP_ID.toString());
         dsSelection.setFilesSize(1_000_000l);
         dsSelection.setFilesCount(1);
         dsSelection.setObjectsCount(1);
-
-        BasketDatedItemsSelection itemsSelection = new BasketDatedItemsSelection();
-        itemsSelection.setFilesSize(1_000_001l);
-        itemsSelection.setFilesCount(1);
-        itemsSelection.setObjectsCount(1);
-        itemsSelection.setOpenSearchRequest("someone:something");
-        itemsSelection.setDate(OffsetDateTime.now());
-        dsSelection.addItemsSelection(itemsSelection);
+        dsSelection.addItemsSelection(createDatasetItemSelection(1_000_001l, 1, 1, "someone:something"));
         basket.addDatasetSelection(dsSelection);
-
         basket = basketRepos.save(basket);
-
         Order order = orderService.createOrder(basket, "http://perdu.com");
         Assert.assertNotNull(order);
     }
@@ -207,10 +239,10 @@ public class OrderServiceIT {
         DatasetTask ds1OrderTask = new DatasetTask();
         ds1OrderTask.setDatasetIpid(DS1_IP_ID.toString());
         ds1OrderTask.setDatasetLabel("DS1");
-        ds1OrderTask.setOpenSearchRequest("all:ds1");
         ds1OrderTask.setFilesCount(1);
         ds1OrderTask.setFilesSize(1_000_000l);
         ds1OrderTask.setObjectsCount(1);
+        ds1OrderTask.addSelectionRequest(createBasketSelectionRequest("all:ds1"));
         order.addDatasetOrderTask(ds1OrderTask);
 
         // DS1 files sub order tasks
@@ -287,7 +319,7 @@ public class OrderServiceIT {
         dsSelection.setObjectsCount(3);
         dsSelection.setFilesCount(12);
         dsSelection.setFilesSize(3_000_171l);
-        dsSelection.setOpenSearchRequest("ALL");
+        dsSelection.addItemsSelection(createDatasetItemSelection(3_000_171l, 12, 3, "ALL"));
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
 
@@ -326,7 +358,7 @@ public class OrderServiceIT {
         dsSelection.setObjectsCount(3);
         dsSelection.setFilesCount(12);
         dsSelection.setFilesSize(3_000_171l);
-        dsSelection.setOpenSearchRequest("ALL");
+        dsSelection.addItemsSelection(createDatasetItemSelection(3_000_171l, 12, 3, "ALL"));
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
 
@@ -354,7 +386,7 @@ public class OrderServiceIT {
         dsSelection.setObjectsCount(3);
         dsSelection.setFilesCount(12);
         dsSelection.setFilesSize(3_000_171l);
-        dsSelection.setOpenSearchRequest("ALL");
+        dsSelection.addItemsSelection(createDatasetItemSelection(3_000_171l, 12, 3, "ALL"));
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
 
