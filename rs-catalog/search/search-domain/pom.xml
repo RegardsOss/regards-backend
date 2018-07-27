@@ -79,10 +79,6 @@
 			<artifactId>indexer-domain</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.indexer</groupId>
-			<artifactId>indexer-dao</artifactId>
-		</dependency>		
-		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>hateoas-regards</artifactId>
 		</dependency>
