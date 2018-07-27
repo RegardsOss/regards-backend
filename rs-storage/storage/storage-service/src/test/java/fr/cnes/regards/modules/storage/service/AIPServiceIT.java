@@ -315,7 +315,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         Assert.assertEquals("There whould be only one datastorage success event", 1, events.size());
 
         AIPEvent event = events.stream().findFirst().get();
-        Assert.assertEquals(aip.getId().toString(), event.getIpId());
+        Assert.assertEquals(aip.getId().toString(), event.getAipId());
         Optional<AIP> aipFromDB = aipDao.findOneByIpId(aip.getId().toString());
         Assert.assertEquals(AIPState.STORED, aipFromDB.get().getState());
         LOG.info("AIP {} stored", aip.getId().toString());
@@ -526,7 +526,9 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         pluginService.updatePluginConfiguration(dsConfWithDeleteDisabled);
 
         // store a first AIP
-        aip.setSipId("hello");
+        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP, EntityType.COLLECTION,
+                getDefaultTenant(), UUID.randomUUID(), 1);
+        aip.setSipId(sipId);
         storeAIP(aip, true);
         String aipIpId = aip.getId().toString();
 
@@ -536,7 +538,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         storeAIP(newAip, true);
 
         // delete the two AIP with the same sipId
-        aipService.deleteAipFromSip(aip.getSipId());
+        aipService.deleteAipFromSip(aip.getSipIdUrn());
 
         Thread.sleep(5000);
 
@@ -618,9 +620,11 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
     private AIP getAIP() throws MalformedURLException {
 
-        AIPBuilder aipBuilder = new AIPBuilder(
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, getDefaultTenant(), UUID.randomUUID(), 1),
-                null, EntityType.DATA, SESSION);
+        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP, EntityType.DATA, getDefaultTenant(),
+                UUID.randomUUID(), 1);
+        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, getDefaultTenant(),
+                sipId.getEntityId(), 1);
+        AIPBuilder aipBuilder = new AIPBuilder(aipId, sipId, null, EntityType.DATA, SESSION);
 
         Path path = Paths.get("src", "test", "resources", "data.txt");
         aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, path, "MD5", CHECKSUM);

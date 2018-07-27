@@ -118,7 +118,7 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         // wait for the AIP
         Thread.sleep(20000);
         // get the datafiles checksum
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         Set<StorageDataFile> dataFiles = dataFileDao.findAllByAip(aip);
         Set<String> dataFilesChecksum = dataFiles.stream().map(df -> df.getChecksum()).collect(Collectors.toSet());
         // ask for availability
@@ -204,7 +204,7 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
     @Test
     public void testDelete() throws InterruptedException {
         testStore();
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         int wait = 0;
         // lets wait for this AIP to be stored
         while ((aipDao.findOneByIpId(aip.getId().toString()).get().getState() != AIPState.STORED)
@@ -294,7 +294,7 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         // first lets make available the file
         testMakeAvailable();
         // lets ask for download now
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         // lets get the datafile checksum
         Set<StorageDataFile> dataFiles = dataFileDao.findAllByAip(aip);
         StorageDataFile dataFile = dataFiles.toArray(new StorageDataFile[dataFiles.size()])[0];
@@ -328,16 +328,15 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.jsonPath("$.content", Matchers.not(Matchers.empty())));
         requestBuilderCustomizer
-                .addDocumentationSnippet(
-                    RequestDocumentation.requestParameters(
-                        RequestDocumentation.parameterWithName("state").description("state the aips should be in").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName()), Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Available values: " + Arrays.stream(AIPState.values()).map(aipState -> aipState.name()).reduce((first, second) -> first + ", " + second).get())).optional(),
-                        RequestDocumentation.parameterWithName("from").description("date after which the aip should have been added to the system").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName()), Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Should respect UTC format")).optional(),
-                        RequestDocumentation.parameterWithName("to").description("date before which the aip should have been added to the system").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName()), Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Should respect UTC format")).optional(),
-                        RequestDocumentation.parameterWithName("session").description("search aips contained in the provided session").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName())),
-                        RequestDocumentation.parameterWithName("tags").description("search aips tagged with one of provided tags").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(List.class.getSimpleName())).optional()
-                    )
-                );
-
+                .addDocumentationSnippet(RequestDocumentation.requestParameters(RequestDocumentation
+                        .parameterWithName("state").description("state the aips should be in")
+                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                .value(String.class.getSimpleName()),
+                                    Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                            .value("Available values: " + Arrays.stream(AIPState.values())
+                                                    .map(aipState -> aipState.name())
+                                                    .reduce((first, second) -> first + ", " + second).get()))
+                        .optional(), RequestDocumentation.parameterWithName("from").description("date after which the aip should have been added to the system").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName()), Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Should respect UTC format")).optional(), RequestDocumentation.parameterWithName("to").description("date before which the aip should have been added to the system").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName()), Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Should respect UTC format")).optional(), RequestDocumentation.parameterWithName("session").description("search aips contained in the provided session").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName())), RequestDocumentation.parameterWithName("tags").description("search aips tagged with one of provided tags").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(List.class.getSimpleName())).optional()));
 
         performDefaultGet(AIPController.AIP_PATH, requestBuilderCustomizer, "There should be some AIP to show");
     }

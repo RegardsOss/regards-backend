@@ -25,7 +25,8 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 
 /**
- * Biggest granularity information event on what's happening on an AIP. If you need informations on each StorageDataFile,
+ * Biggest granularity information event on what's happening on an AIP. If you need informations on each
+ * StorageDataFile,
  * {@link DataFileEvent}.
  *
  * @author Sylvain Vissiere-Guerinet
@@ -36,8 +37,8 @@ public class AIPEvent implements ISubscribable {
     /**
      * Failure cause message format
      */
-    private static final String FAILURE_CAUSE_TEMPLATE =
-            "File %s could not be stored by IDataStorage( plugin " + "configuration id: %s)";
+    private static final String FAILURE_CAUSE_TEMPLATE = "File %s could not be stored by IDataStorage( plugin "
+            + "configuration id: %s)";
 
     /**
      * The aip state
@@ -47,7 +48,7 @@ public class AIPEvent implements ISubscribable {
     /**
      * IP ID of the AIP
      */
-    private String ipId;
+    private String aipId;
 
     /**
      * The failure cause
@@ -62,7 +63,9 @@ public class AIPEvent implements ISubscribable {
     /**
      * Default constructor
      */
+    @SuppressWarnings("unused")
     private AIPEvent() {
+        // Nothing to do
     }
 
     /**
@@ -70,21 +73,22 @@ public class AIPEvent implements ISubscribable {
      * @param aip
      */
     public AIPEvent(AIP aip) {
-        ipId = aip.getId().toString();
+        aipId = aip.getId().toString();
         aipState = aip.getState();
-        sipId = aip.getSipId();
+        sipId = aip.getSipId().toString();
     }
 
     /**
-     * Constructor initializing the event from an aip and uses a data file url and a plugin configuration id to make the failure cause message
+     * Constructor initializing the event from an aip and uses a data file url and a plugin configuration id to make the
+     * failure cause message
      * @param aip
      * @param dataFileUrl
      * @param pluginConfId
      */
     public AIPEvent(AIP aip, String dataFileUrl, Long pluginConfId) {
-        ipId = aip.getId().toString();
+        aipId = aip.getId().toString();
         aipState = aip.getState();
-        sipId = aip.getSipId();
+        sipId = aip.getSipId().toString();
         failureCause = String.format(FAILURE_CAUSE_TEMPLATE, dataFileUrl, pluginConfId);
     }
 
@@ -106,8 +110,8 @@ public class AIPEvent implements ISubscribable {
     /**
      * @return the ip id
      */
-    public String getIpId() {
-        return ipId;
+    public String getAipId() {
+        return aipId;
     }
 
     /**
@@ -115,7 +119,7 @@ public class AIPEvent implements ISubscribable {
      * @param pIpId
      */
     public void setIpId(String pIpId) {
-        ipId = pIpId;
+        aipId = pIpId;
     }
 
     /**

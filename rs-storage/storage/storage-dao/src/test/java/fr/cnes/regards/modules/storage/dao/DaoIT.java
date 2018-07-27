@@ -18,7 +18,29 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.OffsetDateTime;
+import java.util.Random;
+import java.util.Set;
+import java.util.UUID;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.MimeType;
+
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.EventType;
@@ -34,25 +56,6 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.time.OffsetDateTime;
-import java.util.Random;
-import java.util.Set;
-import java.util.UUID;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.util.MimeType;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -158,25 +161,29 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         aip5 = dao.save(aip5, aipSession);
     }
 
-    public AIP pseudoClone(AIP src) {
+    public AIP pseudoClone(AIP aip) {
 
-        AIPBuilder aipBuilder = new AIPBuilder(src.getId(), src.getSipId(), src.getIpType(), SESSION);
+        AIPBuilder aipBuilder = new AIPBuilder(aip.getId(), aip.getSipIdUrn(), aip.getProviderId(), aip.getIpType(),
+                SESSION);
 
-        AIP clone = aipBuilder.build(src.getProperties());
-        clone.setState(src.getState());
+        AIP clone = aipBuilder.build(aip.getProperties());
+        clone.setState(aip.getState());
         return clone;
     }
 
     public AIP generateRandomAIP() throws NoSuchAlgorithmException, MalformedURLException {
 
-        UniformResourceName ipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.COLLECTION, "tenant",
+        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP, EntityType.COLLECTION, "tenant",
                 UUID.randomUUID(), 1);
-        String sipId = String.valueOf(generateRandomString(new Random(), 40));
+        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.COLLECTION, "tenant",
+                sipId.getEntityId(), 1);
+
+        String providerId = String.valueOf(generateRandomString(new Random(), 40));
 
         // Init AIP builder
-        AIPBuilder aipBuilder = new AIPBuilder(ipId, sipId, EntityType.DATA, SESSION);
+        AIPBuilder aipBuilder = new AIPBuilder(aipId, sipId, providerId, EntityType.DATA, SESSION);
 
-        return aipBuilder.build(generateRandomInformationPackageProperties(ipId));
+        return aipBuilder.build(generateRandomInformationPackageProperties(aipId));
     }
 
     public InformationPackageProperties generateRandomInformationPackageProperties(UniformResourceName ipId)

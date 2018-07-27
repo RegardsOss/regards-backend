@@ -288,7 +288,7 @@ public class AIPController implements IResourceController<AIP> {
             throws ModuleException {
         List<RejectedAip> rejectedAips = aipService.applyRetryChecks(aipIpIds);
         if (!rejectedAips.isEmpty()) {
-            rejectedAips.forEach(ra -> aipIpIds.remove(ra.getIpId()));
+            rejectedAips.forEach(ra -> aipIpIds.remove(ra.getAipId()));
             if (aipIpIds.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.UNPROCESSABLE_ENTITY);
             }
@@ -349,13 +349,13 @@ public class AIPController implements IResourceController<AIP> {
             throws ModuleException {
         List<RejectedSip> notHandledSips = Lists.newArrayList();
         for (String sipIpId : sipIpIds) {
-            Set<StorageDataFile> notSuppressible = aipService.deleteAipFromSip(sipIpId);
+            Set<StorageDataFile> notSuppressible = aipService.deleteAipFromSip(UniformResourceName.fromString(sipIpId));
             if (!notSuppressible.isEmpty()) {
                 StringJoiner sj = new StringJoiner(", ",
                         "This sip could not be deleted because at least one of its aip file has not be handle by the storage process: ",
                         ".");
                 notSuppressible.stream().map(sdf -> sdf.getAipEntity())
-                        .forEach(aipEntity -> sj.add(aipEntity.getIpId()));
+                        .forEach(aipEntity -> sj.add(aipEntity.getAipId()));
                 notHandledSips.add(new RejectedSip(sipIpId, sj.toString()));
             }
         }
@@ -512,7 +512,7 @@ public class AIPController implements IResourceController<AIP> {
             StringJoiner sj = new StringJoiner(", ",
                     "This aip could not be deleted because at least one of his files has not be handle by the storage process: ",
                     ".");
-            notSuppressible.stream().map(sdf -> sdf.getAipEntity()).forEach(aipEntity -> sj.add(aipEntity.getIpId()));
+            notSuppressible.stream().map(sdf -> sdf.getAipEntity()).forEach(aipEntity -> sj.add(aipEntity.getAipId()));
             return new ResponseEntity<>(sj.toString(), HttpStatus.CONFLICT);
         }
     }

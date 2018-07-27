@@ -157,6 +157,6 @@ public class DataFileDao implements IDataFileDao {
 
 
     private Optional<AIPEntity> getAipDataBase(StorageDataFile dataFile) {
-        return aipRepo.findOneByIpId(dataFile.getAipEntity().getIpId());
+        return aipRepo.findOneByIpId(dataFile.getAipEntity().getAipId());
     }
 }

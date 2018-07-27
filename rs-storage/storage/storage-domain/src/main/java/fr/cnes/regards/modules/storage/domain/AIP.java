@@ -33,6 +33,11 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 public class AIP extends AbstractInformationPackage<UniformResourceName> {
 
     /**
+     * Provider id
+     */
+    private String providerId;
+
+    /**
      * SIP ID
      */
     private String sipId;
@@ -74,12 +79,20 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
         return sipId;
     }
 
+    public UniformResourceName getSipIdUrn() {
+        return UniformResourceName.fromString(sipId);
+    }
+
     /**
      * Set the sip id
      * @param sipId
      */
     public void setSipId(String sipId) {
         this.sipId = sipId;
+    }
+
+    public void setSipId(UniformResourceName sipId) {
+        this.sipId = sipId.toString();
     }
 
     public boolean isRetry() {
@@ -95,5 +108,13 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
      */
     public String getSession() {
         return this.getProperties().getPdi().getProvenanceInformation().getSession();
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
     }
 }

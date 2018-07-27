@@ -982,9 +982,11 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
      */
     private AIP getAIP() throws MalformedURLException {
 
-        AIPBuilder aipBuilder = new AIPBuilder(
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, getDefaultTenant(), UUID.randomUUID(), 1),
-                null, EntityType.DATA, SESSION);
+        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP, EntityType.DATA, getDefaultTenant(),
+                UUID.randomUUID(), 1);
+        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, getDefaultTenant(),
+                sipId.getEntityId(), 1);
+        AIPBuilder aipBuilder = new AIPBuilder(aipId, sipId, null, EntityType.DATA, SESSION);
 
         Path path = Paths.get("src", "test", "resources", "data.txt");
         aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, path, "MD5",

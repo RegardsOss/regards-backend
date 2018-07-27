@@ -266,9 +266,14 @@ public class AipClientIT extends AbstractRegardsWebIT {
      */
     @Test
     public void testCreateAIP() throws IOException, NoSuchAlgorithmException, InterruptedException {
+
+        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP, EntityType.DATASET, getDefaultTenant(),
+                UUID.randomUUID(), 1);
+        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, getDefaultTenant(),
+                sipId.getEntityId(), 1);
+
         // Create new AIP
-        AIPBuilder builder = new AIPBuilder(new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-                getDefaultTenant(), UUID.randomUUID(), 1), "clientAipTest", EntityType.DATA, "Session 1");
+        AIPBuilder builder = new AIPBuilder(aipId, sipId, "clientAipTest", EntityType.DATA, "Session 1");
         // Init a test file to add with the new AIP.
         Path file = initTestFile();
 

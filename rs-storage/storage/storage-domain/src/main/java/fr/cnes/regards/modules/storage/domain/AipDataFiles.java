@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.Sets;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
 /**
@@ -27,7 +26,8 @@ public class AipDataFiles {
     /**
      * Default constructor
      */
-    public AipDataFiles() {}
+    public AipDataFiles() {
+    }
 
     /**
      * Constructor providing the aip and data files to extract the public information
@@ -35,7 +35,7 @@ public class AipDataFiles {
     public AipDataFiles(AIP aip, StorageDataFile... dataFiles) {
         this.aip = aip;
         // only set files public information if there is information to set
-        if (dataFiles != null && dataFiles.length != 0) {
+        if ((dataFiles != null) && (dataFiles.length != 0)) {
             this.dataFiles.addAll(Arrays.stream(dataFiles).map(DataFileDto::fromDataFile).collect(Collectors.toSet()));
         }
     }

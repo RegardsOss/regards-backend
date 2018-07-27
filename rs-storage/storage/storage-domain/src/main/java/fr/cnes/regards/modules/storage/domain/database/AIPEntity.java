@@ -1,12 +1,7 @@
 package fr.cnes.regards.modules.storage.domain.database;
 
-import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
-import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
-import fr.cnes.regards.framework.oais.Event;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.AIPState;
 import java.time.OffsetDateTime;
+
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Embedded;
@@ -24,9 +19,17 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
+
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
+
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.oais.Event;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.storage.domain.AIP;
+import fr.cnes.regards.modules.storage.domain.AIPState;
 
 /**
  * Metadata of an AIP metadata.
@@ -36,12 +39,12 @@ import org.hibernate.annotations.TypeDefs;
  */
 @Entity
 @Table(name = "t_aip",
-        indexes = {@Index(name = "idx_aip_ip_id", columnList = "ip_id"),
+        indexes = { @Index(name = "idx_aip_ip_id", columnList = "aip_id"),
                 @Index(name = "idx_aip_state", columnList = "state"),
                 @Index(name = "idx_aip_submission_date", columnList = "submission_date"),
-                @Index(name = "idx_aip_last_event_date", columnList = "date")},
-        uniqueConstraints = {@UniqueConstraint(name = "uk_aip_ipId", columnNames = "ip_id")})
-@TypeDefs({@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)})
+                @Index(name = "idx_aip_last_event_date", columnList = "date") },
+        uniqueConstraints = { @UniqueConstraint(name = "uk_aip_ipId", columnNames = "aip_id") })
+@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class AIPEntity {
 
     /**
@@ -61,14 +64,20 @@ public class AIPEntity {
      * private Id for the application, it's a {@link UniformResourceName} but due to the need of retrieving all AIP's
      * version(which is in {@link UniformResourceName}) it's mapped to a String, validated as a URN
      */
-    @Column(name = "ip_id", length = MAX_URN_SIZE)
-    private String ipId;
+    @Column(name = "aip_id", length = MAX_URN_SIZE)
+    private String aipId;
 
     /**
      * The aip sip id
      */
     @Column(name = "sip_id", length = MAX_URN_SIZE)
     private String sipId;
+
+    /**
+     * Provider id
+     */
+    @Column(name = "provider_id", length = 100)
+    private String providerId;
 
     /**
      * AIP state
@@ -122,7 +131,7 @@ public class AIPEntity {
      * @param aipSession
      */
     public AIPEntity(AIP aip, AIPSession aipSession) {
-        this.ipId = aip.getId().toString();
+        this.aipId = aip.getId().toString();
         this.sipId = aip.getSipId();
         this.state = aip.getState();
         this.lastEvent = aip.getLastEvent();
@@ -149,16 +158,24 @@ public class AIPEntity {
     /**
      * @return the ip id
      */
-    public String getIpId() {
-        return ipId;
+    public String getAipId() {
+        return aipId;
+    }
+
+    public UniformResourceName getAipIdUrn() {
+        return UniformResourceName.fromString(aipId);
     }
 
     /**
      * Set the ip id
-     * @param ipId
+     * @param aipId
      */
-    public void setIpId(String ipId) {
-        this.ipId = ipId;
+    public void setAipId(String aipId) {
+        this.aipId = aipId;
+    }
+
+    public void setAipId(UniformResourceName aipId) {
+        this.aipId = aipId.toString();
     }
 
     /**
@@ -168,12 +185,20 @@ public class AIPEntity {
         return sipId;
     }
 
+    public UniformResourceName getSipIdUrn() {
+        return UniformResourceName.fromString(sipId);
+    }
+
     /**
      * set the sip id
      * @param sipId
      */
     public void setSipId(String sipId) {
         this.sipId = sipId;
+    }
+
+    public void setSipId(UniformResourceName sipId) {
+        this.sipId = sipId.toString();
     }
 
     /**
@@ -228,7 +253,6 @@ public class AIPEntity {
         return aip;
     }
 
-
     /**
      * @return the session identifier
      */
@@ -263,12 +287,12 @@ public class AIPEntity {
 
         AIPEntity that = (AIPEntity) o;
 
-        return ipId != null ? ipId.equals(that.ipId) : that.ipId == null;
+        return aipId != null ? aipId.equals(that.aipId) : that.aipId == null;
     }
 
     @Override
     public int hashCode() {
-        return ipId != null ? ipId.hashCode() : 0;
+        return aipId != null ? aipId.hashCode() : 0;
     }
 
     public boolean isRetry() {
@@ -277,5 +301,13 @@ public class AIPEntity {
 
     public void setRetry(boolean retry) {
         this.retry = retry;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
     }
 }
