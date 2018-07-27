@@ -319,7 +319,7 @@ public class DataStorageService implements IDataStorageService {
     @Override
     public void handleDeletionSuccess(StorageDataFile dataFileDeleted, URL deletedUrl, String checksumOfDeletedFile) {
         // Get the associated AIP of the deleted StorageDataFile from db
-        Optional<AIP> optionalAssociatedAIP = aipDao.findOneByIpId(dataFileDeleted.getAip().getId().toString());
+        Optional<AIP> optionalAssociatedAIP = aipDao.findOneByAipId(dataFileDeleted.getAip().getId().toString());
         // Verify that deleted file checksum match StorageDataFile checksum
         if (optionalAssociatedAIP.isPresent() && dataFileDeleted.getChecksum().equals(checksumOfDeletedFile)) {
             AIP associatedAIP = optionalAssociatedAIP.get();
@@ -406,7 +406,7 @@ public class DataStorageService implements IDataStorageService {
         Optional<StorageDataFile> optionalData = dataFileDao.findLockedOneById(event.getDataFileId());
         if (optionalData.isPresent()) {
             StorageDataFile data = optionalData.get();
-            Optional<AIP> optionalAssociatedAip = aipDao.findOneByIpId(data.getAip().getId().toString());
+            Optional<AIP> optionalAssociatedAip = aipDao.findOneByAipId(data.getAip().getId().toString());
             if (optionalAssociatedAip.isPresent()) {
                 AIP associatedAIP = optionalAssociatedAip.get();
                 switch (type) {

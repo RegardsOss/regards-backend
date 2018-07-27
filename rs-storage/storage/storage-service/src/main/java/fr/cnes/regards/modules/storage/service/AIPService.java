@@ -344,7 +344,7 @@ public class AIPService implements IAIPService {
             List<String> rejectionReasons = Lists.newArrayList();
             String ipId = aip.getId().toString();
             // first of all lets see if there already is an aip with this ip id into the database
-            if (aipDao.findOneByIpId(ipId).isPresent()) {
+            if (aipDao.findOneByAipId(ipId).isPresent()) {
                 rejectionReasons.add(String.format("AIP with ip id %s already exists", ipId));
                 rejected = true;
             }
@@ -445,7 +445,7 @@ public class AIPService implements IAIPService {
     @Override
     public void storeRetry(Set<String> aipIpIds) throws ModuleException {
         // lets get the data file which are in storage error state and ask for their storage, once again
-        Set<AIP> failedAips = aipDao.findAllByIpIdIn(aipIpIds);
+        Set<AIP> failedAips = aipDao.findAllByAipIdIn(aipIpIds);
         for (AIP aip : failedAips) {
             if (AIPState.STORAGE_ERROR.equals(aip.getState())) {
                 aip.setState(AIPState.VALID);
@@ -592,7 +592,7 @@ public class AIPService implements IAIPService {
 
     @Override
     public Set<StorageDataFile> retrieveAIPDataFiles(UniformResourceName pIpId) throws ModuleException {
-        Optional<AIP> aip = aipDao.findOneByIpId(pIpId.toString());
+        Optional<AIP> aip = aipDao.findOneByAipId(pIpId.toString());
         if (aip.isPresent()) {
             if (!getSecurityDelegationPlugin().hasAccess(pIpId.toString())) {
                 throw new EntityOperationForbiddenException(pIpId.toString(), AIP.class, AIP_ACCESS_FORBIDDEN);
@@ -865,7 +865,7 @@ public class AIPService implements IAIPService {
         List<RejectedAip> rejectedAips = Lists.newArrayList();
         for (String ipId : aipIpIds) {
             List<String> rejectionReasons = Lists.newArrayList();
-            if (!aipDao.findOneByIpId(ipId).isPresent()) {
+            if (!aipDao.findOneByAipId(ipId).isPresent()) {
                 rejectionReasons.add(String.format("AIP with ip id %s does not exists", ipId));
                 rejectedAips.add(new RejectedAip(ipId, rejectionReasons));
             }
@@ -880,7 +880,7 @@ public class AIPService implements IAIPService {
 
     @Override
     public List<Event> retrieveAIPHistory(UniformResourceName ipId) throws ModuleException {
-        Optional<AIP> aip = aipDao.findOneByIpId(ipId.toString());
+        Optional<AIP> aip = aipDao.findOneByAipId(ipId.toString());
         if (aip.isPresent()) {
             if (!getSecurityDelegationPlugin().hasAccess(ipId.toString())) {
                 throw new EntityOperationForbiddenException(ipId.toString(), AIP.class, AIP_ACCESS_FORBIDDEN);
@@ -893,12 +893,12 @@ public class AIPService implements IAIPService {
 
     @Override
     public Set<AIP> retrieveAipsBulk(Set<String> ipIds) {
-        return aipDao.findAllByIpIdIn(ipIds);
+        return aipDao.findAllByAipIdIn(ipIds);
     }
 
     @Override
     public AIP retrieveAip(String ipId) throws EntityNotFoundException {
-        return aipDao.findOneByIpId(ipId).orElseThrow(() -> new EntityNotFoundException(ipId, AIP.class));
+        return aipDao.findOneByAipId(ipId).orElseThrow(() -> new EntityNotFoundException(ipId, AIP.class));
     }
 
     @Override
@@ -910,7 +910,7 @@ public class AIPService implements IAIPService {
     @Override
     public AIP updateAip(String ipId, AIP updated, String updateMessage)
             throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException {
-        Optional<AIP> oldAipOpt = aipDao.findOneByIpId(ipId);
+        Optional<AIP> oldAipOpt = aipDao.findOneByAipId(ipId);
         // first lets check for issues
         if (!oldAipOpt.isPresent()) {
             throw new EntityNotFoundException(ipId, AIP.class);
@@ -1024,7 +1024,7 @@ public class AIPService implements IAIPService {
 
     @Override
     public Set<StorageDataFile> deleteAip(String ipId) throws ModuleException {
-        Optional<AIP> toBeDeletedOpt = aipDao.findOneByIpId(ipId);
+        Optional<AIP> toBeDeletedOpt = aipDao.findOneByAipId(ipId);
         if (toBeDeletedOpt.isPresent()) {
             AIP toBeDeleted = toBeDeletedOpt.get();
             return deleteAip(toBeDeleted);
@@ -1325,7 +1325,7 @@ public class AIPService implements IAIPService {
     public Pair<StorageDataFile, InputStream> getAIPDataFile(String pAipId, String pChecksum)
             throws ModuleException, IOException {
         // First find the AIP
-        Optional<AIP> oaip = aipDao.findOneByIpId(pAipId);
+        Optional<AIP> oaip = aipDao.findOneByAipId(pAipId);
         if (oaip.isPresent()) {
             AIP aip = oaip.get();
             if (!getSecurityDelegationPlugin().hasAccess(pAipId)) {

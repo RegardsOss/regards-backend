@@ -42,7 +42,7 @@ public class AIPDao implements IAIPDao {
     @Override
     public AIP save(AIP toSave, AIPSession aipSession) {
         AIPEntity toSaveInDb = new AIPEntity(toSave, aipSession);
-        Optional<AIPEntity> fromDb = repo.findOneByIpId(toSave.getId().toString());
+        Optional<AIPEntity> fromDb = repo.findOneByAipId(toSave.getId().toString());
         if (fromDb.isPresent()) {
             toSaveInDb.setId(fromDb.get().getId());
         }
@@ -76,8 +76,8 @@ public class AIPDao implements IAIPDao {
     }
 
     @Override
-    public Set<AIP> findAllByIpIdStartingWith(String ipIdWithoutVersion) {
-        return repo.findAllByIpIdStartingWith(ipIdWithoutVersion).stream().map(this::buildAipFromAIPEntity)
+    public Set<AIP> findAllByIpIdStartingWith(String aipIdWithoutVersion) {
+        return repo.findAllByAipIdStartingWith(aipIdWithoutVersion).stream().map(this::buildAipFromAIPEntity)
                 .collect(Collectors.toSet());
     }
 
@@ -94,8 +94,8 @@ public class AIPDao implements IAIPDao {
     }
 
     @Override
-    public Optional<AIP> findOneByIpId(String ipId) {
-        Optional<AIPEntity> aipDatabase = repo.findOneByIpId(ipId);
+    public Optional<AIP> findOneByAipId(String aipId) {
+        Optional<AIPEntity> aipDatabase = repo.findOneByAipId(aipId);
         if (aipDatabase.isPresent()) {
             return Optional.of(buildAipFromAIPEntity(aipDatabase.get()));
         } else {
@@ -115,20 +115,20 @@ public class AIPDao implements IAIPDao {
 
     @Override
     public void remove(AIP aip) {
-        Optional<AIPEntity> opt = repo.findOneByIpId(aip.getId().toString());
+        Optional<AIPEntity> opt = repo.findOneByAipId(aip.getId().toString());
         if (opt.isPresent()) {
             repo.delete(opt.get());
         }
     }
 
     @Override
-    public Set<AIP> findAllByIpIdIn(Collection<String> ipIds) {
-        return repo.findAllByIpIdIn(ipIds).stream().map(this::buildAipFromAIPEntity).collect(Collectors.toSet());
+    public Set<AIP> findAllByAipIdIn(Collection<String> aipIds) {
+        return repo.findAllByAipIdIn(aipIds).stream().map(this::buildAipFromAIPEntity).collect(Collectors.toSet());
     }
 
     @Override
-    public Stream<UniformResourceName> findUrnsByIpIdIn(Collection<String> ipIds) {
-        return repo.findByIpIdIn(ipIds).map(aipEntity -> aipEntity.getAip().getId());
+    public Stream<UniformResourceName> findUrnsByAipIdIn(Collection<String> aipIds) {
+        return repo.findByAipIdIn(aipIds).map(aipEntity -> aipEntity.getAip().getId());
     }
 
     @Override
@@ -137,8 +137,8 @@ public class AIPDao implements IAIPDao {
     }
 
     @Override
-    public Set<AIP> findAllBySipId(String sipIpId) {
-        return repo.findAllBySipId(sipIpId).stream().map(this::buildAipFromAIPEntity).collect(Collectors.toSet());
+    public Set<AIP> findAllBySipId(String sipId) {
+        return repo.findAllBySipId(sipId).stream().map(this::buildAipFromAIPEntity).collect(Collectors.toSet());
     }
 
     @Override

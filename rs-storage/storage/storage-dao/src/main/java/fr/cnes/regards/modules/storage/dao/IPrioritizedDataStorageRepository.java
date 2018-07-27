@@ -15,7 +15,8 @@ import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 public interface IPrioritizedDataStorageRepository extends JpaRepository<PrioritizedDataStorage, Long> {
 
     /**
-     * We want the {@link PrioritizedDataStorage} with the lowest priority, which means the highest value of the attribute priority.
+     * We want the {@link PrioritizedDataStorage} with the lowest priority, which means the highest value of the
+     * attribute priority.
      * To do so, we order by descending priority and take the first one
      * @param dataStorageType IDataStorage type
      * @return the less prioritized
@@ -26,19 +27,21 @@ public interface IPrioritizedDataStorageRepository extends JpaRepository<Priorit
 
     Optional<PrioritizedDataStorage> findOneById(Long pluginConfId);
 
-    Set<PrioritizedDataStorage> findAllByDataStorageTypeAndPriorityGreaterThanOrderByPriorityAsc(DataStorageType dataStorageType,
-            Long priority);
+    Set<PrioritizedDataStorage> findAllByDataStorageTypeAndPriorityGreaterThanOrderByPriorityAsc(
+            DataStorageType dataStorageType, Long priority);
+
     List<PrioritizedDataStorage> findAllByDataStorageTypeOrderByPriorityAsc(DataStorageType dataStorageType);
 
     /**
-     * We want the active {@link PrioritizedDataStorage} with the highest priority, which means the lowest value of the attribute priority.
+     * We want the active {@link PrioritizedDataStorage} with the highest priority, which means the lowest value of the
+     * attribute priority.
      * To do so, we order by ascending priority and take the first one
      * @param dataStorageType IDataStorage type
      * @param pluginConfActivity the plugin configuration activeness
      * @return the most prioritized
      */
-    PrioritizedDataStorage findFirstByDataStorageTypeAndDataStorageConfigurationActiveOrderByPriorityAsc(DataStorageType dataStorageType,
-            boolean pluginConfActivity);
+    PrioritizedDataStorage findFirstByDataStorageTypeAndDataStorageConfigurationActiveOrderByPriorityAsc(
+            DataStorageType dataStorageType, boolean pluginConfActivity);
 
     PrioritizedDataStorage findOneByDataStorageTypeAndPriority(DataStorageType dataStorageType, long priority);
 }

@@ -148,15 +148,15 @@ public class DataFileDao implements IDataFileDao {
     }
 
     private Optional<AIPEntity> getAipDataBase(AIP aip) {
-        return aipRepo.findOneByIpId(aip.getId().toString());
+        return aipRepo.findOneByAipId(aip.getId().toString());
     }
 
     private Collection<AIPEntity> findAipsDataBase(Collection<AIP> aips) {
-        return aipRepo.findAllByIpIdIn(aips.stream().map(aip -> aip.getId().toString()).collect(Collectors.toSet()));
+        return aipRepo.findAllByAipIdIn(aips.stream().map(aip -> aip.getId().toString()).collect(Collectors.toSet()));
     }
 
 
     private Optional<AIPEntity> getAipDataBase(StorageDataFile dataFile) {
-        return aipRepo.findOneByIpId(dataFile.getAipEntity().getAipId());
+        return aipRepo.findOneByAipId(dataFile.getAipEntity().getAipId());
     }
 }

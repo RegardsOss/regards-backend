@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.hamcrest.Matchers;
@@ -27,6 +28,9 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.oais.EventType;
+import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -139,13 +143,12 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         testStore();
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation
-                .pathParameters(RequestDocumentation.parameterWithName("ip_id").description("the AIP identifier")
-                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
-                                .value(String.class.getSimpleName()),
-                                    Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                            .value("Should respect UniformResourceName pattern"))));
-        performDefaultGet(AIPController.AIP_PATH + AIPController.ID_PATH, requestBuilderCustomizer,
+        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+                .parameterWithName(AIPController.AIP_ID_PATH_PARAM).description("the AIP identifier")
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName()),
+                            Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                    .value("Should respect UniformResourceName pattern"))));
+        performDefaultGet(AIPController.AIP_PATH + AIPController.AIP_ID_PATH, requestBuilderCustomizer,
                           "we should have the aip", aip.getId().toString());
     }
 
@@ -164,7 +167,7 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
                 .jsonPath("$.properties.pdi.provenanceInformation.history[?(@.type == \"" + EventType.DELETION.name()
                         + "\")].date", NotNull.NOT_NULL));
-        performDefaultGet(AIPController.AIP_PATH + AIPController.ID_PATH, requestBuilderCustomizer,
+        performDefaultGet(AIPController.AIP_PATH + AIPController.AIP_ID_PATH, requestBuilderCustomizer,
                           "we should have the aip", aip.getId().toString());
     }
 
@@ -190,7 +193,8 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
                 .pathParameters(RequestDocumentation.parameterWithName("tag")
                         .description("the tag with which AIPs should be tagged")
                         .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
-                                .value(String.class.getSimpleName())), RequestDocumentation.parameterWithName("ip_id")
+                                .value(String.class.getSimpleName())), RequestDocumentation
+                                        .parameterWithName(AIPController.AIP_ID_PATH_PARAM)
                                         .description("the AIP identifier")
                                         .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
                                                 .value(String.class.getSimpleName()),
@@ -207,7 +211,7 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         int wait = 0;
         // lets wait for this AIP to be stored
-        while ((aipDao.findOneByIpId(aip.getId().toString()).get().getState() != AIPState.STORED)
+        while ((aipDao.findOneByAipId(aip.getId().toString()).get().getState() != AIPState.STORED)
                 && (wait < MAX_WAIT)) {
             Thread.sleep(1000);
             wait += 1000;
@@ -215,13 +219,12 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         Assert.assertTrue("AIP was not fully stored in time: " + wait, wait < MAX_WAIT);
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
-        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation
-                .pathParameters(RequestDocumentation.parameterWithName("ip_id").description("the AIP identifier")
-                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
-                                .value(String.class.getSimpleName()),
-                                    Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                            .value("Should respect UniformResourceName pattern"))));
-        performDefaultDelete(AIPController.AIP_PATH + AIPController.ID_PATH, requestBuilderCustomizer,
+        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+                .parameterWithName(AIPController.AIP_ID_PATH_PARAM).description("the AIP identifier")
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName()),
+                            Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                    .value("Should respect UniformResourceName pattern"))));
+        performDefaultDelete(AIPController.AIP_PATH + AIPController.AIP_ID_PATH, requestBuilderCustomizer,
                              "deletion of this aip should be possible", aip.getId().toString());
     }
 
@@ -231,10 +234,16 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
 
         Set<String> sipIpIds = new HashSet<>();
-        sipIpIds.add("SIPIPIDTEST1");
-        sipIpIds.add("SIPIPIDTEST2");
+        sipIpIds.add(getRamdomSipId());
+        sipIpIds.add(getRamdomSipId());
         performDefaultPost(AIPController.AIP_PATH + AIPController.AIP_BULK_DELETE, sipIpIds, requestBuilderCustomizer,
                            "AIPs should be deleted");
+    }
+
+    private String getRamdomSipId() {
+        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP, EntityType.COLLECTION,
+                getDefaultTenant(), UUID.randomUUID(), 1);
+        return sipId.toString();
     }
 
     @Test
@@ -243,12 +252,11 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         testStore();
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation
-                .pathParameters(RequestDocumentation.parameterWithName("ip_id").description("the AIP identifier")
-                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
-                                .value(String.class.getSimpleName()),
-                                    Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                            .value("Should respect UniformResourceName pattern"))));
+        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+                .parameterWithName(AIPController.AIP_ID_PATH_PARAM).description("the AIP identifier")
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName()),
+                            Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                    .value("Should respect UniformResourceName pattern"))));
         performDefaultGet(AIPController.AIP_PATH + AIPController.OBJECT_LINK_PATH, requestBuilderCustomizer,
                           "we should have the metadata of the files of the aip", aip.getId().toString());
     }
@@ -259,12 +267,11 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         testStore();
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation
-                .pathParameters(RequestDocumentation.parameterWithName("ip_id").description("the AIP identifier")
-                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
-                                .value(String.class.getSimpleName()),
-                                    Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                            .value("Should respect UniformResourceName pattern"))));
+        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+                .parameterWithName(AIPController.AIP_ID_PATH_PARAM).description("the AIP identifier")
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName()),
+                            Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                    .value("Should respect UniformResourceName pattern"))));
         performDefaultGet(AIPController.AIP_PATH + AIPController.VERSION_PATH, requestBuilderCustomizer,
                           "we should have the different versions of an aip", aip.getId().toString());
     }
@@ -275,12 +282,11 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         testStore();
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation
-                .pathParameters(RequestDocumentation.parameterWithName("ip_id").description("the AIP identifier")
-                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
-                                .value(String.class.getSimpleName()),
-                                    Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                            .value("Should respect UniformResourceName pattern"))));
+        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+                .parameterWithName(AIPController.AIP_ID_PATH_PARAM).description("the AIP identifier")
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName()),
+                            Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                    .value("Should respect UniformResourceName pattern"))));
         performDefaultGet(AIPController.AIP_PATH + AIPController.HISTORY_PATH, requestBuilderCustomizer,
                           "we should have the history of an aip", aip.getId().toString());
     }
@@ -305,7 +311,7 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
                                                         Lists.newArrayList(dataFile.getMimeType().toString()));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
-                .parameterWithName("ip_id").description("the AIP identifier")
+                .parameterWithName(AIPController.AIP_ID_PATH_PARAM).description("the AIP identifier")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName()),
                             Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                                     .value("Should respect UniformResourceName pattern")), RequestDocumentation

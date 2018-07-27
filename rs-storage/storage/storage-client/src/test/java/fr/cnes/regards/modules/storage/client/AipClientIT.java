@@ -291,7 +291,7 @@ public class AipClientIT extends AbstractRegardsWebIT {
         AIP aip = builder.build();
         Set<AIP> aips = Sets.newHashSet(aip);
         Assert.assertFalse("AIP should not exists before test",
-                           aipDao.findOneByIpId(aip.getId().toString()).isPresent());
+                           aipDao.findOneByAipId(aip.getId().toString()).isPresent());
 
         // 1. Create new AIP
         AIPCollection aipCollection = new AIPCollection();
@@ -306,7 +306,7 @@ public class AipClientIT extends AbstractRegardsWebIT {
                           HttpStatus.OK.equals(resp2.getStatusCode()));
         Assert.assertTrue("There should be only one AIP retrieve, the one created before",
                           resp2.getBody().getMetadata().getTotalElements() == 1);
-        aip = aipDao.findOneByIpId(aip.getId().toString()).get();
+        aip = aipDao.findOneByAipId(aip.getId().toString()).get();
 
         // 3. Retrieve associated files (RAWDATA and AIP metadata)
         ResponseEntity<List<OAISDataObject>> resp3 = client.retrieveAIPFiles(aip.getId().toString());
