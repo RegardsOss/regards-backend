@@ -20,7 +20,7 @@ services:
     environment:
       - BRANCH_NAME
       - WORKSPACE
-      - MODE=Deploy
+      - MODE
       - CI_DIR
     volumes:
       - /DATA/maven-multibranch-repository:/localRepository
