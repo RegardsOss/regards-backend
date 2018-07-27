@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.MultiValueMap;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
@@ -62,16 +61,16 @@ public interface ISearchEngine<R, E, T, V extends Collection<?>> {
      * method on {@link SearchContext#getDatasetUrn()} and add it to the search criterions.</li>
      * </ol>
      */
-    ResponseEntity<R> search(SearchContext context) throws ModuleException;
+    ResponseEntity<R> search(SearchContext context, ISearchEngine<?, ?, ?, ?> requestParser) throws ModuleException;
 
     /**
      * Parse query parameters and transform to {@link ICriterion} (available for all search method)<br/>
      * Use {@link ICriterion} as criterion builder.<br/>
      * <b>This method implementation is required for subsetting feature.</b>
-     * @param queryParams all query parameters
+     * @param context containing all query parameters
      * @return {@link ICriterion}
      */
-    ICriterion parse(MultiValueMap<String, String> queryParams) throws ModuleException;
+    ICriterion parse(SearchContext context) throws ModuleException;
 
     /**
      * Additional extra path handling. Not supported by default<br/>

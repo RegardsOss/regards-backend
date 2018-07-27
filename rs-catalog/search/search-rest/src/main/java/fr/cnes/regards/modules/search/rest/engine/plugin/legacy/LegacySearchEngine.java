@@ -65,7 +65,7 @@ public class LegacySearchEngine implements
     /**
      * Query parameter for facets
      */
-    private static final String FACETS = "facets";
+    public static final String FACETS = "facets";
 
     /**
      * Pagination property
@@ -106,15 +106,15 @@ public class LegacySearchEngine implements
         return true;
     }
 
-    @Override
-    public ICriterion parse(MultiValueMap<String, String> queryParams) throws ModuleException {
+    private ICriterion parse(MultiValueMap<String, String> queryParams) throws ModuleException {
         return openSearchService.parse(queryParams);
     }
 
     /**
      * Parse request parameters and and add dataset context if necessary
      */
-    private ICriterion parse(SearchContext context) throws ModuleException {
+    @Override
+    public ICriterion parse(SearchContext context) throws ModuleException {
         // Convert parameters to business criterion
         ICriterion criterion = parse(context.getQueryParams());
         // Manage dataset URN path parameter as criterion
@@ -127,10 +127,15 @@ public class LegacySearchEngine implements
     }
 
     @Override
-    public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> search(SearchContext context)
-            throws ModuleException {
+    public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> search(SearchContext context,
+            ISearchEngine<?, ?, ?, ?> parser) throws ModuleException {
         // Convert parameters to business criterion considering dataset
-        ICriterion criterion = parse(context);
+        return doSearch(parser.parse(context), context);
+
+    }
+
+    public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> doSearch(ICriterion criterion,
+            SearchContext context) throws ModuleException {
         // Extract facets
         List<String> facets = context.getQueryParams().get(FACETS);
         // Do business search

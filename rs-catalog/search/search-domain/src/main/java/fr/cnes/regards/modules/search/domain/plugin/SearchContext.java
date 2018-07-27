@@ -59,6 +59,12 @@ public class SearchContext {
     private String engineType;
 
     /**
+     * Optional type of request parser. The response formater is the given engineType.
+     * If this parameter is null, so the parser is the same engine as the response formater.
+     */
+    private String engineRequestParserType;
+
+    /**
      * Optional path parameter to retrieve a single entity idenfied by this URN
      */
     private UniformResourceName urn;
@@ -202,11 +208,16 @@ public class SearchContext {
         context.setSearchType(searchType);
         context.setEngineType(engineType);
         context.setHeaders(headers);
+        List<String> parser = queryParams.get(SearchEngineMappings.SEARCH_REQUEST_PARSER);
+        if ((parser != null) && !parser.isEmpty()) {
+            context.setEngineRequestParserType(parser.get(0));
+        }
         // Filter spring pagination parameters if any
         MultiValueMap<String, String> queryParamsPaginationLess = new LinkedMultiValueMap<>();
         queryParamsPaginationLess.putAll(queryParams);
         queryParamsPaginationLess.remove("page");
         queryParamsPaginationLess.remove("size");
+        queryParamsPaginationLess.remove(SearchEngineMappings.SEARCH_REQUEST_PARSER);
         context.setQueryParams(queryParamsPaginationLess);
         context.setPageable(pageable);
         return context;
@@ -258,5 +269,13 @@ public class SearchContext {
     public SearchContext withDataTypes(List<DataType> dataTypes) {
         this.dateTypes = dataTypes;
         return this;
+    }
+
+    public String getEngineRequestParserType() {
+        return engineRequestParserType;
+    }
+
+    public void setEngineRequestParserType(String engineType) {
+        this.engineRequestParserType = engineType;
     }
 }

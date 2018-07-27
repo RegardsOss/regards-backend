@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.MultiValueMap;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
@@ -54,12 +53,13 @@ public class SearchEngineTest implements ISearchEngine<Object, Object, Object, L
     }
 
     @Override
-    public ResponseEntity<Object> search(SearchContext context) throws ModuleException {
+    public ResponseEntity<Object> search(SearchContext context, ISearchEngine<?, ?, ?, ?> parser)
+            throws ModuleException {
         return new ResponseEntity<Object>(associatedDataset, HttpStatus.OK);
     }
 
     @Override
-    public ICriterion parse(MultiValueMap<String, String> queryParams) throws ModuleException {
+    public ICriterion parse(SearchContext context) throws ModuleException {
         return ICriterion.all();
     }
 

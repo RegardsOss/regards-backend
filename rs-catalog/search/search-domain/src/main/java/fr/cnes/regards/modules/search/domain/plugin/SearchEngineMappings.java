@@ -172,6 +172,8 @@ public final class SearchEngineMappings {
 
     public static final String FILE_TYPES = "fileTypes";
 
+    public static final String SEARCH_REQUEST_PARSER = "parser";
+
     private SearchEngineMappings() {
         // Nothing to do
     }

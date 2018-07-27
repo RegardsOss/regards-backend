@@ -58,8 +58,9 @@ public interface ILegacySearchEngineClient {
      */
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_ALL_MAPPING)
     ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchAll(@RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> queryParams, @RequestParam(SearchEngineMappings.PAGE) int page,
-            @RequestParam(SearchEngineMappings.SIZE) int size);
+            @RequestParam MultiValueMap<String, String> queryParams,
+            @RequestParam(name = SearchEngineMappings.SEARCH_REQUEST_PARSER, required = false) String engineParserType,
+            @RequestParam(SearchEngineMappings.PAGE) int page, @RequestParam(SearchEngineMappings.SIZE) int size);
 
     /**
      * Get an entity from its URN regardless its type
@@ -76,6 +77,7 @@ public interface ILegacySearchEngineClient {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING)
     ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchAllCollections(
             @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
+            @RequestParam(name = SearchEngineMappings.SEARCH_REQUEST_PARSER, required = false) String engineParserType,
             @RequestParam(SearchEngineMappings.PAGE) int page, @RequestParam(SearchEngineMappings.SIZE) int size);
 
     /**
@@ -102,6 +104,7 @@ public interface ILegacySearchEngineClient {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DOCUMENTS_MAPPING)
     ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchAllDocuments(
             @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
+            @RequestParam(name = SearchEngineMappings.SEARCH_REQUEST_PARSER, required = false) String engineParserType,
             @RequestParam(SearchEngineMappings.PAGE) int page, @RequestParam(SearchEngineMappings.SIZE) int size);
 
     /**
@@ -128,6 +131,7 @@ public interface ILegacySearchEngineClient {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATASETS_MAPPING)
     ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchAllDatasets(
             @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
+            @RequestParam(name = SearchEngineMappings.SEARCH_REQUEST_PARSER, required = false) String engineParserType,
             @RequestParam(SearchEngineMappings.PAGE) int page, @RequestParam(SearchEngineMappings.SIZE) int size);
 
     /**
@@ -154,6 +158,7 @@ public interface ILegacySearchEngineClient {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING)
     ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchAllDataobjects(
             @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
+            @RequestParam(name = SearchEngineMappings.SEARCH_REQUEST_PARSER, required = false) String engineParserType,
             @RequestParam(SearchEngineMappings.PAGE) int page, @RequestParam(SearchEngineMappings.SIZE) int size);
 
     /**
@@ -192,8 +197,9 @@ public interface ILegacySearchEngineClient {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING)
     ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchSingleDataset(
             @PathVariable(SearchEngineMappings.DATASET_URN) String datasetUrn, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> queryParams, @RequestParam(SearchEngineMappings.PAGE) int page,
-            @RequestParam(SearchEngineMappings.SIZE) int size);
+            @RequestParam MultiValueMap<String, String> queryParams,
+            @RequestParam(name = SearchEngineMappings.SEARCH_REQUEST_PARSER, required = false) String engineParserType,
+            @RequestParam(SearchEngineMappings.PAGE) int page, @RequestParam(SearchEngineMappings.SIZE) int size);
 
     /**
      * Search property values on dataobjects of a single dataset request
@@ -223,5 +229,6 @@ public interface ILegacySearchEngineClient {
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATAOBJECTS_DATASETS_MAPPING)
     ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchDataobjectsReturnDatasets(
             @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
+            @RequestParam(name = SearchEngineMappings.SEARCH_REQUEST_PARSER, required = false) String engineParserType,
             @RequestParam(SearchEngineMappings.PAGE) int page, @RequestParam(SearchEngineMappings.SIZE) int size);
 }
