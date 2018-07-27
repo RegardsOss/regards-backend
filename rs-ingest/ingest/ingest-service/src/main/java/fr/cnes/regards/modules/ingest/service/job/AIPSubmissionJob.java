@@ -38,6 +38,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.ingest.service.store.IAIPService;
@@ -119,13 +120,13 @@ public class AIPSubmissionJob extends AbstractJob<Void> {
                 break;
             case PARTIAL_CONTENT:
                 // Some AIP are rejected
-                Map<String, List<String>> rejectionCausesByIpId = new HashMap<>();
+                Map<String, List<String>> rejectionCausesByAipId = new HashMap<>();
                 if (rejectedAips != null) {
-                    rejectedAips.forEach(aip -> rejectionCausesByIpId.put(aip.getIpId(), aip.getRejectionCauses()));
+                    rejectedAips.forEach(aip -> rejectionCausesByAipId.put(aip.getAipId(), aip.getRejectionCauses()));
                 }
                 for (AIPEntity aip : aips) {
-                    if (rejectionCausesByIpId.containsKey(aip.getIpId())) {
-                        rejectAip(aip.getIpId(), rejectionCausesByIpId.get(aip.getIpId()));
+                    if (rejectionCausesByAipId.containsKey(aip.getAipId().toString())) {
+                        rejectAip(aip.getAipIdUrn(), rejectionCausesByAipId.get(aip.getAipId().toString()));
                     } else {
                         aip.setState(AIPState.VALID);
                         aipService.save(aip);
@@ -136,7 +137,7 @@ public class AIPSubmissionJob extends AbstractJob<Void> {
                 // All AIP rejected
                 if (rejectedAips != null) {
                     for (RejectedAip aip : rejectedAips) {
-                        rejectAip(aip.getIpId(), aip.getRejectionCauses());
+                        rejectAip(UniformResourceName.fromString(aip.getAipId()), aip.getRejectionCauses());
                     }
                 }
                 break;
@@ -147,7 +148,7 @@ public class AIPSubmissionJob extends AbstractJob<Void> {
         }
     }
 
-    private void rejectAip(String aipId, List<String> rejectionCauses) {
+    private void rejectAip(UniformResourceName aipId, List<String> rejectionCauses) {
         logger.warn("AIP {} has been rejected by archival storage microservice for store action", aipId);
         StringJoiner errorMessage = new StringJoiner(", ");
         rejectionCauses.forEach(cause -> errorMessage.add(cause));

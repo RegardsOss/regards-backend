@@ -48,10 +48,10 @@ public class SIPBuilder extends IPBuilder<SIP> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPBuilder.class);
 
-    public SIPBuilder(String sipId) {
+    public SIPBuilder(String providerId) {
         super(SIP.class, EntityType.DATA);
-        Assert.hasLength(sipId, "Supply identifier is required.");
-        ip.setId(sipId);
+        Assert.hasLength(providerId, "Supply identifier is required.");
+        ip.setId(providerId);
     }
 
     /**

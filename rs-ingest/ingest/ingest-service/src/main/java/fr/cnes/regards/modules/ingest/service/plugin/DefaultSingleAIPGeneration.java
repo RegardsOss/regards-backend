@@ -40,9 +40,10 @@ import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 public class DefaultSingleAIPGeneration implements IAipGeneration {
 
     @Override
-    public List<AIP> generate(SIP sip, UniformResourceName ipId, final String sipId) {
+    public List<AIP> generate(SIP sip, UniformResourceName aipId, UniformResourceName sipId, String providerId) {
 
-        AIPBuilder builder = new AIPBuilder(ipId, sipId, EntityType.DATA, sip.getProperties().getPdi().getProvenanceInformation().getSession());
+        AIPBuilder builder = new AIPBuilder(aipId, sipId, providerId, EntityType.DATA,
+                sip.getProperties().getPdi().getProvenanceInformation().getSession());
         // Propagate BBOX
         if (sip.getBbox().isPresent()) {
             builder.setBbox(sip.getBbox().get(), sip.getCrs().orElse(null));

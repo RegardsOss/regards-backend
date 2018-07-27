@@ -55,10 +55,10 @@ public class TaggingStep extends AbstractIngestStep<List<AIP>, Void> {
         Optional<PluginConfiguration> conf = processingChain.getTagPlugin();
         if (conf.isPresent()) {
             IAipTagging tagging = this.getStepPlugin(conf.get().getId());
-            aips.forEach(aip -> LOGGER.debug("Tagging AIP \"{}\" from SIP \"{}\"", aip.getId(), aip.getSipId()));
+            aips.forEach(aip -> LOGGER.debug("Tagging AIP \"{}\" from SIP \"{}\"", aip.getId(), aip.getProviderId()));
             tagging.tag(aips);
         } else {
-            LOGGER.debug("No AIP tagging for SIP \"{}\"", aips.get(0).getSipId());
+            LOGGER.debug("No AIP tagging for SIP \"{}\"", aips.get(0).getProviderId());
         }
         return null;
     }

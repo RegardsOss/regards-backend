@@ -42,7 +42,6 @@ import org.springframework.hateoas.PagedResources.PageMetadata;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.annotation.DirtiesContext;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -142,24 +141,24 @@ public class SIPServiceTest extends AbstractSIPTest {
         AIP aip = new AIP();
         aip.setState(AIPState.STORED);
         aip.setId(UniformResourceName.fromString("URN:AIP:DATA:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
-        aip.setSipId(sipWithManyAIPs.getIpId());
+        aip.setSipId(sipWithManyAIPs.getSipIdUrn());
         simulatedStorageAips.add(aip);
         AIP aip2 = new AIP();
         aip2.setState(AIPState.STORED);
         aip2.setId(UniformResourceName.fromString("URN:AIP:DATA:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
-        aip2.setSipId(sipWithManyAIPs.getIpId());
+        aip2.setSipId(sipWithManyAIPs.getSipIdUrn());
         simulatedStorageAips.add(aip2);
         AIP aip3 = new AIP();
         aip3.setState(AIPState.STORED);
         aip3.setId(UniformResourceName.fromString("URN:AIP:DATA:DEFAULT:" + UUID.randomUUID().toString() + ":V1"));
-        aip3.setSipId(sipWithOneAIP.getIpId());
+        aip3.setSipId(sipWithOneAIP.getSipIdUrn());
         simulatedStorageAips.add(aip3);
         for (SIPEntity entity : sipWithManyVersions) {
             AIP a = new AIP();
             a.setState(AIPState.STORED);
             a.setId(UniformResourceName
                     .fromString("URN:AIP:DATA:DEFAULT:" + UUID.randomUUID().toString() + ":V" + entity.getVersion()));
-            a.setSipId(entity.getIpId());
+            a.setSipId(entity.getSipIdUrn());
             simulatedStorageAips.add(a);
         }
 
@@ -176,7 +175,7 @@ public class SIPServiceTest extends AbstractSIPTest {
     @Requirement("REGARDS_DSL_ING_PRO_660")
     @Purpose("Manage SIP deletion by ipId when SIP is associated to multiple AIPs")
     @Test
-    public void deleteByIpIdMultiplesAIPs() throws InterruptedException {
+    public void deleteBySipIdMultiplesAIPs() throws InterruptedException {
 
         // Simulate AIPClient to return AIPs associated to SIP
         Mockito.when(aipEntityClient.retrieveAIPEntities(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
@@ -185,30 +184,31 @@ public class SIPServiceTest extends AbstractSIPTest {
 
         try {
             // 1. Run sip deletion by ipId
-            sipService.deleteSIPEntitiesByIpIds(Sets.newHashSet(sipWithManyAIPs.getIpId()));
+            sipService.deleteSIPEntitiesBySipIds(Sets.newHashSet(sipWithManyAIPs.getSipIdUrn()));
             // 1.1 Check call to the archival storage for deletion of associated AIPs.
-            Mockito.verify(aipClient, Mockito.times(1)).deleteAipFromSips(Sets.newHashSet(sipWithManyAIPs.getIpId()));
+            Mockito.verify(aipClient, Mockito.times(1))
+                    .deleteAipFromSips(Sets.newHashSet(sipWithManyAIPs.getSipId().toString()));
             // 2. Simulate that one of the AIPs to delete has been successfully deleted by the archival storage
             // microservice
-            simulateAipDeletionFromStorage(getSipSimulatedAIPs(sipWithManyAIPs.getIpId()).get(0).getId());
+            simulateAipDeletionFromStorage(getSipSimulatedAIPs(sipWithManyAIPs.getSipId().toString()).get(0).getId());
             // 2.1 SIP should be in INCOMPLETE state as there is another AIP to delete
             Assert.assertTrue("SIP should be in INCOMPLETE state",
                               SIPState.INCOMPLETE.equals(sipRepository.findOne(sipWithManyAIPs.getId()).getState()));
             // 2.2 A SIPevent associated should have been sent
             Assert.assertTrue("A SIPEvent should had been sent with incomplete state for SIP",
                               handler.getReceivedEvents().stream()
-                                      .anyMatch(e -> e.getIpId().equals(sipWithManyAIPs.getIpId())
+                                      .anyMatch(e -> e.getSipId().equals(sipWithManyAIPs.getSipId())
                                               && e.getState().equals(SIPState.INCOMPLETE)));
             // 3 . Simulate the other AIP deleted by the archival storage microservice
-            simulateAipDeletionFromStorage(getSipSimulatedAIPs(sipWithManyAIPs.getIpId()).get(1).getId());
+            simulateAipDeletionFromStorage(getSipSimulatedAIPs(sipWithManyAIPs.getSipId().toString()).get(1).getId());
             // 3.1 All AIP has been deleted, SIP should be in DELETED STATE
             SIPEntity deletedSip = sipRepository.findOne(sipWithManyAIPs.getId());
             LOGGER.debug("Deleted SIP state : {}", deletedSip.getState());
             Assert.assertTrue("SIP should be in DELETED state", SIPState.DELETED.equals(deletedSip.getState()));
             // 3.2 A SIPevent associated should have been sent
-            Assert.assertTrue("A SIPEvent should had been sent with delete SIP IpId",
+            Assert.assertTrue("A SIPEvent should had been sent with delete SIP sipId",
                               handler.getReceivedEvents().stream()
-                                      .anyMatch(e -> e.getIpId().equals(sipWithManyAIPs.getIpId())
+                                      .anyMatch(e -> e.getSipId().equals(sipWithManyAIPs.getSipId().toString())
                                               && e.getState().equals(SIPState.DELETED)));
             // 3.2 SIP Last update date should be set to deletion date
             Assert.assertNotNull("Last update date should be set to deletion date for the deleted SIP",
@@ -222,7 +222,7 @@ public class SIPServiceTest extends AbstractSIPTest {
 
     @Purpose("Manage SIP deletion by ipId when SIP is associated to only one AIP")
     @Test
-    public void deleteByIpId() throws InterruptedException {
+    public void deleteBySipId() throws InterruptedException {
 
         // Simulate AIPClient to return AIPs associated to SIP
         Mockito.when(aipEntityClient.retrieveAIPEntities(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
@@ -231,19 +231,20 @@ public class SIPServiceTest extends AbstractSIPTest {
 
         try {
             // 1. Run sip deletion by ipId
-            sipService.deleteSIPEntitiesByIpIds(Sets.newHashSet(sipWithOneAIP.getIpId()));
+            sipService.deleteSIPEntitiesBySipIds(Sets.newHashSet(sipWithOneAIP.getSipIdUrn()));
             // 1.1 Check call to the archival storage for deletion of associated AIPs.
-            Mockito.verify(aipClient, Mockito.times(1)).deleteAipFromSips(Sets.newHashSet(sipWithOneAIP.getIpId()));
+            Mockito.verify(aipClient, Mockito.times(1))
+                    .deleteAipFromSips(Sets.newHashSet(sipWithOneAIP.getSipId().toString()));
             // 2. Simulate that one of the AIPs to delete has been successfully deleted by the archival storage
             // microservice
-            simulateAipDeletionFromStorage(getSipSimulatedAIPs(sipWithOneAIP.getIpId()).get(0).getId());
+            simulateAipDeletionFromStorage(getSipSimulatedAIPs(sipWithOneAIP.getSipId().toString()).get(0).getId());
             // 2.1 All AIP has been deleted, SIP should be in DELETED STATE
             SIPEntity deletedSip = sipRepository.findOne(sipWithOneAIP.getId());
             Assert.assertEquals(SIPState.DELETED, deletedSip.getState());
             // 2.1 A SIPevent associated should have been sent
-            Assert.assertTrue("A SIPEvent should had been sent with delete SIP IpId",
+            Assert.assertTrue("A SIPEvent should had been sent with delete SIP sipId",
                               handler.getReceivedEvents().stream()
-                                      .anyMatch(e -> e.getIpId().equals(sipWithOneAIP.getIpId())
+                                      .anyMatch(e -> e.getSipId().equals(sipWithOneAIP.getSipId().toString())
                                               && e.getState().equals(SIPState.DELETED)));
             // 2.2 SIP Last update date should be set to deletion date
             Assert.assertNotNull("Last update date should be set to deletion date for the deleted SIP",
@@ -258,9 +259,9 @@ public class SIPServiceTest extends AbstractSIPTest {
     @Requirement("REGARDS_DSL_ING_PRO_535")
     @Requirement("REGARDS_DSL_ING_PRO_640")
     @Requirement("REGARDS_DSL_ING_PRO_660")
-    @Purpose("Manage SIP deletion by sipId")
+    @Purpose("Manage SIP deletion by provider id")
     @Test
-    public void deleteBySipId() {
+    public void deleteByProviderId() {
 
         // Simulate AIPClient to return AIPs associated to SIP
         Mockito.when(aipEntityClient.retrieveAIPEntities(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
@@ -268,25 +269,25 @@ public class SIPServiceTest extends AbstractSIPTest {
                         .getArguments()[0]));
 
         try {
-            // 1. Run sip deletion by sipId
-            sipService.deleteSIPEntitiesForSipId(sipWithManyVersions.stream().findFirst().get().getSipId());
-            // 1.1 Check call to the archival storage for deletion of AIPs of each SIP with the same sipId.
+            // 1. Run sip deletion by provider id
+            sipService.deleteSIPEntitiesForProviderId(sipWithManyVersions.stream().findFirst().get().getProviderId());
+            // 1.1 Check call to the archival storage for deletion of AIPs of each SIP with the same provider id.
             Assert.assertTrue("For this test, the same SIP_ID should be associated to multiple SIPs",
                               sipWithManyVersions.size() > 1);
             Mockito.verify(aipClient, Mockito.times(1)).deleteAipFromSips(sipWithManyVersions.stream()
-                    .map(SIPEntity::getIpId).collect(Collectors.toSet()));
+                    .map(sip -> sip.getSipId().toString()).collect(Collectors.toSet()));
             for (SIPEntity sip : sipWithManyVersions) {
                 // 2. Simulate that one of the AIPs to delete has been successfully deleted by the archival storage
                 // microservice
-                simulateAipDeletionFromStorage(getSipSimulatedAIPs(sip.getIpId()).get(0).getId());
+                simulateAipDeletionFromStorage(getSipSimulatedAIPs(sip.getSipId()).get(0).getId());
                 // 2.1 All AIP has been deleted, SIP should be in DELETED STATE
                 SIPEntity deletedSip = sipRepository.findOne(sip.getId());
                 LOGGER.debug("Deleted SIP state : {}", deletedSip.getState());
                 Assert.assertEquals("SIP should be in DELETED state", SIPState.DELETED, deletedSip.getState());
                 // 2.1 A SIPevent associated should have been sent
-                Assert.assertTrue("A SIPEvent should had been sent with delete SIP IpId", handler.getReceivedEvents()
+                Assert.assertTrue("A SIPEvent should had been sent with delete SIP sipId", handler.getReceivedEvents()
                         .stream()
-                        .anyMatch(e -> e.getIpId().equals(sip.getIpId()) && e.getState().equals(SIPState.DELETED)));
+                        .anyMatch(e -> e.getSipId().equals(sip.getSipId()) && e.getState().equals(SIPState.DELETED)));
                 // 2.2 SIP Last update date should be set to deletion date
                 Assert.assertNotNull("Last update date should be set to deletion date for the deleted SIP",
                                      deletedSip.getLastUpdateDate());
@@ -378,8 +379,6 @@ public class SIPServiceTest extends AbstractSIPTest {
     /**
      * Simulate response from
      * {@link IAipClient#retrieveAIPs(String, AIPState, java.time.OffsetDateTime, java.time.OffsetDateTime, int, int)}
-     * @param sipId
-     * @return
      */
     private ResponseEntity<PagedResources<Resource<AIPEntity>>> simulateRetrieveAIPResponseFromStorage(String sipId) {
         Set<Resource<AIPEntity>> resources = simulatedStorageAips.stream().filter(a -> a.getSipId().equals(sipId))
@@ -387,7 +386,7 @@ public class SIPServiceTest extends AbstractSIPTest {
                     AIPEntity entity = new AIPEntity();
                     entity.setAip(a);
                     entity.setState(a.getState());
-                    entity.setIpId(a.getId().toString());
+                    entity.setAipId(a.getId().toString());
                     entity.setSipId(a.getSipId());
                     return new Resource<AIPEntity>(entity);
                 }).collect(Collectors.toSet());
@@ -411,11 +410,11 @@ public class SIPServiceTest extends AbstractSIPTest {
      * <li>Set AIP to state DELETED</li>
      * <li>Send an AIPEvent throught AMQP</li>
      * </ul>
-     * @param aipIpId
+     * @param aipId
      * @throws InterruptedException
      */
-    private void simulateAipDeletionFromStorage(UniformResourceName aipIpId) throws InterruptedException {
-        Optional<AIP> oAip = simulatedStorageAips.stream().filter(a -> a.getId().equals(aipIpId)).findFirst();
+    private void simulateAipDeletionFromStorage(UniformResourceName aipId) throws InterruptedException {
+        Optional<AIP> oAip = simulatedStorageAips.stream().filter(a -> a.getId().equals(aipId)).findFirst();
         if (oAip.isPresent()) {
             AIP aipToDelete = oAip.get();
             aipToDelete.setState(AIPState.DELETED);
@@ -426,8 +425,6 @@ public class SIPServiceTest extends AbstractSIPTest {
 
     /**
      * Get all simulated archival storag AIPs intialized in the test for the given SIP.
-     * @param sipId
-     * @return
      */
     private List<AIP> getSipSimulatedAIPs(String sipId) {
         return simulatedStorageAips.stream().filter(a -> a.getSipId().equals(sipId)).collect(Collectors.toList());

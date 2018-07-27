@@ -97,15 +97,15 @@ public class IngestProcessingJob extends AbstractJob<Void> {
             handleInvalidParameter(SIP_PARAMETER, message);
         }
 
-        super.logger.info("Parameters set for SIP \"{}\" (\"{}\") and processing chain \"{}\"", entity.getIpId(),
-                          entity.getSipId(), processingChainName);
+        super.logger.info("Parameters set for SIP \"{}\" (\"{}\") and processing chain \"{}\"", entity.getSipId(),
+                          entity.getProviderId(), processingChainName);
     }
 
     @Override
     public void run() {
 
         super.logger.debug("Launching processing chain \"{}\" for SIP \"{}\"", processingChain.getName(),
-                           entity.getIpId());
+                           entity.getSipId());
 
         try {
             // Step 1 : optional preprocessing

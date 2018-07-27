@@ -59,17 +59,11 @@ public interface IIngestProcessingService {
 
     /**
      * Return {@link SIPEntity} for the given id
-     * @param id
-     * @return
      */
     SIPEntity getSIPEntity(Long id);
 
     /**
-     *
-     * @param sipEntityId
-     * @param aipState
-     * @param aip
-     * @return
+     * Create AIP
      */
     AIPEntity createAIP(Long sipEntityId, SipAIPState aipState, AIP aip);
 
