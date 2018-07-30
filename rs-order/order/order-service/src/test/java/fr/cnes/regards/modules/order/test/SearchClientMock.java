@@ -257,8 +257,8 @@ public class SearchClientMock implements IComplexSearchClient {
 
     @Override
     public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchDataObjects(
-            ComplexSearchRequest complexSearchRequest, int page, int size) {
-        if (page == 0) {
+            ComplexSearchRequest complexSearchRequest) {
+        if (complexSearchRequest.getPage() == 0) {
             try {
                 List<Resource<EntityFeature>> list = new ArrayList<>();
                 File testDir = new File("src/test/resources/files");
