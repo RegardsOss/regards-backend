@@ -100,7 +100,10 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
     }
 
     public void setSipId(UniformResourceName sipId) {
-        this.sipId = sipId.toString();
+        if (sipId != null) {
+            sipId.toString();
+        }
+        this.sipId = null;
     }
 
     public boolean isRetry() {

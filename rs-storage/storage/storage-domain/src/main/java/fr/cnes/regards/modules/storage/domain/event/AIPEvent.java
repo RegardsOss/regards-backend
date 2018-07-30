@@ -75,7 +75,7 @@ public class AIPEvent implements ISubscribable {
     public AIPEvent(AIP aip) {
         aipId = aip.getId().toString();
         aipState = aip.getState();
-        sipId = aip.getSipId().toString();
+        sipId = aip.getSipId().isPresent() ? aip.getSipId().get().toString() : null;
     }
 
     /**
@@ -88,7 +88,7 @@ public class AIPEvent implements ISubscribable {
     public AIPEvent(AIP aip, String dataFileUrl, Long pluginConfId) {
         aipId = aip.getId().toString();
         aipState = aip.getState();
-        sipId = aip.getSipId().toString();
+        sipId = aip.getSipId().isPresent() ? aip.getSipId().get().toString() : null;
         failureCause = String.format(FAILURE_CAUSE_TEMPLATE, dataFileUrl, pluginConfId);
     }
 
