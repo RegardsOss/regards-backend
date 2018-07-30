@@ -19,11 +19,11 @@
 package fr.cnes.regards.modules.storage.service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -41,7 +41,7 @@ import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 
 /**
- * Configuration manager for current module.
+ * Configuration manager for storage module.
  * {@link PrioritizedDataStorage} are exported as simple plugin configuration so priority will be lost.
  *
  * @author Marc Sordi
@@ -50,7 +50,9 @@ import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 @Component
 public class StorageConfigurationManager extends AbstractModuleConfigurationManager {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(StorageConfigurationManager.class);
+    public static final String PLUGIN_CONFIGURATION_ALREADY_EXISTS = "A plugin configuration already exists with same label, skipping import of %s.";
+
+    public static final String VALIDATION_ISSUES = "Skipping import of %s for these reasons: %s";
 
     @Autowired
     private IPluginConfigurationRepository pluginConfigurationRepository;
@@ -65,32 +67,49 @@ public class StorageConfigurationManager extends AbstractModuleConfigurationMana
     private IPrioritizedDataStorageService prioritizedDataStorageService;
 
     @Override
-    public void importConfiguration(ModuleConfiguration configuration) throws ModuleException {
+    public Set<String> importConfiguration(ModuleConfiguration configuration) {
+        Set<String> importErrors = new HashSet<>();
         for (ModuleConfigurationItem<?> item : configuration.getConfiguration()) {
             // We only exported PluginConfiguration so lets handle validation issues first
             // and then check if it is a DataStorage configuration
             if (PluginConfiguration.class.isAssignableFrom(item.getKey())) {
                 PluginConfiguration plgConf = item.getTypedValue();
                 if (pluginService.findPluginConfigurationByLabel(plgConf.getLabel()).isPresent()) {
-                    LOGGER.warn("A plugin configuration already exists with same label, skipping import of {}.",
-                                plgConf.getLabel());
+                    importErrors.add(String.format(PLUGIN_CONFIGURATION_ALREADY_EXISTS, plgConf.getLabel()));
                 } else {
                     EntityInvalidException validationIssues = PluginUtils.validate(plgConf);
                     if (validationIssues == null) {
                         // Now that we are about to create the plugin configuration, lets check for IDataStorage
-                        if(plgConf.getInterfaceNames().contains(IDataStorage.class.getName())) {
-                            prioritizedDataStorageService.create(plgConf);
+                        if (plgConf.getInterfaceNames().contains(IDataStorage.class.getName())) {
+                            try {
+                                prioritizedDataStorageService.create(plgConf);
+                            } catch (ModuleException e) {
+                                importErrors.add(String.format("Skipping import of Data Storage %s: %s",
+                                                               plgConf.getLabel(),
+                                                               e.getMessage()));
+                                logger.error(e.getMessage(), e);
+                            }
                         } else {
-                            pluginService.savePluginConfiguration(plgConf);
+                            try {
+                                pluginService.savePluginConfiguration(plgConf);
+                            } catch (ModuleException e) {
+                                // This should not occurs, but we never know
+                                importErrors.add(String.format("Skipping import of PluginConfiguration %s: %s",
+                                                               plgConf.getLabel(),
+                                                               e.getMessage()));
+                                logger.error(e.getMessage(), e);
+                            }
                         }
                     } else {
-                        LOGGER.warn("Skipping import of {} for these reasons: {}",
-                                    plgConf.getLabel(),
-                                    validationIssues.getMessages().stream().collect(Collectors.joining(",", "", ".")));
+                        importErrors.add(String.format(VALIDATION_ISSUES,
+                                                       plgConf.getLabel(),
+                                                       validationIssues.getMessages().stream()
+                                                               .collect(Collectors.joining(",", "", "."))));
                     }
                 }
             }
         }
+        return importErrors;
     }
 
     @Override
