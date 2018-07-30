@@ -37,9 +37,9 @@ public class SIPEvent implements ISubscribable {
 
     private SIPState state;
 
-    private String ipId;
-
     private String sipId;
+
+    private String providerId;
 
     private String owner;
 
@@ -59,9 +59,9 @@ public class SIPEvent implements ISubscribable {
         ingestDate = sip.getIngestDate().atZoneSameInstant(ZoneOffset.UTC)
                 .format(OffsetDateTimeAdapter.ISO_DATE_TIME_UTC);
         // SIP provider ID
-        sipId = sip.getSipId();
+        providerId = sip.getProviderId();
         // SIP system ID (with version)
-        ipId = sip.getIpId();
+        sipId = sip.getSipId().toString();
         // SIP state
         state = sip.getState();
         // SIP errors
@@ -72,16 +72,16 @@ public class SIPEvent implements ISubscribable {
         return state;
     }
 
-    public String getIpId() {
-        return ipId;
-    }
-
     public String getSipId() {
         return sipId;
     }
 
-    public void setSipId(String sipId) {
-        this.sipId = sipId;
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
     }
 
     public String getOwner() {

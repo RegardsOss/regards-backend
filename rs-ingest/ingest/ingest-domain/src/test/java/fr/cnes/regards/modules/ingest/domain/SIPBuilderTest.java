@@ -69,8 +69,8 @@ public class SIPBuilderTest {
         SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder(processingChain, sessionId);
 
         // Create a SIP builder
-        String sipId = "SIP_001";
-        SIPBuilder sipBuilder = new SIPBuilder(sipId);
+        String providerId = "SIP_001";
+        SIPBuilder sipBuilder = new SIPBuilder(providerId);
 
         // Fill in required content information
         sipBuilder.getContentInformationBuilder().setDataObject(dataType, Paths.get(fileName), algorithm, checksum);
@@ -89,7 +89,7 @@ public class SIPBuilderTest {
         Assert.assertTrue(sips.getFeatures().get(0) instanceof SIP);
 
         SIP one = sips.getFeatures().get(0);
-        Assert.assertTrue(sipId.equals(one.getId()));
+        Assert.assertTrue(providerId.equals(one.getId()));
         Assert.assertNotNull(one.getProperties());
 
         List<ContentInformation> cisOne = one.getProperties().getContentInformations();
@@ -112,8 +112,8 @@ public class SIPBuilderTest {
     @Test
     public void createSIPByReference() {
 
-        String sipId = "refSip";
-        SIPBuilder builder = new SIPBuilder(sipId);
+        String providerId = "refSip";
+        SIPBuilder builder = new SIPBuilder(providerId);
         SIP ref = builder.buildReference(Paths.get("ref.xml"), "algo", "123456789a");
 
         String refString = gson.toJson(ref);

@@ -94,9 +94,9 @@ See <<ip-parameter-description>>.
 
 See <<sip-collection-response>>.
 
-=== Delete SIP identified by sipId
+=== Delete SIP identified by providerId
 
-Several SIP can be deleted via a `DELETE /sips?sipId=XYZ` request. +
+Several SIP can be deleted via a `DELETE /sips?providerId=XYZ` request. +
 The response is a set of SIP that can not be deleted.
 
 * *Query params*
@@ -104,9 +104,9 @@ The response is a set of SIP that can not be deleted.
 |===
 |Parameter|Type|Description|Constraints
 
-|`+sipId+`
+|`+providerId+`
 |String
-|The SIP id provided by the provider 
+|The provider id 
 |
 |===
 

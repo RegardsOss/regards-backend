@@ -22,12 +22,13 @@ import org.hibernate.annotations.TypeDefs;
 import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.entity.converters.AipStateConverter;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.IAipState;
 
 @Entity
-@Table(name = "t_aip", indexes = { @Index(name = "idx_aip_id", columnList = "id,ipId,sip_id"),
+@Table(name = "t_aip", indexes = { @Index(name = "idx_aip_id", columnList = "id,aipId,sip_id"),
         @Index(name = "idx_aip_state", columnList = "state") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class AIPEntity {
@@ -42,8 +43,8 @@ public class AIPEntity {
      * versions
      */
     @NotBlank
-    @Column(name = "ipId", length = SIPEntity.MAX_URN_SIZE)
-    private String ipId;
+    @Column(name = "aipId", length = SIPEntity.MAX_URN_SIZE)
+    private String aipId;
 
     /**
      * The SIP identifier which generate the current AIP
@@ -113,12 +114,20 @@ public class AIPEntity {
         this.errorMessage = errorMessage;
     }
 
-    public String getIpId() {
-        return ipId;
+    public String getAipId() {
+        return aipId;
     }
 
-    public void setIpId(String ipId) {
-        this.ipId = ipId;
+    public void setAipId(String aipId) {
+        this.aipId = aipId;
+    }
+
+    public UniformResourceName getAipIdUrn() {
+        return UniformResourceName.fromString(aipId);
+    }
+
+    public void setAipId(UniformResourceName aipId) {
+        this.aipId = aipId.toString();
     }
 
 }

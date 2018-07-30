@@ -49,6 +49,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
@@ -165,8 +166,8 @@ public class IngestService implements IIngestService {
     }
 
     @Override
-    public SIPDto retryIngest(String ipId) throws ModuleException {
-        Optional<SIPEntity> oSip = sipRepository.findOneByIpId(ipId);
+    public SIPDto retryIngest(UniformResourceName sipId) throws ModuleException {
+        Optional<SIPEntity> oSip = sipRepository.findOneBySipId(sipId.toString());
         if (oSip.isPresent()) {
             SIPEntity sip = oSip.get();
             switch (sip.getState()) {
@@ -177,22 +178,24 @@ public class IngestService implements IIngestService {
                     break;
                 case STORE_ERROR:
                 case STORED:
-                    throw new EntityOperationForbiddenException(ipId, SIPEntity.class,
+                    throw new EntityOperationForbiddenException(sipId.toString(), SIPEntity.class,
                             "SIP ingest process is already successully done");
                 case REJECTED:
-                    throw new EntityOperationForbiddenException(ipId, SIPEntity.class, "SIP format is not valid");
+                    throw new EntityOperationForbiddenException(sipId.toString(), SIPEntity.class,
+                            "SIP format is not valid");
                 case VALID:
                 case QUEUED:
                 case CREATED:
                 case AIP_CREATED:
-                    throw new EntityOperationForbiddenException(ipId, SIPEntity.class, "SIP ingest is already running");
+                    throw new EntityOperationForbiddenException(sipId.toString(), SIPEntity.class,
+                            "SIP ingest is already running");
                 default:
-                    throw new EntityOperationForbiddenException(ipId, SIPEntity.class,
+                    throw new EntityOperationForbiddenException(sipId.toString(), SIPEntity.class,
                             "SIP is in undefined state for ingest retry");
             }
             return sipRepository.findOne(sip.getId()).toDto();
         } else {
-            throw new EntityNotFoundException(ipId, SIPEntity.class);
+            throw new EntityNotFoundException(sipId.toString(), SIPEntity.class);
         }
     }
 
@@ -222,9 +225,9 @@ public class IngestService implements IIngestService {
             entity.setState(SIPState.REJECTED);
             errors.getAllErrors().forEach(error -> {
                 entity.getRejectionCauses().add(error.getDefaultMessage());
-                LOGGER.warn("SIP {} error : {}", entity.getSipId(), error.toString());
+                LOGGER.warn("SIP {} error : {}", entity.getProviderId(), error.toString());
             });
-            LOGGER.warn("SIP {} rejected cause invalid", entity.getSipId());
+            LOGGER.warn("SIP {} rejected cause invalid", entity.getProviderId());
             return entity.toDto();
         }
 
@@ -237,13 +240,13 @@ public class IngestService implements IIngestService {
             if (sipRepository.isAlreadyIngested(checksum)) {
                 entity.setState(SIPState.REJECTED);
                 entity.getRejectionCauses().add("SIP already submitted");
-                LOGGER.warn("SIP {} rejected cause already submitted", entity.getSipId());
+                LOGGER.warn("SIP {} rejected cause already submitted", entity.getProviderId());
             } else {
                 // Entity is persisted only if all properties properly set
                 // And SIP not already stored with a same checksum
                 sipService.saveSIPEntity(entity);
                 publisher.publish(new SIPEvent(entity));
-                LOGGER.info("SIP {} saved, ready for asynchronous processing", entity.getSipId());
+                LOGGER.info("SIP {} saved, ready for asynchronous processing", entity.getProviderId());
             }
 
         } catch (NoSuchAlgorithmException | IOException e) {

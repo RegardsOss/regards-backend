@@ -26,6 +26,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -50,13 +51,13 @@ public final class SIPEntityBuilder {
         SIPEntity sipEntity = new SIPEntity();
 
         UUID uuid = UUID.nameUUIDFromBytes(sip.getId().getBytes());
-
         UniformResourceName urn = new UniformResourceName(OAISIdentifier.SIP, entityType, tenant, uuid, version);
 
-        sipEntity.setIpId(urn.toString());
+        sipEntity.setProviderId(sip.getId());
+        sipEntity.setSipId(urn);
         sipEntity.setOwner(owner);
         sipEntity.setIngestDate(OffsetDateTime.now());
-        sipEntity.setSipId(sip.getId());
+        sipEntity.setProviderId(sip.getId());
         sipEntity.setState(state);
         sipEntity.setSip(sip);
         sipEntity.setProcessing(processing);

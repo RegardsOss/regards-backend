@@ -100,7 +100,7 @@ public class SIPSessionController implements IResourceController<SIPSession> {
         final Resource<SIPSession> resource = resourceService.toResource(sipSession);
         resourceService.addLink(resource, this.getClass(), "getSipSession", LinkRels.SELF,
                                 MethodParamFactory.build(String.class, sipSession.getId()));
-        resourceService.addLink(resource, this.getClass(), "deleteSipEntityBySipId", LinkRels.DELETE,
+        resourceService.addLink(resource, this.getClass(), "deleteSipEntityByProviderId", LinkRels.DELETE,
                                 MethodParamFactory.build(String.class, sipSession.getId()));
         return resource;
     }

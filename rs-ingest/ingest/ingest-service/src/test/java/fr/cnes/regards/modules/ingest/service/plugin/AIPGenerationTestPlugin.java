@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service.plugin;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -46,11 +47,12 @@ public class AIPGenerationTestPlugin implements IAipGeneration {
     private ProcessingChainTestErrorSimulator errorSimulator;
 
     @Override
-    public List<AIP> generate(SIP sip, UniformResourceName ipId, String sipId) throws AIPGenerationException {
+    public List<AIP> generate(SIP sip, UniformResourceName aipId, UniformResourceName sipId, String providerId)
+            throws AIPGenerationException {
         if (AIPGenerationTestPlugin.class.equals(errorSimulator.getSimulateErrorForStep())) {
             throw new AIPGenerationException("Simulated exception for step AIPGenerationTestPlugin");
         }
-        AIPBuilder builder = new AIPBuilder(ipId, sipId, EntityType.DATA, "session 1");
+        AIPBuilder builder = new AIPBuilder(aipId, Optional.of(sipId), providerId, EntityType.DATA, "session 1");
         // Propagate BBOX
         if (sip.getBbox().isPresent()) {
             builder.setBbox(sip.getBbox().get(), sip.getCrs().orElse(null));

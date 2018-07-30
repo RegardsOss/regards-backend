@@ -18,7 +18,26 @@
  */
 package fr.cnes.regards.modules.ingest.service.store;
 
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -42,22 +61,6 @@ import fr.cnes.regards.modules.storage.client.IAipEntityClient;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.IAipState;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 
 /**
  * Service to handle aip related issues in ingest, including sending bulk request of AIP to store to archival storage
@@ -95,27 +98,26 @@ public class AIPService implements IAIPService {
     private Integer bulkRequestLimit;
 
     @Override
-    public void setAipInError(String ipId, IAipState state, String errorMessage) {
-        Optional<AIPEntity> oAip = aipRepository.findByIpId(ipId);
+    public void setAipInError(UniformResourceName aipId, IAipState state, String errorMessage) {
+        Optional<AIPEntity> oAip = aipRepository.findByAipId(aipId.toString());
         if (oAip.isPresent()) {
             // Update AIP State
             AIPEntity aip = oAip.get();
-            aipRepository.updateAIPEntityStateAndErrorMessage(state, ipId, errorMessage);
+            aipRepository.updateAIPEntityStateAndErrorMessage(state, aipId.toString(), errorMessage);
             // Update SIP associated State
             SIPEntity sip = aip.getSip();
             sip.setState(SIPState.STORE_ERROR);
             // Save the errorMessage inside SIP rejections errors
-            sip.getRejectionCauses().add(
-                    String.format("Storage of AIP(%s) failed due to the following error: %s", ipId, errorMessage)
-            );
+            sip.getRejectionCauses().add(String.format("Storage of AIP(%s) failed due to the following error: %s",
+                                                       aipId, errorMessage));
             sipService.saveSIPEntity(sip);
         }
     }
 
     @Override
-    public void setAipToStored(String ipId, IAipState state) {
+    public void setAipToStored(UniformResourceName aipId, IAipState state) {
         // Retrieve aip and set the new status to stored
-        Optional<AIPEntity> oAip = aipRepository.findByIpId(ipId);
+        Optional<AIPEntity> oAip = aipRepository.findByAipId(aipId.toString());
         if (oAip.isPresent()) {
             AIPEntity aip = oAip.get();
             aip.setState(state);
@@ -133,9 +135,9 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public void deleteAip(String ipId, String sipIpId, IAipState state) {
+    public void deleteAip(UniformResourceName aipId, UniformResourceName sipId, IAipState state) {
         // Check if deleted AIP exists in internal database
-        Optional<AIPEntity> oAip = aipRepository.findByIpId(ipId);
+        Optional<AIPEntity> oAip = aipRepository.findByAipId(aipId.toString());
         if (oAip.isPresent()) {
             // Delete aip
             aipRepository.delete(oAip.get());
@@ -143,10 +145,10 @@ public class AIPService implements IAIPService {
         // Retrieve all AIP associated to the SIP.
         FeignSecurityManager.asSystem();
         ResponseEntity<PagedResources<Resource<fr.cnes.regards.modules.storage.domain.database.AIPEntity>>> result = aipEntityClient
-                .retrieveAIPEntities(sipIpId, 0, 100);
+                .retrieveAIPEntities(sipId.toString(), 0, 100);
         FeignSecurityManager.reset();
         if (result.getStatusCode().equals(HttpStatus.OK) && (result.getBody() != null)) {
-            Optional<SIPEntity> oSip = sipRepository.findOneByIpId(sipIpId);
+            Optional<SIPEntity> oSip = sipRepository.findOneBySipId(sipId.toString());
             if (oSip.isPresent()) {
                 SIPEntity sip = oSip.get();
                 // If all AIPs are deleted, update sip to DELETED state
@@ -165,8 +167,8 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public Optional<AIPEntity> searchAip(UniformResourceName ipId) {
-        return aipRepository.findByIpId(ipId.toString());
+    public Optional<AIPEntity> searchAip(UniformResourceName aipId) {
+        return aipRepository.findByAipId(aipId.toString());
     }
 
     @Override
@@ -201,7 +203,7 @@ public class AIPService implements IAIPService {
             if (!aipRepository.isAlreadyWorking(ipc.getName())) {
                 Page<AIPEntity> page = aipRepository
                         .findWithLockBySipProcessingAndState(ipc.getName(), SipAIPState.CREATED,
-                                new PageRequest(0, bulkRequestLimit));
+                                                             new PageRequest(0, bulkRequestLimit));
                 if (page.hasContent()) {
                     // Schedule AIP page submission
                     for (AIPEntity aip : page.getContent()) {
@@ -237,24 +239,25 @@ public class AIPService implements IAIPService {
             String ingestChain = params.get(AIPSubmissionJob.INGEST_CHAIN_PARAMETER).getValue();
             // Set to submission error
             Set<AIPEntity> aips = aipRepository.findBySipProcessingAndState(ingestChain,
-                    SipAIPState.SUBMISSION_SCHEDULED);
+                                                                            SipAIPState.SUBMISSION_SCHEDULED);
             for (AIPEntity aip : aips) {
-                setAipInError(aip.getIpId(), SipAIPState.SUBMISSION_ERROR, "Submission job error");
+                setAipInError(aip.getAipIdUrn(), SipAIPState.SUBMISSION_ERROR, "Submission job error");
             }
         }
     }
 
     @Override
     public void handleAipEvent(AIPEvent aipEvent) {
+        UniformResourceName aipId = UniformResourceName.fromString(aipEvent.getAipId());
         switch (aipEvent.getAipState()) {
             case STORAGE_ERROR:
-                setAipInError(aipEvent.getIpId(), aipEvent.getAipState(), aipEvent.getFailureCause());
+                setAipInError(aipId, aipEvent.getAipState(), aipEvent.getFailureCause());
                 break;
             case STORED:
-                setAipToStored(aipEvent.getIpId(), aipEvent.getAipState());
+                setAipToStored(aipId, aipEvent.getAipState());
                 break;
             case DELETED:
-                deleteAip(aipEvent.getIpId(), aipEvent.getSipId(), aipEvent.getAipState());
+                deleteAip(aipId, UniformResourceName.fromString(aipEvent.getSipId()), aipEvent.getAipState());
                 break;
             case PENDING:
             case STORING_METADATA:

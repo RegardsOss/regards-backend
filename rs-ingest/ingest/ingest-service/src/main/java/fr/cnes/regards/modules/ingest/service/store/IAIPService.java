@@ -47,17 +47,17 @@ public interface IAIPService {
     /**
      * Set the status of the given AIP to {@link SipAIPState#STORE_ERROR}
      */
-    void setAipInError(String ipId, IAipState storeError, String failureCause);
+    void setAipInError(UniformResourceName aipId, IAipState storeError, String failureCause);
 
     /**
      * Delete the {@link AIPEntity} by his ipId
      */
-    void deleteAip(String ipId, String sipIpId, IAipState state);
+    void deleteAip(UniformResourceName aipId, UniformResourceName sipId, IAipState state);
 
     /**
      * Set {@link AIPEntity} state to {@link SipAIPState#STORED}
      */
-    void setAipToStored(String ipId, IAipState state);
+    void setAipToStored(UniformResourceName aipId, IAipState state);
 
     /**
      * Set {@link AIPEntity} state to {@link SipAIPState#INDEXED}
@@ -67,11 +67,11 @@ public interface IAIPService {
     AIPEntity setAipToIndexed(AIPEntity aip);
 
     /**
-     * Search for a {@link AIPEntity} by his ipId
+     * Search for a {@link AIPEntity} by its ipId
      * @param ipId
      * @return
      */
-    Optional<AIPEntity> searchAip(UniformResourceName ipId);
+    Optional<AIPEntity> searchAip(UniformResourceName aipId);
 
     /**
      * Schedule storage bulk request job according to available AIPs

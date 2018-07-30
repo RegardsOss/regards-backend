@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.util.Collection;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 
@@ -51,9 +52,9 @@ public interface IIngestService {
 
     /**
      * Retry to store a SIP already submitted previously.
-     * @param ipId {@link String} ipId of the SIP to retry
+     * @param sipId {@link String} ipId of the SIP to retry
      * @return SIP DTO
      * @throws ModuleException
      */
-    SIPDto retryIngest(String ipId) throws ModuleException;
+    SIPDto retryIngest(UniformResourceName sipId) throws ModuleException;
 }

@@ -45,19 +45,19 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
 
     /**
      * Find last ingest SIP with specified SIP ID according to ingest date
-     * @param sipId external SIP identifier
+     * @param providerId external SIP identifier
      * @return the latest registered SIP
      */
     @EntityGraph("graph.sip.entity.complete")
-    SIPEntity findTopBySipIdOrderByIngestDateDesc(String sipId);
+    SIPEntity findTopByProviderIdOrderByIngestDateDesc(String providerId);
 
     /**
-     * Find all SIP version of a sipId
-     * @param sipId SIP_ID
-     * @return all SIP versions of a sipId
+     * Find all SIP version of a provider id
+     * @param providerId provider id
+     * @return all SIP versions of this provider id
      */
     @EntityGraph("graph.sip.entity.complete")
-    Collection<SIPEntity> findAllBySipIdOrderByVersionAsc(String sipId);
+    Collection<SIPEntity> findAllByProviderIdOrderByVersionAsc(String providerId);
 
     /**
      * Find all {@link SIPEntity}s by given {@link SIPState}
@@ -68,12 +68,12 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
     Collection<SIPEntity> findAllByState(SIPState state);
 
     /**
-     * Find one {@link SIPEntity} by is unique ipId
+     * Find one {@link SIPEntity} by its unique ipId
      * @param ipId
      * @return
      */
     @EntityGraph("graph.sip.entity.complete")
-    Optional<SIPEntity> findOneByIpId(String ipId);
+    Optional<SIPEntity> findOneBySipId(String sipId);
 
     /**
      * Retrieve all {@link SIPEntity} for the given ipIds
@@ -81,7 +81,7 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
      * @return {@link SIPEntity}s
      */
     @EntityGraph("graph.sip.entity.complete")
-    Collection<SIPEntity> findByIpIdIn(Collection<String> ipIds);
+    Collection<SIPEntity> findBySipIdIn(Collection<String> sipIds);
 
     /**
      * Retrieve all {@link SIPEntity} associated to the given session id.
@@ -131,22 +131,22 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
     Long countByChecksum(String checksum);
 
     /**
-     * Get next version of the SIP identified by sipId
-     * @param sipId SIP_ID
+     * Get next version of the SIP identified by provider id
+     * @param providerId provider id
      * @return next version
      */
-    default Integer getNextVersion(String sipId) {
-        SIPEntity latest = findTopBySipIdOrderByIngestDateDesc(sipId);
+    default Integer getNextVersion(String providerId) {
+        SIPEntity latest = findTopByProviderIdOrderByIngestDateDesc(providerId);
         return latest == null ? 1 : latest.getVersion() + 1;
     }
 
     /**
-     * Find all SIP version of a sipId
-     * @param sipId SIP_ID
-     * @return all SIP versions of a sipId
+     * Find all SIP version of a provider id
+     * @param providerId prodiver id
+     * @return all SIP versions of a provider id
      */
-    default Collection<SIPEntity> getAllVersions(String sipId) {
-        return findAllBySipIdOrderByVersionAsc(sipId);
+    default Collection<SIPEntity> getAllVersions(String providerId) {
+        return findAllByProviderIdOrderByVersionAsc(providerId);
     }
 
     /**

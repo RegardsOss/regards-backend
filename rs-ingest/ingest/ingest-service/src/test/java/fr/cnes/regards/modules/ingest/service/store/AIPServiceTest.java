@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -64,12 +65,10 @@ public class AIPServiceTest extends AbstractSIPTest {
 
         // Create two associated AIPs
         aips.add(createAIP(UniformResourceName
-                                   .fromString("URN:AIP:DATA:project1:ebd5100a-b8fc-3e15-8ce1-4fdd1c98794a:V1"),
-                           sip,
+                .fromString("URN:AIP:DATA:project1:ebd5100a-b8fc-3e15-8ce1-4fdd1c98794a:V1"), sip,
                            SipAIPState.CREATED));
         aips.add(createAIP(UniformResourceName
-                                   .fromString("URN:AIP:DATA:project1:ebd5100a-b8fc-3e15-8ce1-4fdd1c98794b:V1"),
-                           sip,
+                .fromString("URN:AIP:DATA:project1:ebd5100a-b8fc-3e15-8ce1-4fdd1c98794b:V1"), sip,
                            SipAIPState.CREATED));
     }
 
@@ -83,17 +82,17 @@ public class AIPServiceTest extends AbstractSIPTest {
             aipService.setAipToIndexed(aip);
             if (count == aips.size()) {
                 // Check for SIP state updated
-                SIPEntity currentSip = sipService.getSIPEntity(sip.getIpId());
+                SIPEntity currentSip = sipService.getSIPEntity(sip.getSipIdUrn());
                 Assert.assertTrue(SIPState.INDEXED.equals(currentSip.getState()));
                 // Check that all AIPs has been deleted
                 Assert.assertTrue("No AIP should be remaining in ingest after indexation done.",
                                   aipRepository.findBySip(sip).isEmpty());
             } else {
-                Optional<AIPEntity> updatedAip = aipService.searchAip(UniformResourceName.fromString(aip.getIpId()));
+                Optional<AIPEntity> updatedAip = aipService.searchAip(aip.getAipIdUrn());
                 Assert.assertTrue(String.format("AIP should be in INDEXED state not %s", updatedAip.get().getState()),
                                   updatedAip.isPresent() && SipAIPState.INDEXED.equals(updatedAip.get().getState()));
                 // Check for SIP state not updated
-                SIPEntity currentSip = sipService.getSIPEntity(sip.getIpId());
+                SIPEntity currentSip = sipService.getSIPEntity(sip.getSipIdUrn());
                 Assert.assertTrue(SIPState.CREATED.equals(currentSip.getState()));
             }
         }
@@ -105,18 +104,18 @@ public class AIPServiceTest extends AbstractSIPTest {
     public void testEntityStored() throws EntityNotFoundException {
         int count = 0;
         for (AIPEntity aip : aips) {
-            aipService.setAipToStored(aip.getIpId(), AIPState.STORED);
-            Optional<AIPEntity> updatedAip = aipService.searchAip(UniformResourceName.fromString(aip.getIpId()));
+            aipService.setAipToStored(aip.getAipIdUrn(), AIPState.STORED);
+            Optional<AIPEntity> updatedAip = aipService.searchAip(aip.getAipIdUrn());
             Assert.assertTrue("AIP should be in STORED state",
                               updatedAip.isPresent() && AIPState.STORED.equals(updatedAip.get().getState()));
             count++;
             if (count == aips.size()) {
                 // Check for SIP state updated
-                SIPEntity currentSip = sipService.getSIPEntity(sip.getIpId());
+                SIPEntity currentSip = sipService.getSIPEntity(sip.getSipIdUrn());
                 Assert.assertTrue(SIPState.STORED.equals(currentSip.getState()));
             } else {
                 // Check for SIP state not updated
-                SIPEntity currentSip = sipService.getSIPEntity(sip.getIpId());
+                SIPEntity currentSip = sipService.getSIPEntity(sip.getSipIdUrn());
                 Assert.assertTrue(SIPState.CREATED.equals(currentSip.getState()));
             }
         }

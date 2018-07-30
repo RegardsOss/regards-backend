@@ -27,6 +27,7 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.storage.domain.RejectedSip;
@@ -38,48 +39,38 @@ import fr.cnes.regards.modules.storage.domain.RejectedSip;
 public interface ISIPService {
 
     /**
-     * Retrieve all submitted SIP with same sipId
-     * @param sipId SIP ID
-     * @return all version of related SIP with specified sipId
+     * Retrieve all submitted SIP with same provider id
+     * @param providerId provider id
+     * @return all version of related SIP with specified provider id
      */
-    Collection<SIPEntity> getAllVersions(String sipId);
+    Collection<SIPEntity> getAllVersions(String providerId);
 
     /**
      * Retrieve all {@link SIPEntity}s matching the parameters. SIPs are ordered by {@link SIPEntity#getIngestDate()}
-     * @param sipId
-     * @param sessionId
-     * @param owner
-     * @param from
-     * @param state
-     * @param page
-     * @return
      */
-    Page<SIPEntity> search(String sipId, String sessionId, String owner, OffsetDateTime from, List<SIPState> state,
+    Page<SIPEntity> search(String providerId, String sessionId, String owner, OffsetDateTime from, List<SIPState> state,
             String processing, Pageable page);
 
     /**
-     * Retrieve one {@link SIPEntity} for the given ipId
-     * @param ipId
-     * @return
-     * @throws EntityNotFoundException
+     * Retrieve one {@link SIPEntity} for the given sipId
      */
-    SIPEntity getSIPEntity(String ipId) throws EntityNotFoundException;
+    SIPEntity getSIPEntity(UniformResourceName sipId) throws EntityNotFoundException;
 
     /**
      * Delete one {@link SIPEntity} for the given ipId
-     * @param ipIds
+     * @param sipIds
      * @return rejected or undeletable {@link SIPEntity}s
      * @throws EntityNotFoundException
      */
-    Collection<RejectedSip> deleteSIPEntitiesByIpIds(Collection<String> ipIds) throws ModuleException;
+    Collection<RejectedSip> deleteSIPEntitiesBySipIds(Collection<UniformResourceName> sipIds) throws ModuleException;
 
     /**
-     * Delete all {@link SIPEntity} for the given sipId
-     * @param sipId
+     * Delete all {@link SIPEntity} for the given provider id
+     * @param providerId
      * @return rejected or undeletable {@link SIPEntity}s
      * @throws ModuleException
      */
-    Collection<RejectedSip> deleteSIPEntitiesForSipId(String sipId) throws ModuleException;
+    Collection<RejectedSip> deleteSIPEntitiesForProviderId(String providerId) throws ModuleException;
 
     /**
      * Delete all {@link SIPEntity}s associated to the given session.
@@ -99,17 +90,13 @@ public interface ISIPService {
 
     /**
      * Check if the SIP with the given ipId is deletable
-     * @param ipId
-     * @return
      */
-    Boolean isDeletable(String ipId) throws EntityNotFoundException;
+    Boolean isDeletable(UniformResourceName sipId) throws EntityNotFoundException;
 
     /**
      * Check if the SIP with the given ipId is available for new ingestion submission
-     * @param ipId
-     * @return
      */
-    Boolean isRetryable(String ipId) throws EntityNotFoundException;
+    Boolean isRetryable(UniformResourceName sipId) throws EntityNotFoundException;
 
     /**
      * Save the given {@link SIPEntity} in DAO and update the associated session
