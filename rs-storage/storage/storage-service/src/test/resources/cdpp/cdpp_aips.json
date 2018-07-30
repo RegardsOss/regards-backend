@@ -5,6 +5,7 @@
             "id": "URN:AIP:DATA:CDPP:402fb03c-55dd-3d11-974e-befbf436bcae:V2",
             "type": "Feature",
             "sipId": "URN:SIP:DATA:CDPP:402fb03c-55dd-3d11-974e-befbf436bcae:V2",
+            "providerId" : "providerId",
             "ipType": "DATA",
             "geometry": null,
             "properties": {
