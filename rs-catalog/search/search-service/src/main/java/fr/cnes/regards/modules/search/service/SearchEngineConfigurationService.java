@@ -214,7 +214,7 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
         public void handle(final TenantWrapper<BroadcastEntityEvent> pWrapper) {
             if ((pWrapper.getContent() != null) && EventType.DELETE.equals(pWrapper.getContent().getEventType())) {
                 runtimeTenantResolver.forceTenant(pWrapper.getTenant());
-                for (final UniformResourceName ipId : pWrapper.getContent().getIpIds()) {
+                for (final UniformResourceName ipId : pWrapper.getContent().getAipIds()) {
                     List<SearchEngineConfiguration> confs = repository.findByDatasetUrn(ipId.toString());
                     if ((confs != null) && !confs.isEmpty()) {
                         confs.forEach(repository::delete);

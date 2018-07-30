@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -94,7 +95,7 @@ public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService {
 
     @Override
     public LinkPluginsDatasets retrieveLink(final String pDatasetId) {
-        Assert.notNull(pDatasetId);
+        Assert.notNull(pDatasetId, "Dataset id is required");
         final LinkPluginsDatasets linkPluginsDatasets = linkRepo.findOneByDatasetId(pDatasetId);
         if (linkPluginsDatasets == null) {
             return createLink(pDatasetId);
@@ -140,7 +141,7 @@ public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService {
      * @return the created link
      */
     private LinkPluginsDatasets createLink(final String pDatasetId) {
-        Assert.notNull(pDatasetId);
+        Assert.notNull(pDatasetId, "Dataset id is required");
         LinkPluginsDatasets newLink = linkRepo.save(new LinkPluginsDatasets(pDatasetId, Sets.newHashSet()));
         publisher.publish(new LinkPluginsDatasetsEvent(newLink));
         return newLink;
@@ -171,7 +172,7 @@ public class LinkPluginsDatasetsService implements ILinkPluginsDatasetsService {
         public void handle(final TenantWrapper<BroadcastEntityEvent> pWrapper) {
             if ((pWrapper.getContent() != null) && EventType.DELETE.equals(pWrapper.getContent().getEventType())) {
                 runtimeTenantResolver.forceTenant(pWrapper.getTenant());
-                for (final UniformResourceName ipId : pWrapper.getContent().getIpIds()) {
+                for (final UniformResourceName ipId : pWrapper.getContent().getAipIds()) {
                     final LinkPluginsDatasets link = linkRepo.findOneByDatasetId(ipId.toString());
                     if (link != null) {
                         deleteLink(link);
