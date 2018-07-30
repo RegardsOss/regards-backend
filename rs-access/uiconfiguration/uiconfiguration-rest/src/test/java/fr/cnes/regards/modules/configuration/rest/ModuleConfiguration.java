@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 @Configuration
 public class ModuleConfiguration {
@@ -25,8 +27,9 @@ public class ModuleConfiguration {
         firstDatasetWithLinks.add("content", firstDataset);
         datasetList.add(firstDatasetWithLinks);
         stub.add("content", datasetList);
+        MultiValueMap attr = new LinkedMultiValueMap();
 
-        Mockito.when(mock.searchDatasets(null)).thenReturn(new ResponseEntity(stub, HttpStatus.OK));
+        Mockito.when(mock.searchDatasets(attr)).thenReturn(new ResponseEntity(stub, HttpStatus.OK));
 
         return mock;
     }

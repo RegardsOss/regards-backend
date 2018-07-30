@@ -49,6 +49,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -205,7 +207,8 @@ public class ModuleController implements IResourceController<Module> {
         URI uri = new URI(scheme, userInfo, host, port, "/engines/opensearch/datasets/DATASET_ID/dataobjects/search/opensearchDescription.xml", null, null);
 
         final Module module = service.retrieveModule(pModuleId);
-        JsonObject dataset = searchClient.searchDatasets(null).getBody();
+        MultiValueMap attr = new LinkedMultiValueMap();
+        JsonObject dataset = (JsonObject)searchClient.searchDatasets(attr).getBody();
         JsonObject result = service.mergeDatasetInsideModuleConf(module, dataset, uri.toString());
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
