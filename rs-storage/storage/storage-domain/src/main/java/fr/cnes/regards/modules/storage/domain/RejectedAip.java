@@ -12,7 +12,7 @@ public class RejectedAip {
     /**
      * Aip ip id
      */
-    private String ipId;
+    private String aipId;
 
     /**
      * causes for rejection
@@ -21,27 +21,27 @@ public class RejectedAip {
 
     /**
      * Constructor setting the parameters as attributes
-     * @param ipId
+     * @param aipId
      * @param rejectionCause
      */
-    public RejectedAip(String ipId, List<String> rejectionCause) {
-        this.ipId = ipId;
+    public RejectedAip(String aipId, List<String> rejectionCause) {
+        this.aipId = aipId;
         this.rejectionCauses = rejectionCause;
     }
 
     /**
      * @return the ip id
      */
-    public String getIpId() {
-        return ipId;
+    public String getAipId() {
+        return aipId;
     }
 
     /**
      * Set the ip id
      * @param ipId
      */
-    public void setIpId(String ipId) {
-        this.ipId = ipId;
+    public void setAipId(String ipId) {
+        this.aipId = ipId;
     }
 
     /**
@@ -70,11 +70,11 @@ public class RejectedAip {
 
         RejectedAip that = (RejectedAip) o;
 
-        return ipId != null ? ipId.equals(that.ipId) : that.ipId == null;
+        return aipId != null ? aipId.equals(that.aipId) : that.aipId == null;
     }
 
     @Override
     public int hashCode() {
-        return ipId != null ? ipId.hashCode() : 0;
+        return aipId != null ? aipId.hashCode() : 0;
     }
 }

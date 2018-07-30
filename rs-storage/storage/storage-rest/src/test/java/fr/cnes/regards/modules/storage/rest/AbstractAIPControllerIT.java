@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.After;
@@ -67,11 +68,6 @@ import fr.cnes.regards.modules.storage.service.IPrioritizedDataStorageService;
 @ActiveProfiles("testAmqp")
 public abstract class AbstractAIPControllerIT extends AbstractRegardsTransactionalIT {
 
-    /**
-     * Default tenant configured in application properties
-     */
-    protected static final String DEFAULT_TENANT = "PROJECT";
-
     private static final String ALLOCATION_CONF_LABEL = "AIPControllerIT_ALLOCATION";
 
     private static final String DATA_STORAGE_CONF_LABEL = "AIPControllerIT_DATA_STORAGE";
@@ -120,7 +116,7 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
     @Before
     public void init() throws IOException, ModuleException, URISyntaxException, InterruptedException {
         cleanUp();
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         // first of all, lets get an AIP with accessible dataObjects and real checksums
         aip = getAIP();
         // second, lets storeAndCreate a plugin configuration for IAllocationStrategy
@@ -156,7 +152,7 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
 
     @After
     public void cleanUp() throws URISyntaxException, IOException, InterruptedException {
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         subscriber.purgeQueue(DataStorageEvent.class, DataStorageEventHandler.class);
         jobInfoRepo.deleteAll();
         dataFileDao.deleteAll();
@@ -186,9 +182,12 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
     }
 
     protected AIP getNewAipWithTags(String aipSession, String... tags) throws MalformedURLException {
-        AIPBuilder aipBuilder = new AIPBuilder(
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT, UUID.randomUUID(), 1),
-                null, EntityType.DATA, aipSession);
+
+        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP, EntityType.DATA, getDefaultTenant(),
+                UUID.randomUUID(), 1);
+        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, getDefaultTenant(),
+                sipId.getEntityId(), 1);
+        AIPBuilder aipBuilder = new AIPBuilder(aipId, Optional.of(sipId), "providerId", EntityType.DATA, aipSession);
 
         Path path = Paths.get("src", "test", "resources", "data.txt");
         aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, path, "MD5",

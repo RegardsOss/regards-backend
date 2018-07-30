@@ -136,34 +136,39 @@ public class AIPController implements IResourceController<AIP> {
     public static final String PREPARE_DATA_FILES = "/dataFiles";
 
     /**
-     * Controller path using an aip ip id as path variable
+     * AIP ID path parameter
      */
-    public static final String ID_PATH = "/{ip_id}";
+    public static final String AIP_ID_PATH_PARAM = "aip_id";
 
     /**
      * Controller path using an aip ip id as path variable
      */
-    public static final String IP_ID_RETRY_STORE_PATH = ID_PATH + RETRY_STORE_PATH;
+    public static final String AIP_ID_PATH = "/{" + AIP_ID_PATH_PARAM + "}";
 
     /**
      * Controller path using an aip ip id as path variable
      */
-    public static final String OBJECT_LINK_PATH = ID_PATH + "/objectlinks";
+    public static final String AIP_ID_RETRY_STORE_PATH = AIP_ID_PATH + RETRY_STORE_PATH;
 
     /**
      * Controller path using an aip ip id as path variable
      */
-    public static final String VERSION_PATH = ID_PATH + "/versions";
+    public static final String OBJECT_LINK_PATH = AIP_ID_PATH + "/objectlinks";
 
     /**
      * Controller path using an aip ip id as path variable
      */
-    public static final String HISTORY_PATH = ID_PATH + "/history";
+    public static final String VERSION_PATH = AIP_ID_PATH + "/versions";
 
     /**
      * Controller path using an aip ip id as path variable
      */
-    public static final String TAG_PATH = ID_PATH + "/tags";
+    public static final String HISTORY_PATH = AIP_ID_PATH + "/history";
+
+    /**
+     * Controller path using an aip ip id as path variable
+     */
+    public static final String TAG_PATH = AIP_ID_PATH + "/tags";
 
     /**
      * Controller path using an aip ip id and a tag as path variable
@@ -173,7 +178,7 @@ public class AIPController implements IResourceController<AIP> {
     /**
      * Controller path using an aip ip id and a file checksum as path variable
      */
-    public static final String DOWNLOAD_AIP_FILE = "/{ip_id}/files/{checksum}";
+    public static final String DOWNLOAD_AIP_FILE = "/{aip_id}/files/{checksum}";
 
     /**
      * Controller path to manage tags of multiple AIPs
@@ -288,7 +293,7 @@ public class AIPController implements IResourceController<AIP> {
             throws ModuleException {
         List<RejectedAip> rejectedAips = aipService.applyRetryChecks(aipIpIds);
         if (!rejectedAips.isEmpty()) {
-            rejectedAips.forEach(ra -> aipIpIds.remove(ra.getIpId()));
+            rejectedAips.forEach(ra -> aipIpIds.remove(ra.getAipId()));
             if (aipIpIds.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.UNPROCESSABLE_ENTITY);
             }
@@ -303,10 +308,10 @@ public class AIPController implements IResourceController<AIP> {
      * Retry the storage of an aip
      * @return whether the aip could be scheduled for storage or not
      */
-    @RequestMapping(method = RequestMethod.POST, value = IP_ID_RETRY_STORE_PATH)
+    @RequestMapping(method = RequestMethod.POST, value = AIP_ID_RETRY_STORE_PATH)
     @ResponseBody
     @ResourceAccess(description = "Retry to store given aip, threw its ip id")
-    public ResponseEntity<RejectedAip> storeRetryUnit(@PathVariable("ip_id") String ipId) throws ModuleException {
+    public ResponseEntity<RejectedAip> storeRetryUnit(@PathVariable(AIP_ID_PATH_PARAM) String ipId) throws ModuleException {
         // we ask for one AIP to be stored, so we can only have one rejected aip in counter part
         ResponseEntity<List<RejectedAip>> listResponse = storeRetry(Sets.newHashSet(ipId));
         if (listResponse.getBody().isEmpty()) {
@@ -345,24 +350,23 @@ public class AIPController implements IResourceController<AIP> {
      */
     @RequestMapping(value = AIP_BULK_DELETE, method = RequestMethod.POST)
     @ResourceAccess(description = "Delete AIPs associated to the given SIP", role = DefaultRole.ADMIN)
-    public ResponseEntity<List<RejectedSip>> deleteAipFromSips(@RequestBody Set<String> sipIpIds)
-            throws ModuleException {
+    public ResponseEntity<List<RejectedSip>> deleteAipFromSips(@RequestBody Set<String> sipIds) throws ModuleException {
         List<RejectedSip> notHandledSips = Lists.newArrayList();
-        for (String sipIpId : sipIpIds) {
-            Set<StorageDataFile> notSuppressible = aipService.deleteAipFromSip(sipIpId);
+        for (String sipId : sipIds) {
+            Set<StorageDataFile> notSuppressible = aipService.deleteAipFromSip(UniformResourceName.fromString(sipId));
             if (!notSuppressible.isEmpty()) {
                 StringJoiner sj = new StringJoiner(", ",
                         "This sip could not be deleted because at least one of its aip file has not be handle by the storage process: ",
                         ".");
                 notSuppressible.stream().map(sdf -> sdf.getAipEntity())
-                        .forEach(aipEntity -> sj.add(aipEntity.getIpId()));
-                notHandledSips.add(new RejectedSip(sipIpId, sj.toString()));
+                        .forEach(aipEntity -> sj.add(aipEntity.getAipId()));
+                notHandledSips.add(new RejectedSip(sipId, sj.toString()));
             }
         }
         if (notHandledSips.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
-            if (notHandledSips.size() == sipIpIds.size()) {
+            if (notHandledSips.size() == sipIds.size()) {
                 return new ResponseEntity<>(notHandledSips, HttpStatus.UNPROCESSABLE_ENTITY);
             } else {
                 return new ResponseEntity<>(notHandledSips, HttpStatus.PARTIAL_CONTENT);
@@ -377,7 +381,7 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(value = OBJECT_LINK_PATH, method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "send the list of files metadata of a specified aip")
-    public ResponseEntity<Set<OAISDataObject>> retrieveAIPFiles(@PathVariable("ip_id") @Valid String pIpId)
+    public ResponseEntity<Set<OAISDataObject>> retrieveAIPFiles(@PathVariable(AIP_ID_PATH_PARAM) @Valid String pIpId)
             throws ModuleException {
         Set<OAISDataObject> files = aipService.retrieveAIPFiles(UniformResourceName.fromString(pIpId));
         return new ResponseEntity<>(files, HttpStatus.OK);
@@ -421,10 +425,11 @@ public class AIPController implements IResourceController<AIP> {
      * Retrieve the aip of provided ip id
      * @return the aip
      */
-    @RequestMapping(value = ID_PATH, method = RequestMethod.GET)
+    @RequestMapping(value = AIP_ID_PATH, method = RequestMethod.GET)
     @ResourceAccess(description = "allow to retrieve a given aip metadata thanks to its ipId")
     @ResponseBody
-    public ResponseEntity<AIP> retrieveAip(@PathVariable(name = "ip_id") String ipId) throws EntityNotFoundException {
+    public ResponseEntity<AIP> retrieveAip(@PathVariable(name = AIP_ID_PATH_PARAM) String ipId)
+            throws EntityNotFoundException {
         return new ResponseEntity<>(aipService.retrieveAip(ipId), HttpStatus.OK);
     }
 
@@ -434,7 +439,8 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(value = TAG_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "allow to add multiple tags to a given aip")
     @ResponseBody
-    public ResponseEntity<Void> addTags(@PathVariable(name = "ip_id") String ipId, @RequestBody Set<String> tagsToAdd)
+    public ResponseEntity<Void> addTags(@PathVariable(name = AIP_ID_PATH_PARAM) String ipId,
+            @RequestBody Set<String> tagsToAdd)
             throws EntityNotFoundException, EntityOperationForbiddenException, EntityInconsistentIdentifierException {
         aipService.addTags(ipId, tagsToAdd);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -457,7 +463,7 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(value = TAG_PATH, method = RequestMethod.DELETE)
     @ResourceAccess(description = "allow to remove multiple tags to a given aip")
     @ResponseBody
-    public ResponseEntity<Void> removeTags(@PathVariable(name = "ip_id") String ipId,
+    public ResponseEntity<Void> removeTags(@PathVariable(name = AIP_ID_PATH_PARAM) String ipId,
             @RequestBody Set<String> tagsToRemove)
             throws EntityNotFoundException, EntityOperationForbiddenException, EntityInconsistentIdentifierException {
         aipService.removeTags(ipId, tagsToRemove);
@@ -489,11 +495,12 @@ public class AIPController implements IResourceController<AIP> {
      * Update an aip, represented by its ip id, thanks to the provided pojo
      * @return updated aip
      */
-    @RequestMapping(value = ID_PATH, method = RequestMethod.PUT,
+    @RequestMapping(value = AIP_ID_PATH, method = RequestMethod.PUT,
             consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
     @ResourceAccess(description = "allow to update a given aip metadata")
     @ResponseBody
-    public ResponseEntity<AIP> updateAip(@PathVariable(name = "ip_id") String ipId, @RequestBody @Valid AIP updated)
+    public ResponseEntity<AIP> updateAip(@PathVariable(name = AIP_ID_PATH_PARAM) String ipId,
+            @RequestBody @Valid AIP updated)
             throws EntityInconsistentIdentifierException, EntityOperationForbiddenException, EntityNotFoundException {
         return new ResponseEntity<>(aipService.updateAip(ipId, updated), HttpStatus.OK);
     }
@@ -501,10 +508,10 @@ public class AIPController implements IResourceController<AIP> {
     /**
      * Delete an aip, represented by its ip id
      */
-    @RequestMapping(value = ID_PATH, method = RequestMethod.DELETE)
+    @RequestMapping(value = AIP_ID_PATH, method = RequestMethod.DELETE)
     @ResourceAccess(description = "allow to delete a given aip", role = DefaultRole.ADMIN)
     @ResponseBody
-    public ResponseEntity<String> deleteAip(@PathVariable(name = "ip_id") String ipId) throws ModuleException {
+    public ResponseEntity<String> deleteAip(@PathVariable(name = AIP_ID_PATH_PARAM) String ipId) throws ModuleException {
         Set<StorageDataFile> notSuppressible = aipService.deleteAip(ipId);
         if (notSuppressible.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -512,7 +519,7 @@ public class AIPController implements IResourceController<AIP> {
             StringJoiner sj = new StringJoiner(", ",
                     "This aip could not be deleted because at least one of his files has not be handle by the storage process: ",
                     ".");
-            notSuppressible.stream().map(sdf -> sdf.getAipEntity()).forEach(aipEntity -> sj.add(aipEntity.getIpId()));
+            notSuppressible.stream().map(sdf -> sdf.getAipEntity()).forEach(aipEntity -> sj.add(aipEntity.getAipId()));
             return new ResponseEntity<>(sj.toString(), HttpStatus.CONFLICT);
         }
     }
@@ -537,7 +544,7 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(value = HISTORY_PATH, method = RequestMethod.GET)
     @ResourceAccess(description = "send the history of event occurred on each data file of the specified AIP")
     @ResponseBody
-    public ResponseEntity<List<Event>> retrieveAIPHistory(@PathVariable("ip_id") @Valid UniformResourceName pIpId)
+    public ResponseEntity<List<Event>> retrieveAIPHistory(@PathVariable(AIP_ID_PATH_PARAM) @Valid UniformResourceName pIpId)
             throws ModuleException {
         List<Event> history = aipService.retrieveAIPHistory(pIpId);
         return new ResponseEntity<>(history, HttpStatus.OK);
@@ -547,7 +554,7 @@ public class AIPController implements IResourceController<AIP> {
     @ResponseBody
     @ResourceAccess(description = "send the list of versions of an aip through their ip ids")
     public ResponseEntity<List<String>> retrieveAIPVersionHistory(
-            @PathVariable("ip_id") @Valid UniformResourceName pIpId, final Pageable pPageable,
+            @PathVariable(AIP_ID_PATH_PARAM) @Valid UniformResourceName pIpId, final Pageable pPageable,
             final PagedResourcesAssembler<AIP> pAssembler) throws EntityNotFoundException {
         List<String> versions = aipService.retrieveAIPVersionHistory(pIpId);
         return new ResponseEntity<>(versions, HttpStatus.OK);
@@ -555,7 +562,7 @@ public class AIPController implements IResourceController<AIP> {
 
     @RequestMapping(path = DOWNLOAD_AIP_FILE, method = RequestMethod.GET, produces = MediaType.ALL_VALUE)
     @ResourceAccess(description = "download one file from a given AIP by checksum.", role = DefaultRole.PUBLIC)
-    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable("ip_id") String aipId,
+    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable(AIP_ID_PATH_PARAM) String aipId,
             @PathVariable("checksum") String checksum) throws ModuleException, IOException {
         // Retrieve file locale path, 404 if aip not found or bad checksum or no storage plugin
         // 403 if user has not right
@@ -619,7 +626,7 @@ public class AIPController implements IResourceController<AIP> {
         sb.append("/");
         sb.append(microserviceName);
         sb.append(AIP_PATH);
-        sb.append(DOWNLOAD_AIP_FILE.replaceAll("\\{ip_id\\}", owningAip.getId().toString())
+        sb.append(DOWNLOAD_AIP_FILE.replaceAll("\\{" + AIP_ID_PATH_PARAM + "\\}", owningAip.getId().toString())
                 .replaceAll("\\{checksum\\}", dataFile.getChecksum()));
         URL downloadUrl = new URL(sb.toString());
         dataFile.setUrl(downloadUrl);

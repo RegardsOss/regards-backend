@@ -7,6 +7,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -196,14 +197,17 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
 
     public AIP generateRandomAIP() throws NoSuchAlgorithmException, MalformedURLException {
 
-        UniformResourceName ipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.COLLECTION, "tenant",
+        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP, EntityType.COLLECTION, "tenant",
                 UUID.randomUUID(), 1);
-        String sipId = String.valueOf(generateRandomString(new Random(), 40));
+        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.COLLECTION, "tenant",
+                sipId.getEntityId(), 1);
+
+        String providerId = String.valueOf(generateRandomString(new Random(), 40));
 
         // Init AIP builder
-        AIPBuilder aipBuilder = new AIPBuilder(ipId, sipId, EntityType.DATA, SESSION);
+        AIPBuilder aipBuilder = new AIPBuilder(aipId, Optional.of(sipId), providerId, EntityType.DATA, SESSION);
 
-        return aipBuilder.build(generateRandomInformationPackageProperties(ipId));
+        return aipBuilder.build(generateRandomInformationPackageProperties(aipId));
     }
 
     public InformationPackageProperties generateRandomInformationPackageProperties(UniformResourceName ipId)

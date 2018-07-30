@@ -18,19 +18,21 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
-import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.storage.domain.AIP;
+import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 
 /**
  * DAO to access {@link AIP} entities by requesting {@link AIPEntity}.
@@ -42,7 +44,7 @@ public interface IAIPDao {
 
     /**
      * Create or update an {@link AIP}
-     * @param toSave     {@link AIP}
+     * @param toSave {@link AIP}
      * @param aipSession {@link AIPSession} related AIPSession to this AIP
      * @return saved {@link AIP}
      */
@@ -50,7 +52,7 @@ public interface IAIPDao {
 
     /**
      * Retrieve all existing {@link AIP}s with given {@link AIPState} state.
-     * @param state    {@link AIPState} state requested.
+     * @param state {@link AIPState} state requested.
      * @param pageable {@link Pageable} pagination parameters.
      * @return {@link AIP}s
      */
@@ -70,17 +72,17 @@ public interface IAIPDao {
      * @param fromLastUpdateDate
      * @param pageable
      * @return a page of aip which state is the one provided and contains at least one of the provided tags and which
-     * last event occurred after the given date
+     *         last event occurred after the given date
      */
     Page<AIP> findAllByStateAndTagsInAndLastEventDateAfter(AIPState state, Set<String> tags,
             OffsetDateTime fromLastUpdateDate, Pageable pageable);
 
     /**
      * Retrieve all existing {@link AIP}s with given starting ipId {@link String}
-     * @param ipIdWithoutVersion starting ipId {@link String}
+     * @param aipIdWithoutVersion starting aipId {@link String}
      * @return {@link AIP}s
      */
-    Set<AIP> findAllByIpIdStartingWith(String ipIdWithoutVersion);
+    Set<AIP> findAllByIpIdStartingWith(String aipIdWithoutVersion);
 
     /**
      * Retrieve all aips which state is the one given
@@ -91,10 +93,10 @@ public interface IAIPDao {
 
     /**
      * Retrieve a single aip according to its ip id
-     * @param ipId
+     * @param aipId
      * @return an optional wrapping the aip to avoid nulls
      */
-    Optional<AIP> findOneByIpId(String ipId);
+    Optional<AIP> findOneByAipId(String aipId);
 
     /**
      * Delete all aips from the database
@@ -116,10 +118,10 @@ public interface IAIPDao {
 
     /**
      * Retrieve all aip which ip id is one of the provided ones
-     * @param ipIds
+     * @param aipIds
      * @return aips which ip id is one of the requested
      */
-    Set<AIP> findAllByIpIdIn(Collection<String> ipIds);
+    Set<AIP> findAllByAipIdIn(Collection<String> aipIds);
 
     /**
      * Retrieve all aips which are tagged with the given tag
@@ -130,10 +132,10 @@ public interface IAIPDao {
 
     /**
      * Retrieve all aips which sip ip id is the given one
-     * @param sipIpId
+     * @param sipId
      * @return aips which sip ip id matches
      */
-    Set<AIP> findAllBySipId(String sipIpId);
+    Set<AIP> findAllBySipId(String sipId);
 
     /**
      * Retrieve all aips which state is the one given with lastEventDate above fromLastUpdateDate provided
@@ -146,7 +148,7 @@ public interface IAIPDao {
 
     /**
      * Allow to make a research
-     * @param query     A SQL query
+     * @param query A SQL query
      * @param pPageable
      * @return
      */
@@ -183,6 +185,6 @@ public interface IAIPDao {
     /**
      * Retrieve all existing IpId from given list
      */
-    Stream<UniformResourceName> findUrnsByIpIdIn(Collection<String> ipIds);
+    Stream<UniformResourceName> findUrnsByAipIdIn(Collection<String> aipIds);
 
 }

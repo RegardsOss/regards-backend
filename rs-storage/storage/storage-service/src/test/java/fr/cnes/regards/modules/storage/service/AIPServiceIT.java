@@ -315,8 +315,8 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         Assert.assertEquals("There whould be only one datastorage success event", 1, events.size());
 
         AIPEvent event = events.stream().findFirst().get();
-        Assert.assertEquals(aip.getId().toString(), event.getIpId());
-        Optional<AIP> aipFromDB = aipDao.findOneByIpId(aip.getId().toString());
+        Assert.assertEquals(aip.getId().toString(), event.getAipId());
+        Optional<AIP> aipFromDB = aipDao.findOneByAipId(aip.getId().toString());
         Assert.assertEquals(AIPState.STORED, aipFromDB.get().getState());
         LOG.info("AIP {} stored", aip.getId().toString());
 
@@ -363,7 +363,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         Set<AIPEvent> events = waitForEventsReceived(AIPState.STORAGE_ERROR, 2);
         Assert.assertEquals("There should be two error events. One per storage location (multistorage).", 2,
                             events.size());
-        Optional<AIP> aipFromDB = aipDao.findOneByIpId(aip.getId().toString());
+        Optional<AIP> aipFromDB = aipDao.findOneByAipId(aip.getId().toString());
         Assert.assertEquals(AIPState.STORAGE_ERROR, aipFromDB.get().getState());
         LOG.info("AIP {} is in ERROR State", aip.getId().toString());
         Set<StorageDataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.ERROR, aip);
@@ -395,7 +395,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
             Assert.assertEquals("There should be one storage error event", 1, events.size());
 
             // Check state of AIP
-            Optional<AIP> aipFromDB = aipDao.findOneByIpId(aip.getId().toString());
+            Optional<AIP> aipFromDB = aipDao.findOneByAipId(aip.getId().toString());
             Assert.assertNotEquals("Test failed because storage didn't failed! It succeeded!", AIPState.STORED,
                                    aipFromDB.get().getState());
             Assert.assertEquals(AIPState.STORAGE_ERROR, aipFromDB.get().getState());
@@ -418,7 +418,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         createSuccessTest();
         mockEventHandler.clear();
         // now that it is correctly created, lets say it has been updated and add a tag
-        aip = aipDao.findOneByIpId(aip.getId().toString()).get();
+        aip = aipDao.findOneByAipId(aip.getId().toString()).get();
         String newTag = "Exemple Tag For Fun";
         aip.getTags().add(newTag);
         Optional<StorageDataFile> oldDataFile = dataFileDao.findByAipAndType(aip, DataType.AIP);
@@ -431,7 +431,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
                                Files.exists(Paths.get(url.getPath())));
         }
 
-        AIP updatedAip = aipDao.findOneByIpId(aip.getId().toString()).get();
+        AIP updatedAip = aipDao.findOneByAipId(aip.getId().toString()).get();
         Assert.assertEquals("AIP should be in storing metadata state", AIPState.STORED, updatedAip.getState());
 
         Assert.assertTrue("Updated AIP should contains new tag", updatedAip.getTags().contains(newTag));
@@ -463,7 +463,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         // Wait for AIP deleteion
         Set<AIPEvent> events = waitForEventsReceived(AIPState.DELETED, 1);
         Assert.assertEquals("There should not been any AIP delete event ", 0, events.size());
-        Assert.assertTrue("AIP should be referenced in the database", aipDao.findOneByIpId(aipIpId).isPresent());
+        Assert.assertTrue("AIP should be referenced in the database", aipDao.findOneByAipId(aipIpId).isPresent());
         for (StorageDataFile df : aipFiles) {
             // As only one of the two storage system allow deletion, only one file should be deleted on disk
             if (df.getDataType().equals(DataType.AIP)) {
@@ -507,7 +507,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         // Wait for AIP deletion
         Set<AIPEvent> events = waitForEventsReceived(AIPState.DELETED, 1);
         Assert.assertEquals("There should been only one AIP delete event ", 1, events.size());
-        Assert.assertFalse("AIP should not be referenced in the database", aipDao.findOneByIpId(aipIpId).isPresent());
+        Assert.assertFalse("AIP should not be referenced in the database", aipDao.findOneByAipId(aipIpId).isPresent());
         for (StorageDataFile df : aipFiles) {
             // As only one of the two storage system allow deletion, only one file should be deleted on disk
             for (URL fileLocation : df.getUrls()) {
@@ -526,17 +526,19 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         pluginService.updatePluginConfiguration(dsConfWithDeleteDisabled);
 
         // store a first AIP
-        aip.setSipId("hello");
+        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP, EntityType.COLLECTION,
+                getDefaultTenant(), UUID.randomUUID(), 1);
+        aip.setSipId(sipId);
         storeAIP(aip, true);
         String aipIpId = aip.getId().toString();
 
         // store a second AIP with the same sipId
         AIP newAip = getAIP();
-        newAip.setSipId(aip.getSipId());
+        newAip.setSipId(aip.getSipId().orElse(null));
         storeAIP(newAip, true);
 
         // delete the two AIP with the same sipId
-        aipService.deleteAipFromSip(aip.getSipId());
+        aipService.deleteAipFromSip(aip.getSipIdUrn().get());
 
         Thread.sleep(5000);
 
@@ -557,7 +559,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         // Wait for AIP deletion events
         Set<AIPEvent> events = waitForEventsReceived(AIPState.DELETED, 2);
         Assert.assertEquals("There should been only one AIP delete event ", 2, events.size());
-        Assert.assertFalse("AIP should not be referenced in the database", aipDao.findOneByIpId(aipIpId).isPresent());
+        Assert.assertFalse("AIP should not be referenced in the database", aipDao.findOneByAipId(aipIpId).isPresent());
     }
 
     @Test
@@ -587,7 +589,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         // Wait for AIP deletion
         Set<AIPEvent> events = waitForEventsReceived(AIPState.DELETED, 1);
         Assert.assertEquals("There should been only one AIP delete event ", 1, events.size());
-        Assert.assertFalse("AIP should not be referenced in the database", aipDao.findOneByIpId(aipIpId).isPresent());
+        Assert.assertFalse("AIP should not be referenced in the database", aipDao.findOneByAipId(aipIpId).isPresent());
         for (StorageDataFile df : aipFiles) {
             // All files should be deleted. But no AIP metadata as it was not stored
             Assert.assertFalse("No AIP metadata should be stored", DataType.AIP.equals(df.getDataType()));
@@ -618,9 +620,11 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
     private AIP getAIP() throws MalformedURLException {
 
-        AIPBuilder aipBuilder = new AIPBuilder(
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, getDefaultTenant(), UUID.randomUUID(), 1),
-                null, EntityType.DATA, SESSION);
+        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP, EntityType.DATA, getDefaultTenant(),
+                UUID.randomUUID(), 1);
+        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, getDefaultTenant(),
+                sipId.getEntityId(), 1);
+        AIPBuilder aipBuilder = new AIPBuilder(aipId, Optional.of(sipId), "providerId", EntityType.DATA, SESSION);
 
         Path path = Paths.get("src", "test", "resources", "data.txt");
         aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, path, "MD5", CHECKSUM);

@@ -94,8 +94,8 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.notification.domain.NotificationType;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
-import fr.cnes.regards.modules.storage.dao.AIPSessionSpecifications;
 import fr.cnes.regards.modules.storage.dao.AIPQueryGenerator;
+import fr.cnes.regards.modules.storage.dao.AIPSessionSpecifications;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IAIPSessionRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
@@ -330,7 +330,7 @@ public class AIPService implements IAIPService {
 
     /**
      * Validate submitted AIPs
-     * @param aips         AIP collection to validate
+     * @param aips AIP collection to validate
      * @param rejectedAips invalid AIPs
      * @return valid AIPs
      */
@@ -344,16 +344,15 @@ public class AIPService implements IAIPService {
             List<String> rejectionReasons = Lists.newArrayList();
             String ipId = aip.getId().toString();
             // first of all lets see if there already is an aip with this ip id into the database
-            if (aipDao.findOneByIpId(ipId).isPresent()) {
+            if (aipDao.findOneByAipId(ipId).isPresent()) {
                 rejectionReasons.add(String.format("AIP with ip id %s already exists", ipId));
                 rejected = true;
             }
             Errors errors = new BeanPropertyBindingResult(aip, "aip");
             validator.validate(aip, errors);
             if (errors.hasErrors()) {
-                errors.getFieldErrors().forEach(oe ->
-                        rejectionReasons.add(String.format("Property %s is invalid: %s", oe.getField(), oe.getDefaultMessage()))
-                );
+                errors.getFieldErrors().forEach(oe -> rejectionReasons
+                        .add(String.format("Property %s is invalid: %s", oe.getField(), oe.getDefaultMessage())));
                 // now lets handle validation issues
                 rejected = true;
             }
@@ -391,18 +390,18 @@ public class AIPService implements IAIPService {
             }
             long aipUpdateStateTime = System.currentTimeMillis();
             LOGGER.debug("Updating AIP state of {} AIP(s) for {} tenant took {} ms", aips.size(),
-                    runtimeTenantResolver.getTenant(), aipUpdateStateTime - startTime);
+                         runtimeTenantResolver.getTenant(), aipUpdateStateTime - startTime);
             // Dispatch and check data files
             Multimap<Long, StorageDataFile> storageWorkingSetMap = dispatchAndCheck(dataFilesToStore);
             long dispatchTime = System.currentTimeMillis();
             LOGGER.debug("Dispatching {} StorageDataFile(s) for {} tenant tooks {} ms", dataFilesToStore.size(),
-                    runtimeTenantResolver.getTenant(), dispatchTime - startTime);
+                         runtimeTenantResolver.getTenant(), dispatchTime - startTime);
             // Schedule storage jobs
             scheduleStorage(storageWorkingSetMap, true);
 
             long scheduleTime = System.currentTimeMillis();
             LOGGER.info("Scheduling storage jobs of {} AIP(s) for {} tenant (scheduling time : {} ms)", aips.size(),
-                    runtimeTenantResolver.getTenant(), scheduleTime - startTime);
+                        runtimeTenantResolver.getTenant(), scheduleTime - startTime);
         }
     }
 
@@ -432,9 +431,9 @@ public class AIPService implements IAIPService {
         // Now lets ask to the strategy to dispatch dataFiles between possible DataStorages
         DispatchErrors dispatchErrors = new DispatchErrors();
         Multimap<Long, StorageDataFile> storageWorkingSetMap = allocationStrategy.dispatch(dataFilesToStore,
-                dispatchErrors);
+                                                                                           dispatchErrors);
         LOGGER.trace("{} data objects has been dispatched between {} data storage by allocation strategy",
-                dataFilesToStore.size(), storageWorkingSetMap.keySet().size());
+                     dataFilesToStore.size(), storageWorkingSetMap.keySet().size());
         // as we are trusty people, we check that the dispatch gave us back all DataFiles into the WorkingSubSets
         checkDispatch(dataFilesToStore, storageWorkingSetMap, dispatchErrors);
         // now that those who should be in error are handled, lets save into DB those to be stored (mainly because of
@@ -446,7 +445,7 @@ public class AIPService implements IAIPService {
     @Override
     public void storeRetry(Set<String> aipIpIds) throws ModuleException {
         // lets get the data file which are in storage error state and ask for their storage, once again
-        Set<AIP> failedAips = aipDao.findAllByIpIdIn(aipIpIds);
+        Set<AIP> failedAips = aipDao.findAllByAipIdIn(aipIpIds);
         for (AIP aip : failedAips) {
             if (AIPState.STORAGE_ERROR.equals(aip.getState())) {
                 aip.setState(AIPState.VALID);
@@ -476,9 +475,9 @@ public class AIPService implements IAIPService {
         // As a file can be associated to multiple AIP, we have to compare their checksums.
         Set<String> checksumsWithoutAccess = Sets
                 .difference(dataFiles.stream().map(df -> df.getChecksum()).collect(Collectors.toSet()),
-                        dataFilesWithAccess.stream().map(df -> df.getChecksum()).collect(Collectors.toSet()));
+                            dataFilesWithAccess.stream().map(df -> df.getChecksum()).collect(Collectors.toSet()));
         checksumsWithoutAccess.forEach(cs -> LOGGER.error("User {} does not have access to file with checksum {}.",
-                authResolver.getUser(), cs));
+                                                          authResolver.getUser(), cs));
         errors.addAll(checksumsWithoutAccess);
 
         Set<StorageDataFile> onlineFiles = Sets.newHashSet();
@@ -553,7 +552,9 @@ public class AIPService implements IAIPService {
             if ((tags == null) || tags.isEmpty()) {
                 aips = aipDao.findAllByState(state, pageable);
             } else {
-                aips = aipDao.findAll(AIPQueryGenerator.search(state, null, null, new ArrayList(tags),null, null, null), pageable);
+                aips = aipDao
+                        .findAll(AIPQueryGenerator.search(state, null, null, new ArrayList(tags), null, null, null),
+                                 pageable);
             }
         } else {
             if ((tags == null) || tags.isEmpty()) {
@@ -591,7 +592,7 @@ public class AIPService implements IAIPService {
 
     @Override
     public Set<StorageDataFile> retrieveAIPDataFiles(UniformResourceName pIpId) throws ModuleException {
-        Optional<AIP> aip = aipDao.findOneByIpId(pIpId.toString());
+        Optional<AIP> aip = aipDao.findOneByAipId(pIpId.toString());
         if (aip.isPresent()) {
             if (!getSecurityDelegationPlugin().hasAccess(pIpId.toString())) {
                 throw new EntityOperationForbiddenException(pIpId.toString(), AIP.class, AIP_ACCESS_FORBIDDEN);
@@ -615,9 +616,9 @@ public class AIPService implements IAIPService {
      * If it's true, nothing is done.<br/>
      * If not, the associated {@link AIP}s of given {@link StorageDataFile}s are set to {@link AIPState#STORAGE_ERROR}
      * status.
-     * @param dataFilesToStore     {@link StorageDataFile}s
+     * @param dataFilesToStore {@link StorageDataFile}s
      * @param storageWorkingSetMap {@link Multimap}<{@link PluginConfiguration}, {@link StorageDataFile}>
-     * @param {@link               DispatchErrors} errors during files dispatch
+     * @param {@link DispatchErrors} errors during files dispatch
      */
     private void checkDispatch(Set<StorageDataFile> dataFilesToStore,
             Multimap<Long, StorageDataFile> storageWorkingSetMap, DispatchErrors dispatchErrors) {
@@ -864,7 +865,7 @@ public class AIPService implements IAIPService {
         List<RejectedAip> rejectedAips = Lists.newArrayList();
         for (String ipId : aipIpIds) {
             List<String> rejectionReasons = Lists.newArrayList();
-            if (!aipDao.findOneByIpId(ipId).isPresent()) {
+            if (!aipDao.findOneByAipId(ipId).isPresent()) {
                 rejectionReasons.add(String.format("AIP with ip id %s does not exists", ipId));
                 rejectedAips.add(new RejectedAip(ipId, rejectionReasons));
             }
@@ -879,7 +880,7 @@ public class AIPService implements IAIPService {
 
     @Override
     public List<Event> retrieveAIPHistory(UniformResourceName ipId) throws ModuleException {
-        Optional<AIP> aip = aipDao.findOneByIpId(ipId.toString());
+        Optional<AIP> aip = aipDao.findOneByAipId(ipId.toString());
         if (aip.isPresent()) {
             if (!getSecurityDelegationPlugin().hasAccess(ipId.toString())) {
                 throw new EntityOperationForbiddenException(ipId.toString(), AIP.class, AIP_ACCESS_FORBIDDEN);
@@ -892,24 +893,24 @@ public class AIPService implements IAIPService {
 
     @Override
     public Set<AIP> retrieveAipsBulk(Set<String> ipIds) {
-        return aipDao.findAllByIpIdIn(ipIds);
+        return aipDao.findAllByAipIdIn(ipIds);
     }
 
     @Override
     public AIP retrieveAip(String ipId) throws EntityNotFoundException {
-        return aipDao.findOneByIpId(ipId).orElseThrow(() -> new EntityNotFoundException(ipId, AIP.class));
+        return aipDao.findOneByAipId(ipId).orElseThrow(() -> new EntityNotFoundException(ipId, AIP.class));
     }
 
     @Override
     public AIP updateAip(String ipId, AIP updated)
             throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException {
-        return updateAip(ipId, updated,  "AIP metadata has been updated.");
+        return updateAip(ipId, updated, "AIP metadata has been updated.");
     }
 
     @Override
     public AIP updateAip(String ipId, AIP updated, String updateMessage)
             throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException {
-        Optional<AIP> oldAipOpt = aipDao.findOneByIpId(ipId);
+        Optional<AIP> oldAipOpt = aipDao.findOneByAipId(ipId);
         // first lets check for issues
         if (!oldAipOpt.isPresent()) {
             throw new EntityNotFoundException(ipId, AIP.class);
@@ -1023,7 +1024,7 @@ public class AIPService implements IAIPService {
 
     @Override
     public Set<StorageDataFile> deleteAip(String ipId) throws ModuleException {
-        Optional<AIP> toBeDeletedOpt = aipDao.findOneByIpId(ipId);
+        Optional<AIP> toBeDeletedOpt = aipDao.findOneByAipId(ipId);
         if (toBeDeletedOpt.isPresent()) {
             AIP toBeDeleted = toBeDeletedOpt.get();
             return deleteAip(toBeDeleted);
@@ -1081,9 +1082,9 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public Set<StorageDataFile> deleteAipFromSip(String sipIpId) throws ModuleException {
+    public Set<StorageDataFile> deleteAipFromSip(UniformResourceName sipId) throws ModuleException {
         Set<StorageDataFile> notSuppressible = new HashSet<>();
-        for (AIP aip : aipDao.findAllBySipId(sipIpId)) {
+        for (AIP aip : aipDao.findAllBySipId(sipId.toString())) {
             notSuppressible.addAll(deleteAip(aip.getId().toString()));
         }
         return notSuppressible;
@@ -1324,7 +1325,7 @@ public class AIPService implements IAIPService {
     public Pair<StorageDataFile, InputStream> getAIPDataFile(String pAipId, String pChecksum)
             throws ModuleException, IOException {
         // First find the AIP
-        Optional<AIP> oaip = aipDao.findOneByIpId(pAipId);
+        Optional<AIP> oaip = aipDao.findOneByAipId(pAipId);
         if (oaip.isPresent()) {
             AIP aip = oaip.get();
             if (!getSecurityDelegationPlugin().hasAccess(pAipId)) {

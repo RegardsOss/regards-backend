@@ -25,10 +25,9 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Entity
-@Table(name = "t_prioritized_data_storage", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_priotitized_data_storage",
-                columnNames = { PrioritizedDataStorage.DATA_STORAGE_TYPE_COLUMN_NAME,
-                        PrioritizedDataStorage.PRIORITY_COLUMN_NAME }) })
+@Table(name = "t_prioritized_data_storage",
+        uniqueConstraints = { @UniqueConstraint(name = "uk_priotitized_data_storage", columnNames = {
+                PrioritizedDataStorage.DATA_STORAGE_TYPE_COLUMN_NAME, PrioritizedDataStorage.PRIORITY_COLUMN_NAME }) })
 public class PrioritizedDataStorage implements Comparable<PrioritizedDataStorage> {
 
     public static final String DATA_STORAGE_TYPE_COLUMN_NAME = "data_storage_type";
@@ -62,6 +61,7 @@ public class PrioritizedDataStorage implements Comparable<PrioritizedDataStorage
     /**
      * Default constructor to be used only by serialization process or JPA
      */
+    @SuppressWarnings("unused")
     private PrioritizedDataStorage() {
     }
 
@@ -109,15 +109,14 @@ public class PrioritizedDataStorage implements Comparable<PrioritizedDataStorage
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
         }
 
         PrioritizedDataStorage that = (PrioritizedDataStorage) o;
 
-        return dataStorageConfiguration != null ?
-                dataStorageConfiguration.equals(that.dataStorageConfiguration) :
-                that.dataStorageConfiguration == null;
+        return dataStorageConfiguration != null ? dataStorageConfiguration.equals(that.dataStorageConfiguration)
+                : that.dataStorageConfiguration == null;
     }
 
     @Override

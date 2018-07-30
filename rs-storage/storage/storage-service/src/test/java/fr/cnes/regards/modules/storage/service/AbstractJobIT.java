@@ -1,5 +1,28 @@
 package fr.cnes.regards.modules.storage.service;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.time.OffsetDateTime;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.MimeType;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -19,32 +42,12 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.time.OffsetDateTime;
-import java.util.Set;
-import java.util.UUID;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.util.MimeType;
 
-@ContextConfiguration(classes = {TestConfig.class, AIPServiceIT.Config.class})
+@ContextConfiguration(classes = { TestConfig.class, AIPServiceIT.Config.class })
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=storage_test", "regards.amqp.enabled=true" },
         locations = { "classpath:storage.properties" })
-@ActiveProfiles({"testAmqp", "disableStorageTasks"})
+@ActiveProfiles({ "testAmqp", "disableStorageTasks" })
 @EnableAsync
 @RunWith(SpringRunner.class)
 public abstract class AbstractJobIT extends AbstractMultitenantServiceTest {
@@ -94,7 +97,7 @@ public abstract class AbstractJobIT extends AbstractMultitenantServiceTest {
         JobInfo jobInfo = jobs.iterator().next();
         // this loop acts like a timeout
         for (int i = 0; i < 40; i++) {
-            //Pause for 1 seconds
+            // Pause for 1 seconds
             Thread.sleep(1000);
             JobInfo jobInfoRefreshed = jobInfoRepo.findById(jobInfo.getId());
             if (JobStatus.SUCCEEDED.equals(jobInfoRefreshed.getStatus().getStatus())) {
@@ -104,17 +107,19 @@ public abstract class AbstractJobIT extends AbstractMultitenantServiceTest {
         return jobInfo;
     }
 
-
     protected AIP getNewAipWithTags(String aipSession, String... tags) throws MalformedURLException {
-        AIPBuilder aipBuilder = new AIPBuilder(
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT, UUID.randomUUID(), 1),
-                null, EntityType.DATA, aipSession);
+
+        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP, EntityType.DATA, DEFAULT_TENANT,
+                UUID.randomUUID(), 1);
+        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT,
+                sipId.getEntityId(), 1);
+        AIPBuilder aipBuilder = new AIPBuilder(aipId, Optional.of(sipId), "providerId", EntityType.DATA, aipSession);
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", MimeType.valueOf("text/plain"));
         aipBuilder.addContentInformation();
         aipBuilder.getPDIBuilder().setAccessRightInformation("public");
         aipBuilder.getPDIBuilder().setFacility("CS");
         aipBuilder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event",
-                OffsetDateTime.now());
+                                                                 OffsetDateTime.now());
         aipBuilder.addTags(tags);
         return aipBuilder.build();
     }

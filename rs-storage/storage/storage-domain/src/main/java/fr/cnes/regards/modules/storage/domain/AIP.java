@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.storage.domain;
 
+import java.util.Optional;
+
+import org.hibernate.validator.constraints.NotBlank;
+
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -31,6 +35,12 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
  *
  */
 public class AIP extends AbstractInformationPackage<UniformResourceName> {
+
+    /**
+     * Provider id
+     */
+    @NotBlank(message = "Provider identifier is required")
+    private String providerId;
 
     /**
      * SIP ID
@@ -70,8 +80,15 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
     /**
      * @return the sip id
      */
-    public String getSipId() {
-        return sipId;
+    public Optional<String> getSipId() {
+        return Optional.ofNullable(sipId);
+    }
+
+    public Optional<UniformResourceName> getSipIdUrn() {
+        if (sipId == null) {
+            return Optional.empty();
+        }
+        return Optional.of(UniformResourceName.fromString(sipId));
     }
 
     /**
@@ -80,6 +97,13 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
      */
     public void setSipId(String sipId) {
         this.sipId = sipId;
+    }
+
+    public void setSipId(UniformResourceName sipId) {
+        if (sipId != null) {
+            sipId.toString();
+        }
+        this.sipId = null;
     }
 
     public boolean isRetry() {
@@ -95,5 +119,13 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
      */
     public String getSession() {
         return this.getProperties().getPdi().getProvenanceInformation().getSession();
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
     }
 }

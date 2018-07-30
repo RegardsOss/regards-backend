@@ -22,11 +22,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Léo Mieulet
- * This object is returned on REST to inform how many entities were removed
+ *         This object is returned on REST to inform how many entities were removed
  */
 public class DeletedAipsInfos {
-    private int nbErrors;
-    private int nbDeleted;
+
+    @SuppressWarnings("unused")
+    private final int nbErrors;
+
+    @SuppressWarnings("unused")
+    private final int nbDeleted;
 
     public DeletedAipsInfos(AtomicInteger nbErrors, AtomicInteger nbDeleted) {
         this.nbErrors = nbErrors.get();

@@ -18,10 +18,12 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
-import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 
 /**
  * JPA Repository to manage {@link AIPSession} entities.
@@ -35,5 +37,4 @@ public interface IAIPSessionRepository extends JpaRepository<AIPSession, String>
      * @return
      */
     Optional<AIPSession> findById(String id);
-
 }

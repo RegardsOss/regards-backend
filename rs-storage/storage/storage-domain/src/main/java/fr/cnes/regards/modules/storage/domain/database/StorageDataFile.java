@@ -179,6 +179,7 @@ public class StorageDataFile {
     /**
      * Default constructor
      */
+    @SuppressWarnings("unused")
     private StorageDataFile() {
         // serialization
     }

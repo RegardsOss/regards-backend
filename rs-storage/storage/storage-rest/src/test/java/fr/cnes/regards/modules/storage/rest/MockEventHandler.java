@@ -19,7 +19,7 @@ public class MockEventHandler implements IHandler<AIPEvent> {
     @Override
     public void handle(TenantWrapper<AIPEvent> wrapper) {
         LOG.info("[MOCK EVENT HANDLER] New AIPEvent Recieved- {} - {}", wrapper.getContent().getAipState().toString(),
-                 wrapper.getContent().getIpId());
+                 wrapper.getContent().getAipId());
         receivedEvents.add(wrapper.getContent());
     }
 
@@ -33,7 +33,7 @@ public class MockEventHandler implements IHandler<AIPEvent> {
 
     public void log() {
         receivedEvents
-                .forEach(event -> LOG.info("Received event : ipId:{}, state:{}", event.getIpId(), event.getAipState()));
+                .forEach(event -> LOG.info("Received event : ipId:{}, state:{}", event.getAipId(), event.getAipState()));
     }
 
 }
