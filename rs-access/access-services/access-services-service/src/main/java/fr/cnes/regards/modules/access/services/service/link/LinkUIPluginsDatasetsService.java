@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.modules.access.services.service.link;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
+
+import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -151,7 +152,7 @@ public class LinkUIPluginsDatasetsService implements ILinkUIPluginsDatasetsServi
         public void handle(final TenantWrapper<BroadcastEntityEvent> wrapper) {
             if ((wrapper.getContent() != null) && (wrapper.getContent().getEventType() == EventType.DELETE)) {
                 runtimeTenantResolver.forceTenant(wrapper.getTenant());
-                for (final UniformResourceName ipId : wrapper.getContent().getIpIds()) {
+                for (final UniformResourceName ipId : wrapper.getContent().getAipIds()) {
                     final LinkUIPluginsDatasets link = linkRepo.findOneByDatasetId(ipId.toString());
                     if (link != null) {
                         deleteLink(link);
@@ -161,6 +162,5 @@ public class LinkUIPluginsDatasetsService implements ILinkUIPluginsDatasetsServi
             }
         }
     }
-
 
 }
