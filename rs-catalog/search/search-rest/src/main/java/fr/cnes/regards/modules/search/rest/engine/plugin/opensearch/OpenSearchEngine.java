@@ -144,8 +144,9 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     }
 
     @Override
-    public ResponseEntity<Object> search(SearchContext context) throws ModuleException {
-        FacetPage<EntityFeature> facetPage = searchService.search(parse(context), context.getSearchType(), null,
+    public ResponseEntity<Object> search(SearchContext context, ISearchEngine<?, ?, ?, ?> parser)
+            throws ModuleException {
+        FacetPage<EntityFeature> facetPage = searchService.search(parser.parse(context), context.getSearchType(), null,
                                                                   context.getPageable());
         try {
             return ResponseEntity.ok(formatResponse(facetPage, context));
@@ -167,7 +168,6 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         }
     }
 
-    @Override
     public ICriterion parse(MultiValueMap<String, String> queryParams) throws ModuleException {
         // First parse q parameter for searchTerms if any.
         QueryParser queryParser = new QueryParser(finder);
@@ -203,7 +203,8 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     /**
      * Parse request parameters and and add dataset context if necessary
      */
-    private ICriterion parse(SearchContext context) throws ModuleException {
+    @Override
+    public ICriterion parse(SearchContext context) throws ModuleException {
         // Convert parameters to business criterion
         ICriterion criterion = parse(context.getQueryParams());
         // Manage dataset URN path parameter as criterion

@@ -18,9 +18,13 @@
  */
 package fr.cnes.regards.modules.search.rest.engine;
 
+import java.util.Optional;
+
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 
 /**
@@ -36,5 +40,12 @@ public interface ISearchEngineDispatcher {
      * Dispatch request to the right search engine according to specified search context
      */
     <T> ResponseEntity<T> dispatchRequest(SearchContext context) throws ModuleException;
+
+    /**
+     * Retrieve a search engine plugin instance for the given dataset and engine type.
+     * @throws ModuleException
+     */
+    ISearchEngine<?, ?, ?, ?> getSearchEngine(Optional<UniformResourceName> datasetUrn, String engineType)
+            throws ModuleException;
 
 }

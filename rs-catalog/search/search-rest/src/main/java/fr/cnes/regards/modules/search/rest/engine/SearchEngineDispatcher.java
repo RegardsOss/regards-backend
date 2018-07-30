@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.search.rest.engine;
 
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.StringJoiner;
 
 import org.slf4j.Logger;
@@ -33,9 +34,11 @@ import org.springframework.validation.Validator;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
+import fr.cnes.regards.modules.search.service.IBusinessSearchService;
 import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
 
 /**
@@ -64,6 +67,12 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
 
     @Autowired
     private ISearchEngineConfigurationService searchEngineService;
+
+    /**
+     * Business search service
+     */
+    @Autowired
+    protected IBusinessSearchService searchService;
 
     @SuppressWarnings("unchecked")
     @Override
@@ -111,23 +120,34 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
         }
 
         // Retrieve search engine plugin from search context
-        ISearchEngine<?, ?, ?, ?> engine = getSearchEngine(context);
+        ISearchEngine<?, ?, ?, ?> searchEngine = getSearchEngine(context.getDatasetUrn(), context.getEngineType());
+        ISearchEngine<?, ?, ?, ?> searchEngineParser = getSearchEngineParser(context, searchEngine);
         if (context.getExtra().isPresent()) {
-            return (ResponseEntity<T>) engine.extra(context);
+            return (ResponseEntity<T>) searchEngine.extra(context);
         } else if (context.getUrn().isPresent()) {
-            return (ResponseEntity<T>) engine.getEntity(context);
+            return (ResponseEntity<T>) searchEngine.getEntity(context);
         } else if (context.getPropertyName().isPresent()) {
-            return (ResponseEntity<T>) engine.getPropertyValues(context);
+            return (ResponseEntity<T>) searchEngine.getPropertyValues(context);
         } else if (context.getDateTypes().isPresent()) {
-            return (ResponseEntity<T>) engine.getSummary(context);
+            return (ResponseEntity<T>) searchEngine.getSummary(context);
         } else {
-            return (ResponseEntity<T>) engine.search(context);
+            return (ResponseEntity<T>) searchEngine.search(context, searchEngineParser);
         }
     }
 
-    private ISearchEngine<?, ?, ?, ?> getSearchEngine(SearchContext context) throws ModuleException {
-        SearchEngineConfiguration conf = searchEngineService.retrieveConf(context.getDatasetUrn(),
-                                                                          context.getEngineType());
+    private ISearchEngine<?, ?, ?, ?> getSearchEngineParser(SearchContext context,
+            ISearchEngine<?, ?, ?, ?> searchEngine) throws ModuleException {
+        if (context.getEngineRequestParserType() != null) {
+            return getSearchEngine(context.getDatasetUrn(), context.getEngineRequestParserType());
+        } else {
+            return searchEngine;
+        }
+
+    }
+
+    public ISearchEngine<?, ?, ?, ?> getSearchEngine(Optional<UniformResourceName> datasetUrn, String engineType)
+            throws ModuleException {
+        SearchEngineConfiguration conf = searchEngineService.retrieveConf(datasetUrn, engineType);
         return pluginService.getPlugin(conf.getConfiguration().getId());
     }
 }

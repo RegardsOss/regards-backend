@@ -42,7 +42,7 @@ public class LegacySearchEngineClientIT extends AbstractSearchClientIT<ILegacySe
     @Test
     public void search() {
         ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> result = client
-                .searchAllDataobjects(new HttpHeaders(), new LinkedMultiValueMap<>(), 0, 10000);
+                .searchAllDataobjects(new HttpHeaders(), new LinkedMultiValueMap<>(), null, 0, 10000);
         Assert.assertTrue(result.getStatusCode().equals(HttpStatus.OK));
 
         // ResponseEntity<Set<UniformResourceName>> response = client.hasAccess(Collections.emptyList());
