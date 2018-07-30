@@ -18,10 +18,11 @@
  */
 package fr.cnes.regards.modules.search.domain;
 
-import java.time.OffsetDateTime;
-import java.util.Collection;
+import java.util.List;
 
-import org.springframework.util.MultiValueMap;
+import org.apache.commons.compress.utils.Lists;
+
+import fr.cnes.regards.framework.oais.urn.DataType;
 
 /**
  * POJO Containig information to handle a new search on catalog from complex search system controller
@@ -30,69 +31,63 @@ import org.springframework.util.MultiValueMap;
 public class ComplexSearchRequest {
 
     /**
-     * Engine to use for the research
+     * Search requests to handle
      */
-    private final String engineType;
+    private List<SearchRequest> requests;
 
     /**
-     * Dataset urn identifier on which search must be applyed. If null search is applyed on the whole catalog
+     * {@link DataType}s to retrieve from search requests
      */
-    private final String datasetUrn;
+    private List<DataType> dataTypes;
 
-    /**
-     * Search engine query parameters
-     */
-    private final MultiValueMap<String, String> searchParameters;
+    private int page = 0;
 
-    /**
-     * Additional entity ids to return with the search results.
-     */
-    private final Collection<String> entityIdsToInclude;
+    private int size = 20;
 
-    /**
-     * Entity ids to exclud from search results.
-     */
-    private final Collection<String> entityIdsToExclude;
-
-    /**
-     * Maximum creation date of researched entities. If null no date criterion is added to the search.
-     */
-    private final OffsetDateTime searchDateLimit;
-
-    public ComplexSearchRequest(String engineType, String datasetUrn, MultiValueMap<String, String> searchParameters,
-            Collection<String> entityIdsToInclude, Collection<String> entityIdsToExclude,
-            OffsetDateTime searchDateLimit) {
+    public ComplexSearchRequest(List<DataType> dataTypes) {
         super();
-        this.engineType = engineType;
-        this.datasetUrn = datasetUrn;
-        this.searchParameters = searchParameters;
-        this.entityIdsToInclude = entityIdsToInclude;
-        this.entityIdsToExclude = entityIdsToExclude;
-        this.searchDateLimit = searchDateLimit;
+        this.dataTypes = dataTypes;
+        this.requests = Lists.newArrayList();
     }
 
-    public String getEngineType() {
-        return engineType;
+    public ComplexSearchRequest(List<DataType> dataTypes, int page, int size) {
+        super();
+        this.dataTypes = dataTypes;
+        this.requests = Lists.newArrayList();
+        this.page = page;
+        this.size = size;
     }
 
-    public String getDatasetUrn() {
-        return datasetUrn;
+    public List<SearchRequest> getRequests() {
+        return requests;
     }
 
-    public MultiValueMap<String, String> getSearchParameters() {
-        return searchParameters;
+    public void setRequests(List<SearchRequest> requests) {
+        this.requests = requests;
     }
 
-    public OffsetDateTime getSearchDateLimit() {
-        return searchDateLimit;
+    public List<DataType> getDataTypes() {
+        return dataTypes;
     }
 
-    public Collection<String> getEntityIdsToExclude() {
-        return entityIdsToExclude;
+    public void setDataTypes(List<DataType> dataTypes) {
+        this.dataTypes = dataTypes;
     }
 
-    public Collection<String> getEntityIdsToInclude() {
-        return entityIdsToInclude;
+    public int getPage() {
+        return page;
+    }
+
+    public void setPage(int page) {
+        this.page = page;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public void setSize(int size) {
+        this.size = size;
     }
 
 }

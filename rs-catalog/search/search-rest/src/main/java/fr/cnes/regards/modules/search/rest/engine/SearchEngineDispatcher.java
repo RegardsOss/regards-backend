@@ -145,7 +145,7 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
 
     }
 
-    private ISearchEngine<?, ?, ?, ?> getSearchEngine(Optional<UniformResourceName> datasetUrn, String engineType)
+    public ISearchEngine<?, ?, ?, ?> getSearchEngine(Optional<UniformResourceName> datasetUrn, String engineType)
             throws ModuleException {
         SearchEngineConfiguration conf = searchEngineService.retrieveConf(datasetUrn, engineType);
         return pluginService.getPlugin(conf.getConfiguration().getId());

@@ -18,22 +18,18 @@
  */
 package fr.cnes.regards.modules.search.client;
 
-import java.util.Collection;
-
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
-import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResources;
 
 /**
@@ -60,16 +56,14 @@ public interface IComplexSearchClient {
      * {@link DataType})
      */
     @RequestMapping(method = RequestMethod.POST, value = IComplexSearchClient.SUMMARY_MAPPING)
-    ResponseEntity<DocFilesSummary> computeDatasetsSummary(
-            @RequestBody Collection<ComplexSearchRequest> complexSearchRequests);
+    ResponseEntity<DocFilesSummary> computeDatasetsSummary(@RequestBody ComplexSearchRequest complexSearchRequest);
 
     /**
      * Compute a complex search
      * {@link DataType})
      */
     @RequestMapping(method = RequestMethod.POST)
-    ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> search(
-            @RequestBody Collection<ComplexSearchRequest> complexSearchRequests,
-            @RequestParam(SearchEngineMappings.PAGE) int page, @RequestParam(SearchEngineMappings.SIZE) int size);
+    ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchDataObjects(
+            @RequestBody ComplexSearchRequest complexSearchRequest);
 
 }
