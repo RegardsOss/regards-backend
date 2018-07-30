@@ -381,7 +381,7 @@ public class SIPServiceTest extends AbstractSIPTest {
      * {@link IAipClient#retrieveAIPs(String, AIPState, java.time.OffsetDateTime, java.time.OffsetDateTime, int, int)}
      */
     private ResponseEntity<PagedResources<Resource<AIPEntity>>> simulateRetrieveAIPResponseFromStorage(String sipId) {
-        Set<Resource<AIPEntity>> resources = simulatedStorageAips.stream().filter(a -> a.getSipId().equals(sipId))
+        Set<Resource<AIPEntity>> resources = simulatedStorageAips.stream().filter(a -> a.getSipId().get().equals(sipId))
                 .map(a -> {
                     AIPEntity entity = new AIPEntity();
                     entity.setAip(a);
@@ -427,7 +427,7 @@ public class SIPServiceTest extends AbstractSIPTest {
      * Get all simulated archival storag AIPs intialized in the test for the given SIP.
      */
     private List<AIP> getSipSimulatedAIPs(String sipId) {
-        return simulatedStorageAips.stream().filter(a -> a.getSipId().equals(sipId)).collect(Collectors.toList());
+        return simulatedStorageAips.stream().filter(a -> a.getSipId().get().equals(sipId)).collect(Collectors.toList());
     }
 
 }
