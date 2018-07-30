@@ -69,7 +69,7 @@ public class ProductSipEventHandler implements ApplicationListener<ApplicationRe
         public void handle(TenantWrapper<SIPEvent> wrapper) {
             runtimeTenantResolver.forceTenant(wrapper.getTenant());
             SIPEvent event = wrapper.getContent();
-            LOGGER.debug("[{}] received event {}", event.getIpId(), event.getState());
+            LOGGER.debug("[{}] received event {}", event.getSipId(), event.getState());
             // Handle SIP event
             productService.handleSIPEvent(event);
         }
