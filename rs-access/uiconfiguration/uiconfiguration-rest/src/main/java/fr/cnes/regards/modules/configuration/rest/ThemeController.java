@@ -115,7 +115,7 @@ public class ThemeController implements IResourceController<Theme> {
     @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to save a new IHM Theme", role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<Resource<Theme>> saveTheme(@Valid @RequestBody final Theme pTheme) throws EntityInvalidException {
+    public HttpEntity<Resource<Theme>> saveTheme(@Valid @RequestBody final Theme pTheme) {
         final Theme theme = service.saveTheme(pTheme);
         final Resource<Theme> resource = toResource(theme);
         return new ResponseEntity<>(resource, HttpStatus.OK);

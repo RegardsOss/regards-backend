@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.configuration.service;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -68,7 +71,7 @@ public interface IThemeService {
      * @return saved {@link Theme}
      * @since 1.0-SNAPSHOT
      */
-    Theme saveTheme(Theme pTheme) throws EntityInvalidException;
+    Theme saveTheme(Theme pTheme);
 
     /**
      *
@@ -92,4 +95,20 @@ public interface IThemeService {
      */
     void deleteTheme(Long pThemeId) throws EntityNotFoundException;
 
+    /**
+     * Retrieve all themes
+     *
+     * @return all themes
+     *
+     * @since 3.0.0
+     */
+    List<Theme> retrieveAllThemes();
+
+    /**
+     * Retrieve a theme according to its name
+     * @param name theme of the theme
+     * @return optional theme
+     * @since 3.0.0
+     */
+    Optional<Theme> retrieveByName(String name);
 }
