@@ -1,4 +1,26 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.order.service;
+
+import static fr.cnes.regards.modules.order.test.SearchClientMock.DS1_IP_ID;
+import static fr.cnes.regards.modules.order.test.SearchClientMock.DS2_IP_ID;
+import static fr.cnes.regards.modules.order.test.SearchClientMock.DS3_IP_ID;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -13,6 +35,8 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -23,9 +47,10 @@ import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
+import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
-import static fr.cnes.regards.modules.order.test.SearchClientMock.*;
+import fr.cnes.regards.modules.order.test.SearchClientMock;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -70,6 +95,16 @@ public class BasketServiceIT {
                 .thenReturn(new ResponseEntity<>(new Resource<>(project), HttpStatus.OK));
     }
 
+    private BasketSelectionRequest createBasketSelectionRequest(String datasetUrn, String query) {
+        BasketSelectionRequest request = new BasketSelectionRequest();
+        request.setEngineType("engine");
+        MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
+        parameters.add("q", query);
+        request.setSearchParameters(parameters);
+        request.setDatasetUrn(datasetUrn);
+        return request;
+    }
+
     /**
      * BECAUSE OF OffsetDateTime.now() used by BasketService, THIS TEST CLASS MUST DEFINE ONLY ONE TEST
      */
@@ -82,7 +117,8 @@ public class BasketServiceIT {
 
         // Add a selection on DS1 => 2 documents, 2 RAWDATA files + 6 QUICKLOOKS 2 x 3 of each size, 1 Mb each RAW
         // file, 500 b QUICKLOOK SD, 1 kb MD, 500 kb HD
-        basketService.addSelection(basket.getId(), DS1_IP_ID.toString(), "");
+
+        basketService.addSelection(basket.getId(), createBasketSelectionRequest(DS1_IP_ID.toString(), ""));
 
         basket = basketService.load(basket.getId());
         Assert.assertEquals(1, basket.getDatasetSelections().size());
@@ -93,8 +129,7 @@ public class BasketServiceIT {
         Assert.assertEquals(3_003_000l, dsSelection.getFilesSize());
 
         // Add a selection on DS2 and DS3 with an opensearch request
-        basketService
-                .addSelection(basket.getId(), "tags:(" + DS2_IP_ID.toString() + " OR " + DS3_IP_ID.toString() + ")");
+        basketService.addSelection(basket.getId(), createBasketSelectionRequest(null, SearchClientMock.QUERY_DS2_DS3));
         basket = basketService.load(basket.getId());
         Assert.assertEquals(3, basket.getDatasetSelections().size());
         for (BasketDatasetSelection dsSel : basket.getDatasetSelections()) {
@@ -117,7 +152,7 @@ public class BasketServiceIT {
         }
 
         // Add a selection on all DS (DS1, 2, 3) : for DS1, same results as previous must be returned
-        basketService.addSelection(basket.getId(), "");
+        basketService.addSelection(basket.getId(), createBasketSelectionRequest(null, ""));
 
         basket = basketService.load(basket.getId());
         Assert.assertEquals(3, basket.getDatasetSelections().size());

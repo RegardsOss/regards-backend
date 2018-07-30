@@ -1,3 +1,21 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.order.service;
 
 import java.io.BufferedWriter;
@@ -27,7 +45,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -54,8 +71,6 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriUtils;
 import org.xml.sax.SAXException;
 
@@ -67,7 +82,6 @@ import com.google.common.collect.TreeMultimap;
 import com.google.common.io.ByteStreams;
 
 import feign.Response;
-import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
@@ -78,7 +92,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
@@ -99,7 +112,6 @@ import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
-import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
 import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
@@ -115,8 +127,7 @@ import fr.cnes.regards.modules.order.service.job.UserJobParameter;
 import fr.cnes.regards.modules.order.service.job.UserRoleJobParameter;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
-import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
-import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
+import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResources;
 import fr.cnes.regards.modules.storage.client.IAipClient;
 import fr.cnes.regards.modules.templates.service.TemplateService;
@@ -124,6 +135,7 @@ import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 
 /**
  * @author oroussel
+ * @author Sébastien Binda
  */
 @Service
 @MultitenantTransactional
@@ -154,7 +166,7 @@ public class OrderService implements IOrderService {
     private IOrderJobService orderJobService;
 
     @Autowired
-    private ILegacySearchEngineClient searchClient;
+    private IComplexSearchClient searchClient;
 
     @Autowired
     private IAipClient aipClient;
@@ -179,9 +191,6 @@ public class OrderService implements IOrderService {
 
     @Autowired
     private TemplateService templateService;
-
-    @Autowired
-    private ISubscriber subscriber;
 
     @Autowired
     private INotificationClient notificationClient;
@@ -217,12 +226,6 @@ public class OrderService implements IOrderService {
 
     // Storage bucket size in bytes
     private Long storageBucketSize = null;
-
-    /**
-     * Set of DataTypes to retrieve on DataObjects
-     */
-    private static final Set<DataType> DATA_TYPES = Stream.of(DataTypeSelection.ALL.getFileTypes())
-            .map(DataType::valueOf).collect(Collectors.toSet());
 
     /**
      * Method called at creation AND after a resfresh
@@ -286,7 +289,7 @@ public class OrderService implements IOrderService {
 
                 // Execute opensearch request
                 int page = 0;
-                List<EntityFeature> features = searchDataObjects(dsTask.getOpenSearchRequest(), page);
+                List<EntityFeature> features = searchDataObjects(dsSel, page);
                 while (!features.isEmpty()) {
                     // For each DataObject
                     for (EntityFeature feature : features) {
@@ -310,7 +313,7 @@ public class OrderService implements IOrderService {
                         }
                     }
                     page++;
-                    features = searchDataObjects(dsSel.getOpenSearchRequest(), page);
+                    features = searchDataObjects(dsSel, page);
                 }
                 // Manage remaining files on each type of buckets
                 if (!storageBucketFiles.isEmpty()) {
@@ -472,13 +475,11 @@ public class OrderService implements IOrderService {
         dsTask.setFilesCount(dsSel.getFilesCount());
         dsTask.setFilesSize(dsSel.getFilesSize());
         dsTask.setObjectsCount(dsSel.getObjectsCount());
-        // In some cases ("select all" on files from many datasets), opensearch request from selection doesn't
-        // contain dataset IP_ID
-        String dsOpenSearchRequest = dsSel.getOpenSearchRequest();
-        if (!dsOpenSearchRequest.contains(dsSel.getDatasetIpid())) {
-            dsOpenSearchRequest = "(" + dsOpenSearchRequest + " AND tags:\"" + dsSel.getDatasetIpid() + "\")";
-        }
-        dsTask.setOpenSearchRequest(dsOpenSearchRequest);
+
+        dsSel.getItemsSelections().forEach(item -> {
+            dsTask.addSelectionRequest(item.getSelectionRequest());
+        });
+
         return dsTask;
     }
 
@@ -521,11 +522,9 @@ public class OrderService implements IOrderService {
         dsTask.addReliantTask(currentFilesTask);
     }
 
-    private List<EntityFeature> searchDataObjects(String openSearchRequest, int page) {
-        MultiValueMap<String, String> requestMap = new LinkedMultiValueMap<>();
-        requestMap.add("q", openSearchRequest);
+    private List<EntityFeature> searchDataObjects(BasketDatasetSelection datasetSelection, int page) {
         ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> pagedResourcesResponseEntity = searchClient
-                .searchAllDataobjects(SearchEngineMappings.getJsonHeaders(), requestMap, page, MAX_PAGE_SIZE);
+                .searchDataObjects(BasketService.buildSearchRequest(datasetSelection, page, MAX_PAGE_SIZE));
         // It is mandatory to check NOW, at creation instant of order from basket, if data object files are still downloadable
         Collection<Resource<EntityFeature>> objects = pagedResourcesResponseEntity.getBody().getContent();
         // If a lot of objects, parallelisation is very useful, if not we don't really care

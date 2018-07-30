@@ -27,9 +27,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
@@ -38,11 +36,10 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.PayloadDocumentation;
-import org.springframework.restdocs.request.RequestDocumentation;
-import org.springframework.restdocs.snippet.Attributes;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
@@ -67,6 +64,7 @@ import fr.cnes.regards.modules.project.domain.Project;
 
 /**
  * @author oroussel
+ * @author Sébastien Binda
  */
 @ContextConfiguration(classes = OrderConfiguration.class)
 public class BasketControllerIT extends AbstractRegardsIT {
@@ -90,32 +88,42 @@ public class BasketControllerIT extends AbstractRegardsIT {
     private IAuthenticationResolver authResolver;
 
     public static final UniformResourceName DS1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DS2_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DS3_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DO1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DO2_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DO3_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DO4_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DO5_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
+
+    private BasketSelectionRequest createBasketSelectionRequest(String datasetUrn, String query) {
+        BasketSelectionRequest request = new BasketSelectionRequest();
+        request.setEngineType("engine");
+        MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
+        parameters.add("q", query);
+        request.setSearchParameters(parameters);
+        request.setDatasetUrn(datasetUrn);
+        return request;
+    }
 
     @Before
     public void init() {
-        tenantResolver.forceTenant(DEFAULT_TENANT);
+        tenantResolver.forceTenant(getDefaultTenant());
 
         basketRepos.deleteAll();
 
@@ -126,30 +134,20 @@ public class BasketControllerIT extends AbstractRegardsIT {
         project.setHost("regards.org");
         Mockito.when(projectsClient.retrieveProject(Matchers.anyString()))
                 .thenReturn(ResponseEntity.ok(new Resource<>(project)));
-        Mockito.when(authResolver.getUser()).thenReturn(DEFAULT_USER_EMAIL);
+        Mockito.when(authResolver.getUser()).thenReturn(getDefaultUserEmail());
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
     }
 
     @Test
     public void testAddBadSelection() {
-        // Test POST without argument : order should be created with RUNNING status
         BasketSelectionRequest request = new BasketSelectionRequest();
 
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isExpectationFailed());
-        // Doc
-        ConstrainedFields constrainedFields = new ConstrainedFields(BasketSelectionRequest.class);
-        List<FieldDescriptor> fields = new ArrayList<>();
-        fields.add(constrainedFields.withPath("selectAllOpenSearchRequest", "opensearch request").optional()
-                           .type(JSON_STRING_TYPE));
-        fields.add(constrainedFields.withPath("ipIds",
-                                              "List of data object IP_IDs to add if opensearch request is null OR to evict if opensearch request is provided")
-                           .optional().type(JSON_ARRAY_TYPE));
-        customizer.addDocumentationSnippet(PayloadDocumentation.relaxedRequestFields(fields));
+        customizer.addExpectation(MockMvcResultMatchers.status().isUnprocessableEntity());
 
         try {
-            ResultActions results = performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION,
-                                                       request, customizer, "error");
+            performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, request, customizer,
+                               "error");
         } catch (AssertionError e) {
             e.printStackTrace();
             throw e;
@@ -160,46 +158,35 @@ public class BasketControllerIT extends AbstractRegardsIT {
     public void testAddNullOpensearchSelection() throws BadBasketSelectionRequestException {
         // Test POST without argument : order should be created with RUNNING status
         BasketSelectionRequest request = new BasketSelectionRequest();
+        request.setEngineType("legacy");
         request.setIpIds(Collections.singleton("URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1"));
-
-        Assert.assertEquals("ipId:\"URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1\"",
-                            request.computeOpenSearchRequest());
 
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
 
-        ResultActions results = performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, request,
-                                                   customizer, "error");
+        performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, request, customizer, "error");
     }
 
     @Test
     public void testAddEmptyOpensearchSelection() throws BadBasketSelectionRequestException {
         // Test POST without argument : order should be created with RUNNING status
         BasketSelectionRequest request = new BasketSelectionRequest();
+        request.setEngineType("legacy");
         request.setIpIds(Collections.singleton("URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1"));
-        request.setSelectAllOpenSearchRequest("");
-
-        Assert.assertEquals("NOT(ipId:\"URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1\")",
-                            request.computeOpenSearchRequest());
 
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
 
-        ResultActions results = performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, request,
-                                                   customizer, "error");
+        performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, request, customizer, "error");
     }
 
     @Test
     public void testAddFullOpensearchSelection() throws BadBasketSelectionRequestException {
         // Test POST without argument : order should be created with RUNNING status
         BasketSelectionRequest request = new BasketSelectionRequest();
+        request.setEngineType("legacy");
         request.setIpIds(Collections.singleton("URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1"));
-        request.setSelectAllOpenSearchRequest(
-                "tags:\"URN%3AAIP%3ADATASET%3AOlivier%3A4af7fa7f-110e-42c8-b434-7c863c280548%3AV1\"\"");
-
-        Assert.assertEquals(
-                "(tags:\"URN:AIP:DATASET:Olivier:4af7fa7f-110e-42c8-b434-7c863c280548:V1\"\") AND NOT(ipId:\"URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1\")",
-                request.computeOpenSearchRequest());
+        request.setDatasetUrn("URN%3AAIP%3ADATASET%3AOlivier%3A4af7fa7f-110e-42c8-b434-7c863c280548%3AV1");
 
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
@@ -209,23 +196,22 @@ public class BasketControllerIT extends AbstractRegardsIT {
         fields.add(constrainedFields.withPath("content", "basket object").optional().type(JSON_OBJECT_TYPE));
         customizer.addDocumentationSnippet(PayloadDocumentation.relaxedResponseFields(fields));
 
-        ResultActions results = performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, request,
-                                                   customizer, "error");
+        performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, request, customizer, "error");
     }
 
     @Test
     public void testAddOnlyOpensearchSelection() throws BadBasketSelectionRequestException {
         // Test POST without argument : order should be created with RUNNING status
         BasketSelectionRequest request = new BasketSelectionRequest();
-        request.setSelectAllOpenSearchRequest("MACHIN: BIDULE AND PATATIPATAT: POUET");
-
-        Assert.assertEquals("MACHIN: BIDULE AND PATATIPATAT: POUET", request.computeOpenSearchRequest());
+        request.setEngineType("legacy");
+        MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
+        parameters.add("q", "MACHIN: BIDULE AND PATATIPATAT: POUET");
+        request.setSearchParameters(parameters);
 
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
 
-        ResultActions results = performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, request,
-                                                   customizer, "error");
+        performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, request, customizer, "error");
     }
 
     @Test
@@ -248,13 +234,9 @@ public class BasketControllerIT extends AbstractRegardsIT {
 
     private Basket createBasket() {
         OffsetDateTime date = OffsetDateTime.now();
-        String openSearchRequest =
-                "(tags:\"URN:AIP:DATASET:Olivier:4af7fa7f-110e-42c8-b434-7c863c280548:V1\") AND creationDate:[* TO "
-                        + OffsetDateTimeAdapter.format(date) + "]";
 
-        Basket basket = new Basket(DEFAULT_USER_EMAIL);
+        Basket basket = new Basket(getDefaultUserEmail());
         BasketDatasetSelection dsSel = new BasketDatasetSelection();
-        dsSel.setOpenSearchRequest(openSearchRequest);
         dsSel.setDatasetIpid("URN:AIP:DATASET:Olivier:4af7fa7f-110e-42c8-b434-7c863c280548:V1");
         dsSel.setFilesCount(10);
         dsSel.setFilesSize(124452);
@@ -266,7 +248,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
         itemSel.setFilesCount(10);
         itemSel.setFilesSize(124452);
         itemSel.setObjectsCount(5);
-        itemSel.setOpenSearchRequest(openSearchRequest);
+        itemSel.setSelectionRequest(createBasketSelectionRequest(null, ""));
 
         dsSel.addItemsSelection(itemSel);
         basket.addDatasetSelection(dsSel);
@@ -293,12 +275,13 @@ public class BasketControllerIT extends AbstractRegardsIT {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
 
-        OffsetDateTime date = basket.getDatasetSelections().first().getItemsSelections().first().getDate();
+        OffsetDateTime date = basket.getDatasetSelections().first().getItemsSelections().first().getSelectionRequest()
+                .getSelectionDate();
 
-        performDefaultDelete(
-                BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID_ITEMS_SELECTION_DATE,
-                customizer, "error", basket.getDatasetSelections().first().getId(),
-                URLEncoder.encode(OffsetDateTimeAdapter.format(date), Charset.defaultCharset().toString()));
+        performDefaultDelete(BasketController.ORDER_BASKET
+                + BasketController.DATASET_DATASET_SELECTION_ID_ITEMS_SELECTION_DATE, customizer, "error",
+                             basket.getDatasetSelections().first().getId(), URLEncoder
+                                     .encode(OffsetDateTimeAdapter.format(date), Charset.defaultCharset().toString()));
     }
 
     @Test

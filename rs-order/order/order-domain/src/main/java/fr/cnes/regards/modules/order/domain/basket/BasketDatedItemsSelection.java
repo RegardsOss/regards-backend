@@ -1,19 +1,44 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.order.domain.basket;
+
+import java.time.OffsetDateTime;
 
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Embeddable;
-import java.time.OffsetDateTime;
+import javax.validation.Valid;
 
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 
 /**
  * Dated items selection
  * @author oroussel
+ * @author Sébastien Binda
  */
 @Embeddable
+@TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 public class BasketDatedItemsSelection implements Comparable<BasketDatedItemsSelection> {
 
     @Column(nullable = false)
@@ -23,9 +48,10 @@ public class BasketDatedItemsSelection implements Comparable<BasketDatedItemsSel
     /**
      * Selection request
      */
-    @Column(name = "opensearch_request")
-    @Type(type = "text")
-    private String openSearchRequest;
+    @Valid
+    @Type(type = "jsonb")
+    @Column(columnDefinition = "jsonb", name = "selection_request")
+    private BasketSelectionRequest selectionRequest;
 
     @Column(name = "objects_count")
     private int objectsCount = 0;
@@ -36,20 +62,16 @@ public class BasketDatedItemsSelection implements Comparable<BasketDatedItemsSel
     @Column(name = "files_size")
     private long filesSize = 0;
 
-    public OffsetDateTime getDate() {
-        return date;
-    }
-
     public void setDate(OffsetDateTime date) {
         this.date = date;
     }
 
-    public String getOpenSearchRequest() {
-        return openSearchRequest;
+    public BasketSelectionRequest getSelectionRequest() {
+        return selectionRequest;
     }
 
-    public void setOpenSearchRequest(String openSearchRequest) {
-        this.openSearchRequest = openSearchRequest;
+    public void setSelectionRequest(BasketSelectionRequest selectionRequest) {
+        this.selectionRequest = selectionRequest;
     }
 
     public int getObjectsCount() {
@@ -86,7 +108,7 @@ public class BasketDatedItemsSelection implements Comparable<BasketDatedItemsSel
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
         }
 

@@ -38,11 +38,13 @@ import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.models.client.IAttributeModelClient;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
+import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
 import fr.cnes.regards.modules.storage.client.IAipClient;
 
 /**
  * @author oroussel
+ * @author Sébastien Binda
  */
 @Configuration
 @ComponentScan
@@ -61,15 +63,19 @@ public class OrderConfiguration {
     }
 
     @Bean
-    public ILegacySearchEngineClient searchClient() {
-        ILegacySearchEngineClient searchClient = Mockito.mock(ILegacySearchEngineClient.class);
+    public IComplexSearchClient searchClient() {
+        IComplexSearchClient searchClient = Mockito.mock(IComplexSearchClient.class);
         DocFilesSummary summary = new DocFilesSummary();
         summary.addDocumentsCount(0l);
         summary.addFilesCount(0l);
         summary.addFilesSize(0l);
-        Mockito.when(searchClient.computeDatasetsSummary(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
-                .thenReturn(ResponseEntity.ok(summary));
+        Mockito.when(searchClient.computeDatasetsSummary(Mockito.any())).thenReturn(ResponseEntity.ok(summary));
         return searchClient;
+    }
+
+    @Bean
+    public ILegacySearchEngineClient legacyClient() {
+        return Mockito.mock(ILegacySearchEngineClient.class);
     }
 
     @Bean

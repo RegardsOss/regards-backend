@@ -23,6 +23,8 @@ import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.time.OffsetDateTime;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
@@ -36,25 +38,21 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
-import fr.cnes.regards.modules.order.domain.exception.BadBasketSelectionRequestException;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 import fr.cnes.regards.modules.order.service.IBasketService;
-import fr.cnes.regards.modules.order.service.IOrderService;
 
 /**
  * Basket controller
  * @author oroussel
+ * @author Sébastien Binda
  */
 @RestController
-@ModuleInfo(name = "order", version = "2.0.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping(BasketController.ORDER_BASKET)
 public class BasketController implements IResourceController<Basket> {
 
@@ -73,9 +71,6 @@ public class BasketController implements IResourceController<Basket> {
     private IBasketService basketService;
 
     @Autowired
-    private IOrderService orderService;
-
-    @Autowired
     private IAuthenticationResolver authResolver;
 
     /**
@@ -85,12 +80,11 @@ public class BasketController implements IResourceController<Basket> {
      */
     @ResourceAccess(description = "Add a selection to the basket", role = DefaultRole.REGISTERED_USER)
     @RequestMapping(method = RequestMethod.POST, value = SELECTION)
-    public ResponseEntity<Resource<Basket>> addSelection(@RequestBody BasketSelectionRequest basketSelectionRequest)
-            throws BadBasketSelectionRequestException, EmptySelectionException {
+    public ResponseEntity<Resource<Basket>> addSelection(
+            @Valid @RequestBody BasketSelectionRequest basketSelectionRequest) throws EmptySelectionException {
         String user = authResolver.getUser();
         Basket basket = basketService.findOrCreate(user);
-        String openSearchRequest = basketSelectionRequest.computeOpenSearchRequest();
-        return ResponseEntity.ok(toResource(basketService.addSelection(basket.getId(), openSearchRequest)));
+        return ResponseEntity.ok(toResource(basketService.addSelection(basket.getId(), basketSelectionRequest)));
     }
 
     /**
@@ -151,7 +145,7 @@ public class BasketController implements IResourceController<Basket> {
     @RequestMapping(method = RequestMethod.DELETE)
     public ResponseEntity<Void> empty() {
         basketService.deleteIfExists(authResolver.getUser());
-        return ResponseEntity.<Void>noContent().build();
+        return ResponseEntity.<Void> noContent().build();
     }
 
     @Override
