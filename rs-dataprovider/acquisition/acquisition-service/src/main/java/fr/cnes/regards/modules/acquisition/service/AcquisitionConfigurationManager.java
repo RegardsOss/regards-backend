@@ -19,10 +19,10 @@
 package fr.cnes.regards.modules.acquisition.service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,22 +39,28 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
 @Service
 public class AcquisitionConfigurationManager extends AbstractModuleConfigurationManager {
 
-    @SuppressWarnings("unused")
-    private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionConfigurationManager.class);
-
     @Autowired
     private IAcquisitionProcessingService processingService;
 
     @Override
-    public void importConfiguration(ModuleConfiguration configuration) throws ModuleException {
+    public Set<String> importConfiguration(ModuleConfiguration configuration) {
+        Set<String> importErrors = new HashSet<>();
         for (ModuleConfigurationItem<?> item : configuration.getConfiguration()) {
             if (AcquisitionProcessingChain.class.isAssignableFrom(item.getKey())) {
                 AcquisitionProcessingChain apc = item.getTypedValue();
-                // Inactive chain at the moment FIXME
+                // Inactive chain at the moment
                 apc.setActive(Boolean.FALSE);
-                processingService.createChain(apc);
+                try {
+                    processingService.createChain(apc);
+                } catch (ModuleException e) {
+                    importErrors.add(String.format("Skipping import of chain with label %s: %s",
+                                                   apc.getLabel(),
+                                                   e.getMessage()));
+                    logger.error(e.getMessage(), e);
+                }
             }
         }
+        return importErrors;
     }
 
     @Override
