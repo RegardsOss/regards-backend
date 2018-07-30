@@ -95,7 +95,7 @@ public class RegardsModuleGenerator implements ModuleGenerator {
         EntityFeature entity = regardsModule.getEntity();
         addStandardElement(element, LABEL, entity.getLabel(), regardsModule.getGsonBuilder());
         addStandardElement(element, IPID, entity.getId(), regardsModule.getGsonBuilder());
-        addStandardElement(element, SIPID, entity.getSipId(), regardsModule.getGsonBuilder());
+        addStandardElement(element, SIPID, entity.getProviderId(), regardsModule.getGsonBuilder());
         addStandardElement(element, TAGS, entity.getTags(), regardsModule.getGsonBuilder());
         addStandardElement(element, TYPE, entity.getType(), regardsModule.getGsonBuilder());
         regardsModule.getEntity().getProperties().stream().forEach(property -> element
