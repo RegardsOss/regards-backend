@@ -986,7 +986,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
                 UUID.randomUUID(), 1);
         UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, getDefaultTenant(),
                 sipId.getEntityId(), 1);
-        AIPBuilder aipBuilder = new AIPBuilder(aipId, sipId, null, EntityType.DATA, SESSION);
+        AIPBuilder aipBuilder = new AIPBuilder(aipId, Optional.of(sipId), "providerId", EntityType.DATA, SESSION);
 
         Path path = Paths.get("src", "test", "resources", "data.txt");
         aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, path, "MD5",

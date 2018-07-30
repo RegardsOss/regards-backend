@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -112,7 +113,7 @@ public abstract class AbstractJobIT extends AbstractMultitenantServiceTest {
                 UUID.randomUUID(), 1);
         UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT,
                 sipId.getEntityId(), 1);
-        AIPBuilder aipBuilder = new AIPBuilder(aipId, sipId, null, EntityType.DATA, aipSession);
+        AIPBuilder aipBuilder = new AIPBuilder(aipId, Optional.of(sipId), "providerId", EntityType.DATA, aipSession);
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", MimeType.valueOf("text/plain"));
         aipBuilder.addContentInformation();
         aipBuilder.getPDIBuilder().setAccessRightInformation("public");

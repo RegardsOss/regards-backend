@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.storage.domain;
 
+import java.util.Optional;
+
+import org.hibernate.validator.constraints.NotBlank;
+
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -35,6 +39,7 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
     /**
      * Provider id
      */
+    @NotBlank
     private String providerId;
 
     /**
@@ -75,12 +80,15 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
     /**
      * @return the sip id
      */
-    public String getSipId() {
-        return sipId;
+    public Optional<String> getSipId() {
+        return Optional.ofNullable(sipId);
     }
 
-    public UniformResourceName getSipIdUrn() {
-        return UniformResourceName.fromString(sipId);
+    public Optional<UniformResourceName> getSipIdUrn() {
+        if (sipId == null) {
+            return Optional.empty();
+        }
+        return Optional.of(UniformResourceName.fromString(sipId));
     }
 
     /**

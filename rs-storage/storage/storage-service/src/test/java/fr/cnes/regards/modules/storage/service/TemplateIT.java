@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -214,7 +215,7 @@ public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
                 UUID.randomUUID(), 1);
         UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, getDefaultTenant(),
                 sipId.getEntityId(), 1);
-        AIPBuilder aipBuilder = new AIPBuilder(aipId, sipId, null, EntityType.DATA, SESSION);
+        AIPBuilder aipBuilder = new AIPBuilder(aipId, Optional.of(sipId), "providerId", EntityType.DATA, SESSION);
 
         Path path = Paths.get("src", "test", "resources", "data.txt");
         aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, path, "MD5",

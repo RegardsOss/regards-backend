@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -273,7 +274,7 @@ public class AipClientIT extends AbstractRegardsWebIT {
                 sipId.getEntityId(), 1);
 
         // Create new AIP
-        AIPBuilder builder = new AIPBuilder(aipId, sipId, "clientAipTest", EntityType.DATA, "Session 1");
+        AIPBuilder builder = new AIPBuilder(aipId, Optional.of(sipId), "clientAipTest", EntityType.DATA, "Session 1");
         // Init a test file to add with the new AIP.
         Path file = initTestFile();
 

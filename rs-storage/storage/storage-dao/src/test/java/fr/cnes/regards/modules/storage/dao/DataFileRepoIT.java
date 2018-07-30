@@ -7,6 +7,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -204,7 +205,7 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
         String providerId = String.valueOf(generateRandomString(new Random(), 40));
 
         // Init AIP builder
-        AIPBuilder aipBuilder = new AIPBuilder(aipId, sipId, providerId, EntityType.DATA, SESSION);
+        AIPBuilder aipBuilder = new AIPBuilder(aipId, Optional.of(sipId), providerId, EntityType.DATA, SESSION);
 
         return aipBuilder.build(generateRandomInformationPackageProperties(aipId));
     }
