@@ -18,23 +18,29 @@
  */
 package fr.cnes.regards.modules.order.domain.basket;
 
+import java.util.List;
+
+import com.google.common.collect.Lists;
+
+import fr.cnes.regards.framework.oais.urn.DataType;
+
 /**
  * Data type selection (quilooks and/or raw data)
  * File types are from enum class DataType (from rs-dam/entities-domain)
  * @author oroussel
  */
 public enum DataTypeSelection {
-    ALL("RAWDATA", "QUICKLOOK_SD", "QUICKLOOK_MD", "QUICKLOOK_HD"),
-    QUICKLOOKS("QUICKLOOK_SD", "QUICKLOOK_MD", "QUICKLOOK_HD"),
-    RAWDATA("RAWDATA");
+    ALL(DataType.RAWDATA, DataType.QUICKLOOK_SD, DataType.QUICKLOOK_MD, DataType.QUICKLOOK_HD),
+    QUICKLOOKS(DataType.QUICKLOOK_SD, DataType.QUICKLOOK_MD, DataType.QUICKLOOK_HD),
+    RAWDATA(DataType.RAWDATA);
 
-    private String[] fileTypes;
+    private DataType[] fileTypes;
 
-    DataTypeSelection(String... fileTypes) {
+    DataTypeSelection(DataType... fileTypes) {
         this.fileTypes = fileTypes;
     }
 
-    public String[] getFileTypes() {
-        return this.fileTypes;
+    public List<DataType> getFileTypes() {
+        return Lists.newArrayList(this.fileTypes);
     }
 }

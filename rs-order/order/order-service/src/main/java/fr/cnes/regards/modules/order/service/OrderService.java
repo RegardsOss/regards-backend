@@ -524,7 +524,7 @@ public class OrderService implements IOrderService {
 
     private List<EntityFeature> searchDataObjects(BasketDatasetSelection datasetSelection, int page) {
         ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> pagedResourcesResponseEntity = searchClient
-                .search(BasketService.buildSearchRequest(datasetSelection), page, MAX_PAGE_SIZE);
+                .searchDataObjects(BasketService.buildSearchRequest(datasetSelection, page, MAX_PAGE_SIZE));
         // It is mandatory to check NOW, at creation instant of order from basket, if data object files are still downloadable
         Collection<Resource<EntityFeature>> objects = pagedResourcesResponseEntity.getBody().getContent();
         // If a lot of objects, parallelisation is very useful, if not we don't really care

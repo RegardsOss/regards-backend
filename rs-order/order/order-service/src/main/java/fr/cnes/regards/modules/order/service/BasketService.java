@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.order.service;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -32,11 +31,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 
-import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
@@ -53,6 +51,7 @@ import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
 import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
+import fr.cnes.regards.modules.search.domain.SearchRequest;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 
 /**
@@ -114,7 +113,7 @@ public class BasketService implements IBasketService {
             FeignSecurityManager.asUser(authResolver.getUser(), authResolver.getRole());
             // Retrieve summary for all datasets matching the search request from the new selection to add.
             DocFilesSummary summary = complexSearchClient
-                    .computeDatasetsSummary(Lists.newArrayList(buildSearchRequest(selectionRequest))).getBody();
+                    .computeDatasetsSummary(buildSearchRequest(selectionRequest, 0, 1)).getBody();
             // If global summary contains no files => EmptySelection
             if (summary.getFilesCount() == 0l) {
                 throw new EmptySelectionException();
@@ -215,8 +214,8 @@ public class BasketService implements IBasketService {
         itemsSelection.setObjectsCount((int) subSummary.getDocumentsCount());
         int filesCount = 0;
         long filesSize = 0;
-        for (String fileType : DataTypeSelection.ALL.getFileTypes()) {
-            FilesSummary filesSummary = subSummary.getFileTypesSummaryMap().get(fileType);
+        for (DataType fileType : DataTypeSelection.ALL.getFileTypes()) {
+            FilesSummary filesSummary = subSummary.getFileTypesSummaryMap().get(fileType.toString());
             filesCount += filesSummary.getFilesCount();
             filesSize += filesSummary.getFilesSize();
         }
@@ -233,7 +232,7 @@ public class BasketService implements IBasketService {
     private void computeSummaryAndUpdateDatasetSelection(BasketDatasetSelection datasetSelection) {
 
         DocFilesSummary curDsSelectionSummary = complexSearchClient
-                .computeDatasetsSummary(buildSearchRequest(datasetSelection)).getBody();
+                .computeDatasetsSummary(buildSearchRequest(datasetSelection, 0, 1)).getBody();
         // Take into account only asked datasetIpId (sub-)summary
         DocFilesSubSummary curDsSelectionSubSummary = curDsSelectionSummary.getSubSummariesMap()
                 .get(datasetSelection.getDatasetIpid());
@@ -249,38 +248,47 @@ public class BasketService implements IBasketService {
         }
     }
 
-    private static ComplexSearchRequest buildSearchRequest(String engineType, String datasetUrn,
+    private static SearchRequest buildSearchRequest(String engineType, String datasetUrn,
             MultiValueMap<String, String> searchParameters, Collection<String> entityIds,
             OffsetDateTime searchDateLimit) {
-        ComplexSearchRequest request;
+        SearchRequest request;
         if ((entityIds != null) && !entityIds.isEmpty()) {
             if ((searchParameters != null) && !searchParameters.isEmpty()) {
-                request = new ComplexSearchRequest(engineType, datasetUrn, searchParameters, entityIds, null,
-                        searchDateLimit);
+                request = new SearchRequest(engineType, datasetUrn, searchParameters, entityIds, null, searchDateLimit);
             } else {
-                request = new ComplexSearchRequest(engineType, datasetUrn, searchParameters, null, entityIds,
-                        searchDateLimit);
+                request = new SearchRequest(engineType, datasetUrn, searchParameters, null, entityIds, searchDateLimit);
             }
         } else {
-            request = new ComplexSearchRequest(engineType, datasetUrn, searchParameters, null, null, searchDateLimit);
+            request = new SearchRequest(engineType, datasetUrn, searchParameters, null, null, searchDateLimit);
         }
 
         return request;
 
     }
 
-    public static ComplexSearchRequest buildSearchRequest(BasketSelectionRequest bascketSelectionRequest) {
-        return buildSearchRequest(bascketSelectionRequest.getEngineType(), bascketSelectionRequest.getDatasetUrn(),
-                                  bascketSelectionRequest.getSearchParameters(), bascketSelectionRequest.getIpIds(),
-                                  bascketSelectionRequest.getSelectionDate());
+    public static ComplexSearchRequest buildSearchRequest(BasketSelectionRequest bascketSelectionRequest, int page,
+            int size) {
+        ComplexSearchRequest complexReq = new ComplexSearchRequest(DataTypeSelection.ALL.getFileTypes(), page, size);
+        complexReq.getRequests()
+                .add(buildSearchRequest(bascketSelectionRequest.getEngineType(),
+                                        bascketSelectionRequest.getDatasetUrn(),
+                                        bascketSelectionRequest.getSearchParameters(),
+                                        bascketSelectionRequest.getIpIds(),
+                                        bascketSelectionRequest.getSelectionDate()));
+        return complexReq;
 
     }
 
-    public static List<ComplexSearchRequest> buildSearchRequest(BasketDatasetSelection datasetSelection) {
-        List<ComplexSearchRequest> requests = Lists.newArrayList();
+    public static ComplexSearchRequest buildSearchRequest(BasketDatasetSelection datasetSelection, int page, int size) {
+        ComplexSearchRequest request = new ComplexSearchRequest(DataTypeSelection.ALL.getFileTypes(), page, size);
         datasetSelection.getItemsSelections().forEach(selectionItem -> {
-            requests.add(buildSearchRequest(selectionItem.getSelectionRequest()));
+            request.getRequests()
+                    .add(buildSearchRequest(selectionItem.getSelectionRequest().getEngineType(),
+                                            selectionItem.getSelectionRequest().getDatasetUrn(),
+                                            selectionItem.getSelectionRequest().getSearchParameters(),
+                                            selectionItem.getSelectionRequest().getIpIds(),
+                                            selectionItem.getSelectionRequest().getSelectionDate()));
         });
-        return requests;
+        return request;
     }
 }

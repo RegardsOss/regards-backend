@@ -22,7 +22,6 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +55,7 @@ import fr.cnes.regards.modules.indexer.domain.summary.FilesSummary;
 import fr.cnes.regards.modules.models.domain.Model;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
+import fr.cnes.regards.modules.search.domain.SearchRequest;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResources;
 
 /**
@@ -231,10 +231,10 @@ public class SearchClientMock implements IComplexSearchClient {
     }
 
     @Override
-    public ResponseEntity<DocFilesSummary> computeDatasetsSummary(
-            Collection<ComplexSearchRequest> complexSearchRequests) {
-        Assert.assertFalse("Cannot handle empty complex search", complexSearchRequests.isEmpty());
-        ComplexSearchRequest request = complexSearchRequests.stream().findFirst().get();
+    public ResponseEntity<DocFilesSummary> computeDatasetsSummary(ComplexSearchRequest complexSearchRequest) {
+        List<SearchRequest> requests = complexSearchRequest.getRequests();
+        Assert.assertFalse("Cannot handle empty complex search", requests.isEmpty());
+        SearchRequest request = requests.stream().findFirst().get();
         String query = request.getSearchParameters().get("q").stream().findFirst().orElse(null);
         String datasetUrn = request.getDatasetUrn();
 
@@ -256,8 +256,8 @@ public class SearchClientMock implements IComplexSearchClient {
     }
 
     @Override
-    public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> search(
-            Collection<ComplexSearchRequest> complexSearchRequests, int page, int size) {
+    public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchDataObjects(
+            ComplexSearchRequest complexSearchRequest, int page, int size) {
         if (page == 0) {
             try {
                 List<Resource<EntityFeature>> list = new ArrayList<>();
