@@ -18,8 +18,27 @@
  */
 package fr.cnes.regards.modules.configuration.rest;
 
+import com.google.gson.JsonObject;
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.annotation.ModuleInfo;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.configuration.domain.Layout;
+import fr.cnes.regards.modules.configuration.domain.Module;
+import fr.cnes.regards.modules.configuration.service.IModuleService;
+import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,25 +57,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.hateoas.LinkRels;
-import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.configuration.domain.Layout;
-import fr.cnes.regards.modules.configuration.domain.Module;
-import fr.cnes.regards.modules.configuration.service.IModuleService;
-
 /**
  * REST controller for the microservice Access
- *
  * @author Sébastien Binda
- *
  */
 @RestController
 @ModuleInfo(name = "Module", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
@@ -68,15 +71,18 @@ public class ModuleController implements IResourceController<Module> {
 
     public static final String MODULE_ID_MAPPING = "/{moduleId}";
 
+    public static final String MAP_CONFIG = MODULE_ID_MAPPING + "/map";
     @Autowired
     private IModuleService service;
 
     @Autowired
     private IResourceService resourceService;
 
+    @Autowired
+    private ILegacySearchEngineJsonClient searchClient;
+
     /**
      * Entry point to retrieve a modules for a given application id {@link Module}.
-     *
      * @return {@link Layout}
      * @throws EntityNotFoundException
      */
@@ -93,7 +99,6 @@ public class ModuleController implements IResourceController<Module> {
     /**
      * Entry point to retrieve all modules for a given application id {@link Module}. Query parameter active
      * [true|false]
-     *
      * @return {@link Layout}
      * @throws EntityNotFoundException
      */
@@ -116,7 +121,6 @@ public class ModuleController implements IResourceController<Module> {
 
     /**
      * Entry point to save a new ihm module.
-     *
      * @return {@link Module}
      * @throws EntityInvalidException
      * @throws EntityNotFoundException
@@ -138,7 +142,6 @@ public class ModuleController implements IResourceController<Module> {
 
     /**
      * Entry point to save a new ihm module.
-     *
      * @return {@link Module}
      * @throws EntityInvalidException
      * @throws EntityNotFoundException
@@ -165,7 +168,6 @@ public class ModuleController implements IResourceController<Module> {
 
     /**
      * Entry point to delete an ihm module.
-     *
      * @return {@link Module}
      * @throws EntityInvalidException
      * @throws EntityNotFoundException
@@ -181,19 +183,46 @@ public class ModuleController implements IResourceController<Module> {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+
+    /**
+     * Entry point to retrieve a Mizar config for a given module id {@link Module}.
+     * It retrieves the list of dataset visible by this user and returns the corresponding Mizar configuration
+     * @return {@link JsonObject} mizar configuration
+     * @throws EntityNotFoundException
+     */
+    @RequestMapping(value = MAP_CONFIG, method = RequestMethod.GET)
+    @ResponseBody
+    @ResourceAccess(description = "Endpoint to retrieve Mizar config", role = DefaultRole.PUBLIC)
+    public HttpEntity<JsonObject> retrieveMapConfig(@PathVariable("applicationId") final String pApplicationId,
+            @PathVariable("moduleId") final Long pModuleId, HttpServletRequest request) throws EntityNotFoundException, EntityInvalidException, URISyntaxException, MalformedURLException {
+        // Save the current URL
+        URL url = new URL(request.getRequestURL().toString());
+        String host = url.getHost();
+        String userInfo = url.getUserInfo();
+        String scheme = url.getProtocol();
+        int port = url.getPort();
+        // Create the URL that returns the OpenSearch description
+        URI uri = new URI(scheme, userInfo, host, port, "/engines/opensearch/datasets/DATASET_ID/dataobjects/search/opensearchDescription.xml", null, null);
+
+        final Module module = service.retrieveModule(pModuleId);
+        JsonObject dataset = searchClient.searchDatasets(null).getBody();
+        JsonObject result = service.mergeDatasetInsideModuleConf(module, dataset, uri.toString());
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
     @Override
     public Resource<Module> toResource(final Module pElement, final Object... pExtras) {
         final Resource<Module> resource = resourceService.toResource(pElement);
         resourceService.addLink(resource, this.getClass(), "retrieveModule", LinkRels.SELF,
-                                MethodParamFactory.build(String.class, pElement.getApplicationId()),
-                                MethodParamFactory.build(Long.class, pElement.getId()));
+                MethodParamFactory.build(String.class, pElement.getApplicationId()),
+                MethodParamFactory.build(Long.class, pElement.getId()));
         resourceService.addLink(resource, this.getClass(), "updateModule", LinkRels.UPDATE,
-                                MethodParamFactory.build(String.class, pElement.getApplicationId()),
-                                MethodParamFactory.build(Long.class, pElement.getId()),
-                                MethodParamFactory.build(Module.class));
+                MethodParamFactory.build(String.class, pElement.getApplicationId()),
+                MethodParamFactory.build(Long.class, pElement.getId()),
+                MethodParamFactory.build(Module.class));
         resourceService.addLink(resource, this.getClass(), "deleteModule", LinkRels.DELETE,
-                                MethodParamFactory.build(String.class, pElement.getApplicationId()),
-                                MethodParamFactory.build(Long.class, pElement.getId()));
+                MethodParamFactory.build(String.class, pElement.getApplicationId()),
+                MethodParamFactory.build(Long.class, pElement.getId()));
         return resource;
     }
 

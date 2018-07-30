@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.configuration.service;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import java.io.IOException;
 import java.util.List;
 
@@ -110,7 +113,7 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             gson.fromJson(pModule.getConf(), Object.class);
         } catch (RuntimeException e) {
             LOG.error(e.getMessage(), e);
-            throw new EntityInvalidException("Layout is not a valid json format.", e);
+            throw new EntityInvalidException("Module is not a valid json format.", e);
         }
         UIPage page = pModule.getPage();
         if ((page != null) && page.isHome()) {
@@ -127,7 +130,7 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             gson.fromJson(pModule.getConf(), Object.class);
         } catch (RuntimeException e) {
             LOG.error(e.getMessage(), e);
-            throw new EntityInvalidException("Layout is not a valid json format.", e);
+            throw new EntityInvalidException("Module is not a valid json format.", e);
         }
         if (!repository.exists(pModule.getId())) {
             throw new EntityNotFoundException(pModule.getId(), Module.class);
@@ -146,6 +149,41 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
         }
         repository.delete(pModuleId);
 
+    }
+
+    @Override
+    public JsonObject mergeDatasetInsideModuleConf(Module module, JsonObject dataset, String openSearchLink) throws EntityInvalidException {
+        final Gson gson = new Gson();
+        JsonObject moduleConfJson;
+
+        try {
+            JsonElement element = gson.fromJson(module.getConf(), JsonElement.class);
+            moduleConfJson = element.getAsJsonObject();
+        } catch (RuntimeException e) {
+            LOG.error(e.getMessage(), e);
+            throw new EntityInvalidException("Module is not a valid json format.", e);
+        }
+
+        String errorMessage = "";
+        JsonArray layers = new JsonArray();
+        JsonArray ds = dataset.getAsJsonArray("content");
+        // Iterate over datasets resources
+        ds.forEach(d -> {
+            String datasetIpId = d.getAsJsonObject().get("content").getAsJsonObject().get("ipId").getAsString();
+            JsonObject layer = new JsonObject();
+            layer.addProperty("category", "Catalog");
+            layer.addProperty("type", "OpenSearch");
+            layer.addProperty("baseUrl", openSearchLink.replace("DATASET_ID", datasetIpId));
+            layer.addProperty("visible", false);
+            layers.add(layer);
+        });
+        //  Add to the end of the list all layers configured in the module json
+        moduleConfJson.get("layers").getAsJsonArray().forEach(layer -> {
+            layers.add(layer);
+        });
+        // save the layer list inside the module conf
+        moduleConfJson.add("layers", layers);
+        return moduleConfJson;
     }
 
     /**
