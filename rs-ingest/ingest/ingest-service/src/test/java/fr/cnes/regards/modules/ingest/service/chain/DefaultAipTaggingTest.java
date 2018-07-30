@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -117,7 +118,7 @@ public class DefaultAipTaggingTest {
         String md5 = "plifplafplouf";
         String session = "session 1";
         AIPBuilder builder = new AIPBuilder(UniformResourceName.fromString(aipUrn),
-                UniformResourceName.fromString(sipUrn), providerId, EntityType.DATA, session);
+                Optional.of(UniformResourceName.fromString(sipUrn)), providerId, EntityType.DATA, session);
         builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("target", filename), md5);
         builder.addContentInformation();
         AIP single = builder.build();

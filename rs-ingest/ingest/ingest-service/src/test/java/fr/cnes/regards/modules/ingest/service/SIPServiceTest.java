@@ -387,7 +387,7 @@ public class SIPServiceTest extends AbstractSIPTest {
                     entity.setAip(a);
                     entity.setState(a.getState());
                     entity.setAipId(a.getId().toString());
-                    entity.setSipId(a.getSipId());
+                    entity.setSipId(a.getSipId().orElse(null));
                     return new Resource<AIPEntity>(entity);
                 }).collect(Collectors.toSet());
         PagedResources<Resource<AIPEntity>> pagedRes = new PagedResources<Resource<AIPEntity>>(resources,

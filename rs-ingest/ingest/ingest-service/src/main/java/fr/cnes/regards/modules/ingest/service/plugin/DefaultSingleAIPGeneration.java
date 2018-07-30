@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.ingest.service.plugin;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -42,7 +43,7 @@ public class DefaultSingleAIPGeneration implements IAipGeneration {
     @Override
     public List<AIP> generate(SIP sip, UniformResourceName aipId, UniformResourceName sipId, String providerId) {
 
-        AIPBuilder builder = new AIPBuilder(aipId, sipId, providerId, EntityType.DATA,
+        AIPBuilder builder = new AIPBuilder(aipId, Optional.of(sipId), providerId, EntityType.DATA,
                 sip.getProperties().getPdi().getProvenanceInformation().getSession());
         // Propagate BBOX
         if (sip.getBbox().isPresent()) {

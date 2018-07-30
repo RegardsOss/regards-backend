@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.service;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
+import java.util.Optional;
 
 import org.junit.After;
 import org.junit.Before;
@@ -115,7 +116,7 @@ public abstract class AbstractSIPTest extends AbstractRegardsServiceTransactiona
 
     protected AIPEntity createAIP(UniformResourceName aipId, SIPEntity sip, SipAIPState state) {
         AIPEntity aip = new AIPEntity();
-        aip.setAip(new AIPBuilder(aipId, sip.getSipIdUrn(), sip.getProviderId(), EntityType.DATA,
+        aip.setAip(new AIPBuilder(aipId, Optional.of(sip.getSipIdUrn()), sip.getProviderId(), EntityType.DATA,
                 sip.getSession().toString()).build());
         aip.setCreationDate(OffsetDateTime.now());
         aip.setAipId(aipId);
