@@ -197,20 +197,70 @@ public class ModuleController implements IResourceController<Module> {
     @ResourceAccess(description = "Endpoint to retrieve Mizar config", role = DefaultRole.PUBLIC)
     public HttpEntity<JsonObject> retrieveMapConfig(@PathVariable("applicationId") final String pApplicationId,
             @PathVariable("moduleId") final Long pModuleId, HttpServletRequest request) throws EntityNotFoundException, EntityInvalidException, URISyntaxException, MalformedURLException {
-        // Save the current URL
-        URL url = new URL(request.getRequestURL().toString());
-        String host = url.getHost();
-        String userInfo = url.getUserInfo();
-        String scheme = url.getProtocol();
-        int port = url.getPort();
-        // Create the URL that returns the OpenSearch description
-        URI uri = new URI(scheme, userInfo, host, port, "/engines/opensearch/datasets/DATASET_ID/dataobjects/search/opensearchDescription.xml", null, null);
+        // Retrieve the URI for the opensearch endpoint (with public gateway IP/Port)
+        URI uri = getOpenSearchURL(request);
 
         final Module module = service.retrieveModule(pModuleId);
         MultiValueMap attr = new LinkedMultiValueMap();
         JsonObject dataset = (JsonObject)searchClient.searchDatasets(attr).getBody();
         JsonObject result = service.mergeDatasetInsideModuleConf(module, dataset, uri.toString());
         return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    /**
+     * Returns the public URL to retrieve open search descriptor
+     */
+    private URI getOpenSearchURL(HttpServletRequest request) throws MalformedURLException, URISyntaxException {
+        // Save the current URL
+        URL url = new URL(request.getRequestURL().toString());
+
+        String host;
+        int port;
+        // We have the same implementation than spring-hateoas.
+        // see ControllerLinkBuilder.java for additional infos
+        String headerXForwardedHost = request.getHeader("X-Forwarded-Host");
+        if (headerXForwardedHost != null) {
+            // Handle several IP separated by a comma
+            if (headerXForwardedHost.contains(",")) {
+                String[] headerSplit = headerXForwardedHost.split(",");
+                // handle port
+                host = getOpenSearchHost(headerSplit[0]);
+                port = getOpenSearchPort(headerSplit[0]);
+            } else {
+                host = getOpenSearchHost(headerXForwardedHost);
+                port = getOpenSearchPort(headerXForwardedHost);
+            }
+        } else {
+            host = url.getHost();
+            port = url.getPort();
+        }
+
+        String userInfo = url.getUserInfo();
+        String scheme = url.getProtocol();
+        // Create the URL that returns the OpenSearch description
+        return new URI(scheme, userInfo, host, port, "/engines/opensearch/datasets/DATASET_ID/dataobjects/search/opensearchDescription.xml", null, null);
+    }
+
+    private int getOpenSearchPort(String header) {
+        int port;
+        if (header.contains(":")) {
+            String[] hostAndPort = header.split(":");
+            port = Integer.parseInt(hostAndPort[1]);
+        } else {
+            port = 80;
+        }
+        return port;
+    }
+
+    private String getOpenSearchHost(String header) {
+        String host;
+        if (header.contains(":")) {
+            String[] hostAndPort = header.split(":");
+            host = hostAndPort[0];
+        } else {
+            host = header;
+        }
+        return host;
     }
 
     @Override
