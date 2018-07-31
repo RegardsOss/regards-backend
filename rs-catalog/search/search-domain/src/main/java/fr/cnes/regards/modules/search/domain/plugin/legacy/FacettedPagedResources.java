@@ -62,7 +62,9 @@ public class FacettedPagedResources<T> extends PagedResources<T> {
 
         if (content != null) {
             for (S element : content) {
-                resources.add((T) new Resource<S>(element));
+                if (element != null) {
+                    resources.add((T) new Resource<S>(element));
+                }
             }
         }
 
