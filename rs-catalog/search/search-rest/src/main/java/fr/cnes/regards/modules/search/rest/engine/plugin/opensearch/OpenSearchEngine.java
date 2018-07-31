@@ -310,14 +310,12 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
      * @return {@link IResponseBuilder}
      * @throws UnsupportedMediaTypesException
      */
-    private IResponseBuilder<?> getBuilder(SearchContext context) throws UnsupportedMediaTypesException {
+    private IResponseBuilder<?> getBuilder(SearchContext context) {
         IResponseBuilder<?> responseBuilder;
         if (context.getHeaders().getAccept().contains(MediaType.APPLICATION_ATOM_XML)) {
             responseBuilder = new AtomResponseBuilder(gson);
-        } else if (context.getHeaders().getAccept().contains(MediaType.APPLICATION_JSON)) {
-            responseBuilder = new GeojsonResponseBuilder();
         } else {
-            throw new UnsupportedMediaTypesException(context.getHeaders().getAccept());
+            responseBuilder = new GeojsonResponseBuilder();
         }
         responseBuilder.addExtension(timeExtension);
         responseBuilder.addExtension(mediaExtension);
