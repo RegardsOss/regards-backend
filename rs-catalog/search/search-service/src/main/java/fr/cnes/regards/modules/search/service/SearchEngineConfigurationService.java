@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.modules.search.service;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
-
-import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +33,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Lists;
-
 import feign.FeignException;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -174,7 +172,7 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
 
         if (conf == null) {
             throw new EntityNotFoundException(String.format("SearchType=%s and Dataset=%s", pluginId, ds),
-                    SearchEngineConfiguration.class);
+                                              SearchEngineConfiguration.class);
         }
 
         return addDatasetLabel(conf, Lists.newArrayList());
@@ -197,36 +195,20 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
         }
 
         if ((foundConf != null) && (!foundConf.getId().equals(conf.getId()))) {
-            throw new EntityInvalidException(
-                    String.format("Search engine already defined for engine <%s> and dataset <%s>",
-                                  conf.getConfiguration().getPluginId(), conf.getDatasetUrn()));
-        }
-    }
-
-    /**
-     * Class DeleteEntityEventHandler
-     * Handler to delete {@link SearchEngineConfiguration} for deleted datasets.
-     * @author Sébastien Binda
-     */
-    private class DeleteEntityEventHandler implements IHandler<BroadcastEntityEvent> {
-
-        @Override
-        public void handle(final TenantWrapper<BroadcastEntityEvent> pWrapper) {
-            if ((pWrapper.getContent() != null) && EventType.DELETE.equals(pWrapper.getContent().getEventType())) {
-                runtimeTenantResolver.forceTenant(pWrapper.getTenant());
-                for (final UniformResourceName ipId : pWrapper.getContent().getAipIds()) {
-                    List<SearchEngineConfiguration> confs = repository.findByDatasetUrn(ipId.toString());
-                    if ((confs != null) && !confs.isEmpty()) {
-                        confs.forEach(repository::delete);
-                    }
-                }
-            }
+            throw new EntityInvalidException(String.format(
+                    "Search engine already defined for engine <%s> and dataset <%s>",
+                    conf.getConfiguration().getPluginId(),
+                    conf.getDatasetUrn()));
         }
     }
 
     @Override
-    public Page<SearchEngineConfiguration> retrieveConfs(Optional<String> engineType, Pageable page)
-            throws ModuleException {
+    public List<SearchEngineConfiguration> retrieveAllConfs() {
+        return repository.findAll();
+    }
+
+    @Override
+    public Page<SearchEngineConfiguration> retrieveConfs(Optional<String> engineType, Pageable page) {
         Page<SearchEngineConfiguration> confs;
         if (engineType.isPresent()) {
             confs = repository.findByConfigurationPluginId(engineType.get(), page);
@@ -249,8 +231,8 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
                 // Retrieve dataset from dam
                 try {
                     ResponseEntity<Resource<Dataset>> response = datasetClient.retrieveDataset(conf.getDatasetUrn());
-                    if ((response != null) && (response.getBody() != null)
-                            && (response.getBody().getContent() != null)) {
+                    if ((response != null) && (response.getBody() != null) && (response.getBody().getContent()
+                            != null)) {
                         conf.setDataset(response.getBody().getContent());
                         // Add new retrieved dataset into cached ones
                         cachedDatasets.add(response.getBody().getContent());
@@ -261,5 +243,26 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
             }
         }
         return conf;
+    }
+
+    /**
+     * Class DeleteEntityEventHandler
+     * Handler to delete {@link SearchEngineConfiguration} for deleted datasets.
+     * @author Sébastien Binda
+     */
+    private class DeleteEntityEventHandler implements IHandler<BroadcastEntityEvent> {
+
+        @Override
+        public void handle(final TenantWrapper<BroadcastEntityEvent> pWrapper) {
+            if ((pWrapper.getContent() != null) && EventType.DELETE.equals(pWrapper.getContent().getEventType())) {
+                runtimeTenantResolver.forceTenant(pWrapper.getTenant());
+                for (final UniformResourceName ipId : pWrapper.getContent().getAipIds()) {
+                    List<SearchEngineConfiguration> confs = repository.findByDatasetUrn(ipId.toString());
+                    if ((confs != null) && !confs.isEmpty()) {
+                        confs.forEach(repository::delete);
+                    }
+                }
+            }
+        }
     }
 }
