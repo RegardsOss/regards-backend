@@ -18,26 +18,7 @@
  */
 package fr.cnes.regards.modules.configuration.rest;
 
-import javax.validation.Valid;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
+import com.google.gson.JsonObject;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -51,12 +32,36 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.configuration.domain.Layout;
 import fr.cnes.regards.modules.configuration.domain.Module;
 import fr.cnes.regards.modules.configuration.service.IModuleService;
+import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * REST controller for the microservice Access
- *
  * @author Sébastien Binda
- *
  */
 @RestController
 @RequestMapping(ModuleController.ROOT_MAPPING)
@@ -66,15 +71,18 @@ public class ModuleController implements IResourceController<Module> {
 
     public static final String MODULE_ID_MAPPING = "/{moduleId}";
 
+    public static final String MAP_CONFIG = MODULE_ID_MAPPING + "/map";
     @Autowired
     private IModuleService service;
 
     @Autowired
     private IResourceService resourceService;
 
+    @Autowired
+    private ILegacySearchEngineJsonClient searchClient;
+
     /**
      * Entry point to retrieve a modules for a given application id {@link Module}.
-     *
      * @return {@link Layout}
      * @throws EntityNotFoundException
      */
@@ -91,7 +99,6 @@ public class ModuleController implements IResourceController<Module> {
     /**
      * Entry point to retrieve all modules for a given application id {@link Module}. Query parameter active
      * [true|false]
-     *
      * @return {@link Layout}
      * @throws EntityNotFoundException
      */
@@ -114,7 +121,6 @@ public class ModuleController implements IResourceController<Module> {
 
     /**
      * Entry point to save a new ihm module.
-     *
      * @return {@link Module}
      * @throws EntityInvalidException
      * @throws EntityNotFoundException
@@ -136,7 +142,6 @@ public class ModuleController implements IResourceController<Module> {
 
     /**
      * Entry point to save a new ihm module.
-     *
      * @return {@link Module}
      * @throws EntityInvalidException
      * @throws EntityNotFoundException
@@ -163,7 +168,6 @@ public class ModuleController implements IResourceController<Module> {
 
     /**
      * Entry point to delete an ihm module.
-     *
      * @return {@link Module}
      * @throws EntityInvalidException
      * @throws EntityNotFoundException
@@ -179,19 +183,97 @@ public class ModuleController implements IResourceController<Module> {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+
+    /**
+     * Entry point to retrieve a Mizar config for a given module id {@link Module}.
+     * It retrieves the list of dataset visible by this user and returns the corresponding Mizar configuration
+     * @return {@link JsonObject} mizar configuration
+     * @throws EntityNotFoundException
+     */
+    @RequestMapping(value = MAP_CONFIG, method = RequestMethod.GET)
+    @ResponseBody
+    @ResourceAccess(description = "Endpoint to retrieve Mizar config", role = DefaultRole.PUBLIC)
+    public HttpEntity<JsonObject> retrieveMapConfig(@PathVariable("applicationId") final String pApplicationId,
+            @PathVariable("moduleId") final Long pModuleId, HttpServletRequest request) throws EntityNotFoundException, EntityInvalidException, URISyntaxException, MalformedURLException {
+        // Retrieve the URI for the opensearch endpoint (with public gateway IP/Port)
+        URI uri = getOpenSearchURL(request);
+
+        final Module module = service.retrieveModule(pModuleId);
+        MultiValueMap attr = new LinkedMultiValueMap();
+        JsonObject dataset = (JsonObject)searchClient.searchDatasets(attr).getBody();
+        JsonObject result = service.mergeDatasetInsideModuleConf(module, dataset, uri.toString());
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    /**
+     * Returns the public URL to retrieve open search descriptor
+     */
+    private URI getOpenSearchURL(HttpServletRequest request) throws MalformedURLException, URISyntaxException {
+        // Save the current URL
+        URL url = new URL(request.getRequestURL().toString());
+
+        String host;
+        int port;
+        // We have the same implementation than spring-hateoas.
+        // see ControllerLinkBuilder.java for additional infos
+        String headerXForwardedHost = request.getHeader("X-Forwarded-Host");
+        if (headerXForwardedHost != null) {
+            // Handle several IP separated by a comma
+            if (headerXForwardedHost.contains(",")) {
+                String[] headerSplit = headerXForwardedHost.split(",");
+                // handle port
+                host = getOpenSearchHost(headerSplit[0]);
+                port = getOpenSearchPort(headerSplit[0]);
+            } else {
+                host = getOpenSearchHost(headerXForwardedHost);
+                port = getOpenSearchPort(headerXForwardedHost);
+            }
+        } else {
+            host = url.getHost();
+            port = url.getPort();
+        }
+
+        String userInfo = url.getUserInfo();
+        String scheme = url.getProtocol();
+        // Create the URL that returns the OpenSearch description
+        return new URI(scheme, userInfo, host, port, "/engines/opensearch/datasets/DATASET_ID/dataobjects/search/opensearchDescription.xml", null, null);
+    }
+
+    private int getOpenSearchPort(String header) {
+        int port;
+        if (header.contains(":")) {
+            String[] hostAndPort = header.split(":");
+            port = Integer.parseInt(hostAndPort[1]);
+        } else {
+            port = 80;
+        }
+        return port;
+    }
+
+    private String getOpenSearchHost(String header) {
+        String host;
+        if (header.contains(":")) {
+            String[] hostAndPort = header.split(":");
+            host = hostAndPort[0];
+        } else {
+            host = header;
+        }
+        return host;
+    }
+
     @Override
     public Resource<Module> toResource(final Module pElement, final Object... pExtras) {
         final Resource<Module> resource = resourceService.toResource(pElement);
         resourceService.addLink(resource, this.getClass(), "retrieveModule", LinkRels.SELF,
-                                MethodParamFactory.build(String.class, pElement.getApplicationId()),
-                                MethodParamFactory.build(Long.class, pElement.getId()));
+                MethodParamFactory.build(String.class, pElement.getApplicationId()),
+                MethodParamFactory.build(Long.class, pElement.getId()));
         resourceService.addLink(resource, this.getClass(), "updateModule", LinkRels.UPDATE,
-                                MethodParamFactory.build(String.class, pElement.getApplicationId()),
-                                MethodParamFactory.build(Long.class, pElement.getId()),
-                                MethodParamFactory.build(Module.class));
+                MethodParamFactory.build(String.class, pElement.getApplicationId()),
+                MethodParamFactory.build(Long.class, pElement.getId()),
+                MethodParamFactory.build(Module.class));
         resourceService.addLink(resource, this.getClass(), "deleteModule", LinkRels.DELETE,
-                                MethodParamFactory.build(String.class, pElement.getApplicationId()),
-                                MethodParamFactory.build(Long.class, pElement.getId()));
+                MethodParamFactory.build(String.class, pElement.getApplicationId()),
+                MethodParamFactory.build(Long.class, pElement.getId()));
         return resource;
     }
 
