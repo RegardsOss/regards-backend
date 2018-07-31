@@ -60,8 +60,10 @@ public class FacettedPagedResources<T> extends PagedResources<T> {
             Set<IFacet<?>> facets) {
         ArrayList<T> resources = new ArrayList<T>();
 
-        for (S element : content) {
-            resources.add((T) new Resource<S>(element));
+        if (content != null) {
+            for (S element : content) {
+                resources.add((T) new Resource<S>(element));
+            }
         }
 
         return new FacettedPagedResources<T>(facets, resources, metadata);

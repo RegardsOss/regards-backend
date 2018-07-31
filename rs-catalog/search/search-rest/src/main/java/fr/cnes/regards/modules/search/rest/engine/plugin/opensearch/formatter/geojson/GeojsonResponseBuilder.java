@@ -78,26 +78,28 @@ public class GeojsonResponseBuilder implements IResponseBuilder<FeatureWithPrope
     @Override
     public void addEntity(EntityFeature entity, Optional<OffsetDateTime> entityLastUpdate,
             List<ParameterConfiguration> paramConfigurations, List<Link> entityLinks) {
-        Feature feature = new Feature();
-        feature.setId(entity.getId().toString());
-        // All links are alternate links here in geo json format
-        // Other types like icon or enclosure are handle in extensions (example : media)
-        String title = String.format("GeoJson link for %s", entity.getId());
-        feature.setLinks(entityLinks.stream()
-                .map(l -> GeoJsonLinkBuilder.build(l, GeoJsonLink.LINK_ALTERNATE_REL, title,
-                                                   GeoJsonMediaType.APPLICATION_GEOJSON_VALUE))
-                .collect(Collectors.toList()));
-        feature.setTitle(entity.getLabel());
-        if (entityLastUpdate.isPresent()) {
-            feature.setUpdated(entityLastUpdate.get());
-        }
-        // Handle extensions
-        for (IOpenSearchExtension extension : extensions) {
-            if (extension.isActivated()) {
-                extension.formatGeoJsonResponseFeature(entity, paramConfigurations, feature);
+        if (entity != null) {
+            Feature feature = new Feature();
+            feature.setId(entity.getId().toString());
+            // All links are alternate links here in geo json format
+            // Other types like icon or enclosure are handle in extensions (example : media)
+            String title = String.format("GeoJson link for %s", entity.getId());
+            feature.setLinks(entityLinks.stream()
+                    .map(l -> GeoJsonLinkBuilder.build(l, GeoJsonLink.LINK_ALTERNATE_REL, title,
+                                                       GeoJsonMediaType.APPLICATION_GEOJSON_VALUE))
+                    .collect(Collectors.toList()));
+            feature.setTitle(entity.getLabel());
+            if (entityLastUpdate.isPresent()) {
+                feature.setUpdated(entityLastUpdate.get());
             }
+            // Handle extensions
+            for (IOpenSearchExtension extension : extensions) {
+                if (extension.isActivated()) {
+                    extension.formatGeoJsonResponseFeature(entity, paramConfigurations, feature);
+                }
+            }
+            response.add(feature);
         }
-        response.add(feature);
     }
 
     @Override
