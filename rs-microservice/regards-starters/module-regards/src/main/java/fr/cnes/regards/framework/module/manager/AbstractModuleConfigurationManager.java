@@ -18,14 +18,16 @@
  */
 package fr.cnes.regards.framework.module.manager;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
-import javax.annotation.PostConstruct;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
@@ -42,6 +44,8 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 public abstract class AbstractModuleConfigurationManager implements IModuleConfigurationManager {
 
     private static final String PROPERTY_FILE = "module.properties";
+
+    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     protected ModuleInformation info;
 
@@ -91,12 +95,31 @@ public abstract class AbstractModuleConfigurationManager implements IModuleConfi
      */
     @Override
     public boolean isApplicable(ModuleConfiguration configuration) {
-        return info.getId().equals(configuration.getModule().getId())
-                && info.getVersion().equals(configuration.getModule().getVersion());
+        return info.getId().equals(configuration.getModule().getId()) && info.getVersion()
+                .equals(configuration.getModule().getVersion());
     }
 
     @Override
     public ModuleInformation getModuleInformation() {
         return info;
     }
+
+    @Override
+    public ModuleImportReport importConfigurationAndLog(ModuleConfiguration configuration) {
+        Set<String> importErrors = importConfiguration(configuration);
+        for (String importError : importErrors) {
+            logger.warn(importError);
+        }
+        return new ModuleImportReport(info,
+                                      importErrors,
+                                      importErrors.size() == configuration.getConfiguration().size());
+    }
+
+    /**
+     * This method being called by {@link #importConfigurationAndLog(ModuleConfiguration)}, you do not need to logs import errors.
+     *
+     * @param configuration
+     * @return Errors for each configuration element that could not be imported
+     */
+    protected abstract Set<String> importConfiguration(ModuleConfiguration configuration);
 }
