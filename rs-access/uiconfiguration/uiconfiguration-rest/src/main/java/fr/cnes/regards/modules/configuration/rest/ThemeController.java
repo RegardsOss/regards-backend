@@ -58,8 +58,6 @@ import fr.cnes.regards.modules.configuration.service.IThemeService;
  *
  */
 @RestController
-@ModuleInfo(name = "Theme", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping(ThemeController.ROOT_MAPPING)
 public class ThemeController implements IResourceController<Theme> {
 

@@ -59,8 +59,6 @@ import fr.cnes.regards.modules.configuration.service.IModuleService;
  *
  */
 @RestController
-@ModuleInfo(name = "Module", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping(ModuleController.ROOT_MAPPING)
 public class ModuleController implements IResourceController<Module> {
 
