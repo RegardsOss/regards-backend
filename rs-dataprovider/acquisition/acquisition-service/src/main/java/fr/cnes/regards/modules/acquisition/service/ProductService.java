@@ -461,7 +461,7 @@ public class ProductService implements IProductService {
 
     @Override
     public void handleSIPEvent(SIPEvent event) {
-        Product product = productRepository.findCompleteByIpId(event.getIpId());
+        Product product = productRepository.findCompleteByIpId(event.getSipId());
         if (product != null) {
             // Do post processing if SIP properly stored
             if (SIPState.STORED.equals(event.getState())) {
@@ -482,7 +482,7 @@ public class ProductService implements IProductService {
             product.setSipState(event.getState());
             productRepository.save(product);
         } else {
-            LOGGER.debug("SIP with IP ID \"{}\" is not managed by data provider", event.getIpId());
+            LOGGER.debug("SIP with IP ID \"{}\" is not managed by data provider", event.getSipId());
         }
     }
 

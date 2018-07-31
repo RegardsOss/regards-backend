@@ -152,7 +152,7 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
                 for (SIPDto dto : response) {
                     Product product = productMap.get(dto.getId());
                     product.setSipState(dto.getState());
-                    product.setIpId(dto.getIpId()); // May be null
+                    product.setIpId(dto.getSipId()); // May be null
                     if ((dto.getRejectionCauses() != null) && !dto.getRejectionCauses().isEmpty()) {
                         StringBuffer error = new StringBuffer();
                         for (String cause : dto.getRejectionCauses()) {
