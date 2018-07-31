@@ -49,6 +49,10 @@
 			<artifactId>spring-webmvc</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>gson-regards</artifactId>
 		</dependency>
