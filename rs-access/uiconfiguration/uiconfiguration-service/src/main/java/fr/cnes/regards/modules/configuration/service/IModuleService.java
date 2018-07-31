@@ -113,5 +113,5 @@ public interface IModuleService {
      *
      * @since 3.0-SNAPSHOT
      */
-    JsonObject mergeDatasetInsideModuleConf(Module module, JsonObject dataset, String openSearchLink) throws EntityInvalidException;
+    JsonObject addDatasetLayersInsideModuleConf(Module module, JsonObject dataset, String openSearchLink) throws EntityInvalidException;
 }

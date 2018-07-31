@@ -152,7 +152,7 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
     }
 
     @Override
-    public JsonObject mergeDatasetInsideModuleConf(Module module, JsonObject dataset, String openSearchLink) throws EntityInvalidException {
+    public JsonObject addDatasetLayersInsideModuleConf(Module module, JsonObject dataset, String openSearchLink) throws EntityInvalidException {
         final Gson gson = new Gson();
         JsonObject moduleConfJson;
 
@@ -164,8 +164,11 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             throw new EntityInvalidException("Module is not a valid json format.", e);
         }
 
-        String errorMessage = "";
         JsonArray layers = new JsonArray();
+        if (!dataset.has("content")) {
+            LOG.warn("There is no dataset available for this user");
+            return moduleConfJson;
+        }
         JsonArray ds = dataset.getAsJsonArray("content");
         // Iterate over datasets resources
         ds.forEach(d -> {

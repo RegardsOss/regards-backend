@@ -18,13 +18,11 @@
  */
 package fr.cnes.regards.modules.configuration.rest;
 
-import com.google.common.net.HttpHeaders;
 import com.google.gson.JsonObject;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -38,10 +36,10 @@ import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -82,6 +80,9 @@ public class ModuleController implements IResourceController<Module> {
 
     @Autowired
     private ILegacySearchEngineJsonClient searchClient;
+
+    @Value("${zuul.prefix}")
+    private String gatewayPrefix;
 
     /**
      * Entry point to retrieve a modules for a given application id {@link Module}.
@@ -135,7 +136,7 @@ public class ModuleController implements IResourceController<Module> {
             @Valid @RequestBody final Module pModule) throws EntityInvalidException {
 
         if (!pModule.getApplicationId().equals(pApplicationId)) {
-            throw new EntityInvalidException("Invalide application identifier for new module");
+            throw new EntityInvalidException("Invalid application identifier for new module");
         }
         final Module module = service.saveModule(pModule);
         final Resource<Module> resource = toResource(module);
@@ -157,11 +158,11 @@ public class ModuleController implements IResourceController<Module> {
             throws EntityException {
 
         if (!pModule.getApplicationId().equals(pApplicationId)) {
-            throw new EntityInvalidException("Invalide application identifier for module update");
+            throw new EntityInvalidException("Invalid application identifier for module update");
         }
 
         if (!pModule.getId().equals(pModuleId)) {
-            throw new EntityInvalidException("Invalide module identifier for module update");
+            throw new EntityInvalidException("Invalid module identifier for module update");
         }
         final Module module = service.updateModule(pModule);
         final Resource<Module> resource = toResource(module);
@@ -198,11 +199,11 @@ public class ModuleController implements IResourceController<Module> {
     public HttpEntity<JsonObject> retrieveMapConfig(@PathVariable("applicationId") final String pApplicationId,
             @PathVariable("moduleId") final Long pModuleId, HttpServletRequest request) throws EntityNotFoundException, EntityInvalidException, URISyntaxException, MalformedURLException {
         // Retrieve the URI for the opensearch endpoint (with public gateway IP/Port)
-        URI uri = HttpUtils.retrievePublicURI(request, "/engines/opensearch/datasets/DATASET_ID/dataobjects/search/opensearchDescription.xml");
+        URI uriDatasetDescriptor = HttpUtils.retrievePublicURI(request, gatewayPrefix+"/rs-catalog/engines/opensearch/datasets/DATASET_ID/dataobjects/search/opensearchDescription.xml");
         final Module module = service.retrieveModule(pModuleId);
         MultiValueMap attr = new LinkedMultiValueMap();
         JsonObject dataset = (JsonObject)searchClient.searchDatasets(attr).getBody();
-        JsonObject result = service.mergeDatasetInsideModuleConf(module, dataset, uri.toString());
+        JsonObject result = service.addDatasetLayersInsideModuleConf(module, dataset, uriDatasetDescriptor.toString());
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
