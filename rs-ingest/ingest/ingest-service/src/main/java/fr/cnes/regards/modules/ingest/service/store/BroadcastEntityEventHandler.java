@@ -83,7 +83,7 @@ public class BroadcastEntityEventHandler
             LOGGER.info("BroadcastEntityEvent received type={}", event.getEventType());
             switch (event.getEventType()) {
                 case INDEXED:
-                    handleEntitiesIndexed(event.getIpIds(), wrapper.getTenant());
+                    handleEntitiesIndexed(event.getAipIds(), wrapper.getTenant());
                     break;
                 case DELETE:
                 case CREATE:
@@ -114,7 +114,7 @@ public class BroadcastEntityEventHandler
                     SIPEntity sip = aip.getSip();
                     sip.setState(SIPState.INDEXED);
                     sipService.saveSIPEntity(sip);
-                    LOGGER.info("SIP \"{}\" is now indexed.", sip.getIpId());
+                    LOGGER.info("SIP \"{}\" is now indexed.", sip.getSipId());
                     // AIPs are no longer usefull here we can delete them
                     aipRepository.delete(sipAips);
                 }

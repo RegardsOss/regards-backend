@@ -56,12 +56,12 @@ public class GenerationStep extends AbstractIngestStep<SIP, List<AIP>> {
         IAipGeneration generation = this.getStepPlugin(conf.getId());
 
         // Retrieve SIP URN from internal identifier
-        UniformResourceName sipUrn = UniformResourceName.fromString(job.getEntity().getIpId());
+        UniformResourceName sipId = job.getEntity().getSipIdUrn();
         // Compute AIP URN from SIP one
-        UniformResourceName ipId = new UniformResourceName(OAISIdentifier.AIP, sipUrn.getEntityType(),
-                sipUrn.getTenant(), sipUrn.getEntityId(), sipUrn.getVersion());
+        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, sipId.getEntityType(),
+                sipId.getTenant(), sipId.getEntityId(), sipId.getVersion());
         // Launch AIP generation
-        return generation.generate(sip, ipId, sipUrn.toString());
+        return generation.generate(sip, aipId, sipId, sip.getId());
     }
 
     @Override

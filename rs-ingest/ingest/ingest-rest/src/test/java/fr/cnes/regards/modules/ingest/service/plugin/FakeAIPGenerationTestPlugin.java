@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 
 /**
  * Fake plugin for the processing chains.
- * 
+ *
  * @author Christophe Mertz
  */
 @Plugin(author = "REGARDS Team", description = "Fake plugin for AIP generation", id = "FakeAIPGenerationTestPlugin",
@@ -38,8 +38,8 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 public class FakeAIPGenerationTestPlugin implements IAipGeneration {
 
     @Override
-    public List<AIP> generate(SIP sip, UniformResourceName ipId, String sipId) throws AIPGenerationException {
-
+    public List<AIP> generate(SIP sip, UniformResourceName aipId, UniformResourceName sipId, String providerId)
+            throws AIPGenerationException {
         return null;
     }
 

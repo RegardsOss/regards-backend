@@ -176,7 +176,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
     private void documentSearchSipParameters(RequestBuilderCustomizer requestBuilderCustomizer) {
         List<ParameterDescriptor> paramDescrList = new ArrayList<ParameterDescriptor>();
 
-        paramDescrList.add(RequestDocumentation.parameterWithName(SIPController.REQUEST_PARAM_SIP_ID).optional()
+        paramDescrList.add(RequestDocumentation.parameterWithName(SIPController.REQUEST_PARAM_PROVIDER_ID).optional()
                 .description("SIP identifier filter")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"))
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")));
@@ -408,8 +408,8 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultGet(SIPController.TYPE_MAPPING, requestBuilderCustomizer, "Should found valid SIP");
     }
 
-    private SIPBuilder buildSipOne(String sipId, String fileName) {
-        SIPBuilder sipBuilder = new SIPBuilder(sipId);
+    private SIPBuilder buildSipOne(String providerId, String fileName) {
+        SIPBuilder sipBuilder = new SIPBuilder(providerId);
         sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get(fileName),
                                                                 Paths.get(fileName).getFileName().toString(), "MD5",
                                                                 "b463726cfbb52d47e432bedf08edbec3", new Long(12345));
@@ -460,8 +460,8 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         return sipBuilder;
     }
 
-    private SIPBuilder buildSipTwo(String sipId, String fileName) {
-        SIPBuilder sipBuilder = new SIPBuilder(sipId);
+    private SIPBuilder buildSipTwo(String providerId, String fileName) {
+        SIPBuilder sipBuilder = new SIPBuilder(providerId);
         sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get(fileName),
                                                                 "3464e3f9a1dad119712c32e2290cbdf8");
         sipBuilder.setSyntax("FITS(FlexibleImageTransport)",

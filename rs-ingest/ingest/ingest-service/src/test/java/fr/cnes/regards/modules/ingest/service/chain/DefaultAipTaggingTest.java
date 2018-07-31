@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -110,20 +111,22 @@ public class DefaultAipTaggingTest {
     }
 
     private void tag(IAipTagging plugin, List<String> tags, Map<String, String> links) throws TagAIPException {
-        String urn = "URN:AIP:DATA:PROJECT:00000011-0022-0033-0044-000000000055:V1";
-        String sipId = "sipId1";
+        String aipUrn = "URN:AIP:DATA:PROJECT:00000011-0022-0033-0044-000000000055:V1";
+        String sipUrn = "URN:SIP:DATA:PROJECT:00000011-0022-0033-0044-000000000055:V1";
+        String providerId = "providerId1";
         String filename = "test.netcdf";
         String md5 = "plifplafplouf";
         String session = "session 1";
-        AIPBuilder builder = new AIPBuilder(UniformResourceName.fromString(urn), sipId, EntityType.DATA, session);
+        AIPBuilder builder = new AIPBuilder(UniformResourceName.fromString(aipUrn),
+                Optional.of(UniformResourceName.fromString(sipUrn)), providerId, EntityType.DATA, session);
         builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("target", filename), md5);
         builder.addContentInformation();
         AIP single = builder.build();
 
         plugin.tag(Arrays.asList(single));
 
-        Assert.assertEquals(urn, single.getId().toString());
-        Assert.assertEquals(sipId, single.getSipId());
+        Assert.assertEquals(aipUrn, single.getId().toString());
+        Assert.assertEquals(providerId, single.getProviderId());
         ContentInformation ci = single.getProperties().getContentInformations().iterator().next();
         Assert.assertEquals(filename, ci.getDataObject().getFilename());
         Assert.assertEquals(md5, ci.getDataObject().getChecksum());

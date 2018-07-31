@@ -52,17 +52,17 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
 
     /**
      * Retrieve all {@link AIPEntity}s associated to the given {@link SIPEntity}
-     * @param sip {@link SIPEntity}
+     * @param sipId SIP identifier
      * @return {@link AIPEntity}s
      */
-    Set<AIPEntity> findBySipIpId(String sipIpId);
+    Set<AIPEntity> findBySipSipId(String sipId);
 
     /**
-     * Retrieve an {@link AIPEntity} by is {@link AIPEntity#getIpId()}
-     * @param ipId {@link String}
+     * Retrieve an {@link AIPEntity} by its {@link AIPEntity#getAipId()}
+     * @param aipId SIP identifier
      * @return optional {@link AIPEntity}
      */
-    Optional<AIPEntity> findByIpId(String ipId);
+    Optional<AIPEntity> findByAipId(String aipId);
 
     /**
      * Retrieve an {@link AIPEntity} by is {@link AIPEntity#getState()}
@@ -89,7 +89,7 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
      * @param id {@link AIPEntity} to update
      */
     @Modifying
-    @Query("UPDATE AIPEntity a set a.state = ?1, a.errorMessage = ?3 where a.ipId = ?2")
-    void updateAIPEntityStateAndErrorMessage(IAipState state, String ipId, String errorMessage);
+    @Query("UPDATE AIPEntity a set a.state = ?1, a.errorMessage = ?3 where a.aipId = ?2")
+    void updateAIPEntityStateAndErrorMessage(IAipState state, String aipId, String errorMessage);
 
 }
