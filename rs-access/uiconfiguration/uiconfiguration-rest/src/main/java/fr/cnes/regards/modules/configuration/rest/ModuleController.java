@@ -66,8 +66,6 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Sébastien Binda
  */
 @RestController
-@ModuleInfo(name = "Module", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping(ModuleController.ROOT_MAPPING)
 public class ModuleController implements IResourceController<Module> {
 

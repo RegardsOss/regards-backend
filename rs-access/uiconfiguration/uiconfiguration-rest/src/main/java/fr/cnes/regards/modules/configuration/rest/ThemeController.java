@@ -58,8 +58,6 @@ import fr.cnes.regards.modules.configuration.service.IThemeService;
  *
  */
 @RestController
-@ModuleInfo(name = "Theme", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping(ThemeController.ROOT_MAPPING)
 public class ThemeController implements IResourceController<Theme> {
 
@@ -115,7 +113,7 @@ public class ThemeController implements IResourceController<Theme> {
     @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to save a new IHM Theme", role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<Resource<Theme>> saveTheme(@Valid @RequestBody final Theme pTheme) throws EntityInvalidException {
+    public HttpEntity<Resource<Theme>> saveTheme(@Valid @RequestBody final Theme pTheme) {
         final Theme theme = service.saveTheme(pTheme);
         final Resource<Theme> resource = toResource(theme);
         return new ResponseEntity<>(resource, HttpStatus.OK);

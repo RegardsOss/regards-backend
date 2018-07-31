@@ -30,6 +30,8 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Type;
 
+import fr.cnes.regards.framework.module.manager.ConfigIgnore;
+
 /**
  *
  * Class Theme
@@ -50,6 +52,7 @@ public class Theme {
     @Id
     @SequenceGenerator(name = "ihmThemesSequence", initialValue = 1, sequenceName = "seq_ui_theme")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ihmThemesSequence")
+    @ConfigIgnore
     private Long id;
 
     /**

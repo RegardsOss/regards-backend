@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.configuration.service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +72,6 @@ public class ThemeService extends AbstractUiConfigurationService implements IThe
     @Value("classpath:DefaultEnergyTheme.json")
     private Resource defaultEnergyThemeResource;
 
-
     /**
      * The default configuration for ocean theme
      */
@@ -96,7 +96,7 @@ public class ThemeService extends AbstractUiConfigurationService implements IThe
     }
 
     @Override
-    public Theme saveTheme(final Theme pTheme) throws EntityInvalidException {
+    public Theme saveTheme(final Theme pTheme) {
         // If new theme is the only one active theme, so first disable all other themes
         if (pTheme.isActive()) {
             disableAllActiveThemes();
@@ -126,6 +126,16 @@ public class ThemeService extends AbstractUiConfigurationService implements IThe
         }
 
         repository.delete(pThemeId);
+    }
+
+    @Override
+    public List<Theme> retrieveAllThemes() {
+        return repository.findAll();
+    }
+
+    @Override
+    public Optional<Theme> retrieveByName(String name) {
+        return repository.findByName(name);
     }
 
     /**
