@@ -42,6 +42,7 @@ import fr.cnes.regards.modules.accessrights.instance.service.IAccountService;
 import fr.cnes.regards.modules.accessrights.instance.service.accountunlock.IAccountUnlockTokenService;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
+import fr.cnes.regards.modules.project.service.ITenantService;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 
 /**
@@ -109,7 +110,7 @@ public class LockedStateTest {
     /**
      * Mocked tenant resolver
      */
-    private ITenantResolver tenantResolver;
+    private ITenantService tenantService;
 
     /**
      * Mocked runtime tenant resolver
@@ -146,7 +147,7 @@ public class LockedStateTest {
         // Mock dependencies
         accountRepository = Mockito.mock(IAccountRepository.class);
         projectUsersClient = Mockito.mock(IProjectUsersClient.class);
-        tenantResolver = Mockito.mock(ITenantResolver.class);
+        tenantService = Mockito.mock(ITenantService.class);
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         accountStateProvider = Mockito.mock(AccountStateProvider.class);
         accountService = Mockito.mock(IAccountService.class);
@@ -183,7 +184,7 @@ public class LockedStateTest {
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
         Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUsersClient,
                                                                                         accountRepository,
-                                                                                        tenantResolver,
+                                                                                        tenantService,
                                                                                         runtimeTenantResolver,
                                                                                         passwordResetService,
                                                                                         accountUnlockTokenService));
@@ -211,7 +212,7 @@ public class LockedStateTest {
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
         Mockito.when(accountStateProvider.getState(account)).thenReturn(new LockedState(projectUsersClient,
                                                                                         accountRepository,
-                                                                                        tenantResolver,
+                                                                                        tenantService,
                                                                                         runtimeTenantResolver,
                                                                                         passwordResetService,
                                                                                         accountUnlockTokenService,
@@ -239,7 +240,7 @@ public class LockedStateTest {
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
         Mockito.when(accountStateProvider.getState(account)).thenReturn(new LockedState(projectUsersClient,
                                                                                         accountRepository,
-                                                                                        tenantResolver,
+                                                                                        tenantService,
                                                                                         runtimeTenantResolver,
                                                                                         passwordResetService,
                                                                                         accountUnlockTokenService,

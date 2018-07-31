@@ -44,6 +44,7 @@ import fr.cnes.regards.modules.accessrights.instance.service.IAccountService;
 import fr.cnes.regards.modules.accessrights.instance.service.accountunlock.IAccountUnlockTokenService;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
+import fr.cnes.regards.modules.project.service.ITenantService;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 
@@ -83,25 +84,25 @@ public class LockedState extends AbstractDeletableState {
 
     /**
      * @param projectUsersClient
-     * @param pAccountRepository
-     * @param pTenantResolver
-     * @param pRuntimeTenantResolver
-     * @param pPasswordResetTokenService
-     * @param pAccountUnlockTokenService
-     * @param pAccountService
-     * @param pTemplateService
-     * @param pEmailClient
+     * @param accountRepository
+     * @param tenantService
+     * @param runtimeTenantResolver
+     * @param passwordResetService
+     * @param accountUnlockTokenService
+     * @param accountService
+     * @param templateService
+     * @param emailClient
      */
-    public LockedState(IProjectUsersClient projectUsersClient, IAccountRepository pAccountRepository,
-            ITenantResolver pTenantResolver, IRuntimeTenantResolver pRuntimeTenantResolver,
-            IPasswordResetService pPasswordResetTokenService,
-            IAccountUnlockTokenService pAccountUnlockTokenService, IAccountService pAccountService,
-            ITemplateService pTemplateService, IEmailClient pEmailClient) {
-        super(projectUsersClient, pAccountRepository, pTenantResolver, pRuntimeTenantResolver,
-              pPasswordResetTokenService, pAccountUnlockTokenService);
-        accountService = pAccountService;
-        templateService = pTemplateService;
-        emailClient = pEmailClient;
+    public LockedState(IProjectUsersClient projectUsersClient, IAccountRepository accountRepository,
+            ITenantService tenantService, IRuntimeTenantResolver runtimeTenantResolver,
+            IPasswordResetService passwordResetService,
+            IAccountUnlockTokenService accountUnlockTokenService, IAccountService accountService,
+            ITemplateService templateService, IEmailClient emailClient) {
+        super(projectUsersClient, accountRepository, tenantService, runtimeTenantResolver,
+              passwordResetService, accountUnlockTokenService);
+        this.accountService = accountService;
+        this.templateService = templateService;
+        this.emailClient = emailClient;
     }
 
     @Override
