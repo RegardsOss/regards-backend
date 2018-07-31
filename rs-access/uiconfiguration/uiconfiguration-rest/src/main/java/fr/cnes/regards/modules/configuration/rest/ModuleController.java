@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.configuration.rest;
 
+import com.google.common.net.HttpHeaders;
 import com.google.gson.JsonObject;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
@@ -27,6 +28,7 @@ import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.configuration.domain.Layout;
@@ -198,8 +200,7 @@ public class ModuleController implements IResourceController<Module> {
     public HttpEntity<JsonObject> retrieveMapConfig(@PathVariable("applicationId") final String pApplicationId,
             @PathVariable("moduleId") final Long pModuleId, HttpServletRequest request) throws EntityNotFoundException, EntityInvalidException, URISyntaxException, MalformedURLException {
         // Retrieve the URI for the opensearch endpoint (with public gateway IP/Port)
-        URI uri = getOpenSearchURL(request);
-
+        URI uri = HttpUtils.retrievePublicURI(request, "/engines/opensearch/datasets/DATASET_ID/dataobjects/search/opensearchDescription.xml");
         final Module module = service.retrieveModule(pModuleId);
         MultiValueMap attr = new LinkedMultiValueMap();
         JsonObject dataset = (JsonObject)searchClient.searchDatasets(attr).getBody();
@@ -207,61 +208,6 @@ public class ModuleController implements IResourceController<Module> {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    /**
-     * Returns the public URL to retrieve open search descriptor
-     */
-    private URI getOpenSearchURL(HttpServletRequest request) throws MalformedURLException, URISyntaxException {
-        // Save the current URL
-        URL url = new URL(request.getRequestURL().toString());
-
-        String host;
-        int port;
-        // We have the same implementation than spring-hateoas.
-        // see ControllerLinkBuilder.java for additional infos
-        String headerXForwardedHost = request.getHeader("X-Forwarded-Host");
-        if (headerXForwardedHost != null) {
-            // Handle several IP separated by a comma
-            if (headerXForwardedHost.contains(",")) {
-                String[] headerSplit = headerXForwardedHost.split(",");
-                // handle port
-                host = getOpenSearchHost(headerSplit[0]);
-                port = getOpenSearchPort(headerSplit[0]);
-            } else {
-                host = getOpenSearchHost(headerXForwardedHost);
-                port = getOpenSearchPort(headerXForwardedHost);
-            }
-        } else {
-            host = url.getHost();
-            port = url.getPort();
-        }
-
-        String userInfo = url.getUserInfo();
-        String scheme = url.getProtocol();
-        // Create the URL that returns the OpenSearch description
-        return new URI(scheme, userInfo, host, port, "/engines/opensearch/datasets/DATASET_ID/dataobjects/search/opensearchDescription.xml", null, null);
-    }
-
-    private int getOpenSearchPort(String header) {
-        int port;
-        if (header.contains(":")) {
-            String[] hostAndPort = header.split(":");
-            port = Integer.parseInt(hostAndPort[1]);
-        } else {
-            port = 80;
-        }
-        return port;
-    }
-
-    private String getOpenSearchHost(String header) {
-        String host;
-        if (header.contains(":")) {
-            String[] hostAndPort = header.split(":");
-            host = hostAndPort[0];
-        } else {
-            host = header;
-        }
-        return host;
-    }
 
     @Override
     public Resource<Module> toResource(final Module pElement, final Object... pExtras) {
