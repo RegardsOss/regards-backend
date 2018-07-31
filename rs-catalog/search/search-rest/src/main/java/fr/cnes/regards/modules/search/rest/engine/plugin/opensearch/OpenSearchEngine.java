@@ -314,8 +314,11 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         IResponseBuilder<?> responseBuilder;
         if (context.getHeaders().getAccept().contains(MediaType.APPLICATION_ATOM_XML)) {
             responseBuilder = new AtomResponseBuilder(gson);
-        } else {
+        } else if (context.getHeaders().getAccept().contains(MediaType.APPLICATION_JSON)) {
             responseBuilder = new GeojsonResponseBuilder();
+        } else {
+            // Default value to atom
+            responseBuilder = new AtomResponseBuilder(gson);
         }
         responseBuilder.addExtension(timeExtension);
         responseBuilder.addExtension(mediaExtension);
