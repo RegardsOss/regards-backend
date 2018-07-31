@@ -74,11 +74,5 @@
 			<artifactId>jpa-multitenant-regards-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
-			<artifactId>plugins-test</artifactId>
-			<scope>test</scope>
-			<type>test-jar</type>
-		</dependency>
 	</dependencies>
 </project>

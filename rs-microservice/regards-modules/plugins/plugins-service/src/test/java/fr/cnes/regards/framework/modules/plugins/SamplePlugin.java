@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.plugins;
+package fr.cnes.regards.framework.modules.plugins;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,48 +26,45 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
- * ISamplePlugin
+ * SamplePlugin
  *
  * @author Christophe Mertz
  */
-@Plugin(description = "Complex plugin test", id = "aComplexPlugin", version = "0.0.1", author = "REGARDS Team",
+@Plugin(description = "Sample plugin test", id = "aSamplePlugin", version = "0.0.1", author = "REGARDS Team",
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
-public class ComplexPlugin implements ISamplePlugin {
+public class SamplePlugin implements ISamplePlugin {
 
-    public static final String FIELD_NAME_COMPLEX = "complexInterfacePlugin";
+    public static final String FIELD_NAME_SUFFIX = "suffix";
 
     public static final String FIELD_NAME_COEF = "coef";
 
     public static final String FIELD_NAME_ACTIVE = "isActive";
 
-    /**
-     * Class logger
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(ComplexPlugin.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SamplePlugin.class);
 
     /**
-     * A plugin with an annotation {@link PluginParameter}
+     * A {@link String} parameter
      */
-    @PluginParameter(description = "Plugin interface", label = "PLUGIN_PARAM")
-    private IComplexInterfacePlugin complexInterfacePlugin;
+    @PluginParameter(description = "string parameter", label = "SUFFIXE", defaultValue = "Hello")
+    private String suffix;
 
     /**
      * A {@link Integer} parameter
      */
-    @PluginParameter(description = "int parameter", label = "COEFF")
-    private final Integer coef = 0;
+    @PluginParameter(description = "int parameter", label = "COEFF", defaultValue = "-333", optional = true)
+    private Integer coef;
 
     /**
      * A {@link Boolean} parameter
      */
     @PluginParameter(description = "boolean parameter", label = "ACTIVE")
-    private final Boolean isActive = Boolean.FALSE;
+    private Boolean isActive;
 
     @Override
     public String echo(final String pMessage) {
         final StringBuffer str = new StringBuffer();
         if (isActive) {
-            str.append(this.getClass().getName() + "-" + pMessage);
+            str.append(this.getClass().getName() + " -> " + pMessage + " - " + suffix);
         } else {
 
             str.append(this.getClass().getName() + ":is not active");
@@ -76,16 +73,10 @@ public class ComplexPlugin implements ISamplePlugin {
     }
 
     @Override
-    public int add(final int pFirst, final int pSecond) {
-        final float f = complexInterfacePlugin.mult(4, 8);
-        LOGGER.info("float=" + f);
-        final int res = coef * (pFirst + pSecond);
+    public int add(final int pFist, final int pSecond) {
+        final int res = coef * (pFist + pSecond);
         LOGGER.info("add result : " + res);
         return res;
-    }
-
-    public String echoPluginParameter() {
-        return complexInterfacePlugin.toString();
     }
 
     /**
@@ -93,8 +84,8 @@ public class ComplexPlugin implements ISamplePlugin {
      */
     @PluginInit
     private void aInit() {
-        LOGGER.info("Init method call : " + this.getClass().getName() + "|active:" + isActive + "|coeff:" + coef);
-        // + "|plg_conf:" + this.pluginConfiguration.getId()+ "|plg_int:" + this.complexInterfacePlugin.toString()
+        LOGGER.info("Init method call : " + this.getClass().getName() + "suffixe:" + suffix + "|active:" + isActive
+                + "|coeff:" + coef);
     }
 
 }

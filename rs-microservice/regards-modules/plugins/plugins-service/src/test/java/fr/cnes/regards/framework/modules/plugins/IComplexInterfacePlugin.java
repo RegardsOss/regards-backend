@@ -16,8 +16,28 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
+package fr.cnes.regards.framework.modules.plugins;
+
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
+
 /**
- * 
- * @author Xavier-Alexandre Brochard
+ * IComplexInterfacePlugin
+ *
+ * @author Christophe Mertz
+ *
  */
-package fr.cnes.regards.modules.templates.test;
+@PluginInterface(description = "hello plugin interface")
+public interface IComplexInterfacePlugin {
+
+    /**
+     * method mult
+     *
+     * @param pFirst
+     *            first parameter's method
+     * @param pSecond
+     *            second parameter's method
+     * @return the result
+     */
+    public int mult(int pFirst, int pSecond);
+
+}
