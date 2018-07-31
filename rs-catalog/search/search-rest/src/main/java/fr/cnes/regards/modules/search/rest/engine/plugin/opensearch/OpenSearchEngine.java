@@ -135,7 +135,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     @PluginParameter(name = MEDIA_EXTENSION_PARAMETER, label = "Open search media extension")
     private MediaExtension mediaExtension;
 
-    @PluginParameter(name = PARAMETERS_CONFIGURATION, label = "Parameters configuration")
+    @PluginParameter(name = PARAMETERS_CONFIGURATION, label = "Parameters configuration", optional = true)
     private final List<ParameterConfiguration> paramConfigurations = Lists.newArrayList();
 
     @Override
@@ -310,14 +310,15 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
      * @return {@link IResponseBuilder}
      * @throws UnsupportedMediaTypesException
      */
-    private IResponseBuilder<?> getBuilder(SearchContext context) throws UnsupportedMediaTypesException {
+    private IResponseBuilder<?> getBuilder(SearchContext context) {
         IResponseBuilder<?> responseBuilder;
         if (context.getHeaders().getAccept().contains(MediaType.APPLICATION_ATOM_XML)) {
             responseBuilder = new AtomResponseBuilder(gson);
         } else if (context.getHeaders().getAccept().contains(MediaType.APPLICATION_JSON)) {
             responseBuilder = new GeojsonResponseBuilder();
         } else {
-            throw new UnsupportedMediaTypesException(context.getHeaders().getAccept());
+            // Default value to atom
+            responseBuilder = new AtomResponseBuilder(gson);
         }
         responseBuilder.addExtension(timeExtension);
         responseBuilder.addExtension(mediaExtension);
