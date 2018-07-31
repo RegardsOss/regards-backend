@@ -135,7 +135,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     @PluginParameter(name = MEDIA_EXTENSION_PARAMETER, label = "Open search media extension")
     private MediaExtension mediaExtension;
 
-    @PluginParameter(name = PARAMETERS_CONFIGURATION, label = "Parameters configuration")
+    @PluginParameter(name = PARAMETERS_CONFIGURATION, label = "Parameters configuration", optional = true)
     private final List<ParameterConfiguration> paramConfigurations = Lists.newArrayList();
 
     @Override

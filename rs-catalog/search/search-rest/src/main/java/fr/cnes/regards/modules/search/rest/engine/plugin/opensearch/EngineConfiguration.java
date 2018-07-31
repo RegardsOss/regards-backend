@@ -24,10 +24,11 @@ public class EngineConfiguration {
             optional = true)
     private String tags;
 
-    @PluginParameter(name = "shortName", label = "Engine short name", optional = false)
+    @PluginParameter(name = "shortName", label = "Engine short name", defaultValue = "Opensearch", optional = false)
     private String shortName;
 
-    @PluginParameter(name = "longName", label = "Engine long name", optional = true)
+    @PluginParameter(name = "longName", label = "Engine long name", defaultValue = "Open search engine",
+            optional = true)
     private String longName;
 
     @PluginParameter(name = "image", label = "Optional image (icon or image) URL", optional = true)
