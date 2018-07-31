@@ -45,6 +45,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
@@ -644,7 +646,11 @@ public class SearchEngineController {
      */
     public static List<Link> buildEntityLinks(IResourceService resourceService, SearchContext context,
             EntityFeature entity) {
-        return buildEntityLinks(resourceService, context, entity.getEntityType(), entity.getId());
+        if (entity != null) {
+            return buildEntityLinks(resourceService, context, entity.getEntityType(), entity.getId());
+        } else {
+            return Lists.newArrayList();
+        }
     }
 
     /**

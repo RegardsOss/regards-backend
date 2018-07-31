@@ -26,7 +26,6 @@ import java.util.Set;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
-import org.springframework.util.Assert;
 
 import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
 
@@ -59,7 +58,6 @@ public class FacettedPagedResources<T> extends PagedResources<T> {
     @SuppressWarnings("unchecked")
     public static <T extends Resource<S>, S> FacettedPagedResources<T> wrap(Iterable<S> content, PageMetadata metadata,
             Set<IFacet<?>> facets) {
-        Assert.notNull(content, "Content must not be null");
         ArrayList<T> resources = new ArrayList<T>();
 
         for (S element : content) {
