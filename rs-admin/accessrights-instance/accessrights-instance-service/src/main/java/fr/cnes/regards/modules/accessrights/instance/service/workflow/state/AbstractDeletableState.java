@@ -25,6 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import feign.FeignException;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
@@ -132,6 +133,7 @@ abstract class AbstractDeletableState implements IAccountTransitions {
             for (String tenant : tenantService.getAllActiveTenants(IProjectUsersClient.TARGET_NAME)) {
                 runtimeTenantResolver.forceTenant(tenant);
                 try {
+                    FeignSecurityManager.asSystem();
                     ResponseEntity<Resource<ProjectUser>> projectUserResponse = projectUsersClient
                             .retrieveProjectUserByEmail(account.getEmail());
                     if (projectUserResponse.getStatusCode() != HttpStatus.NOT_FOUND) {
@@ -142,6 +144,9 @@ abstract class AbstractDeletableState implements IAccountTransitions {
                     LOGGER.warn("There was an issue while trying to determine if an account is deletable.", e);
                     // in case of issues, the tenant might be in maintenance or the microservice down, so lets assume there is a project user linked to this account
                     return false;
+                } finally {
+                    FeignSecurityManager.reset();
+
                 }
             }
         } finally {
