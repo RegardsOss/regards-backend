@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -17,6 +17,8 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 package fr.cnes.regards.framework.feign;
+
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,5 +43,5 @@ public interface IHelloClient {
     ResponseEntity<Hello> getHello404();
 
     @RequestMapping(method = RequestMethod.GET, value = "/hello503")
-    ResponseEntity<Hello> getHello503();
+    ResponseEntity<List<Hello>> getHello503();
 }

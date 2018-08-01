@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -19,34 +19,18 @@
 package fr.cnes.regards.framework.module.rest.exception;
 
 /**
+ * Unqualified entity exception
  *
- * Class EntityException
- *
- * Global entities exceptions
- *
- * @author CS
- * @since 1.0-SNAPSHOT
+ * @author Marc Sordi
  */
+@SuppressWarnings("serial")
 public class EntityException extends ModuleException {
 
-    /**
-     * serialVersionUID field.
-     *
-     * @author CS
-     * @since 1.0-SNAPSHOT
-     */
-    private static final long serialVersionUID = -6284091634593228162L;
-
-    /**
-     *
-     * Constructor
-     *
-     * @param pMessage
-     *            Entity error message
-     * @since 1.0-SNAPSHOT
-     */
-    public EntityException(final String pMessage) {
-        super(pMessage);
+    public EntityException(final String message) {
+        super(message);
     }
 
+    public EntityException(final String message, Throwable cause) {
+        super(message, cause);
+    }
 }

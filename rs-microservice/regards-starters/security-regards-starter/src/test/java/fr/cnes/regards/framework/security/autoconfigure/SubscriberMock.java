@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -38,35 +38,29 @@ public class SubscriberMock implements ISubscriber {
         // Nothing to do
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.framework.amqp.ISubscriber#unsubscribeFrom(java.lang.Class)
-     */
     @Override
     public <T extends ISubscribable> void unsubscribeFrom(Class<T> pEvent) {
         // Nothing to do
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see fr.cnes.regards.framework.amqp.ISubscriber#addTenant(java.lang.String)
-     */
     @Override
     public void addTenant(String pTenant) {
         // Nothing to do
-
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see fr.cnes.regards.framework.amqp.ISubscriber#removeTenant(java.lang.String)
-     */
     @Override
     public void removeTenant(String pTenant) {
         // Nothing to do
 
+    }
+
+    @Override
+    public <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, boolean purgeQueue) {
+        /// Nothing to do
+    }
+
+    @Override
+    public <E extends ISubscribable> void purgeQueue(Class<E> eventType, Class<? extends IHandler<E>> handlerType) {
+        // Nothing to do
     }
 }

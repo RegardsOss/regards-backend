@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -45,9 +45,7 @@ import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 
 /**
  * Authorization utilities
- *
  * @author msordi
- *
  */
 public final class MethodAuthorizationUtils {
 
@@ -73,12 +71,9 @@ public final class MethodAuthorizationUtils {
      * Introspect code to retrieve resource mapping configuration.<br/>
      * Following annotations are supported : {@link RequestMapping}, {@link GetMapping}, {@link PostMapping},
      * {@link PutMapping}, {@link DeleteMapping} and {@link PatchMapping}.<br/>
-     *
-     * @param pMethod
-     *            the called method
+     * @param pMethod the called method
      * @return {@link ResourceMapping}
-     * @throws ResourceMappingException
-     *             if resource mapping cannot be built
+     * @throws ResourceMappingException if resource mapping cannot be built
      */
     public static ResourceMapping buildResourceMapping(final Method pMethod) throws ResourceMappingException {
         // Retrieve resource access annotation
@@ -108,41 +103,36 @@ public final class MethodAuthorizationUtils {
         final String path = join(classMapping, methodMapping);
 
         return new ResourceMapping(access, path, getSingleMethod(pMethod), pMethod.getDeclaringClass().getSimpleName(),
-                new RoleAuthority(access.role().name()));
+                                   new RoleAuthority(access.role().name()));
     }
 
     /**
      * Retrieve single mapping path of the annotated element
-     *
-     * @param pElement
-     *            {@link RequestMapping} annotated element
-     * @param pElementName
-     *            element name (for logging)
+     * @param pElement {@link RequestMapping} annotated element
+     * @param pElementName element name (for logging)
      * @return single path mapping
-     * @throws ResourceMappingException
-     *             if mapping contains more than one path
+     * @throws ResourceMappingException if mapping contains more than one path
      */
     private static String getMapping(final AnnotatedElement pElement, final String pElementName)
             throws ResourceMappingException {
         String mapping = null;
-        final RequestMapping requestMapping = AnnotatedElementUtils.findMergedAnnotation(pElement,
-                                                                                         RequestMapping.class);
+        final RequestMapping requestMapping = AnnotatedElementUtils
+                .findMergedAnnotation(pElement, RequestMapping.class);
         if (requestMapping != null) {
             final String[] paths = requestMapping.value();
             if (paths != null) {
                 if (paths.length == 1) {
                     mapping = paths[0];// Nothing to do
-                } else
-                    if (paths.length == 0) {
-                        // Nothing to do
-                        LOG.debug("No path definition for {}", pElementName);
-                    } else {
-                        // Throw exception if resource maps to more than one path
-                        final String message = MessageFormat
-                                .format("Only single path is authorized in annotated element {0}.", pElementName);
-                        LOG.error(message);
-                        throw new ResourceMappingException(message);
-                    }
+                } else if (paths.length == 0) {
+                    // Nothing to do
+                    LOG.debug("No path definition for {}", pElementName);
+                } else {
+                    // Throw exception if resource maps to more than one path
+                    final String message = MessageFormat
+                            .format("Only single path is authorized in annotated element {0}.", pElementName);
+                    LOG.error(message);
+                    throw new ResourceMappingException(message);
+                }
             }
         }
         return mapping;
@@ -150,12 +140,9 @@ public final class MethodAuthorizationUtils {
 
     /**
      * Retrieve single HTTP method
-     *
-     * @param pMethod
-     *            method
+     * @param pMethod method
      * @return HTTP method
-     * @throws ResourceMappingException
-     *             if no single method detected
+     * @throws ResourceMappingException if no single method detected
      */
     private static RequestMethod getSingleMethod(final Method pMethod) throws ResourceMappingException {
 
@@ -163,8 +150,8 @@ public final class MethodAuthorizationUtils {
 
         if (requestMapping == null) {
             // Throw exception if request mapping not found
-            final String message = MessageFormat.format("Request mapping is required for method {0}.",
-                                                        getMethodFullPath(pMethod));
+            final String message = MessageFormat
+                    .format("Request mapping is required for method {0}.", getMethodFullPath(pMethod));
             LOG.error(message);
             throw new ResourceMappingException(message);
         }
@@ -172,24 +159,21 @@ public final class MethodAuthorizationUtils {
         final RequestMethod[] methods = requestMapping.method();
         if (methods.length == 1) {
             return methods[0];
-        } else
-            if (methods.length == 0) {
-                final String errorMessage = MessageFormat.format("One HTTP method is required for method {0}",
-                                                                 getMethodFullPath(pMethod));
-                LOG.error(errorMessage);
-                throw new ResourceMappingException(errorMessage);
-            } else {
-                final String errorMessage = MessageFormat.format("Only one HTTP method is required for method {0}",
-                                                                 getMethodFullPath(pMethod));
-                LOG.error(errorMessage);
-                throw new ResourceMappingException(errorMessage);
-            }
+        } else if (methods.length == 0) {
+            final String errorMessage = MessageFormat
+                    .format("One HTTP method is required for method {0}", getMethodFullPath(pMethod));
+            LOG.error(errorMessage);
+            throw new ResourceMappingException(errorMessage);
+        } else {
+            final String errorMessage = MessageFormat
+                    .format("Only one HTTP method is required for method {0}", getMethodFullPath(pMethod));
+            LOG.error(errorMessage);
+            throw new ResourceMappingException(errorMessage);
+        }
     }
 
     /**
-     *
-     * @param pMethod
-     *            method
+     * @param pMethod method
      * @return full method path
      */
     private static String getMethodFullPath(final Method pMethod) {
@@ -198,15 +182,12 @@ public final class MethodAuthorizationUtils {
 
     /**
      * Join class and method mapping to retrieve full path
-     *
-     * @param pClassMapping
-     *            class mapping
-     * @param pMethodMapping
-     *            method mapping
+     * @param pClassMapping class mapping
+     * @param pMethodMapping method mapping
      * @return full path to method
      */
     private static String join(final String pClassMapping, final String pMethodMapping) {
-        final StringBuffer fullPath = new StringBuffer();
+        final StringBuilder fullPath = new StringBuilder();
         if (pClassMapping != null) {
             fullPath.append(pClassMapping);
         }

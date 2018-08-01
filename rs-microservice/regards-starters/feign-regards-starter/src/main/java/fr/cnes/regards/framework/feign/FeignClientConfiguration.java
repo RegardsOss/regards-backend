@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,13 +18,14 @@
  */
 package fr.cnes.regards.framework.feign;
 
+import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
 import org.springframework.cloud.netflix.feign.support.ResponseEntityDecoder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.google.gson.Gson;
-
 import feign.Contract;
 import feign.Feign;
 import feign.Logger;
@@ -48,13 +49,16 @@ import feign.gson.GsonEncoder;
 @Configuration
 public class FeignClientConfiguration {
 
+    @Autowired
+    private ObjectFactory<HttpMessageConverters> messageConverters;
+
     /**
      * Basic log
      *
      * @return loggin level
      */
     @Bean
-    Logger.Level feignLoggerLevel() {
+    public Logger.Level feignLoggerLevel() {
         return Logger.Level.BASIC;
     }
 

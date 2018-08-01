@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -42,12 +42,12 @@ public class SingleRuntimeTenantResolver implements IRuntimeTenantResolver {
     }
 
     @Override
-    public void forceTenant(final String pTenant) {
-        tenantHolder.set(pTenant);
+    public void forceTenant(final String tenant) {
+        tenantHolder.set(tenant);
     }
 
     @Override
-    public Boolean isInstance() {
+    public boolean isInstance() {
         return Boolean.FALSE;
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -21,21 +21,59 @@ package fr.cnes.regards.framework.amqp.event;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 
 /**
  *
- * An event must be annotated with {@link Event} to identify its {@link fr.cnes.regards.framework.amqp.event.Target}.
+ * This annotation is required for all AMQP events.
+ *
+ * <h1>For {@link ISubscribable} events:</h1>
+ * <br/>
+ * <ul>
+ * <li>{@link WorkerMode#BROADCAST} / {@link Target#ALL} : event will
+ * be received by ALL handlers of ALL microservice instances.</li>
+ * <li>{@link WorkerMode#BROADCAST} / {@link Target#MICROSERVICE} : event will
+ * be received by ALL handlers of a ALL microservice instances which type is the same as the PUBLISHING
+ * one.</li>
+ * <li>{@link WorkerMode#BROADCAST} / {@link Target#ONE_PER_MICROSERVICE_TYPE} : event will
+ * be received by ALL handlers of ONE microservice instance PER microservice instance.</li>
+ * <li>{@link WorkerMode#UNICAST} / {@link Target#MICROSERVICE} : event will
+ * be received by a SINGLE handler of a SINGLE microservice instance which type is the same as the PUBLISHING
+ * one.</li>
+ * <li>{@link WorkerMode#UNICAST} / {@link Target#ALL} : event will
+ * be received by a SINGLE handler of a SINGLE microservice instance WHATEVER the microservice type.</li>
+ * </ul>
+ *
+ * <h1>For {@link IPollable} events:</h1>
+ * <br/>
+ * <ul>
+ * <li>{@link WorkerMode#UNICAST} / {@link Target#MICROSERVICE} (default behaviour) : event can be polled ONCE by
+ * the FIRST microservice instance which type is the same as the PUBLISHING
+ * one.</li>
+ * <li>{@link WorkerMode#UNICAST} / {@link Target#ALL} : event can be polled ONCE by
+ * the FIRST microservice instance WHATEVER the microservice type.</li>
+ * </ul>
  *
  * @author Marc Sordi
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@java.lang.annotation.Target(ElementType.TYPE)
 public @interface Event {
 
     /**
-     * @return event {@link fr.cnes.regards.framework.amqp.event.Target}
+     * With {@link ISubscribable} events, all {@link Target} are usable.<br/>
+     * With {@link IPollable} events, only {@link Target#ALL} or {@link Target#MICROSERVICE} are.<br/>
+     * Look at {@link Event} javadoc for usage.
+     *
+     * @return event {@link Target}
      */
-    fr.cnes.regards.framework.amqp.event.Target target();
+    Target target();
+
+    /**
+     * This mode is only used for {@link ISubscribable} event.<br/>
+     * Look at {@link Event} javadoc for usage.
+     *
+     * @return event {@link WorkerMode}
+     */
+    WorkerMode mode() default WorkerMode.BROADCAST;
 }

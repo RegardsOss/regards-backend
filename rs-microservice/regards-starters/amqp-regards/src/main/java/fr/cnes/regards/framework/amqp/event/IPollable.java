@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -20,7 +20,7 @@ package fr.cnes.regards.framework.amqp.event;
 
 /**
  *
- * Qualitfy an event you can poll and acknowledge
+ * Qualify an event you can poll and acknowledge
  *
  * @author Marc Sordi
  *

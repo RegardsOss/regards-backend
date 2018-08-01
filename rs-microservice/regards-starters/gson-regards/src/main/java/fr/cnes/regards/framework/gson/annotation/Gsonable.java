@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -28,7 +28,7 @@ import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
 /**
  *
  * Annotation allowing us to automatically add a class and it's subtypes to a {@link PolymorphicTypeAdapterFactory}
- *
+ * This annotation should be only used on abstract type.
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
  *

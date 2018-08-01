@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -34,27 +34,30 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class SamplePlugin implements ISamplePlugin {
 
-    /**
-     * Class logger
-     */
+    public static final String FIELD_NAME_SUFFIX = "suffix";
+
+    public static final String FIELD_NAME_COEF = "coef";
+
+    public static final String FIELD_NAME_ACTIVE = "isActive";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(SamplePlugin.class);
 
     /**
      * A {@link String} parameter
      */
-    @PluginParameter(description = "string parameter", name = SUFFIXE, defaultValue="Hello")
+    @PluginParameter(description = "string parameter", label = "SUFFIXE", defaultValue = "Hello")
     private String suffix;
 
     /**
      * A {@link Integer} parameter
      */
-    @PluginParameter(description = "int parameter", name = COEFF, defaultValue="-333", optional=true)
+    @PluginParameter(description = "int parameter", label = "COEFF", defaultValue = "-333", optional = true)
     private Integer coef;
 
     /**
      * A {@link Boolean} parameter
      */
-    @PluginParameter(description = "boolean parameter", name = ACTIVE)
+    @PluginParameter(description = "boolean parameter", label = "ACTIVE")
     private Boolean isActive;
 
     @Override

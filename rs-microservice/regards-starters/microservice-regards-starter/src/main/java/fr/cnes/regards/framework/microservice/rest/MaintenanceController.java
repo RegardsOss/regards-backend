@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -58,6 +58,9 @@ public class MaintenanceController {
 
     public static final String MAINTENANCE_DESACTIVATE_URL = "/{tenant}/" + DISABLE;
 
+    /**
+     * @return the maintenace map allowing to known which tenants are in maintenance mode
+     */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the map (tenant, maintenance) for this instance")
     public HttpEntity<Resource<Map<String, MaintenanceInfo>>> retrieveTenantsInMaintenance() {
@@ -65,6 +68,10 @@ public class MaintenanceController {
         return new ResponseEntity<>(new Resource<>(maintenaceMap), HttpStatus.OK);
     }
 
+    /**
+     * Set the given tenant in maintenance mode
+     * @param pTenant
+     */
     @RequestMapping(method = RequestMethod.PUT, value = MAINTENANCE_ACTIVATE_URL)
     @ResourceAccess(description = "set this tenant into maintenance mode")
     public HttpEntity<Resource<Void>> setMaintenance(@PathVariable("tenant") String pTenant) {
@@ -72,6 +79,10 @@ public class MaintenanceController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    /**
+     * Set the given tenant not in maintenance mode
+     * @param pTenant
+     */
     @RequestMapping(method = RequestMethod.PUT, value = MAINTENANCE_DESACTIVATE_URL)
     @ResourceAccess(description = "unset this tenant from maintenance mode")
     public HttpEntity<Resource<Void>> unSetMaintenance(@PathVariable("tenant") String pTenant) {

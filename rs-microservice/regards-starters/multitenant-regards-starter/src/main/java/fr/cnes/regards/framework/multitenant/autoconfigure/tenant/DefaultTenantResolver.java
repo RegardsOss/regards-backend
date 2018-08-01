@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.framework.multitenant.autoconfigure.tenant;
 
+import javax.annotation.PostConstruct;
 import java.util.Set;
 import java.util.TreeSet;
-
-import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
 

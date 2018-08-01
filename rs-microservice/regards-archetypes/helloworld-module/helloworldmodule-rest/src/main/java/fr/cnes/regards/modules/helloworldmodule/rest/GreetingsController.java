@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -72,8 +72,8 @@ public class GreetingsController implements IResourceController<Greeting> {
     }
 
     @Override
-    public Resource<Greeting> toResource(Greeting pElement, Object... pExtras) {
+    public Resource<Greeting> toResource(Greeting element, Object... extras) {
         // TODO add hateoas links
-        return resourceService.toResource(pElement);
+        return resourceService.toResource(element);
     }
 }

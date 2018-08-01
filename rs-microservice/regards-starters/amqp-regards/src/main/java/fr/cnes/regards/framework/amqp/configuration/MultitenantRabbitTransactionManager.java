@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -25,37 +25,42 @@ import org.springframework.transaction.TransactionDefinition;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
- *
  * Override {@link RabbitTransactionManager} to manage virtual host in transaction
- *
  * @author Marc Sordi
- *
  */
 @SuppressWarnings("serial")
 public class MultitenantRabbitTransactionManager extends RabbitTransactionManager {
 
+    private final VirtualHostMode mode;
+
     /**
      * Resolve current tenant at runtime. The resolver must be thread safe.
      */
-    private transient final IRuntimeTenantResolver runtimeTenantResolver;
+    private final transient IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * Virtual host admin
      */
-    private transient final IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
+    private final transient IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
 
-    public MultitenantRabbitTransactionManager(ConnectionFactory pConnectionFactory,
-            IRuntimeTenantResolver pRuntimeTenantResolver, IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {
-        super(pConnectionFactory);
+    public MultitenantRabbitTransactionManager(VirtualHostMode mode, ConnectionFactory connectionFactory,
+            IRuntimeTenantResolver pRuntimeTenantResolver, IRabbitVirtualHostAdmin rabbitVirtualHostAdmin) {
+        super(connectionFactory);
+        this.mode = mode;
         this.runtimeTenantResolver = pRuntimeTenantResolver;
-        this.rabbitVirtualHostAdmin = pRabbitVirtualHostAdmin;
+        this.rabbitVirtualHostAdmin = rabbitVirtualHostAdmin;
     }
 
     @Override
-    protected void doBegin(Object pTransaction, TransactionDefinition pDefinition) {
+    protected void doBegin(Object transaction, TransactionDefinition definition) {
+        String virtualHost = AmqpConstants.AMQP_MULTITENANT_MANAGER;
+        if (VirtualHostMode.MULTI.equals(mode)) {
+            virtualHost = RabbitVirtualHostAdmin.getVhostName(runtimeTenantResolver.getTenant());
+        }
+
         try {
-            rabbitVirtualHostAdmin.bind(runtimeTenantResolver.getTenant());
-            super.doBegin(pTransaction, pDefinition);
+            rabbitVirtualHostAdmin.bind(virtualHost);
+            super.doBegin(transaction, definition);
         } finally {
             rabbitVirtualHostAdmin.unbind();
         }

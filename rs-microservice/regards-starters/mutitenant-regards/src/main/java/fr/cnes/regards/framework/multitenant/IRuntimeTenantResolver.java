@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -20,38 +20,31 @@ package fr.cnes.regards.framework.multitenant;
 
 /**
  * In a request context, this resolver allows to retrieve request tenant. This resolver must be thread safe.
- *
  * @author Marc Sordi
- *
  */
 public interface IRuntimeTenantResolver {
 
     /**
-     *
      * @return runtime tenant
      */
     String getTenant();
 
     /**
-     *
      * Does the current tenant is instance
-     *
      * @return true|false
      */
-    Boolean isInstance();
+    boolean isInstance();
 
     /**
      * Force runtime tenant to a specific value on current thread.<br/>
      * We recommend to use {@link IRuntimeTenantResolver#clearTenant()} to clean the thread in a finally clause.<br/>
      * It is mostly recommended for server threads as they are reused.
-     *
-     * @param pTenant
-     *            tenant
+     * @param tenant tenant
      */
-    void forceTenant(String pTenant);
+    void forceTenant(String tenant);
 
     /**
      * Clear forced tenant on current thread
      */
-    public void clearTenant();
+    void clearTenant();
 }

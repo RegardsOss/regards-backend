@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -21,8 +21,8 @@ package fr.cnes.regards.framework.amqp;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
+import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 
 /**
  *
@@ -33,13 +33,18 @@ import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
  */
 public class InstancePublisher extends AbstractPublisher implements IInstancePublisher {
 
-    public InstancePublisher(RabbitTemplate pRabbitTemplate, RegardsAmqpAdmin pRegardsAmqpAdmin,
+    public InstancePublisher(RabbitTemplate pRabbitTemplate, IAmqpAdmin amqpAdmin,
             IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {
-        super(pRabbitTemplate, pRegardsAmqpAdmin, pRabbitVirtualHostAdmin);
+        super(pRabbitTemplate, amqpAdmin, pRabbitVirtualHostAdmin);
     }
 
     @Override
     protected String resolveTenant() {
-        return AmqpConstants.AMQP_MANAGER;
+        return AmqpConstants.INSTANCE_TENANT;
+    }
+
+    @Override
+    protected String resolveVirtualHost(String tenant) {
+        return AmqpConstants.AMQP_INSTANCE_MANAGER;
     }
 }

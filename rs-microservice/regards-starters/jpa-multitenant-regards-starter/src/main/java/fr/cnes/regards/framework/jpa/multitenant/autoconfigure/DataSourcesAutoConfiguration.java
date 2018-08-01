@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,13 +18,13 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.autoconfigure;
 
+import javax.persistence.Entity;
+import javax.sql.DataSource;
 import java.beans.PropertyVetoException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.persistence.Entity;
-import javax.sql.DataSource;
 
 import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
 import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
@@ -42,14 +42,14 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.autoconfigure.AmqpAutoConfiguration;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.framework.jpa.exception.JpaException;
 import fr.cnes.regards.framework.jpa.multitenant.event.MultitenantJpaEventHandler;
-import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionDiscarded;
-import fr.cnes.regards.framework.jpa.multitenant.event.TenantConnectionReady;
+import fr.cnes.regards.framework.jpa.multitenant.event.MultitenantJpaEventPublisher;
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionDiscarded;
+import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
@@ -180,11 +180,20 @@ public class DataSourcesAutoConfiguration {
      */
     @Bean
     public MultitenantJpaEventHandler multitenantJpaEventHandler(IInstanceSubscriber instanceSubscriber,
-            IInstancePublisher instancePublisher, ITenantConnectionResolver multitenantResolver,
+            ITenantConnectionResolver multitenantResolver,
             @Qualifier(DATASOURCE_SCHEMA_HELPER_BEAN_NAME) IDatasourceSchemaHelper datasourceSchemaHelper)
             throws JpaMultitenantException {
         return new MultitenantJpaEventHandler(microserviceName, getDataSources(), daoProperties, datasourceSchemaHelper,
-                instanceSubscriber, instancePublisher, multitenantResolver);
+                instanceSubscriber, multitenantResolver, localPublisher());
+    }
+
+    /**
+     * Spring managed events for informing all microservice modules
+     * @return {@link MultitenantJpaEventPublisher}
+     */
+    @Bean
+    public MultitenantJpaEventPublisher localPublisher() {
+        return new MultitenantJpaEventPublisher();
     }
 
     /**
@@ -219,7 +228,7 @@ public class DataSourcesAutoConfiguration {
                     }
                     // Register data source
                     pExistingDataSources.put(tenantConnection.getTenant(), dataSource);
-                } catch (PropertyVetoException | JpaMultitenantException | JpaException e) {
+                } catch (PropertyVetoException | JpaMultitenantException | JpaException | SQLException e) {
                     // Do not block all tenants if for an inconsistent data source
                     LOGGER.error("Cannot create datasource for tenant {}", tenantConnection.getTenant());
                     LOGGER.error(e.getMessage(), e);

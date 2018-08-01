@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -258,6 +258,10 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
         }
     }
 
+    /**
+     * @param pTenant
+     * @return whether the mapping should be refreshed for the given tenant
+     */
     protected Boolean needRefreshMapping(String pTenant) {
         if (!refreshMappingMap.containsKey(pTenant)) {
             LOGGER.warn("Empty mapping for tenant {}", pTenant);

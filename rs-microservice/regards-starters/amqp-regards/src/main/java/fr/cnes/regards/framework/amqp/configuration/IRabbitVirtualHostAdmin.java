@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -49,27 +49,27 @@ public interface IRabbitVirtualHostAdmin {
      *
      * PUT Request to /api/vhost/{vhostName} to add this Vhost only if it is not already defined
      *
-     * @param pTenant
-     *            name of the tenant related to the Vhost you want to add
+     * @param virtualHost
+     *            name virtual host you want to add
      */
-    void addVhost(String pTenant);
+    void addVhost(String virtualHost);
 
     /**
      * DELETE Request to /api/vhost/{vhostName}
      *
-     * @param pTenant
-     *            name of the tenant related to the Vhost you want to remove
+     * @param virtualHost
+     *            name of virtual host you want to remove
      */
-    void removeVhost(String pTenant);
+    void removeVhost(String virtualHost);
 
     /**
-     * Retrieve {@link ConnectionFactory} for tenant
+     * Retrieve {@link ConnectionFactory} for virtual host
      *
-     * @param pTenant
-     *            tenant
+     * @param virtualHost
+     *            virtual host
      * @return vhost {@link ConnectionFactory}
      */
-    ConnectionFactory getVhostConnectionFactory(String pTenant);
+    ConnectionFactory getVhostConnectionFactory(String virtualHost);
 
     /**
      *
@@ -82,11 +82,11 @@ public interface IRabbitVirtualHostAdmin {
     boolean isSuccess(int pStatusValue);
 
     /**
-     * @param pTenant
-     *            name of the tenant related to the Vhost you want to check
+     * @param virtualHost
+     *            name of the virtual host you want to check
      * @return true if the vhost is already known
      */
-    boolean existVhost(String pTenant);
+    boolean existVhost(String virtualHost);
 
     /**
      * @return either the message broker is running or not
@@ -108,30 +108,27 @@ public interface IRabbitVirtualHostAdmin {
     String encode(String pRabbitmqUserName, String pRabbitmqPassword);
 
     /**
-     * Bind {@link ConnectionFactory} to tenant (and vhost) before declaring an AMQP element
+     * Bind {@link ConnectionFactory} to virtual host before declaring an AMQP element
      *
-     * @param pTenant
-     *            tenant to bind
+     * @param virtualHost virtual host to bind
      */
-    public void bind(String pTenant);
+    public void bind(String virtualHost);
 
     /**
-     * Unbind {@link ConnectionFactory} from tenant (and vhost)
+     * Unbind {@link ConnectionFactory} from virtual host
      *
      */
     public void unbind();
 
     /**
      *
-     * @return true if a {@link ConnectionFactory} is bound independently of the tenant
+     * @return true if a {@link ConnectionFactory} is bound
      */
     public boolean isBound();
 
     /**
-     *
-     * @param pTenant
-     *            tenant
-     * @return true if the tenant {@link ConnectionFactory} is already bound
+     * @param virtualHost virtual host to bind
+     * @return true if the virtual host {@link ConnectionFactory} is already bound
      */
-    public boolean isBound(String pTenant);
+    public boolean isBound(String virtualHost);
 }

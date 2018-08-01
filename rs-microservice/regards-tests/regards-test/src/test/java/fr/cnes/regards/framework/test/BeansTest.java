@@ -14,11 +14,11 @@ public class BeansTest {
         Item item4 = new Item(1, "Item 1", new Tutu(Math.E));
         Item item1bis = new Item(1, "Item 1", new Tutu(Math.PI));
 
-        Assert.assertTrue(Beans.equals(item1, item1));
-        Assert.assertTrue(Beans.equals(item1, item1bis));
-        Assert.assertFalse(Beans.equals(item1, item2));
-        Assert.assertFalse(Beans.equals(item1, item3));
-        Assert.assertFalse(Beans.equals(item1, item4));
+        Assert.assertTrue(Beans.areEqual(item1, item1));
+        Assert.assertTrue(Beans.areEqual(item1, item1bis));
+        Assert.assertFalse(Beans.areEqual(item1, item2));
+        Assert.assertFalse(Beans.areEqual(item1, item3));
+        Assert.assertFalse(Beans.areEqual(item1, item4));
     }
 
     // CHECKSTYLE:OFF

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -20,16 +20,20 @@ package fr.cnes.regards.framework.module.rest.exception;
 
 /**
  *
- * Exception may occur when trying to delete a parent entity already linked to child entities.
+ * Exception indicating a parent entity cannot be deleted cause children already exist
  *
  * @author Marc Sordi
  * @author Sylvain Vissiere-Guerinet
  *
  */
+@SuppressWarnings("serial")
 public class EntityNotEmptyException extends EntityException {
 
-    private static final long serialVersionUID = 1642202168751223657L;
-
+    /**
+     * Constructor setting exception message thanks to given parameters
+     * @param pEntityIdentifier
+     * @param pEntityClass
+     */
     public EntityNotEmptyException(final Long pEntityIdentifier, final Class<?> pEntityClass) {
         super(String.format("Entity of type \"%s\" with id \"%s\" is not empty and cannot be removed.",
                             pEntityClass.getName(), pEntityIdentifier));

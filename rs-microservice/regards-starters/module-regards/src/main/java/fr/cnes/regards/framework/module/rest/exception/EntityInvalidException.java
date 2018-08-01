@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -20,48 +20,41 @@ package fr.cnes.regards.framework.module.rest.exception;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * Class InvalidEntityException
  *
- * Exception to indicates that the entity requested is invalid.
+ * Exception indicating an entity is invalid
  *
  * @author CS
  * @author Sylvain Vissiere-Guerinet
  * @since 1.0-SNAPSHOT
  */
+@SuppressWarnings("serial")
 public class EntityInvalidException extends EntityException {
-
-    /**
-     * serialVersionUID field.
-     *
-     * @author CS
-     * @since 1.0-SNAPSHOT
-     */
-    private static final long serialVersionUID = 1677039769133438679L;
 
     /**
      * Detailed messages
      */
-    private final List<String> messages;
+    private final List<String> messages = new ArrayList<>();
 
     /**
-     *
-     * Constructor
-     *
-     * @param pMessage
-     *            Entity error message
-     * @since 1.0-SNAPSHOT
+     * Constructor setting the exception message
+     * @param message
      */
-    public EntityInvalidException(final String pMessage) {
-        super(pMessage);
-        this.messages = new ArrayList<>();
-        this.messages.add(pMessage);
+    public EntityInvalidException(final String message) {
+        super(message);
+        this.messages.add(message);
     }
 
-    public EntityInvalidException(final List<String> pMessages) {
-        super("Invalid entity");
-        this.messages = pMessages;
+    public EntityInvalidException(final List<String> messages) {
+        super(messages.stream().collect(Collectors.joining(" ", "Invalid entity: ", "")));
+        this.messages.addAll(messages);
+    }
+
+    public EntityInvalidException(String message, Throwable cause) {
+        super(message, cause);
+        this.messages.add(message);
     }
 
     public List<String> getMessages() {

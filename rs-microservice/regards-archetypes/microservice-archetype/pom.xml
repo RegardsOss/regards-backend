@@ -5,11 +5,18 @@
 
 	<groupId>fr.cnes.regards.microservices</groupId>
 	<artifactId>helloworld-microservice-archetype</artifactId>
-	<version>1.1.0</version>
+	<version>2.0.0-RELEASE</version>
 	<packaging>maven-archetype</packaging>
 
-	<name>Microservice Archetype</name>
-	<description>Maven archetype for scaffolding a REGARDS microservice</description>
+	<name>helloworld-microservice-archetype</name>
+
+	<parent>
+		<groupId>fr.cnes.regards</groupId>
+		<artifactId>regards-parent</artifactId>
+		<version>2.0.0-RELEASE</version>
+		<relativePath />
+	</parent>
+
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
 	<licenses>
@@ -30,13 +37,6 @@
 			<organizationUrl>http://www.c-s.fr</organizationUrl>
 		</developer>
 	</developers>
-
-	<parent>
-		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-parent</artifactId>
-		<version>1.1.0</version>
-		<relativePath />
-	</parent>
 
 	<build>
 		<extensions>

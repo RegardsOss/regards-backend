@@ -1,30 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
- Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
- 
- This file is part of REGARDS.
- 
- REGARDS is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
- 
- REGARDS is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- GNU General Public License for more details.
- 
- You should have received a copy of the GNU General Public License
- along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
--->
+<!-- Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES This file is 
+	part of REGARDS. REGARDS is free software: you can redistribute it and/or 
+	modify it under the terms of the GNU General Public License as published 
+	by the Free Software Foundation, either version 3 of the License, or (at 
+	your option) any later version. REGARDS is distributed in the hope that it 
+	will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty 
+	of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General 
+	Public License for more details. You should have received a copy of the GNU 
+	General Public License along with REGARDS. If not, see <http://www.gnu.org/licenses/>. -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>gson-regards-starter</artifactId>
-	<version>1.1.0</version>
-	<name>Gson REGARDS Starter</name>
-	<description>Provides autoconfiguration for Google's Gson as a Spring Boot like starter</description> 
+	<version>2.0.0-RELEASE</version>
+	<description>REGARDS GSON starter</description>
+
+	<parent>
+		<groupId>fr.cnes.regards.framework</groupId>
+		<artifactId>regards-starters</artifactId>
+		<version>2.0.0-RELEASE</version>
+	</parent>
+
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
 	<licenses>
@@ -46,12 +43,6 @@
 		</developer>
 	</developers>
 
-	<parent>
-		<groupId>fr.cnes.regards.framework</groupId>
-		<artifactId>regards-starters</artifactId>
-		<version>1.1.0</version>
-	</parent>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -67,7 +58,7 @@
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 			<optional>true</optional>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>hsqldb</groupId>
 			<artifactId>hsqldb</artifactId>
@@ -84,11 +75,11 @@
 			<artifactId>regards-test-reporting</artifactId>
 			<scope>test</scope>
 		</dependency>
-<!-- 		<dependency> -->
-<!-- 			<groupId>fr.cnes.regards.framework.test</groupId> -->
-<!-- 			<artifactId>regards-test</artifactId> -->
-<!-- 			<scope>test</scope> -->
-<!-- 		</dependency>		 -->
+		<!-- <dependency> -->
+		<!-- <groupId>fr.cnes.regards.framework.test</groupId> -->
+		<!-- <artifactId>regards-test</artifactId> -->
+		<!-- <scope>test</scope> -->
+		<!-- </dependency> -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>

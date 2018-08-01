@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,9 +18,9 @@
  */
 package fr.cnes.regards.framework.security.autoconfigure;
 
-import org.apache.log4j.MDC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -41,6 +41,11 @@ public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver {
 
     // Thread safe tenant holder for forced tenant
     private static final ThreadLocal<String> tenantHolder = new ThreadLocal<>();
+
+    /**
+     * The tenant
+     */
+    private static final String TENANT = "tenant";
 
     /**
      * Name of the static and fixed name of instance virtual tenant.
@@ -70,10 +75,10 @@ public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver {
     }
 
     @Override
-    public void forceTenant(final String pTenant) {
+    public void forceTenant(final String tenant) {
         // when we force the tenant for the application, we set it for logging too
-        MDC.put("tenant", pTenant);
-        tenantHolder.set(pTenant);
+        MDC.put(TENANT, tenant);
+        tenantHolder.set(tenant);
     }
 
     @Override
@@ -81,16 +86,17 @@ public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver {
         LOGGER.debug("Clearing tenant");
         tenantHolder.remove();
         JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();
-        // when we clear the tenant, system will act by getting it from the security context holder, so we do the same for logging
-        if(authentication!=null) {
-            MDC.put("tenant", authentication.getTenant());
+        // when we clear the tenant, system will act by getting it from the security context holder, so we do the same
+        // for logging
+        if (authentication == null) {
+            MDC.put(TENANT, null);
         } else {
-            MDC.put("tenant", null);
+            MDC.put(TENANT, authentication.getTenant());
         }
     }
 
     @Override
-    public Boolean isInstance() {
+    public boolean isInstance() {
         return instanceTenantName.equals(getTenant());
     }
 }

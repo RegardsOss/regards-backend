@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -24,8 +24,8 @@ import java.util.Set;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
+import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 
 /**
  * {@link InstanceSubscriber} uses a fixed tenant to subscribe to instance events.
@@ -35,16 +35,21 @@ import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
  */
 public class InstanceSubscriber extends AbstractSubscriber implements IInstanceSubscriber {
 
-    public InstanceSubscriber(IRabbitVirtualHostAdmin pVirtualHostAdmin, RegardsAmqpAdmin pRegardsAmqpAdmin,
+    public InstanceSubscriber(IRabbitVirtualHostAdmin pVirtualHostAdmin, IAmqpAdmin amqpAdmin,
             Jackson2JsonMessageConverter pJackson2JsonMessageConverter) {
-        super(pVirtualHostAdmin, pRegardsAmqpAdmin, pJackson2JsonMessageConverter);
+        super(pVirtualHostAdmin, amqpAdmin, pJackson2JsonMessageConverter);
     }
 
     @Override
     protected Set<String> resolveTenants() {
         // Instance is considered as a single tenant
         Set<String> tenants = new HashSet<>();
-        tenants.add(AmqpConstants.AMQP_MANAGER);
+        tenants.add(AmqpConstants.INSTANCE_TENANT);
         return tenants;
+    }
+
+    @Override
+    protected String resolveVirtualHost(String tenant) {
+        return AmqpConstants.AMQP_INSTANCE_MANAGER;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -20,18 +20,20 @@ package fr.cnes.regards.framework.module.rest.exception;
 
 /**
  *
- * Element in conflict that already exists
+ * Exception indicating a conflict occurred with an existing entity
  *
  * @author Marc Sordi
  * @author Sylvain Vissiere-Guerinet
  *
  */
+@SuppressWarnings("serial")
 public class EntityAlreadyExistsException extends EntityException {
 
-    private static final long serialVersionUID = 10460690591381017L;
-
-    public EntityAlreadyExistsException(String pErrorMessage) {
-        super(pErrorMessage);
+    /**
+     * Constructor setting exception message
+     * @param message
+     */
+    public EntityAlreadyExistsException(String message) {
+        super(message);
     }
-
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -32,7 +32,6 @@ import java.util.concurrent.ConcurrentMap;
  */
 public final class MaintenanceManager {
 
-
     /**
      * map linking each tenant with his mode
      */
@@ -42,10 +41,17 @@ public final class MaintenanceManager {
         // override of public because it's an utility class
     }
 
+    /**
+     * @return the maintenance map
+     */
     public static ConcurrentMap<String, MaintenanceInfo> getMaintenanceMap() {
         return maintenanceMap;
     }
 
+    /**
+     * @param pTenant
+     * @return whether the given tenant is in maintenance or not
+     */
     public static Boolean getMaintenance(String pTenant) {
         MaintenanceInfo info = maintenanceMap.get(pTenant);
         // if the tenant is unknown, it is not in maintenance
@@ -55,15 +61,27 @@ public final class MaintenanceManager {
         return info.getActive();
     }
 
+    /**
+     * Add a tenant to the maintenance manager
+     * @param pTenant
+     */
     public static void addTenant(String pTenant) {
-        maintenanceMap.put(pTenant, new MaintenanceInfo(Boolean.FALSE, null));
+        maintenanceMap.put(pTenant, new MaintenanceInfo(Boolean.FALSE, OffsetDateTime.now()));
     }
 
+    /**
+     * Set the tenant in maintenance mode
+     * @param pTenant
+     */
     public static void setMaintenance(String pTenant) {
         maintenanceMap.put(pTenant, new MaintenanceInfo(Boolean.TRUE, OffsetDateTime.now().withOffsetSameInstant(
                 ZoneOffset.UTC)));
     }
 
+    /**
+     * Set the tenant not in maintenance mode
+     * @param pTenant
+     */
     public static void unSetMaintenance(String pTenant) {
         maintenanceMap.put(pTenant, new MaintenanceInfo(Boolean.FALSE, OffsetDateTime.now().withOffsetSameInstant(
                 ZoneOffset.UTC)));

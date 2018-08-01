@@ -1,22 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
- Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
- 
- This file is part of REGARDS.
- 
- REGARDS is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
- 
- REGARDS is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- GNU General Public License for more details.
- 
- You should have received a copy of the GNU General Public License
- along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
--->
+<!-- Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES This file is 
+	part of REGARDS. REGARDS is free software: you can redistribute it and/or 
+	modify it under the terms of the GNU General Public License as published 
+	by the Free Software Foundation, either version 3 of the License, or (at 
+	your option) any later version. REGARDS is distributed in the hope that it 
+	will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty 
+	of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General 
+	Public License for more details. You should have received a copy of the GNU 
+	General Public License along with REGARDS. If not, see <http://www.gnu.org/licenses/>. -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
@@ -25,6 +16,14 @@
 	<packaging>maven-plugin</packaging>
 	<name>Report Maven Plugin</name>
 	<description>Maven plugin to aggregate all requirement reports</description>
+	
+	<parent>
+		<groupId>fr.cnes.regards</groupId>
+		<artifactId>regards-parent</artifactId>
+		<version>2.0.0-RELEASE</version>
+		<relativePath />
+	</parent>
+
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
 	<licenses>
@@ -45,13 +44,6 @@
 			<organizationUrl>http://www.c-s.fr</organizationUrl>
 		</developer>
 	</developers>
-	
-	<parent>
-		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-parent</artifactId>
-		<version>1.1.0</version>
-		<relativePath />
-	</parent>
 
 	<dependencies>
 		<dependency>
@@ -84,7 +76,8 @@
 		</plugins>
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
@@ -119,5 +112,5 @@
 		</pluginManagement>
 	</build>
 	<groupId>fr.cnes.regards.microservices</groupId>
-	<version>1.1.0</version>
+	<version>2.0.0-RELEASE</version>
 </project>

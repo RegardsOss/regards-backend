@@ -5,11 +5,18 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>helloworld-module-archetype</artifactId>
-	<version>1.1.0</version>
+	<version>2.0.0-RELEASE</version>
 	<packaging>maven-archetype</packaging>
 
-	<name>Module Archetype</name>
-	<description>Maven archetype for scaffolding a REGARDS module</description>
+	<name>helloworld-module-archetype</name>
+
+	<parent>
+		<groupId>fr.cnes.regards</groupId>
+		<artifactId>regards-parent</artifactId>
+		<version>2.0.0-RELEASE</version>
+		<relativePath />
+	</parent>
+
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
 	<licenses>
@@ -30,13 +37,6 @@
 			<organizationUrl>http://www.c-s.fr</organizationUrl>
 		</developer>
 	</developers>
-
-	<parent>
-		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-parent</artifactId>
-		<version>1.1.0</version>
-		<relativePath />
-	</parent>
 
 	<build>
 		<extensions>

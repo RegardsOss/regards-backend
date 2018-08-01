@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -19,18 +19,19 @@
 package fr.cnes.regards.framework.amqp.test.event;
 
 /**
+ * Default event body
  * @author Marc Sordi
  *
  */
 public abstract class AbstractEvent {
 
-    private String message;
+    private String message = "Default message!";
 
     public String getMessage() {
         return message;
     }
 
-    public void setMessage(String pMessage) {
-        message = pMessage;
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

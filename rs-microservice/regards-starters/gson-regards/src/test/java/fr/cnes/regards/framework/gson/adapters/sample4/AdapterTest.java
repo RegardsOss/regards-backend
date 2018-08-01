@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -25,9 +25,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
+import fr.cnes.regards.framework.gson.GsonAnnotationProcessor;
 import fr.cnes.regards.framework.gson.annotation.Gsonable;
-import fr.cnes.regards.framework.gson.reflection.GsonAnnotationProcessor;
 
 /**
  *

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,11 +16,12 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.${artifactId}.dao;
+package fr.cnes.regards.modules.$
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import fr.cnes.regards.modules.${artifactId}.domain.Greeting;
+{artifactId}.dao;
+        {artifactId}.domain.Greeting;
 /**
  * 
  * TODO Description

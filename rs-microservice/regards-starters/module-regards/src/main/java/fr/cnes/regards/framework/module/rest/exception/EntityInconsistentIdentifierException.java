@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -19,25 +19,34 @@
 package fr.cnes.regards.framework.module.rest.exception;
 
 /**
- *
- * Use on update endpoint if identifier in url path doesn't match identifier in request body
+ * Exception indicating an update request is inconsistent cause URL path id not equals to body id.
  *
  * @author Marc Sordi
  * @author Sylvain Vissiere-Guerinet
- *
  */
+@SuppressWarnings("serial")
 public class EntityInconsistentIdentifierException extends EntityException {
 
-    private static final long serialVersionUID = -2244195392447606535L;
-
-    public EntityInconsistentIdentifierException(final Long pPathId, final Long pBodyId, final Class<?> pEntityClass) {
+    /**
+     * Constructor setting the exception message thanks to the given parameters
+     * @param pathId
+     * @param bodyId
+     * @param entityClass
+     */
+    public EntityInconsistentIdentifierException(final Long pathId, final Long bodyId, final Class<?> entityClass) {
         // CHECKSTYLE:OFF
         super(String.format(
                             "Inconsistent entity update request for \"%s\". Path identifier \"%s\" does not match request body identifier \"%s\".",
-                            pEntityClass.getName(), pPathId, pBodyId));
+                            entityClass.getName(), pathId, bodyId));
         // CHECKSTYLE:ON
     }
 
+    /**
+     * Constructor setting the exception message thanks to the given parameters
+     * @param pPathName
+     * @param pBodyName
+     * @param pEntityClass
+     */
     public EntityInconsistentIdentifierException(final String pPathName, final String pBodyName,
             final Class<?> pEntityClass) {
         // CHECKSTYLE:OFF
@@ -46,5 +55,4 @@ public class EntityInconsistentIdentifierException extends EntityException {
                             pEntityClass.getName(), pPathName, pBodyName));
         // CHECKSTYLE:ON
     }
-
 }

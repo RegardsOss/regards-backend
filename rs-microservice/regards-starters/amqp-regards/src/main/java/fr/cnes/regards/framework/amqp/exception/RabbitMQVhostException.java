@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -34,6 +34,10 @@ public class RabbitMQVhostException extends RuntimeException {
      */
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Constrcutor setting the exception message
+     * @param pMessage
+     */
     public RabbitMQVhostException(String pMessage) {
         super(pMessage);
     }

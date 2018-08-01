@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,11 +18,15 @@
  */
 package fr.cnes.regards.framework.feign;
 
+import java.util.List;
 import java.util.Map;
 
+import org.assertj.core.util.Lists;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -37,8 +41,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpServerErrorException;
 
-import feign.FeignException;
+import com.google.gson.Gson;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 
 /**
@@ -54,11 +59,16 @@ public class FeignClientTests {
 
     private static final String HELLO_MESSAGE = "Hello world";
 
+    private static final Logger LOG = LoggerFactory.getLogger(FeignClientTests.class);
+
     @Autowired
     private ApplicationContext context;
 
     @Autowired
     private IHelloClient helloClient;
+
+    @Autowired
+    private Gson gson;
 
     @SpringBootApplication
     @RestController
@@ -73,8 +83,10 @@ public class FeignClientTests {
         }
 
         @RequestMapping(method = RequestMethod.GET, value = "/hello503")
-        public ResponseEntity<Hello> getHello503() {
-            return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
+        public ResponseEntity<List<Hello>> getHello503() {
+            Hello hello = new Hello();
+            hello.setMessage("For Tests");
+            return new ResponseEntity<>(Lists.newArrayList(hello), HttpStatus.SERVICE_UNAVAILABLE);
         }
 
         public static void main(String[] args) {
@@ -128,8 +140,8 @@ public class FeignClientTests {
         try {
             helloClient.getHello503();
             Assert.fail("Feign exception should be thrown");
-        } catch (FeignException e) {
-            Assert.assertEquals(HttpStatus.SERVICE_UNAVAILABLE.value(), e.status());
+        } catch (HttpServerErrorException e) {
+            Assert.assertEquals(HttpStatus.SERVICE_UNAVAILABLE.value(), e.getRawStatusCode());
         }
     }
 

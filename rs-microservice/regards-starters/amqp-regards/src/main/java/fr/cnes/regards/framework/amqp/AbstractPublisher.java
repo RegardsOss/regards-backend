@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.amqp;
 
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Exchange;
@@ -26,8 +28,8 @@ import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
+import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.IPollable;
@@ -50,11 +52,6 @@ public abstract class AbstractPublisher implements IPublisherContract {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractPublisher.class);
 
     /**
-     * Default routing key
-     */
-    private static final String DEFAULT_ROUTING_KEY = "";
-
-    /**
      * bean allowing us to send message to the broker
      */
     private final RabbitTemplate rabbitTemplate;
@@ -62,110 +59,151 @@ public abstract class AbstractPublisher implements IPublisherContract {
     /**
      * configuration initializing required bean
      */
-    private final RegardsAmqpAdmin regardsAmqpAdmin;
+    private final IAmqpAdmin amqpAdmin;
 
     /**
      * Virtual host admin
      */
     private final IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
 
-    public AbstractPublisher(RabbitTemplate pRabbitTemplate, RegardsAmqpAdmin pRegardsAmqpAdmin,
+    public AbstractPublisher(RabbitTemplate pRabbitTemplate, IAmqpAdmin amqpAdmin,
             IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {
         this.rabbitTemplate = pRabbitTemplate;
-        this.regardsAmqpAdmin = pRegardsAmqpAdmin;
+        this.amqpAdmin = amqpAdmin;
         this.rabbitVirtualHostAdmin = pRabbitVirtualHostAdmin;
     }
 
     @Override
-    public void publish(ISubscribable pEvent) {
-        publish(pEvent, 0);
+    public void publish(ISubscribable event) {
+        publish(event, 0);
     }
 
     @Override
-    public void publish(ISubscribable pEvent, int pPriority) {
-        Class<?> eventClass = pEvent.getClass();
-        publish(pEvent, WorkerMode.ALL, EventUtils.getCommunicationTarget(eventClass), pPriority);
+    public void publish(ISubscribable event, int pPriority) {
+        Class<?> eventClass = event.getClass();
+        publish(event, EventUtils.getWorkerMode(eventClass), EventUtils.getTargetRestriction(eventClass), pPriority,
+                false);
     }
 
     @Override
-    public void publish(IPollable pEvent) {
-        publish(pEvent, 0);
+    public void publish(IPollable event) {
+        publish(event, 0, false);
     }
 
     @Override
-    public void publish(IPollable pEvent, int pPriority) {
-        Class<?> eventClass = pEvent.getClass();
-        publish(pEvent, WorkerMode.SINGLE, EventUtils.getCommunicationTarget(eventClass), pPriority);
+    public void publish(IPollable event, boolean purgeQueue) {
+        publish(event, 0, purgeQueue);
     }
 
-    /**
-     * @param <T>
-     *            event to be published
-     * @param pEvt
-     *            the event you want to publish
-     * @param pPriority
-     *            priority given to the event
-     * @param pWorkerMode
-     *            publishing mode
-     * @param pTarget
-     *            publishing scope
-     */
-    public final <T> void publish(final T pEvt, final WorkerMode pWorkerMode, final Target pTarget,
-            final int pPriority) {
+    @Override
+    public void publish(IPollable event, int priority) {
+        publish(event, priority, false);
+    }
 
-        LOGGER.debug("Publishing event {} (Target : {}, WorkerMode : {} )", pEvt.getClass(), pTarget, pWorkerMode);
+    @Override
+    public void publish(IPollable event, int priority, boolean purgeQueue) {
+        Class<?> eventClass = event.getClass();
+        publish(event, WorkerMode.UNICAST, EventUtils.getTargetRestriction(eventClass), priority, purgeQueue);
+    }
 
+    @Override
+    public void purgeQueue(Class<? extends IPollable> eventType) {
         String tenant = resolveTenant();
-        if (tenant != null) {
-            publish(tenant, pEvt, pWorkerMode, pTarget, pPriority);
-        } else {
-            LOGGER.error("[AMQP Publisher] Unable to publish event {} because no tenant found.", pEvt.getClass());
+        String virtualHost = resolveVirtualHost(tenant);
+
+        try {
+            rabbitVirtualHostAdmin.bind(virtualHost);
+            Queue queue = amqpAdmin.declareQueue(tenant, eventType, WorkerMode.UNICAST,
+                                                 EventUtils.getTargetRestriction(eventType), Optional.empty());
+            amqpAdmin.purgeQueue(queue.getName(), false);
+        } finally {
+            rabbitVirtualHostAdmin.unbind();
         }
     }
 
     /**
-     * @return the tenant on which we have to publish the event
+     * @param <T>
+     *            event to be published
+     * @param event
+     *            the event you want to publish
+     * @param priority
+     *            priority given to the event
+     * @param workerMode
+     *            publishing mode
+     * @param target
+     *            publishing scope
+     * @param purgeQueue true to purge queue if already exists. Useful in tests.
+     */
+    protected <T> void publish(final T event, final WorkerMode workerMode, final Target target, final int priority,
+            boolean purgeQueue) {
+
+        LOGGER.debug("Publishing event {} (Target : {}, WorkerMode : {} )", event.getClass(), target, workerMode);
+
+        String tenant = resolveTenant();
+        if (tenant != null) {
+            publish(tenant, resolveVirtualHost(tenant), event, workerMode, target, priority, purgeQueue);
+        } else {
+            String errorMessage = String.format("Unable to publish event %s cause no tenant found.", event.getClass());
+            LOGGER.error(errorMessage);
+            throw new IllegalArgumentException(errorMessage);
+        }
+    }
+
+    /**
+     * @return current tenant
      */
     protected abstract String resolveTenant();
 
     /**
+     * @param tenant current tenant
+     * @return the virtual host on which we have to publish the event according to the tenant
+     */
+    protected abstract String resolveVirtualHost(String tenant);
+
+    /**
      * @param <T>
      *            event to be published
-     * @param pTenant
+     * @param tenant
      *            the tenant name
-     * @param pEvt
+     * @param virtualHost virtual host for current tenant
+     * @param event
      *            the event you want to publish
-     * @param pPriority
+     * @param priority
      *            priority given to the event
-     * @param pWorkerMode
+     * @param workerMode
      *            publishing mode
-     * @param pTarget
+     * @param target
      *            publishing scope
+     * @param purgeQueue true to purge queue if already exists. Useful in tests.
      */
-    protected final <T> void publish(final String pTenant, final T pEvt, final WorkerMode pWorkerMode,
-            final Target pTarget, final int pPriority) {
+    protected final <T> void publish(String tenant, String virtualHost, T event, WorkerMode workerMode, Target target,
+            int priority, boolean purgeQueue) {
 
-        final Class<?> evtClass = pEvt.getClass();
+        final Class<?> eventType = event.getClass();
 
         try {
             // Bind the connection to the right vHost (i.e. tenant to publish the message)
-            rabbitVirtualHostAdmin.bind(pTenant);
+            rabbitVirtualHostAdmin.bind(virtualHost);
 
             // Declare exchange
-            Exchange exchange = regardsAmqpAdmin.declareExchange(pTenant, evtClass, pWorkerMode, pTarget);
+            Exchange exchange = amqpAdmin.declareExchange(eventType, workerMode, target);
 
-            if (WorkerMode.SINGLE.equals(pWorkerMode)) {
+            if (WorkerMode.UNICAST.equals(workerMode)) {
                 // Direct exchange needs a specific queue, a binding between this queue and exchange containing a
                 // specific routing key
-                Queue queue = regardsAmqpAdmin.declareQueue(pTenant, pEvt.getClass(), WorkerMode.SINGLE, pTarget);
-                regardsAmqpAdmin.declareBinding(pTenant, queue, exchange, pWorkerMode);
-                publishMessageByTenant(pTenant, exchange.getName(),
-                                       regardsAmqpAdmin.getRoutingKey(queue.getName(), pWorkerMode), pEvt, pPriority);
-            } else if (WorkerMode.ALL.equals(pWorkerMode)) {
+                Queue queue = amqpAdmin.declareQueue(tenant, eventType, workerMode, target, Optional.empty());
+                if (purgeQueue) {
+                    amqpAdmin.purgeQueue(queue.getName(), false);
+                }
+                amqpAdmin.declareBinding(queue, exchange, workerMode);
+                publishMessageByTenant(tenant, exchange.getName(),
+                                       amqpAdmin.getRoutingKey(Optional.of(queue), workerMode), event, priority);
+            } else if (WorkerMode.BROADCAST.equals(workerMode)) {
                 // Routing key useless ... always skipped with a fanout exchange
-                publishMessageByTenant(pTenant, exchange.getName(), DEFAULT_ROUTING_KEY, pEvt, pPriority);
+                publishMessageByTenant(tenant, exchange.getName(), amqpAdmin.getRoutingKey(null, workerMode), event,
+                                       priority);
             } else {
-                String errorMessage = String.format("Unexpected communication mode : %s.", pWorkerMode);
+                String errorMessage = String.format("Unexpected worker mode : %s.", workerMode);
                 LOGGER.error(errorMessage);
                 throw new IllegalArgumentException(errorMessage);
             }
@@ -179,27 +217,27 @@ public abstract class AbstractPublisher implements IPublisherContract {
      *
      * @param <T>
      *            event type
-     * @param pTenant
+     * @param tenant
      *            tenant
-     * @param pExchangeName
+     * @param exchangeName
      *            {@link Exchange} name
-     * @param pRoutingKey
+     * @param routingKey
      *            routing key (really useful for direct exchange). Use {@link Publisher#DEFAULT_ROUTING_KEY} for fanout.
-     * @param pEvt
+     * @param event
      *            the event to publish
-     * @param pPriority
+     * @param priority
      *            the event priority
      */
-    private final <T> void publishMessageByTenant(final String pTenant, String pExchangeName, String pRoutingKey,
-            final T pEvt, final int pPriority) {
+    private final <T> void publishMessageByTenant(String tenant, String exchangeName, String routingKey, T event,
+            int priority) {
 
         // Message to publish
-        final TenantWrapper<T> messageSended = new TenantWrapper<>(pEvt, pTenant);
+        final TenantWrapper<T> messageSended = new TenantWrapper<>(event, tenant);
 
         // routing key is unnecessary for fanout exchanges but is for direct exchanges
-        rabbitTemplate.convertAndSend(pExchangeName, pRoutingKey, messageSended, pMessage -> {
+        rabbitTemplate.convertAndSend(exchangeName, routingKey, messageSended, pMessage -> {
             final MessageProperties propertiesWithPriority = pMessage.getMessageProperties();
-            propertiesWithPriority.setPriority(pPriority);
+            propertiesWithPriority.setPriority(priority);
             return new Message(pMessage.getBody(), propertiesWithPriority);
         });
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.hateoas;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -74,10 +75,10 @@ public class DefaultResourceService implements IResourceService {
     public <T> void addLink(final Resource<T> pResource, final Class<?> pController, final String pMethodName,
             final String pRel, final MethodParam<?>... pMethodParams) {
 
-        Assert.notNull(pResource);
-        Assert.notNull(pController);
-        Assert.notNull(pMethodName);
-        Assert.notNull(pRel);
+        Assert.notNull(pResource, "Resource should not be null");
+        Assert.notNull(pController, "Controller should not be null");
+        Assert.notNull(pMethodName, "Method name should not be null");
+        Assert.notNull(pRel, "Relation should not be null");
 
         // Prepare method parameters
         Class<?>[] parameterTypes = null;
@@ -133,10 +134,10 @@ public class DefaultResourceService implements IResourceService {
     public <T, C> void addLinkWithParams(final Resource<T> pResource, final Class<C> pController,
             final String pMethodName, final String pRel, final MethodParam<?>... pMethodParams) {
 
-        Assert.notNull(pResource);
-        Assert.notNull(pController);
-        Assert.notNull(pMethodName);
-        Assert.notNull(pRel);
+        Assert.notNull(pResource, "Resource should not be null");
+        Assert.notNull(pController, "Controller should not be null");
+        Assert.notNull(pMethodName, "Method name should not be null");
+        Assert.notNull(pRel, "Relation should not be null");
 
         // Prepare method parameters
         Class<?>[] parameterTypes = null;
@@ -161,7 +162,7 @@ public class DefaultResourceService implements IResourceService {
             }
             Link link = ControllerLinkBuilder.linkTo(invoke).withRel(pRel);
             pResource.add(link);
-        } catch (Exception e) {
+        } catch (MethodException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             // Do not insert link
             LOGGER.trace("HATEOAS link skipped silently due to introspection error or access denied", e);
         }
@@ -187,14 +188,13 @@ public class DefaultResourceService implements IResourceService {
             checkAuthorization(method);
             return method;
         } catch (final NoSuchMethodException e) {
-            final String message = MessageFormat
-                    .format("No such method {0} in controller {1}.", pMethodName, pController.getCanonicalName());
+            final String message = MessageFormat.format("No such method {0} in controller {1}.", pMethodName,
+                                                        pController.getCanonicalName());
             LOGGER.error(message, e);
             throw new MethodException(message);
         } catch (final SecurityException e) {
-            final String message = MessageFormat
-                    .format("Security exception accessing method {0} in controller {1}.", pMethodName,
-                            pController.getCanonicalName());
+            final String message = MessageFormat.format("Security exception accessing method {0} in controller {1}.",
+                                                        pMethodName, pController.getCanonicalName());
             LOGGER.error(message, e);
             throw new MethodException(message);
         }

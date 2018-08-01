@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -28,6 +28,7 @@ import org.junit.Test;
 
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.configuration.VirtualHostMode;
 
 /**
  * @author svissier
@@ -82,8 +83,8 @@ public class RabbitVirtualHostAdminTests {
 
     @BeforeClass
     public static void init() {
-        rabbitVirtualHostAdmin = new RabbitVirtualHostAdmin(null, RABBITMQ_USERNAME, RABBITMQ_PASSWORD,
-                AMQP_MANAGEMENT_HOST, AMQP_MANAGEMENT_PORT, null, null, ADDRESSES, null);
+        rabbitVirtualHostAdmin = new RabbitVirtualHostAdmin(VirtualHostMode.MULTI, null, RABBITMQ_USERNAME,
+                RABBITMQ_PASSWORD, AMQP_MANAGEMENT_HOST, AMQP_MANAGEMENT_PORT, null, null, ADDRESSES, null);
     }
 
     /**

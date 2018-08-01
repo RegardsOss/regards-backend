@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.resolver;
 
-import java.util.Map;
-
 import javax.sql.DataSource;
+import java.util.Map;
 
 import org.hibernate.engine.jdbc.connections.spi.AbstractDataSourceBasedMultiTenantConnectionProviderImpl;
 import org.slf4j.Logger;
@@ -70,9 +69,16 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
     protected DataSource selectDataSource(final String pTenantIdentifier) {
         DataSource tenantDataSource = dataSources.get(pTenantIdentifier);
         if (tenantDataSource == null) {
-            String message = String.format("No data source found for tenant %s.", pTenantIdentifier);
-            LOGGER.error(message);
-            throw new InvalidDataSourceTenant(message);
+            String message = String.format("No data source found for tenant %s.\nActual defined datasources : %s.\n"
+                                          + "If wanted tenant is 'default' and at least another one has been defined, "
+                                          + "a transactional method may have been executed before multitenancy is set.\n"
+                                          + "Check if this method really need a transaction (haven't you implemented "
+                                          + "an onApplicationEvent() method recently fortuitously you prank ?)",
+                                           pTenantIdentifier, dataSources.keySet().toString());
+
+            InvalidDataSourceTenant e = new InvalidDataSourceTenant(message);
+            LOGGER.error(message, e);
+            throw e;
         }
         return dataSources.get(pTenantIdentifier);
     }
