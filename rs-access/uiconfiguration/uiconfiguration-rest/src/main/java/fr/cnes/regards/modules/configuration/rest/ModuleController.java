@@ -202,7 +202,11 @@ public class ModuleController implements IResourceController<Module> {
         URI uriDatasetDescriptor = HttpUtils.retrievePublicURI(request, gatewayPrefix+"/rs-catalog/engines/opensearch/datasets/DATASET_ID/dataobjects/search/opensearchDescription.xml");
         final Module module = service.retrieveModule(pModuleId);
         MultiValueMap attr = new LinkedMultiValueMap();
-        JsonObject dataset = (JsonObject)searchClient.searchDatasets(attr).getBody();
+        ResponseEntity datasets = searchClient.searchDatasets(attr);
+        if (!HttpUtils.isSuccess(datasets.getStatusCode())) {
+            return new ResponseEntity<>(datasets.getStatusCode());
+        }
+        JsonObject dataset = (JsonObject) datasets.getBody();
         JsonObject result = service.addDatasetLayersInsideModuleConf(module, dataset, uriDatasetDescriptor.toString());
         return new ResponseEntity<>(result, HttpStatus.OK);
     }

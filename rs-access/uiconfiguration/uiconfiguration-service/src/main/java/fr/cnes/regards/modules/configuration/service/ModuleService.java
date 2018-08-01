@@ -18,23 +18,10 @@
  */
 package fr.cnes.regards.modules.configuration.service;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import java.io.IOException;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
-import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -45,13 +32,21 @@ import fr.cnes.regards.modules.configuration.domain.LayoutDefaultApplicationIds;
 import fr.cnes.regards.modules.configuration.domain.Module;
 import fr.cnes.regards.modules.configuration.domain.UIPage;
 import fr.cnes.regards.modules.configuration.service.exception.InitUIException;
+import java.io.IOException;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
 /**
- *
  * Class ModuleService
- *
+ * <p>
  * Service to manage modules entities
- *
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
@@ -163,13 +158,20 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             LOG.error(e.getMessage(), e);
             throw new EntityInvalidException("Module is not a valid json format.", e);
         }
+        if (!moduleConfJson.has("layers")) {
+            throw new EntityInvalidException("Module is not a valid Mizar json context file.");
+        }
 
         JsonArray layers = new JsonArray();
         if (!dataset.has("content")) {
-            LOG.warn("There is no dataset available for this user");
+            LOG.warn("Dataset retrieved from catalog doesn't fit the expected result");
             return moduleConfJson;
         }
         JsonArray ds = dataset.getAsJsonArray("content");
+        if (ds.size() < 1) {
+            LOG.warn("There is no dataset available for this user");
+            return moduleConfJson;
+        }
         // Iterate over datasets resources
         ds.forEach(d -> {
             String datasetIpId = d.getAsJsonObject().get("content").getAsJsonObject().get("ipId").getAsString();
@@ -190,9 +192,7 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
     }
 
     /**
-     *
      * Set to false the defaultDynamicModule attribute of all modules for the given application id
-     *
      * @param pApplicationId
      * @since 1.0-SNAPSHOT
      */
