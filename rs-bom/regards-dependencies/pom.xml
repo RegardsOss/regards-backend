@@ -111,6 +111,7 @@
         <fr.cnes.regards.modules.access.version>3.0.0-SNAPSHOT</fr.cnes.regards.modules.access.version>
         <fr.cnes.regards.modules.uiconfiguration.version>3.0.0-SNAPSHOT</fr.cnes.regards.modules.uiconfiguration.version>
         <fr.cnes.regards.modules.entities.version>3.0.0-SNAPSHOT</fr.cnes.regards.modules.entities.version>
+        <fr.cnes.regards.modules.dam.version>3.0.0-SNAPSHOT</fr.cnes.regards.modules.dam.version>
         <fr.cnes.regards.modules.dataaccess.version>3.0.0-SNAPSHOT</fr.cnes.regards.modules.dataaccess.version>
         <fr.cnes.regards.frontend-webapp.version>3.0.0-SNAPSHOT</fr.cnes.regards.frontend-webapp.version>
         <fr.cnes.regards.modules.emails.version>3.0.0-SNAPSHOT</fr.cnes.regards.modules.emails.version>
@@ -615,6 +616,42 @@
                 <version>3.0.0-SNAPSHOT</version>
                 <classifier>shaded</classifier>
             </dependency>
+            <!-- DAM -->
+            <dependency>
+				<groupId>fr.cnes.regards.modules.dam</groupId>
+				<artifactId>dam-dao</artifactId>
+				<version>${fr.cnes.regards.modules.dam.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.dam</groupId>
+				<artifactId>dam-domain</artifactId>
+				<version>${fr.cnes.regards.modules.dam.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.dam</groupId>
+				<artifactId>dam-service</artifactId>
+				<version>${fr.cnes.regards.modules.dam.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.dam</groupId>
+				<artifactId>dam-rest</artifactId>
+				<version>${fr.cnes.regards.modules.dam.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.dam</groupId>
+				<artifactId>dam-client</artifactId>
+				<version>${fr.cnes.regards.modules.dam.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.dam</groupId>
+				<artifactId>dam-gson</artifactId>
+				<version>${fr.cnes.regards.modules.dam.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.dam</groupId>
+				<artifactId>dam-plugins</artifactId>
+				<version>${fr.cnes.regards.modules.dam.version}</version>
+			</dependency>
             <!-- Models -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.models</groupId>
