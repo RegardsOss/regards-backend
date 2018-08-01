@@ -507,12 +507,6 @@
                 <version>${fr.cnes.regards.framework.modules.plugins.version}</version>
             </dependency>
             <dependency>
-                <groupId>fr.cnes.regards.framework.modules.plugins</groupId>
-                <artifactId>plugins-test</artifactId>
-                <version>${fr.cnes.regards.framework.modules.plugins.version}</version>
-                <type>test-jar</type>
-            </dependency>
-            <dependency>
                 <groupId>fr.cnes.regards.framework.utils</groupId>
                 <artifactId>plugin-utils</artifactId>
                 <version>${fr.cnes.regards.utils.plugin-utils.version}</version>
@@ -1002,12 +996,6 @@
                 <groupId>fr.cnes.regards.modules.templates</groupId>
                 <artifactId>templates-service</artifactId>
                 <version>${fr.cnes.regards.modules.templates.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.templates</groupId>
-                <artifactId>templates-test</artifactId>
-                <version>${fr.cnes.regards.modules.templates.version}</version>
-                <type>test-jar</type>
             </dependency>
             <!-- OpenSearch -->
             <dependency>
