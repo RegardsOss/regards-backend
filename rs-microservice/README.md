@@ -6,19 +6,5 @@ This repository brings together all the REGARDS framework features :
 * All framework starters,
 * Test tools.
 
-REGARDS is still under heavy development. Operational version V1.0.0 is planed for 2018.
-
-## Build requirements
-
-Build relies on :
-* Maven 3+
-* OpenJDK 8
-
-Dependency : 
-* REGARDS Bill Of Materials
-
 ## Build
-
-```shell
-mvn clean install
-```
+The [README](https://github.com/RegardsOss/regards-deployment/blob/master/README.md) of the project [rs-deployment](https://github.com/RegardsOss/regards-deployment) describes how to generate all the REGARDS repositories.
