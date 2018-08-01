@@ -153,7 +153,8 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
 
         try {
             JsonElement element = gson.fromJson(module.getConf(), JsonElement.class);
-            moduleConfJson = element.getAsJsonObject();
+            JsonObject rootConf = element.getAsJsonObject();
+            moduleConfJson = rootConf.getAsJsonObject("conf");
         } catch (RuntimeException e) {
             LOG.error(e.getMessage(), e);
             throw new EntityInvalidException("Module is not a valid json format.", e);
