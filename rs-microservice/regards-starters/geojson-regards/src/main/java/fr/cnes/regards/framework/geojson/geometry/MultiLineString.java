@@ -49,7 +49,7 @@ public class MultiLineString extends AbstractGeometry<List<Positions>> {
     }
 
     /**
-     * Create a MultiLineString from array { { { longitude, latitude }, {}, ... } } (first is exterior ring, others holes)
+     * Create a MultiLineString from array { { { longitude, latitude }, {}, ... } }
      * <B>NOTE: the goal of this method is to ease creation/transformation/computation of geometries so no check is
      * done concerning input values.</B>
      */
