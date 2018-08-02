@@ -34,13 +34,21 @@ import fr.cnes.regards.framework.geojson.coordinates.Positions;
  * GeoJson geometry declaration and geometry builder.
  * @author Marc Sordi
  */
-public interface IGeometry { // NOSONAR
+public interface IGeometry {
 
     Logger LOGGER = LoggerFactory.getLogger(IGeometry.class);
 
     GeoJsonType getType();
 
     void setCrs(String crs);
+
+    default <T extends IGeometry> T withCrs(String crs) {
+        this.setCrs(crs);
+        return (T)this;
+    }
+
+    <R> R accept(IGeometryVisitor<R> visitor);
+
 
     /**
      * Define a GeoJson without geometry
@@ -306,7 +314,4 @@ public interface IGeometry { // NOSONAR
         return polygon(toPolygonCoordinates(positions(positions)));
     }
 
-    <T extends IGeometry> T withCrs(String crs);
-
-    <T> T accept(IGeometryVisitor<T> visitor);
 }
