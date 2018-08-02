@@ -51,7 +51,6 @@
 		<module>plugins-domain</module>
 		<module>plugins-rest</module>
 		<module>plugins-service</module>
-		<module>plugins-test</module>
 	</modules>
 
 	<dependencyManagement>
@@ -81,12 +80,6 @@
 				<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
 				<artifactId>plugins-service</artifactId>
 				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
-				<artifactId>plugins-test</artifactId>
-				<version>${project.version}</version>
-				<type>test-jar</type>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

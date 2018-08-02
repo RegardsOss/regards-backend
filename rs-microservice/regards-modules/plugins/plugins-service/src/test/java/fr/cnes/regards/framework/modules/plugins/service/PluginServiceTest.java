@@ -39,9 +39,9 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.event.BroadcastPluginConfEvent;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginServiceAction;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.plugins.IComplexInterfacePlugin;
-import fr.cnes.regards.framework.plugins.ISamplePlugin;
-import fr.cnes.regards.framework.plugins.SamplePlugin;
+import fr.cnes.regards.framework.modules.plugins.IComplexInterfacePlugin;
+import fr.cnes.regards.framework.modules.plugins.ISamplePlugin;
+import fr.cnes.regards.framework.modules.plugins.SamplePlugin;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
@@ -125,7 +125,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     @Requirement("REGARDS_DSL_CMP_PLG_200")
     @Purpose("Load all plugin's metada for a specific plugin type identified by a class name.")
     public void getPluginTypesByString() {
-        final String aClass = "fr.cnes.regards.framework.plugins.IComplexInterfacePlugin";
+        final String aClass = "fr.cnes.regards.framework.modules.plugins.IComplexInterfacePlugin";
         List<PluginMetaData> plugins = null;
 
         try {
@@ -681,7 +681,7 @@ public class PluginServiceTest extends PluginServiceUtility {
 
     @Test
     public void checkPluginName() throws EntityInvalidException {
-        String className = "fr.cnes.regards.framework.plugins.SamplePlugin";
+        String className = "fr.cnes.regards.framework.modules.plugins.SamplePlugin";
         PluginMetaData metaData = pluginServiceMocked.checkPluginClassName(ISamplePlugin.class, className);
         Assert.assertNotNull(metaData);
         Assert.assertEquals(className, metaData.getPluginClassName());

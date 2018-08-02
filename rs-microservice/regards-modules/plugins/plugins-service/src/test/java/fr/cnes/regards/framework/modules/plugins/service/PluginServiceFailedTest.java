@@ -34,9 +34,9 @@ import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationReposit
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.plugins.IComplexInterfacePlugin;
-import fr.cnes.regards.framework.plugins.INotInterfacePlugin;
-import fr.cnes.regards.framework.plugins.ISamplePlugin;
+import fr.cnes.regards.framework.modules.plugins.IComplexInterfacePlugin;
+import fr.cnes.regards.framework.modules.plugins.INotInterfacePlugin;
+import fr.cnes.regards.framework.modules.plugins.ISamplePlugin;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;

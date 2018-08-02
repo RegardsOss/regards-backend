@@ -260,11 +260,28 @@ public interface IGeometry { // NOSONAR
 
     /**
      * Create a new {@link Point} geometry.<br/>
-     * As parameters are doublesinstead of Doubles, int values can also be used.<br/>
+     * As parameters are doubles instead of Doubles, int values can also be used.<br/>
      * Intent of this method is principaly to be used for tests
      */
     static Point point(double lon, double lat) {
         return point(position(lon, lat));
+    }
+
+    /**
+     * Create a new {@link LineString} geometry.<br/>
+     * As parameters are doubles instead of Doubles, int values can also be used.<br/>
+     * Intent of this method is principaly to be used for tests     */
+    static LineString lineString(double... lonLats) {
+        Preconditions.checkNotNull(lonLats);
+        Preconditions.checkArgument(lonLats.length > 2);
+        Preconditions.checkArgument(lonLats.length % 2 == 0);
+
+        double[][] array = new double[lonLats.length / 2][2];
+        for (int i = 0; i < lonLats.length; i += 2) {
+            array[i / 2][0] = lonLats[i];
+            array[i / 2][1] = lonLats[i + 1];
+        }
+        return lineString(Positions.fromArray(array));
     }
 
     /**
