@@ -38,6 +38,8 @@ public class AuthenticationAutoConfiguration {
 
     public static final String DEFAULT_ROLE = "DEFAULT_ROLE";
 
+    public static final String DEFAULT_TOKEN = "DEFAULT_TOKEN";
+
     @ConditionalOnMissingBean
     @Bean
     public IAuthenticationResolver defaultAuthenticationResolver() {
@@ -54,6 +56,11 @@ public class AuthenticationAutoConfiguration {
         @Override
         public String getRole() {
             return DEFAULT_ROLE;
+        }
+
+        @Override
+        public String getToken() {
+            return DEFAULT_TOKEN;
         }
     }
 }

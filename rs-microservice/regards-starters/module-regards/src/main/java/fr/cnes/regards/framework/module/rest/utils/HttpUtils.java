@@ -57,9 +57,10 @@ public final class HttpUtils {
      * Build the public URL of the given endpoint by extracting headers from an user request
      * @param request      Request receive by a REST endpoint
      * @param endpointPath the endpoint you want to get the link
+     * @param queryParams  Params to add after endpointPath
      * @return A public URL (with the gateway address instead of this µService adress) that user can contact
      */
-    public static URI retrievePublicURI(HttpServletRequest request, String endpointPath) throws MalformedURLException, URISyntaxException {
+    public static URI retrievePublicURI(HttpServletRequest request, String endpointPath, String queryParams) throws MalformedURLException, URISyntaxException {
         // Save the current URL
         URL url = new URL(request.getRequestURL().toString());
         String userInfo = url.getUserInfo();
@@ -104,7 +105,7 @@ public final class HttpUtils {
         }
 
         // Create the URL
-        return new URI(scheme, userInfo, host, port, endpointPath, null, null);
+        return new URI(scheme, userInfo, host, port, endpointPath, queryParams, null);
     }
 
     private static int retrievePortFromHeader(String header) {
