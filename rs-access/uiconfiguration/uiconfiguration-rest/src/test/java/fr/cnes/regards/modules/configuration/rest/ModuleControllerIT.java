@@ -155,7 +155,7 @@ public class ModuleControllerIT extends AbstractRegardsTransactionalIT {
         Module module = new Module();
         module.setActive(true);
         module.setApplicationId(APPLICATION_TEST);
-        module.setConf("{\"init\":{\"category\":\"Planets\",\"type\":\"Planet\",\"name\":\"Earth\",\"coordinateSystem\":{\"geoideName\":\"CRS:84\"},\"nameResolver\":{\"zoomFov\":2,\"jsObject\":\"gw/NameResolver/DictionaryNameResolver\",\"baseUrl\":\"data/earth_resolver.json\"},\"visible\":false},\"layers\":[{\"category\":\"Other\",\"type\":\"TileWireframe\",\"name\":\"Coordinates Grid\",\"outline\":true,\"visible\":true}]}");
+        module.setConf("{\"conf\":{\"init\":{\"category\":\"Planets\",\"type\":\"Planet\",\"name\":\"Earth\",\"coordinateSystem\":{\"geoideName\":\"CRS:84\"},\"nameResolver\":{\"zoomFov\":2,\"jsObject\":\"gw/NameResolver/DictionaryNameResolver\",\"baseUrl\":\"data/earth_resolver.json\"},\"visible\":false},\"layers\":[{\"category\":\"Other\",\"type\":\"TileWireframe\",\"name\":\"Coordinates Grid\",\"outline\":true,\"visible\":true}]}}");
         module.setContainer("TestContainer");
         module.setDescription("Description");
         module.setType("Module");
