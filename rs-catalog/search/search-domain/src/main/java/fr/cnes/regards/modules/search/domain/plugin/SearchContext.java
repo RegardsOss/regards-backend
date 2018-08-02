@@ -208,17 +208,19 @@ public class SearchContext {
         context.setSearchType(searchType);
         context.setEngineType(engineType);
         context.setHeaders(headers);
-        List<String> parser = queryParams.get(SearchEngineMappings.SEARCH_REQUEST_PARSER);
-        if ((parser != null) && !parser.isEmpty()) {
-            context.setEngineRequestParserType(parser.get(0));
+        if (queryParams != null) {
+            List<String> parser = queryParams.get(SearchEngineMappings.SEARCH_REQUEST_PARSER);
+            if ((parser != null) && !parser.isEmpty()) {
+                context.setEngineRequestParserType(parser.get(0));
+            }
+            // Filter spring pagination parameters if any
+            MultiValueMap<String, String> queryParamsPaginationLess = new LinkedMultiValueMap<>();
+            queryParamsPaginationLess.putAll(queryParams);
+            queryParamsPaginationLess.remove("page");
+            queryParamsPaginationLess.remove("size");
+            queryParamsPaginationLess.remove(SearchEngineMappings.SEARCH_REQUEST_PARSER);
+            context.setQueryParams(queryParamsPaginationLess);
         }
-        // Filter spring pagination parameters if any
-        MultiValueMap<String, String> queryParamsPaginationLess = new LinkedMultiValueMap<>();
-        queryParamsPaginationLess.putAll(queryParams);
-        queryParamsPaginationLess.remove("page");
-        queryParamsPaginationLess.remove("size");
-        queryParamsPaginationLess.remove(SearchEngineMappings.SEARCH_REQUEST_PARSER);
-        context.setQueryParams(queryParamsPaginationLess);
         context.setPageable(pageable);
         return context;
     }
