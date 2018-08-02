@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.configuration.rest;
 
 import com.google.gson.JsonObject;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -27,6 +28,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.configuration.domain.Layout;
@@ -80,6 +82,13 @@ public class ModuleController implements IResourceController<Module> {
 
     @Autowired
     private ILegacySearchEngineJsonClient searchClient;
+
+    @Autowired
+    private IAuthenticationResolver authenticationResolver;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
 
     @Value("${zuul.prefix}")
     private String gatewayPrefix;
@@ -198,8 +207,18 @@ public class ModuleController implements IResourceController<Module> {
     @ResourceAccess(description = "Endpoint to retrieve Mizar config", role = DefaultRole.PUBLIC)
     public HttpEntity<JsonObject> retrieveMapConfig(@PathVariable("applicationId") final String pApplicationId,
             @PathVariable("moduleId") final Long pModuleId, HttpServletRequest request) throws EntityNotFoundException, EntityInvalidException, URISyntaxException, MalformedURLException {
+        // Retrieve login information for link generation
+        String queryParams;
+        if (DefaultRole.PUBLIC.equals(authenticationResolver.getRole())) {
+            // Handle user not log in
+            String tenant = runtimeTenantResolver.getTenant();
+            queryParams = "scope=" + tenant;
+        } else {
+            String token = authenticationResolver.getToken();
+            queryParams = "token=" + token;
+        }
         // Retrieve the URI for the opensearch endpoint (with public gateway IP/Port)
-        URI uriDatasetDescriptor = HttpUtils.retrievePublicURI(request, gatewayPrefix+"/rs-catalog/engines/opensearch/datasets/DATASET_ID/dataobjects/search/opensearchDescription.xml");
+        URI uriDatasetDescriptor = HttpUtils.retrievePublicURI(request, gatewayPrefix+"/rs-catalog/engines/opensearch/datasets/DATASET_ID/dataobjects/search/opensearchDescription.xml", queryParams);
         final Module module = service.retrieveModule(pModuleId);
         MultiValueMap attr = new LinkedMultiValueMap();
         ResponseEntity datasets = searchClient.searchDatasets(attr);

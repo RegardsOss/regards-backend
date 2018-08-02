@@ -22,7 +22,7 @@ public class ModuleConfiguration {
         JsonArray datasetList = new JsonArray();
 
         JsonObject firstDataset = new JsonObject();
-        firstDataset.addProperty("ipId", "URN:A:B:C:D:E:F");
+        firstDataset.addProperty("id", "URN:A:B:C:D:E:F");
         JsonObject firstDatasetWithLinks = new JsonObject();
         firstDatasetWithLinks.add("content", firstDataset);
         datasetList.add(firstDatasetWithLinks);
