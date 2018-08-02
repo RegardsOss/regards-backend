@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.search.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -86,4 +87,9 @@ public interface ISearchEngineConfigurationService {
     SearchEngineConfiguration retrieveConf(Optional<UniformResourceName> datasetUrn, String pluginId)
             throws ModuleException;
 
+    /**
+     * Retrieve all {@link SearchEngineConfiguration}.
+     * @return all search engine configurations
+     */
+    List<SearchEngineConfiguration> retrieveAllConfs();
 }

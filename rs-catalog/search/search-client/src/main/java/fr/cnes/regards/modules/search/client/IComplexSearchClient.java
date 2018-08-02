@@ -44,7 +44,8 @@ import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResource
  *
  */
 @RestClient(name = "rs-catalog")
-@RequestMapping(value = IComplexSearchClient.TYPE_MAPPING, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = IComplexSearchClient.TYPE_MAPPING, produces = MediaType.APPLICATION_JSON_UTF8_VALUE,
+        consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IComplexSearchClient {
 
     static final String TYPE_MAPPING = "/complex/search";

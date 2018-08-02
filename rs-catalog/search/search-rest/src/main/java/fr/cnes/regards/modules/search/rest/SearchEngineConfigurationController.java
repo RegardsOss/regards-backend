@@ -139,8 +139,11 @@ public class SearchEngineConfigurationController implements IResourceController<
         final Resource<SearchEngineConfiguration> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "retrieveConf", LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, element.getId()));
-        resourceService.addLink(resource, this.getClass(), "deleteConf", LinkRels.DELETE,
-                                MethodParamFactory.build(Long.class, element.getId()));
+        if ((element.getDatasetUrn() != null)
+                || !element.getConfiguration().getPluginId().equals(LegacySearchEngine.PLUGIN_ID)) {
+            resourceService.addLink(resource, this.getClass(), "deleteConf", LinkRels.DELETE,
+                                    MethodParamFactory.build(Long.class, element.getId()));
+        }
         resourceService.addLink(resource, this.getClass(), "updateConf", LinkRels.UPDATE,
                                 MethodParamFactory.build(Long.class, element.getId()),
                                 MethodParamFactory.build(SearchEngineConfiguration.class));
