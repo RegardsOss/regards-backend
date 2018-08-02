@@ -1,5 +1,7 @@
 # REGARDS cloud
 
+REGARDS is still under development. **This version is a beta version**.
+
 This is the microservice infrastructure repository. It manages :
 * System gateway (relying on Netflix Zuul),
 * System authentication (relying on Spring OAuth2),
