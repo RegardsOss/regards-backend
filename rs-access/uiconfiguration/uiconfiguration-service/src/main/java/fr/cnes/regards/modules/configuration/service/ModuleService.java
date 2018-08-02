@@ -175,7 +175,7 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
         }
         // Iterate over datasets resources
         ds.forEach(d -> {
-            String datasetIpId = d.getAsJsonObject().get("content").getAsJsonObject().get("ipId").getAsString();
+            String datasetIpId = d.getAsJsonObject().get("content").getAsJsonObject().get("id").getAsString();
             JsonObject layer = new JsonObject();
             layer.addProperty("category", "Catalog");
             layer.addProperty("type", "OpenSearch");
