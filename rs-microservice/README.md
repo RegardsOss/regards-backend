@@ -1,5 +1,7 @@
 # REGARDS microservice framework
 
+REGARDS is still under development. **This version is a beta version**.
+
 This repository brings together all the REGARDS framework features :
 * Archetypes for module and microservice generation,
 * Core framework modules : plugin engine, job manager, etc.
