@@ -41,6 +41,10 @@ public class Polygon extends AbstractGeometry<PolygonPositions> {
         coordinates = new PolygonPositions();
     }
 
+    public boolean containsHoles() {
+        return !coordinates.getHoles().isEmpty();
+    }
+
     @Override
     public <T> T accept(IGeometryVisitor<T> visitor) {
         return visitor.visitPolygon(this);

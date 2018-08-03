@@ -58,6 +58,13 @@ public class Position {
         return latitude;
     }
 
+    /**
+     * Useful for normalization
+     */
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
+
     public Optional<Double> getAltitude() {
         return Optional.ofNullable(altitude);
     }

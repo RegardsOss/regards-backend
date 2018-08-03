@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.plugins;
+package fr.cnes.regards.framework.modules.plugins;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,13 +26,13 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
- * SamplePlugin
+ * SampleErrorPlugin
  *
  * @author Christophe Mertz
  */
-@Plugin(description = "Sample plugin test", id = "aSamplePlugin", version = "0.0.1", author = "REGARDS Team",
+@Plugin(description = "Sample plugin test", id = "aSampleErrorPlugin", version = "0.0.1", author = "REGARDS Team",
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
-public class SamplePlugin implements ISamplePlugin {
+public class SampleErrorPlugin implements ISamplePlugin {
 
     public static final String FIELD_NAME_SUFFIX = "suffix";
 
@@ -40,18 +40,18 @@ public class SamplePlugin implements ISamplePlugin {
 
     public static final String FIELD_NAME_ACTIVE = "isActive";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SamplePlugin.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SampleErrorPlugin.class);
 
     /**
      * A {@link String} parameter
      */
-    @PluginParameter(description = "string parameter", label = "SUFFIXE", defaultValue = "Hello")
+    @PluginParameter(description = "string parameter", label = "SUFFIXE")
     private String suffix;
 
     /**
      * A {@link Integer} parameter
      */
-    @PluginParameter(description = "int parameter", label = "COEFF", defaultValue = "-333", optional = true)
+    @PluginParameter(description = "int parameter", label = "COEFF")
     private Integer coef;
 
     /**
@@ -64,7 +64,7 @@ public class SamplePlugin implements ISamplePlugin {
     public String echo(final String pMessage) {
         final StringBuffer str = new StringBuffer();
         if (isActive) {
-            str.append(this.getClass().getName() + " -> " + pMessage + " - " + suffix);
+            str.append(this.getClass().getName() + " -> " + pMessage + suffix);
         } else {
 
             str.append(this.getClass().getName() + ":is not active");
@@ -86,6 +86,7 @@ public class SamplePlugin implements ISamplePlugin {
     private void aInit() {
         LOGGER.info("Init method call : " + this.getClass().getName() + "suffixe:" + suffix + "|active:" + isActive
                 + "|coeff:" + coef);
+        throw new IllegalArgumentException();
     }
 
 }

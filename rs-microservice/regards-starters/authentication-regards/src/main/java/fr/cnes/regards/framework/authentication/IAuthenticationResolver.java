@@ -29,4 +29,6 @@ public interface IAuthenticationResolver {
     String getUser();
 
     String getRole();
+
+    String getToken();
 }

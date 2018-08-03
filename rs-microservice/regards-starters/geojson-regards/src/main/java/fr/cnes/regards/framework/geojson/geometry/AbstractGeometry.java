@@ -47,13 +47,6 @@ public abstract class AbstractGeometry<T> extends AbstractGeoJsonObject implemen
         this.coordinates = coordinates;
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T extends IGeometry> T withCrs(String crs) {
-        this.setCrs(crs);
-        return (T) this;
-    }
-
     @Override
     public int hashCode() {
         final int prime = 31;

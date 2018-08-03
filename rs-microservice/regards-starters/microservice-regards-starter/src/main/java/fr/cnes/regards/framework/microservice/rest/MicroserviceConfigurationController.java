@@ -18,13 +18,15 @@
  */
 package fr.cnes.regards.framework.microservice.rest;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.HashSet;
 import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +46,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-
 import fr.cnes.regards.framework.gson.GsonBuilderFactory;
 import fr.cnes.regards.framework.gson.adapters.ClassAdapter;
 import fr.cnes.regards.framework.gson.strategy.SerializationExclusionStrategy;
@@ -54,6 +55,7 @@ import fr.cnes.regards.framework.module.manager.IModuleConfigurationManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItemAdapter;
+import fr.cnes.regards.framework.module.manager.ModuleImportReport;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 
@@ -137,20 +139,40 @@ public class MicroserviceConfigurationController {
 
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Import microservice configuration")
-    public ResponseEntity<Void> importConfiguration(@RequestParam("file") MultipartFile file) throws ModuleException {
+    public ResponseEntity<Set<ModuleImportReport>> importConfiguration(@RequestParam("file") MultipartFile file) throws ModuleException {
 
         try (JsonReader reader = new JsonReader(new InputStreamReader(file.getInputStream(), "UTF-8"))) {
             MicroserviceConfiguration microConfig = getConfigGson().fromJson(reader, MicroserviceConfiguration.class);
             // Propagate configuration to modules
             if ((managers != null) && !managers.isEmpty()) {
+                Set<ModuleImportReport> importReports = new HashSet<>();
                 for (ModuleConfiguration module : microConfig.getModules()) {
                     for (IModuleConfigurationManager manager : managers) {
                         if (manager.isApplicable(module)) {
-                            manager.importConfiguration(module);
+                            importReports.add(manager.importConfigurationAndLog(module));
                         }
                     }
                 }
-                return ResponseEntity.status(HttpStatus.CREATED).build();
+                Set<ModuleImportReport> modulesInError = importReports.stream()
+                        .filter(mir -> mir.isOnlyErrors() || !mir.getImportErrors().isEmpty())
+                        .collect(Collectors.toSet());
+                // if there is no error at all
+                if(modulesInError.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.CREATED).build();
+                } else {
+                    //if not all import had errors
+                    if(modulesInError.size() < importReports.size()) {
+                        return new ResponseEntity<>(importReports, HttpStatus.PARTIAL_CONTENT);
+                    } else {
+                        // now that we know that every module has errors, lets check if any configuration at all could be imported
+                        long numberModulesInTotalError = modulesInError.stream().filter(mir->mir.isOnlyErrors()).count();
+                        if(numberModulesInTotalError == modulesInError.size()) {
+                            return new ResponseEntity<>(importReports, HttpStatus.CONFLICT);
+                        } else {
+                            return new ResponseEntity<>(importReports, HttpStatus.PARTIAL_CONTENT);
+                        }
+                    }
+                }
             } else {
                 LOGGER.warn("Configuration cannot be imported because no module configuration manager is found!");
                 return ResponseEntity.unprocessableEntity().build();

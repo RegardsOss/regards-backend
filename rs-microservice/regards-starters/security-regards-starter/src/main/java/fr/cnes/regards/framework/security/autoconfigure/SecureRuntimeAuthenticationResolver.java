@@ -50,4 +50,14 @@ public class SecureRuntimeAuthenticationResolver implements IAuthenticationResol
             return null;
         }
     }
+
+    @Override
+    public String getToken() {
+        JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null) {
+            return authentication.getJwt();
+        } else {
+            return null;
+        }
+    }
 }

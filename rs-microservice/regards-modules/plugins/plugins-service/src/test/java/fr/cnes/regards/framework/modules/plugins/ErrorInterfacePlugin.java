@@ -16,9 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.plugins;
+package fr.cnes.regards.framework.modules.plugins;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
@@ -26,35 +30,33 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
  *
  * @author Christophe Mertz
  */
-@Plugin(description = "Complex plugin test", id = "aComplexErrorPlugin", version = "0.0.1", author = "REGARDS Team",
+@Plugin(description = "Sample plugin test", id = "anErrorPluginInterface", version = "0.0.1", author = "REGARDS Team",
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
-public class ComplexErrorPlugin implements ISamplePlugin {
+public class ErrorInterfacePlugin implements IComplexInterfacePlugin {
 
-    public static final String FIELD_NAME_COEF = "coef";
-
-    public static final String FIELD_NAME_PLUGIN = "interfacePlugin";
+    public static final String FIELD_NAME = "aLong";
 
     /**
-     * A {@link Integer} parameter
+     * Class logger
      */
-    @PluginParameter(description = "int parameter", label = "COEFF")
-    private final Integer coef = 0;
+    private static final Logger LOGGER = LoggerFactory.getLogger(ErrorInterfacePlugin.class);
 
     /**
-     * A {@link String} parameter
+     * A {@link Long} parameter
      */
-    @PluginParameter(description = "plugin parameter", label = "PLUGIN_PARAM")
-    private INotInterfacePlugin interfacePlugin;
+    @PluginParameter(description = "long parameter", label = "LONG_PARAM")
+    private Long aLong;
 
-    @Override
-    public String echo(String pMessage) {
-        final StringBuffer str = new StringBuffer();
-        str.append(this.getClass().getName() + "-" + pMessage + interfacePlugin.toString());
-        return str.toString();
+    /**
+     * Init method
+     */
+    @PluginInit
+    private void aInit() {
+        LOGGER.info("Init method call : " + this.getClass().getName() + "|long:" + aLong);
     }
 
     @Override
-    public int add(int pFist, int pSecond) {
+    public int mult(final int pFirst, final int pSecond) {
         return 0;
     }
 

@@ -26,8 +26,8 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.plugins.ISamplePlugin;
-import fr.cnes.regards.framework.plugins.SamplePlugin;
+import fr.cnes.regards.framework.modules.plugins.ISamplePlugin;
+import fr.cnes.regards.framework.modules.plugins.SamplePlugin;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 
 /***

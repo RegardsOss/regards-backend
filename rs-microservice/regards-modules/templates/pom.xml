@@ -51,7 +51,6 @@
 		<module>templates-dao</module>
 		<module>templates-rest</module>
 		<module>templates-service</module>
-		<module>templates-test</module>
 	</modules>
 
 	<dependencyManagement>
@@ -81,12 +80,6 @@
 				<groupId>fr.cnes.regards.modules.templates</groupId>
 				<artifactId>templates-client</artifactId>
 				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.templates</groupId>
-				<artifactId>templates-test</artifactId>
-				<version>${project.version}</version>
-				<type>test-jar</type>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
