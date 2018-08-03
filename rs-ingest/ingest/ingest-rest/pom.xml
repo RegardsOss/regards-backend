@@ -57,10 +57,12 @@
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>geojson-docs</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>oais-docs</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	
