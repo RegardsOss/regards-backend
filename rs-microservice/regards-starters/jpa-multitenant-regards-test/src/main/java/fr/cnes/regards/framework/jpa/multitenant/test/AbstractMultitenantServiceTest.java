@@ -72,7 +72,7 @@ public abstract class AbstractMultitenantServiceTest extends AbstractDaoTest {
 
     @Configuration
     @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
-    static class ScanningConfiguration {
+    public static class ScanningConfiguration {
     }
 
     /**
@@ -83,11 +83,12 @@ public abstract class AbstractMultitenantServiceTest extends AbstractDaoTest {
      */
     @BeforeTransaction
     public void beforeTransaction() {
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
     }
 
     /**
-     * Useful class to simulate a Spring Boot {@link ApplicationReadyEvent}
+     * Useful class to simulate a Spring Boot {@link ApplicationReadyEvent}.<br/>
+     * <b>Warning : subscribers may manipulate tenant so call this method before all others.</b>
      */
     protected void simulateApplicationReadyEvent() {
         springPublisher.publishEvent(new ApplicationReadyEvent(Mockito.mock(SpringApplication.class), null, null));
