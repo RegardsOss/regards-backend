@@ -67,20 +67,16 @@
 			<artifactId>plugins-service</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.entities</groupId>
-			<artifactId>entities-client</artifactId>
+			<groupId>fr.cnes.regards.modules.dam</groupId>
+			<artifactId>dam-client</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.accessrights</groupId>
 			<artifactId>accessrights-client</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.entities</groupId>
-			<artifactId>entities-domain</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.entities</groupId>
-			<artifactId>entities-gson</artifactId>
+			<groupId>fr.cnes.regards.modules.dam</groupId>
+			<artifactId>dam-gson</artifactId>
 		</dependency>
 		<!-- COTS -->
 		<dependency>
@@ -98,8 +94,8 @@
 			<artifactId>indexer-service</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.models</groupId>
-			<artifactId>models-client</artifactId>
+			<groupId>fr.cnes.regards.modules.dam</groupId>
+			<artifactId>dam-client</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
@@ -112,10 +108,6 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.search</groupId>
 			<artifactId>search-domain</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.dataaccess</groupId>
-			<artifactId>dataaccess-client</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.opensearch</groupId>

@@ -64,10 +64,10 @@ public class TestService implements IService {
             responseList = Sets.newLinkedHashSet();
         } else {
             Model model = Model.build("pName", "pDescription", EntityType.DATA);
-            DataObject do1 = new DataObject(model, "pTenant", "pLabel1");
+            DataObject do1 = new DataObject(model, "pTenant", "DO1", "pLabel1");
             do1.setIpId(new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "pTenant",
                     UUID.fromString("924d1f0d-37ba-4da1-9be3-d94aac629897"), 1));
-            DataObject do2 = new DataObject(model, "pTenant", "pLabel2");
+            DataObject do2 = new DataObject(model, "pTenant", "DO2", "pLabel2");
             do2.setIpId(new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, "pTenant",
                     UUID.fromString("74f2c965-0136-47f0-93e1-4fd098db701c"), 1));
             responseList = Sets.newLinkedHashSet(do1, do2);

@@ -57,7 +57,7 @@ public class EngineConfiguration {
         IDatasetClient client = Mockito.mock(IDatasetClient.class);
         Model mockedModel = new Model();
         mockedModel.setName("MockedModel");
-        Dataset mockDataset = new Dataset(mockedModel, "tenant",
+        Dataset mockDataset = new Dataset(mockedModel, "tenant", "DSMOCK",
                 "Mocked dataset response from mock dataset dam client");
         mockDataset.setId(1L);
         mockDataset.setIpId(UniformResourceName

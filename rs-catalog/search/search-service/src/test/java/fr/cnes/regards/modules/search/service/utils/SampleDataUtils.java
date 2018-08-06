@@ -267,17 +267,17 @@ public class SampleDataUtils {
     /**
      * A dummy dataobject
      */
-    public static final DataObject DATAOBJECT = new DataObject(DATAOBJET_MODEL, "tenant", "DO1");
+    public static final DataObject DATAOBJECT = new DataObject(DATAOBJET_MODEL, "tenant", "DO1", "DO1");
 
     /**
      * A dummy dataset
      */
-    public static final Dataset DATASET = new Dataset(DATASET_MODEL, "tenant", "DS1");
+    public static final Dataset DATASET = new Dataset(DATASET_MODEL, "tenant", "DS1", "DS1");
 
     /**
      * A dummy document
      */
-    public static final Document DOCUMENT = new Document(DOCUMENT_MODEL, "tenant", "DOC1");
+    public static final Document DOCUMENT = new Document(DOCUMENT_MODEL, "tenant", "DOC1", "DOC1");
 
     /**
      * A dummy list of facets
