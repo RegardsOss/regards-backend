@@ -95,6 +95,7 @@
 		<module>authentication-regards-starter</module>
 		<module>jpa-commons-regards</module>
 		<module>jpa-data-regards</module>
+		<module>microservice-logger</module>
 	</modules>
 
 	<dependencies>
