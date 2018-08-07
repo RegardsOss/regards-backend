@@ -44,15 +44,15 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
-import fr.cnes.regards.modules.entities.domain.Dataset;
-import fr.cnes.regards.modules.entities.domain.feature.DataObjectFeature;
-import fr.cnes.regards.modules.entities.domain.feature.DatasetFeature;
-import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
+import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import fr.cnes.regards.modules.dam.domain.entities.feature.DataObjectFeature;
+import fr.cnes.regards.modules.dam.domain.entities.feature.DatasetFeature;
+import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
+import fr.cnes.regards.modules.dam.domain.models.Model;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.FilesSummary;
-import fr.cnes.regards.modules.models.domain.Model;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
 import fr.cnes.regards.modules.search.domain.SearchRequest;
@@ -87,13 +87,13 @@ public class SearchClientMock implements IComplexSearchClient {
         dsModel.setType(EntityType.DATASET);
         dsModel.setId(1L);
 
-        ds1 = new Dataset(dsModel, "tenant", "DS1");
+        ds1 = new Dataset(dsModel, "tenant", "DS1", "DS1");
         ds1.setIpId(DS1_IP_ID);
 
-        ds2 = new Dataset(dsModel, "tenant", "DS2");
+        ds2 = new Dataset(dsModel, "tenant", "DS2", "DS2");
         ds2.setIpId(DS2_IP_ID);
 
-        ds3 = new Dataset(dsModel, "tenant", "DS3");
+        ds3 = new Dataset(dsModel, "tenant", "DS3", "DS3");
         ds3.setIpId(DS3_IP_ID);
     }
 
@@ -263,7 +263,7 @@ public class SearchClientMock implements IComplexSearchClient {
                 List<Resource<EntityFeature>> list = new ArrayList<>();
                 File testDir = new File("src/test/resources/files");
                 for (File dir : testDir.listFiles()) {
-                    EntityFeature feature = new DataObjectFeature("tenant", dir.getName());
+                    EntityFeature feature = new DataObjectFeature("tenant", dir.getName(), dir.getName());
                     feature.setId(UniformResourceName.fromString(dir.getName()));
                     Multimap<DataType, DataFile> fileMultimap = ArrayListMultimap.create();
                     for (File file : dir.listFiles()) {
