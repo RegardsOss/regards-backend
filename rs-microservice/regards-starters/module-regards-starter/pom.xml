@@ -44,9 +44,19 @@
 	</developers>
 
 	<dependencies>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-xml</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.module</groupId>
+			<artifactId>jackson-module-jaxb-annotations</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>module-regards</artifactId>
 		</dependency>
-	</dependencies>
+    </dependencies>
 </project>
