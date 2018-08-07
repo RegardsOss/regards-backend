@@ -102,17 +102,13 @@
         <fr.cnes.regards.microservices.catalog.plugin-client.version>3.0.0-SNAPSHOT</fr.cnes.regards.microservices.catalog.plugin-client.version>
         <fr.cnes.regards.utils.plugin-utils.version>3.0.0-SNAPSHOT</fr.cnes.regards.utils.plugin-utils.version>
         <fr.cnes.regards.modules.project.version>3.0.0-SNAPSHOT</fr.cnes.regards.modules.project.version>
-        <fr.cnes.regards.modules.datasources.version>3.0.0-SNAPSHOT</fr.cnes.regards.modules.datasources.version>
-        <fr.cnes.regards.modules.models.version>3.0.0-SNAPSHOT</fr.cnes.regards.modules.models.version>
         <fr.cnes.regards.modules.crawler.version>3.0.0-SNAPSHOT</fr.cnes.regards.modules.crawler.version>
         <fr.cnes.regards.modules.indexer.version>3.0.0-SNAPSHOT</fr.cnes.regards.modules.indexer.version>
         <fr.cnes.regards.modules.accessrights-instance.version>3.0.0-SNAPSHOT</fr.cnes.regards.modules.accessrights-instance.version>
         <fr.cnes.regards.modules.accessrights.version>3.0.0-SNAPSHOT</fr.cnes.regards.modules.accessrights.version>
         <fr.cnes.regards.modules.access.version>3.0.0-SNAPSHOT</fr.cnes.regards.modules.access.version>
         <fr.cnes.regards.modules.uiconfiguration.version>3.0.0-SNAPSHOT</fr.cnes.regards.modules.uiconfiguration.version>
-        <fr.cnes.regards.modules.entities.version>3.0.0-SNAPSHOT</fr.cnes.regards.modules.entities.version>
         <fr.cnes.regards.modules.dam.version>3.0.0-SNAPSHOT</fr.cnes.regards.modules.dam.version>
-        <fr.cnes.regards.modules.dataaccess.version>3.0.0-SNAPSHOT</fr.cnes.regards.modules.dataaccess.version>
         <fr.cnes.regards.frontend-webapp.version>3.0.0-SNAPSHOT</fr.cnes.regards.frontend-webapp.version>
         <fr.cnes.regards.modules.emails.version>3.0.0-SNAPSHOT</fr.cnes.regards.modules.emails.version>
         <fr.cnes.regards.modules.notification.version>3.0.0-SNAPSHOT</fr.cnes.regards.modules.notification.version>
@@ -562,27 +558,6 @@
                 <version>${fr.cnes.regards.modules.project.version}</version>
                 <type>test-jar</type>
             </dependency>
-            <!-- DataSources -->
-            <dependency>
-                <groupId>fr.cnes.regards.modules.datasources</groupId>
-                <artifactId>datasources-domain</artifactId>
-                <version>${fr.cnes.regards.modules.datasources.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.datasources</groupId>
-                <artifactId>datasources-service</artifactId>
-                <version>${fr.cnes.regards.modules.datasources.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.datasources</groupId>
-                <artifactId>datasources-service-contract</artifactId>
-                <version>${fr.cnes.regards.modules.datasources.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.datasources</groupId>
-                <artifactId>datasources-rest</artifactId>
-                <version>${fr.cnes.regards.modules.datasources.version}</version>
-            </dependency>
             <!-- Datasource plugins -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.datasources.plugins</groupId>
@@ -658,32 +633,6 @@
 				<artifactId>dam-plugins</artifactId>
 				<version>${fr.cnes.regards.modules.dam.version}</version>
 			</dependency>
-            <!-- Models -->
-            <dependency>
-                <groupId>fr.cnes.regards.modules.models</groupId>
-                <artifactId>models-rest</artifactId>
-                <version>${fr.cnes.regards.modules.models.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.models</groupId>
-                <artifactId>models-domain</artifactId>
-                <version>${fr.cnes.regards.modules.models.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.models</groupId>
-                <artifactId>models-service</artifactId>
-                <version>${fr.cnes.regards.modules.models.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.models</groupId>
-                <artifactId>models-dao</artifactId>
-                <version>${fr.cnes.regards.modules.models.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.models</groupId>
-                <artifactId>models-client</artifactId>
-                <version>${fr.cnes.regards.modules.models.version}</version>
-            </dependency>
             <!-- Crawler -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.crawler</groupId>
@@ -820,47 +769,6 @@
                 <artifactId>backend-for-frontend-rest</artifactId>
                 <version>${fr.cnes.regards.modules.backend-for-frontend.version}</version>
             </dependency>
-            <!-- Entity -->
-            <dependency>
-                <groupId>fr.cnes.regards.modules.entities</groupId>
-                <artifactId>entities-client</artifactId>
-                <version>${fr.cnes.regards.modules.entities.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.entities</groupId>
-                <artifactId>entities-dao</artifactId>
-                <version>${fr.cnes.regards.modules.entities.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.entities</groupId>
-                <artifactId>entities-domain</artifactId>
-                <version>${fr.cnes.regards.modules.entities.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.entities</groupId>
-                <artifactId>entities-gson</artifactId>
-                <version>${fr.cnes.regards.modules.entities.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.entities</groupId>
-                <artifactId>entities-service</artifactId>
-                <version>${fr.cnes.regards.modules.entities.version}</version>
-            </dependency>
-            <dependency>
-            	<groupId>fr.cnes.regards.modules.entities</groupId>
-            	<artifactId>entities-service-contract</artifactId>
-            	<version>${fr.cnes.regards.modules.entities.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.entities</groupId>
-                <artifactId>entities-rest</artifactId>
-                <version>${fr.cnes.regards.modules.entities.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.entities</groupId>
-                <artifactId>entities-plugin</artifactId>
-                <version>${fr.cnes.regards.modules.entities.version}</version>
-            </dependency>
             <!-- Storage -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.storage</groupId>
@@ -925,27 +833,6 @@
                 <artifactId>acquisition-plugins-ssalto</artifactId> 
                 <version>${fr.cnes.regards.modules.dataprovider.version}</version> 
             </dependency> 
-            <!-- Data Access -->
-            <dependency>
-                <groupId>fr.cnes.regards.modules.dataaccess</groupId>
-                <artifactId>dataaccess-domain</artifactId>
-                <version>${fr.cnes.regards.modules.dataaccess.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.dataaccess</groupId>
-                <artifactId>dataaccess-service</artifactId>
-                <version>${fr.cnes.regards.modules.dataaccess.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.dataaccess</groupId>
-                <artifactId>dataaccess-client</artifactId>
-                <version>${fr.cnes.regards.modules.dataaccess.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.dataaccess</groupId>
-                <artifactId>dataaccess-rest</artifactId>
-                <version>${fr.cnes.regards.modules.dataaccess.version}</version>
-            </dependency>
             <!-- Frontend -->
             <dependency>
                 <groupId>fr.cnes.regards</groupId>
