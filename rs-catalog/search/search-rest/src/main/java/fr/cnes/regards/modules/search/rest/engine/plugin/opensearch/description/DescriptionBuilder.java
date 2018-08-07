@@ -153,6 +153,8 @@ public class DescriptionBuilder {
         desc.getUrl().add(buildUrl(project, parameters, searchLink.getHref(), MediaType.APPLICATION_ATOM_XML_VALUE));
         desc.getUrl()
                 .add(buildUrl(project, parameters, searchLink.getHref(), GeoJsonMediaType.APPLICATION_GEOJSON_VALUE));
+        desc.getUrl()
+                .add(buildUrl(project, parameters, searchLink.getHref(), MediaType.APPLICATION_JSON_VALUE));
 
         // Apply active extensions to global description
         extensions.stream().filter(IOpenSearchExtension::isActivated).forEach(ext -> ext.applyToDescription(desc));
