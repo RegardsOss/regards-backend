@@ -325,6 +325,11 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework</groupId>
+                <artifactId>microservice-logger</artifactId>
+                <version>${microservice.starter.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework</groupId>
                 <artifactId>module-regards-starter</artifactId>
                 <version>${module.starter.version}</version>
             </dependency>
