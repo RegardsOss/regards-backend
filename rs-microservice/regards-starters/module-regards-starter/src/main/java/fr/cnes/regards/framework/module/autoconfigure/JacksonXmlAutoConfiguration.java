@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
@@ -19,7 +20,7 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Component
-@ConditionalOnBean(MappingJackson2XmlHttpMessageConverter.class)
+@ConditionalOnProperty(name = "regards.xml.jackson.as.jaxb", havingValue = "true")
 public class JacksonXmlAutoConfiguration {
 
     @Autowired
