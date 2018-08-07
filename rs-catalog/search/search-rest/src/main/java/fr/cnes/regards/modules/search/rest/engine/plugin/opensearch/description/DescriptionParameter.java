@@ -1,7 +1,7 @@
 package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description;
 
+import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
-import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
 
 public class DescriptionParameter {

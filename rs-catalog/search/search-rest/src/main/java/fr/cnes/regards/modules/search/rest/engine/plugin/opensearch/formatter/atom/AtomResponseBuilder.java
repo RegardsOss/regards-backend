@@ -39,7 +39,7 @@ import com.rometools.rome.feed.module.Module;
 import com.rometools.rome.feed.synd.SyndPerson;
 import com.rometools.rome.feed.synd.SyndPersonImpl;
 
-import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
+import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.search.OpenSearchMediaType;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;

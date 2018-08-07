@@ -28,13 +28,13 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
-import fr.cnes.regards.modules.dataaccess.client.IAccessGroupClient;
-import fr.cnes.regards.modules.dataaccess.client.IAccessRightClient;
-import fr.cnes.regards.modules.dataaccess.client.IUserClient;
-import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
-import fr.cnes.regards.modules.entities.client.IDatasetClient;
-import fr.cnes.regards.modules.models.client.IAttributeModelClient;
-import fr.cnes.regards.modules.models.client.IModelAttrAssocClient;
+import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
+import fr.cnes.regards.modules.dam.client.dataaccess.IAccessRightClient;
+import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
+import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
+import fr.cnes.regards.modules.dam.client.models.IAttributeModelClient;
+import fr.cnes.regards.modules.dam.client.models.IModelAttrAssocClient;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
