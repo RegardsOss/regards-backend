@@ -32,15 +32,15 @@ import fr.cnes.regards.framework.amqp.IPoller;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
-import fr.cnes.regards.modules.dataaccess.client.IAccessGroupClient;
-import fr.cnes.regards.modules.dataaccess.client.IAccessRightClient;
-import fr.cnes.regards.modules.dataaccess.client.IUserClient;
-import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
-import fr.cnes.regards.modules.entities.client.IDatasetClient;
-import fr.cnes.regards.modules.entities.domain.Dataset;
-import fr.cnes.regards.modules.models.client.IAttributeModelClient;
-import fr.cnes.regards.modules.models.client.IModelAttrAssocClient;
-import fr.cnes.regards.modules.models.domain.Model;
+import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
+import fr.cnes.regards.modules.dam.client.dataaccess.IAccessRightClient;
+import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
+import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
+import fr.cnes.regards.modules.dam.client.models.IAttributeModelClient;
+import fr.cnes.regards.modules.dam.client.models.IModelAttrAssocClient;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
+import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import fr.cnes.regards.modules.dam.domain.models.Model;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**

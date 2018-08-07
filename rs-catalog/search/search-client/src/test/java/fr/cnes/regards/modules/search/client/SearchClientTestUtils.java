@@ -30,13 +30,13 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
-import fr.cnes.regards.modules.dataaccess.client.IUserClient;
-import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
-import fr.cnes.regards.modules.entities.domain.StaticProperties;
-import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.models.domain.attributes.AttributeModelBuilder;
-import fr.cnes.regards.modules.models.domain.attributes.AttributeType;
-import fr.cnes.regards.modules.models.domain.attributes.Fragment;
+import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
+import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
+import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
+import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModelBuilder;
+import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeType;
+import fr.cnes.regards.modules.dam.domain.models.attributes.Fragment;
 
 /**
  *

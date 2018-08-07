@@ -38,8 +38,8 @@ import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServic
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory;
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory.CatalogPluginResponseType;
-import fr.cnes.regards.modules.entities.domain.DataObject;
-import fr.cnes.regards.modules.models.domain.Model;
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
+import fr.cnes.regards.modules.dam.domain.models.Model;
 
 /**
  * @author Sylvain Vissiere-Guerinet

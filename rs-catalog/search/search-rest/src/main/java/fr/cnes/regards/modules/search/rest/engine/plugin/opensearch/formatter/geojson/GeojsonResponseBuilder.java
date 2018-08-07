@@ -31,7 +31,7 @@ import fr.cnes.regards.framework.geojson.FeatureWithPropertiesCollection;
 import fr.cnes.regards.framework.geojson.GeoJsonLink;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.geojson.Query;
-import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
+import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.Configuration;

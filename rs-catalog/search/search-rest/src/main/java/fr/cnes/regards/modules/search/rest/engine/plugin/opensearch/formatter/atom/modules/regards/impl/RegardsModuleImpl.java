@@ -24,7 +24,7 @@ import com.google.gson.Gson;
 import com.rometools.rome.feed.CopyFrom;
 import com.rometools.rome.feed.module.ModuleImpl;
 
-import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
+import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.atom.modules.regards.RegardsModule;
 
 /**

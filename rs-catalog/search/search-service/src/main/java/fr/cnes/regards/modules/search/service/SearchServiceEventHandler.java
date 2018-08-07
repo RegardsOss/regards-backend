@@ -26,9 +26,9 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.dataaccess.domain.accessgroup.event.AccessGroupAssociationEvent;
-import fr.cnes.regards.modules.dataaccess.domain.accessgroup.event.AccessGroupDissociationEvent;
-import fr.cnes.regards.modules.dataaccess.domain.accessgroup.event.AccessGroupPublicEvent;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.event.AccessGroupAssociationEvent;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.event.AccessGroupDissociationEvent;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.event.AccessGroupPublicEvent;
 import fr.cnes.regards.modules.search.service.cache.accessgroup.IAccessGroupCache;
 
 /**
