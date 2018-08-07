@@ -33,7 +33,7 @@ import javax.validation.constraints.NotNull;
 
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.entities.domain.Dataset;
+import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 
 /**
  * Configuration POJO for {@link ISearchEngine} plugins.

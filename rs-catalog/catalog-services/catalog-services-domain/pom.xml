@@ -23,7 +23,6 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>catalog-services-domain</artifactId>
-	<packaging>jar</packaging>
 
 	<description>Model layer of the Catalog Services module</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -63,8 +62,8 @@
 			<artifactId>plugins-domain</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.models</groupId>
-			<artifactId>models-domain</artifactId>
+			<groupId>fr.cnes.regards.modules.dam</groupId>
+			<artifactId>dam-domain</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>

@@ -23,7 +23,7 @@ import java.util.List;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 
-import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 
 /**
  * Provider for {@link AccessGroup}s with caching facilities.

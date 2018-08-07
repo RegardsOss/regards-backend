@@ -20,8 +20,8 @@ package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.a
 
 import com.google.gson.Gson;
 
-import fr.cnes.regards.modules.entities.domain.AbstractEntity;
-import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
+import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
+import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 
 /**
  * Provides access to Regards information.

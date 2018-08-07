@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
+import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
 
 /**
  * Configuration of an opensearch parameter.

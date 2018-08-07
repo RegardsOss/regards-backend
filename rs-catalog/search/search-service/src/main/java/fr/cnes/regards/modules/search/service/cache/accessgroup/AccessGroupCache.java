@@ -27,9 +27,9 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.modules.dataaccess.client.IAccessGroupClient;
-import fr.cnes.regards.modules.dataaccess.client.IUserClient;
-import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
+import fr.cnes.regards.modules.dam.client.dataaccess.IAccessGroupClient;
+import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 
 /**
  * In this implementation, we choose to simply evict the cache for a tenant in response to "create", "delete" and
