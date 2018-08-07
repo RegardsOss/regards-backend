@@ -36,7 +36,7 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.service.ui.IUIPluginConfigurationService;
-import fr.cnes.regards.modules.entities.domain.Dataset;
+import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 
 /**
  *

@@ -40,11 +40,11 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
-import fr.cnes.regards.modules.entities.domain.AbstractEntity;
-import fr.cnes.regards.modules.entities.domain.Collection;
-import fr.cnes.regards.modules.entities.domain.DataObject;
-import fr.cnes.regards.modules.entities.domain.Dataset;
-import fr.cnes.regards.modules.models.domain.Model;
+import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
+import fr.cnes.regards.modules.dam.domain.entities.Collection;
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
+import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import fr.cnes.regards.modules.dam.domain.models.Model;
 
 /**
  * Declare static variables for tests.
@@ -170,26 +170,26 @@ public class BackendForFrontendTestUtils {
     }
 
     static {
-        DATASET_0 = new Dataset(DATASET_MODEL, DEFAULT_TENANT, "dataset0");
+        DATASET_0 = new Dataset(DATASET_MODEL, DEFAULT_TENANT, "DS0", "dataset0");
     }
 
     static {
-        DATASET_1 = new Dataset(DATASET_MODEL, DEFAULT_TENANT, "dataset1");
+        DATASET_1 = new Dataset(DATASET_MODEL, DEFAULT_TENANT, "DS1", "dataset1");
         DATASET_1.setTags(Sets.newHashSet(DATASET_0.getIpId().toString()));
     }
 
     static {
-        DATAOBJECT = new DataObject(DATAOBJECT_MODEL, DEFAULT_TENANT, "dataobject");
+        DATAOBJECT = new DataObject(DATAOBJECT_MODEL, DEFAULT_TENANT, "DO1", "dataobject");
         DATAOBJECT.setTags(Sets.newHashSet(DATASET_0.getIpId().toString(), "string_tag"));
     }
 
     static {
-        COLLECTION = new Collection(COLLECTION_MODEL, DEFAULT_TENANT, "collection");
+        COLLECTION = new Collection(COLLECTION_MODEL, DEFAULT_TENANT, "COL1", "collection");
         COLLECTION.setTags(Sets.newHashSet(DATASET_1.getIpId().toString()));
     }
 
     static {
-        DOCUMENT = new DataObject(DOCUMENT_MODEL, DEFAULT_TENANT, "document");
+        DOCUMENT = new DataObject(DOCUMENT_MODEL, DEFAULT_TENANT, "DOC1", "document");
         DOCUMENT.setTags(Sets.newHashSet(DATASET_0.getIpId().toString(), DATASET_1.getIpId().toString()));
     }
 
