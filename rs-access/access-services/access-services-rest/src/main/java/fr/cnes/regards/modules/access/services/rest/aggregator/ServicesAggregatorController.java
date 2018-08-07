@@ -40,7 +40,7 @@ import fr.cnes.regards.modules.access.services.service.ui.IUIPluginConfiguration
 import fr.cnes.regards.modules.catalog.services.client.ICatalogServicesClient;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
-import fr.cnes.regards.modules.entities.domain.Dataset;
+import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 
 /**
  * This controller returns aggregations of UI services and Catalog services.

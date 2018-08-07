@@ -37,8 +37,8 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.access.services.dao.ui.ILinkUIPluginsDatasetsRepository;
 import fr.cnes.regards.modules.access.services.domain.event.LinkUiPluginsDatasetsEvent;
 import fr.cnes.regards.modules.access.services.domain.ui.LinkUIPluginsDatasets;
-import fr.cnes.regards.modules.entities.domain.event.BroadcastEntityEvent;
-import fr.cnes.regards.modules.entities.domain.event.EventType;
+import fr.cnes.regards.modules.dam.domain.entities.event.BroadcastEntityEvent;
+import fr.cnes.regards.modules.dam.domain.entities.event.EventType;
 
 /**
  * Service handling properly how the mapping of plugin configurations to datasets is done.
