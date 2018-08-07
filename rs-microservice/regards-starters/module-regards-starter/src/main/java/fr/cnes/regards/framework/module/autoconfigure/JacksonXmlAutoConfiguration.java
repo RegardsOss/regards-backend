@@ -3,6 +3,7 @@ package fr.cnes.regards.framework.module.autoconfigure;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
@@ -18,6 +19,7 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Component
+@ConditionalOnBean(MappingJackson2XmlHttpMessageConverter.class)
 public class JacksonXmlAutoConfiguration {
 
     @Autowired
@@ -28,7 +30,7 @@ public class JacksonXmlAutoConfiguration {
         JaxbAnnotationModule jaxbModule = new JaxbAnnotationModule();
         for (MappingJackson2XmlHttpMessageConverter jacksonConverter : jacksonConverters) {
             ObjectMapper om = jacksonConverter.getObjectMapper();
-            if(om instanceof XmlMapper) {
+            if (om instanceof XmlMapper) {
                 ((XmlMapper) om).setDefaultUseWrapper(false);
             }
             jacksonConverter.getObjectMapper().registerModule(jaxbModule);
