@@ -120,8 +120,8 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
         mercury.getMetadata().addGroup(ACCESS_GROUP, "datasetid", true);
         indexerService.saveEntity(getDefaultTenant(), mercury);
 
-        // Wait until index is really up to date!
-        Thread.sleep(1000L);
+        // Refresh index to be sure data is available for requesting
+        indexerService.refresh(getDefaultTenant());
 
         String json = payload(searchDataobjects());
 

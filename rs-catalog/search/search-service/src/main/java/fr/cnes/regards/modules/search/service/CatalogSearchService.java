@@ -390,7 +390,7 @@ public class CatalogSearchService implements ICatalogSearchService {
                 criterion = ICriterion.and(criterion, IFeatureCriterion.contains(attModel, partialText));
             }
             return searchService.searchUniqueTopValues(searchKey, criterion,
-                                                       IFeatureCriterion.buildFeaturePath(attModel), maxCount);
+                                                       IFeatureCriterion.buildQueryablePath(attModel), maxCount);
         } catch (AccessRightFilterException e) {
             LOGGER.debug("Falling back to empty list of values", e);
             return Collections.emptyList();

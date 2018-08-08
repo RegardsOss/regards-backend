@@ -44,10 +44,10 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 @TestPropertySource(locations = { "classpath:test.properties" },
         properties = { "regards.tenant=legacy", "spring.jpa.properties.hibernate.default_schema=legacy" })
 @MultitenantTransactional
-public class SearchEngineControllerIT extends AbstractEngineIT {
+public class LegacySearchEngineControllerIT extends AbstractEngineIT {
 
     @SuppressWarnings("unused")
-    private static final Logger LOGGER = LoggerFactory.getLogger(SearchEngineControllerIT.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LegacySearchEngineControllerIT.class);
 
     private static final String ENGINE_TYPE = "legacy";
 
@@ -125,6 +125,25 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
+    public void searchDataobjectsFilteredByDatasetModels() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(1)));
+        // Filter
+        customizer.customizeRequestParam().param(SEARCH_TERMS_QUERY, StaticProperties.DATASET_MODEL_IDS + ":(99)");
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
+
+        // No match
+        customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(0)));
+        customizer.customizeRequestParam().param(SEARCH_TERMS_QUERY, StaticProperties.DATASET_MODEL_IDS + ":(999)");
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
+    }
+
+    @Test
     public void searchDataobjectPropertyValues() {
 
         // Search the 9 planets
@@ -151,6 +170,20 @@ public class SearchEngineControllerIT extends AbstractEngineIT {
                 + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_PROPERTY_VALUES, customizer, "Search all error",
                           ENGINE_TYPE, solarSystem.getIpId().toString(),
                           StaticProperties.FEATURE_PROPERTIES + "." + PLANET);
+    }
+
+    @Test
+    public void searchDataobjectPropertyValuesFilteredByDatasetModels() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.length()", Matchers.equalTo(1)));
+
+        // Filter
+        customizer.customizeRequestParam().param(SEARCH_TERMS_QUERY, StaticProperties.DATASET_MODEL_IDS + ":(99)");
+
+        customizer.customizeRequestParam().param("maxCount", "100");
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_PROPERTY_VALUES,
+                          customizer, "Search all error", ENGINE_TYPE, StaticProperties.FEATURE_MODEL);
     }
 
     @Test

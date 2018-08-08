@@ -39,6 +39,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.MimeType;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.geojson.geometry.Polygon;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -277,8 +279,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         DataObject kepler90b = createPlanet(planetModel, "Kepler 90b", PLANET_TYPE_TELLURIC, 1000, 50_000_000L);
         indexerService.saveEntity(getDefaultTenant(), kepler90b);
 
-        // Wait until index is really up to date!
-        Thread.sleep(1000L);
+        // Refresh index to be sure data is available for requesting
+        indexerService.refresh(getDefaultTenant());
 
         initPlugins();
     }
@@ -402,6 +404,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
     protected DataObject createMercury(Model planetModel) {
         DataObject planet = createPlanet(planetModel, MERCURY, PLANET_TYPE_TELLURIC, 4878, 58_000_000L);
+
+        planet.setDatasetModelIds(Sets.newHashSet(99L));
 
         DataFile quicklook = new DataFile();
         quicklook.setMimeType(MimeType.valueOf("application/jpg"));
