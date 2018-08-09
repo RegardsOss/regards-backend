@@ -67,6 +67,10 @@
 			<artifactId>gson-regards-starter</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>geojson-starter</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.modules.search</groupId>
 			<artifactId>search-service</artifactId>
 		</dependency>
