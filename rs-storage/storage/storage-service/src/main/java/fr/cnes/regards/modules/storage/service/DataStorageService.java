@@ -487,9 +487,6 @@ public class DataStorageService implements IDataStorageService {
                         .findFirst();
             // @formatter:on
                 if (ci.isPresent()) {
-                    associatedAIP.getProperties().getPdi().getProvenanceInformation()
-                            .addEvent(EventType.STORAGE.name(),
-                                      "File " + storedDataFile.getName() + " stored into REGARDS");
                     ci.get().getDataObject().setFileSize(storedDataFile.getFileSize());
                     ci.get().getDataObject().getUrls().clear();
                     ci.get().getDataObject().getUrls().addAll(storedDataFile.getUrls());
