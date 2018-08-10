@@ -124,6 +124,24 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
                           customizer, "Search all error", ENGINE_TYPE);
     }
 
+    // http://172.26.47.52/api/v1/rs-access-project/dataobjects/search?
+    // sort=properties.fragment1.activated,ASC&sort=label,ASC
+    // &facets=properties.description,properties.fragment1.activated&offset=0&page=0&size=500
+
+    @Test
+    public void searchDataobjectsWithFacets() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        addCommontMatchers(customizer);
+        // Sort
+        customizer.customizeRequestParam().param("sort", PLANET_TYPE + ",ASC");
+        // Facets
+        customizer.customizeRequestParam().param("facets", PLANET_TYPE);
+
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
+    }
+
     @Test
     public void searchDataobjectsFilteredByDatasetModels() {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
