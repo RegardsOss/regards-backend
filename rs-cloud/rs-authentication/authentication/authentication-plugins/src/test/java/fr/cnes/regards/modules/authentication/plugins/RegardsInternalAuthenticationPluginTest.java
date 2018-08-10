@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.authentication.plugins;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -69,11 +68,7 @@ public class RegardsInternalAuthenticationPluginTest {
         final List<PluginParameter> parameters = new ArrayList<>();
         try {
             // instantiate plugin
-            plugin = PluginUtils.getPlugin(parameters,
-                                           RegardsInternalAuthenticationPlugin.class,
-                                           Arrays.asList(
-                                                   "fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos"),
-                                           new HashMap<>());
+            plugin = PluginUtils.getPlugin(parameters, RegardsInternalAuthenticationPlugin.class, new HashMap<>());
             Assert.assertNotNull(plugin);
         } catch (final PluginUtilsRuntimeException | IllegalArgumentException | SecurityException e) {
             Assert.fail();

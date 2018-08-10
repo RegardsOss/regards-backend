@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.authentication.plugins;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -120,8 +119,7 @@ public class KerberosServiceProviderPluginTest {
                 .addParameter(KerberosSPParameters.KEYTAB_FILEPATH_PARAMETER, keytabFilePath.getPath()).getParameters();
         try {
             // instantiate plugin
-            plugin = PluginUtils.getPlugin(parameters, KerberosServiceProviderPlugin.class, Arrays
-                    .asList("fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos"), new HashMap<>());
+            plugin = PluginUtils.getPlugin(parameters, KerberosServiceProviderPlugin.class, new HashMap<>());
             Assert.assertNotNull(plugin);
         } catch (final PluginUtilsRuntimeException e) {
             Assert.fail();
