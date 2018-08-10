@@ -18,9 +18,10 @@
  */
 package fr.cnes.regards.modules.search.service;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
+
+import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Lists;
+
 import feign.FeignException;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -97,8 +99,7 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
             conf = new SearchEngineConfiguration();
             conf.setLabel("REGARDS search protocol");
             conf.setConfiguration(PluginUtils.getPluginConfiguration(PluginParametersFactory.build().getParameters(),
-                                                                     legacySearchEnginePluginClass,
-                                                                     Lists.newArrayList()));
+                                                                     legacySearchEnginePluginClass));
             try {
                 createConf(conf);
             } catch (ModuleException e) {
@@ -172,7 +173,7 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
 
         if (conf == null) {
             throw new EntityNotFoundException(String.format("SearchType=%s and Dataset=%s", pluginId, ds),
-                                              SearchEngineConfiguration.class);
+                    SearchEngineConfiguration.class);
         }
 
         return addDatasetLabel(conf, Lists.newArrayList());
@@ -195,10 +196,9 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
         }
 
         if ((foundConf != null) && (!foundConf.getId().equals(conf.getId()))) {
-            throw new EntityInvalidException(String.format(
-                    "Search engine already defined for engine <%s> and dataset <%s>",
-                    conf.getConfiguration().getPluginId(),
-                    conf.getDatasetUrn()));
+            throw new EntityInvalidException(
+                    String.format("Search engine already defined for engine <%s> and dataset <%s>",
+                                  conf.getConfiguration().getPluginId(), conf.getDatasetUrn()));
         }
     }
 
@@ -231,8 +231,8 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
                 // Retrieve dataset from dam
                 try {
                     ResponseEntity<Resource<Dataset>> response = datasetClient.retrieveDataset(conf.getDatasetUrn());
-                    if ((response != null) && (response.getBody() != null) && (response.getBody().getContent()
-                            != null)) {
+                    if ((response != null) && (response.getBody() != null)
+                            && (response.getBody().getContent() != null)) {
                         conf.setDataset(response.getBody().getContent());
                         // Add new retrieved dataset into cached ones
                         cachedDatasets.add(response.getBody().getContent());

@@ -286,17 +286,14 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     }
 
     private void initPlugins() throws ModuleException {
-        pluginService.addPluginPackage("fr.cnes.regards.modules.search.rest.engine.plugin.legacy");
         PluginConfiguration legacyConf = PluginUtils
-                .getPluginConfiguration(PluginParametersFactory.build().getParameters(), LegacySearchEngine.class,
-                                        Lists.newArrayList());
+                .getPluginConfiguration(PluginParametersFactory.build().getParameters(), LegacySearchEngine.class);
         legacyConf = pluginService.savePluginConfiguration(legacyConf);
         SearchEngineConfiguration seConf = new SearchEngineConfiguration();
         seConf.setLabel("Legacy conf for all datasets");
         seConf.setConfiguration(legacyConf);
         searchEngineService.createConf(seConf);
 
-        pluginService.addPluginPackage("fr.cnes.regards.modules.search.rest.engine.plugin.opensearch");
         GeoTimeExtension geoTime = new GeoTimeExtension();
         geoTime.setActivated(true);
         RegardsExtension regardsExt = new RegardsExtension();
@@ -337,8 +334,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
                 .addParameter(OpenSearchEngine.MEDIA_EXTENSION_PARAMETER, mediaExt)
                 .addParameter(OpenSearchEngine.PARAMETERS_CONFIGURATION, paramConfigurations)
                 .addParameter(OpenSearchEngine.ENGINE_PARAMETERS, engineConfiguration).getParameters();
-        PluginConfiguration opensearchConf = PluginUtils.getPluginConfiguration(parameters, OpenSearchEngine.class,
-                                                                                Lists.newArrayList());
+        PluginConfiguration opensearchConf = PluginUtils.getPluginConfiguration(parameters, OpenSearchEngine.class);
         openSearchPluginConf = pluginService.savePluginConfiguration(opensearchConf);
         SearchEngineConfiguration seConfOS = new SearchEngineConfiguration();
         seConfOS.setConfiguration(openSearchPluginConf);
