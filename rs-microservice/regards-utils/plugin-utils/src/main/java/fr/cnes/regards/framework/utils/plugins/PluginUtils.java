@@ -58,7 +58,7 @@ import fr.cnes.regards.framework.utils.plugins.bean.PluginUtilsBean;
 /**
  * This class contains all the utilities to create a {@link Plugin} instance, to retrieve all annotated plugins and to
  * create a {@link PluginConfiguration}.<br/>
- * Before using it, you have to call {@link #setup(List)} where parameter may be null.
+ * Before using it, you have to call a setup method.
  * @author Christophe Mertz
  * @author Marc Sordi
  */
@@ -94,6 +94,14 @@ public final class PluginUtils {
      */
     private PluginUtils() {
         // Static class
+    }
+
+    /**
+     * Method to set up plugin context with default package <code>fr.cnes.regards</code><br/>
+     * <b>Must be call on startup in a thread safe manner</b>
+     */
+    public static void setup() {
+        setup(new ArrayList<>());
     }
 
     /**
