@@ -45,7 +45,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
@@ -57,7 +56,6 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
-import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
@@ -79,9 +77,6 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
 
     @Autowired
     private IAcquisitionProcessingService processingService;
-
-    @Autowired
-    private IPluginService pluginService;
 
     @Autowired
     private IAcquisitionFileRepository acqFileRepository;
@@ -117,8 +112,7 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(GlobDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString())).getParameters();
 
-        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(parameters, GlobDiskScanning.class,
-                                                                            Lists.newArrayList());
+        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(parameters, GlobDiskScanning.class);
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan plugin");
         fileInfo.setScanPlugin(scanPlugin);
@@ -126,31 +120,28 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         processingChain.addFileInfo(fileInfo);
 
         // Validation
-        PluginConfiguration validationPlugin = PluginUtils
-                .getPluginConfiguration(Lists.newArrayList(), DefaultFileValidation.class, Lists.newArrayList());
+        PluginConfiguration validationPlugin = PluginUtils.getPluginConfiguration(Lists.newArrayList(),
+                                                                                  DefaultFileValidation.class);
         validationPlugin.setIsActive(true);
         validationPlugin.setLabel("Validation plugin");
         processingChain.setValidationPluginConf(validationPlugin);
 
         // Product
-        PluginConfiguration productPlugin = PluginUtils
-                .getPluginConfiguration(Lists.newArrayList(), DefaultProductPlugin.class, Lists.newArrayList());
+        PluginConfiguration productPlugin = PluginUtils.getPluginConfiguration(Lists.newArrayList(),
+                                                                               DefaultProductPlugin.class);
         productPlugin.setIsActive(true);
         productPlugin.setLabel("Product plugin");
         processingChain.setProductPluginConf(productPlugin);
 
         // SIP generation
-        PluginConfiguration sipGenPlugin = PluginUtils
-                .getPluginConfiguration(Lists.newArrayList(), DefaultSIPGeneration.class, Lists.newArrayList());
+        PluginConfiguration sipGenPlugin = PluginUtils.getPluginConfiguration(Lists.newArrayList(),
+                                                                              DefaultSIPGeneration.class);
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("SIP generation plugin");
         processingChain.setGenerateSipPluginConf(sipGenPlugin);
 
         // SIP post processing
         // Not required
-
-        pluginService.addPluginPackage(IScanPlugin.class.getPackage().getName());
-        pluginService.addPluginPackage(GlobDiskScanning.class.getPackage().getName());
 
         // Save processing chain
         return processingService.createChain(processingChain);

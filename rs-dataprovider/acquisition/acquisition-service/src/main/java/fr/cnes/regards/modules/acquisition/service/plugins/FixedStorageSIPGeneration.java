@@ -40,6 +40,7 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
         url = "https://github.com/RegardsOss")
 public class FixedStorageSIPGeneration extends AbstractMiscStorageInformation implements ISipGenerationPlugin {
 
+    @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(FixedStorageSIPGeneration.class);
 
     @Override

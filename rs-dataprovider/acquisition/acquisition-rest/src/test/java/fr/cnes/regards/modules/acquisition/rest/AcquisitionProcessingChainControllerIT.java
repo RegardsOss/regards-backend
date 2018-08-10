@@ -36,7 +36,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import com.google.common.collect.Lists;
 import com.jayway.jsonpath.JsonPath;
 
 import fr.cnes.regards.framework.microservice.rest.MicroserviceConfigurationController;
@@ -222,15 +221,14 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         Integer chainId = JsonPath.read(resultAsString, "$.content.id");
 
         // Load it
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         AcquisitionProcessingChain loadedChain = processingService.getChain(chainId.longValue());
         Assert.assertNotNull("Chain must exist", loadedChain);
 
         // Update scan plugin
         List<PluginParameter> params = PluginParametersFactory.build()
                 .addParameter(GlobDiskScanning.FIELD_DIRS, new ArrayList<>()).getParameters();
-        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(params, GlobDiskScanning.class,
-                                                                            Lists.newArrayList());
+        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(params, GlobDiskScanning.class);
         scanPlugin.setIsActive(true);
         String label = "Scan plugin update";
         scanPlugin.setLabel(label);
@@ -249,7 +247,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
                           loadedChain.getId());
 
         // Load new scan plugin configuration
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         loadedChain = processingService.getChain(chainId.longValue());
         Assert.assertEquals(label, loadedChain.getFileInfos().get(0).getScanPlugin().getLabel());
     }
@@ -274,15 +272,14 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         Integer chainId = JsonPath.read(resultAsString, "$.content.id");
 
         // Load it
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         AcquisitionProcessingChain loadedChain = processingService.getChain(chainId.longValue());
         Assert.assertNotNull("Chain must exist", loadedChain);
 
         // Update scan plugin
         List<PluginParameter> params = PluginParametersFactory.build()
                 .addParameter(GlobDiskScanning.FIELD_DIRS, new ArrayList<>()).getParameters();
-        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(params, GlobDiskScanning.class,
-                                                                            Lists.newArrayList());
+        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(params, GlobDiskScanning.class);
         scanPlugin.setIsActive(true);
         String label = "Scan plugin update";
         scanPlugin.setLabel(label);
@@ -295,7 +292,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
                           loadedChain.getId());
 
         // Load new scan plugin configuration
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         loadedChain = processingService.getChain(chainId.longValue());
         Assert.assertEquals(label, loadedChain.getFileInfos().get(0).getScanPlugin().getLabel());
 
