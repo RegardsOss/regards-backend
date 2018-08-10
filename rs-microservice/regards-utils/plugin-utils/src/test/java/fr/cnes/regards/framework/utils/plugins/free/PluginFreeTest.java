@@ -54,8 +54,8 @@ public class PluginFreeTest {
         PluginParametersFactory dynParametersFactory = PluginParametersFactory.build();
         dynParametersFactory.addParameter(PluginWithBoolean.FIELD_NAME_STRING, "string1");
 
-        IFreePlugin plugin = PluginUtils.getPlugin(parameters, FreePluginWithString.class,
-                                                   Arrays.asList(this.getClass().getPackage().getName()), null,
+        PluginUtils.setup(this.getClass().getPackage().getName());
+        IFreePlugin plugin = PluginUtils.getPlugin(parameters, FreePluginWithString.class, null,
                                                    dynParametersFactory.asArray());
         Assert.assertNotNull(plugin);
         plugin.doIt();

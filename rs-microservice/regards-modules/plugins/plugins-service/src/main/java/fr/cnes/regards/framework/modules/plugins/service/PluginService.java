@@ -20,6 +20,7 @@
 package fr.cnes.regards.framework.modules.plugins.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -32,14 +33,14 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.util.Assert;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -59,7 +60,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.event.BroadcastPluginCon
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginConfEvent;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginServiceAction;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.utils.plugins.PluginInterfaceUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
@@ -69,7 +69,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
  * @author Christophe Mertz
  * @author Sébastien Binda
  *
- * TODO V3 : with hot plugin loading, be careful to properly clean the plugin cache when plugin version change
+ *         TODO V3 : with hot plugin loading, be careful to properly clean the plugin cache when plugin version change
  */
 @MultitenantTransactional
 @Service
@@ -112,42 +112,27 @@ public class PluginService implements IPluginService {
     @Value("${regards.plugins.packages-to-scan:#{null}}")
     private String[] packagesToScan;
 
-    /**
-     * The plugin's package to scan
-     */
-    private List<String> pluginPackages;
-
-    /**
-     * Plugins implementation metadata list keyed by plugin id. Plugin id is the id of the "@PluginMetaData"
-     * annotation of the implementation class.
-     * <b>Note: </b> PluginService is used in multi-thread environment (see IngesterService and CrawlerService) so
-     * ConcurrentHashMap is used instead of HashMap
-     */
-    private Map<String, PluginMetaData> pluginMap;
-
-    public PluginService(final IPluginConfigurationRepository pPluginConfigurationRepository,
-            final IPublisher publisher, IRuntimeTenantResolver runtimeTenantResolver) {
-        this.repos = pPluginConfigurationRepository;
+    public PluginService(IPluginConfigurationRepository pluginConfigurationRepository, IPublisher publisher,
+            IRuntimeTenantResolver runtimeTenantResolver) {
+        this.repos = pluginConfigurationRepository;
         this.publisher = publisher;
         this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
-    private Map<String, PluginMetaData> getLoadedPlugins() {
-        if (pluginMap == null) {
-            pluginMap = PluginUtils.getPlugins(getPluginPackages());
-        }
-        return pluginMap;
+    @PostConstruct
+    public void setup() {
+        PluginUtils.setup(packagesToScan == null ? null : Arrays.asList(packagesToScan));
     }
 
     @Override
-    public List<String> getPluginTypes() {
-        return PluginInterfaceUtils.getInterfaces(getPluginPackages());
+    public Set<String> getPluginTypes() {
+        return PluginUtils.getPluginInterfaces();
     }
 
     @Override
     public Set<String> getAvailablePluginTypes() {
         Set<String> instantiablePluginTypes = new HashSet<>();
-        getLoadedPlugins().forEach((id, meta) -> instantiablePluginTypes.addAll(meta.getInterfaceNames()));
+        PluginUtils.getPlugins().forEach((id, meta) -> instantiablePluginTypes.addAll(meta.getInterfaceNames()));
         return instantiablePluginTypes;
     }
 
@@ -160,7 +145,7 @@ public class PluginService implements IPluginService {
     public List<PluginMetaData> getPluginsByType(final Class<?> interfacePluginType) {
         List<PluginMetaData> availablePlugins = new ArrayList<>();
 
-        getLoadedPlugins().forEach((pluginId, metaData) -> {
+        PluginUtils.getPlugins().forEach((pluginId, metaData) -> {
             try {
                 if ((interfacePluginType == null)
                         || interfacePluginType.isAssignableFrom(Class.forName(metaData.getPluginClassName()))) {
@@ -191,7 +176,7 @@ public class PluginService implements IPluginService {
             throw new EntityInvalidException(msg.toString());
         }
 
-        getLoadedPlugins().forEach((pluginId, metaData) -> {
+        PluginUtils.getPlugins().forEach((pluginId, metaData) -> {
             if (metaData.getPluginClassName().equals(plgConf.getPluginClassName())) {
                 plgConf.setInterfaceNames(metaData.getInterfaceNames());
             }
@@ -316,7 +301,7 @@ public class PluginService implements IPluginService {
     }
 
     /**
-     * Clean from cache given plugin configuration and all those which  use it (recursively)
+     * Clean from cache given plugin configuration and all those which use it (recursively)
      */
     private void cleanRecursively(PluginConfiguration pluginConf) {
         // And don't forget to clean all PluginConfiguration that have this plugin as a parameter
@@ -362,7 +347,7 @@ public class PluginService implements IPluginService {
 
     @Override
     public PluginMetaData getPluginMetaDataById(final String pPluginImplId) {
-        return getLoadedPlugins().get(pPluginImplId);
+        return PluginUtils.getPlugins().get(pPluginImplId);
     }
 
     @Override
@@ -449,7 +434,7 @@ public class PluginService implements IPluginService {
         PluginConfiguration pluginConf = loadPluginConfiguration(pPluginConfigurationId);
 
         // Get the plugin implementation associated
-        PluginMetaData pluginMetadata = getLoadedPlugins().get(pluginConf.getPluginId());
+        PluginMetaData pluginMetadata = PluginUtils.getPlugins().get(pluginConf.getPluginId());
 
         if (pluginMetadata == null) {
             LOGGER.debug("No plugin metadata found for plugin configuration id {}", pluginConf.getPluginId());
@@ -481,8 +466,7 @@ public class PluginService implements IPluginService {
             }
         }
 
-        T resultPlugin = PluginUtils.getPlugin(pluginConf, pluginMetadata, getPluginPackages(), getPluginCache(),
-                                               dynamicPluginParameters);
+        T resultPlugin = PluginUtils.getPlugin(pluginConf, pluginMetadata, getPluginCache(), dynamicPluginParameters);
 
         // Put in the map, only if there is no dynamic parameters
         if (dynamicPluginParameters.length == 0) {
@@ -499,9 +483,8 @@ public class PluginService implements IPluginService {
     private void logPluginServiceState(String invokingMethod) {
         LOGGER.debug("logPluginServiceState invoked by : {}", invokingMethod);
         LOGGER.debug("This identifier: {}", this.toString());
-        LOGGER.debug("List of plugin packages: {}", Joiner.on(" ,").join(pluginPackages));
         StringBuilder buf = new StringBuilder();
-        for (Entry<String, PluginMetaData> entry : pluginMap.entrySet()) {
+        for (Entry<String, PluginMetaData> entry : PluginUtils.getPlugins().entrySet()) {
 
             // Interfaces
             Iterator<String> interfaceIt = entry.getValue().getInterfaceNames().iterator();
@@ -524,33 +507,6 @@ public class PluginService implements IPluginService {
     @Override
     public List<PluginConfiguration> getAllPluginConfigurations() {
         return repos.findAll();
-    }
-
-    private List<String> getPluginPackages() {
-        // Manage scan packages
-        if (pluginPackages == null) {
-            pluginPackages = ((packagesToScan != null) && (packagesToScan.length > 0))
-                    ? Lists.newArrayList(packagesToScan)
-                    : new ArrayList<>();
-        }
-        return pluginPackages;
-    }
-
-    @Override
-    @MultitenantTransactional(propagation = Propagation.SUPPORTS)
-    public void addPluginPackage(final String pluginPackage) {
-        // First time initiliaze the pluginMap for the configured package
-        getLoadedPlugins();
-
-        if (!pluginPackages.contains(pluginPackage)) {
-            pluginPackages.add(pluginPackage);
-            Map<String, PluginMetaData> newPluginMap = PluginUtils.getPlugins(pluginPackage, pluginPackages);
-            if (pluginMap == null) {
-                // in case the plugin service has been initialized with PluginService(IPluginRepository) constructor
-                pluginMap = new ConcurrentHashMap<>();
-            }
-            pluginMap.putAll(newPluginMap);
-        }
     }
 
     @Override
@@ -711,5 +667,4 @@ public class PluginService implements IPluginService {
         return pluginConfs.stream().filter(conf -> conf.getPluginId().equals(pluginId)).findAny().orElse(null);
 
     }
-
 }

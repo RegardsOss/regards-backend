@@ -16,36 +16,40 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.utils.plugins.generics;
+package fr.cnes.regards.framework.utils.cycle.generics;
 
-import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.junit.Assert;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.framework.utils.plugins.generics.IPluginWithGenerics;
 
 /**
  * @author Marc Sordi
  *
  */
-@Plugin(author = "REGARDS Team", description = "Plugin with POJO collection parameter",
-        id = "PluginWithCyclicPojoCollection", version = "1.0.0", contact = "regards@c-s.fr", licence = "GPLv3",
-        owner = "CNES", url = "https://regardsoss.github.io/")
-public class PluginWithCyclicPojoCollection implements IPluginWithGenerics {
+@Plugin(author = "REGARDS Team", description = "Plugin with String map parameters", id = "PluginWithCyclicPojoMap",
+        version = "1.0.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
+        url = "https://regardsoss.github.io/")
+public class PluginWithCyclicPojoMap implements IPluginWithGenerics {
 
-    // Field name
+    // Attribute name
     public static final String FIELD_NAME = "infos";
 
-    @PluginParameter(label = "Informations", description = "List of cyclic infos as POJO")
-    private List<CyclicInfo> infos;
+    @PluginParameter(keylabel = "Key", label = "Cyclic information", description = "Map of infos as POJO")
+    private Map<String, CyclicInfo> infos;
 
     @Override
     public void doIt() {
         Assert.assertNotNull(infos);
+        Assert.assertTrue(infos instanceof Map<?, ?>);
         Assert.assertTrue(infos.size() == 3);
-        for (CyclicInfo info : infos) {
-            Assert.assertTrue(info instanceof CyclicInfo);
+        for (Entry<String, CyclicInfo> info : infos.entrySet()) {
+            Assert.assertTrue(info.getKey() instanceof String);
+            Assert.assertTrue(info.getValue() instanceof CyclicInfo);
         }
     }
 }

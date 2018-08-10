@@ -21,7 +21,6 @@ package fr.cnes.regards.framework.utils.cycle.detection;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -74,8 +73,9 @@ public class CycleDetectionTest {
                 .addParameter(SamplePluginWithPojo.FIELD_NAME_SUFFIX, "chris_test_1").getParameters();
 
         // instantiate plugin
+        PluginUtils.setup(PLUGIN_PACKAGE);
         SamplePluginWithPojo samplePlugin = PluginUtils.getPlugin(parameters, SamplePluginWithPojo.class,
-                                                                  Arrays.asList(PLUGIN_PACKAGE), new HashMap<>());
+                                                                  new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
@@ -133,8 +133,8 @@ public class CycleDetectionTest {
                 .addParameter(SamplePluginWithPojoCycleDetected.FIELD_NAME_POJO, pojoParent).getParameters();
 
         // instantiate plugin
-        PluginUtils.getPlugin(parameters, SamplePluginWithPojoCycleDetected.class, Arrays.asList(PLUGIN_PACKAGE),
-                              new HashMap<>());
+        PluginUtils.setup(PLUGIN_PACKAGE);
+        PluginUtils.getPlugin(parameters, SamplePluginWithPojoCycleDetected.class, new HashMap<>());
 
         Assert.fail();
     }
@@ -162,8 +162,8 @@ public class CycleDetectionTest {
                 .addParameter(SamplePluginWithPojo.FIELD_NAME_SUFFIX, "suffix").getParameters();
 
         // instantiate plugin
+        PluginUtils.setup(PLUGIN_PACKAGE);
         SamplePluginWithPojoWithSet samplePlugin = PluginUtils.getPlugin(parameters, SamplePluginWithPojoWithSet.class,
-                                                                         Arrays.asList(PLUGIN_PACKAGE),
                                                                          new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
@@ -226,8 +226,8 @@ public class CycleDetectionTest {
                 .getParameters();
 
         // instantiate plugin
-        PluginUtils.getPlugin(parameters, SamplePluginWithPojoCycleDetectedLevelThree.class,
-                              Arrays.asList(PLUGIN_PACKAGE), new HashMap<>());
+        PluginUtils.setup(PLUGIN_PACKAGE);
+        PluginUtils.getPlugin(parameters, SamplePluginWithPojoCycleDetectedLevelThree.class, new HashMap<>());
 
         Assert.fail();
     }

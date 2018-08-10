@@ -74,7 +74,7 @@ public class PluginController implements IResourceController<PluginConfiguration
     public static final String PLUGIN_TYPES = "/plugintypes";
 
     public static final String REQUEST_PARAM_PLUGIN_ID = "pluginId";
-    
+
     /**
      * REST mapping resource : /plugins/{pluginId}
      */
@@ -90,13 +90,13 @@ public class PluginController implements IResourceController<PluginConfiguration
      */
     public static final String PLUGINS_CONFIGS = PLUGINS + "/configs";
 
-    
     public static final String REQUEST_PARAM_CONFIG_ID = "configId";
-    
+
     /**
      * REST mapping resource : /plugins/{pluginId}/config/{configId}
      */
-    public static final String PLUGINS_PLUGINID_CONFIGID = PLUGINS_PLUGINID_CONFIGS + "/{" + REQUEST_PARAM_CONFIG_ID + "}";
+    public static final String PLUGINS_PLUGINID_CONFIGID = PLUGINS_PLUGINID_CONFIGS + "/{" + REQUEST_PARAM_CONFIG_ID
+            + "}";
 
     /**
      * REST mapping resource : /plugins/configs/{configId}
@@ -171,13 +171,14 @@ public class PluginController implements IResourceController<PluginConfiguration
      */
     @RequestMapping(value = PLUGIN_TYPES, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Get all the plugin types (ie interface annotated with @PluginInterface)")
-    public ResponseEntity<List<Resource<String>>> getPluginTypes(@RequestParam(name = "available", required = false) Boolean available) {
-        if(available != null && available.booleanValue() == true) {
+    public ResponseEntity<List<Resource<String>>> getPluginTypes(
+            @RequestParam(name = "available", required = false) Boolean available) {
+        if ((available != null) && (available.booleanValue() == true)) {
             Set<String> types = pluginService.getAvailablePluginTypes();
             List<Resource<String>> resources = types.stream().map(Resource::new).collect(Collectors.toList());
             return new ResponseEntity<>(resources, HttpStatus.OK);
         }
-        List<String> types = pluginService.getPluginTypes();
+        Set<String> types = pluginService.getPluginTypes();
         List<Resource<String>> resources = types.stream().map(Resource::new).collect(Collectors.toList());
 
         return new ResponseEntity<>(resources, HttpStatus.OK);
@@ -214,7 +215,7 @@ public class PluginController implements IResourceController<PluginConfiguration
      * Get all the {@link PluginConfiguration} for a specific plugin type.</br>
      * If any specific plugin type is defined, get all the {@link PluginConfiguration}.
      * @param pluginType an interface name, that implements {@link PluginInterface}.<br>
-     * This parameter is optional.
+     *            This parameter is optional.
      * @return a {@link List} of {@link PluginConfiguration}
      * @throws EntityNotFoundException the specific plugin type name is unknown
      */

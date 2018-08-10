@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.utils.plugins.generics;
+package fr.cnes.regards.framework.utils.cycle.generics;
 
 /**
  * This class contains a {@link CyclicMessage}

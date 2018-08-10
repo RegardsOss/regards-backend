@@ -20,7 +20,9 @@
 package fr.cnes.regards.framework.modules.plugins.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -32,6 +34,9 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.IComplexInterfacePlugin;
+import fr.cnes.regards.framework.modules.plugins.ISamplePlugin;
+import fr.cnes.regards.framework.modules.plugins.SamplePlugin;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -39,12 +44,10 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.event.BroadcastPluginConfEvent;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginServiceAction;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.modules.plugins.IComplexInterfacePlugin;
-import fr.cnes.regards.framework.modules.plugins.ISamplePlugin;
-import fr.cnes.regards.framework.modules.plugins.SamplePlugin;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 
 /**
  * Unit testing of {@link PluginService}.
@@ -55,8 +58,6 @@ import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 public class PluginServiceTest extends PluginServiceUtility {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginServiceTest.class);
-
-    private final String pluginsPackage = "fr.cnes.regards.plugins.utils";
 
     private IPluginConfigurationRepository pluginConfRepositoryMocked;
 
@@ -78,9 +79,8 @@ public class PluginServiceTest extends PluginServiceUtility {
         // create a mock repository
         pluginConfRepositoryMocked = Mockito.mock(IPluginConfigurationRepository.class);
         pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, publisherMocked, runtimeTenantResolver);
-        pluginServiceMocked.addPluginPackage("fr.cnes.regards.plugins");
-        pluginServiceMocked.addPluginPackage("fr.cnes.regards.framework.plugins");
-        pluginServiceMocked.addPluginPackage("fr.cnes.regards.framework.modules.plugins");
+        PluginUtils.setup(Arrays.asList("fr.cnes.regards.plugins", "fr.cnes.regards.framework.plugins",
+                                        "fr.cnes.regards.framework.modules.plugins"));
     }
 
     @Test
@@ -98,7 +98,7 @@ public class PluginServiceTest extends PluginServiceUtility {
 
     @Test
     public void getAllPluginTypes() {
-        final List<String> types = pluginServiceMocked.getPluginTypes();
+        Set<String> types = pluginServiceMocked.getPluginTypes();
 
         Assert.assertNotNull(types);
         Assert.assertFalse(types.isEmpty());
@@ -111,7 +111,6 @@ public class PluginServiceTest extends PluginServiceUtility {
     @Requirement("REGARDS_DSL_CMP_PLG_200")
     @Purpose("Load all plugin's metada for a specific plugin type identified by a Class.")
     public void getPluginOneType() {
-        pluginServiceMocked.addPluginPackage("fr.cnes.regards.mypackage");
         final List<PluginMetaData> plugins = pluginServiceMocked.getPluginsByType(IComplexInterfacePlugin.class);
 
         Assert.assertNotNull(plugins);
@@ -375,7 +374,6 @@ public class PluginServiceTest extends PluginServiceUtility {
                 .thenReturn(aPluginConfiguration);
         Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
 
-        pluginServiceMocked.addPluginPackage(pluginsPackage);
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class);
 
         Assert.assertNotNull(aSamplePlugin);
@@ -401,7 +399,6 @@ public class PluginServiceTest extends PluginServiceUtility {
                 .thenReturn(aPluginConfiguration);
         Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
 
-        pluginServiceMocked.addPluginPackage(pluginsPackage);
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getPlugin(aPluginConfiguration.getId());
 
         Assert.assertNotNull(aSamplePlugin);
@@ -432,7 +429,6 @@ public class PluginServiceTest extends PluginServiceUtility {
                 .thenReturn(aPluginConfiguration);
         Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
 
-        pluginServiceMocked.addPluginPackage(pluginsPackage);
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class);
         Assert.assertNotNull(aSamplePlugin);
 
@@ -469,7 +465,6 @@ public class PluginServiceTest extends PluginServiceUtility {
         final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
                 .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).getParameters().get(0);
 
-        pluginServiceMocked.addPluginPackage(pluginsPackage);
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class,
                                                                                     aDynamicPlgParam);
         Assert.assertNotNull(aSamplePlugin);
@@ -504,7 +499,6 @@ public class PluginServiceTest extends PluginServiceUtility {
         final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
                 .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).getParameters().get(0);
 
-        pluginServiceMocked.addPluginPackage(pluginsPackage);
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class);
         Assert.assertNotNull(aSamplePlugin);
 
@@ -543,7 +537,6 @@ public class PluginServiceTest extends PluginServiceUtility {
         final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
                 .addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, -1).getParameters().get(0);
 
-        pluginServiceMocked.addPluginPackage(pluginsPackage);
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class,
                                                                                     aDynamicPlgParam);
 
@@ -580,7 +573,6 @@ public class PluginServiceTest extends PluginServiceUtility {
                 .thenReturn(aPluginConfiguration);
         Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
 
-        pluginServiceMocked.addPluginPackage(pluginsPackage);
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class);
 
         Assert.assertNotNull(aSamplePlugin);
@@ -614,7 +606,6 @@ public class PluginServiceTest extends PluginServiceUtility {
         final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
                 .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).getParameters().get(0);
 
-        pluginServiceMocked.addPluginPackage(pluginsPackage);
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class,
                                                                                     aDynamicPlgParam);
 
@@ -642,8 +633,7 @@ public class PluginServiceTest extends PluginServiceUtility {
                 .thenReturn(aPluginConfiguration);
         Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
 
-        pluginServiceMocked.addPluginPackage(pluginsPackage);
-        final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class);
+        pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class);
     }
 
     /**
@@ -672,7 +662,6 @@ public class PluginServiceTest extends PluginServiceUtility {
                 .thenReturn(aPluginConfiguration);
         Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
 
-        pluginServiceMocked.addPluginPackage(pluginsPackage);
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class);
 
         Assert.assertNotNull(aSamplePlugin);
