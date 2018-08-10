@@ -30,6 +30,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -65,14 +66,14 @@ public class IngestProcessingServiceTest extends AbstractRegardsServiceTransacti
         newChain.setDescription("Ingest processing chain");
         newChain.setName("ipst_Chain1");
 
-        PluginConfiguration validation = PluginUtils
-                .getPluginConfiguration(Lists.newArrayList(), ValidationTestPlugin.class, Lists.newArrayList());
+        PluginConfiguration validation = PluginUtils.getPluginConfiguration(Lists.newArrayList(),
+                                                                            ValidationTestPlugin.class);
         validation.setIsActive(true);
         validation.setLabel("validationPlugin_ipst");
         newChain.setValidationPlugin(validation);
 
-        PluginConfiguration generation = PluginUtils
-                .getPluginConfiguration(Lists.newArrayList(), AIPGenerationTestPlugin.class, Lists.newArrayList());
+        PluginConfiguration generation = PluginUtils.getPluginConfiguration(Lists.newArrayList(),
+                                                                            AIPGenerationTestPlugin.class);
         generation.setIsActive(true);
         generation.setLabel("generationPlugin_ipst");
         newChain.setGenerationPlugin(generation);

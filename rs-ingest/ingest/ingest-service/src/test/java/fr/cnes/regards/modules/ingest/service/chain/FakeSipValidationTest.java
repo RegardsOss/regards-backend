@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.ingest.service.plugin.FakeSipValidation;
@@ -44,7 +45,8 @@ public class FakeSipValidationTest {
 
     @Test
     public void buildMetadata() {
-        PluginMetaData mtd = PluginUtils.createPluginMetaData(FakeSipValidation.class, MODULE_PACKAGE);
+        PluginUtils.setup(MODULE_PACKAGE);
+        PluginMetaData mtd = PluginUtils.createPluginMetaData(FakeSipValidation.class);
         Assert.assertNotNull(mtd);
         LOGGER.debug(gson.toJson(mtd));
     }

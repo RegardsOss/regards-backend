@@ -70,8 +70,7 @@ public class DefaultAipTaggingTest {
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(DefaultAIPTagging.FIELD_NAME_TAGS, TAGS).getParameters();
 
-        DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class,
-                                                         Arrays.asList(MODULE_PACKAGE), null);
+        DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class, null);
         Assert.assertNotNull(plugin);
         tag(plugin, TAGS, null);
     }
@@ -82,8 +81,7 @@ public class DefaultAipTaggingTest {
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(DefaultAIPTagging.FIELD_NAME_LINKS, LINKS).getParameters();
 
-        DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class,
-                                                         Arrays.asList(MODULE_PACKAGE), null);
+        DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class, null);
         Assert.assertNotNull(plugin);
         tag(plugin, null, LINKS);
     }
@@ -94,8 +92,7 @@ public class DefaultAipTaggingTest {
                 .addParameter(DefaultAIPTagging.FIELD_NAME_TAGS, TAGS)
                 .addParameter(DefaultAIPTagging.FIELD_NAME_LINKS, LINKS).getParameters();
 
-        DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class,
-                                                         Arrays.asList(MODULE_PACKAGE), null);
+        DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class, null);
         Assert.assertNotNull(plugin);
         tag(plugin, TAGS, LINKS);
     }
@@ -104,8 +101,8 @@ public class DefaultAipTaggingTest {
     public void addNothing() throws TagAIPException {
         List<PluginParameter> parameters = PluginParametersFactory.build().getParameters();
 
-        DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class,
-                                                         Arrays.asList(MODULE_PACKAGE), null);
+        PluginUtils.setup(MODULE_PACKAGE);
+        DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class, null);
         Assert.assertNotNull(plugin);
         tag(plugin, null, null);
     }
