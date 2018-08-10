@@ -36,6 +36,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 
 /**
  * Unit testing of {@link PluginService}.
@@ -61,6 +62,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
         pluginConfRepositoryMocked = Mockito.mock(IPluginConfigurationRepository.class);
         pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, Mockito.mock(IPublisher.class),
                 runtimeTenantResolver);
+        PluginUtils.setup();
     }
 
     /**
