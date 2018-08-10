@@ -26,7 +26,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.After;
@@ -141,22 +140,22 @@ public class CDPPStoreTest extends AbstractMultitenantServiceTest {
                               Paths.get("target", "localstorage").toUri().toString())
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 100_000_000).getParameters();
 
-        PluginConfiguration localDataStorageConf = PluginUtils
-                .getPluginConfiguration(parameters, LocalDataStorage.class, Arrays.asList("fr.cnes.regards"));
+        PluginConfiguration localDataStorageConf = PluginUtils.getPluginConfiguration(parameters,
+                                                                                      LocalDataStorage.class);
         localDataStorageConf.setIsActive(true);
         localDataStorageConf.setLabel("Local data storage");
         prioritizedDataStorageService.create(localDataStorageConf);
 
         // Enable default allocation strategy
         PluginConfiguration defaultAllocStrategyConf = PluginUtils
-                .getPluginConfiguration(null, DefaultAllocationStrategyPlugin.class, Arrays.asList("fr.cnes.regards"));
+                .getPluginConfiguration(null, DefaultAllocationStrategyPlugin.class);
         pluginService.savePluginConfiguration(defaultAllocStrategyConf);
     }
 
     @Test
     public void storeAIP() throws IOException, ModuleException, InterruptedException {
 
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         configure();
 
         long startTime = System.currentTimeMillis();

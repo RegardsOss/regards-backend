@@ -80,7 +80,6 @@ import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
-import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalWorkingSubset;
@@ -154,9 +153,7 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000L).getParameters();
         // new plugin conf for LocalDataStorage storage into target/LocalDataStorageIT
-        PluginMetaData localStorageMeta = PluginUtils
-                .createPluginMetaData(LocalDataStorage.class, LocalDataStorage.class.getPackage().getName(),
-                                      IDataStorage.class.getPackage().getName());
+        PluginMetaData localStorageMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
         localStorageConf = new PluginConfiguration(localStorageMeta, LOCAL_STORAGE_LABEL, pluginParameters);
         localStorageConf = pluginService.savePluginConfiguration(localStorageConf);
         // ... a working subset

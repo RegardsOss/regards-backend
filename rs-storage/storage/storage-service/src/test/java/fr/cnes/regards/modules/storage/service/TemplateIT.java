@@ -75,9 +75,6 @@ import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
-import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
-import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
-import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.WorkingSubsetWrapper;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultAllocationStrategyPlugin;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
@@ -137,9 +134,7 @@ public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         Map<String, Object> dataMap = new HashMap<>();
-        PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
-                                                                      IDataStorage.class.getPackage().getName(),
-                                                                      IOnlineDataStorage.class.getPackage().getName());
+        PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
         URL baseStorageLocation = new URL("file", "", Paths.get("target/TemplateIT/Local2").toFile().getAbsolutePath());
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000L)
@@ -183,8 +178,7 @@ public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
     public void testNotDispatched() throws ModuleException, MalformedURLException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         Map<String, Object> dataMap = new HashMap<>();
-        PluginMetaData AlloMeta = PluginUtils.createPluginMetaData(DefaultAllocationStrategyPlugin.class,
-                                                                   IAllocationStrategy.class.getPackage().getName());
+        PluginMetaData AlloMeta = PluginUtils.createPluginMetaData(DefaultAllocationStrategyPlugin.class);
         PluginConfiguration alloConf = new PluginConfiguration(AlloMeta, ALLO_CONF_LABEL, new ArrayList<>(), 0);
         alloConf.setIsActive(true);
         alloConf = pluginService.savePluginConfiguration(alloConf);

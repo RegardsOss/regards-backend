@@ -97,10 +97,6 @@ import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
-import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
-import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
-import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
-import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.service.plugins.CatalogSecurityDelegationTestPlugin;
 import fr.cnes.regards.modules.storage.service.plugins.NearlineNoRetrieveDataStorage;
@@ -236,17 +232,12 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
 
         // second, lets storeAndCreate a plugin configuration for IAllocationStrategy
-        pluginService.addPluginPackage(SimpleNearLineStoragePlugin.class.getPackage().getName());
         PluginMetaData catalogSecuDelegMeta = PluginUtils
-                .createPluginMetaData(CatalogSecurityDelegationTestPlugin.class,
-                                      CatalogSecurityDelegationTestPlugin.class.getPackage().getName(),
-                                      ISecurityDelegation.class.getPackage().getName());
+                .createPluginMetaData(CatalogSecurityDelegationTestPlugin.class);
         catalogSecuDelegConf = new PluginConfiguration(catalogSecuDelegMeta, CATALOG_SECURITY_DELEGATION_LABEL);
         catalogSecuDelegConf = pluginService.savePluginConfiguration(catalogSecuDelegConf);
 
-        PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
-                                                                      IDataStorage.class.getPackage().getName(),
-                                                                      IOnlineDataStorage.class.getPackage().getName());
+        PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 10000000)
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
@@ -260,9 +251,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
                               gson.toJson(baseStorageLocation))
                 .getParameters();
-        PluginMetaData onlineNoRetrieveDataStoMeta = PluginUtils
-                .createPluginMetaData(LocalDataStorage.class, IDataStorage.class.getPackage().getName(),
-                                      IOnlineDataStorage.class.getPackage().getName());
+        PluginMetaData onlineNoRetrieveDataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
         PluginConfiguration onlineNoRetrieveDSConf = new PluginConfiguration(onlineNoRetrieveDataStoMeta,
                 "onlineNoRetrieveDsConfLabel", parameters, 1);
         onlineNoRetrieveDSConf.setIsActive(true);
@@ -272,18 +261,14 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
                               gson.toJson(baseStorageLocation))
                 .getParameters();
-        PluginMetaData nearlineMeta = PluginUtils
-                .createPluginMetaData(SimpleNearLineStoragePlugin.class, IDataStorage.class.getPackage().getName(),
-                                      INearlineDataStorage.class.getPackage().getName());
+        PluginMetaData nearlineMeta = PluginUtils.createPluginMetaData(SimpleNearLineStoragePlugin.class);
         parameters = PluginParametersFactory.build().getParameters();
         PluginConfiguration nearlineDSConf = new PluginConfiguration(nearlineMeta, "nearlineConfLabel", parameters, 0);
         nearlineDSConf.setIsActive(true);
 
         nearlineDataStorageConf = prioritizedDataStorageService.create(nearlineDSConf);
 
-        PluginMetaData dataStoNoRetrieveMeta = PluginUtils
-                .createPluginMetaData(NearlineNoRetrieveDataStorage.class, IDataStorage.class.getPackage().getName(),
-                                      INearlineDataStorage.class.getPackage().getName());
+        PluginMetaData dataStoNoRetrieveMeta = PluginUtils.createPluginMetaData(NearlineNoRetrieveDataStorage.class);
         PluginConfiguration nearlineNoRetrieveDSConf = new PluginConfiguration(dataStoNoRetrieveMeta,
                 "dsNoRetrieveConfLabel");
         nearlineNoRetrieveDSConf.setIsActive(true);

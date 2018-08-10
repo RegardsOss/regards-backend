@@ -68,7 +68,6 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
-import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IProgressManager;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalWorkingSubset;
@@ -107,17 +106,13 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
 
     @Before
     public void init() throws IOException, ModuleException, URISyntaxException {
-        pluginService.addPluginPackage(LocalDataStorage.class.getPackage().getName());
-        pluginService.addPluginPackage(IDataStorage.class.getPackage().getName());
         baseStorageLocation = new URL("file", "", System.getProperty("user.dir") + "/target/LocalDataStorageIT");
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000L).getParameters();
         // new plugin conf for LocalDataStorage storage into target/LocalDataStorageIT
-        PluginMetaData localStorageMeta = PluginUtils
-                .createPluginMetaData(LocalDataStorage.class, LocalDataStorage.class.getPackage().getName(),
-                                      IDataStorage.class.getPackage().getName());
+        PluginMetaData localStorageMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
         localStorageConf = new PluginConfiguration(localStorageMeta, LOCAL_STORAGE_LABEL, parameters);
         localStorageConf = pluginService.savePluginConfiguration(localStorageConf);
     }

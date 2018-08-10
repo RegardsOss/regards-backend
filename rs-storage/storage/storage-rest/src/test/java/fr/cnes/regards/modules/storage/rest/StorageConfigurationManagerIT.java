@@ -33,10 +33,6 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
-import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
-import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
-import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
-import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultAllocationStrategyPlugin;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.service.IPrioritizedDataStorageService;
@@ -101,9 +97,7 @@ public class StorageConfigurationManagerIT extends AbstractRegardsTransactionalI
 
     private PrioritizedDataStorage createPrioritizedDataStorage(String label)
             throws IOException, URISyntaxException, ModuleException {
-        PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
-                                                                      IDataStorage.class.getPackage().getName(),
-                                                                      IOnlineDataStorage.class.getPackage().getName());
+        PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
         URL baseStorageLocation = new URL("file", "",
                 Paths.get("target/PrioritizedDataStorageServiceIT").toFile().getAbsolutePath());
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
@@ -117,10 +111,7 @@ public class StorageConfigurationManagerIT extends AbstractRegardsTransactionalI
     }
 
     private PluginConfiguration createAllocationStrategy(String label) throws ModuleException {
-        PluginMetaData allocationMeta = PluginUtils
-                .createPluginMetaData(DefaultAllocationStrategyPlugin.class,
-                                      DefaultAllocationStrategyPlugin.class.getPackage().getName(),
-                                      IAllocationStrategy.class.getPackage().getName());
+        PluginMetaData allocationMeta = PluginUtils.createPluginMetaData(DefaultAllocationStrategyPlugin.class);
         PluginConfiguration allocationConfiguration = new PluginConfiguration(allocationMeta, label, new ArrayList<>(),
                 0);
         allocationConfiguration.setIsActive(true);
@@ -129,9 +120,7 @@ public class StorageConfigurationManagerIT extends AbstractRegardsTransactionalI
     }
 
     private PluginConfiguration createSecurityDelegation(String label) throws ModuleException {
-        PluginMetaData catalogSecuDelegMeta = PluginUtils
-                .createPluginMetaData(FakeSecurityDelegation.class, FakeSecurityDelegation.class.getPackage().getName(),
-                                      ISecurityDelegation.class.getPackage().getName());
+        PluginMetaData catalogSecuDelegMeta = PluginUtils.createPluginMetaData(FakeSecurityDelegation.class);
         PluginConfiguration catalogSecuDelegConf = new PluginConfiguration(catalogSecuDelegMeta, label);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         return pluginService.savePluginConfiguration(catalogSecuDelegConf);
