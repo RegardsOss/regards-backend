@@ -73,6 +73,8 @@ public class LdapAuthenticationPluginTest {
     @BeforeClass
     public static void init() {
 
+        PluginUtils.setup();
+
         /*
          * Set all parameters
          */
@@ -88,7 +90,6 @@ public class LdapAuthenticationPluginTest {
         } catch (final PluginUtilsRuntimeException e) {
             Assert.fail();
         }
-
     }
 
     /**

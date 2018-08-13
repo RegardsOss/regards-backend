@@ -62,6 +62,7 @@ public class RegardsInternalAuthenticationPluginTest {
     @BeforeClass
     public static void init() {
 
+        PluginUtils.setup();
         /*
          * Set all parameters
          */
