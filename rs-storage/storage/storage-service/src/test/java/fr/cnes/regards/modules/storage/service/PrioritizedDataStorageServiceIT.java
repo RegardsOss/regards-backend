@@ -54,8 +54,6 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.domain.database.DataStorageType;
 import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
-import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
-import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.service.plugins.SimpleOnlineDataStorage;
 
 /**
@@ -128,9 +126,7 @@ public class PrioritizedDataStorageServiceIT extends AbstractRegardsTransactiona
     private PluginConfiguration getPluginConf(String label) throws IOException, URISyntaxException {
         URL baseStorageLocation = new URL("file", "", Paths.get(targetPath).toFile().getAbsolutePath());
 
-        PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineDataStorage.class,
-                                                                      IDataStorage.class.getPackage().getName(),
-                                                                      IOnlineDataStorage.class.getPackage().getName());
+        PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineDataStorage.class);
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SimpleOnlineDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000000L)

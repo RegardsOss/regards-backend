@@ -101,10 +101,6 @@ import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
-import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
-import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
-import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
-import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultMultipleAllocationStrategy;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.service.plugins.CatalogSecurityDelegationTestPlugin;
@@ -224,9 +220,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         aip = getAIP();
 
         // second, lets storeAndCreate a plugin configuration of IDataStorage with the highest priority
-        PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
-                                                                      IDataStorage.class.getPackage().getName(),
-                                                                      IOnlineDataStorage.class.getPackage().getName());
+        PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
         baseStorage1Location = new URL("file", "", Paths.get("target/AIPServiceIT/Local1").toFile().getAbsolutePath());
         Files.createDirectories(Paths.get(baseStorage1Location.toURI()));
         List<PluginParameter> parameters = PluginParametersFactory.build()
@@ -253,10 +247,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         dataStorageIds.add(pds.getId());
 
         // forth, lets create a plugin configuration for IAllocationStrategy
-        PluginMetaData allocationMeta = PluginUtils
-                .createPluginMetaData(DefaultMultipleAllocationStrategy.class,
-                                      DefaultMultipleAllocationStrategy.class.getPackage().getName(),
-                                      IAllocationStrategy.class.getPackage().getName());
+        PluginMetaData allocationMeta = PluginUtils.createPluginMetaData(DefaultMultipleAllocationStrategy.class);
         List<PluginParameter> allocationParameter = PluginParametersFactory.build()
                 .addParameter(DefaultMultipleAllocationStrategy.DATA_STORAGE_IDS_PARAMETER_NAME, dataStorageIds)
                 .getParameters();
@@ -266,9 +257,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         pluginService.savePluginConfiguration(allocationConfiguration);
 
         PluginMetaData catalogSecuDelegMeta = PluginUtils
-                .createPluginMetaData(CatalogSecurityDelegationTestPlugin.class,
-                                      CatalogSecurityDelegationTestPlugin.class.getPackage().getName(),
-                                      ISecurityDelegation.class.getPackage().getName());
+                .createPluginMetaData(CatalogSecurityDelegationTestPlugin.class);
         catalogSecuDelegConf = new PluginConfiguration(catalogSecuDelegMeta, "AIPServiceIT");
         catalogSecuDelegConf = pluginService.savePluginConfiguration(catalogSecuDelegConf);
     }

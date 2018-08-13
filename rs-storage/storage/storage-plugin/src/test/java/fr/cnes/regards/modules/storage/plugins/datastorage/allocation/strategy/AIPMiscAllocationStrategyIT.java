@@ -70,7 +70,6 @@ import fr.cnes.regards.modules.storage.domain.plugin.DispatchErrors;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
-import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.AIPMiscAllocationStrategyPlugin;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.PluginConfigurationIdentifiersWrapper;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
@@ -106,11 +105,7 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
     }
 
     private PluginConfiguration initNearLinePluginConf(String pluginLabel) throws ModuleException {
-        PluginMetaData nearlineMeta = PluginUtils
-                .createPluginMetaData(NearlineDataStorageTestPlugin.class,
-                                      NearlineDataStorageTestPlugin.class.getPackage().getName(),
-                                      IDataStorage.class.getPackage().getName(),
-                                      INearlineDataStorage.class.getPackage().getName());
+        PluginMetaData nearlineMeta = PluginUtils.createPluginMetaData(NearlineDataStorageTestPlugin.class);
         return pluginService.savePluginConfiguration(new PluginConfiguration(nearlineMeta, pluginLabel, null));
     }
 
@@ -121,10 +116,7 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000L).getParameters();
-        PluginMetaData localDataStorageMeta = PluginUtils
-                .createPluginMetaData(LocalDataStorage.class, IDataStorage.class.getPackage().getName(),
-                                      IOnlineDataStorage.class.getPackage().getName(),
-                                      LocalDataStorage.class.getPackage().getName());
+        PluginMetaData localDataStorageMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
         PluginConfiguration localStorageConf = new PluginConfiguration(localDataStorageMeta, label, parameters);
         return pluginService.savePluginConfiguration(localStorageConf);
     }
@@ -132,10 +124,7 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
     private PluginConfiguration initAllocation(String label, Map<String, PluginConfigurationIdentifiersWrapper> mapping)
             throws ModuleException {
         // lets get a allocation
-        PluginMetaData allocation = PluginUtils
-                .createPluginMetaData(AIPMiscAllocationStrategyPlugin.class,
-                                      AIPMiscAllocationStrategyPlugin.class.getPackage().getName(),
-                                      AIPMiscAllocationStrategyPlugin.class.getPackage().getName());
+        PluginMetaData allocation = PluginUtils.createPluginMetaData(AIPMiscAllocationStrategyPlugin.class);
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(AIPMiscAllocationStrategyPlugin.MAP_PLUGINID_PLUGINCONFID_PARAMETER, mapping)
                 .getParameters();
