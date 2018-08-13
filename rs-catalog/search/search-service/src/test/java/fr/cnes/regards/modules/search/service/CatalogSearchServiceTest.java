@@ -110,6 +110,7 @@ public class CatalogSearchServiceTest {
         pageableConverter = Mockito.mock(IPageableConverter.class);
 
         Mockito.when(facetConverter.convert(SampleDataUtils.QUERY_FACETS)).thenReturn(SampleDataUtils.FACETS);
+        Mockito.when(pageableConverter.convert(SampleDataUtils.PAGEABLE)).thenReturn(SampleDataUtils.PAGEABLE);
 
         // Globally mock what's mockable yet
         Mockito.when(accessRightFilter.addAccessRights(Mockito.any()))
