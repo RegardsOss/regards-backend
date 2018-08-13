@@ -59,7 +59,7 @@ public interface ICatalogSearchService {
      */
     @Deprecated // Only use method with ICriterion
     <S, R extends IIndexable> FacetPage<R> search(MultiValueMap<String, String> allParams, SearchKey<S, R> searchKey,
-            List<String> facets, Pageable pageable) throws SearchException;
+            List<String> facets, Pageable pageable) throws SearchException, OpenSearchUnknownParameter;
 
     /**
      * Perform a business request on specified entity type
@@ -70,13 +70,13 @@ public interface ICatalogSearchService {
      * @return the page of elements matching the criterions
      */
     <S, R extends IIndexable> FacetPage<R> search(ICriterion criterion, SearchKey<S, R> searchKey, List<String> facets,
-            Pageable pageable) throws SearchException;
+            Pageable pageable) throws SearchException, OpenSearchUnknownParameter;
 
     /**
      * Same as below but using {@link SearchType}
      */
     <R extends IIndexable> FacetPage<R> search(ICriterion criterion, SearchType searchType, List<String> facets,
-            Pageable pageable) throws SearchException;
+            Pageable pageable) throws SearchException, OpenSearchUnknownParameter;
 
     /**
      * Compute summary for given request

@@ -135,6 +135,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
         addCommontMatchers(customizer);
         // Sort
         customizer.customizeRequestParam().param("sort", PLANET_TYPE + ",ASC");
+        customizer.customizeRequestParam().param("sort", PLANET + ",ASC");
         // Facets
         customizer.customizeRequestParam().param("facets", PLANET_TYPE);
 

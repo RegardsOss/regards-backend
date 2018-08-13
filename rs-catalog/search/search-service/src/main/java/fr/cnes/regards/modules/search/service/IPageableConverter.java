@@ -18,22 +18,17 @@
  */
 package fr.cnes.regards.modules.search.service;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import org.springframework.data.domain.Pageable;
+
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 
 /**
- * Error occurs when an exception is thrown during OpenSearch query parsing process.
  *
- * @author Xavier-Alexandre Brochard
+ * Convert sorted parameters to queryable ones
+ * @author Marc Sordi
+ *
  */
-@SuppressWarnings("serial")
-public class SearchException extends ModuleException {
+public interface IPageableConverter {
 
-    public SearchException(String pErrorMessage) {
-        super(pErrorMessage);
-    }
-
-    public SearchException(String pQuery, Throwable pCause) {
-        super(String.format("Could not handle the query %s", pQuery), pCause);
-    }
-
+    Pageable convert(Pageable pageable) throws OpenSearchUnknownParameter;
 }

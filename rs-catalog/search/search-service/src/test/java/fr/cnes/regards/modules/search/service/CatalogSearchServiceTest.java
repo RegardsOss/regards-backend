@@ -47,6 +47,7 @@ import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.indexer.service.Searches;
 import fr.cnes.regards.modules.opensearch.service.OpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 import fr.cnes.regards.modules.search.service.utils.SampleDataUtils;
@@ -73,6 +74,11 @@ public class CatalogSearchServiceTest {
     private IFacetConverter facetConverter;
 
     /**
+     * Facet converter
+     */
+    private IPageableConverter pageableConverter;
+
+    /**
      * Adds user group and data access filters
      */
     private IAccessRightFilter accessRightFilter;
@@ -93,7 +99,7 @@ public class CatalogSearchServiceTest {
     private IResourceService resourceService;
 
     @Before
-    public void setUp() throws AccessRightFilterException {
+    public void setUp() throws AccessRightFilterException, OpenSearchUnknownParameter {
         // Declare mocks
         openSearchService = Mockito.mock(OpenSearchService.class);
         accessRightFilter = Mockito.mock(IAccessRightFilter.class);
@@ -101,6 +107,7 @@ public class CatalogSearchServiceTest {
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         resourceService = Mockito.mock(IResourceService.class);
         facetConverter = Mockito.mock(IFacetConverter.class);
+        pageableConverter = Mockito.mock(IPageableConverter.class);
 
         Mockito.when(facetConverter.convert(SampleDataUtils.QUERY_FACETS)).thenReturn(SampleDataUtils.FACETS);
 
@@ -113,17 +120,18 @@ public class CatalogSearchServiceTest {
 
         // Instanciate the tested class
         catalogSearchService = new CatalogSearchService(searchService, openSearchService, accessRightFilter,
-                facetConverter);
+                facetConverter, pageableConverter);
     }
 
     /**
      * Test the main search method
+     * @throws OpenSearchUnknownParameter
      */
     @SuppressWarnings("unchecked")
     @Test
     @Requirement("REGARDS_DSL_DAM_ARC_810")
     public void doSearchShouldPerformASimpleSearch()
-            throws SearchException, OpenSearchParseException, UnsupportedEncodingException {
+            throws SearchException, OpenSearchParseException, UnsupportedEncodingException, OpenSearchUnknownParameter {
         // Prepare test
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(EntityType.DATA);
         searchKey.setSearchIndex(SampleDataUtils.TENANT);
@@ -154,12 +162,13 @@ public class CatalogSearchServiceTest {
 
     /**
      * Le système doit permettre de désactiver la gestion des facettes pour des questions de performance.
+     * @throws OpenSearchUnknownParameter
      */
     @SuppressWarnings("unchecked")
     @Test
     @Purpose("Le système doit permettre de désactiver la gestion des facettes pour des questions de performance.")
     @Requirement("REGARDS_DSL_DAM_CAT_620")
-    public void doSearchWithNoFacet() throws SearchException, OpenSearchParseException {
+    public void doSearchWithNoFacet() throws SearchException, OpenSearchParseException, OpenSearchUnknownParameter {
         // Prepare test
         SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(EntityType.DATA);
         searchKey.setSearchIndex(SampleDataUtils.TENANT);

@@ -55,7 +55,7 @@ public class BusinessSearchService implements IBusinessSearchService {
     @SuppressWarnings("unchecked")
     @Override
     public <F extends EntityFeature> FacetPage<F> search(ICriterion criterion, SearchType searchType,
-            List<String> facets, Pageable pageable) throws SearchException {
+            List<String> facets, Pageable pageable) throws SearchException, OpenSearchUnknownParameter {
         FacetPage<AbstractEntity<?>> facetPage = searchService.search(criterion, searchType, facets, pageable);
 
         // Extract feature(s) from entity(ies)

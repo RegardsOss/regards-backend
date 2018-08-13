@@ -51,7 +51,7 @@ public interface IBusinessSearchService {
      * @return a facet page of entity feature
      */
     <F extends EntityFeature> FacetPage<F> search(ICriterion criterion, SearchType searchType, List<String> facets,
-            Pageable pageable) throws SearchException;
+            Pageable pageable) throws SearchException, OpenSearchUnknownParameter;
 
     /**
      * Retrieve a feature by its identifier
