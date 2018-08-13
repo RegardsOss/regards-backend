@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -51,13 +50,8 @@ public class Jason3LtmCheckingPluginTest {
         // Plugin parameters
         List<PluginParameter> parameters = PluginParametersFactory.build().getParameters();
 
-        // Plugin and plugin interface packages
-        List<String> prefixes = Arrays.asList(IProductPlugin.class.getPackage().getName(),
-                                              Jason3LtmP3ProductPlugin.class.getPackage().getName());
-
         // Instantiate plugin
-        IProductPlugin plugin = PluginUtils.getPlugin(parameters, Jason3LtmP3ProductPlugin.class, prefixes,
-                                                      new HashMap<>());
+        IProductPlugin plugin = PluginUtils.getPlugin(parameters, Jason3LtmP3ProductPlugin.class, new HashMap<>());
         Assert.assertNotNull(plugin);
 
         // Run plugin

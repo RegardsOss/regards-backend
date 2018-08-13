@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -48,17 +47,14 @@ public class Doris1BCheckingPluginTest {
     @Purpose("A plugin can generate a SIP for a Jason1's Doris1B products")
     @Test
     public void testProductPlugin() throws ModuleException {
+        PluginUtils.setup();
+
         // Plugin parameters
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(DefaultProductPlugin.FIELD_PREFIX, "MOE_CDDIS_").getParameters();
 
-        // Plugin and plugin interface packages
-        List<String> prefixes = Arrays.asList(IProductPlugin.class.getPackage().getName(),
-                                              DefaultProductPlugin.class.getPackage().getName());
-
         // Instantiate plugin
-        IProductPlugin plugin = PluginUtils.getPlugin(parameters, DefaultProductPlugin.class, prefixes,
-                                                      new HashMap<>());
+        IProductPlugin plugin = PluginUtils.getPlugin(parameters, DefaultProductPlugin.class, new HashMap<>());
         Assert.assertNotNull(plugin);
 
         // Run plugin

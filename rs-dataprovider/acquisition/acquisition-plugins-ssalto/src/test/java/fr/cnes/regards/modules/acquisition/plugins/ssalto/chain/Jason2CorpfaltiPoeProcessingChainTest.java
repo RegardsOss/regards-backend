@@ -35,7 +35,6 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
-import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.AbstractProductMetadataPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.Jason2ProductMetadataPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
@@ -79,10 +78,7 @@ public class Jason2CorpfaltiPoeProcessingChainTest extends AbstractAcquisitionCh
                 .getParameters();
 
         // Plugin and plugin interface packages
-        List<String> prefixes = Arrays.asList(IScanPlugin.class.getPackage().getName(),
-                                              RegexDiskScanning.class.getPackage().getName());
-        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(parameters, RegexDiskScanning.class,
-                                                                            prefixes);
+        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(parameters, RegexDiskScanning.class);
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan plugin");
         fileInfo.setScanPlugin(scanPlugin);
@@ -90,8 +86,8 @@ public class Jason2CorpfaltiPoeProcessingChainTest extends AbstractAcquisitionCh
         processingChain.addFileInfo(fileInfo);
 
         // Validation
-        PluginConfiguration validationPlugin = PluginUtils
-                .getPluginConfiguration(Lists.newArrayList(), DefaultFileValidation.class, Lists.newArrayList());
+        PluginConfiguration validationPlugin = PluginUtils.getPluginConfiguration(Lists.newArrayList(),
+                                                                                  DefaultFileValidation.class);
         validationPlugin.setIsActive(true);
         validationPlugin.setLabel("Validation plugin");
         processingChain.setValidationPluginConf(validationPlugin);
@@ -99,8 +95,8 @@ public class Jason2CorpfaltiPoeProcessingChainTest extends AbstractAcquisitionCh
         // Product
         List<PluginParameter> productParameters = PluginParametersFactory.build()
                 .addParameter(DefaultProductPlugin.FIELD_REMOVE_EXT, Boolean.TRUE).getParameters();
-        PluginConfiguration productPlugin = PluginUtils
-                .getPluginConfiguration(productParameters, DefaultProductPlugin.class, Lists.newArrayList());
+        PluginConfiguration productPlugin = PluginUtils.getPluginConfiguration(productParameters,
+                                                                               DefaultProductPlugin.class);
         productPlugin.setIsActive(true);
         productPlugin.setLabel("Product plugin");
         processingChain.setProductPluginConf(productPlugin);
@@ -112,7 +108,7 @@ public class Jason2CorpfaltiPoeProcessingChainTest extends AbstractAcquisitionCh
                               "src/test/resources/income/data/JASON2/ORF_HISTORIQUE/JA2_ORF_AXXCNE*")
                 .addParameter(Jason2ProductMetadataPlugin.CYCLES_FILE_PATH_PARAM,
                               "src/test/resources/income/data/JASON2/CYCLES/JASON2_CYCLES")
-                .getParameters(), Jason2ProductMetadataPlugin.class, Lists.newArrayList());
+                .getParameters(), Jason2ProductMetadataPlugin.class);
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("SIP generation plugin");
         processingChain.setGenerateSipPluginConf(sipGenPlugin);

@@ -52,13 +52,8 @@ public class Cryosat2CheckingPluginTest {
                 .addParameter(DefaultProductPlugin.FIELD_REMOVE_EXT, Boolean.TRUE)
                 .addParameter(DefaultProductPlugin.FIELD_EXTS, Arrays.asList(".HDR", ".DBL")).getParameters();
 
-        // Plugin and plugin interface packages
-        List<String> prefixes = Arrays.asList(IProductPlugin.class.getPackage().getName(),
-                                              DefaultProductPlugin.class.getPackage().getName());
-
         // Instantiate plugin
-        IProductPlugin plugin = PluginUtils.getPlugin(parameters, DefaultProductPlugin.class, prefixes,
-                                                      new HashMap<>());
+        IProductPlugin plugin = PluginUtils.getPlugin(parameters, DefaultProductPlugin.class, new HashMap<>());
         Assert.assertNotNull(plugin);
 
         // Run plugin
