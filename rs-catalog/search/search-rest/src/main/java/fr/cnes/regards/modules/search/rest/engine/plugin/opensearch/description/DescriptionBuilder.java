@@ -150,11 +150,12 @@ public class DescriptionBuilder {
 
         // Build urls
         Link searchLink = SearchEngineController.buildPaginationLink(resourceService, context, "search");
-        desc.getUrl().add(buildUrl(project, parameters, searchLink.getHref(), MediaType.APPLICATION_ATOM_XML_VALUE));
-        desc.getUrl()
-                .add(buildUrl(project, parameters, searchLink.getHref(), GeoJsonMediaType.APPLICATION_GEOJSON_VALUE));
-        desc.getUrl()
-                .add(buildUrl(project, parameters, searchLink.getHref(), MediaType.APPLICATION_JSON_VALUE));
+        desc.getUrl().add(buildUrl(project, parameters, searchLink.getHref(), MediaType.APPLICATION_ATOM_XML_VALUE,
+                                   context.getQueryParams().isEmpty()));
+        desc.getUrl().add(buildUrl(project, parameters, searchLink.getHref(),
+                                   GeoJsonMediaType.APPLICATION_GEOJSON_VALUE, context.getQueryParams().isEmpty()));
+        desc.getUrl().add(buildUrl(project, parameters, searchLink.getHref(), MediaType.APPLICATION_JSON_VALUE,
+                                   context.getQueryParams().isEmpty()));
 
         // Apply active extensions to global description
         extensions.stream().filter(IOpenSearchExtension::isActivated).forEach(ext -> ext.applyToDescription(desc));
@@ -205,17 +206,21 @@ public class DescriptionBuilder {
      * @param parameters {@link OpenSearchParameter}s parameters of the url
      * @param endpoint {@link String} endpoint of the search request
      * @param mediaType {@link String} MediaType of the search request response
+     * @param queryDelimiter whether to inject "?" into template or not
      * @return {@link UrlType}
      */
-    private UrlType buildUrl(Project project, List<OpenSearchParameter> parameters, String endpoint, String mediaType) {
+    private UrlType buildUrl(Project project, List<OpenSearchParameter> parameters, String endpoint, String mediaType,
+            boolean queryDelimiter) {
         UrlType url = new UrlType();
         url.getParameter().addAll(parameters);
         url.setRel(configuration.getUrlsRel());
         url.setType(mediaType);
         StringBuilder urlTemplateBuilder = new StringBuilder(endpoint);
-        urlTemplateBuilder.append(String.format("?%s={%s}", configuration.getQueryParameterName(),
-                                                configuration.getQueryParameterValue()));
-        parameters.stream().forEach(p -> urlTemplateBuilder.append(String.format("&%s=%s", p.getName(), p.getValue())));
+
+        StringJoiner joiner = new StringJoiner("&");
+        parameters.forEach(p -> joiner.add(String.format("%s=%s", p.getName(), p.getValue())));
+        urlTemplateBuilder.append(queryDelimiter ? "?" : "&");
+        urlTemplateBuilder.append(joiner);
         url.setTemplate(urlTemplateBuilder.toString());
         return url;
     }
