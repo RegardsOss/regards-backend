@@ -453,8 +453,11 @@ public class AIPController implements IResourceController<AIP> {
     @ResourceAccess(description = "allow to add multiple tags to several aips")
     @ResponseBody
     public ResponseEntity<Void> addTagsByQuery(@RequestBody AddAIPTagsFilters request) {
-        aipService.addTagsByQuery(request);
-        return new ResponseEntity<>(HttpStatus.OK);
+        boolean succeed = aipService.addTagsByQuery(request);
+        if (succeed) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.CONFLICT);
     }
 
     /**
@@ -477,8 +480,11 @@ public class AIPController implements IResourceController<AIP> {
     @ResourceAccess(description = "allow to remove multiple tags to several aips")
     @ResponseBody
     public ResponseEntity<Void> removeTagsByQuery(@RequestBody RemoveAIPTagsFilters request) {
-        aipService.removeTagsByQuery(request);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        boolean succeed = aipService.removeTagsByQuery(request);
+        if (succeed) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.CONFLICT);
     }
 
     /**
