@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.commons.compress.utils.Lists;
+import org.elasticsearch.common.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -279,8 +280,10 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         List<SearchParameter> searchParameters = Lists.newArrayList();
         for (Entry<String, List<String>> queryParam : queryParams.entrySet()) {
             try {
-                // Do not handle special query parameter (q) here.
-                if (!queryParam.getKey().equals(configuration.getQueryParameterName())) {
+                // Ignore special query parameter (q) or empty values
+                if (!queryParam.getKey().equals(configuration.getQueryParameterName()) &&
+                        (queryParam.getValue().size() != 1 || !Strings.isNullOrEmpty(queryParam.getValue().get(0)))
+                        ) {
                     AttributeModel attributeModel = finder.findByName(queryParam.getKey());
                     if (attributeModel.isDynamic()) {
                         attributeModel.buildJsonPath(StaticProperties.FEATURE_PROPERTIES);
