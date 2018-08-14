@@ -281,9 +281,9 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         for (Entry<String, List<String>> queryParam : queryParams.entrySet()) {
             try {
                 // Ignore special query parameter (q) or empty values
-                if (!queryParam.getKey().equals(configuration.getQueryParameterName()) &&
-                        (queryParam.getValue().size() != 1 || !Strings.isNullOrEmpty(queryParam.getValue().get(0)))
-                        ) {
+                if (!queryParam.getKey().equals(configuration.getQueryParameterName())
+                        && ((queryParam.getValue().size() != 1)
+                                || !Strings.isNullOrEmpty(queryParam.getValue().get(0)))) {
                     AttributeModel attributeModel = finder.findByName(queryParam.getKey());
                     if (attributeModel.isDynamic()) {
                         attributeModel.buildJsonPath(StaticProperties.FEATURE_PROPERTIES);
@@ -313,15 +313,14 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
      * @return {@link IResponseBuilder}
      * @throws UnsupportedMediaTypesException
      */
-    private IResponseBuilder<?> getBuilder(SearchContext context) {
+    private IResponseBuilder<?> getBuilder(SearchContext context) throws UnsupportedMediaTypesException {
         IResponseBuilder<?> responseBuilder;
         if (context.getHeaders().getAccept().contains(MediaType.APPLICATION_ATOM_XML)) {
             responseBuilder = new AtomResponseBuilder(gson);
         } else if (context.getHeaders().getAccept().contains(MediaType.APPLICATION_JSON)) {
             responseBuilder = new GeojsonResponseBuilder();
         } else {
-            // Default value to atom
-            responseBuilder = new AtomResponseBuilder(gson);
+            throw new UnsupportedMediaTypesException(context.getHeaders().getAccept());
         }
         responseBuilder.addExtension(timeExtension);
         responseBuilder.addExtension(mediaExtension);
