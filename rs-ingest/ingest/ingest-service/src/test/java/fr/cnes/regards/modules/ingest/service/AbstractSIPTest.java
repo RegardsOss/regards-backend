@@ -54,7 +54,7 @@ import fr.cnes.regards.modules.storage.domain.AIPBuilder;
  * Abstract test class to provide SIP Creation tool.
  * @author Sébastien Binda
  */
-@ActiveProfiles({ "testAmqp", "disable-scheduled-ingest" })
+@ActiveProfiles({ "testAmqp", "disable-scheduled-ingest", "noschdule" })
 @TestPropertySource(locations = "classpath:test.properties")
 @ContextConfiguration(classes = { TestConfiguration.class })
 public abstract class AbstractSIPTest extends AbstractRegardsServiceTransactionalIT {

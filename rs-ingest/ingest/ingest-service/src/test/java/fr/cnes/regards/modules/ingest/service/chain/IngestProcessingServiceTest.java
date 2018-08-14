@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.ingest.service.TestConfiguration;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
 
-@ActiveProfiles({ "disable-scheduled-ingest" })
+@ActiveProfiles({ "disable-scheduled-ingest", "noschdule" })
 @TestPropertySource(locations = "classpath:test.properties")
 @ContextConfiguration(classes = { TestConfiguration.class })
 @RegardsTransactional
