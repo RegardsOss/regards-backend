@@ -72,6 +72,12 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
     private Resource defaultUserCatalogModuleResource;
 
     /**
+     * The default configuration for project user entity description
+     */
+    @Value("classpath:DefaultUserDescriptionModule.json")
+    private Resource defaultUserDescriptionModuleResource;
+
+    /**
      * The default configuration for portal menu
      */
     @Value("classpath:DefaultPortalMenu.json")
@@ -239,6 +245,20 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
                 throw new InitUIException(e);
             }
             repository.save(catalog);
+
+            final Module description = new Module();
+            description.setActive(true);
+            description.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
+            description.setContainer("page-top-header");
+            description.setDescription("Entities description");
+            description.setType("description");
+            try {
+                description.setConf(readDefaultFileResource(defaultUserDescriptionModuleResource));
+            } catch (final IOException e) {
+                LOG.error(e.getMessage(), e);
+                throw new InitUIException(e);
+            }
+            repository.save(description);
         }
 
     }
