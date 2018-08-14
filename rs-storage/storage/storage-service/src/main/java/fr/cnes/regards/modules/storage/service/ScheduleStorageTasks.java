@@ -152,11 +152,13 @@ public class ScheduleStorageTasks {
     public void restoreToCache() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            LOGGER.debug(" -----------------> Handle queued cache restoration files for tenant {} START <-----------------------",
-                         tenant);
+            LOGGER.debug(
+                    " -----------------> Handle queued cache restoration files for tenant {} START <-----------------------",
+                    tenant);
             cachedFileService.restoreQueued();
-            LOGGER.debug(" -----------------> Handle queued cache restoration files for tenant {} END <-----------------------",
-                         tenant);
+            LOGGER.debug(
+                    " -----------------> Handle queued cache restoration files for tenant {} END <-----------------------",
+                    tenant);
             runtimeTenantResolver.clearTenant();
         }
     }
