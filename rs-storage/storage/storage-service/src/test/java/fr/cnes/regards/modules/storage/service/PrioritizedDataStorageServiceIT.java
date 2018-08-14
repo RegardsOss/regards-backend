@@ -62,7 +62,7 @@ import fr.cnes.regards.modules.storage.service.plugins.SimpleOnlineDataStorage;
 @ContextConfiguration(classes = { TestConfig.class, PrioritizedDataStorageServiceIT.Config.class })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_test" },
         locations = "classpath:storage.properties")
-@ActiveProfiles({ "disableStorageTasks" })
+@ActiveProfiles({ "disableStorageTasks", "noschdule" })
 @DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE, classMode = ClassMode.AFTER_CLASS)
 @RegardsTransactional
 public class PrioritizedDataStorageServiceIT extends AbstractRegardsTransactionalIT {

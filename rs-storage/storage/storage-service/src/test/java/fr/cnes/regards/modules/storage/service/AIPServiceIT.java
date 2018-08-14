@@ -113,7 +113,7 @@ import fr.cnes.regards.modules.storage.service.plugins.CatalogSecurityDelegation
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=storage_test", "regards.amqp.enabled=true" },
         locations = { "classpath:storage.properties" })
-@ActiveProfiles({ "testAmqp", "disableStorageTasks" })
+@ActiveProfiles({ "testAmqp", "disableStorageTasks", "noschdule" })
 @DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE, classMode = ClassMode.BEFORE_CLASS)
 @EnableAsync
 public class AIPServiceIT extends AbstractRegardsTransactionalIT {
