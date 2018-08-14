@@ -32,5 +32,6 @@ import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownPar
  */
 public interface IFacetConverter {
 
-    Map<String, FacetType> convert(List<String> propertyNames) throws OpenSearchUnknownParameter;
+    Map<String, FacetType> convert(List<String> propertyNames, Map<String, String> reverseFacetNames)
+            throws OpenSearchUnknownParameter;
 }

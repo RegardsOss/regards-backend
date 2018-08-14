@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.search.service;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +64,7 @@ import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
+import fr.cnes.regards.modules.indexer.domain.facet.IFacet;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
@@ -162,7 +164,8 @@ public class CatalogSearchService implements ICatalogSearchService {
             criterion = accessRightFilter.addAccessRights(criterion);
 
             // Build search facets from query facets
-            Map<String, FacetType> searchFacets = facetConverter.convert(facets);
+            Map<String, String> reverseFacetNames = new HashMap<>();
+            Map<String, FacetType> searchFacets = facetConverter.convert(facets, reverseFacetNames);
             // Translate sort query
             Pageable convertedPageable = pageableConverter.convert(pageable);
             // Optimisation: when searching for datasets via another searchType (ie searchKey is a
@@ -195,8 +198,14 @@ public class CatalogSearchService implements ICatalogSearchService {
                 }
             }
 
-            // For all results, when searching for data objects, set the downloadable property depending on user DATA
-            // access rights
+            // Rebuilding facets
+            if (facetPage.getFacets() != null) {
+                for (IFacet<?> facet : facetPage.getFacets()) {
+                    facet.setAttributeName(reverseFacetNames.get(facet.getAttributeName()));
+                }
+            }
+
+            // Filter data file according to access rights when searching for data objects
             if (((searchKey instanceof SimpleSearchKey)
                     && searchKey.getSearchTypeMap().values().contains(DataObject.class))
                     || ((searchKey.getResultClass() != null)
