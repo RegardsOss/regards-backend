@@ -26,7 +26,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
+import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
@@ -51,7 +51,7 @@ public interface IBusinessSearchService {
      * @return a facet page of entity feature
      */
     <F extends EntityFeature> FacetPage<F> search(ICriterion criterion, SearchType searchType, List<String> facets,
-            Pageable pageable) throws SearchException;
+            Pageable pageable) throws SearchException, OpenSearchUnknownParameter;
 
     /**
      * Retrieve a feature by its identifier

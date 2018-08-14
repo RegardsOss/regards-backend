@@ -71,24 +71,20 @@
 			<artifactId>plugins-service</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.entities</groupId>
-			<artifactId>entities-client</artifactId>
+			<groupId>fr.cnes.regards.modules.dam</groupId>
+			<artifactId>dam-client</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.accessrights</groupId>
 			<artifactId>accessrights-client</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.entities</groupId>
-			<artifactId>entities-domain</artifactId>
+			<groupId>fr.cnes.regards.modules.dam</groupId>
+			<artifactId>dam-domain</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.indexer</groupId>
 			<artifactId>indexer-service</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.models</groupId>
-			<artifactId>models-client</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
@@ -97,10 +93,6 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.indexer</groupId>
 			<artifactId>indexer-domain</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.dataaccess</groupId>
-			<artifactId>dataaccess-client</artifactId>
 		</dependency>
 		<!-- Test dependencies -->
 		<dependency>

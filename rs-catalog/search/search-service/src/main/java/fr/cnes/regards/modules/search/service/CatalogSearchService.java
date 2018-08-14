@@ -50,10 +50,11 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.entities.domain.AbstractEntity;
-import fr.cnes.regards.modules.entities.domain.DataObject;
-import fr.cnes.regards.modules.entities.domain.Dataset;
-import fr.cnes.regards.modules.entities.domain.criterion.IFeatureCriterion;
+import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
+import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import fr.cnes.regards.modules.dam.domain.entities.criterion.IFeatureCriterion;
+import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.JoinEntitySearchKey;
@@ -66,7 +67,6 @@ import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.indexer.service.Searches;
-import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
@@ -105,6 +105,11 @@ public class CatalogSearchService implements ICatalogSearchService {
      */
     private final IFacetConverter facetConverter;
 
+    /**
+     * Pageable converter
+     */
+    private final IPageableConverter pageableConverter;
+
     @Autowired
     private IAttributeFinder finder;
 
@@ -117,17 +122,20 @@ public class CatalogSearchService implements ICatalogSearchService {
      * @param facetConverter manage facet conversion
      */
     public CatalogSearchService(ISearchService searchService, IOpenSearchService openSearchService,
-            IAccessRightFilter accessRightFilter, IFacetConverter facetConverter) {
+            IAccessRightFilter accessRightFilter, IFacetConverter facetConverter,
+            IPageableConverter pageableConverter) {
         this.searchService = searchService;
         this.openSearchService = openSearchService;
         this.accessRightFilter = accessRightFilter;
         this.facetConverter = facetConverter;
+        this.pageableConverter = pageableConverter;
     }
 
     @Deprecated // Only use method with ICriterion
     @Override
     public <S, R extends IIndexable> FacetPage<R> search(MultiValueMap<String, String> allParams,
-            SearchKey<S, R> inSearchKey, List<String> facets, Pageable pageable) throws SearchException {
+            SearchKey<S, R> inSearchKey, List<String> facets, Pageable pageable)
+            throws SearchException, OpenSearchUnknownParameter {
         try {
             // Build criterion from query
             ICriterion criterion = openSearchService.parse(allParams);
@@ -146,7 +154,7 @@ public class CatalogSearchService implements ICatalogSearchService {
     @SuppressWarnings("unchecked")
     @Override
     public <S, R extends IIndexable> FacetPage<R> search(ICriterion criterion, SearchKey<S, R> inSearchKey,
-            List<String> facets, Pageable pageable) throws SearchException {
+            List<String> facets, Pageable pageable) throws SearchException, OpenSearchUnknownParameter {
         try {
             SearchKey<?, ?> searchKey = inSearchKey;
 
@@ -155,6 +163,8 @@ public class CatalogSearchService implements ICatalogSearchService {
 
             // Build search facets from query facets
             Map<String, FacetType> searchFacets = facetConverter.convert(facets);
+            // Translate sort query
+            Pageable convertedPageable = pageableConverter.convert(pageable);
             // Optimisation: when searching for datasets via another searchType (ie searchKey is a
             // JoinEntitySearchKey<?, Dataset> without any criterion on searchType => just directly search
             // datasets (ie SimpleSearchKey<DataSet>)
@@ -167,7 +177,8 @@ public class CatalogSearchService implements ICatalogSearchService {
             // Perform search
             FacetPage<R> facetPage;
             if (searchKey instanceof SimpleSearchKey) {
-                facetPage = searchService.search((SimpleSearchKey<R>) searchKey, pageable, criterion, searchFacets);
+                facetPage = searchService.search((SimpleSearchKey<R>) searchKey, convertedPageable, criterion,
+                                                 searchFacets);
             } else {
                 // It may be necessary to filter returned objects (before pagination !!!) by user access groups to avoid
                 // getting datasets on which user has no right
@@ -176,10 +187,11 @@ public class CatalogSearchService implements ICatalogSearchService {
                         && (accessGroups != null)) { // accessGroups null means superuser
                     Predicate<Dataset> datasetGroupAccessFilter = ds -> !Sets.intersection(ds.getGroups(), accessGroups)
                             .isEmpty();
-                    facetPage = searchService.search((JoinEntitySearchKey<S, R>) searchKey, pageable, criterion,
-                                                     (Predicate<R>) datasetGroupAccessFilter);
+                    facetPage = searchService.search((JoinEntitySearchKey<S, R>) searchKey, convertedPageable,
+                                                     criterion, (Predicate<R>) datasetGroupAccessFilter);
                 } else {
-                    facetPage = searchService.search((JoinEntitySearchKey<S, R>) searchKey, pageable, criterion);
+                    facetPage = searchService.search((JoinEntitySearchKey<S, R>) searchKey, convertedPageable,
+                                                     criterion);
                 }
             }
 
@@ -205,7 +217,7 @@ public class CatalogSearchService implements ICatalogSearchService {
 
     @Override
     public <R extends IIndexable> FacetPage<R> search(ICriterion criterion, SearchType searchType, List<String> facets,
-            Pageable pageable) throws SearchException {
+            Pageable pageable) throws SearchException, OpenSearchUnknownParameter {
         return search(criterion, getSearchKey(searchType), facets, pageable);
     }
 
@@ -391,7 +403,7 @@ public class CatalogSearchService implements ICatalogSearchService {
                 criterion = ICriterion.and(criterion, IFeatureCriterion.contains(attModel, partialText));
             }
             return searchService.searchUniqueTopValues(searchKey, criterion,
-                                                       IFeatureCriterion.buildFeaturePath(attModel), maxCount);
+                                                       IFeatureCriterion.buildQueryablePath(attModel), maxCount);
         } catch (AccessRightFilterException e) {
             LOGGER.debug("Falling back to empty list of values", e);
             return Collections.emptyList();

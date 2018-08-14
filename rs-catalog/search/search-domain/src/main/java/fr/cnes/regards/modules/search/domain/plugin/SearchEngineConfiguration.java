@@ -31,8 +31,9 @@ import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 
+import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.entities.domain.Dataset;
+import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 
 /**
  * Configuration POJO for {@link ISearchEngine} plugins.
@@ -46,6 +47,7 @@ public class SearchEngineConfiguration {
     @Id
     @SequenceGenerator(name = "searchEnginConfSequence", initialValue = 1, sequenceName = "seq_search_engine_conf")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "searchEnginConfSequence")
+    @ConfigIgnore
     private Long id;
 
     @NotNull
@@ -61,6 +63,7 @@ public class SearchEngineConfiguration {
     private String datasetUrn;
 
     @Transient
+    @ConfigIgnore
     private Dataset dataset;
 
     public Long getId() {

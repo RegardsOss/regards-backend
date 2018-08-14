@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.search.rest.engine.plugin.legacy;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
@@ -34,8 +35,8 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.modules.entities.domain.StaticProperties;
-import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
+import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
+import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
@@ -136,8 +137,12 @@ public class LegacySearchEngine implements
 
     public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> doSearch(ICriterion criterion,
             SearchContext context) throws ModuleException {
-        // Extract facets
+        // Extract facets: beware, theorically there should be only one facets parameter with values separated by ","
+        // but take all cases into account
         List<String> facets = context.getQueryParams().get(FACETS);
+        if (facets != null) {
+            facets = facets.stream().flatMap(f -> Arrays.stream(f.split(","))).collect(Collectors.toList());
+        }
         // Do business search
         FacetPage<EntityFeature> facetPage = searchService.search(criterion, context.getSearchType(), facets,
                                                                   context.getPageable());

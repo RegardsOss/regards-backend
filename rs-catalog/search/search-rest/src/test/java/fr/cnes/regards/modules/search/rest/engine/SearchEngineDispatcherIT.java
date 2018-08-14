@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.search.rest.engine;
 
 import java.util.UUID;
 
-import org.assertj.core.util.Lists;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -74,12 +73,10 @@ public class SearchEngineDispatcherIT extends AbstractRegardsTransactionalIT {
 
     @Before
     public void init() throws ModuleException {
-        pluginService.addPluginPackage("fr.cnes.regards.modules.search.rest.engine.plugin");
 
         // First conf for engine associated to dataset1
         PluginConfiguration engineConf = PluginUtils.getPluginConfiguration(PluginParametersFactory.build()
-                .addParameter(SearchEngineTest.DATASET_PARAM, DATASET1_URN).getParameters(), SearchEngineTest.class,
-                                                                            Lists.newArrayList());
+                .addParameter(SearchEngineTest.DATASET_PARAM, DATASET1_URN).getParameters(), SearchEngineTest.class);
         engineConf = pluginService.savePluginConfiguration(engineConf);
         SearchEngineConfiguration seConf = new SearchEngineConfiguration();
         seConf.setLabel("Engine for dataset1");
@@ -89,8 +86,7 @@ public class SearchEngineDispatcherIT extends AbstractRegardsTransactionalIT {
 
         // Second conf for engine associated to dataset2
         PluginConfiguration engineConf2 = PluginUtils.getPluginConfiguration(PluginParametersFactory.build()
-                .addParameter(SearchEngineTest.DATASET_PARAM, DATASET2_URN).getParameters(), SearchEngineTest.class,
-                                                                             Lists.newArrayList());
+                .addParameter(SearchEngineTest.DATASET_PARAM, DATASET2_URN).getParameters(), SearchEngineTest.class);
         engineConf2 = pluginService.savePluginConfiguration(engineConf2);
         seConf = new SearchEngineConfiguration();
         seConf.setLabel("Engine for dataset2");
@@ -100,8 +96,7 @@ public class SearchEngineDispatcherIT extends AbstractRegardsTransactionalIT {
 
         // Third conf for engine associated to no dataset
         PluginConfiguration engineConf3 = PluginUtils
-                .getPluginConfiguration(PluginParametersFactory.build().getParameters(), SearchEngineTest.class,
-                                        Lists.newArrayList());
+                .getPluginConfiguration(PluginParametersFactory.build().getParameters(), SearchEngineTest.class);
         engineConf3 = pluginService.savePluginConfiguration(engineConf3);
         seConf = new SearchEngineConfiguration();
         seConf.setLabel("Engine for all datasets");

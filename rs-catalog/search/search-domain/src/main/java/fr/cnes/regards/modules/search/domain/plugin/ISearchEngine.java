@@ -37,10 +37,10 @@ import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
  *
  * @author Marc Sordi
  *
- * @param R search result type
- * @param E extra result type
- * @param T single entity type
- * @param V property values
+ * @param <R> search result type
+ * @param <E> extra result type
+ * @param <T> single entity type
+ * @param <V> property values
  *
  */
 @PluginInterface(

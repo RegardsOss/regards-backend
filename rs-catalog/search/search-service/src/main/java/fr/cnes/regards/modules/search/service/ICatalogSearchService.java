@@ -29,8 +29,9 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.entities.domain.AbstractEntity;
-import fr.cnes.regards.modules.entities.domain.DataObject;
+import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
+import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.IIndexable;
 import fr.cnes.regards.modules.indexer.domain.SearchKey;
@@ -38,7 +39,6 @@ import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
-import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 
@@ -59,7 +59,7 @@ public interface ICatalogSearchService {
      */
     @Deprecated // Only use method with ICriterion
     <S, R extends IIndexable> FacetPage<R> search(MultiValueMap<String, String> allParams, SearchKey<S, R> searchKey,
-            List<String> facets, Pageable pageable) throws SearchException;
+            List<String> facets, Pageable pageable) throws SearchException, OpenSearchUnknownParameter;
 
     /**
      * Perform a business request on specified entity type
@@ -70,13 +70,13 @@ public interface ICatalogSearchService {
      * @return the page of elements matching the criterions
      */
     <S, R extends IIndexable> FacetPage<R> search(ICriterion criterion, SearchKey<S, R> searchKey, List<String> facets,
-            Pageable pageable) throws SearchException;
+            Pageable pageable) throws SearchException, OpenSearchUnknownParameter;
 
     /**
      * Same as below but using {@link SearchType}
      */
     <R extends IIndexable> FacetPage<R> search(ICriterion criterion, SearchType searchType, List<String> facets,
-            Pageable pageable) throws SearchException;
+            Pageable pageable) throws SearchException, OpenSearchUnknownParameter;
 
     /**
      * Compute summary for given request

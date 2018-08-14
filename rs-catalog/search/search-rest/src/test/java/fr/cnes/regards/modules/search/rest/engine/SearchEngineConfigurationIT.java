@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.search.rest.engine;
 import java.util.List;
 import java.util.UUID;
 
-import org.assertj.core.util.Lists;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -79,8 +78,7 @@ public class SearchEngineConfigurationIT extends AbstractEngineIT {
         customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
 
         List<PluginParameter> parameters = PluginParametersFactory.build().getParameters();
-        PluginConfiguration pluginConf = PluginUtils.getPluginConfiguration(parameters, LegacySearchEngine.class,
-                                                                            Lists.newArrayList());
+        PluginConfiguration pluginConf = PluginUtils.getPluginConfiguration(parameters, LegacySearchEngine.class);
 
         SearchEngineConfiguration conf = new SearchEngineConfiguration();
         conf.setLabel("Test create new search engine");

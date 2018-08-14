@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
 import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
+import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResources;
@@ -44,7 +44,8 @@ import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResource
  *
  */
 @RestClient(name = "rs-catalog")
-@RequestMapping(value = IComplexSearchClient.TYPE_MAPPING, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = IComplexSearchClient.TYPE_MAPPING, produces = MediaType.APPLICATION_JSON_UTF8_VALUE,
+        consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IComplexSearchClient {
 
     static final String TYPE_MAPPING = "/complex/search";

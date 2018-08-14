@@ -49,10 +49,10 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.entities.client.IDatasetClient;
-import fr.cnes.regards.modules.entities.domain.Dataset;
-import fr.cnes.regards.modules.entities.domain.event.BroadcastEntityEvent;
-import fr.cnes.regards.modules.entities.domain.event.EventType;
+import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
+import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import fr.cnes.regards.modules.dam.domain.entities.event.BroadcastEntityEvent;
+import fr.cnes.regards.modules.dam.domain.entities.event.EventType;
 import fr.cnes.regards.modules.search.dao.ISearchEngineConfRepository;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
@@ -99,8 +99,7 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
             conf = new SearchEngineConfiguration();
             conf.setLabel("REGARDS search protocol");
             conf.setConfiguration(PluginUtils.getPluginConfiguration(PluginParametersFactory.build().getParameters(),
-                                                                     legacySearchEnginePluginClass,
-                                                                     Lists.newArrayList()));
+                                                                     legacySearchEnginePluginClass));
             try {
                 createConf(conf);
             } catch (ModuleException e) {
@@ -203,30 +202,13 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
         }
     }
 
-    /**
-     * Class DeleteEntityEventHandler
-     * Handler to delete {@link SearchEngineConfiguration} for deleted datasets.
-     * @author Sébastien Binda
-     */
-    private class DeleteEntityEventHandler implements IHandler<BroadcastEntityEvent> {
-
-        @Override
-        public void handle(final TenantWrapper<BroadcastEntityEvent> pWrapper) {
-            if ((pWrapper.getContent() != null) && EventType.DELETE.equals(pWrapper.getContent().getEventType())) {
-                runtimeTenantResolver.forceTenant(pWrapper.getTenant());
-                for (final UniformResourceName ipId : pWrapper.getContent().getAipIds()) {
-                    List<SearchEngineConfiguration> confs = repository.findByDatasetUrn(ipId.toString());
-                    if ((confs != null) && !confs.isEmpty()) {
-                        confs.forEach(repository::delete);
-                    }
-                }
-            }
-        }
+    @Override
+    public List<SearchEngineConfiguration> retrieveAllConfs() {
+        return repository.findAll();
     }
 
     @Override
-    public Page<SearchEngineConfiguration> retrieveConfs(Optional<String> engineType, Pageable page)
-            throws ModuleException {
+    public Page<SearchEngineConfiguration> retrieveConfs(Optional<String> engineType, Pageable page) {
         Page<SearchEngineConfiguration> confs;
         if (engineType.isPresent()) {
             confs = repository.findByConfigurationPluginId(engineType.get(), page);
@@ -261,5 +243,26 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
             }
         }
         return conf;
+    }
+
+    /**
+     * Class DeleteEntityEventHandler
+     * Handler to delete {@link SearchEngineConfiguration} for deleted datasets.
+     * @author Sébastien Binda
+     */
+    private class DeleteEntityEventHandler implements IHandler<BroadcastEntityEvent> {
+
+        @Override
+        public void handle(final TenantWrapper<BroadcastEntityEvent> pWrapper) {
+            if ((pWrapper.getContent() != null) && EventType.DELETE.equals(pWrapper.getContent().getEventType())) {
+                runtimeTenantResolver.forceTenant(pWrapper.getTenant());
+                for (final UniformResourceName ipId : pWrapper.getContent().getAipIds()) {
+                    List<SearchEngineConfiguration> confs = repository.findByDatasetUrn(ipId.toString());
+                    if ((confs != null) && !confs.isEmpty()) {
+                        confs.forEach(repository::delete);
+                    }
+                }
+            }
+        }
     }
 }

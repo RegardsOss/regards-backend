@@ -59,8 +59,8 @@ import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServic
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IEntitiesServicePlugin;
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory;
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory.CatalogPluginResponseType;
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.catalog.services.helper.IServiceHelper;
-import fr.cnes.regards.modules.entities.domain.DataObject;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
 

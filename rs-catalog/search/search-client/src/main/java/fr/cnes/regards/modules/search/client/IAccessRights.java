@@ -60,7 +60,7 @@ public interface IAccessRights {
     static final String ENTITY_HAS_ACCESS_MAPPING = URN_MAPPING + ACCESS_RIGHTS_MAPPING;
 
     @RequestMapping(method = RequestMethod.GET, value = ENTITY_HAS_ACCESS_MAPPING)
-    ResponseEntity<Boolean> hasAccess(@Valid @PathVariable UniformResourceName urn);
+    ResponseEntity<Boolean> hasAccess(@Valid @PathVariable("urn") UniformResourceName urn);
 
     @RequestMapping(method = RequestMethod.POST, value = HAS_ACCESS_MAPPING)
     ResponseEntity<Set<UniformResourceName>> hasAccess(@RequestBody Collection<UniformResourceName> inUrns);

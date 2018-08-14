@@ -46,15 +46,15 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.modules.entities.domain.StaticProperties;
-import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
+import fr.cnes.regards.modules.dam.client.models.IModelAttrAssocClient;
+import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
+import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
+import fr.cnes.regards.modules.dam.domain.models.ModelAttrAssoc;
+import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
+import fr.cnes.regards.modules.dam.domain.models.attributes.restriction.PatternRestriction;
+import fr.cnes.regards.modules.dam.domain.models.attributes.restriction.RestrictionType;
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
-import fr.cnes.regards.modules.models.client.IModelAttrAssocClient;
-import fr.cnes.regards.modules.models.domain.ModelAttrAssoc;
-import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.models.domain.attributes.restriction.PatternRestriction;
-import fr.cnes.regards.modules.models.domain.attributes.restriction.RestrictionType;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
@@ -150,9 +150,12 @@ public class DescriptionBuilder {
 
         // Build urls
         Link searchLink = SearchEngineController.buildPaginationLink(resourceService, context, "search");
-        desc.getUrl().add(buildUrl(project, parameters, searchLink.getHref(), MediaType.APPLICATION_ATOM_XML_VALUE));
-        desc.getUrl()
-                .add(buildUrl(project, parameters, searchLink.getHref(), GeoJsonMediaType.APPLICATION_GEOJSON_VALUE));
+        desc.getUrl().add(buildUrl(project, parameters, searchLink.getHref(), MediaType.APPLICATION_ATOM_XML_VALUE,
+                                   context.getQueryParams().isEmpty()));
+        desc.getUrl().add(buildUrl(project, parameters, searchLink.getHref(),
+                                   GeoJsonMediaType.APPLICATION_GEOJSON_VALUE, context.getQueryParams().isEmpty()));
+        desc.getUrl().add(buildUrl(project, parameters, searchLink.getHref(), MediaType.APPLICATION_JSON_VALUE,
+                                   context.getQueryParams().isEmpty()));
 
         // Apply active extensions to global description
         extensions.stream().filter(IOpenSearchExtension::isActivated).forEach(ext -> ext.applyToDescription(desc));
@@ -203,17 +206,21 @@ public class DescriptionBuilder {
      * @param parameters {@link OpenSearchParameter}s parameters of the url
      * @param endpoint {@link String} endpoint of the search request
      * @param mediaType {@link String} MediaType of the search request response
+     * @param queryDelimiter whether to inject "?" into template or not
      * @return {@link UrlType}
      */
-    private UrlType buildUrl(Project project, List<OpenSearchParameter> parameters, String endpoint, String mediaType) {
+    private UrlType buildUrl(Project project, List<OpenSearchParameter> parameters, String endpoint, String mediaType,
+            boolean queryDelimiter) {
         UrlType url = new UrlType();
         url.getParameter().addAll(parameters);
         url.setRel(configuration.getUrlsRel());
         url.setType(mediaType);
         StringBuilder urlTemplateBuilder = new StringBuilder(endpoint);
-        urlTemplateBuilder.append(String.format("?%s={%s}", configuration.getQueryParameterName(),
-                                                configuration.getQueryParameterValue()));
-        parameters.stream().forEach(p -> urlTemplateBuilder.append(String.format("&%s=%s", p.getName(), p.getValue())));
+
+        StringJoiner joiner = new StringJoiner("&");
+        parameters.forEach(p -> joiner.add(String.format("%s=%s", p.getName(), p.getValue())));
+        urlTemplateBuilder.append(queryDelimiter ? "?" : "&");
+        urlTemplateBuilder.append(joiner);
         url.setTemplate(urlTemplateBuilder.toString());
         return url;
     }

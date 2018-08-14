@@ -42,14 +42,14 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.modules.entities.domain.StaticProperties;
-import fr.cnes.regards.modules.entities.domain.attribute.AbstractAttribute;
-import fr.cnes.regards.modules.entities.domain.attribute.DateAttribute;
-import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
+import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
+import fr.cnes.regards.modules.dam.domain.entities.attribute.AbstractAttribute;
+import fr.cnes.regards.modules.dam.domain.entities.attribute.DateAttribute;
+import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
+import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
-import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.opensearch.service.parser.QueryParser;
@@ -136,7 +136,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     @PluginParameter(name = MEDIA_EXTENSION_PARAMETER, label = "Open search media extension")
     private MediaExtension mediaExtension;
 
-    @PluginParameter(name = PARAMETERS_CONFIGURATION, label = "Parameters configuration")
+    @PluginParameter(name = PARAMETERS_CONFIGURATION, label = "Parameters configuration", optional = true)
     private final List<ParameterConfiguration> paramConfigurations = Lists.newArrayList();
 
     @Override
@@ -313,14 +313,15 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
      * @return {@link IResponseBuilder}
      * @throws UnsupportedMediaTypesException
      */
-    private IResponseBuilder<?> getBuilder(SearchContext context) throws UnsupportedMediaTypesException {
+    private IResponseBuilder<?> getBuilder(SearchContext context) {
         IResponseBuilder<?> responseBuilder;
         if (context.getHeaders().getAccept().contains(MediaType.APPLICATION_ATOM_XML)) {
             responseBuilder = new AtomResponseBuilder(gson);
         } else if (context.getHeaders().getAccept().contains(MediaType.APPLICATION_JSON)) {
             responseBuilder = new GeojsonResponseBuilder();
         } else {
-            throw new UnsupportedMediaTypesException(context.getHeaders().getAccept());
+            // Default value to atom
+            responseBuilder = new AtomResponseBuilder(gson);
         }
         responseBuilder.addExtension(timeExtension);
         responseBuilder.addExtension(mediaExtension);

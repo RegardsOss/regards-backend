@@ -45,6 +45,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
@@ -54,7 +56,7 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
+import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
@@ -644,7 +646,11 @@ public class SearchEngineController {
      */
     public static List<Link> buildEntityLinks(IResourceService resourceService, SearchContext context,
             EntityFeature entity) {
-        return buildEntityLinks(resourceService, context, entity.getEntityType(), entity.getId());
+        if (entity != null) {
+            return buildEntityLinks(resourceService, context, entity.getEntityType(), entity.getId());
+        } else {
+            return Lists.newArrayList();
+        }
     }
 
     /**

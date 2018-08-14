@@ -30,8 +30,8 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.entities.domain.AbstractEntity;
-import fr.cnes.regards.modules.entities.domain.feature.EntityFeature;
+import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
+import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
@@ -55,7 +55,7 @@ public class BusinessSearchService implements IBusinessSearchService {
     @SuppressWarnings("unchecked")
     @Override
     public <F extends EntityFeature> FacetPage<F> search(ICriterion criterion, SearchType searchType,
-            List<String> facets, Pageable pageable) throws SearchException {
+            List<String> facets, Pageable pageable) throws SearchException, OpenSearchUnknownParameter {
         FacetPage<AbstractEntity<?>> facetPage = searchService.search(criterion, searchType, facets, pageable);
 
         // Extract feature(s) from entity(ies)

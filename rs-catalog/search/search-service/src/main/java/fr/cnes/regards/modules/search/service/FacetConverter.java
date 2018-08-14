@@ -21,19 +21,19 @@ package fr.cnes.regards.modules.search.service;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.configuration.ConversionException;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableMap;
 
+import fr.cnes.regards.modules.dam.domain.entities.criterion.IFeatureCriterion;
+import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
+import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeType;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
-import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.models.domain.attributes.AttributeType;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 
 /**
- * The converter retrieves attributes regarding their names. It may be static or dynamic attributes.
+ * The converter retrieves attributes regarding their names. It may be internal, static or dynamic attributes.
  * And then build facets according to attribute properties.
  *
  * @author Marc Sordi
@@ -72,20 +72,16 @@ public class FacetConverter implements IFacetConverter {
     }
 
     @Override
-    public Map<String, FacetType> convert(List<String> propertyNames) {
+    public Map<String, FacetType> convert(List<String> propertyNames) throws OpenSearchUnknownParameter {
         if (propertyNames == null) {
             return null;
         }
 
         ImmutableMap.Builder<String, FacetType> facetMapBuilder = new ImmutableMap.Builder<>();
 
-        try {
-            for (String propertyName : propertyNames) {
-                AttributeModel attModel = finder.findByName(propertyName);
-                facetMapBuilder.put(propertyName, MAP.get(attModel.getType()));
-            }
-        } catch (OpenSearchUnknownParameter e) {
-            throw new ConversionException(e.getMessage(), e);
+        for (String propertyName : propertyNames) {
+            AttributeModel attModel = finder.findByName(propertyName);
+            facetMapBuilder.put(IFeatureCriterion.buildQueryablePath(attModel), MAP.get(attModel.getType()));
         }
 
         return facetMapBuilder.build();
