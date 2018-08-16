@@ -444,8 +444,6 @@ public class DataStorageService implements IDataStorageService {
                     + "has just been removed from the application", e);
             return;
         }
-        LOGGER.debug("Datafile {} stored for pluginConfId:{} missing {} confs.", storedDataFile.getId(),
-                     dataStoragePluginConfId, storedDataFile.getNotYetStoredBy());
         storedDataFile.setChecksum(storedFileChecksum);
         storedDataFile.setFileSize(storedFileSize);
         storedDataFile.addDataStorageUsed(prioritizedDataStorageUsed);
@@ -453,6 +451,8 @@ public class DataStorageService implements IDataStorageService {
         storedDataFile.getUrls().add(storedFileNewURL);
         storedDataFile.setHeight(dataHeight);
         storedDataFile.setWidth(dataWidth);
+        LOGGER.debug("Datafile {} stored for pluginConfId:{} missing {} confs.", storedDataFile.getId(),
+                     dataStoragePluginConfId, storedDataFile.getNotYetStoredBy());
         if (storedDataFile.getNotYetStoredBy().equals(0L)) {
             storedDataFile.setState(DataFileState.STORED);
             storedDataFile.emptyFailureCauses();
