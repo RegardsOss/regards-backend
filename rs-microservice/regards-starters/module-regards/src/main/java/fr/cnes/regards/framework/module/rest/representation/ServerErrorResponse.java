@@ -18,8 +18,11 @@
  */
 package fr.cnes.regards.framework.module.rest.representation;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Server error response representation
@@ -29,18 +32,22 @@ import java.util.List;
  */
 public class ServerErrorResponse {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServerErrorResponse.class);
+
     /**
      * Error message
      */
     private final List<String> messages;
 
-    public ServerErrorResponse(String pMessage) {
-        this.messages = new ArrayList<>();
-        this.messages.add(pMessage);
+    public ServerErrorResponse(String message) {
+        this(Arrays.asList(message));
     }
 
-    public ServerErrorResponse(List<String> pMessages) {
-        this.messages = pMessages;
+    public ServerErrorResponse(List<String> messages) {
+        this.messages = messages;
+        if (messages != null) {
+            messages.forEach(message -> LOGGER.error(message));
+        }
     }
 
     public List<String> getMessages() {
