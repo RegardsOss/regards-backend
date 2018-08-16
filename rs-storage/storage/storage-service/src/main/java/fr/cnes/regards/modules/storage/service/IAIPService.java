@@ -253,6 +253,11 @@ public interface IAIPService {
     Set<StorageDataFile> deleteAip(AIP aip) throws ModuleException;
 
     /**
+     * Schedule deletion of datafiles marked for deletion
+     */
+    void doDelete();
+
+    /**
      * Remove {@link AIP}s associated the given sip, through its ip id
      */
     Set<StorageDataFile> deleteAipFromSip(UniformResourceName sipId) throws ModuleException;

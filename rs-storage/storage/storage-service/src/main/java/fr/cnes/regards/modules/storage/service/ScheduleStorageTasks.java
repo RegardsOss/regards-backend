@@ -83,12 +83,12 @@ public class ScheduleStorageTasks {
      */
     @Scheduled(fixedDelayString = "${regards.storage.check.aip.metadata.delay:60000}")
     public void storeMetadata() {
-        LOGGER.debug(" ------------------------> Update AIP storage informations - START<---------------------------- ");
         for (String tenant : tenantResolver.getAllActiveTenants()) {
+            LOGGER.debug(" [METADATA STORAGE DAEMON] Start scheduling AIP metadata storage for tenant {}.", tenant);
             runtimeTenantResolver.forceTenant(tenant);
             aipService.storeMetadata();
+            LOGGER.debug(" [METADATA STORAGE DAEMON] Scheduling metadata storage has finished for tenant {}.", tenant);
         }
-        LOGGER.debug(" ------------------------> Update AIP storage informations - END <---------------------------- ");
     }
 
     /*
@@ -106,6 +106,7 @@ public class ScheduleStorageTasks {
             aipService.updateAipMetadata();
             LOGGER.debug(String.format("[METADATA UPDATE DAEMON] Update jobs for tenant %s have been scheduled",
                                        tenant));
+            // FIXME: sbinda why? deletion here while it is also lunched every 2 minutes
             LOGGER.debug(String.format("[METADATA DELETION DAEMON] Starting to prepare deletion jobs for tenant %s",
                                        tenant));
             aipService.removeDeletedAIPMetadatas();
@@ -125,6 +126,21 @@ public class ScheduleStorageTasks {
                                        tenant));
             aipService.removeDeletedAIPMetadatas();
             LOGGER.debug(String.format("[METADATA DELETION DAEMON] Deletion jobs for tenant %s have been scheduled",
+                                       tenant));
+        }
+    }
+
+    /**
+     * Periodicaly delete AIPs data in status TO_BE_DELETED. Delete physical file and reference in database.
+     */
+    @Scheduled(fixedDelayString = "${regards.storage.delete.aip.data.delay:120000}") // 2 minutes
+    public void deleteData() {
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            LOGGER.debug(String.format("[DATA DELETION DAEMON] Starting to prepare deletion jobs for tenant %s",
+                                       tenant));
+            aipService.doDelete();
+            LOGGER.debug(String.format("[DATA DELETION DAEMON] Deletion jobs for tenant %s have been scheduled",
                                        tenant));
         }
     }

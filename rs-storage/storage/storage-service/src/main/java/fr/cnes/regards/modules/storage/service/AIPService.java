@@ -832,7 +832,8 @@ public class AIPService implements IAIPService {
     @Override
     public Set<StorageDataFile> prepareNotFullyStored() {
         Set<StorageDataFile> metadataToStore = Sets.newHashSet();
-        Set<AIP> notFullyStored = aipDao.findAllByStateInService(AIPState.PENDING);
+        Page<AIP> pendingAips = aipDao.findAllWithLockByState(AIPState.PENDING, new PageRequest(0, aipIterationLimit));
+        List<AIP> notFullyStored = pendingAips.getContent();
         // first lets handle the case where every dataFiles of an AIP are successfully stored.
         for (AIP aip : notFullyStored) {
             AIPSession aipSession = getSession(aip.getSession(), false);
@@ -1035,7 +1036,7 @@ public class AIPService implements IAIPService {
     @Override
     public Set<StorageDataFile> deleteAip(AIP toBeDeleted) throws ModuleException {
         Set<StorageDataFile> notSuppressible = Sets.newHashSet();
-        Set<StorageDataFile> dataFilesToDelete = Sets.newHashSet();
+//        Set<StorageDataFile> dataFilesToDelete = Sets.newHashSet();
         Set<StorageDataFile> dataFilesWithoutMetadata = dataFileDao.findAllByAip(toBeDeleted).stream()
                 .filter(df -> !DataType.AIP.equals(df.getDataType())).collect(Collectors.toSet());
         for (StorageDataFile dataFile : dataFilesWithoutMetadata) {
@@ -1056,7 +1057,9 @@ public class AIPService implements IAIPService {
                     dataFilesWithSameFile.remove(dataFile);
                     if (dataFilesWithSameFile.isEmpty()) {
                         // add to datafiles that should be removed
-                        dataFilesToDelete.add(dataFile);
+                        dataFile.setState(DataFileState.TO_BE_DELETED);
+                        dataFileDao.save(dataFile);
+//                        dataFilesToDelete.add(dataFile);
                     } else {
                         // if other datafiles are referencing a file, we just remove the data file from the
                         // database.
@@ -1077,8 +1080,17 @@ public class AIPService implements IAIPService {
         toBeDeleted = toBeDeletedBuilder.build();
         toBeDeleted.setState(AIPState.DELETED);
         save(toBeDeleted, false);
-        scheduleDeletion(dataFilesToDelete);
+//        scheduleDeletion(dataFilesToDelete);
         return notSuppressible;
+    }
+
+    @Override
+    public void doDelete() {
+        try {
+            scheduleDeletion(dataFileDao.findAllByState(DataFileState.TO_BE_DELETED));
+        } catch (ModuleException e) {
+            LOGGER.error("ERROR occured during deletion scheduling of datafiles.", e);
+        }
     }
 
     @Override
@@ -1383,15 +1395,19 @@ public class AIPService implements IAIPService {
                 publisher.publish(new AIPEvent(aip));
                 aipDao.remove(aip);
             } else if (dataFiles.stream().filter(df -> !DataType.AIP.equals(df.getDataType())).count() == 0) {
-                aipDataFilesToDelete.addAll(dataFiles);
+                for(StorageDataFile meta: dataFiles) {
+                    meta.setState(DataFileState.TO_BE_DELETED);
+                    dataFileDao.save(meta);
+                }
+//                aipDataFilesToDelete.addAll(dataFiles);
             }
         }
-        try {
-            scheduleDeletion(aipDataFilesToDelete);
-        } catch (ModuleException e) {
-            // Exception thrown for plugin instantiation errors. Only log error.
-            LOGGER.error(e.getMessage(), e);
-        }
+//        try {
+//            scheduleDeletion(aipDataFilesToDelete);
+//        } catch (ModuleException e) {
+//            // Exception thrown for plugin instantiation errors. Only log error.
+//            LOGGER.error(e.getMessage(), e);
+//        }
     }
 
     @Override

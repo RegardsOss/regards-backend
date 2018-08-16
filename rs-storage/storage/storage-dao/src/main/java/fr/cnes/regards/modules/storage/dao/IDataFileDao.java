@@ -26,6 +26,13 @@ public interface IDataFileDao {
     Set<StorageDataFile> findAllByStateAndAip(DataFileState stored, AIP aip);
 
     /**
+     * Find all data files which state is the given one
+     * @param state
+     * @return data files which state is the given one
+     */
+    Set<StorageDataFile> findAllByState(DataFileState state);
+
+    /**
      * Find all data files which state is the provided one and that are associated to at least one of the provided aips
      * @param dataFileState
      * @param aips

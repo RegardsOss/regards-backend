@@ -56,6 +56,11 @@ public class DataFileDao implements IDataFileDao {
     }
 
     @Override
+    public Set<StorageDataFile> findAllByState(DataFileState state) {
+        return repository.findAllByState(state);
+    }
+
+    @Override
     public Set<StorageDataFile> findAllByStateAndAipIn(DataFileState dataFileState, Collection<AIP> aips) {
         Set<AIPEntity> aipDataBases = Sets.newHashSet();
         for (AIP aip : aips) {

@@ -448,6 +448,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         waitForJobsFinished();
 
         aipService.removeDeletedAIPMetadatas();
+        aipService.doDelete();
 
         // Wait for AIP deleteion
         Set<AIPEvent> events = waitForEventsReceived(AIPState.DELETED, 1);
@@ -489,9 +490,12 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         // lets get all the dataFile before deleting them for further verification
         Set<StorageDataFile> aipFiles = dataFileDao.findAllByAip(aip);
         Assert.assertEquals(0, aipService.deleteAip(aipIpId).size());
+        aipService.doDelete();
         waitForJobsFinished();
 
         aipService.removeDeletedAIPMetadatas();
+        aipService.doDelete();
+        waitForJobsFinished();
 
         // Wait for AIP deletion
         Set<AIPEvent> events = waitForEventsReceived(AIPState.DELETED, 1);
@@ -544,6 +548,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
         // delete the AIP metadata
         aipService.removeDeletedAIPMetadatas();
+        aipService.doDelete();
 
         // Wait for AIP deletion events
         Set<AIPEvent> events = waitForEventsReceived(AIPState.DELETED, 2);
@@ -573,6 +578,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         Assert.assertEquals(0, aipService.deleteAip(aipIpId).size());
         waitForJobsFinished();
         aipService.removeDeletedAIPMetadatas();
+        aipService.doDelete();
         waitForJobsFinished();
 
         // Wait for AIP deletion
