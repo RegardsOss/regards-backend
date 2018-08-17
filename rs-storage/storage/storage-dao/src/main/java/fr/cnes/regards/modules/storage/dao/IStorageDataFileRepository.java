@@ -1,11 +1,12 @@
 package fr.cnes.regards.modules.storage.dao;
 
+import javax.persistence.LockModeType;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.persistence.LockModeType;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -41,6 +42,9 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
      */
     @EntityGraph(value = "graph.datafile.full")
     Set<StorageDataFile> findAllByState(DataFileState stored);
+
+    @EntityGraph(value = "graph.datafile.full")
+    Page<StorageDataFile> findAllByState(DataFileState state, Pageable pageable);
 
     /**
      * Find all {@link StorageDataFile}s associated to the given aip entity

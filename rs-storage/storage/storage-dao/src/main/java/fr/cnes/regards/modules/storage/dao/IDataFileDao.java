@@ -4,6 +4,10 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
@@ -31,6 +35,8 @@ public interface IDataFileDao {
      * @return data files which state is the given one
      */
     Set<StorageDataFile> findAllByState(DataFileState state);
+
+    Page<StorageDataFile> findAllByState(DataFileState state, Pageable pageable);
 
     /**
      * Find all data files which state is the provided one and that are associated to at least one of the provided aips

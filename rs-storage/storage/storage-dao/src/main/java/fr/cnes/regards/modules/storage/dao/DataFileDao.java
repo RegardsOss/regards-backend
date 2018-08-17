@@ -6,10 +6,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
@@ -58,6 +59,11 @@ public class DataFileDao implements IDataFileDao {
     @Override
     public Set<StorageDataFile> findAllByState(DataFileState state) {
         return repository.findAllByState(state);
+    }
+
+    @Override
+    public Page<StorageDataFile> findAllByState(DataFileState state, Pageable pageable) {
+        return repository.findAllByState(state, pageable);
     }
 
     @Override
@@ -159,7 +165,6 @@ public class DataFileDao implements IDataFileDao {
     private Collection<AIPEntity> findAipsDataBase(Collection<AIP> aips) {
         return aipRepo.findAllByAipIdIn(aips.stream().map(aip -> aip.getId().toString()).collect(Collectors.toSet()));
     }
-
 
     private Optional<AIPEntity> getAipDataBase(StorageDataFile dataFile) {
         return aipRepo.findOneByAipId(dataFile.getAipEntity().getAipId());
