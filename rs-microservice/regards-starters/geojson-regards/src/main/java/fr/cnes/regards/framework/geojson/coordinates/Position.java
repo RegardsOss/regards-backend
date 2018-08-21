@@ -58,6 +58,13 @@ public class Position {
         return latitude;
     }
 
+    /**
+     * Useful for normalization
+     */
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
+
     public Optional<Double> getAltitude() {
         return Optional.ofNullable(altitude);
     }
@@ -106,5 +113,30 @@ public class Position {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public String toString() {
+        if (altitude != null) {
+            return getLongitude() + ", " + getLatitude() + ", " + getAltitude();
+        } else {
+            return getLongitude() + ", " + getLatitude();
+        }
+    }
+
+    /**
+     * Return position as double[] where first index is longitude and seconde latitude
+     */
+    public double[] toArray() {
+        return new double[] { longitude, latitude };
+    }
+
+    /**
+     * Create a Position from array { longitude, latitude }
+     * <B>NOTE: the goal of this method is to ease creation/transformation/computation of geometries so no check is
+     * done concerning input values.</B>
+     */
+    public static Position fromArray(double[] lonLat) {
+        return new Position(lonLat[0], lonLat[1]);
     }
 }

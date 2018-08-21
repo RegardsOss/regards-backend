@@ -18,14 +18,15 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
-import javax.annotation.Nullable;
 import java.time.OffsetDateTime;
-import java.util.Arrays;
 import java.util.Collection;
+
+import javax.annotation.Nullable;
 
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
 
@@ -120,13 +121,18 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
      */
     public void addTags(String... tags) {
         Assert.notEmpty(tags, "Tag is required");
-        @SuppressWarnings("unchecked") Collection<String> existingTags = (Collection<String>) pdi
-                .getContextInformation().get(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY);
+        @SuppressWarnings("unchecked")
+        Collection<String> existingTags = (Collection<String>) pdi.getContextInformation()
+                .get(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY);
         if (existingTags == null) {
             existingTags = Sets.newHashSet(tags);
             pdi.getContextInformation().put(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY, existingTags);
         } else {
-            existingTags.addAll(Arrays.asList(tags));
+            for (String tag : tags) {
+                if (!existingTags.contains(tag)) {
+                    existingTags.add(tag);
+                }
+            }
         }
     }
 
@@ -135,9 +141,9 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
      * @param tags
      */
     public void removeTags(String... tags) {
-        Collection<String> existingTags = (Collection<String>) pdi
-                .getContextInformation().get(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY);
-        if(existingTags != null) {
+        Collection<String> existingTags = (Collection<String>) pdi.getContextInformation()
+                .get(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY);
+        if (existingTags != null) {
             existingTags.removeAll(Sets.newHashSet(tags));
         }
     }
@@ -213,6 +219,13 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
     }
 
     /**
+     * Set Regards session identifier
+     */
+    public void setSession(String session) {
+        pdi.getProvenanceInformation().setSession(session);
+    }
+
+    /**
      * Add information object events
      * @param events events to add
      */
@@ -276,9 +289,9 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
     public void setAccessRightInformation(String licence, String dataRights,
             @Nullable OffsetDateTime publicReleaseDate) {
         Assert.hasLength(dataRights, "Data rights is required");
-        pdi.getAccesRightInformation().setDataRights(dataRights);
-        pdi.getAccesRightInformation().setPublicReleaseDate(publicReleaseDate);
-        pdi.getAccesRightInformation().setLicence(licence);
+        pdi.getAccessRightInformation().setDataRights(dataRights);
+        pdi.getAccessRightInformation().setPublicReleaseDate(publicReleaseDate);
+        pdi.getAccessRightInformation().setLicence(licence);
     }
 
     /**

@@ -37,15 +37,16 @@ import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
 import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.IComplexInterfacePlugin;
+import fr.cnes.regards.framework.modules.plugins.INotInterfacePlugin;
+import fr.cnes.regards.framework.modules.plugins.ISamplePlugin;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.plugins.IComplexInterfacePlugin;
-import fr.cnes.regards.framework.plugins.INotInterfacePlugin;
-import fr.cnes.regards.framework.plugins.ISamplePlugin;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 
 /**
@@ -79,7 +80,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
                                                 Mockito.mock(IPublisher.class),
                                                 runtimeTenantResolver,
                                                 blowfishEncryptionService);
-        pluginServiceMocked.addPluginPackage("fr.cnes.regards.framework.plugins");
+        PluginUtils.setup();
     }
 
     /**

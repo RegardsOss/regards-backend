@@ -35,14 +35,14 @@ public interface IModuleConfigurationManager {
 
     /**
      * Check if this configuration is applicable to current manager. If so,
-     * {@link #importConfiguration(ModuleConfiguration)} will be called.
+     * {@link #importConfigurationAndLog(ModuleConfiguration)} will be called.
      */
     boolean isApplicable(ModuleConfiguration configuration);
 
     /**
      * Import configuration
      */
-    void importConfiguration(ModuleConfiguration configuration) throws ModuleException;
+    ModuleImportReport importConfigurationAndLog(ModuleConfiguration configuration);
 
     /**
      * Export configuration

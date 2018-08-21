@@ -18,7 +18,8 @@
  */
 // CHECKSTYLE:OFF
 /**
- * Code inspired from https://github.com/google/gson/blob/master/extras/src/main/java/com/google/gson/typeadapters/RuntimeTypeAdapterFactory.java
+ * Code inspired from
+ * https://github.com/google/gson/blob/master/extras/src/main/java/com/google/gson/typeadapters/RuntimeTypeAdapterFactory.java
  */
 // CHECKSTYLE:ON
 package fr.cnes.regards.framework.gson.adapters;
@@ -43,6 +44,7 @@ import com.google.gson.internal.Streams;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+
 import fr.cnes.regards.framework.gson.utils.GSONUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
@@ -186,11 +188,11 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
         // Retrieve tenant map
         Map<String, Class<?>> tenantDiscriminatorToSubtype = getTenantDiscriminatorToSubtype(pTenant);
         // Check if map not already contains value with a different mapping
-        if (tenantDiscriminatorToSubtype.containsKey(pDiscriminatorFieldValue) && (pType != tenantDiscriminatorToSubtype
-                .get(pDiscriminatorFieldValue))) {
+        if (tenantDiscriminatorToSubtype.containsKey(pDiscriminatorFieldValue)
+                && (pType != tenantDiscriminatorToSubtype.get(pDiscriminatorFieldValue))) {
 
-            final String errorMessage = String
-                    .format("Discrimator field value %s must be unique", pDiscriminatorFieldValue);
+            final String errorMessage = String.format("Discrimator field value %s must be unique",
+                                                      pDiscriminatorFieldValue);
             LOGGER.error(errorMessage);
             throw new IllegalArgumentException(errorMessage);
         }
@@ -259,14 +261,14 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
     }
 
     /**
-     * @param pTenant
      * @return whether the mapping should be refreshed for the given tenant
      */
-    protected Boolean needRefreshMapping(String pTenant) {
-        if (!refreshMappingMap.containsKey(pTenant)) {
-            LOGGER.warn("Empty mapping for tenant {}", pTenant);
+    protected Boolean needRefreshMapping(String tenant) {
+        if (!refreshMappingMap.containsKey(tenant)) {
+            LOGGER.warn("Empty mapping for tenant {}", tenant);
+            return Boolean.FALSE;
         }
-        return refreshMappingMap.get(pTenant);
+        return refreshMappingMap.get(tenant);
     }
 
     protected Map<String, Class<?>> getTenantDiscriminatorToSubtype(String pTenant) {
@@ -511,8 +513,10 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
                 }
 
                 try {
-                    return delegate.fromJsonTree(beforeRead(jsonElement, discriminator, getTenantDiscriminatorToSubtype(
-                            runtimeTenantResolver.getTenant()).get(discriminator)));
+                    return delegate
+                            .fromJsonTree(beforeRead(jsonElement, discriminator,
+                                                     getTenantDiscriminatorToSubtype(runtimeTenantResolver.getTenant())
+                                                             .get(discriminator)));
                 } catch (JsonIOException e) {
                     String errorMessage = String.format("Unexpected JSON format (%s)", jsonElement.toString());
                     LOGGER.error(errorMessage, e);

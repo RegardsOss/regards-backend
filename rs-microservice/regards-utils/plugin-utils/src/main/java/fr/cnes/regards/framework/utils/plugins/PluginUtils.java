@@ -22,24 +22,27 @@ package fr.cnes.regards.framework.utils.plugins;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
+import org.reflections.Configuration;
 import org.reflections.Reflections;
+import org.reflections.util.ConfigurationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.google.common.reflect.TypeToken;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginDestroy;
@@ -54,20 +57,37 @@ import fr.cnes.regards.framework.utils.plugins.bean.PluginUtilsBean;
 
 /**
  * This class contains all the utilities to create a {@link Plugin} instance, to retrieve all annotated plugins and to
- * create a {@link PluginConfiguration}.
+ * create a {@link PluginConfiguration}.<br/>
+ * Before using it, you have to call a setup method.
  * @author Christophe Mertz
+ * @author Marc Sordi
  */
 public final class PluginUtils {
 
-    /**
-     * Class logger
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginUtils.class);
+
+    private static final String HR = "####################################################";
 
     /**
      * Message error plugin instantiate
      */
     private static final String CANNOT_INSTANTIATE = "Cannot instantiate <%s>";
+
+    /**
+     * Plugin interface cache, should be only populate one on startup calling {@link #setup(List)}
+     */
+    private static Set<String> pluginInterfaceCache;
+
+    /**
+     * Plugin class cache, should be only populate one on startup calling {@link #setup(List)}
+     */
+    private static Set<Class<?>> pluginCache;
+
+    /**
+     * Plugin metadata map cache, should be only populate one on startup calling {@link #setup(List)}<br/>
+     * Map key is the plugin identifier, map value is the related plugin metadata.
+     */
+    private static Map<String, PluginMetaData> pluginMetadataCache = new ConcurrentHashMap<>();
 
     /**
      * Constructor
@@ -77,78 +97,99 @@ public final class PluginUtils {
     }
 
     /**
-     * Retrieve all annotated plugins (@see {@link Plugin}) and initialize a map whose key is the {@link Plugin}
-     * identifier and value the required plugin metadata.
-     * @param prefix a package prefix used for the scan
-     * @param prefixes a {@link List} of package to scan to find the {@link Plugin} and {@link PluginInterface}
-     * @return all class annotated {@link Plugin}
+     * Method to set up plugin context with default package <code>fr.cnes.regards</code><br/>
+     * <b>Must be call on startup in a thread safe manner</b>
      */
-    public static Map<String, PluginMetaData> getPlugins(String prefix, List<String> prefixes) {
-        final Map<String, PluginMetaData> plugins = new HashMap<>();
+    public static void setup() {
+        setup(new ArrayList<>());
+    }
 
-        // Scan class path with Reflections library
-        final Reflections reflections = ReflectionUtils.getReflections();
-        final Set<Class<?>> annotatedPlugins = reflections.getTypesAnnotatedWith(Plugin.class, true);
+    /**
+     * Method to set up plugin context.<br/>
+     * <b>Must be call on startup in a thread safe manner</b>
+     * @param reflectionPackage package to scan
+     */
+    public static void setup(String reflectionPackage) {
+        setup(Arrays.asList(reflectionPackage));
+    }
+
+    /**
+     * Method to set up plugin context.<br/>
+     * <b>Must be call on startup in a thread safe manner</b>
+     * @param reflectionPackages packages to scan
+     */
+    public static void setup(List<String> reflectionPackages) {
+
+        LOGGER.info("{} Loading plugins...", HR);
+        // Initialize reflection tool
+        Reflections reflections;
+        if ((reflectionPackages == null) || reflectionPackages.isEmpty()) {
+            String defaultPackage = "fr.cnes.regards";
+            LOGGER.info("System will look for plugins in default package: {}", defaultPackage);
+            reflections = new Reflections(defaultPackage);
+        } else {
+            StringJoiner customPackages = new StringJoiner(",");
+            reflectionPackages.forEach(p -> customPackages.add(p));
+            LOGGER.info("System will look for plugins in custom package(s): {}", customPackages.toString());
+            Configuration configuration = ConfigurationBuilder
+                    .build(reflectionPackages.toArray(new Object[reflectionPackages.size()]));
+            reflections = new Reflections(configuration);
+        }
+
+        // Initialize plugin interfaces
+        pluginInterfaceCache = new HashSet<>();
+        Set<Class<?>> annotatedPlugins = reflections.getTypesAnnotatedWith(PluginInterface.class, true);
+        annotatedPlugins.forEach(i -> pluginInterfaceCache.add(i.getCanonicalName()));
+
+        // Initialize plugins
+        pluginCache = reflections.getTypesAnnotatedWith(Plugin.class, true);
+
+        // Initialize plugin metadata map
+        pluginMetadataCache = new ConcurrentHashMap<>();
 
         // Create a plugin object for each class
-        for (final Class<?> pluginClass : annotatedPlugins) {
+        for (Class<?> pluginClass : pluginCache) {
 
             // Create plugin metadata
-            final PluginMetaData plugin = PluginUtils.createPluginMetaData(pluginClass, prefixes);
+            PluginMetaData plugin = PluginUtils.createPluginMetaData(pluginClass);
 
             // Check a plugin does not already exists with the same plugin id
-            if (plugins.containsKey(plugin.getPluginId())) {
-                final PluginMetaData pMeta = plugins.get(plugin.getPluginId());
-                final String message = String
+            if (pluginMetadataCache.containsKey(plugin.getPluginId())) {
+                PluginMetaData pMeta = pluginMetadataCache.get(plugin.getPluginId());
+                String message = String
                         .format("Plugin identifier must be unique : %s for plugin \"%s\" already used in plugin \"%s\"!",
                                 plugin.getPluginId(), plugin.getPluginClassName(), pMeta.getPluginClassName());
                 LOGGER.warn(message);
             }
 
             // Store plugin reference
-            plugins.put(plugin.getPluginId(), plugin);
+            pluginMetadataCache.put(plugin.getPluginId(), plugin);
 
             LOGGER.info(String.format("Plugin \"%s\" with identifier \"%s\" loaded.", plugin.getPluginClassName(),
                                       plugin.getPluginId()));
         }
-        return plugins;
+        LOGGER.info("{} Plugins loaded!", HR);
+    }
+
+    public static Set<String> getPluginInterfaces() {
+        return pluginInterfaceCache;
     }
 
     /**
      * Retrieve all annotated plugins (@see {@link Plugin}) and initialize a map whose key is the {@link Plugin}
-     * identifier and value the required {@link PluginMetaData}.
-     * <b>Note: </b> This method is used by PluginService which is used in multi-thread environment (see IngesterService
-     * and CrawlerService) so ConcurrentHashMap is used instead of HashMap
-     * @param prefixes a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
+     * identifier and value the required plugin metadata.
      * @return all class annotated {@link Plugin}
      */
-    public static Map<String, PluginMetaData> getPlugins(List<String> prefixes) {
-        ConcurrentMap<String, PluginMetaData> pluginMap = new ConcurrentHashMap<>();
-
-        for (String p : prefixes) {
-            pluginMap.putAll(getPlugins(p, prefixes));
-        }
-
-        return pluginMap;
+    public static Map<String, PluginMetaData> getPlugins() {
+        return pluginMetadataCache;
     }
 
     /**
      * Create {@link PluginMetaData} based on its annotations {@link Plugin} and {@link PluginParameter} if any.
      * @param pluginClass a class that must contains a {@link Plugin} annotation
-     * @param prefixes packages to scan for find the {@link Plugin} and {@link PluginInterface}
      * @return the {@link PluginMetaData} create
      */
-    public static PluginMetaData createPluginMetaData(final Class<?> pluginClass, final String... prefixes) {
-        return createPluginMetaData(pluginClass, Lists.newArrayList(prefixes));
-    }
-
-    /**
-     * Create {@link PluginMetaData} based on its annotations {@link Plugin} and {@link PluginParameter} if any.
-     * @param pluginClass a class that must contains a {@link Plugin} annotation
-     * @param prefixes a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
-     * @return the {@link PluginMetaData} create
-     */
-    public static PluginMetaData createPluginMetaData(final Class<?> pluginClass, final List<String> prefixes) {
+    public static PluginMetaData createPluginMetaData(Class<?> pluginClass) {
         // Get implementation associated annotations
         Plugin plugin = pluginClass.getAnnotation(Plugin.class);
 
@@ -162,18 +203,14 @@ public final class PluginUtils {
         pluginMetaData.setPluginClassName(pluginClass.getCanonicalName());
 
         // Search the plugin type of the plugin class : i.e. the interface that has the @PluginInterface annotation
-        final List<String> pluginInterfaces = PluginInterfaceUtils.getInterfaces(prefixes);
-        List<String> types = new ArrayList<>(); // FIXME: is really used?
-
         for (Class<?> aInterface : TypeToken.of(pluginClass).getTypes().interfaces().rawTypes()) {
-            types.add(aInterface.getCanonicalName());
-            if (pluginInterfaces.contains(aInterface.getCanonicalName())) {
+            if (pluginInterfaceCache.contains(aInterface.getCanonicalName())) {
                 pluginMetaData.getInterfaceNames().add(aInterface.getCanonicalName());
             }
         }
 
         // Try to detect parameters if any
-        pluginMetaData.setParameters(PluginParameterUtils.getParameters(pluginClass, prefixes));
+        pluginMetaData.setParameters(PluginParameterUtils.getParameters(pluginClass));
         return pluginMetaData;
     }
 
@@ -182,22 +219,20 @@ public final class PluginUtils {
      * @param <T> a {@link Plugin}
      * @param pluginConf the {@link PluginConfiguration}
      * @param pluginMetadata the {@link PluginMetaData}
-     * @param prefixes a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @param instantiatedPluginMap already instaniated plugins
      * @param dynamicPluginParameters an optional list of {@link PluginParameter}
      * @return an instance of a {@link Plugin} @ if a problem occurs
      */
-    public static <T> T getPlugin(PluginConfiguration pluginConf, PluginMetaData pluginMetadata, List<String> prefixes,
+    public static <T> T getPlugin(PluginConfiguration pluginConf, PluginMetaData pluginMetadata,
             Map<Long, Object> instantiatedPluginMap, PluginParameter... dynamicPluginParameters) {
-        return getPlugin(pluginConf, pluginMetadata.getPluginClassName(), prefixes, instantiatedPluginMap,
+        return getPlugin(pluginConf, pluginMetadata.getPluginClassName(), instantiatedPluginMap,
                          dynamicPluginParameters);
     }
 
     public static <T> T getPlugin(PluginConfiguration pluginConf, PluginMetaData pluginMetadata,
-            IPluginUtilsBean pluginUtilsBean, List<String> prefixes, Map<Long, Object> instantiatedPluginMap,
+            IPluginUtilsBean pluginUtilsBean, Map<Long, Object> instantiatedPluginMap,
             PluginParameter... dynamicPluginParameters) {
-        return PluginUtils
-                .getPlugin(pluginConf, pluginMetadata, prefixes, instantiatedPluginMap, dynamicPluginParameters);
+        return PluginUtils.getPlugin(pluginConf, pluginMetadata, instantiatedPluginMap, dynamicPluginParameters);
     }
 
     /**
@@ -205,12 +240,11 @@ public final class PluginUtils {
      * @param <T> a {@link Plugin}
      * @param pluginConf the {@link PluginConfiguration}
      * @param pluginClassName the {@link Plugin} class name
-     * @param prefixes a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @param dynamicPluginParameters an optional list of {@link PluginParameter}
      * @return an instance of {@link Plugin} @ if a problem occurs
      */
     @SuppressWarnings("unchecked")
-    public static <T> T getPlugin(PluginConfiguration pluginConf, String pluginClassName, List<String> prefixes,
+    public static <T> T getPlugin(PluginConfiguration pluginConf, String pluginClassName,
             Map<Long, Object> instantiatedPluginMap, PluginParameter... dynamicPluginParameters) {
         T returnPlugin = null;
 
@@ -220,21 +254,20 @@ public final class PluginUtils {
 
             if (PluginUtilsBean.getInstance() != null) {
                 // Post process parameters in Spring context
-                PluginParameterUtils
-                        .postProcess(PluginUtilsBean.getInstance().getGson(), returnPlugin, pluginConf, prefixes,
-                                     instantiatedPluginMap, dynamicPluginParameters);
+                PluginParameterUtils.postProcess(PluginUtilsBean.getInstance().getGson(), returnPlugin, pluginConf,
+                                                 instantiatedPluginMap, dynamicPluginParameters);
                 PluginUtilsBean.getInstance().processAutowiredBean(returnPlugin);
             } else {
                 // Post process parameters without Spring
-                PluginParameterUtils
-                        .postProcess(Optional.empty(), returnPlugin, pluginConf, prefixes, instantiatedPluginMap,
-                                     dynamicPluginParameters);
+                PluginParameterUtils.postProcess(Optional.empty(), returnPlugin, pluginConf, instantiatedPluginMap,
+                                                 dynamicPluginParameters);
             }
 
             // Launch init method if detected
             doInitPlugin(returnPlugin);
 
-        } catch (InstantiationException | IllegalAccessException | NoSuchElementException | IllegalArgumentException | SecurityException | ClassNotFoundException e) {
+        } catch (InstantiationException | IllegalAccessException | NoSuchElementException | IllegalArgumentException
+                | SecurityException | ClassNotFoundException e) {
             throw new PluginUtilsRuntimeException(String.format(CANNOT_INSTANTIATE, pluginClassName), e);
         }
 
@@ -246,34 +279,16 @@ public final class PluginUtils {
      * @param <T> a {@link Plugin}
      * @param parameters a {@link List} of {@link PluginParameter}
      * @param pluginClass the required returned type
-     * @param pluginUtilsBean a {@link PluginUtilsBean} containing your own
-     * {@link org.springframework.beans.factory.BeanFactory}
-     * @param prefixes a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
-     * @param pluginParameters an optional {@link List} of {@link PluginParameter}
-     * @return a {@link Plugin} instance @ if a problem occurs
-     */
-    public static <T> T getPlugin(List<PluginParameter> parameters, Class<T> pluginClass,
-            IPluginUtilsBean pluginUtilsBean, List<String> prefixes, Map<Long, Object> instantiatedPluginMap,
-            PluginParameter... pluginParameters) {
-        return PluginUtils.getPlugin(parameters, pluginClass, prefixes, instantiatedPluginMap, pluginParameters);
-    }
-
-    /**
-     * Create an instance of {@link Plugin} based on its configuration and metadata
-     * @param <T> a {@link Plugin}
-     * @param parameters a {@link List} of {@link PluginParameter}
-     * @param pluginClass the required returned type
-     * @param prefixes a {@link List} of package to scan to find the {@link Plugin} and {@link PluginInterface}
      * @param dynamicPluginParameters an optional {@link List} of {@link PluginParameter}
      * @return a {@link Plugin} instance
      */
-    public static <T> T getPlugin(List<PluginParameter> parameters, Class<T> pluginClass, List<String> prefixes,
+    public static <T> T getPlugin(List<PluginParameter> parameters, Class<T> pluginClass,
             Map<Long, Object> instantiatedPluginMap, PluginParameter... dynamicPluginParameters) {
         // Build plugin metadata
-        PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pluginClass, prefixes);
+        PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pluginClass);
 
         PluginConfiguration pluginConfiguration = new PluginConfiguration(pluginMetadata, "", parameters);
-        return PluginUtils.getPlugin(pluginConfiguration, pluginMetadata, prefixes, instantiatedPluginMap,
+        return PluginUtils.getPlugin(pluginConfiguration, pluginMetadata, instantiatedPluginMap,
                                      dynamicPluginParameters);
     }
 
@@ -292,7 +307,8 @@ public final class PluginUtils {
                     method.invoke(pluginInstance);
                 } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                     LOGGER.error(String.format("Exception while invoking destroy method on plugin class <%s>.",
-                                               pluginInstance.getClass()), e);
+                                               pluginInstance.getClass()),
+                                 e);
                     throw new PluginUtilsRuntimeException(e);
                 }
             }
@@ -314,7 +330,8 @@ public final class PluginUtils {
                     method.invoke(pluginInstance);
                 } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                     LOGGER.error(String.format("Exception while invoking init method on plugin class <%s>.",
-                                               pluginInstance.getClass()), e);
+                                               pluginInstance.getClass()),
+                                 e);
                     if (e.getCause() instanceof PluginUtilsRuntimeException) {
                         throw (PluginUtilsRuntimeException) e.getCause();
                     } else {
@@ -330,14 +347,12 @@ public final class PluginUtils {
      * @param <T> a plugin
      * @param parameters the plugin parameters
      * @param returnInterfaceType the required returned type
-     * @param prefixes a {@link List} of package to scan for find the {@link Plugin} and {@link PluginInterface}
      * @return an instance @ if a problem occurs
      */
-    public static <T> PluginConfiguration getPluginConfiguration(final List<PluginParameter> parameters,
-            final Class<T> returnInterfaceType, final List<String> prefixes) {
+    public static <T> PluginConfiguration getPluginConfiguration(List<PluginParameter> parameters,
+            Class<T> returnInterfaceType) {
         // Build plugin metadata
-        final PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(returnInterfaceType, prefixes);
-
+        PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(returnInterfaceType);
         return new PluginConfiguration(pluginMetadata, UUID.randomUUID().toString(), parameters);
     }
 
@@ -354,9 +369,8 @@ public final class PluginUtils {
             return new EntityInvalidException(validationErrors);
         }
         if (pluginConfiguration.getPriorityOrder() == null) {
-            validationErrors
-                    .add(String.format("The plugin configuration priority order is required (pluginId: %s).",
-                                       pluginConfiguration.getPluginId()));
+            validationErrors.add(String.format("The plugin configuration priority order is required (pluginId: %s).",
+                                               pluginConfiguration.getPluginId()));
         }
         if (Strings.isNullOrEmpty(pluginConfiguration.getLabel())) {
             validationErrors.add(String.format("The plugin configuration label is required (pluginId: %s).",
@@ -364,15 +378,8 @@ public final class PluginUtils {
         }
         // Now lets apply some more complicated validation that required introspection
         try {
-            List<String> packages = new ArrayList<>();
             Class<?> pluginClass = Class.forName(pluginConfiguration.getPluginClassName());
-            // Let's get the plugin interfaces packages
-            for (String interfaceName : pluginConfiguration.getInterfaceNames()) {
-                packages.add(Class.forName(interfaceName).getPackage().getName());
-            }
-            // Don't forget to add the implementation package
-            packages.add(pluginClass.getPackage().getName());
-            PluginMetaData pluginMetadata = createPluginMetaData(pluginClass, packages);
+            PluginMetaData pluginMetadata = createPluginMetaData(pluginClass);
             // Now that we have the metadata, lets check everything and eventualy set some properties
             // as version (a null version means a plugin configuration creation
             if (pluginConfiguration.getVersion() == null) {
@@ -397,14 +404,14 @@ public final class PluginUtils {
             }
 
             // First lets check the plugin parameters
-            //    first simple test, are there enough parameters?
+            // first simple test, are there enough parameters?
             List<PluginParameterType> pluginParametersFromMeta = pluginMetadata.getParameters();
-            //    the plugin configuration should not have any reference to plugin parameters that are only dynamic
-            //    lets check that all remaining parameters are correctly given
+            // the plugin configuration should not have any reference to plugin parameters that are only dynamic
+            // lets check that all remaining parameters are correctly given
             for (PluginParameterType plgParamMeta : pluginParametersFromMeta) {
-                if (!plgParamMeta.isOptional() && !plgParamMeta.getUnconfigurable() && (
-                        pluginConfiguration.getParameter(plgParamMeta.getName()) == null
-                                && plgParamMeta.getDefaultValue() == null)) {
+                if (!plgParamMeta.isOptional() && !plgParamMeta.getUnconfigurable()
+                        && ((pluginConfiguration.getParameter(plgParamMeta.getName()) == null)
+                                && (plgParamMeta.getDefaultValue() == null))) {
                     validationErrors.add(String.format("Plugin Parameter %s is missing.", plgParamMeta.getName()));
                 }
             }

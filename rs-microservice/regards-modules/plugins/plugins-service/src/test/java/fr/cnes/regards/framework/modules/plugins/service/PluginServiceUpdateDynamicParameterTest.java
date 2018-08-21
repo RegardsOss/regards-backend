@@ -42,6 +42,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 
 /**
  * Unit testing of {@link PluginService}.
@@ -72,7 +73,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
                                                 Mockito.mock(IPublisher.class),
                                                 runtimeTenantResolver,
                                                 blowfishEncryptionService);
-        pluginServiceMocked.addPluginPackage("fr.cnes.regards");
+        PluginUtils.setup();
     }
 
     /**

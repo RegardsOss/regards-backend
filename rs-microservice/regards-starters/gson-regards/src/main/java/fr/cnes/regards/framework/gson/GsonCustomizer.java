@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.MimeType;
+import org.springframework.util.MultiValueMap;
 
 import com.google.common.collect.Multimap;
 import com.google.gson.GsonBuilder;
@@ -34,6 +35,7 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
 
 import fr.cnes.regards.framework.gson.adapters.MimeTypeAdapter;
+import fr.cnes.regards.framework.gson.adapters.MultiValueMapAdapter;
 import fr.cnes.regards.framework.gson.adapters.MultimapAdapter;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.gson.adapters.PathAdapter;
@@ -72,6 +74,7 @@ public final class GsonCustomizer {
         builder.registerTypeAdapter(OffsetDateTime.class, new OffsetDateTimeAdapter().nullSafe());
         builder.registerTypeAdapter(MimeType.class, new MimeTypeAdapter().nullSafe());
         builder.registerTypeHierarchyAdapter(Multimap.class, new MultimapAdapter());
+        builder.registerTypeHierarchyAdapter(MultiValueMap.class, new MultiValueMapAdapter());
         builder.addSerializationExclusionStrategy(new GsonIgnoreExclusionStrategy());
     }
 

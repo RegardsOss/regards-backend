@@ -18,10 +18,11 @@
  */
 package fr.cnes.regards.framework.modules.plugins.rest;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +42,6 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -61,8 +61,6 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
  * @author Sébastien Binda
  */
 @RestController
-@ModuleInfo(name = "plugins", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 public class PluginController implements IResourceController<PluginConfiguration> {
 
     /**
@@ -75,10 +73,12 @@ public class PluginController implements IResourceController<PluginConfiguration
      */
     public static final String PLUGIN_TYPES = "/plugintypes";
 
+    public static final String REQUEST_PARAM_PLUGIN_ID = "pluginId";
+
     /**
      * REST mapping resource : /plugins/{pluginId}
      */
-    public static final String PLUGINS_PLUGINID = PLUGINS + "/{pluginId}";
+    public static final String PLUGINS_PLUGINID = PLUGINS + "/{" + REQUEST_PARAM_PLUGIN_ID + "}";
 
     /**
      * REST mapping resource : /plugins/{pluginId}/config
@@ -90,15 +90,18 @@ public class PluginController implements IResourceController<PluginConfiguration
      */
     public static final String PLUGINS_CONFIGS = PLUGINS + "/configs";
 
+    public static final String REQUEST_PARAM_CONFIG_ID = "configId";
+
     /**
      * REST mapping resource : /plugins/{pluginId}/config/{configId}
      */
-    public static final String PLUGINS_PLUGINID_CONFIGID = PLUGINS_PLUGINID_CONFIGS + "/{configId}";
+    public static final String PLUGINS_PLUGINID_CONFIGID = PLUGINS_PLUGINID_CONFIGS + "/{" + REQUEST_PARAM_CONFIG_ID
+            + "}";
 
     /**
      * REST mapping resource : /plugins/configs/{configId}
      */
-    public static final String PLUGINS_CONFIGID = PLUGINS_CONFIGS + "/{configId}";
+    public static final String PLUGINS_CONFIGID = PLUGINS_CONFIGS + "/{" + REQUEST_PARAM_CONFIG_ID + "}";
 
     /**
      * REST mapping resource : /plugins/cache
@@ -153,7 +156,7 @@ public class PluginController implements IResourceController<PluginConfiguration
                 metadaData = pluginService.getPluginsByType(Class.forName(pluginType));
             } catch (final ClassNotFoundException e) {
                 LOGGER.error(e.getMessage(), e);
-                throw new EntityInvalidException(e.getMessage());
+                throw new EntityInvalidException("Class not found : " + e.getMessage());
             }
         }
 
@@ -168,13 +171,14 @@ public class PluginController implements IResourceController<PluginConfiguration
      */
     @RequestMapping(value = PLUGIN_TYPES, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Get all the plugin types (ie interface annotated with @PluginInterface)")
-    public ResponseEntity<List<Resource<String>>> getPluginTypes(@RequestParam(name = "available", required = false) Boolean available) {
-        if(available != null && available.booleanValue() == true) {
+    public ResponseEntity<List<Resource<String>>> getPluginTypes(
+            @RequestParam(name = "available", required = false) Boolean available) {
+        if ((available != null) && (available.booleanValue() == true)) {
             Set<String> types = pluginService.getAvailablePluginTypes();
             List<Resource<String>> resources = types.stream().map(Resource::new).collect(Collectors.toList());
             return new ResponseEntity<>(resources, HttpStatus.OK);
         }
-        List<String> types = pluginService.getPluginTypes();
+        Set<String> types = pluginService.getPluginTypes();
         List<Resource<String>> resources = types.stream().map(Resource::new).collect(Collectors.toList());
 
         return new ResponseEntity<>(resources, HttpStatus.OK);
@@ -211,7 +215,7 @@ public class PluginController implements IResourceController<PluginConfiguration
      * Get all the {@link PluginConfiguration} for a specific plugin type.</br>
      * If any specific plugin type is defined, get all the {@link PluginConfiguration}.
      * @param pluginType an interface name, that implements {@link PluginInterface}.<br>
-     * This parameter is optional.
+     *            This parameter is optional.
      * @return a {@link List} of {@link PluginConfiguration}
      * @throws EntityNotFoundException the specific plugin type name is unknown
      */
@@ -251,7 +255,7 @@ public class PluginController implements IResourceController<PluginConfiguration
             @Valid @RequestBody PluginConfiguration pluginConf) throws ModuleException {
         try {
             return new ResponseEntity<>(toResource(pluginService.savePluginConfiguration(pluginConf)),
-                                        HttpStatus.CREATED);
+                    HttpStatus.CREATED);
         } catch (final ModuleException e) {
             LOGGER.error("Cannot create the plugin configuration : <" + pluginConf.getPluginId() + ">", e);
             throw e;
@@ -304,7 +308,7 @@ public class PluginController implements IResourceController<PluginConfiguration
 
         if (!pluginId.equals(pluginConf.getPluginId())) {
             LOGGER.error("The plugin configuration is incoherent with the requests param : plugin id= <" + pluginId
-                                 + ">- config id= <" + configId + ">");
+                    + ">- config id= <" + configId + ">");
             throw new EntityNotFoundException(pluginId, PluginConfiguration.class);
         }
 

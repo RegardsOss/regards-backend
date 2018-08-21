@@ -39,6 +39,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 
 /**
  *
@@ -75,7 +76,7 @@ public class ComplexPluginTest {
                                                 publisherMocked,
                                                 runtimeTenantResolver,
                                                 blowfishEncryptionService);
-        pluginServiceMocked.addPluginPackage("fr.cnes.regards.framework.modules.plugins.service");
+        PluginUtils.setup();
     }
 
     @Test

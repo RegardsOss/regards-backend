@@ -19,7 +19,7 @@
 package fr.cnes.regards.framework.oais.urn.converters;
 
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 
@@ -29,7 +29,7 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
  *
  * @author Xavier-Alexandre Brochard
  */
-@ControllerAdvice
+@Component
 public class StringToUrn implements Converter<String, UniformResourceName> {
 
     @Override

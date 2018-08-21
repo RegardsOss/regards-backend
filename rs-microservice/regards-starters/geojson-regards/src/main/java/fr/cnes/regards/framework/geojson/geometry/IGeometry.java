@@ -23,6 +23,7 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
 import fr.cnes.regards.framework.geojson.GeoJsonType;
 import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
 import fr.cnes.regards.framework.geojson.coordinates.Position;
@@ -33,13 +34,21 @@ import fr.cnes.regards.framework.geojson.coordinates.Positions;
  * GeoJson geometry declaration and geometry builder.
  * @author Marc Sordi
  */
-public interface IGeometry { // NOSONAR
+public interface IGeometry {
 
     Logger LOGGER = LoggerFactory.getLogger(IGeometry.class);
 
     GeoJsonType getType();
 
     void setCrs(String crs);
+
+    default <T extends IGeometry> T withCrs(String crs) {
+        this.setCrs(crs);
+        return (T)this;
+    }
+
+    <R> R accept(IGeometryVisitor<R> visitor);
+
 
     /**
      * Define a GeoJson without geometry
@@ -68,6 +77,15 @@ public interface IGeometry { // NOSONAR
      */
     static Position position(Double longitude, Double latitude) {
         return new Position(longitude, latitude);
+    }
+
+    /**
+     * Create a {@link Positions}
+     */
+    static Positions positions(Position[] positions) {
+        Positions positions1 = new Positions();
+        positions1.addAll(Arrays.asList(positions));
+        return positions1;
     }
 
     /**
@@ -247,4 +265,53 @@ public interface IGeometry { // NOSONAR
             throw new IllegalArgumentException(errorMessage);
         }
     }
+
+    /**
+     * Create a new {@link Point} geometry.<br/>
+     * As parameters are doubles instead of Doubles, int values can also be used.<br/>
+     * Intent of this method is principaly to be used for tests
+     */
+    static Point point(double lon, double lat) {
+        return point(position(lon, lat));
+    }
+
+    /**
+     * Create a new {@link LineString} geometry.<br/>
+     * As parameters are doubles instead of Doubles, int values can also be used.<br/>
+     * Intent of this method is principaly to be used for tests     */
+    static LineString lineString(double... lonLats) {
+        Preconditions.checkNotNull(lonLats);
+        Preconditions.checkArgument(lonLats.length > 2);
+        Preconditions.checkArgument(lonLats.length % 2 == 0);
+
+        double[][] array = new double[lonLats.length / 2][2];
+        for (int i = 0; i < lonLats.length; i += 2) {
+            array[i / 2][0] = lonLats[i];
+            array[i / 2][1] = lonLats[i + 1];
+        }
+        return lineString(Positions.fromArray(array));
+    }
+
+    /**
+     * Create a simple polygon (no hole, only exterior ring), specifying alternatively longitude and latitude of all
+     * points. No need to close the polygon by specifying last two values as first twos.<br/>
+     * As parameter is double[] instead of Double[], int values can also be used.<br/>
+     * Intent of this method is principaly to be used for tests
+     * @param lonLats point1 longitude, point2 latitude, point2 long, point2 latitude, ...
+     */
+    static Polygon simplePolygon(double... lonLats) {
+        Preconditions.checkNotNull(lonLats);
+        Preconditions.checkArgument(lonLats.length > 2);
+        Preconditions.checkArgument(lonLats.length % 2 == 0);
+        Preconditions.checkArgument(
+                (lonLats[0] != lonLats[lonLats.length - 2]) || (lonLats[1] != lonLats[lonLats.length - 1]));
+
+        Position[] positions = new Position[lonLats.length / 2 + 1];
+        for (int i = 0; i < lonLats.length; i += 2) {
+            positions[i / 2] = IGeometry.position(lonLats[i], lonLats[i + 1]);
+        }
+        positions[positions.length - 1] = position(lonLats[0], lonLats[1]);
+        return polygon(toPolygonCoordinates(positions(positions)));
+    }
+
 }

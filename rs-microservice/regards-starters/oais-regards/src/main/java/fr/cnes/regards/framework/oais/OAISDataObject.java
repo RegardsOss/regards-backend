@@ -18,14 +18,16 @@
  */
 package fr.cnes.regards.framework.oais;
 
-import javax.validation.constraints.NotNull;
 import java.net.URL;
 import java.util.Set;
+
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.oais.validator.ValidOAISDataObject;
 import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgorithm;
 
 /**
@@ -36,6 +38,7 @@ import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgor
  * @author Marc Sordi
  *
  */
+@ValidOAISDataObject
 public class OAISDataObject {
 
     /**
@@ -43,6 +46,12 @@ public class OAISDataObject {
      */
     @NotNull(message = "REGARDS data type is required to qualify the related data file")
     private DataType regardsDataType;
+
+    /**
+     * Required flag to indicate a data file is just a reference (whether physical file is managed internally or not)
+     */
+    @NotNull(message = "Reference flag is required")
+    private Boolean reference;
 
     /**
      * The url
@@ -53,19 +62,18 @@ public class OAISDataObject {
     /**
      * The file name
      */
+    @NotBlank(message = "Filename is required")
     private String filename;
 
     /**
-     * The checksum algorithm
+     * The checksum algorithm (<b>required</b> if data object is not a reference)
      */
-    @NotBlank(message = "Data file checksum algorithm is required")
     @HandledMessageDigestAlgorithm
     private String algorithm;
 
     /**
-     * The checksum
+     * The checksum (<b>required</b> if data object is not a reference)
      */
-    @NotBlank(message = "Data file checksum is required")
     private String checksum;
 
     /**
@@ -163,35 +171,89 @@ public class OAISDataObject {
         this.fileSize = fileSize;
     }
 
+    public Boolean getReference() {
+        return reference;
+    }
+
+    public Boolean isReference() {
+        return reference;
+    }
+
+    public void setReference(Boolean reference) {
+        this.reference = reference;
+    }
+
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object obj) {
+        if (this == obj) {
             return true;
         }
-        if ((o == null) || (getClass() != o.getClass())) {
+        if (obj == null) {
             return false;
         }
-
-        OAISDataObject that = (OAISDataObject) o;
-
-        if (regardsDataType != that.regardsDataType) {
+        if (getClass() != obj.getClass()) {
             return false;
         }
-        if (urls != null ? !urls.equals(that.urls) : that.urls != null) {
+        OAISDataObject other = (OAISDataObject) obj;
+        if (algorithm == null) {
+            if (other.algorithm != null) {
+                return false;
+            }
+        } else if (!algorithm.equals(other.algorithm)) {
             return false;
         }
-        if (algorithm != null ? !algorithm.equals(that.algorithm) : that.algorithm != null) {
+        if (checksum == null) {
+            if (other.checksum != null) {
+                return false;
+            }
+        } else if (!checksum.equals(other.checksum)) {
             return false;
         }
-        return checksum != null ? checksum.equals(that.checksum) : that.checksum == null;
+        if (fileSize == null) {
+            if (other.fileSize != null) {
+                return false;
+            }
+        } else if (!fileSize.equals(other.fileSize)) {
+            return false;
+        }
+        if (filename == null) {
+            if (other.filename != null) {
+                return false;
+            }
+        } else if (!filename.equals(other.filename)) {
+            return false;
+        }
+        if (reference == null) {
+            if (other.reference != null) {
+                return false;
+            }
+        } else if (!reference.equals(other.reference)) {
+            return false;
+        }
+        if (regardsDataType != other.regardsDataType) {
+            return false;
+        }
+        if (urls == null) {
+            if (other.urls != null) {
+                return false;
+            }
+        } else if (!urls.equals(other.urls)) {
+            return false;
+        }
+        return true;
     }
 
     @Override
     public int hashCode() {
-        int result = regardsDataType != null ? regardsDataType.hashCode() : 0;
-        result = (31 * result) + (urls != null ? urls.hashCode() : 0);
-        result = (31 * result) + (algorithm != null ? algorithm.hashCode() : 0);
-        result = (31 * result) + (checksum != null ? checksum.hashCode() : 0);
+        final int prime = 31;
+        int result = 1;
+        result = (prime * result) + ((algorithm == null) ? 0 : algorithm.hashCode());
+        result = (prime * result) + ((checksum == null) ? 0 : checksum.hashCode());
+        result = (prime * result) + ((fileSize == null) ? 0 : fileSize.hashCode());
+        result = (prime * result) + ((filename == null) ? 0 : filename.hashCode());
+        result = (prime * result) + ((reference == null) ? 0 : reference.hashCode());
+        result = (prime * result) + ((regardsDataType == null) ? 0 : regardsDataType.hashCode());
+        result = (prime * result) + ((urls == null) ? 0 : urls.hashCode());
         return result;
     }
 }

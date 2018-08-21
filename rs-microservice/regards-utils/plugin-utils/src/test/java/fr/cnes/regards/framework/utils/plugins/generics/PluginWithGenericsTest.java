@@ -29,6 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.utils.cycle.generics.PluginWithCyclicPojoCollection;
+import fr.cnes.regards.framework.utils.cycle.generics.PluginWithCyclicPojoMap;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
@@ -52,8 +54,8 @@ public class PluginWithGenericsTest {
                 .addParameter(PluginWithBoolean.FIELD_NAME_PRIMITIVE, false)
                 .addParameter(PluginWithBoolean.FIELD_NAME_STRING, "string").getParameters();
 
-        IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithBoolean.class,
-                                                           Arrays.asList(this.getClass().getPackage().getName()), null);
+        PluginUtils.setup(this.getClass().getPackage().getName());
+        IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithBoolean.class, null);
         Assert.assertNotNull(plugin);
         plugin.doIt();
     }
@@ -65,8 +67,8 @@ public class PluginWithGenericsTest {
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(PluginWithStringCollection.FIELD_NAME, infos).getParameters();
 
-        IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithStringCollection.class,
-                                                           Arrays.asList(this.getClass().getPackage().getName()), null);
+        PluginUtils.setup(this.getClass().getPackage().getName());
+        IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithStringCollection.class, null);
 
         Assert.assertNotNull(plugin);
         plugin.doIt();
@@ -86,8 +88,8 @@ public class PluginWithGenericsTest {
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(PluginWithPojoCollection.FIELD_NAME, infos).getParameters();
 
-        IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithPojoCollection.class,
-                                                           Arrays.asList(this.getClass().getPackage().getName()), null);
+        PluginUtils.setup(this.getClass().getPackage().getName());
+        IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithPojoCollection.class, null);
 
         Assert.assertNotNull(plugin);
         plugin.doIt();
@@ -103,8 +105,8 @@ public class PluginWithGenericsTest {
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(PluginWithStringMap.FIELD_NAME, infos).getParameters();
 
-        IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithStringMap.class,
-                                                           Arrays.asList(this.getClass().getPackage().getName()), null);
+        PluginUtils.setup(this.getClass().getPackage().getName());
+        IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithStringMap.class, null);
 
         Assert.assertNotNull(plugin);
         plugin.doIt();
@@ -126,8 +128,8 @@ public class PluginWithGenericsTest {
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(PluginWithPojoMap.PARAMETER_NAME, infos).getParameters();
 
-        IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithPojoMap.class,
-                                                           Arrays.asList(this.getClass().getPackage().getName()), null);
+        PluginUtils.setup(this.getClass().getPackage().getName());
+        IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithPojoMap.class, null);
 
         Assert.assertNotNull(plugin);
         plugin.doIt();
@@ -135,13 +137,13 @@ public class PluginWithGenericsTest {
 
     @Test(expected = PluginUtilsRuntimeException.class)
     public void cyclicCollectionTest() {
-        PluginUtils.getPlugin(null, PluginWithCyclicPojoCollection.class,
-                              Arrays.asList(this.getClass().getPackage().getName()), null);
+        PluginUtils.setup(this.getClass().getPackage().getName());
+        PluginUtils.getPlugin(null, PluginWithCyclicPojoCollection.class, null);
     }
 
     @Test(expected = PluginUtilsRuntimeException.class)
     public void cyclicMapTest() {
-        PluginUtils.getPlugin(null, PluginWithCyclicPojoMap.class,
-                              Arrays.asList(this.getClass().getPackage().getName()), null);
+        PluginUtils.setup(this.getClass().getPackage().getName());
+        PluginUtils.getPlugin(null, PluginWithCyclicPojoMap.class, null);
     }
 }

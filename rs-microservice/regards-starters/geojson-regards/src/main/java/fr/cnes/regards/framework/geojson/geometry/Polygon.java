@@ -40,4 +40,33 @@ public class Polygon extends AbstractGeometry<PolygonPositions> {
         super(GeoJsonType.POLYGON);
         coordinates = new PolygonPositions();
     }
+
+    public boolean containsHoles() {
+        return !coordinates.getHoles().isEmpty();
+    }
+
+    @Override
+    public <T> T accept(IGeometryVisitor<T> visitor) {
+        return visitor.visitPolygon(this);
+    }
+
+    @Override
+    public String toString() {
+        return "POLYGON ( " + getCoordinates().toString() + " )";
+    }
+
+    public double[][][] toArray() {
+        return coordinates.toArray();
+    }
+
+    /**
+     * Create a PolygonPositions from array { { { longitude, latitude }, {}, ... } } (first is exterior ring, others holes)
+     * <B>NOTE: the goal of this method is to ease creation/transformation/computation of geometries so no check is
+     * done concerning input values.</B>
+     */
+    public static Polygon fromArray(double[][][] lonLatsArray) {
+        Polygon polygon = new Polygon();
+        polygon.coordinates = PolygonPositions.fromArray(lonLatsArray);
+        return polygon;
+    }
 }
