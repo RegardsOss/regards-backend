@@ -10,11 +10,11 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import fr.cnes.regards.framework.encryption.BlowfishEncryptionService;
+import fr.cnes.regards.framework.encryption.AESEncryptionService;
 import fr.cnes.regards.framework.encryption.IEncryptionService;
 
 /**
- * Auto configuration for ciphers
+ * Auto configuration for ciphers. Default encryption service: {@link AESEncryptionService}
  *
  * @author Sylvain VISSIERE-GUERINET
  */
@@ -29,9 +29,9 @@ public class CipherAutoConf {
     @ConditionalOnMissingBean(IEncryptionService.class)
     public IEncryptionService blowfishEncryptionService()
             throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
-        BlowfishEncryptionService blowfishEncryptionService = new BlowfishEncryptionService();
-        blowfishEncryptionService.init(cipherProperties);
-        return blowfishEncryptionService;
+        AESEncryptionService aesEncryptionService = new AESEncryptionService();
+        aesEncryptionService.init(cipherProperties);
+        return aesEncryptionService;
     }
 
 }

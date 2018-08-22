@@ -8,6 +8,7 @@ import java.security.InvalidKeyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.encryption.AESEncryptionService;
 import fr.cnes.regards.framework.encryption.BlowfishEncryptionService;
 import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
 import fr.cnes.regards.framework.encryption.exception.EncryptionException;
@@ -44,9 +45,9 @@ public class EncryptionApp {
             LOG.error("{} parameter is missing", VALUE);
             System.exit(1);
         }
-        BlowfishEncryptionService blowfishEncryptionService = new BlowfishEncryptionService();
-        blowfishEncryptionService.init(new CipherProperties(Paths.get(keyLocation), iv));
-        LOG.info("Encrypted value: {}", blowfishEncryptionService.encrypt(value));
+        AESEncryptionService aesEncryptionService = new AESEncryptionService();
+        aesEncryptionService.init(new CipherProperties(Paths.get(keyLocation), iv));
+        LOG.info("Encrypted value: {}", aesEncryptionService.encrypt(value));
         System.exit(0);
     }
 }
