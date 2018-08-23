@@ -1,8 +1,8 @@
 package fr.cnes.regards.framework.modules.plugins.service.it;
 
+import fr.cnes.regards.framework.modules.plugins.ISamplePlugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.framework.plugins.ISamplePlugin;
 
 /**
  * Sample plugin with sensitive parameter. Be aware that {@link SensitivePlugin#echo(String)} method does not care

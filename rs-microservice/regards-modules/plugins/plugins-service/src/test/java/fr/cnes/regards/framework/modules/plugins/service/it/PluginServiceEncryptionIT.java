@@ -12,12 +12,12 @@ import fr.cnes.regards.framework.encryption.IEncryptionService;
 import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.ISamplePlugin;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.plugins.ISamplePlugin;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
@@ -43,9 +43,7 @@ public class PluginServiceEncryptionIT extends AbstractRegardsServiceTransaction
 
     @Test
     public void testSaveSensitiveConf() throws EncryptionException, EntityInvalidException {
-        PluginMetaData pluginMeta = PluginUtils.createPluginMetaData(SensitivePlugin.class,
-                                                                     ISamplePlugin.class.getPackage().getName(),
-                                                                     SensitivePlugin.class.getPackage().getName());
+        PluginMetaData pluginMeta = PluginUtils.createPluginMetaData(SensitivePlugin.class);
         String paramValue = "Un petit test";
         String encryptedParamValue = encryptionService.encrypt(paramValue);
         List<PluginParameter> params = PluginParametersFactory.build()
@@ -61,9 +59,7 @@ public class PluginServiceEncryptionIT extends AbstractRegardsServiceTransaction
 
     @Test
     public void testInstanciateSensitivePlugin() throws ModuleException {
-        PluginMetaData pluginMeta = PluginUtils.createPluginMetaData(SensitivePlugin.class,
-                                                                     ISamplePlugin.class.getPackage().getName(),
-                                                                     SensitivePlugin.class.getPackage().getName());
+        PluginMetaData pluginMeta = PluginUtils.createPluginMetaData(SensitivePlugin.class);
         String paramValue = "Un petit test";
         List<PluginParameter> params = PluginParametersFactory.build()
                 .addParameter(SensitivePlugin.MESSAGE_PLUGIN_PARAM, paramValue).getParameters();
@@ -77,9 +73,7 @@ public class PluginServiceEncryptionIT extends AbstractRegardsServiceTransaction
 
     @Test
     public void testUpdateSensitiveParamUnchanged() throws ModuleException {
-        PluginMetaData pluginMeta = PluginUtils.createPluginMetaData(SensitivePlugin.class,
-                                                                     ISamplePlugin.class.getPackage().getName(),
-                                                                     SensitivePlugin.class.getPackage().getName());
+        PluginMetaData pluginMeta = PluginUtils.createPluginMetaData(SensitivePlugin.class);
         String paramValue = "Un petit test";
         String encryptedParamValue = encryptionService.encrypt(paramValue);
         List<PluginParameter> params = PluginParametersFactory.build()
@@ -95,9 +89,7 @@ public class PluginServiceEncryptionIT extends AbstractRegardsServiceTransaction
 
     @Test
     public void testUpdateSensitiveParam() throws ModuleException {
-        PluginMetaData pluginMeta = PluginUtils.createPluginMetaData(SensitivePlugin.class,
-                                                                     ISamplePlugin.class.getPackage().getName(),
-                                                                     SensitivePlugin.class.getPackage().getName());
+        PluginMetaData pluginMeta = PluginUtils.createPluginMetaData(SensitivePlugin.class);
         String paramValue = "Un petit test";
         List<PluginParameter> params = PluginParametersFactory.build()
                 .addParameter(SensitivePlugin.MESSAGE_PLUGIN_PARAM, paramValue).getParameters();
