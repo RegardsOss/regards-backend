@@ -137,7 +137,7 @@ public interface IPluginService {
      * @throws ModuleException thrown if an error occurs
      */
     PluginConfiguration savePluginConfiguration(PluginConfiguration pluginConfiguration)
-            throws EntityInvalidException, EncryptionException;
+            throws EntityInvalidException, EncryptionException, EntityNotFoundException;
 
     /**
      * Delete a {@link PluginConfiguration}.

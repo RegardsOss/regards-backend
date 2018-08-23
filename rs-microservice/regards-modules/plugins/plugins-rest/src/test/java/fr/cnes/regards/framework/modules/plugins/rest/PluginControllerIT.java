@@ -44,7 +44,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
  */
 @RegardsTransactional
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=plugin_it",
-        "regards.cipher.key-location=src/test/resources/testKey", "regards.cipher.iv=12345678" })
+        "regards.cipher.key-location=src/test/resources/testKey", "regards.cipher.iv=1234567812345678" })
 public class PluginControllerIT extends AbstractRegardsTransactionalIT {
 
     @Autowired

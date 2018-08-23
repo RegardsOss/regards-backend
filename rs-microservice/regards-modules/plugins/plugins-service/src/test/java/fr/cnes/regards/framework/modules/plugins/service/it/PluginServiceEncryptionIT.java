@@ -11,6 +11,7 @@ import org.springframework.test.context.TestPropertySource;
 import fr.cnes.regards.framework.encryption.IEncryptionService;
 import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.ISamplePlugin;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
@@ -42,7 +43,7 @@ public class PluginServiceEncryptionIT extends AbstractRegardsServiceTransaction
     private IPluginConfigurationRepository pluginRepository;
 
     @Test
-    public void testSaveSensitiveConf() throws EncryptionException, EntityInvalidException {
+    public void testSaveSensitiveConf() throws EncryptionException, EntityInvalidException, EntityNotFoundException {
         PluginMetaData pluginMeta = PluginUtils.createPluginMetaData(SensitivePlugin.class);
         String paramValue = "Un petit test";
         String encryptedParamValue = encryptionService.encrypt(paramValue);

@@ -164,7 +164,7 @@ public class PluginService implements IPluginService {
 
     @Override
     public PluginConfiguration savePluginConfiguration(PluginConfiguration plgConf)
-            throws EntityInvalidException, EncryptionException {
+            throws EntityInvalidException, EncryptionException, EntityNotFoundException {
         // Check plugin configuration validity
         EntityInvalidException validityException = PluginUtils.validate(plgConf);
         if (validityException != null) {
@@ -219,7 +219,7 @@ public class PluginService implements IPluginService {
      * @throws ModuleException Error accessing {@link PluginConfiguration}s
      */
     public void ensureOnlyOneConfIsActive(PluginConfiguration plgConf)
-            throws EncryptionException, EntityInvalidException {
+            throws EncryptionException, EntityInvalidException, EntityNotFoundException {
         if (plgConf.isActive()) {
             List<String> uniqueActiveConfInterfaces = Lists.newArrayList();
             for (String interfaceName : plgConf.getInterfaceNames()) {
@@ -245,11 +245,12 @@ public class PluginService implements IPluginService {
                                 "As only one active configuration is allowed, the plugin {} is disabled. The new active plugin is {}",
                                 conf.getLabel(),
                                 plgConf.getLabel());
-                        try {
+//                        try {
                             updatePluginConfiguration(conf);
-                        } catch (EntityNotFoundException e) {
-                            LOGGER.error("DEVELOPMENT ERROR, plugin configuration cannot be missing as we just got it", e);
-                        }
+//                        } catch (EntityNotFoundException e) {
+//                            LOGGER.error("DEVELOPMENT ERROR, plugin configuration cannot be missing as we just got it",
+//                                         e);
+//                        }
                     }
                 }
             }
@@ -296,15 +297,6 @@ public class PluginService implements IPluginService {
             throw validityException;
         }
 
-        StringBuilder msg = new StringBuilder("Cannot save plugin configuration");
-        PluginConfiguration pluginConfInDb = repos.findOneByLabel(pluginConf.getLabel());
-        if ((pluginConfInDb != null) && !Objects.equals(pluginConfInDb.getId(), pluginConf.getId()) && pluginConfInDb
-                .getLabel().equals(pluginConf.getLabel())) {
-            msg.append(String.format(". A plugin configuration with same label (%s) already exists.",
-                                     pluginConf.getLabel()));
-            throw new EntityInvalidException(msg.toString());
-        }
-
         PluginUtils.getPlugins().forEach((pluginId, metaData) -> {
             if (metaData.getPluginClassName().equals(pluginConf.getPluginClassName())) {
                 pluginConf.setInterfaceNames(metaData.getInterfaceNames());
@@ -318,13 +310,15 @@ public class PluginService implements IPluginService {
             if (paramMeta.isSensible()) {
                 PluginParameter newParam = pluginConf.getParameter(paramMeta.getName());
                 PluginParameter oldParam = oldConf.getParameter(paramMeta.getName());
-                if (!Objects.equals(newParam.getStripParameterValue(), oldParam.getStripParameterValue())) {
-                    if (newParam != null) {
+                if (newParam != null) {
+                    if (!Objects.equals(newParam.getStripParameterValue(), oldParam.getStripParameterValue())) {
                         newParam.setValue(encryptionService.encrypt(newParam.getStripParameterValue()));
                     }
                 }
             }
         }
+
+        ensureOnlyOneConfIsActive(pluginConf);
 
         PluginConfiguration newConf = repos.save(pluginConf);
 

@@ -59,7 +59,7 @@ import fr.cnes.regards.modules.templates.domain.Template;
 @RunWith(SpringRunner.class)
 @TestPropertySource(properties = { "spring.application.name=rs-admin", "regards.jpa.multitenant.enabled=false",
         "regards.amqp.enabled=false", "regards.cipher.key-location=src/test/resources/testKey",
-        "regards.cipher.iv=12345678" })
+        "regards.cipher.iv=1234567812345678" })
 public class TemplateServiceTest {
 
     /**
