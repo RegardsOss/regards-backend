@@ -35,7 +35,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
-import fr.cnes.regards.framework.encryption.BlowfishEncryptionService;
+import fr.cnes.regards.framework.encryption.AESEncryptionService;
 import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -146,15 +146,15 @@ public class ProjectConnectionServiceTest {
                                             Mockito.mock(ITenantResolver.class),
                                             Mockito.mock(IInstancePublisher.class),
                                             "default-project-test");
-        BlowfishEncryptionService blowfishEncryptionService = new BlowfishEncryptionService();
-        blowfishEncryptionService
+        AESEncryptionService aesEncryptionService = new AESEncryptionService();
+        aesEncryptionService
                 .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "1234567812345678"));
         projectConnectionRepoStub = new ProjectConnectionRepositoryStub();
         projectConnectionService = new ProjectConnectionService(projectRepoStub,
                                                                 projectConnectionRepoStub,
                                                                 Mockito.mock(IInstancePublisher.class),
                                                                 Mockito.mock(EntityManager.class),
-                                                                blowfishEncryptionService);
+                                                                aesEncryptionService);
 
         Project project1 = projectRepoStub
                 .save(new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_1));
