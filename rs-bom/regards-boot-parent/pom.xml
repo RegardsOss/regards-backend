@@ -73,7 +73,7 @@
 						<skipDockerBuild>false</skipDockerBuild>
 						<forceTags>true</forceTags>
 						<imageName>${docker.registry.host}/${fr.cnes.regards.docker.image.name}</imageName>
-						<baseImage>${docker.registry.host}/rs-alpine-openjdk8:security</baseImage>
+						<baseImage>${docker.registry.host}/rs-alpine-openjdk8</baseImage>
 						<serverId>REGARDS-DockerHub</serverId>
 						<registryUrl>${docker.registry.host}</registryUrl>
 						<imageTags>
