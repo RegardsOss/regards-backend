@@ -18,13 +18,14 @@
  */
 package fr.cnes.regards.framework.oais.urn;
 
+import java.util.StringJoiner;
+import java.util.UUID;
+import java.util.regex.Pattern;
+
 import javax.persistence.Convert;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import java.util.StringJoiner;
-import java.util.UUID;
-import java.util.regex.Pattern;
 
 import fr.cnes.regards.framework.oais.urn.converters.UrnConverter;
 import fr.cnes.regards.framework.oais.urn.validator.RegardsOaisUrn;
@@ -76,6 +77,8 @@ public class UniformResourceName {
      * Version maximum value
      */
     private static final int MAX_VERSION_VALUE = 999;
+
+    private static final String BASE_URN_ZERO = "00000000-0000-0000-0000";
 
     /**
      * Compiled pattern
@@ -193,14 +196,13 @@ public class UniformResourceName {
                 final String revisionString = stringFragment[6];
                 // so we have all fields
                 return new UniformResourceName(oaisIdentifier, entityType, tenant, entityId,
-                                               Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
-                                               Long.parseLong(versionWithOrder[1]),
-                                               revisionString.substring(REVISION_PREFIX.length()));
+                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
+                        Long.parseLong(versionWithOrder[1]), revisionString.substring(REVISION_PREFIX.length()));
             } else {
                 // Revision is missing so we have all except Revision
                 return new UniformResourceName(oaisIdentifier, entityType, tenant, entityId,
-                                               Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
-                                               Long.parseLong(versionWithOrder[1]));
+                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
+                        Long.parseLong(versionWithOrder[1]));
             }
         } else {
             // we don't have an order specified
@@ -209,14 +211,36 @@ public class UniformResourceName {
                 final String revisionString = stringFragment[6];
                 // so we have all fields exception Order
                 return new UniformResourceName(oaisIdentifier, entityType, tenant, entityId,
-                                               Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
-                                               revisionString.substring(REVISION_PREFIX.length()));
+                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
+                        revisionString.substring(REVISION_PREFIX.length()));
             } else {
                 // Revision is missing so we have all except Revision and Order
-                return new UniformResourceName(oaisIdentifier, entityType, tenant, entityId, Integer.parseInt(
-                        versionWithOrder[0].substring(VERSION_PREFIX.length())));
+                return new UniformResourceName(oaisIdentifier, entityType, tenant, entityId,
+                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())));
             }
         }
+    }
+
+    /**
+     * Build a pseudo random UUID starting with 00000000-0000-0000-0000
+     * @param oaisIdentifier
+     * @param entityType
+     * @param tenant
+     * @param version
+     * @return
+     */
+    public static UniformResourceName pseudoRandomUrm(OAISIdentifier oaisIdentifier, EntityType entityType,
+            String tenant, int version) {
+        return new UniformResourceName(oaisIdentifier, entityType, tenant,
+                UUID.fromString(BASE_URN_ZERO + (int) (Math.random() * Integer.MAX_VALUE)), version);
+    }
+
+    /**
+     * By default UUID.randomUUID() must not be used. It is generating a true random UUID which makes it undetectable.
+     * To avoid this, pseudo random UUID is used with following format : 00000000-0000-0000-0000-&lt;random-int>
+     */
+    public boolean isRandomEntityId() {
+        return entityId.toString().startsWith(BASE_URN_ZERO);
     }
 
     /**
@@ -292,14 +316,6 @@ public class UniformResourceName {
      */
     public UUID getEntityId() {
         return entityId;
-    }
-
-    /**
-     * By default UUID.randomUUID() must not be used. It is generating a true random UUID which makes it undetectable.
-     * To avoid this, pseudo random UUID is used with following format : 00000000-0000-0000-0000-&lt;random-int>
-     */
-    public boolean isRandomEntityId() {
-        return entityId.toString().startsWith("00000000-0000-0000-0000");
     }
 
     /**
