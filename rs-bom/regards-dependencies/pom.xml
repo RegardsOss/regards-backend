@@ -68,6 +68,7 @@
         <plugins.starter.version>3.0.0-SNAPSHOT</plugins.starter.version>
         <oais.docs.version>3.0.0-SNAPSHOT</oais.docs.version>
         <oais.starter.version>3.0.0-SNAPSHOT</oais.starter.version>
+        <encryption.starter.version>3.0.0-SNAPSHOT</encryption.starter.version>
 
         <!-- Bootstrap -->
         <config.bootstrap.version>3.0.0-SNAPSHOT</config.bootstrap.version>
@@ -231,6 +232,11 @@
                 <groupId>fr.cnes.regards.framework</groupId>
                 <artifactId>cloud-regards-starter</artifactId>
                 <version>${cloud.starter.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework</groupId>
+                <artifactId>encryption-starter</artifactId>
+                <version>${encryption.starter.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework</groupId>
