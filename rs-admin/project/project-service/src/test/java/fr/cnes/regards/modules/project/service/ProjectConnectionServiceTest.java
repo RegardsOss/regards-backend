@@ -148,7 +148,7 @@ public class ProjectConnectionServiceTest {
                                             "default-project-test");
         BlowfishEncryptionService blowfishEncryptionService = new BlowfishEncryptionService();
         blowfishEncryptionService
-                .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "12345678"));
+                .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "1234567812345678"));
         projectConnectionRepoStub = new ProjectConnectionRepositoryStub();
         projectConnectionService = new ProjectConnectionService(projectRepoStub,
                                                                 projectConnectionRepoStub,
