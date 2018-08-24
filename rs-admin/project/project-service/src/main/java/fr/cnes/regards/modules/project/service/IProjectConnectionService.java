@@ -36,6 +36,8 @@
  */
 package fr.cnes.regards.modules.project.service;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
 import java.util.List;
 import java.util.Optional;
 
@@ -99,7 +101,8 @@ public interface IProjectConnectionService {
      * @return {@link ProjectConnection}
      * @throws ModuleException if error occurs!
      */
-    ProjectConnection createStaticProjectConnection(ProjectConnection projectConnection) throws ModuleException;
+    ProjectConnection createStaticProjectConnection(ProjectConnection projectConnection)
+            throws ModuleException;
 
     /**
      *
