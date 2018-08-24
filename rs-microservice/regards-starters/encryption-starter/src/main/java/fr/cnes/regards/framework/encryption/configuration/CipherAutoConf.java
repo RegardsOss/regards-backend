@@ -27,7 +27,7 @@ public class CipherAutoConf {
 
     @Bean
     @ConditionalOnMissingBean(IEncryptionService.class)
-    public IEncryptionService blowfishEncryptionService()
+    public IEncryptionService aesEncryptionService()
             throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
         AESEncryptionService aesEncryptionService = new AESEncryptionService();
         aesEncryptionService.init(cipherProperties);
