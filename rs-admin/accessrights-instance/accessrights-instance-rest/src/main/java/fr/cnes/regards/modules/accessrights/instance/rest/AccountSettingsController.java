@@ -35,6 +35,7 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.annotation.ModuleInfo;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
@@ -92,12 +93,13 @@ public class AccountSettingsController implements IResourceController<AccountSet
      * @param pUpdatedAccountSetting
      *            The {@link AccountSettings}
      * @return The updated {@link AccountSettings}
+     * @throws EntityNotFoundException
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.PUT)
     @ResourceAccess(description = "update the setting managing the account", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<AccountSettings>> updateAccountSetting(
-            @Valid @RequestBody final AccountSettings pUpdatedAccountSetting) {
+            @Valid @RequestBody final AccountSettings pUpdatedAccountSetting) throws EntityNotFoundException {
         final AccountSettings updated = accountSettingsService.update(pUpdatedAccountSetting);
         return new ResponseEntity<>(toResource(updated), HttpStatus.OK);
     }

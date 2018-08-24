@@ -34,7 +34,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
@@ -45,6 +44,7 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.instance.service.accountunlock.IAccountUnlockTokenService;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
+import fr.cnes.regards.modules.project.service.ITenantService;
 
 /**
  * Test class for {@link AccountWorkflowManager}.
@@ -101,7 +101,7 @@ public class AccountWorkflowManagerTest {
     /**
      * Mocked tenant resolver
      */
-    private ITenantResolver tenantResolver;
+    private ITenantService tenantService;
 
     /**
      * Mocked runtime tenant resolver
@@ -131,7 +131,7 @@ public class AccountWorkflowManagerTest {
         // Mock dependencies
         projectUsersClient = Mockito.mock(IProjectUsersClient.class);
         accountRepository = Mockito.mock(IAccountRepository.class);
-        tenantResolver = Mockito.mock(ITenantResolver.class);
+        tenantService = Mockito.mock(ITenantService.class);
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         accountStateProvider = Mockito.mock(AccountStateProvider.class);
         passwordResetService = Mockito.mock(IPasswordResetService.class);
@@ -163,12 +163,12 @@ public class AccountWorkflowManagerTest {
 
         // Mock
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(tenantResolver.getAllActiveTenants()).thenReturn(TENANTS);
+        Mockito.when(tenantService.getAllActiveTenants(IProjectUsersClient.TARGET_NAME)).thenReturn(TENANTS);
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(EMAIL))
                 .thenReturn(new ResponseEntity<>(new Resource<>(new ProjectUser()), HttpStatus.OK));
         Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUsersClient,
                                                                                         accountRepository,
-                                                                                        tenantResolver,
+                                                                                        tenantService,
                                                                                         runtimeTenantResolver,
                                                                                         passwordResetService,
                                                                                         accountUnlockTokenService));
@@ -192,12 +192,12 @@ public class AccountWorkflowManagerTest {
 
         // Mock
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(tenantResolver.getAllActiveTenants()).thenReturn(TENANTS);
+        Mockito.when(tenantService.getAllActiveTenants(IProjectUsersClient.TARGET_NAME)).thenReturn(TENANTS);
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(EMAIL))
                 .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
         Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUsersClient,
                                                                                         accountRepository,
-                                                                                        tenantResolver,
+                                                                                        tenantService,
                                                                                         runtimeTenantResolver,
                                                                                         passwordResetService,
                                                                                         accountUnlockTokenService));
@@ -223,12 +223,12 @@ public class AccountWorkflowManagerTest {
 
         // Mock
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(tenantResolver.getAllActiveTenants()).thenReturn(TENANTS);
+        Mockito.when(tenantService.getAllActiveTenants(IProjectUsersClient.TARGET_NAME)).thenReturn(TENANTS);
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(EMAIL))
                 .thenReturn(new ResponseEntity<>(new Resource<>(new ProjectUser()), HttpStatus.OK));
         Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUsersClient,
                                                                                         accountRepository,
-                                                                                        tenantResolver,
+                                                                                        tenantService,
                                                                                         runtimeTenantResolver,
                                                                                         passwordResetService,
                                                                                         accountUnlockTokenService));
@@ -252,12 +252,12 @@ public class AccountWorkflowManagerTest {
 
         // Mock
         Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
-        Mockito.when(tenantResolver.getAllActiveTenants()).thenReturn(TENANTS);
+        Mockito.when(tenantService.getAllActiveTenants(IProjectUsersClient.TARGET_NAME)).thenReturn(TENANTS);
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(EMAIL))
                 .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
         Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUsersClient,
                                                                                         accountRepository,
-                                                                                        tenantResolver,
+                                                                                        tenantService,
                                                                                         runtimeTenantResolver,
                                                                                         passwordResetService,
                                                                                         accountUnlockTokenService));

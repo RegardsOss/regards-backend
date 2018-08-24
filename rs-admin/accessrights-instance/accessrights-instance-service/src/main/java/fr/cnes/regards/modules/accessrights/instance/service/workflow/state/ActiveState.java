@@ -30,6 +30,7 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.instance.service.accountunlock.IAccountUnlockTokenService;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
+import fr.cnes.regards.modules.project.service.ITenantService;
 
 /**
  * State class of the State Pattern implementing the available actions on a {@link Account} in status ACTIVE.
@@ -43,21 +44,21 @@ public class ActiveState extends AbstractDeletableState {
 
     /**
      * @param projectUsersClient
-     * @param pAccountRepository
-     * @param pTenantResolver
-     * @param pRuntimeTenantResolver
-     * @param pPasswordResetTokenService
-     * @param pAccountUnlockTokenService
+     * @param accountRepository
+     * @param tenantService
+     * @param runtimeTenantResolver
+     * @param passwordResetService
+     * @param accountUnlockTokenService
      */
-    public ActiveState(IProjectUsersClient projectUsersClient, IAccountRepository pAccountRepository,
-            ITenantResolver pTenantResolver, IRuntimeTenantResolver pRuntimeTenantResolver,
-            IPasswordResetService pPasswordResetTokenService,
-            IAccountUnlockTokenService pAccountUnlockTokenService) {
+    public ActiveState(IProjectUsersClient projectUsersClient, IAccountRepository accountRepository,
+            ITenantService tenantService, IRuntimeTenantResolver runtimeTenantResolver,
+            IPasswordResetService passwordResetService,
+            IAccountUnlockTokenService accountUnlockTokenService) {
         super(projectUsersClient,
-              pAccountRepository,
-              pTenantResolver,
-              pRuntimeTenantResolver,
-              pPasswordResetTokenService, pAccountUnlockTokenService);
+              accountRepository,
+              tenantService,
+              runtimeTenantResolver,
+              passwordResetService, accountUnlockTokenService);
     }
 
     @Override

@@ -25,6 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import feign.FeignException;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
@@ -37,6 +38,7 @@ import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.service.accountunlock.IAccountUnlockTokenService;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
+import fr.cnes.regards.modules.project.service.ITenantService;
 
 /**
  * Abstract state implementation to implement the delete action on an account.<br>
@@ -65,7 +67,7 @@ abstract class AbstractDeletableState implements IAccountTransitions {
     /**
      * Tenant resolver
      */
-    protected final ITenantResolver tenantResolver;
+    protected final ITenantService tenantService;
 
     /**
      * Runtime tenant resolver
@@ -84,22 +86,22 @@ abstract class AbstractDeletableState implements IAccountTransitions {
 
     /**
      * @param projectUsersClient
-     * @param pAccountRepository
-     * @param pTenantResolver
-     * @param pRuntimeTenantResolver
-     * @param pPasswordResetTokenService
-     * @param pAccountUnlockTokenService
+     * @param accountRepository
+     * @param tenantService
+     * @param runtimeTenantResolver
+     * @param passwordResetTokenService
+     * @param accountUnlockTokenService
      */
-    public AbstractDeletableState(IProjectUsersClient projectUsersClient, IAccountRepository pAccountRepository,
-            ITenantResolver pTenantResolver, IRuntimeTenantResolver pRuntimeTenantResolver,
-            IPasswordResetService pPasswordResetTokenService, IAccountUnlockTokenService pAccountUnlockTokenService) {
+    public AbstractDeletableState(IProjectUsersClient projectUsersClient, IAccountRepository accountRepository,
+            ITenantService tenantService, IRuntimeTenantResolver runtimeTenantResolver,
+            IPasswordResetService passwordResetTokenService, IAccountUnlockTokenService accountUnlockTokenService) {
         super();
         this.projectUsersClient = projectUsersClient;
-        accountRepository = pAccountRepository;
-        tenantResolver = pTenantResolver;
-        runtimeTenantResolver = pRuntimeTenantResolver;
-        passwordResetTokenService = pPasswordResetTokenService;
-        accountUnlockTokenService = pAccountUnlockTokenService;
+        this.accountRepository = accountRepository;
+        this.tenantService = tenantService;
+        this.runtimeTenantResolver = runtimeTenantResolver;
+        this.passwordResetTokenService = passwordResetTokenService;
+        this.accountUnlockTokenService = accountUnlockTokenService;
     }
 
     @Override
@@ -126,13 +128,14 @@ abstract class AbstractDeletableState implements IAccountTransitions {
      * accessrights.domain.instance.Account)
      */
     @Override
-    public boolean canDelete(final Account pAccount) {
+    public boolean canDelete(final Account account) {
         try {
-            for (String tenant : tenantResolver.getAllActiveTenants()) {
+            for (String tenant : tenantService.getAllActiveTenants(IProjectUsersClient.TARGET_NAME)) {
                 runtimeTenantResolver.forceTenant(tenant);
                 try {
+                    FeignSecurityManager.asSystem();
                     ResponseEntity<Resource<ProjectUser>> projectUserResponse = projectUsersClient
-                            .retrieveProjectUserByEmail(pAccount.getEmail());
+                            .retrieveProjectUserByEmail(account.getEmail());
                     if (projectUserResponse.getStatusCode() != HttpStatus.NOT_FOUND) {
                         return false;
                     }
@@ -141,6 +144,9 @@ abstract class AbstractDeletableState implements IAccountTransitions {
                     LOGGER.warn("There was an issue while trying to determine if an account is deletable.", e);
                     // in case of issues, the tenant might be in maintenance or the microservice down, so lets assume there is a project user linked to this account
                     return false;
+                } finally {
+                    FeignSecurityManager.reset();
+
                 }
             }
         } finally {
@@ -183,7 +189,7 @@ abstract class AbstractDeletableState implements IAccountTransitions {
     protected void deleteLinkedProjectUsers(final Account pAccount) throws EntityNotFoundException {
         String email = pAccount.getEmail();
         try {
-            for (String tenant : tenantResolver.getAllActiveTenants()) {
+            for (String tenant : tenantService.getAllActiveTenants(IProjectUsersClient.TARGET_NAME)) {
                 runtimeTenantResolver.forceTenant(tenant);
                 //lets get the project user
                 ResponseEntity<Resource<ProjectUser>> projectUserResponse = projectUsersClient

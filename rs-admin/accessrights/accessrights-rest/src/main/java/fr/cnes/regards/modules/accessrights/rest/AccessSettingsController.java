@@ -52,7 +52,8 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsS
  * @since 1.0-SNAPSHOT
  */
 @RestController
-@ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
+@ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
+        documentation = "http://test")
 @RequestMapping(path = AccessSettingsController.REQUEST_MAPPING_ROOT)
 public class AccessSettingsController implements IResourceController<AccessSettings> {
 
@@ -82,7 +83,8 @@ public class AccessSettingsController implements IResourceController<AccessSetti
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieves the settings managing the access requests", role = DefaultRole.PROJECT_ADMIN)
+    @ResourceAccess(description = "Retrieves the settings managing the access requests",
+            role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Resource<AccessSettings>> retrieveAccessSettings() throws EntityNotFoundException {
         final AccessSettings accessSettings = accessSettingsService.retrieve();
         final Resource<AccessSettings> resource = new Resource<>(accessSettings);
@@ -101,10 +103,11 @@ public class AccessSettingsController implements IResourceController<AccessSetti
     @ResponseBody
     @RequestMapping(method = RequestMethod.PUT)
     @ResourceAccess(description = "Updates the setting managing the access requests", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> updateAccessSettings(@Valid @RequestBody final AccessSettings pAccessSettings)
-            throws EntityNotFoundException {
-        accessSettingsService.update(pAccessSettings);
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<Resource<AccessSettings>> updateAccessSettings(
+            @Valid @RequestBody final AccessSettings pAccessSettings) throws EntityNotFoundException {
+        final AccessSettings accessSettings = accessSettingsService.update(pAccessSettings);
+        final Resource<AccessSettings> resource = new Resource<>(accessSettings);
+        return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     @Override

@@ -23,17 +23,18 @@
 
 	<groupId>fr.cnes.regards.microservices.administration</groupId>
 	<artifactId>bootstrap-administration-instance</artifactId>
-	<version>2.1.0-SNAPSHOT</version>
+	<version>3.0.0-SNAPSHOT</version>
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-boot-parent</artifactId>
-		<version>2.1.0-SNAPSHOT</version>
+		<version>3.0.0-SNAPSHOT</version>
 		<relativePath></relativePath>
 	</parent>
 
 	<properties>
 		<fr.cnes.regards.docker.image.name>rs-administration-instance</fr.cnes.regards.docker.image.name>
+		<docker.entryPoint>["./wait-for-it.sh", "rs_config:9031", "-t", "0", "--", "./wait-for-it.sh", "rs_registry:9032", "-t", "0", "--", "./wait-for-it.sh", "rs_rabbitmq:15672", "-t", "0", "--", "java", "-Xmx300m", "-Djava.security.egd=file:/dev/./urandom", "-agentlib:jdwp=transport=dt_socket,address=10500,server=y,suspend=n", "-jar", "/${project.build.finalName}.${project.packaging}"]</docker.entryPoint>
 	</properties>
 
 	<dependencies>
@@ -109,16 +110,4 @@
 			<id>delivery</id>
 		</profile>
 	</profiles>
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>com.spotify</groupId>
-				<artifactId>docker-maven-plugin</artifactId>
-				<configuration>
-					<entryPoint>["./wait-for-it.sh", "rs_config:9031", "-t", "0", "--", "./wait-for-it.sh", "rs_registry:9032", "-t", "0", "--", "./wait-for-it.sh", "rs_rabbitmq:15672", "-t", "0", "--", "java", "-Xmx300m", "-Djava.security.egd=file:/dev/./urandom", "-agentlib:jdwp=transport=dt_socket,address=10500,server=y,suspend=n", "-jar", "/${project.build.finalName}.${project.packaging}"]</entryPoint>
-					<!-- We rewrite the entrypoint because rs-admin-instance doesn't have to wait for rs-admin -->
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>

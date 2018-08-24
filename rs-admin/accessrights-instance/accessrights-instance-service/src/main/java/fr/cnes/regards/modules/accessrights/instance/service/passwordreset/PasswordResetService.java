@@ -44,13 +44,13 @@ import fr.cnes.regards.modules.accessrights.instance.service.encryption.Encrypti
 public class PasswordResetService implements IPasswordResetService {
 
     /**
-     * CRUD repository handling {@link PasswordResetToken}s. Autowired by Spring.
+     * CRUD repository handling {@link PasswordResetToken}s
      */
     @Autowired
     private final IPasswordResetTokenRepository tokenRepository;
 
     /**
-     * CRUD service handling {@link Account}s. Autowired by Spring.
+     * CRUD service handling {@link Account}s
      */
     @Autowired
     private final IAccountService accountService;
@@ -70,25 +70,12 @@ public class PasswordResetService implements IPasswordResetService {
         accountService = pAccountService;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.accessrights.passwordreset.IPasswordResetService#getPasswordResetToken(java.lang.String)
-     */
     @Override
     public PasswordResetToken getPasswordResetToken(final String pToken) throws EntityNotFoundException {
         return tokenRepository.findByToken(pToken)
                 .orElseThrow(() -> new EntityNotFoundException(pToken, PasswordResetToken.class));
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.accessrights.instance.service.IAccountService#createVerificationToken(fr.cnes.regards.
-     * modules.accessrights.domain.instance.Account, java.lang.String)
-     */
     @Override
     public void createPasswordResetToken(final Account pAccount, final String pToken) {
         final Optional<PasswordResetToken> currentToken = tokenRepository.findByAccount(pAccount);
@@ -102,12 +89,6 @@ public class PasswordResetService implements IPasswordResetService {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.instance.service.IAccountService#changeAccountPassword(java.lang.Long,
-     * java.lang.String, java.lang.String)
-     */
     @Override
     public void performPasswordReset(final String pAccountEmail, final String pResetCode, final String pNewPassword)
             throws EntityException {

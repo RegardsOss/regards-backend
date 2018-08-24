@@ -67,7 +67,7 @@ public class AccessSettingsTest {
     public void testAccessSettings() {
         final AccessSettings accessTest = new AccessSettings();
         Assert.assertEquals(null, accessTest.getId());
-        Assert.assertEquals("manual", accessTest.getMode());
+        Assert.assertEquals(AccessSettings.AUTO_ACCEPT_MODE, accessTest.getMode());
     }
 
     /**
