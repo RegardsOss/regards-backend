@@ -72,7 +72,8 @@ public class FacetConverter implements IFacetConverter {
     }
 
     @Override
-    public Map<String, FacetType> convert(List<String> propertyNames) throws OpenSearchUnknownParameter {
+    public Map<String, FacetType> convert(List<String> propertyNames, Map<String, String> reverseFacetNames)
+            throws OpenSearchUnknownParameter {
         if (propertyNames == null) {
             return null;
         }
@@ -81,7 +82,9 @@ public class FacetConverter implements IFacetConverter {
 
         for (String propertyName : propertyNames) {
             AttributeModel attModel = finder.findByName(propertyName);
-            facetMapBuilder.put(IFeatureCriterion.buildQueryablePath(attModel), MAP.get(attModel.getType()));
+            String queryablePath = IFeatureCriterion.buildQueryablePath(attModel);
+            facetMapBuilder.put(queryablePath, MAP.get(attModel.getType()));
+            reverseFacetNames.put(queryablePath, propertyName);
         }
 
         return facetMapBuilder.build();
