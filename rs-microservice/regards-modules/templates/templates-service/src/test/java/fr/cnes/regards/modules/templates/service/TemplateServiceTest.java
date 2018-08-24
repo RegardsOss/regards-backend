@@ -58,33 +58,9 @@ import fr.cnes.regards.modules.templates.domain.Template;
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource(properties = { "spring.application.name=rs-admin", "regards.jpa.multitenant.enabled=false",
-        "regards.amqp.enabled=false" })
+        "regards.amqp.enabled=false", "regards.cipher.key-location=src/test/resources/testKey",
+        "regards.cipher.iv=1234567812345678" })
 public class TemplateServiceTest {
-
-    @Configuration
-    @EnableAutoConfiguration
-    public static class Config {
-
-        @Bean
-        public ITemplateRepository templateRepository() {
-            return Mockito.mock(ITemplateRepository.class);
-        }
-
-        @Bean
-        public ITenantResolver tenantResolver() {
-            return Mockito.mock(ITenantResolver.class);
-        }
-
-        @Bean
-        public IRuntimeTenantResolver runtimeTenantResolver() {
-            return Mockito.mock(IRuntimeTenantResolver.class);
-        }
-
-        @Bean
-        public IInstanceSubscriber instanceSubscriber() {
-            return Mockito.mock(InstanceSubscriber.class);
-        }
-    }
 
     /**
      * Code
@@ -137,14 +113,14 @@ public class TemplateServiceTest {
     }};
 
     /**
-     * A template
-     */
-    private static Template template;
-
-    /**
      * A template id
      */
     private static final Long ID = 0L;
+
+    /**
+     * A template
+     */
+    private static Template template;
 
     /**
      * Tested service
@@ -391,6 +367,31 @@ public class TemplateServiceTest {
         Assert.assertEquals(expectedSubject, message.getSubject());
         Assert.assertEquals(expectedText, message.getText());
         Assert.assertArrayEquals(RECIPIENTS, message.getTo());
+    }
+
+    @Configuration
+    @EnableAutoConfiguration
+    public static class Config {
+
+        @Bean
+        public ITemplateRepository templateRepository() {
+            return Mockito.mock(ITemplateRepository.class);
+        }
+
+        @Bean
+        public ITenantResolver tenantResolver() {
+            return Mockito.mock(ITenantResolver.class);
+        }
+
+        @Bean
+        public IRuntimeTenantResolver runtimeTenantResolver() {
+            return Mockito.mock(IRuntimeTenantResolver.class);
+        }
+
+        @Bean
+        public IInstanceSubscriber instanceSubscriber() {
+            return Mockito.mock(InstanceSubscriber.class);
+        }
     }
 
 }

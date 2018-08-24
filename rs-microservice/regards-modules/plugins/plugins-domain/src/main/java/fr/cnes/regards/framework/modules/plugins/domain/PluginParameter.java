@@ -42,7 +42,7 @@ import javax.validation.constraints.NotNull;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-
+import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 
@@ -111,6 +111,10 @@ public class PluginParameter implements IIdentifiable<Long> {
      */
     @Transient
     private boolean onlyDynamic = false;
+
+    @Transient
+    @GsonIgnore
+    private transient String decryptedValue;
 
     /**
      * Needed for deserialization
@@ -300,5 +304,13 @@ public class PluginParameter implements IIdentifiable<Long> {
 
     public void setOnlyDynamic(boolean onlyDynamic) {
         this.onlyDynamic = onlyDynamic;
+    }
+
+    public void setDecryptedValue(String decryptedValue) {
+        this.decryptedValue = decryptedValue;
+    }
+
+    public String getDecryptedValue() {
+        return decryptedValue;
     }
 }

@@ -84,6 +84,11 @@ public class PluginParameterType {
     private Boolean optional;
 
     /**
+     * Define if the parameter is sensitive
+     */
+    private Boolean sensitive;
+
+    /**
      * The parameters of the plugin
      */
     private List<PluginParameterType> parameters = new ArrayList<>();
@@ -108,7 +113,7 @@ public class PluginParameterType {
      * @return {@link PluginParameterType}
      */
     public static PluginParameterType create(String name, String label, String description, Class<?> clazz,
-            ParamType paramType, Boolean optional, Boolean onlyDynamic) {
+            ParamType paramType, Boolean optional, Boolean onlyDynamic, Boolean sensitive) {
         PluginParameterType ppt = new PluginParameterType();
 
         // Validate and set
@@ -130,6 +135,8 @@ public class PluginParameterType {
         ppt.setOptional(optional);
 
         ppt.setUnconfigurable(onlyDynamic);
+
+        ppt.setSensitive(sensitive);
 
         return ppt;
     }
@@ -237,6 +244,14 @@ public class PluginParameterType {
         return unconfigurable;
     }
 
+    public Boolean isSensible() {
+        return sensitive;
+    }
+
+    public void setSensitive(Boolean sensitive) {
+        this.sensitive = sensitive;
+    }
+
     /**
      * An enumeration with PRIMITIVE and PLUGIN defaultValue
      *
@@ -265,5 +280,6 @@ public class PluginParameterType {
          * Parameter type plugin
          */
         PLUGIN
+
     }
 }

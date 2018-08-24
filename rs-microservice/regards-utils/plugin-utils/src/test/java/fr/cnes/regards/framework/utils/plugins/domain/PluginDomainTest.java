@@ -149,10 +149,30 @@ public class PluginDomainTest extends PluginDomainUtility {
         plgMetaData.setAuthor(anAuthor);
         final String aDescription = USERROLE + BLUE + RED;
         plgMetaData.setDescription(aDescription);
-        final List<PluginParameterType> parameters = Arrays
-                .asList(PluginParameterType.create(RED, "red", null, String.class, ParamType.PRIMITIVE, false, false),
-                        PluginParameterType.create(BLUE, "blue", null, String.class, ParamType.PRIMITIVE, false, false),
-                        PluginParameterType.create(GREEN, "green", null, String.class, ParamType.PLUGIN, false, false));
+        final List<PluginParameterType> parameters = Arrays.asList(PluginParameterType.create(RED,
+                                                                                              "red",
+                                                                                              null,
+                                                                                              String.class,
+                                                                                              ParamType.PRIMITIVE,
+                                                                                              false,
+                                                                                              false,
+                                                                                              false),
+                                                                   PluginParameterType.create(BLUE,
+                                                                                              "blue",
+                                                                                              null,
+                                                                                              String.class,
+                                                                                              ParamType.PRIMITIVE,
+                                                                                              false,
+                                                                                              false,
+                                                                                              false),
+                                                                   PluginParameterType.create(GREEN,
+                                                                                              "green",
+                                                                                              null,
+                                                                                              String.class,
+                                                                                              ParamType.PLUGIN,
+                                                                                              false,
+                                                                                              false,
+                                                                                              false));
 
         plgMetaData.setParameters(parameters);
 

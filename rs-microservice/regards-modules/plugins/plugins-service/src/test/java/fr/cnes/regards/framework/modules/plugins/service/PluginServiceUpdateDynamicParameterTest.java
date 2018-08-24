@@ -19,6 +19,10 @@
 
 package fr.cnes.regards.framework.modules.plugins.service;
 
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -28,6 +32,8 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.encryption.BlowfishEncryptionService;
+import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -54,14 +60,19 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
      * This method is run before all tests
      */
     @Before
-    public void init() {
+    public void init() throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         Mockito.when(runtimeTenantResolver.getTenant()).thenReturn("tenant");
 
         // create a mock repository
         pluginConfRepositoryMocked = Mockito.mock(IPluginConfigurationRepository.class);
-        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, Mockito.mock(IPublisher.class),
-                runtimeTenantResolver);
+        BlowfishEncryptionService blowfishEncryptionService = new BlowfishEncryptionService();
+        blowfishEncryptionService
+                .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "12345678"));
+        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked,
+                                                Mockito.mock(IPublisher.class),
+                                                runtimeTenantResolver,
+                                                blowfishEncryptionService);
         PluginUtils.setup();
     }
 
@@ -141,9 +152,15 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
                 if (!p.isDynamic()) {
                     parameters.remove(p);
                     // Update
-                    PluginParametersFactory
-                            .updateParameter(p, "one", true,
-                                             Arrays.asList("one", "two", "three", "four", "five", "six"));
+                    PluginParametersFactory.updateParameter(p,
+                                                            "one",
+                                                            true,
+                                                            Arrays.asList("one",
+                                                                          "two",
+                                                                          "three",
+                                                                          "four",
+                                                                          "five",
+                                                                          "six"));
                     parameters.add(p);
                     break;
                 }
