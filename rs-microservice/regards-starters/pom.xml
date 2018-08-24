@@ -68,7 +68,7 @@
 		<module>jpa-multitenant-regards-starter</module>
 		<module>jpa-instance-regards</module>
 		<module>jpa-instance-regards-starter</module>
-		<module>mutitenant-regards</module>
+		<module>multitenant-regards</module>
 		<module>multitenant-regards-starter</module>
 		<module>hateoas-regards-starter</module>
 		<module>hateoas-regards</module>
@@ -95,6 +95,7 @@
 		<module>authentication-regards-starter</module>
 		<module>jpa-commons-regards</module>
 		<module>jpa-data-regards</module>
+        <module>encryption-starter</module>
 		<module>microservice-logger</module>
 	</modules>
 

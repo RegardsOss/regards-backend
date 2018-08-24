@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.resolver;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,12 +56,13 @@ public interface ITenantConnectionResolver {
      *
      * @param microservice
      *            related microservice
-     * @param pTenantConnection
+     * @param tenantConnection
      *            tenant connection for specified microservice
      * @throws JpaMultitenantException
      *             implementation exception
      */
-    void addTenantConnection(String microservice, TenantConnection tenantConnection) throws JpaMultitenantException;
+    void addTenantConnection(String microservice, TenantConnection tenantConnection)
+            throws JpaMultitenantException;
 
     /**
      * Update connection state giving optional error cause

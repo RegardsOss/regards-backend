@@ -25,7 +25,6 @@ import java.sql.SQLException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
@@ -41,13 +40,6 @@ import com.mchange.v2.c3p0.DataSources;
  * @since 1.0-SNAPSHOT
  */
 public final class DataSourceHelper {
-
-    /**
-     * Class logger
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceHelper.class);
-
-    private static final String HR = "####################################################";
 
     /**
      * Hibernate dialect for embedded HSQL Database
@@ -76,6 +68,13 @@ public final class DataSourceHelper {
     public static final String EMBEDDED_URL_BASE_NAME = "applicationdb;shutdown=true;";
 
     /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceHelper.class);
+
+    private static final String HR = "####################################################";
+
+    /**
      * Static class
      */
     private DataSourceHelper() {
@@ -84,7 +83,7 @@ public final class DataSourceHelper {
     /**
      *
      * Create an embedded data source. This method should not be used in production in favor of
-     * {@link DataSourceHelper#createPooledDataSource(String, String, String, String, String, Integer, Integer)}
+     * {@link DataSourceHelper#createPooledDataSource(String, String, String, String, String, Integer, Integer, String)}
      *
      * @param pTenant
      *            Project name
@@ -97,39 +96,16 @@ public final class DataSourceHelper {
         final DriverManagerDataSource dmDataSource = new DriverManagerDataSource();
         dmDataSource.setDriverClassName(EMBEDDED_HSQL_DRIVER_CLASS);
         dmDataSource.setUrl(EMBEDDED_HSQL_URL + pEmbeddedPath + DataSourceHelper.EMBEDDED_URL_SEPARATOR + pTenant
-                + DataSourceHelper.EMBEDDED_URL_SEPARATOR + DataSourceHelper.EMBEDDED_URL_BASE_NAME);
+                                    + DataSourceHelper.EMBEDDED_URL_SEPARATOR
+                                    + DataSourceHelper.EMBEDDED_URL_BASE_NAME);
 
-        LOGGER.info("\n{}\nCreating an EMBEDDED datasource for tenant {} with path {}\n{}", HR, pTenant, pEmbeddedPath,
+        LOGGER.info("\n{}\nCreating an EMBEDDED datasource for tenant {} with path {}\n{}",
+                    HR,
+                    pTenant,
+                    pEmbeddedPath,
                     HR);
 
         return dmDataSource;
-    }
-
-    /**
-     * Create an unpooled {@link DataSource}. This method should not be used in production in favor of
-     * {@link DataSourceHelper#createPooledDataSource(String, String, String, String, String, Integer, Integer)}
-     *
-     * @param pTenant
-     *            related tenant, only useful for login purpose
-     * @param pUrl
-     *            data source URL
-     * @param pDriverClassName
-     *            data source driver
-     * @param pUserName
-     *            the user to used for the database connection
-     * @param pPassword
-     *            the user's password to used for the database connection
-     * @return an unpooled {@link DataSource}
-     */
-    public static DataSource createUnpooledDataSource(final String pTenant, final String pUrl,
-            final String pDriverClassName, final String pUserName, final String pPassword) {
-
-        final DataSourceBuilder factory = DataSourceBuilder.create().driverClassName(pDriverClassName)
-                .username(pUserName).password(pPassword).url(pUrl);
-
-        LOGGER.info("\n{}\nCreating an UNPOOLED datasource for tenant {} with url {}\n{}", HR, pTenant, pUrl, HR);
-
-        return factory.build();
     }
 
     /**
