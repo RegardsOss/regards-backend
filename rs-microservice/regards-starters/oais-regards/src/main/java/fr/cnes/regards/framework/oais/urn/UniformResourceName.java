@@ -229,10 +229,10 @@ public class UniformResourceName {
      * @param version
      * @return
      */
-    public static UniformResourceName pseudoRandomUrm(OAISIdentifier oaisIdentifier, EntityType entityType,
+    public static UniformResourceName pseudoRandomUrn(OAISIdentifier oaisIdentifier, EntityType entityType,
             String tenant, int version) {
         return new UniformResourceName(oaisIdentifier, entityType, tenant,
-                UUID.fromString(BASE_URN_ZERO + (int) (Math.random() * Integer.MAX_VALUE)), version);
+                UUID.fromString("0-0-0-0-" + (int) (Math.random() * Integer.MAX_VALUE)), version);
     }
 
     /**
