@@ -150,7 +150,6 @@ public class AccessSearchController {
      * <p>
      * Also injects the applicable Ui Services and Catalog Services.
      * @param allParams a MultiValueMap containing all request params (multi-valued because of multi "sort" params)
-     * @param facets the facets to apply
      * @return the search result with services injected
      */
     @RequestMapping(path = DATAOBJECTS_SEARCH, method = RequestMethod.GET)
@@ -168,7 +167,6 @@ public class AccessSearchController {
      * <p>
      * Also injects the applicable Ui Services and Catalog Services.
      * @param allParams all query parameters
-     * @param facets the facets to apply
      * @return the search result with services injected
      */
     @RequestMapping(path = DATAOBJECTS_DATASETS_SEARCH, method = RequestMethod.GET)
