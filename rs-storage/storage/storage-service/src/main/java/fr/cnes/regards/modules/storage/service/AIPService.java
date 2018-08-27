@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -108,6 +109,7 @@ import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.CoupleAvailableError;
 import fr.cnes.regards.modules.storage.domain.FileCorruptedException;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
+import fr.cnes.regards.modules.storage.domain.RejectedSip;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.CachedFile;
@@ -1054,6 +1056,7 @@ public class AIPService implements IAIPService {
 
     @Override
     public Set<StorageDataFile> deleteAip(AIP toBeDeleted) throws ModuleException {
+        long methodStart = System.currentTimeMillis();
         Set<StorageDataFile> notSuppressible = Sets.newHashSet();
         Set<StorageDataFile> dataFilesWithoutMetadata = dataFileDao.findAllByAip(toBeDeleted).stream()
                 .filter(df -> !DataType.AIP.equals(df.getDataType())).collect(Collectors.toSet());
@@ -1103,6 +1106,8 @@ public class AIPService implements IAIPService {
         toBeDeleted = toBeDeletedBuilder.build();
         toBeDeleted.setState(AIPState.DELETED);
         save(toBeDeleted, false);
+        long methodEnd = System.currentTimeMillis();
+        LOGGER.debug("Deleting AIP {} took {} ms", toBeDeleted.getId().toString(), methodEnd - methodStart);
         return notSuppressible;
     }
 
@@ -1462,6 +1467,26 @@ public class AIPService implements IAIPService {
         JobInfo jobInfo = new JobInfo(false, 0, parameters, authResolver.getUser(), DeleteAIPsJob.class.getName());
         jobInfoService.createAsQueued(jobInfo);
         LOGGER.debug("New job scheduled uuid={}", jobInfo.getId().toString());
+    }
+
+    @Override
+    public List<RejectedSip> deleteAipFromSips(Set<String> sipIds) throws ModuleException {
+        List<RejectedSip> notHandledSips = new ArrayList<>();
+        for (String sipId : sipIds) {
+            long timeStart = System.currentTimeMillis();
+            Set<StorageDataFile> notSuppressible = deleteAipFromSip(UniformResourceName.fromString(sipId));
+            long timeEnd = System.currentTimeMillis();
+            LOGGER.debug("deleting sip {} took {} ms", sipId, timeEnd - timeStart);
+            if (!notSuppressible.isEmpty()) {
+                StringJoiner sj = new StringJoiner(", ",
+                                                   "This sip could not be deleted because at least one of its aip file has not be handle by the storage process: ",
+                                                   ".");
+                notSuppressible.stream().map(sdf -> sdf.getAipEntity())
+                        .forEach(aipEntity -> sj.add(aipEntity.getAipId()));
+                notHandledSips.add(new RejectedSip(sipId, sj.toString()));
+            }
+        }
+        return notHandledSips;
     }
 
     @Override

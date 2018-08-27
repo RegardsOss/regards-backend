@@ -42,6 +42,7 @@ import fr.cnes.regards.modules.storage.domain.AipDataFiles;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
+import fr.cnes.regards.modules.storage.domain.RejectedSip;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
@@ -342,6 +343,8 @@ public interface IAIPService {
      * This method returns before AIPs are deleted, as this method just launch a job
      */
     void deleteAIPsByQuery(AIPQueryFilters request);
+
+    List<RejectedSip> deleteAipFromSips(Set<String> sipIds) throws ModuleException;
 
     /**
      * Retrieve all tags used by a set of AIPS, using query filters or a list of AIP id

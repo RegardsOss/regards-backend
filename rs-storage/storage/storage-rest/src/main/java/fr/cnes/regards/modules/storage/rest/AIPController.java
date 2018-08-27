@@ -352,22 +352,9 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(value = AIP_BULK_DELETE, method = RequestMethod.POST)
     @ResourceAccess(description = "Delete AIPs associated to the given SIP", role = DefaultRole.ADMIN)
     public ResponseEntity<List<RejectedSip>> deleteAipFromSips(@RequestBody Set<String> sipIds) throws ModuleException {
-        List<RejectedSip> notHandledSips = Lists.newArrayList();
+        List<RejectedSip> notHandledSips;
         long methodStart = System.currentTimeMillis();
-        for (String sipId : sipIds) {
-            long timeStart = System.currentTimeMillis();
-            Set<StorageDataFile> notSuppressible = aipService.deleteAipFromSip(UniformResourceName.fromString(sipId));
-            long timeEnd = System.currentTimeMillis();
-            LOGGER.debug("deleting sip {} took {} ms", sipId, timeEnd - timeStart);
-            if (!notSuppressible.isEmpty()) {
-                StringJoiner sj = new StringJoiner(", ",
-                                                   "This sip could not be deleted because at least one of its aip file has not be handle by the storage process: ",
-                                                   ".");
-                notSuppressible.stream().map(sdf -> sdf.getAipEntity())
-                        .forEach(aipEntity -> sj.add(aipEntity.getAipId()));
-                notHandledSips.add(new RejectedSip(sipId, sj.toString()));
-            }
-        }
+        notHandledSips = aipService.deleteAipFromSips(sipIds);
         long methodEnd = System.currentTimeMillis();
         LOGGER.debug("Deleting {} sips took {} ms", sipIds.size(), methodEnd - methodStart);
         if (notHandledSips.isEmpty()) {
