@@ -144,4 +144,5 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      */
     long countBySessionIdAndStateIn(String sessionId, Collection<AIPState> states);
 
+    Collection<AIPEntity> findAllBySipIdIn(Collection<String> sipIds);
 }

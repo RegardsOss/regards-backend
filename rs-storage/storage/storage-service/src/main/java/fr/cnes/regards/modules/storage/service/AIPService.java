@@ -1445,15 +1445,8 @@ public class AIPService implements IAIPService {
                     meta.setState(DataFileState.TO_BE_DELETED);
                     dataFileDao.save(meta);
                 }
-                //                aipDataFilesToDelete.addAll(dataFiles);
             }
         }
-        //        try {
-        //            scheduleDeletion(aipDataFilesToDelete);
-        //        } catch (ModuleException e) {
-        //            // Exception thrown for plugin instantiation errors. Only log error.
-        //            LOGGER.error(e.getMessage(), e);
-        //        }
     }
 
     @Override
@@ -1472,9 +1465,21 @@ public class AIPService implements IAIPService {
     @Override
     public List<RejectedSip> deleteAipFromSips(Set<String> sipIds) throws ModuleException {
         List<RejectedSip> notHandledSips = new ArrayList<>();
-        for (String sipId : sipIds) {
+        long daofindAllStart = System.currentTimeMillis();
+        Map<String, Set<AIP>> aipsPerSip = aipDao.findAllBySipIdIn(sipIds).stream().collect(Collectors.toMap(aip -> aip
+                .getSipId().get(), aip -> Sets.newHashSet(aip), (set1, set2) -> Sets.union(set1, set2)));
+        long daofindAllEnd = System.currentTimeMillis();
+        LOGGER.debug("Finding {} aip from {} sip ids took {} ms",
+                     aipsPerSip.values().stream().mapToInt(set -> set.size()).sum(),
+                     sipIds.size(),
+                     daofindAllEnd - daofindAllStart);
+        for (String sipId : aipsPerSip.keySet()) {
             long timeStart = System.currentTimeMillis();
-            Set<StorageDataFile> notSuppressible = deleteAipFromSip(UniformResourceName.fromString(sipId));
+            Set<AIP> aipsToDeleted = aipsPerSip.get(sipId);
+            Set<StorageDataFile> notSuppressible = new HashSet<>();
+            for(AIP aip : aipsToDeleted) {
+                notSuppressible.addAll(deleteAip(aip));
+            }
             long timeEnd = System.currentTimeMillis();
             LOGGER.debug("deleting sip {} took {} ms", sipId, timeEnd - timeStart);
             if (!notSuppressible.isEmpty()) {
