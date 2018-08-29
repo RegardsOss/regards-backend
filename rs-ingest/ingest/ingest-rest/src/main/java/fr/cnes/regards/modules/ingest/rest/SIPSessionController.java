@@ -20,6 +20,8 @@ package fr.cnes.regards.modules.ingest.rest;
 
 import java.time.OffsetDateTime;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -58,6 +60,8 @@ public class SIPSessionController implements IResourceController<SIPSession> {
 
     public static final String REQUEST_PARAM_TO = "to";
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(SIPSessionController.class);
+
     @Autowired
     private ISIPSessionService sipSessionService;
 
@@ -71,11 +75,10 @@ public class SIPSessionController implements IResourceController<SIPSession> {
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<PagedResources<Resource<SIPSession>>> search(
             @RequestParam(name = REQUEST_PARAM_ID, required = false) String id,
-            @RequestParam(name = REQUEST_PARAM_FROM,
-                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
-            @RequestParam(name = REQUEST_PARAM_TO,
-                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to,
-            Pageable pageable, PagedResourcesAssembler<SIPSession> pAssembler) {
+            @RequestParam(name = REQUEST_PARAM_FROM, required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
+            @RequestParam(name = REQUEST_PARAM_TO, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                    OffsetDateTime to, Pageable pageable, PagedResourcesAssembler<SIPSession> pAssembler) {
         Page<SIPSession> sipSessions = sipSessionService.search(id, from, to, pageable);
         PagedResources<Resource<SIPSession>> resources = toPagedResources(sipSessions, pAssembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
@@ -84,7 +87,10 @@ public class SIPSessionController implements IResourceController<SIPSession> {
     @ResourceAccess(description = "Delete all SIP having that session name.")
     @RequestMapping(value = ID_PATH, method = RequestMethod.DELETE)
     public ResponseEntity<Void> deleteSipEntityBySessionId(@PathVariable("id") String id) throws ModuleException {
+        long methodStart = System.currentTimeMillis();
         sipSessionService.deleteSIPSession(id);
+        long methodEnd = System.currentTimeMillis();
+        LOGGER.debug("Deleting session {} took {} ms", id, methodEnd - methodStart);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -98,9 +104,15 @@ public class SIPSessionController implements IResourceController<SIPSession> {
     @Override
     public Resource<SIPSession> toResource(SIPSession sipSession, Object... pExtras) {
         final Resource<SIPSession> resource = resourceService.toResource(sipSession);
-        resourceService.addLink(resource, this.getClass(), "getSipSession", LinkRels.SELF,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "getSipSession",
+                                LinkRels.SELF,
                                 MethodParamFactory.build(String.class, sipSession.getId()));
-        resourceService.addLink(resource, this.getClass(), "deleteSipEntityBySessionId", LinkRels.DELETE,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "deleteSipEntityBySessionId",
+                                LinkRels.DELETE,
                                 MethodParamFactory.build(String.class, sipSession.getId()));
         return resource;
     }

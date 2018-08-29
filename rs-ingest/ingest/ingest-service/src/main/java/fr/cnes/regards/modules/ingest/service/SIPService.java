@@ -128,6 +128,7 @@ public class SIPService implements ISIPService {
     public Collection<RejectedSip> deleteSIPEntities(Collection<SIPEntity> sips) throws ModuleException {
         Set<SIPEntity> deletableSips = Sets.newHashSet();
         Set<RejectedSip> undeletableSips = Sets.newHashSet();
+        long sipDeletionCheckStart = System.currentTimeMillis();
         for (SIPEntity sip : sips) {
             if (isDeletableWithAIPs(sip)) {
                 // If SIP si not stored, we can already delete sip and associated AIPs
@@ -139,12 +140,17 @@ public class SIPService implements ISIPService {
                 LOGGER.error(errorMsg);
             }
         }
+        long sipDeletionCheckEnd = System.currentTimeMillis();
+        LOGGER.debug("Checking {} sips for deletion took {} ms", sips.size(), sipDeletionCheckEnd - sipDeletionCheckStart);
         // Do delete AIPs
         if (!deletableSips.isEmpty()) {
             ResponseEntity<List<RejectedSip>> response = null;
+            long askForAipDeletionStart = System.currentTimeMillis();
             try {
                 response = aipClient.deleteAipFromSips(deletableSips.stream().map(sip -> sip.getSipId().toString())
                         .collect(Collectors.toSet()));
+                long askForAipDeletionEnd = System.currentTimeMillis();
+                LOGGER.debug("Asking SUCCESSFULLY for storage to delete {} sip took {} ms", deletableSips.size(), askForAipDeletionEnd - askForAipDeletionStart);
             } catch (HttpClientErrorException e) {
                 // Feign only throws exceptions in case the response status is neither 404 or one of the 2xx,
                 // so lets catch the exception and if it not one of our API normal status rethrow it
@@ -160,6 +166,8 @@ public class SIPService implements ISIPService {
                 undeletableSips.addAll(rejectedSips);
                 return undeletableSips;
             } finally {
+                long askForAipDeletionEnd = System.currentTimeMillis();
+                LOGGER.debug("Asking for storage to delete {} sip took {} ms", deletableSips.size(), askForAipDeletionEnd - askForAipDeletionStart);
                 FeignSecurityManager.reset();
             }
             if (HttpUtils.isSuccess(response.getStatusCode())) {
