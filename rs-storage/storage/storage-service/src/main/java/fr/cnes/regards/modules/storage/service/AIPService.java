@@ -1072,20 +1072,18 @@ public class AIPService implements IAIPService {
                 } else {
                     // we order deletion of a file if and only if no other aip references the same file
                     long daoFindOtherDataFileStart = System.currentTimeMillis();
-                    Set<StorageDataFile> dataFilesWithSameFile = dataFileDao
-                            .findAllByChecksumIn(Sets.newHashSet(dataFile.getChecksum()));
+//                    Set<StorageDataFile> dataFilesWithSameFile = dataFileDao
+//                            .findAllByChecksumIn(Sets.newHashSet(dataFile.getChecksum()));
+                    long nbDataFilesWithSameFile = dataFileDao.countByChecksum(dataFile.getChecksum());
                     long daoFindOtherDataFileEnd = System.currentTimeMillis();
-                    LOGGER.debug("Finding {} other datafile with checksum {} took {} ms",
-                                 dataFilesWithSameFile.size(),
+                    LOGGER.debug("Counting {} other datafile with checksum {} took {} ms",
+                                 nbDataFilesWithSameFile,
                                  dataFile.getChecksum(),
                                  daoFindOtherDataFileEnd - daoFindOtherDataFileStart);
-                    // well lets remove ourselves of course!
-                    dataFilesWithSameFile.remove(dataFile);
-                    if (dataFilesWithSameFile.isEmpty()) {
+                    if (nbDataFilesWithSameFile == 1) {
                         // add to datafiles that should be removed
                         dataFile.setState(DataFileState.TO_BE_DELETED);
                         dataFileDao.save(dataFile);
-                        //                        dataFilesToDelete.add(dataFile);
                     } else {
                         // if other datafiles are referencing a file, we just remove the data file from the
                         // database.

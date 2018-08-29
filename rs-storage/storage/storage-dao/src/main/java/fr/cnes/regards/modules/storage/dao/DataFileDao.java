@@ -158,6 +158,11 @@ public class DataFileDao implements IDataFileDao {
         return repository.getMonitoringAggregation();
     }
 
+    @Override
+    public long countByChecksum(String checksum) {
+        return repository.countByChecksum(checksum);
+    }
+
     private Optional<AIPEntity> getAipDataBase(AIP aip) {
         return aipRepo.findOneByAipId(aip.getId().toString());
     }

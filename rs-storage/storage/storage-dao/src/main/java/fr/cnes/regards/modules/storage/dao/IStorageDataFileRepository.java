@@ -124,4 +124,6 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
      * @param pdsId {@link PrioritizedDataStorage} identifier
      */
     long countByPrioritizedDataStoragesId(Long pdsId);
+
+    long countByChecksum(String checksum);
 }

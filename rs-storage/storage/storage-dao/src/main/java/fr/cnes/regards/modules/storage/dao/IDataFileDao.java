@@ -114,4 +114,6 @@ public interface IDataFileDao {
      * @return the monitoring aggregation
      */
     Collection<MonitoringAggregation> getMonitoringAggregation();
+
+    long countByChecksum(String checksum);
 }
