@@ -1076,7 +1076,7 @@ public class AIPService implements IAIPService {
                             .findAllByChecksumIn(Sets.newHashSet(dataFile.getChecksum()));
                     long daoFindOtherDataFileEnd = System.currentTimeMillis();
                     LOGGER.debug("Finding {} other datafile with checksum {} took {} ms",
-                                 dataFilesWithSameFile,
+                                 dataFilesWithSameFile.size(),
                                  dataFile.getChecksum(),
                                  daoFindOtherDataFileEnd - daoFindOtherDataFileStart);
                     // well lets remove ourselves of course!
