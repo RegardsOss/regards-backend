@@ -1058,7 +1058,14 @@ public class AIPService implements IAIPService {
     public Set<StorageDataFile> deleteAip(AIP toBeDeleted) throws ModuleException {
         long methodStart = System.currentTimeMillis();
         Set<StorageDataFile> notSuppressible = Sets.newHashSet();
-        Set<StorageDataFile> dataFilesWithoutMetadata = dataFileDao.findAllByAip(toBeDeleted).stream()
+        long daoFindStart = System.currentTimeMillis();
+        Set<StorageDataFile> dataFilesWithMetadata = dataFileDao.findAllByAip(toBeDeleted);
+        long daoFindEnd = System.currentTimeMillis();
+        LOGGER.debug("Finding {} datafile for aip {} took {} ms",
+                     dataFilesWithMetadata.size(),
+                     toBeDeleted.getId().toString(),
+                     daoFindEnd - daoFindStart);
+        Set<StorageDataFile> dataFilesWithoutMetadata = dataFilesWithMetadata.stream()
                 .filter(df -> !DataType.AIP.equals(df.getDataType())).collect(Collectors.toSet());
         for (StorageDataFile dataFile : dataFilesWithoutMetadata) {
             // If dataFile is in error state and no storage succeeded. So no urls are associated to the dataFile.
@@ -1075,8 +1082,14 @@ public class AIPService implements IAIPService {
                     notSuppressible.add(dataFile);
                 } else {
                     // we order deletion of a file if and only if no other aip references the same file
+                    long daoFindOtherDataFileStart = System.currentTimeMillis();
                     Set<StorageDataFile> dataFilesWithSameFile = dataFileDao
                             .findAllByChecksumIn(Sets.newHashSet(dataFile.getChecksum()));
+                    long daoFindOtherDataFileEnd = System.currentTimeMillis();
+                    LOGGER.debug("Finding {} other datafile with checksum {} took {} ms",
+                                 dataFilesWithSameFile,
+                                 dataFile.getChecksum(),
+                                 daoFindOtherDataFileEnd - daoFindOtherDataFileStart);
                     // well lets remove ourselves of course!
                     dataFilesWithSameFile.remove(dataFile);
                     if (dataFilesWithSameFile.isEmpty()) {
@@ -1466,7 +1479,7 @@ public class AIPService implements IAIPService {
     public List<RejectedSip> deleteAipFromSips(Set<String> sipIds) throws ModuleException {
         List<RejectedSip> notHandledSips = new ArrayList<>();
         //to avoid memory issues with hibernate, lets paginate the select and then evict the entities from the cache
-        Pageable page = new PageRequest(0,500);
+        Pageable page = new PageRequest(0, 500);
         long daofindPageStart = System.currentTimeMillis();
         Page<AIP> aipPage = aipDao.findPageBySipIdIn(sipIds, page);
         long daofindPageEnd = System.currentTimeMillis();
@@ -1476,7 +1489,8 @@ public class AIPService implements IAIPService {
                      daofindPageEnd - daofindPageStart);
         while (aipPage.hasContent()) {
             // while there is aip to delete, lets delete them and get the new page at the end
-            Map<String, Set<AIP>> aipsPerSip = aipPage.getContent().stream().collect(Collectors.toMap(aip -> aip.getSipId().get(), aip -> Sets.newHashSet(aip), (set1, set2) -> Sets.union(set1, set2)));
+            Map<String, Set<AIP>> aipsPerSip = aipPage.getContent().stream().collect(Collectors.toMap(aip -> aip
+                    .getSipId().get(), aip -> Sets.newHashSet(aip), (set1, set2) -> Sets.union(set1, set2)));
             for (String sipId : aipsPerSip.keySet()) {
                 long timeStart = System.currentTimeMillis();
                 Set<AIP> aipsToDelete = aipsPerSip.get(sipId);
@@ -1490,7 +1504,8 @@ public class AIPService implements IAIPService {
                     StringJoiner sj = new StringJoiner(", ",
                                                        "This sip could not be deleted because at least one of its aip file has not be handle by the storage process: ",
                                                        ".");
-                    notSuppressible.stream().map(sdf -> sdf.getAipEntity()).forEach(aipEntity -> sj.add(aipEntity.getAipId()));
+                    notSuppressible.stream().map(sdf -> sdf.getAipEntity())
+                            .forEach(aipEntity -> sj.add(aipEntity.getAipId()));
                     notHandledSips.add(new RejectedSip(sipId, sj.toString()));
                 }
             }
