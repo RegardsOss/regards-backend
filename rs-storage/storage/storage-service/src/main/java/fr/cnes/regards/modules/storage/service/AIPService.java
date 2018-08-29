@@ -1465,31 +1465,40 @@ public class AIPService implements IAIPService {
     @Override
     public List<RejectedSip> deleteAipFromSips(Set<String> sipIds) throws ModuleException {
         List<RejectedSip> notHandledSips = new ArrayList<>();
-        long daofindAllStart = System.currentTimeMillis();
-        Map<String, Set<AIP>> aipsPerSip = aipDao.findAllBySipIdIn(sipIds).stream().collect(Collectors.toMap(aip -> aip
-                .getSipId().get(), aip -> Sets.newHashSet(aip), (set1, set2) -> Sets.union(set1, set2)));
-        long daofindAllEnd = System.currentTimeMillis();
-        LOGGER.debug("Finding {} aip from {} sip ids took {} ms",
-                     aipsPerSip.values().stream().mapToInt(set -> set.size()).sum(),
-                     sipIds.size(),
-                     daofindAllEnd - daofindAllStart);
-        for (String sipId : aipsPerSip.keySet()) {
-            long timeStart = System.currentTimeMillis();
-            Set<AIP> aipsToDeleted = aipsPerSip.get(sipId);
-            Set<StorageDataFile> notSuppressible = new HashSet<>();
-            for(AIP aip : aipsToDeleted) {
-                notSuppressible.addAll(deleteAip(aip));
+        //to avoid memory issues with hibernate, lets paginate the select and then evict the entities from the cache
+        Pageable page = new PageRequest(0,500);
+        long daofindPageStart = System.currentTimeMillis();
+        Page<AIP> aipPage = aipDao.findPageBySipIdIn(sipIds, page);
+        while (aipPage.hasContent()) {
+            // while there is aip to delete, lets delete them and get the new page at the end
+            Map<String, Set<AIP>> aipsPerSip = aipPage.getContent().stream().collect(Collectors.toMap(aip -> aip.getSipId().get(), aip -> Sets.newHashSet(aip), (set1, set2) -> Sets.union(set1, set2)));
+            long daofindPageEnd = System.currentTimeMillis();
+            LOGGER.debug("Finding {} aip from {} sip ids took {} ms",
+                         aipsPerSip.values().stream().mapToInt(set -> set.size()).sum(),
+                         sipIds.size(),
+                         daofindPageEnd - daofindPageStart);
+            for (String sipId : aipsPerSip.keySet()) {
+                long timeStart = System.currentTimeMillis();
+                Set<AIP> aipsToDeleted = aipsPerSip.get(sipId);
+                Set<StorageDataFile> notSuppressible = new HashSet<>();
+                for (AIP aip : aipsToDeleted) {
+                    notSuppressible.addAll(deleteAip(aip));
+                }
+                long timeEnd = System.currentTimeMillis();
+                LOGGER.debug("deleting sip {} took {} ms", sipId, timeEnd - timeStart);
+                if (!notSuppressible.isEmpty()) {
+                    StringJoiner sj = new StringJoiner(", ",
+                                                       "This sip could not be deleted because at least one of its aip file has not be handle by the storage process: ",
+                                                       ".");
+                    notSuppressible.stream().map(sdf -> sdf.getAipEntity()).forEach(aipEntity -> sj.add(aipEntity.getAipId()));
+                    notHandledSips.add(new RejectedSip(sipId, sj.toString()));
+                }
             }
-            long timeEnd = System.currentTimeMillis();
-            LOGGER.debug("deleting sip {} took {} ms", sipId, timeEnd - timeStart);
-            if (!notSuppressible.isEmpty()) {
-                StringJoiner sj = new StringJoiner(", ",
-                                                   "This sip could not be deleted because at least one of its aip file has not be handle by the storage process: ",
-                                                   ".");
-                notSuppressible.stream().map(sdf -> sdf.getAipEntity())
-                        .forEach(aipEntity -> sj.add(aipEntity.getAipId()));
-                notHandledSips.add(new RejectedSip(sipId, sj.toString()));
-            }
+            // Before getting the next page, lets evict actual entities from cache
+            em.clear();
+            // now that hibernate cache has been cleared, lets get the next page
+            page = new PageRequest(page.getPageNumber()+1, 500);
+            aipPage = aipDao.findPageBySipIdIn(sipIds, page);
         }
         return notHandledSips;
     }
