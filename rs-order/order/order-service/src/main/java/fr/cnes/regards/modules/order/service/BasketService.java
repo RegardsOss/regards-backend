@@ -254,9 +254,11 @@ public class BasketService implements IBasketService {
         SearchRequest request;
         if ((entityIds != null) && !entityIds.isEmpty()) {
             if ((searchParameters != null) && !searchParameters.isEmpty()) {
-                request = new SearchRequest(engineType, datasetUrn, searchParameters, entityIds, null, searchDateLimit);
-            } else {
+                // A search request is configured, so entityIds are entity to exclude from the search result
                 request = new SearchRequest(engineType, datasetUrn, searchParameters, null, entityIds, searchDateLimit);
+            } else {
+                // No search request, so entityIds are the entity to search for.
+                request = new SearchRequest(engineType, datasetUrn, searchParameters, entityIds, null, searchDateLimit);
             }
         } else {
             request = new SearchRequest(engineType, datasetUrn, searchParameters, null, null, searchDateLimit);
