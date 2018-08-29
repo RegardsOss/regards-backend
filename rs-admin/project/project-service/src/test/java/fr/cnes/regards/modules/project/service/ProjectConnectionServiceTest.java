@@ -18,13 +18,14 @@
  */
 package fr.cnes.regards.modules.project.service;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.persistence.EntityManager;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.persistence.EntityManager;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -142,39 +143,25 @@ public class ProjectConnectionServiceTest {
     public void init() throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
         // use a stub repository, to be able to only test the service
         IProjectRepository projectRepoStub = new ProjectRepositoryStub();
-        projectService = new ProjectService(projectRepoStub,
-                                            Mockito.mock(ITenantResolver.class),
-                                            Mockito.mock(IInstancePublisher.class),
-                                            "default-project-test");
+        projectService = new ProjectService(projectRepoStub, Mockito.mock(ITenantResolver.class),
+                Mockito.mock(IInstancePublisher.class), "default-project-test",
+                "http://localhost/default-project-test");
         AESEncryptionService aesEncryptionService = new AESEncryptionService();
         aesEncryptionService
                 .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "1234567812345678"));
         projectConnectionRepoStub = new ProjectConnectionRepositoryStub();
-        projectConnectionService = new ProjectConnectionService(projectRepoStub,
-                                                                projectConnectionRepoStub,
-                                                                Mockito.mock(IInstancePublisher.class),
-                                                                Mockito.mock(EntityManager.class),
-                                                                aesEncryptionService);
+        projectConnectionService = new ProjectConnectionService(projectRepoStub, projectConnectionRepoStub,
+                Mockito.mock(IInstancePublisher.class), Mockito.mock(EntityManager.class), aesEncryptionService);
 
         Project project1 = projectRepoStub
                 .save(new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_1));
         Project project2 = projectRepoStub
                 .save(new Project(1L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_2));
 
-        projectConnectionRepoStub.save(new ProjectConnection(0L,
-                                                             project1,
-                                                             MS_TEST_1,
-                                                             COMMON_PROJECT_USER_NAME,
-                                                             COMMON_PROJECT_USER_PWD,
-                                                             COMMON_PROJECT_DRIVER,
-                                                             PROJECT1_URL));
-        projectConnectionRepoStub.save(new ProjectConnection(1L,
-                                                             project2,
-                                                             MS_TEST_2,
-                                                             COMMON_PROJECT_USER_NAME,
-                                                             COMMON_PROJECT_USER_PWD,
-                                                             COMMON_PROJECT_DRIVER,
-                                                             PROJECT2_URL));
+        projectConnectionRepoStub.save(new ProjectConnection(0L, project1, MS_TEST_1, COMMON_PROJECT_USER_NAME,
+                COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT1_URL));
+        projectConnectionRepoStub.save(new ProjectConnection(1L, project2, MS_TEST_2, COMMON_PROJECT_USER_NAME,
+                COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT2_URL));
     }
 
     /**
@@ -192,13 +179,8 @@ public class ProjectConnectionServiceTest {
         Project project1 = projectService.retrieveProject(PROJECT_TEST_1);
 
         // Test database parameter conflict detection : project 1 connection = project 2 connection
-        ProjectConnection connection = new ProjectConnection(600L,
-                                                             project1,
-                                                             "microservice-test",
-                                                             COMMON_PROJECT_USER_NAME,
-                                                             COMMON_PROJECT_USER_PWD,
-                                                             COMMON_PROJECT_DRIVER,
-                                                             PROJECT2_URL);
+        ProjectConnection connection = new ProjectConnection(600L, project1, "microservice-test",
+                COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT2_URL);
         try {
             projectConnectionService.createProjectConnection(connection, true);
             Assert.fail("Conflicting connection should not be created");
@@ -287,15 +269,8 @@ public class ProjectConnectionServiceTest {
 
         // Updating with an non existing project
         connection = new ProjectConnection(0L,
-                                           new Project(COMMON_PROJECT_DESCRIPTION,
-                                                       COMMON_PROJECT_ICON,
-                                                       true,
-                                                       PROJECT_TEST_3),
-                                           MS_TEST_1,
-                                           COMMON_PROJECT_USER_NAME,
-                                           COMMON_PROJECT_USER_PWD,
-                                           COMMON_PROJECT_DRIVER,
-                                           PROJECT1_URL);
+                new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_3), MS_TEST_1,
+                COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT1_URL);
         try {
             connection = projectConnectionService.updateProjectConnection(0L, connection);
             Assert.fail(errorUpdate);
@@ -306,16 +281,8 @@ public class ProjectConnectionServiceTest {
         // Updating a non existing projectConnection
         final long id = 56L;
         connection = new ProjectConnection(id,
-                                           new Project(0L,
-                                                       COMMON_PROJECT_DESCRIPTION,
-                                                       COMMON_PROJECT_ICON,
-                                                       true,
-                                                       PROJECT_TEST_3),
-                                           MS_TEST_1,
-                                           COMMON_PROJECT_USER_NAME,
-                                           COMMON_PROJECT_USER_PWD,
-                                           COMMON_PROJECT_DRIVER,
-                                           PROJECT1_URL);
+                new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_3), MS_TEST_1,
+                COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT1_URL);
         try {
             connection = projectConnectionService.updateProjectConnection(id, connection);
             Assert.fail(errorUpdate);
