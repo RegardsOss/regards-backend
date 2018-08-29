@@ -1469,19 +1469,19 @@ public class AIPService implements IAIPService {
         Pageable page = new PageRequest(0,500);
         long daofindPageStart = System.currentTimeMillis();
         Page<AIP> aipPage = aipDao.findPageBySipIdIn(sipIds, page);
+        long daofindPageEnd = System.currentTimeMillis();
+        LOGGER.debug("Finding {} aip from {} sip ids took {} ms",
+                     aipPage.getNumberOfElements(),
+                     sipIds.size(),
+                     daofindPageEnd - daofindPageStart);
         while (aipPage.hasContent()) {
             // while there is aip to delete, lets delete them and get the new page at the end
             Map<String, Set<AIP>> aipsPerSip = aipPage.getContent().stream().collect(Collectors.toMap(aip -> aip.getSipId().get(), aip -> Sets.newHashSet(aip), (set1, set2) -> Sets.union(set1, set2)));
-            long daofindPageEnd = System.currentTimeMillis();
-            LOGGER.debug("Finding {} aip from {} sip ids took {} ms",
-                         aipsPerSip.values().stream().mapToInt(set -> set.size()).sum(),
-                         sipIds.size(),
-                         daofindPageEnd - daofindPageStart);
             for (String sipId : aipsPerSip.keySet()) {
                 long timeStart = System.currentTimeMillis();
-                Set<AIP> aipsToDeleted = aipsPerSip.get(sipId);
+                Set<AIP> aipsToDelete = aipsPerSip.get(sipId);
                 Set<StorageDataFile> notSuppressible = new HashSet<>();
-                for (AIP aip : aipsToDeleted) {
+                for (AIP aip : aipsToDelete) {
                     notSuppressible.addAll(deleteAip(aip));
                 }
                 long timeEnd = System.currentTimeMillis();
@@ -1497,8 +1497,14 @@ public class AIPService implements IAIPService {
             // Before getting the next page, lets evict actual entities from cache
             em.clear();
             // now that hibernate cache has been cleared, lets get the next page
-            page = new PageRequest(page.getPageNumber()+1, 500);
+            page = page.next();
+            daofindPageStart = System.currentTimeMillis();
             aipPage = aipDao.findPageBySipIdIn(sipIds, page);
+            daofindPageEnd = System.currentTimeMillis();
+            LOGGER.debug("Finding {} aip from {} sip ids took {} ms",
+                         aipPage.getNumberOfElements(),
+                         sipIds.size(),
+                         daofindPageEnd - daofindPageStart);
         }
         return notHandledSips;
     }
