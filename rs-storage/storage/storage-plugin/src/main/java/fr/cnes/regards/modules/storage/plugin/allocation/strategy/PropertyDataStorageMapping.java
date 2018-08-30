@@ -31,12 +31,12 @@ public class PropertyDataStorageMapping {
     /**
      * Plugin parameter name of the property value
      */
-    private static final String PROPERTY_VALUE = "Property_value";
+    private static final String PROPERTY_VALUE = "propertyValue";
 
     /**
      * Plugin parameter name of the data storage plugin configuration id
      */
-    private static final String DATA_STORAGE_CONF_ID_PARAMETER_NAME = "Data_storage_conf_id";
+    private static final String DATA_STORAGE_CONF_ID_PARAMETER_NAME = "dataStorageConfId";
 
     /**
      * Value of the property into the aip
