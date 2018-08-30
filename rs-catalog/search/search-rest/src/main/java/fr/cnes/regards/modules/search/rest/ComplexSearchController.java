@@ -162,8 +162,16 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
 
         // Include ids criterion
         if ((searchRequest.getEntityIdsToInclude() != null) && !searchRequest.getEntityIdsToInclude().isEmpty()) {
+            ICriterion idsCrit = null;
             for (String ipId : searchRequest.getEntityIdsToInclude()) {
-                reqCrit = ICriterion.and(reqCrit, ICriterion.eq(StaticProperties.IP_ID, ipId));
+                if (idsCrit == null) {
+                    idsCrit = ICriterion.eq(StaticProperties.IP_ID, ipId);
+                } else {
+                    idsCrit = ICriterion.or(idsCrit, ICriterion.eq(StaticProperties.IP_ID, ipId));
+                }
+            }
+            if (idsCrit != null) {
+                reqCrit = ICriterion.and(reqCrit, idsCrit);
             }
         }
 
