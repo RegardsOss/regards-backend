@@ -384,7 +384,8 @@ public class OrderService implements IOrderService {
     private void dispatchFeatureFilesInBuckets(Basket basket, Order order, String role, EntityFeature feature,
             Set<OrderDataFile> storageBucketFiles, Set<OrderDataFile> externalBucketFiles) {
         for (DataFile dataFile : feature.getFiles().values()) {
-            if (dataFile.isReference()) {
+            // Referenced dataFiles are externaly stored.
+            if (!dataFile.isReference()) {
                 addInternalFileToStorageBucket(basket, order, role, storageBucketFiles, dataFile, feature);
             } else {
                 addExternalFileToExternalBucket(order, externalBucketFiles, dataFile, feature);
