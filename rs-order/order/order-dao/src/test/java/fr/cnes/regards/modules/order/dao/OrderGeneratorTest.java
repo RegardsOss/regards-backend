@@ -18,10 +18,13 @@
  */
 package fr.cnes.regards.modules.order.dao;
 
+import org.junit.Ignore;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTest;
 
 /**
  * @author oroussel
  */
+@Ignore
 public class OrderGeneratorTest extends AbstractScriptGeneratorTest {
 }
