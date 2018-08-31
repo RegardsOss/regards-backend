@@ -97,6 +97,10 @@ public enum SIPState implements ISipState {
      */
     INCOMPLETE,
     /**
+     * SIP is to be DELETED
+     */
+    TO_BE_DELETED,
+    /**
      * SIP deleted
      */
     DELETED;

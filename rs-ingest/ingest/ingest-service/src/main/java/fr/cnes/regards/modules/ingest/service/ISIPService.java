@@ -105,10 +105,4 @@ public interface ISIPService {
      */
     SIPEntity saveSIPEntity(SIPEntity sip);
 
-    /**
-     * Set to SIPEntity to DELETED state and delete associated AIPs if there is.
-     * @param sip {@link SIPEntity} to delete;
-     */
-    void deleteSIPEntity(SIPEntity sip);
-
 }

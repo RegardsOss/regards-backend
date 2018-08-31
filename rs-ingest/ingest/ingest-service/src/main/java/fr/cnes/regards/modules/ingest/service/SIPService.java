@@ -21,7 +21,9 @@ package fr.cnes.regards.modules.ingest.service;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -30,23 +32,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
 import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.microservice.maintenance.MaintenanceException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPSessionRepository;
@@ -56,8 +61,12 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
+import fr.cnes.regards.modules.notification.domain.NotificationType;
 import fr.cnes.regards.modules.storage.client.IAipClient;
 import fr.cnes.regards.modules.storage.domain.RejectedSip;
+import fr.cnes.regards.modules.templates.service.ITemplateService;
+import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 
 /**
  * Service to handle access to {@link SIPEntity} entities.
@@ -80,12 +89,6 @@ public class SIPService implements ISIPService {
 
     @Autowired
     private ISIPSessionRepository sipSessionRepository;
-
-    @Autowired
-    private IAipClient aipClient;
-
-    @Autowired
-    private Gson gson;
 
     @Override
     public Page<SIPEntity> search(String providerId, String sessionId, String owner, OffsetDateTime from,
@@ -126,14 +129,20 @@ public class SIPService implements ISIPService {
 
     @Override
     public Collection<RejectedSip> deleteSIPEntities(Collection<SIPEntity> sips) throws ModuleException {
-        Set<SIPEntity> deletableSips = Sets.newHashSet();
         Set<RejectedSip> undeletableSips = Sets.newHashSet();
         long sipDeletionCheckStart = System.currentTimeMillis();
         for (SIPEntity sip : sips) {
             if (isDeletableWithAIPs(sip)) {
-                // If SIP si not stored, we can already delete sip and associated AIPs
-                this.deleteSIPEntity(sip);
-                deletableSips.add(sip);
+                // If SIP is not stored, we can already delete sip and associated AIPs
+                if (isDeletableWithoutAips(sip)) {
+                    Set<AIPEntity> aips = aipRepository.findBySip(sip);
+                    if (!aips.isEmpty()) {
+                        aipRepository.delete(aips);
+                    }
+                    sipRepository.updateSIPEntityState(SIPState.DELETED, sip.getId());
+                } else {
+                    sipRepository.updateSIPEntityState(SIPState.TO_BE_DELETED, sip.getId());
+                }
             } else {
                 String errorMsg = String.format("SIPEntity with state %s is not deletable", sip.getState());
                 undeletableSips.add(new RejectedSip(sip.getSipId().toString(), errorMsg));
@@ -141,43 +150,13 @@ public class SIPService implements ISIPService {
             }
         }
         long sipDeletionCheckEnd = System.currentTimeMillis();
-        LOGGER.debug("Checking {} sips for deletion took {} ms", sips.size(), sipDeletionCheckEnd - sipDeletionCheckStart);
-        // Do delete AIPs
-        if (!deletableSips.isEmpty()) {
-            ResponseEntity<List<RejectedSip>> response = null;
-            long askForAipDeletionStart = System.currentTimeMillis();
-            try {
-                response = aipClient.deleteAipFromSips(deletableSips.stream().map(sip -> sip.getSipId().toString())
-                        .collect(Collectors.toSet()));
-                long askForAipDeletionEnd = System.currentTimeMillis();
-                LOGGER.debug("Asking SUCCESSFULLY for storage to delete {} sip took {} ms", deletableSips.size(), askForAipDeletionEnd - askForAipDeletionStart);
-            } catch (HttpClientErrorException e) {
-                // Feign only throws exceptions in case the response status is neither 404 or one of the 2xx,
-                // so lets catch the exception and if it not one of our API normal status rethrow it
-                if (e.getStatusCode() != HttpStatus.UNPROCESSABLE_ENTITY) {
-                    throw e;
-                }
-                // first lets get the string from the body then lets deserialize it using gson
-                @SuppressWarnings("serial")
-                TypeToken<List<RejectedSip>> bodyTypeToken = new TypeToken<List<RejectedSip>>() {
-
-                };
-                List<RejectedSip> rejectedSips = gson.fromJson(e.getResponseBodyAsString(), bodyTypeToken.getType());
-                undeletableSips.addAll(rejectedSips);
-                return undeletableSips;
-            } finally {
-                long askForAipDeletionEnd = System.currentTimeMillis();
-                LOGGER.debug("Asking for storage to delete {} sip took {} ms", deletableSips.size(), askForAipDeletionEnd - askForAipDeletionStart);
-                FeignSecurityManager.reset();
-            }
-            if (HttpUtils.isSuccess(response.getStatusCode())) {
-                if (response.getBody() != null) {
-                    undeletableSips.addAll(response.getBody());
-                }
-            }
-        }
+        LOGGER.debug("Checking {} sips for deletion took {} ms",
+                     sips.size(),
+                     sipDeletionCheckEnd - sipDeletionCheckStart);
         return undeletableSips;
     }
+
+
 
     @Override
     public Collection<SIPEntity> getAllVersions(String providerId) {
@@ -223,17 +202,6 @@ public class SIPService implements ISIPService {
         return savedSip;
     }
 
-    @Override
-    public void deleteSIPEntity(SIPEntity sip) {
-        if (isDeletableWithoutAips(sip)) {
-            Set<AIPEntity> aips = aipRepository.findBySip(sip);
-            if (!aips.isEmpty()) {
-                aipRepository.delete(aips);
-            }
-            sipRepository.updateSIPEntityState(SIPState.DELETED, sip.getId());
-        }
-    }
-
     /**
      * Check if the given {@link SIPEntity} is in a state that allow to start a deletion process.
      * In this case the deletion process have to wait for other microservice deletion results to change
@@ -253,6 +221,7 @@ public class SIPService implements ISIPService {
             case STORE_ERROR:
             case INCOMPLETE:
             case INDEXED:
+            case TO_BE_DELETED:
                 return true;
             default:
                 return false;

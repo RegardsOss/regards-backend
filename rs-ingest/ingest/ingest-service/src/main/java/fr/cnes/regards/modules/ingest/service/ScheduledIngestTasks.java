@@ -84,4 +84,14 @@ public class ScheduledIngestTasks {
         }
     }
 
+    @Scheduled(fixedRateString = "${regards.ingest.ask.for.aips.deletion.rate:60000}")
+    public void askForAipsDeletion() {
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            LOG.info("Scheduled task : Process new AIP bulk request to archival storage for tenant {}", tenant);
+            runtimeTenantResolver.forceTenant(tenant);
+            aipBulkRequestService.askForAipsDeletion();
+            runtimeTenantResolver.clearTenant();
+        }
+    }
+
 }

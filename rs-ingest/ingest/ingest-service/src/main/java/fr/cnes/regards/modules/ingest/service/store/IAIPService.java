@@ -87,4 +87,9 @@ public interface IAIPService {
      * Get AIP to submit in {@link SipAIPState#SUBMISSION_SCHEDULED} state for specific ingest processing chain
      */
     Set<AIPEntity> findAIPToSubmit(String ingestProcessingChain);
+
+    /**
+     * Look for sips in state {@link fr.cnes.regards.modules.ingest.domain.entity.SIPState#TO_BE_DELETED} and ask to rs-storage to delete them per page of 100.
+     */
+    void askForAipsDeletion();
 }

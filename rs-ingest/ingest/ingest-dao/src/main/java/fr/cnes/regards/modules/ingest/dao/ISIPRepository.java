@@ -22,6 +22,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -157,4 +160,6 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
     default Boolean isAlreadyIngested(String checksum) {
         return countByChecksum(checksum) == 1;
     }
+
+    Page<SIPEntity> findPageByState(SIPState state, Pageable pageable);
 }

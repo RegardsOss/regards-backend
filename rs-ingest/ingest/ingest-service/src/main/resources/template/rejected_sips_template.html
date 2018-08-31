@@ -1,0 +1,8 @@
+<#setting datetime_format='yyyy-MM-dd HH:mm:ss z'>
+    <h1>REGARDS - Some SIPs could not be deleted</h1>
+    <div>
+        One or more SIPs could not be deleted:
+        <#list rejectedSips as rejectedSip>
+            - SIP ${rejectedSip.sipId} could not be deleted for teh following reason: ${rejectedSip.reason}.<br/>
+        </#list>
+    </div>

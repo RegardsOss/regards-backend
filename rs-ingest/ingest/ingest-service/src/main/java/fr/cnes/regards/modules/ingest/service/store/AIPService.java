@@ -19,10 +19,13 @@
 package fr.cnes.regards.modules.ingest.service.store;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,18 +37,25 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 import com.google.common.collect.Sets;
-
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.microservice.maintenance.MaintenanceException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
@@ -57,10 +67,16 @@ import fr.cnes.regards.modules.ingest.service.ISIPService;
 import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingService;
 import fr.cnes.regards.modules.ingest.service.job.AIPSubmissionJob;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
+import fr.cnes.regards.modules.notification.domain.NotificationType;
+import fr.cnes.regards.modules.storage.client.IAipClient;
 import fr.cnes.regards.modules.storage.client.IAipEntityClient;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.IAipState;
+import fr.cnes.regards.modules.storage.domain.RejectedSip;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
+import fr.cnes.regards.modules.templates.service.ITemplateService;
+import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 
 /**
  * Service to handle aip related issues in ingest, including sending bulk request of AIP to store to archival storage
@@ -97,6 +113,18 @@ public class AIPService implements IAIPService {
     @Value("${regards.ingest.aips.bulk.request.limit:1000}")
     private Integer bulkRequestLimit;
 
+    @Autowired
+    private IAipClient aipClient;
+
+    @Autowired
+    private Gson gson;
+
+    @Autowired
+    private INotificationClient notificationClient;
+
+    @Autowired
+    private ITemplateService templateService;
+
     @Override
     public void setAipInError(UniformResourceName aipId, IAipState state, String errorMessage) {
         Optional<AIPEntity> oAip = aipRepository.findByAipId(aipId.toString());
@@ -109,7 +137,8 @@ public class AIPService implements IAIPService {
             sip.setState(SIPState.STORE_ERROR);
             // Save the errorMessage inside SIP rejections errors
             sip.getRejectionCauses().add(String.format("Storage of AIP(%s) failed due to the following error: %s",
-                                                       aipId, errorMessage));
+                                                       aipId,
+                                                       errorMessage));
             sipService.saveSIPEntity(sip);
         }
     }
@@ -201,9 +230,10 @@ public class AIPService implements IAIPService {
         for (IngestProcessingChain ipc : ipcs) {
             // Check if submission not already scheduled
             if (!aipRepository.isAlreadyWorking(ipc.getName())) {
-                Page<AIPEntity> page = aipRepository
-                        .findWithLockBySipProcessingAndState(ipc.getName(), SipAIPState.CREATED,
-                                                             new PageRequest(0, bulkRequestLimit));
+                Page<AIPEntity> page = aipRepository.findWithLockBySipProcessingAndState(ipc.getName(),
+                                                                                         SipAIPState.CREATED,
+                                                                                         new PageRequest(0,
+                                                                                                         bulkRequestLimit));
                 if (page.hasContent()) {
                     // Schedule AIP page submission
                     for (AIPEntity aip : page.getContent()) {
@@ -238,8 +268,8 @@ public class AIPService implements IAIPService {
             Map<String, JobParameter> params = jobInfo.getParametersAsMap();
             String ingestChain = params.get(AIPSubmissionJob.INGEST_CHAIN_PARAMETER).getValue();
             // Set to submission error
-            Set<AIPEntity> aips = aipRepository.findBySipProcessingAndState(ingestChain,
-                                                                            SipAIPState.SUBMISSION_SCHEDULED);
+            Set<AIPEntity> aips = aipRepository
+                    .findBySipProcessingAndState(ingestChain, SipAIPState.SUBMISSION_SCHEDULED);
             for (AIPEntity aip : aips) {
                 setAipInError(aip.getAipIdUrn(), SipAIPState.SUBMISSION_ERROR, "Submission job error");
             }
@@ -276,5 +306,78 @@ public class AIPService implements IAIPService {
     @Override
     public Set<AIPEntity> findAIPToSubmit(String ingestProcessingChain) {
         return aipRepository.findBySipProcessingAndState(ingestProcessingChain, SipAIPState.SUBMISSION_SCHEDULED);
+    }
+
+    @Override
+    public void askForAipsDeletion() {
+        List<RejectedSip> rejectedSips = new ArrayList<>();
+        Page<SIPEntity> deletableSips = sipRepository.findPageByState(SIPState.TO_BE_DELETED, new PageRequest(0, 100));
+        ResponseEntity<List<RejectedSip>> response;
+        long askForAipDeletionStart = System.currentTimeMillis();
+        FeignSecurityManager.asSystem();
+        try {
+            response = aipClient
+                    .deleteAipFromSips(deletableSips.getContent().stream().map(sip -> sip.getSipId().toString())
+                                               .collect(Collectors.toSet()));
+            long askForAipDeletionEnd = System.currentTimeMillis();
+            LOGGER.debug("Asking SUCCESSFULLY for storage to delete {} sip took {} ms",
+                         deletableSips.getNumberOfElements(),
+                         askForAipDeletionEnd - askForAipDeletionStart);
+            if (HttpUtils.isSuccess(response.getStatusCode())) {
+                if (response.getBody() != null) {
+                    rejectedSips = response.getBody();
+                }
+            }
+        } catch (HttpClientErrorException e) {
+            // Feign only throws exceptions in case the response status is neither 404 or one of the 2xx,
+            // so lets catch the exception and if it not one of our API normal status rethrow it
+            if (e.getStatusCode() != HttpStatus.UNPROCESSABLE_ENTITY) {
+                throw e;
+            }
+            // first lets get the string from the body then lets deserialize it using gson
+            @SuppressWarnings("serial")
+            TypeToken<List<RejectedSip>> bodyTypeToken = new TypeToken<List<RejectedSip>>() {
+
+            };
+            rejectedSips = gson.fromJson(e.getResponseBodyAsString(), bodyTypeToken.getType());
+        } finally {
+            long askForAipDeletionEnd = System.currentTimeMillis();
+            LOGGER.debug("Asking for storage to delete {} sip took {} ms",
+                         deletableSips.getNumberOfElements(),
+                         askForAipDeletionEnd - askForAipDeletionStart);
+            FeignSecurityManager.reset();
+        }
+        sendRejectedSipNotification(rejectedSips);
+        // set state to deleted
+        Set<String> rejectedSipIds = rejectedSips.stream().map(RejectedSip::getSipId).collect(Collectors.toSet());
+        for (SIPEntity sip : deletableSips.getContent()) {
+            if (!rejectedSipIds.contains(sip.getSipId())) {
+                sip.setState(SIPState.DELETED);
+                sipRepository.save(sip);
+            }
+        }
+    }
+
+    /**
+     * Be aware that this method does not touch to FeignSecurityManager.
+     * Be sure to handle FeignSecurityManager issues before and after calling this method.
+     * @param rejectedSips
+     */
+    private void sendRejectedSipNotification(List<RejectedSip> rejectedSips) {
+        // lets prepare the notification message
+        Map<String, Object> dataMap = new HashMap<>();
+        dataMap.put("rejectedSips", rejectedSips);
+        // lets use the template service to get our message
+        SimpleMailMessage email;
+        try {
+            email = templateService.writeToEmail(TemplateServiceConfiguration.REJECTED_SIPS_CODE, dataMap);
+        } catch (EntityNotFoundException enf) {
+            throw new MaintenanceException(enf.getMessage(), enf);
+        }
+        notificationClient.notifyRoles(email.getText(),
+                                       "Errors during SIPs deletions",
+                                       "rs-ingest",
+                                       NotificationType.ERROR,
+                                       DefaultRole.ADMIN);
     }
 }
