@@ -911,8 +911,8 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public AIP retrieveAip(String ipId) throws EntityNotFoundException {
-        return aipDao.findOneByAipId(ipId).orElseThrow(() -> new EntityNotFoundException(ipId, AIP.class));
+    public AIP retrieveAip(String aipId) throws EntityNotFoundException {
+        return aipDao.findOneByAipId(aipId).orElseThrow(() -> new EntityNotFoundException(aipId, AIP.class));
     }
 
     @Override
@@ -1053,10 +1053,8 @@ public class AIPService implements IAIPService {
         long daoFindStart = System.currentTimeMillis();
         Set<StorageDataFile> dataFilesWithMetadata = dataFileDao.findAllByAip(toBeDeleted);
         long daoFindEnd = System.currentTimeMillis();
-        LOGGER.debug("Finding {} datafile for aip {} took {} ms",
-                     dataFilesWithMetadata.size(),
-                     toBeDeleted.getId().toString(),
-                     daoFindEnd - daoFindStart);
+        LOGGER.debug("Finding {} datafile for aip {} took {} ms", dataFilesWithMetadata.size(),
+                     toBeDeleted.getId().toString(), daoFindEnd - daoFindStart);
         Set<StorageDataFile> dataFilesWithoutMetadata = dataFilesWithMetadata.stream()
                 .filter(df -> !DataType.AIP.equals(df.getDataType())).collect(Collectors.toSet());
         for (StorageDataFile dataFile : dataFilesWithoutMetadata) {
@@ -1072,14 +1070,12 @@ public class AIPService implements IAIPService {
                 } else {
                     // we order deletion of a file if and only if no other aip references the same file
                     long daoFindOtherDataFileStart = System.currentTimeMillis();
-//                    Set<StorageDataFile> dataFilesWithSameFile = dataFileDao
-//                            .findAllByChecksumIn(Sets.newHashSet(dataFile.getChecksum()));
+                    //                    Set<StorageDataFile> dataFilesWithSameFile = dataFileDao
+                    //                            .findAllByChecksumIn(Sets.newHashSet(dataFile.getChecksum()));
                     long nbDataFilesWithSameFile = dataFileDao.countByChecksum(dataFile.getChecksum());
                     long daoFindOtherDataFileEnd = System.currentTimeMillis();
-                    LOGGER.debug("Counting {} other datafile with checksum {} took {} ms",
-                                 nbDataFilesWithSameFile,
-                                 dataFile.getChecksum(),
-                                 daoFindOtherDataFileEnd - daoFindOtherDataFileStart);
+                    LOGGER.debug("Counting {} other datafile with checksum {} took {} ms", nbDataFilesWithSameFile,
+                                 dataFile.getChecksum(), daoFindOtherDataFileEnd - daoFindOtherDataFileStart);
                     if (nbDataFilesWithSameFile == 1) {
                         // add to datafiles that should be removed
                         dataFile.setState(DataFileState.TO_BE_DELETED);
@@ -1453,14 +1449,13 @@ public class AIPService implements IAIPService {
         long daofindPageStart = System.currentTimeMillis();
         Page<AIP> aipPage = aipDao.findPageBySipIdIn(sipIds, page);
         long daofindPageEnd = System.currentTimeMillis();
-        LOGGER.debug("Finding {} aip from {} sip ids took {} ms",
-                     aipPage.getNumberOfElements(),
-                     sipIds.size(),
+        LOGGER.debug("Finding {} aip from {} sip ids took {} ms", aipPage.getNumberOfElements(), sipIds.size(),
                      daofindPageEnd - daofindPageStart);
         while (aipPage.hasContent()) {
             // while there is aip to delete, lets delete them and get the new page at the end
-            Map<String, Set<AIP>> aipsPerSip = aipPage.getContent().stream().collect(Collectors.toMap(aip -> aip
-                    .getSipId().get(), aip -> Sets.newHashSet(aip), (set1, set2) -> Sets.union(set1, set2)));
+            Map<String, Set<AIP>> aipsPerSip = aipPage.getContent().stream()
+                    .collect(Collectors.toMap(aip -> aip.getSipId().get(), aip -> Sets.newHashSet(aip),
+                                              (set1, set2) -> Sets.union(set1, set2)));
             for (String sipId : aipsPerSip.keySet()) {
                 long timeStart = System.currentTimeMillis();
                 Set<AIP> aipsToDelete = aipsPerSip.get(sipId);
@@ -1472,8 +1467,8 @@ public class AIPService implements IAIPService {
                 LOGGER.debug("deleting sip {} took {} ms", sipId, timeEnd - timeStart);
                 if (!notSuppressible.isEmpty()) {
                     StringJoiner sj = new StringJoiner(", ",
-                                                       "This sip could not be deleted because at least one of its aip file has not be handle by the storage process: ",
-                                                       ".");
+                            "This sip could not be deleted because at least one of its aip file has not be handle by the storage process: ",
+                            ".");
                     notSuppressible.stream().map(sdf -> sdf.getAipEntity())
                             .forEach(aipEntity -> sj.add(aipEntity.getAipId()));
                     notHandledSips.add(new RejectedSip(sipId, sj.toString()));
@@ -1486,9 +1481,7 @@ public class AIPService implements IAIPService {
             daofindPageStart = System.currentTimeMillis();
             aipPage = aipDao.findPageBySipIdIn(sipIds, page);
             daofindPageEnd = System.currentTimeMillis();
-            LOGGER.debug("Finding {} aip from {} sip ids took {} ms",
-                         aipPage.getNumberOfElements(),
-                         sipIds.size(),
+            LOGGER.debug("Finding {} aip from {} sip ids took {} ms", aipPage.getNumberOfElements(), sipIds.size(),
                          daofindPageEnd - daofindPageStart);
         }
         return notHandledSips;

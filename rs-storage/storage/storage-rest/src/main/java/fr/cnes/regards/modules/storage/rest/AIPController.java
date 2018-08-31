@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.rest;
 
-import javax.validation.Valid;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -29,6 +28,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
+
+import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,8 +57,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
@@ -240,10 +241,11 @@ public class AIPController implements IResourceController<AIP> {
     @ResourceAccess(description = "send a page of aips")
     public ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(
             @RequestParam(name = "state", required = false) AIPState pState,
-            @RequestParam(name = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                    OffsetDateTime from,
-            @RequestParam(name = "to", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                    OffsetDateTime to, @RequestParam(name = "tags", required = false) List<String> tags,
+            @RequestParam(name = "from",
+                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
+            @RequestParam(name = "to",
+                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to,
+            @RequestParam(name = "tags", required = false) List<String> tags,
             @RequestParam(name = "session", required = false) String session, final Pageable pPageable,
             final PagedResourcesAssembler<AIP> pAssembler) throws ModuleException {
         Page<AIP> aips = aipService.retrieveAIPs(pState, from, to, tags, session, pPageable);
@@ -275,11 +277,8 @@ public class AIPController implements IResourceController<AIP> {
             }
         }
         // small hack to be used thanks to GSON which does not know how to deserialize Page or PageImpl
-        PagedResources<AipDataFiles> aipDataFiles = new PagedResources<>(content,
-                                                                         new PagedResources.PageMetadata(page.getSize(),
-                                                                                                         page.getNumber(),
-                                                                                                         page.getTotalElements(),
-                                                                                                         page.getTotalPages()));
+        PagedResources<AipDataFiles> aipDataFiles = new PagedResources<>(content, new PagedResources.PageMetadata(
+                page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages()));
         return new ResponseEntity<>(aipDataFiles, HttpStatus.OK);
     }
 
@@ -416,15 +415,15 @@ public class AIPController implements IResourceController<AIP> {
     }
 
     /**
-     * Retrieve the aip of provided ip id
+     * Retrieve the aip for the given aipId
      * @return the aip
      */
     @RequestMapping(value = AIP_ID_PATH, method = RequestMethod.GET)
     @ResourceAccess(description = "allow to retrieve a given aip metadata thanks to its ipId")
     @ResponseBody
-    public ResponseEntity<AIP> retrieveAip(@PathVariable(name = AIP_ID_PATH_PARAM) String ipId)
+    public ResponseEntity<AIP> retrieveAip(@PathVariable(name = AIP_ID_PATH_PARAM) String aipId)
             throws EntityNotFoundException {
-        return new ResponseEntity<>(aipService.retrieveAip(ipId), HttpStatus.OK);
+        return new ResponseEntity<>(aipService.retrieveAip(aipId), HttpStatus.OK);
     }
 
     /**
@@ -512,8 +511,8 @@ public class AIPController implements IResourceController<AIP> {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
             StringJoiner sj = new StringJoiner(", ",
-                                               "This aip could not be deleted because at least one of his files has not be handle by the storage process: ",
-                                               ".");
+                    "This aip could not be deleted because at least one of his files has not be handle by the storage process: ",
+                    ".");
             notSuppressible.stream().map(sdf -> sdf.getAipEntity()).forEach(aipEntity -> sj.add(aipEntity.getAipId()));
             return new ResponseEntity<>(sj.toString(), HttpStatus.CONFLICT);
         }
@@ -583,33 +582,19 @@ public class AIPController implements IResourceController<AIP> {
     @Override
     public Resource<AIP> toResource(AIP pElement, Object... pExtras) {
         Resource<AIP> resource = resourceService.toResource(pElement);
-        resourceService.addLink(resource,
-                                this.getClass(),
-                                "retrieveAIPs",
-                                LinkRels.LIST,
+        resourceService.addLink(resource, this.getClass(), "retrieveAIPs", LinkRels.LIST,
                                 MethodParamFactory.build(AIPState.class),
                                 MethodParamFactory.build(OffsetDateTime.class),
-                                MethodParamFactory.build(OffsetDateTime.class),
-                                MethodParamFactory.build(List.class),
-                                MethodParamFactory.build(String.class),
-                                MethodParamFactory.build(Pageable.class),
+                                MethodParamFactory.build(OffsetDateTime.class), MethodParamFactory.build(List.class),
+                                MethodParamFactory.build(String.class), MethodParamFactory.build(Pageable.class),
                                 MethodParamFactory.build(PagedResourcesAssembler.class));
-        resourceService.addLink(resource,
-                                this.getClass(),
-                                "retrieveAip",
-                                LinkRels.SELF,
+        resourceService.addLink(resource, this.getClass(), "retrieveAip", LinkRels.SELF,
                                 MethodParamFactory.build(String.class, pElement.getId().toString()));
-        resourceService.addLink(resource,
-                                this.getClass(),
-                                "storeRetryUnit",
-                                "retry",
+        resourceService.addLink(resource, this.getClass(), "storeRetryUnit", "retry",
                                 MethodParamFactory.build(String.class, pElement.getId().toString()));
         // If the AIP is not being deleted, add the hateoas delete key
         if (!AIPState.DELETED.equals(pElement.getState())) {
-            resourceService.addLink(resource,
-                                    this.getClass(),
-                                    "deleteAip",
-                                    "delete",
+            resourceService.addLink(resource, this.getClass(), "deleteAip", "delete",
                                     MethodParamFactory.build(String.class, pElement.getId().toString()));
         }
         return resource;
@@ -636,7 +621,7 @@ public class AIPController implements IResourceController<AIP> {
         sb.append(microserviceName);
         sb.append(AIP_PATH);
         sb.append(DOWNLOAD_AIP_FILE.replaceAll("\\{" + AIP_ID_PATH_PARAM + "\\}", owningAip.getId().toString())
-                          .replaceAll("\\{checksum\\}", dataFile.getChecksum()));
+                .replaceAll("\\{checksum\\}", dataFile.getChecksum()));
         URL downloadUrl = new URL(sb.toString());
         dataFile.setUrl(downloadUrl);
     }

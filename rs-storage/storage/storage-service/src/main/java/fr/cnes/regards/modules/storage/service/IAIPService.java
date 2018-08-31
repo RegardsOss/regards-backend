@@ -198,12 +198,12 @@ public interface IAIPService {
     Set<AIP> retrieveAipsByTag(String tag);
 
     /**
-     * Retrieve an aip thanks to its ip id
-     * @param ipId
+     * Retrieve an aip thanks to its aip id
+     * @param aipId
      * @return the aip
      * @throws EntityNotFoundException
      */
-    AIP retrieveAip(String ipId) throws EntityNotFoundException;
+    AIP retrieveAip(String aipId) throws EntityNotFoundException;
 
     /**
      * Update PDI and descriptive information of an aip according to updated. To add/remove ContentInformation,
