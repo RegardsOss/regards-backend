@@ -106,6 +106,8 @@ public class TemplateServiceConfiguration {
      */
     public static final String TEMPLATES = "templates";
 
+    public static final String REJECTED_SIPS_CODE = "REJECTED_SIPS";
+
     /**
      * The verification email template as html
      */
@@ -157,6 +159,8 @@ public class TemplateServiceConfiguration {
      */
     private static final String NOT_SUBSETTED_DATA_FILES_TEMPLATE = "template/not_subsetted_data_files_template.html";
 
+    private static final String REJECTED_SIPS_TEMPLATE = "template/rejected_sips_template.html";
+
     private static final Map<String, TemplatePathSubject> templateCodePathMap = Maps.newHashMap();
 
     private static void addTemplate(String templateCode, String templatePath, String emailSubject) {
@@ -178,15 +182,17 @@ public class TemplateServiceConfiguration {
         templateCodePathMap.put(NOT_DISPATCHED_DATA_FILES_CODE,
                                 new TemplatePathSubject(NOT_DISPATCHED_DATA_FILES_TEMPLATE,
                                                         "Files not associated to any data storages"));
+        templateCodePathMap.put(REJECTED_SIPS_CODE,
+                                new TemplatePathSubject(REJECTED_SIPS_TEMPLATE, "Some sips could not be deleted"));
         templateCodePathMap.put(NOT_SUBSETTED_DATA_FILES_CODE,
                                 new TemplatePathSubject(NOT_SUBSETTED_DATA_FILES_TEMPLATE,
                                                         "Files could not be handled by their data storage"));
-        templateCodePathMap.put(ACCOUNT_UNLOCK_TEMPLATE_CODE,
-                                new TemplatePathSubject(ACCOUNT_UNLOCK_TEMPLATE, "Account Unlock"));
+        templateCodePathMap
+                .put(ACCOUNT_UNLOCK_TEMPLATE_CODE, new TemplatePathSubject(ACCOUNT_UNLOCK_TEMPLATE, "Account Unlock"));
         templateCodePathMap.put(ACCOUNT_REFUSED_TEMPLATE_CODE,
                                 new TemplatePathSubject(ACCOUNT_REFUSED_TEMPLATE, "Account refused"));
-        templateCodePathMap.put(PASSWORD_RESET_TEMPLATE_CODE,
-                                new TemplatePathSubject(PASSWORD_RESET_TEMPLATE, "Password Reset"));
+        templateCodePathMap
+                .put(PASSWORD_RESET_TEMPLATE_CODE, new TemplatePathSubject(PASSWORD_RESET_TEMPLATE, "Password Reset"));
     }
 
     /**
