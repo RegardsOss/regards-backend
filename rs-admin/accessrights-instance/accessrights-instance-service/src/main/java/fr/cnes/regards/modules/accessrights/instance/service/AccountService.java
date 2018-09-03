@@ -213,9 +213,10 @@ public class AccountService implements IAccountService {
     }
 
     @Override
-    public boolean validatePassword(final String pEmail, final String pPassword) throws EntityNotFoundException {
+    public boolean validatePassword(final String email, final String password, boolean checkAccountValidity)
+            throws EntityNotFoundException {
 
-        final Optional<Account> toValidate = accountRepository.findOneByEmail(pEmail);
+        final Optional<Account> toValidate = accountRepository.findOneByEmail(email);
 
         if (!toValidate.isPresent()) {
             return false;
@@ -224,9 +225,9 @@ public class AccountService implements IAccountService {
         Account accountToValidate = toValidate.get();
 
         // Check password validity and account active status.
-        final boolean activeAccount = accountToValidate.getStatus().equals(AccountStatus.ACTIVE);
-        final boolean validPassword = accountToValidate.getPassword()
-                .equals(EncryptionUtils.encryptPassword(pPassword));
+        final boolean activeAccount = checkAccountValidity ? accountToValidate.getStatus().equals(AccountStatus.ACTIVE)
+                : true;
+        final boolean validPassword = accountToValidate.getPassword().equals(EncryptionUtils.encryptPassword(password));
 
         // If password is invalid
         if (!validPassword && !runtimeTenantResolver.isInstance()) {

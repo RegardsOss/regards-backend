@@ -376,7 +376,7 @@ public class AccountsController implements IResourceController<Account> {
             @Valid @RequestBody final PerformChangePasswordDto changePasswordDto) throws EntityException {
         final Account toReset = accountService.retrieveAccountByEmail(accountEmail);
         if (!authResolver.getUser().equals(accountEmail)
-                && !accountService.validatePassword(accountEmail, changePasswordDto.getOldPassword())) {
+                && !accountService.validatePassword(accountEmail, changePasswordDto.getOldPassword(), true)) {
             return new ResponseEntity<Void>(HttpStatus.FORBIDDEN);
         }
         accountService.validPassword(changePasswordDto.getNewPassword());
@@ -429,7 +429,7 @@ public class AccountsController implements IResourceController<Account> {
             @RequestParam("password") final String pPassword) throws EntityException {
 
         // Validate password for given user and password
-        final boolean validPassword = accountService.validatePassword(pEmail, pPassword);
+        final boolean validPassword = accountService.validatePassword(pEmail, pPassword, true);
 
         // Return password validity
         return new ResponseEntity<>(validPassword, HttpStatus.OK);

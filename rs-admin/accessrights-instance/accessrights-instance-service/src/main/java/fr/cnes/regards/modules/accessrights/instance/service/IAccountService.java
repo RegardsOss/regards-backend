@@ -125,16 +125,18 @@ public interface IAccountService {
      * Return <code>true</code> if the passed <code>pPassword</code> is equal to the one set on the {@link Account} of
      * passed <code>email</code>
      *
-     * @param pEmail
+     * @param email
      *            The {@link Account}'s <code>email</code>
-     * @param pPassword
+     * @param password
      *            The password to check
+     * @param checkAccountValidity if true, this method check also the account validity
      * @throws EntityNotFoundException
      *             Thrown when no {@link Account} could be found with id <code>pAccountId</code>
      * @return <code>true</code> if the password is valid, else <code>false</code>
      * @throws EntityException
      */
-    boolean validatePassword(String pEmail, String pPassword) throws EntityNotFoundException;
+    boolean validatePassword(String email, String password, boolean checkAccountValidity)
+            throws EntityNotFoundException;
 
     /**
      * Validate the password according to the regex provided by file. Mainly used by create and update methods so an
