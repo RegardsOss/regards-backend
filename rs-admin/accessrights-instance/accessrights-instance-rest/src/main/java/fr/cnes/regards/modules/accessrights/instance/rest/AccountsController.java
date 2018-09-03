@@ -37,11 +37,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
@@ -55,9 +55,11 @@ import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.PerformUnlockAccountDto;
 import fr.cnes.regards.modules.accessrights.instance.domain.accountunlock.RequestAccountUnlockDto;
+import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.PerformChangePasswordDto;
 import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.PerformResetPasswordDto;
 import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.RequestResetPasswordDto;
 import fr.cnes.regards.modules.accessrights.instance.service.IAccountService;
+import fr.cnes.regards.modules.accessrights.instance.service.encryption.EncryptionUtils;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.OnPasswordResetEvent;
 import fr.cnes.regards.modules.accessrights.instance.service.workflow.state.IAccountTransitions;
@@ -71,8 +73,6 @@ import fr.cnes.regards.modules.accessrights.instance.service.workflow.state.IAcc
  * @since 1.0-SNAPSHOT
  */
 @RestController
-@ModuleInfo(name = "accessrigths-instance", version = "2.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping(AccountsController.TYPE_MAPPING)
 public class AccountsController implements IResourceController<Account> {
 
@@ -85,6 +85,7 @@ public class AccountsController implements IResourceController<Account> {
 
     public static final String PATH_ACCOUNT_EMAIL_RESET_PASSWORD = "/{account_email}/resetPassword"; // NOSONAR: not a
                                                                                                      // password
+
     /**
      * Controller path for account email unlock
      */
@@ -119,6 +120,8 @@ public class AccountsController implements IResourceController<Account> {
      */
     public static final String REFUSE_ACCOUNT_RELATIVE_PATH = "/{account_email}/refuse";
 
+    private static final String PATH_ACCOUNT_EMAIL_CHANGE_PASSWORD = "/{account_email}/changePassword";
+
     @Autowired
     private IAccountService accountService;
 
@@ -127,6 +130,9 @@ public class AccountsController implements IResourceController<Account> {
      */
     @Autowired
     private IResourceService resourceService;
+
+    @Autowired
+    private IAuthenticationResolver authResolver;
 
     @Autowired
     private IAccountTransitions accountWorkflowManager;
@@ -185,8 +191,8 @@ public class AccountsController implements IResourceController<Account> {
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "create an new account", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Resource<Account>> createAccount(@Valid @RequestBody final AccountNPassword newAccountWithPassword)
-            throws EntityException {
+    public ResponseEntity<Resource<Account>> createAccount(
+            @Valid @RequestBody final AccountNPassword newAccountWithPassword) throws EntityException {
         Account newAccount = newAccountWithPassword.getAccount();
         newAccount.setPassword(newAccountWithPassword.getPassword());
         accountService.checkPassword(newAccount);
@@ -214,7 +220,7 @@ public class AccountsController implements IResourceController<Account> {
     /**
      * Retrieve an account by his unique email
      *
-     * @param pAccountEmail
+     * @param accountEmail
      *            email of the account to retrieve
      * @return Account
      * @throws EntityNotFoundException
@@ -223,8 +229,8 @@ public class AccountsController implements IResourceController<Account> {
     @RequestMapping(value = PATH_ACCOUNT_ACCOUNT_EMAIL, method = RequestMethod.GET)
     @ResourceAccess(description = "retrieve the account with his unique email", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<Account>> retrieveAccounByEmail(
-            @PathVariable("account_email") final String pAccountEmail) throws EntityNotFoundException {
-        return ResponseEntity.ok(toResource(accountService.retrieveAccountByEmail(pAccountEmail)));
+            @PathVariable("account_email") final String accountEmail) throws EntityNotFoundException {
+        return ResponseEntity.ok(toResource(accountService.retrieveAccountByEmail(accountEmail)));
 
     }
 
@@ -272,7 +278,7 @@ public class AccountsController implements IResourceController<Account> {
     /**
      * Send to the user an email containing a link with limited validity to unlock its account.
      *
-     * @param pAccountEmail
+     * @param accountEmail
      *            The {@link Account}'s <code>email</code>
      * @param pDto
      *            The DTO containing<br>
@@ -287,10 +293,10 @@ public class AccountsController implements IResourceController<Account> {
     @ResponseBody
     @RequestMapping(value = PATH_ACCOUNT_EMAIL_UNLOCK_ACCOUNT, method = RequestMethod.POST)
     @ResourceAccess(description = "send a code of type type to the email specified", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Void> requestUnlockAccount(@PathVariable("account_email") final String pAccountEmail,
+    public ResponseEntity<Void> requestUnlockAccount(@PathVariable("account_email") final String accountEmail,
             @Valid @RequestBody final RequestAccountUnlockDto pDto) throws EntityException {
         // Retrieve the account
-        final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
+        final Account account = accountService.retrieveAccountByEmail(accountEmail);
 
         // Request account unlock
         accountWorkflowManager.requestUnlockAccount(account, pDto.getOriginUrl(), pDto.getRequestLink());
@@ -300,7 +306,7 @@ public class AccountsController implements IResourceController<Account> {
     /**
      * Unlock an {@link Account}.
      *
-     * @param pAccountEmail
+     * @param accountEmail
      *            The {@link Account}'s <code>email</code>
      * @param pTokenDto
      *            The token
@@ -315,10 +321,10 @@ public class AccountsController implements IResourceController<Account> {
     @ResponseBody
     @RequestMapping(value = PATH_ACCOUNT_EMAIL_UNLOCK_ACCOUNT, method = RequestMethod.PUT)
     @ResourceAccess(description = "unlock the account of provided email", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Void> performUnlockAccount(@PathVariable("account_email") final String pAccountEmail,
+    public ResponseEntity<Void> performUnlockAccount(@PathVariable("account_email") final String accountEmail,
             @Valid @RequestBody final PerformUnlockAccountDto pTokenDto) throws EntityException {
         // Retrieve the account
-        final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
+        final Account account = accountService.retrieveAccountByEmail(accountEmail);
 
         // Perform account unlock
         accountWorkflowManager.performUnlockAccount(account, pTokenDto.getToken());
@@ -328,7 +334,7 @@ public class AccountsController implements IResourceController<Account> {
     /**
      * Send to the user an email containing a link with limited validity to reset its password.
      *
-     * @param pAccountEmail
+     * @param accountEmail
      *            The {@link Account}'s <code>email</code>
      * @param pDto
      *            The DTO containing<br>
@@ -340,10 +346,10 @@ public class AccountsController implements IResourceController<Account> {
     @ResponseBody
     @RequestMapping(value = PATH_ACCOUNT_EMAIL_RESET_PASSWORD, method = RequestMethod.POST)
     @ResourceAccess(description = "send a code of type type to the email specified", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Void> requestResetPassword(@PathVariable("account_email") final String pAccountEmail,
+    public ResponseEntity<Void> requestResetPassword(@PathVariable("account_email") final String accountEmail,
             @Valid @RequestBody final RequestResetPasswordDto pDto) throws EntityNotFoundException {
         // Retrieve the account
-        final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
+        final Account account = accountService.retrieveAccountByEmail(accountEmail);
 
         // Publish an application event
         eventPublisher.publishEvent(new OnPasswordResetEvent(account, pDto.getOriginUrl(), pDto.getRequestLink()));
@@ -353,7 +359,36 @@ public class AccountsController implements IResourceController<Account> {
     /**
      * Change the password of an {@link Account}.
      *
-     * @param pAccountEmail
+     * @param accountEmail
+     *            The {@link Account}'s <code>email</code>
+     * @param pDto
+     *            The DTO containing : 1) the token 2) the new password
+     * @return void
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityOperationForbiddenException} when the token is invalid<br>
+     *             {@link EntityNotFoundException} when no account could be found<br>
+     */
+    @ResponseBody
+    @RequestMapping(value = PATH_ACCOUNT_EMAIL_CHANGE_PASSWORD, method = RequestMethod.PUT)
+    @ResourceAccess(description = "Change the passsword of account account_email", role = DefaultRole.PUBLIC)
+    public ResponseEntity<Void> performChangePassword(@PathVariable("account_email") final String accountEmail,
+            @Valid @RequestBody final PerformChangePasswordDto changePasswordDto) throws EntityException {
+        final Account toReset = accountService.retrieveAccountByEmail(accountEmail);
+        if (!authResolver.getUser().equals(accountEmail)
+                && !accountService.validatePassword(accountEmail, changePasswordDto.getOldPassword())) {
+            return new ResponseEntity<Void>(HttpStatus.FORBIDDEN);
+        }
+        accountService.validPassword(changePasswordDto.getNewPassword());
+        accountService.changePassword(toReset.getId(),
+                                      EncryptionUtils.encryptPassword(changePasswordDto.getNewPassword()));
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Change the password of an {@link Account}.
+     *
+     * @param accountEmail
      *            The {@link Account}'s <code>email</code>
      * @param pDto
      *            The DTO containing : 1) the token 2) the new password
@@ -365,7 +400,7 @@ public class AccountsController implements IResourceController<Account> {
      */
     @ResponseBody
     @RequestMapping(value = PATH_ACCOUNT_EMAIL_RESET_PASSWORD, method = RequestMethod.PUT)
-    @ResourceAccess(description = "change the passsword of account account_email if provided token is valid",
+    @ResourceAccess(description = "Change the passsword of account account_email if provided token is valid",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<Void> performResetPassword(@PathVariable("account_email") final String pAccountEmail,
             @Valid @RequestBody final PerformResetPasswordDto pDto) throws EntityException {
@@ -429,7 +464,7 @@ public class AccountsController implements IResourceController<Account> {
     /**
      * Deactivates an {@link Account} in status ACTIVE.
      *
-     * @param pAccountEmail the account email
+     * @param accountEmail the account email
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
      * @throws EntityException
      *             <br>
@@ -438,10 +473,10 @@ public class AccountsController implements IResourceController<Account> {
      */
     @RequestMapping(value = PATH_INACTIVE_ACCOUNT, method = RequestMethod.PUT)
     @ResourceAccess(description = "Deactivates an active account", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> inactiveAccount(@PathVariable("account_email") final String pAccountEmail)
+    public ResponseEntity<Void> inactiveAccount(@PathVariable("account_email") final String accountEmail)
             throws EntityException {
         // Retrieve the account
-        final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
+        final Account account = accountService.retrieveAccountByEmail(accountEmail);
 
         // Dactivate it
         accountWorkflowManager.inactiveAccount(account);
@@ -451,7 +486,7 @@ public class AccountsController implements IResourceController<Account> {
     /**
      * Activates an {@link Account} in status INACTIVE.
      *
-     * @param pAccountEmail the account email
+     * @param accountEmail the account email
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
      * @throws EntityException
      *             <br>
@@ -461,10 +496,10 @@ public class AccountsController implements IResourceController<Account> {
     @RequestMapping(value = PATH_ACTIVE_ACCOUNT, method = RequestMethod.PUT)
     @ResourceAccess(description = "Activates an account which has been previously deactivated",
             role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> activeAccount(@PathVariable("account_email") final String pAccountEmail)
+    public ResponseEntity<Void> activeAccount(@PathVariable("account_email") final String accountEmail)
             throws EntityException {
         // Retrieve the account
-        final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
+        final Account account = accountService.retrieveAccountByEmail(accountEmail);
 
         // Activate it
         accountWorkflowManager.activeAccount(account);
@@ -474,7 +509,7 @@ public class AccountsController implements IResourceController<Account> {
     /**
      * Grants access to the project user
      *
-     * @param pAccountEmail
+     * @param accountEmail
      *            account email
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
      * @throws EntityException
@@ -484,10 +519,10 @@ public class AccountsController implements IResourceController<Account> {
      */
     @RequestMapping(value = ACCEPT_ACCOUNT_RELATIVE_PATH, method = RequestMethod.PUT)
     @ResourceAccess(description = "Accepts the access request", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> acceptAccount(@PathVariable("account_email") final String pAccountEmail)
+    public ResponseEntity<Void> acceptAccount(@PathVariable("account_email") final String accountEmail)
             throws EntityException {
         // Retrieve the account
-        final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
+        final Account account = accountService.retrieveAccountByEmail(accountEmail);
 
         // Accept it
         accountWorkflowManager.acceptAccount(account);
@@ -497,17 +532,17 @@ public class AccountsController implements IResourceController<Account> {
     /**
      * Refuse the account request
      *
-     * @param pAccountEmail
+     * @param accountEmail
      *            account email
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
      * @throws EntityException
      */
     @RequestMapping(value = REFUSE_ACCOUNT_RELATIVE_PATH, method = RequestMethod.PUT)
     @ResourceAccess(description = "Accepts the access request", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> refuseAccount(@PathVariable("account_email") final String pAccountEmail)
+    public ResponseEntity<Void> refuseAccount(@PathVariable("account_email") final String accountEmail)
             throws EntityException {
         // Retrieve the account
-        final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
+        final Account account = accountService.retrieveAccountByEmail(accountEmail);
 
         // Accept it
         accountWorkflowManager.refuseAccount(account);

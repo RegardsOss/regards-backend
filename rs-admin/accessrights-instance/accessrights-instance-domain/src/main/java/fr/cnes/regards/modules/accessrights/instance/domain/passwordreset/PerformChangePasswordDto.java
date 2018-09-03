@@ -19,60 +19,40 @@
 package fr.cnes.regards.modules.accessrights.instance.domain.passwordreset;
 
 /**
- * Dto class wrapping data required for the {@link AccountsController#performResetPassword} endpoint.
  *
- * @author Xavier-Alexandre Brochard
+ * @author Sébastien Binda
+ *
  */
-public class PerformResetPasswordDto {
+public class PerformChangePasswordDto {
 
-    /**
-     * The token
-     */
-    private String token;
+    private String oldPassword;
 
-    /**
-     * The new password
-     */
     private String newPassword;
 
-    /**
-     * @param pToken
-     * @param pNewPassword
-     */
-    public PerformResetPasswordDto(final String pToken, final String pNewPassword) {
+    public PerformChangePasswordDto() {
         super();
-        token = pToken;
-        newPassword = pNewPassword;
     }
 
-    /**
-     * @return the token
-     */
-    public String getToken() {
-        return token;
+    public PerformChangePasswordDto(String oldPassword, String newPassword) {
+        super();
+        this.oldPassword = oldPassword;
+        this.newPassword = newPassword;
     }
 
-    /**
-     * @param pToken
-     *            the token to set
-     */
-    public void setToken(final String pToken) {
-        token = pToken;
+    public String getOldPassword() {
+        return oldPassword;
     }
 
-    /**
-     * @return the newPassword
-     */
+    public void setOldPassword(String oldPassword) {
+        this.oldPassword = oldPassword;
+    }
+
     public String getNewPassword() {
         return newPassword;
     }
 
-    /**
-     * @param pNewPassword
-     *            the newPassword to set
-     */
-    public void setNewPassword(final String pNewPassword) {
-        newPassword = pNewPassword;
+    public void setNewPassword(String newPassword) {
+        this.newPassword = newPassword;
     }
 
 }
