@@ -279,6 +279,7 @@ public class AccountService implements IAccountService {
     public void changePassword(final Long pId, final String pEncryptPassword) throws EntityNotFoundException {
         final Account toChange = retrieveAccount(pId);
         toChange.setPassword(pEncryptPassword);
+        toChange.setPasswordUpdateDate(LocalDateTime.now());
         resetAuthenticationFailedCounter(toChange);
         toChange.setStatus(AccountStatus.ACTIVE);
         accountRepository.save(toChange);
