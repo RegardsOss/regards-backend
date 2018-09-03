@@ -18,13 +18,14 @@
  */
 package fr.cnes.regards.framework.authentication.internal;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -181,6 +182,13 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             response = doPluginAuthentication(defaultAuthenticationPlugin, pLogin, pPassword, pScope);
         }
 
+        // If access is not allowed then return an unknown account error response
+        if (!response.getAccessGranted()) {
+            final String message = String.format("Access denied for user %s. cause: %s", response.getEmail(),
+                                                 response.getErrorMessage());
+            throw new AuthenticationException(message, AuthenticationStatus.ACCOUNT_UNKNOWN);
+        }
+
         // Before returning generating token, check user status.
         AuthenticationStatus status = checkUserStatus(response.getEmail(), pScope);
         // If authentication is granted and user does not exists and plugin is not the regards internal authentication.
@@ -196,12 +204,6 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             final String message = String.format("Access denied for user %s. cause : user status is %s",
                                                  response.getEmail(), status.name());
             throw new AuthenticationException(message, status);
-        }
-
-        if (!response.getAccessGranted()) {
-            final String message = String.format("Access denied for user %s. cause: %s", response.getEmail(),
-                                                 response.getErrorMessage());
-            throw new AuthenticationException(message, AuthenticationStatus.ACCOUNT_UNKNOWN);
         }
 
         LOG.info("The user <{}> is authenticate for the project {}", response.getEmail(), pScope);
