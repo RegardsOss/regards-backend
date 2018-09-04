@@ -63,11 +63,6 @@ public final class SearchEngineMappings {
      */
     private static final String PROPERTY_VALUES_MAPPING = "/properties/{propertyName}/values";
 
-    /**
-     * To get a file summary on a given request, only available for dataobject queries
-     */
-    private static final String FILE_SUMMARY_MAPPING = "/summary";
-
     // Search on all entities
 
     private static final String ENTITIES_MAPPING = "/entities";
@@ -130,8 +125,6 @@ public final class SearchEngineMappings {
 
     public static final String GET_DATAOBJECT_MAPPING = DATAOBJECTS_MAPPING + URN_MAPPING;
 
-    public static final String DATAOBJECTS_SUMMARY_MAPPING = DATAOBJECTS_MAPPING + FILE_SUMMARY_MAPPING;
-
     // Search dataobjects on a single dataset mapping
 
     private static final String DATASET_DATAOBJECTS_MAPPING = "/datasets/{datasetUrn}/dataobjects";
@@ -143,8 +136,6 @@ public final class SearchEngineMappings {
 
     public static final String SEARCH_DATASET_DATAOBJECTS_PROPERTY_VALUES = SEARCH_DATASET_DATAOBJECTS_MAPPING
             + PROPERTY_VALUES_MAPPING;
-
-    public static final String DATASET_DATAOBJECTS_SUMMARY_MAPPING = DATASET_DATAOBJECTS_MAPPING + FILE_SUMMARY_MAPPING;
 
     // Fallback to {@link #GET_DATAOBJECT_MAPPING} for single data object retrieval
 

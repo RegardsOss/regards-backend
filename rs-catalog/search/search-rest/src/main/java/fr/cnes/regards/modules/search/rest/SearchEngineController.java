@@ -51,13 +51,11 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
-import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
@@ -403,27 +401,6 @@ public class SearchEngineController {
                 .withUrn(urn));
     }
 
-    /**
-     * Compute a DocFileSummary for current user, for specified request context, for asked file types (see
-     * {@link DataType})
-     */
-    @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.DATAOBJECTS_SUMMARY_MAPPING)
-    @ResourceAccess(description = "Compute dataset(s) summary", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<DocFilesSummary> computeDatasetsSummary(
-            @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> queryParams,
-            @RequestParam(SearchEngineMappings.FILE_TYPES) String[] fileTypes) throws ModuleException {
-        LOGGER.debug("Get dataobject summary delegated to engine \"{}\"", engineType);
-        List<DataType> dataTypes = new ArrayList<>();
-        if (fileTypes != null) {
-            for (String fileType : fileTypes) {
-                dataTypes.add(Enum.valueOf(DataType.class, fileType));
-            }
-        }
-        return dispatcher.dispatchRequest(SearchContext
-                .build(SearchType.DATAOBJECTS, engineType, headers, queryParams, null).withDataTypes(dataTypes));
-    }
-
     // Search dataobjects on a single dataset mapping
 
     /**
@@ -482,30 +459,6 @@ public class SearchEngineController {
         return dispatcher.dispatchRequest(SearchContext
                 .build(SearchType.DATAOBJECTS, engineType, headers, getDecodedParams(queryParams), null)
                 .withDatasetUrn(urn).withPropertyName(propertyName).withMaxCount(maxCount));
-    }
-
-    /**
-     * Compute a DocFileSummary for current user, for specified request context, for asked file types (see
-     * {@link DataType}) on a single dataset
-     */
-    @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.DATASET_DATAOBJECTS_SUMMARY_MAPPING)
-    @ResourceAccess(description = "Compute single dataset summary", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<DocFilesSummary> computeDatasetsSummary(
-            @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
-            @PathVariable(SearchEngineMappings.DATASET_URN) String datasetUrn, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> queryParams,
-            @RequestParam(SearchEngineMappings.FILE_TYPES) String[] fileTypes) throws ModuleException {
-        LOGGER.debug("Get dataobject summary for dataset \"{}\" delegated to engine \"{}\"", datasetUrn, engineType);
-        UniformResourceName urn = UniformResourceName.fromString(datasetUrn);
-        List<DataType> dataTypes = new ArrayList<>();
-        if (fileTypes != null) {
-            for (String fileType : fileTypes) {
-                dataTypes.add(Enum.valueOf(DataType.class, fileType));
-            }
-        }
-        return dispatcher
-                .dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, queryParams, null)
-                        .withDatasetUrn(urn).withDataTypes(dataTypes));
     }
 
     // Search on dataobjects returning datasets

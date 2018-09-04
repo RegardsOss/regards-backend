@@ -34,10 +34,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
-import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResources;
 
@@ -177,15 +175,6 @@ public interface ILegacySearchEngineClient {
     ResponseEntity<Resource<EntityFeature>> getDataobject(
             @Valid @PathVariable(SearchEngineMappings.URN) UniformResourceName urn, @RequestHeader HttpHeaders headers);
 
-    /**
-     * Compute a DocFileSummary for current user, for specified request context, for asked file types (see
-     * {@link DataType})
-     */
-    @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.DATAOBJECTS_SUMMARY_MAPPING)
-    ResponseEntity<DocFilesSummary> computeDatasetsSummary(@RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> queryParams,
-            @RequestParam(SearchEngineMappings.FILE_TYPES) String[] fileTypes);
-
     // Search dataobjects on a single dataset mapping
 
     /**
@@ -210,16 +199,6 @@ public interface ILegacySearchEngineClient {
             @PathVariable(SearchEngineMappings.PROPERTY_NAME) String propertyName, @RequestHeader HttpHeaders headers,
             @RequestParam MultiValueMap<String, String> queryParams,
             @RequestParam(SearchEngineMappings.MAX_COUNT) int maxCount);
-
-    /**
-     * Compute a DocFileSummary for current user, for specified request context, for asked file types (see
-     * {@link DataType}) on a single dataset
-     */
-    @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.DATASET_DATAOBJECTS_SUMMARY_MAPPING)
-    ResponseEntity<DocFilesSummary> computeDatasetsSummary(
-            @PathVariable(SearchEngineMappings.DATASET_URN) String datasetUrn, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> queryParams,
-            @RequestParam(SearchEngineMappings.FILE_TYPES) String[] fileTypes);
 
     // Search on dataobjects returning datasets
 
