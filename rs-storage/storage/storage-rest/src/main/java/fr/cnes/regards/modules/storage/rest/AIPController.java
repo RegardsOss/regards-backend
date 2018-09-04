@@ -355,7 +355,7 @@ public class AIPController implements IResourceController<AIP> {
         long methodStart = System.currentTimeMillis();
         notHandledSips = aipService.deleteAipFromSips(sipIds);
         long methodEnd = System.currentTimeMillis();
-        LOGGER.debug("Deleting {} sips took {} ms", sipIds.size(), methodEnd - methodStart);
+        LOGGER.trace("Deleting {} sips took {} ms", sipIds.size(), methodEnd - methodStart);
         if (notHandledSips.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
