@@ -28,7 +28,6 @@ import org.springframework.util.MultiValueMap;
 
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
-import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResources;
 
@@ -130,13 +129,6 @@ public class LegacySearchClientMock implements ILegacySearchEngineClient {
     }
 
     @Override
-    public ResponseEntity<DocFilesSummary> computeDatasetsSummary(HttpHeaders headers,
-            MultiValueMap<String, String> queryParams, String[] fileTypes) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchSingleDataset(String datasetUrn,
             HttpHeaders headers, MultiValueMap<String, String> queryParams, String engineParserType, int page,
             int size) {
@@ -147,13 +139,6 @@ public class LegacySearchClientMock implements ILegacySearchEngineClient {
     @Override
     public ResponseEntity<List<String>> searchDataobjectPropertyValuesOnDataset(String datasetUrn, String propertyName,
             HttpHeaders headers, MultiValueMap<String, String> queryParams, int maxCount) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<DocFilesSummary> computeDatasetsSummary(String datasetUrn, HttpHeaders headers,
-            MultiValueMap<String, String> queryParams, String[] fileTypes) {
         // TODO Auto-generated method stub
         return null;
     }
