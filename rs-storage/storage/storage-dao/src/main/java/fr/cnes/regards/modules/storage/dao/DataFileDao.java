@@ -163,6 +163,16 @@ public class DataFileDao implements IDataFileDao {
         return repository.countByChecksum(checksum);
     }
 
+    @Override
+    public long countByAip(AIP aip) {
+        Optional<AIPEntity> fromDbOpt = getAipDataBase(aip);
+        if(fromDbOpt.isPresent()) {
+            return repository.countByAipEntity(fromDbOpt.get());
+        } else {
+            return 0;
+        }
+    }
+
     private Optional<AIPEntity> getAipDataBase(AIP aip) {
         return aipRepo.findOneByAipId(aip.getId().toString());
     }

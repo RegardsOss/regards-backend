@@ -1469,18 +1469,32 @@ public class AIPService implements IAIPService {
     public void removeDeletedAIPMetadatas() {
         Set<AIP> aips = aipDao.findAllByStateService(AIPState.DELETED);
         for (AIP aip : aips) {
-            Set<StorageDataFile> dataFiles = dataFileDao.findAllByAip(aip);
-            if (dataFiles.isEmpty()) {
+            // lets count the number of datafiles per aip:
+            // if there is none:
+            long nbDataFile = dataFileDao.countByAip(aip);
+            if (nbDataFile == 0) {
                 // Error case recovering. If AIP is in DELETED state and there is no DataFile linked to it, we can
                 // delete aip from database.
                 LOGGER.warn("Delete AIP {} wich is not associated to any datafile.", aip.getId());
                 publisher.publish(new AIPEvent(aip));
                 aipDao.remove(aip);
-            } else if (dataFiles.stream().filter(df -> !DataType.AIP.equals(df.getDataType())).count() == 0) {
-                for (StorageDataFile meta : dataFiles) {
-                    meta.setState(DataFileState.TO_BE_DELETED);
-                    dataFileDao.save(meta);
+            } else {
+                // if there is one, it must be the metadata
+                if (nbDataFile == 1) {
+                    Optional<StorageDataFile> metaOpt = dataFileDao.findByAipAndType(aip, DataType.AIP);
+                    if (metaOpt.isPresent()) {
+                        StorageDataFile meta = metaOpt.get();
+                        meta.setState(DataFileState.TO_BE_DELETED);
+                        dataFileDao.save(meta);
+                    } else {
+                        LOGGER.error(
+                                "AIP {} is in state {} and its metadata file cannot be found in DB while it has still "
+                                        + "some file associated. Database coherence seems shady.",
+                                aip.getId().toString(),
+                                aip.getState());
+                    }
                 }
+                //if there is more than one then deletion has not been executed yet, do nothing
             }
         }
     }

@@ -116,4 +116,6 @@ public interface IDataFileDao {
     Collection<MonitoringAggregation> getMonitoringAggregation();
 
     long countByChecksum(String checksum);
+
+    long countByAip(AIP aip);
 }
