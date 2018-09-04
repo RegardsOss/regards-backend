@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -574,7 +575,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
 
             // Try downloading file as if, with token given into public file url
             ResultActions results = performDefaultGet(OrderDataFileController.ORDERS_AIPS_AIP_ID_FILES_ID, customizer,
-                                                      "Should return result", aipId, dataFileId);
+                                                      "Should return result", URLDecoder.decode(aipId, "UTF-8"),
+                                                      dataFileId);
 
             File tmpFile = File.createTempFile("ORDER", "tmp", new File("/tmp"));
             tmpFile.deleteOnExit();
@@ -665,7 +667,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         customizer.addExpectation(MockMvcResultMatchers.status().isAccepted());
         customizer.customizeRequestParam().param("orderToken", lastDataFileToken);
         performDefaultGet(OrderDataFileController.ORDERS_AIPS_AIP_ID_FILES_ID, customizer, "Should return result",
-                          lastDataFileAipId, lastDataFileId);
+                          URLDecoder.decode(lastDataFileAipId, "UTF-8"), lastDataFileId);
     }
 
     private Order createOrderAsRunning() throws URISyntaxException {
