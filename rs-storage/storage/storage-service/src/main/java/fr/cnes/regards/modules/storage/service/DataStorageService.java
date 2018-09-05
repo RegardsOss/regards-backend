@@ -80,6 +80,11 @@ public class DataStorageService implements IDataStorageService {
     private static final String DATAFILE_DELETED_SUCCESSFULLY = "File %s has been successfully deleted";
 
     /**
+     * Data file url deleted successfully message format
+     */
+    private static final String DATAFILE_URL_DELETED_SUCCESSFULLY = "Url %s has been successfully deleted for file %s";
+
+    /**
      * Metadata updated successfully message
      */
     public static final String METADATA_UPDATED_SUCCESSFULLY = "AIP metadata has been successfully updated";
@@ -218,11 +223,11 @@ public class DataStorageService implements IDataStorageService {
                                 dataStorageTotalSpace, monitoringAggregationMap.get(activeDataStorageConfId));
                         Double ratio = dataStorageInfo.getRatio();
                         if (ratio >= criticalThreshold) {
-                            String message = String.format(
-                                                           "Data storage(configuration id: %s, configuration label: %s) has reach its "
-                                                                   + "disk usage critical threshold. Actual occupation: %.2f%%, critical threshold: %s%%",
-                                                           activeDataStorageConf.getId().toString(),
-                                                           activeDataStorageConf.getLabel(), ratio, criticalThreshold);
+                            String message = String
+                                    .format("Data storage(configuration id: %s, configuration label: %s) has reach its "
+                                            + "disk usage critical threshold. Actual occupation: %.2f%%, critical threshold: %s%%",
+                                            activeDataStorageConf.getId().toString(), activeDataStorageConf.getLabel(),
+                                            ratio, criticalThreshold);
                             LOGGER.error(message);
                             notifyAdmins("Data storage " + activeDataStorageConf.getLabel() + " is almost full",
                                          message, NotificationType.ERROR);
@@ -230,11 +235,11 @@ public class DataStorageService implements IDataStorageService {
                             return;
                         }
                         if (ratio >= threshold) {
-                            String message = String.format(
-                                                           "Data storage(configuration id: %s, configuration label: %s) has reach its "
-                                                                   + "disk usage threshold. Actual occupation: %.2f%%, threshold: %s%%",
-                                                           activeDataStorageConf.getId().toString(),
-                                                           activeDataStorageConf.getLabel(), ratio, threshold);
+                            String message = String
+                                    .format("Data storage(configuration id: %s, configuration label: %s) has reach its "
+                                            + "disk usage threshold. Actual occupation: %.2f%%, threshold: %s%%",
+                                            activeDataStorageConf.getId().toString(), activeDataStorageConf.getLabel(),
+                                            ratio, threshold);
                             LOGGER.warn(message);
                             notifyAdmins("Data storage " + activeDataStorageConf.getLabel() + " is almost full",
                                          message, NotificationType.WARNING);
@@ -350,52 +355,39 @@ public class DataStorageService implements IDataStorageService {
      * @param associatedAIP {@link AIP} associated to the given {@link StorageDataFile}
      */
     private void removeDeletedUrlFromDataFile(StorageDataFile dataFileDeleted, URL urlToRemove, AIP associatedAIP) {
-        if (dataFileDeleted.getUrls().isEmpty()) {
-            LOGGER.info("Datafile to delete does not contains any location url. Deletion of the dataFile {}",
-                        dataFileDeleted.getName());
-            dataFileDao.remove(dataFileDeleted);
-        }
 
-        if (urlToRemove == null || dataFileDeleted.getUrls().contains(urlToRemove)) {
-            if (urlToRemove == null || dataFileDeleted.getUrls().size() == 1) {
-                // Get from the AIP all the content informations to remove. All content informations to remove are the
-                // content informations with the same checksum that
-                // the deleted StorageDataFile.
-                // @formatter:off
-                Set<ContentInformation> cisToRemove =
-                        associatedAIP.getProperties().getContentInformations()
-                            .stream()
-                            .filter(ci -> dataFileDeleted.getChecksum().equals(ci.getDataObject().getChecksum()))
-                            .collect(Collectors.toSet());
-                // @formatter:on
-                associatedAIP.getProperties().getContentInformations().removeAll(cisToRemove);
-                associatedAIP.addEvent(EventType.DELETION.name(),
-                                       String.format(DATAFILE_DELETED_SUCCESSFULLY, urlToRemove));
-                associatedAIP = aipService.save(associatedAIP, false);
-                LOGGER.debug("[DELETE FILE SUCCESS] AIP {} is in UPDATED state",
-                             dataFileDeleted.getAip().getId().toString());
-                LOGGER.debug("Deleted location {} is the only one location of the StorageDataFile {}. So we can completly remove the StorageDataFile.",
-                             urlToRemove, dataFileDeleted.getName());
-                dataFileDao.remove(dataFileDeleted);
-            } else {
-                LOGGER.info("Partial deletion of StorageDataFile {}. One of the location has been removed {}.",
-                            dataFileDeleted.getName(), urlToRemove);
-                associatedAIP.getProperties().getContentInformations().stream()
-                        .filter(ci -> dataFileDeleted.getChecksum().equals(ci.getDataObject().getChecksum()))
-                        .forEach(ci -> ci.getDataObject().getUrls().remove(urlToRemove));
-                associatedAIP.addEvent(EventType.DELETION.name(),
-                                       String.format(DATAFILE_DELETED_SUCCESSFULLY, urlToRemove));
-                aipService.save(associatedAIP, false);
-                dataFileDeleted.getUrls().remove(urlToRemove);
-                dataFileDao.save(dataFileDeleted);
-            }
-        } else {
+        // If dataFile to delete contains given url to remove, remove URL from it and update associated AIP to add
+        // URL remove event.
+        if ((urlToRemove != null) && dataFileDeleted.getUrls().contains(urlToRemove)) {
+            LOGGER.info("Partial deletion of StorageDataFile {}. One of the location has been removed {}.",
+                        dataFileDeleted.getName(), urlToRemove);
+            associatedAIP.getProperties().getContentInformations().stream()
+                    .filter(ci -> dataFileDeleted.getChecksum().equals(ci.getDataObject().getChecksum()))
+                    .forEach(ci -> ci.getDataObject().getUrls().remove(urlToRemove));
+            String message = String.format(DATAFILE_URL_DELETED_SUCCESSFULLY, urlToRemove, dataFileDeleted.getName());
+            associatedAIP.addEvent(EventType.DELETION.name(), message);
+            LOGGER.info(message);
+            aipService.save(associatedAIP, false);
+            dataFileDeleted.getUrls().remove(urlToRemove);
+            dataFileDao.save(dataFileDeleted);
+        } else if (urlToRemove != null) {
             LOGGER.warn("Removed URL {} is not associated to the StorageDataFile to delete {}", urlToRemove,
                         dataFileDeleted.getName());
         }
 
+        // If url to remove is null (so all the location are deleted) or if there is no longer any location for the datafile,
+        // we can remove it from db.
+        if ((urlToRemove == null) || dataFileDeleted.getUrls().isEmpty()) {
+            LOGGER.info("Datafile to delete does not contains any location url. Deletion of the dataFile {}",
+                        dataFileDeleted.getName());
+            dataFileDao.remove(dataFileDeleted);
+            String message = String.format(DATAFILE_DELETED_SUCCESSFULLY, dataFileDeleted.getName());
+            associatedAIP.addEvent(EventType.DELETION.name(), message);
+            LOGGER.info(message);
+        }
+
         // If associated AIP is not linked to any dataFile anymore, delete aip.
-        if (dataFileDao.findAllByAip(associatedAIP).isEmpty()) {
+        if (dataFileDao.countByAip(associatedAIP) == 0) {
             publisher.publish(new AIPEvent(associatedAIP));
             aipDao.remove(associatedAIP);
         }
