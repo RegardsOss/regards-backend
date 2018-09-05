@@ -40,6 +40,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
@@ -56,6 +57,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
@@ -320,7 +322,7 @@ public class AIPService implements IAIPService {
                     .deleteAipFromSips(deletableSips.getContent().stream().map(sip -> sip.getSipId().toString())
                                                .collect(Collectors.toSet()));
             long askForAipDeletionEnd = System.currentTimeMillis();
-            LOGGER.debug("Asking SUCCESSFULLY for storage to delete {} sip took {} ms",
+            LOGGER.trace("Asking SUCCESSFULLY for storage to delete {} sip took {} ms",
                          deletableSips.getNumberOfElements(),
                          askForAipDeletionEnd - askForAipDeletionStart);
             if (HttpUtils.isSuccess(response.getStatusCode())) {
@@ -342,12 +344,23 @@ public class AIPService implements IAIPService {
             rejectedSips = gson.fromJson(e.getResponseBodyAsString(), bodyTypeToken.getType());
         } finally {
             long askForAipDeletionEnd = System.currentTimeMillis();
-            LOGGER.debug("Asking for storage to delete {} sip took {} ms",
+            LOGGER.trace("Asking for storage to delete {} sip took {} ms",
                          deletableSips.getNumberOfElements(),
                          askForAipDeletionEnd - askForAipDeletionStart);
             FeignSecurityManager.reset();
         }
-        sendRejectedSipNotification(rejectedSips);
+        FeignSecurityManager.asSystem();
+        try {
+            sendRejectedSipNotification(rejectedSips);
+        } catch (HttpClientErrorException ce) {
+            LOGGER.error("Could not send notification because of client side error.", ce);
+            // probably a development error or version compatibility issue so lets rethrow the exception
+            throw new RsRuntimeException(ce);
+        } catch (HttpServerErrorException se) {
+            LOGGER.error("Could not send notification because of server side error. Check rs-admin logs.", se);
+        } finally {
+            FeignSecurityManager.reset();
+        }
         // set state to deleted
         Set<String> rejectedSipIds = rejectedSips.stream().map(RejectedSip::getSipId).collect(Collectors.toSet());
         for (SIPEntity sip : deletableSips.getContent()) {
