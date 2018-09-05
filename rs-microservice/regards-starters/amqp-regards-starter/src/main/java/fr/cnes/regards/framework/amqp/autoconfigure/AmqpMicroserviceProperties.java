@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.amqp.autoconfigure;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.validation.annotation.Validated;
 
 /**
  * class regrouping properties about the microservice
@@ -28,6 +29,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author svissier
  *
  */
+@Validated
 @ConfigurationProperties(prefix = "regards.amqp.microservice")
 public class AmqpMicroserviceProperties {
 
