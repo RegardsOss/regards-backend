@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.framework.oais;
 
+import javax.validation.constraints.NotNull;
 import java.net.URL;
 import java.util.Set;
-
-import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -48,15 +47,16 @@ public class OAISDataObject {
     private DataType regardsDataType;
 
     /**
-     * Required flag to indicate a data file is just a reference (whether physical file is managed internally or not)
+     * Required flag to indicate a data file is just a reference (whether physical file is managed externally or not)
+     * ie not managed by Regards if true, false otherwise
      */
     @NotNull(message = "Reference flag is required")
     private Boolean reference;
 
     /**
-     * The url
+     * File urls (a file can be stored at several locations)
      */
-    @NotEmpty(message = "Data file URL is required")
+    @NotEmpty(message = "At least one Data file URL is required")
     private Set<URL> urls;
 
     /**
