@@ -106,7 +106,6 @@ public class ScheduleStorageTasks {
             aipService.updateAipMetadata();
             LOGGER.debug(String.format("[METADATA UPDATE DAEMON] Update jobs for tenant %s have been scheduled",
                                        tenant));
-            // FIXME: sbinda why? deletion here while it is also lunched every 2 minutes
             LOGGER.debug(String.format("[METADATA DELETION DAEMON] Starting to prepare deletion jobs for tenant %s",
                                        tenant));
             aipService.removeDeletedAIPMetadatas();
@@ -168,13 +167,11 @@ public class ScheduleStorageTasks {
     public void restoreToCache() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            LOGGER.debug(
-                    " -----------------> Handle queued cache restoration files for tenant {} START <-----------------------",
-                    tenant);
+            LOGGER.debug(" -----------------> Handle queued cache restoration files for tenant {} START <-----------------------",
+                         tenant);
             cachedFileService.restoreQueued();
-            LOGGER.debug(
-                    " -----------------> Handle queued cache restoration files for tenant {} END <-----------------------",
-                    tenant);
+            LOGGER.debug(" -----------------> Handle queued cache restoration files for tenant {} END <-----------------------",
+                         tenant);
             runtimeTenantResolver.clearTenant();
         }
     }
