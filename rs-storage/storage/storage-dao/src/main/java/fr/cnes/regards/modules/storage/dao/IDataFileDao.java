@@ -5,7 +5,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.oais.urn.DataType;
@@ -115,7 +114,7 @@ public interface IDataFileDao {
      */
     Collection<MonitoringAggregation> getMonitoringAggregation();
 
-    long countByChecksum(String checksum);
+    long countByChecksumAndStorageDirectory(String checksum, String storageDirectory);
 
     long countByAip(AIP aip);
 }

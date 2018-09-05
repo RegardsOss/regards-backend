@@ -1,9 +1,10 @@
 package fr.cnes.regards.modules.storage.dao;
 
-import javax.persistence.LockModeType;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
+
+import javax.persistence.LockModeType;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -126,6 +127,8 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
     long countByPrioritizedDataStoragesId(Long pdsId);
 
     long countByChecksum(String checksum);
+
+    long countByChecksumAndStorageDirectory(String checksum, String storageDirectory);
 
     long countByAipEntity(AIPEntity aipEntity);
 }

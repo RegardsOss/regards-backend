@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
@@ -159,14 +160,17 @@ public class DataFileDao implements IDataFileDao {
     }
 
     @Override
-    public long countByChecksum(String checksum) {
+    public long countByChecksumAndStorageDirectory(String checksum, String storageDirectory) {
+        if (storageDirectory != null) {
+            return repository.countByChecksumAndStorageDirectory(checksum, storageDirectory);
+        }
         return repository.countByChecksum(checksum);
     }
 
     @Override
     public long countByAip(AIP aip) {
         Optional<AIPEntity> fromDbOpt = getAipDataBase(aip);
-        if(fromDbOpt.isPresent()) {
+        if (fromDbOpt.isPresent()) {
             return repository.countByAipEntity(fromDbOpt.get());
         } else {
             return 0;
