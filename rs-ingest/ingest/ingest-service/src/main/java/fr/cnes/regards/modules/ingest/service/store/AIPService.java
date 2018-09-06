@@ -351,7 +351,9 @@ public class AIPService implements IAIPService {
         }
         FeignSecurityManager.asSystem();
         try {
-            sendRejectedSipNotification(rejectedSips);
+            if (!rejectedSips.isEmpty()) {
+                sendRejectedSipNotification(rejectedSips);
+            }
         } catch (HttpClientErrorException ce) {
             LOGGER.error("Could not send notification because of client side error.", ce);
             // probably a development error or version compatibility issue so lets rethrow the exception
