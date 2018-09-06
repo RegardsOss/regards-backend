@@ -1552,7 +1552,7 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public void removeTagsByQuery(RemoveAIPTagsFilters filters) {
+    public boolean removeTagsByQuery(RemoveAIPTagsFilters filters) {
         Long jobsScheduled = jobInfoService.retrieveJobsCount(UpdateAIPsTagJob.class.getName(), JobStatus.QUEUED, JobStatus.RUNNING);
         if (jobsScheduled > 0) {
             LOGGER.debug("Cannot remove tags on AIPs : {} similar job(s) is(are) already running on this tenant", jobsScheduled);
