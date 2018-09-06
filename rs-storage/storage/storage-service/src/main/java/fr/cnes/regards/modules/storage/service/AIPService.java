@@ -82,6 +82,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -149,6 +150,44 @@ import fr.cnes.regards.modules.storage.service.job.UpdateAIPsTagJob;
 import fr.cnes.regards.modules.storage.service.job.UpdateDataFilesJob;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
+import javax.persistence.EntityManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.util.Pair;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.stereotype.Service;
+import org.springframework.util.MimeType;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.Errors;
+import org.springframework.validation.Validator;
 
 /**
  * Service to handle {@link AIP} and associated {@link StorageDataFile}s entities from all data storage systems.<br/>
@@ -1513,7 +1552,12 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public void removeTagsByQuery(RemoveAIPTagsFilters filters) {
+    public boolean removeTagsByQuery(RemoveAIPTagsFilters filters) {
+        Long jobsScheduled = jobInfoService.retrieveJobsCount(UpdateAIPsTagJob.class.getName(), JobStatus.QUEUED, JobStatus.RUNNING);
+        if (jobsScheduled > 0) {
+            LOGGER.debug("Cannot remove tags on AIPs : {} similar job(s) is(are) already running on this tenant", jobsScheduled);
+            return false;
+        }
         // prevent the job to remove tags to entities created after this call
         if (filters.getTo() == null) {
             filters.setTo(OffsetDateTime.now());
@@ -1521,10 +1565,16 @@ public class AIPService implements IAIPService {
         UpdateAIPsTagJobType updateType = UpdateAIPsTagJobType.REMOVE;
         JobParameter filterParameter = new JobParameter(UpdateAIPsTagJob.FILTER_PARAMETER_NAME, filters);
         scheduleJobToUpdateTags(updateType, filterParameter);
+        return true;
     }
 
     @Override
-    public void addTagsByQuery(AddAIPTagsFilters filters) {
+    public boolean addTagsByQuery(AddAIPTagsFilters filters) {
+        Long jobsScheduled = jobInfoService.retrieveJobsCount(UpdateAIPsTagJob.class.getName(), JobStatus.QUEUED, JobStatus.RUNNING);
+        if (jobsScheduled > 0) {
+            LOGGER.debug("Cannot add tags on AIPs : {} similar job(s) is(are) already running on this tenant", jobsScheduled);
+            return false;
+        }
         // prevent the job to add tags to entities created after this call
         if (filters.getTo() == null) {
             filters.setTo(OffsetDateTime.now());
@@ -1532,6 +1582,7 @@ public class AIPService implements IAIPService {
         UpdateAIPsTagJobType updateType = UpdateAIPsTagJobType.ADD;
         JobParameter filterParameter = new JobParameter(UpdateAIPsTagJob.FILTER_PARAMETER_NAME, filters);
         scheduleJobToUpdateTags(updateType, filterParameter);
+        return true;
     }
 
     /**

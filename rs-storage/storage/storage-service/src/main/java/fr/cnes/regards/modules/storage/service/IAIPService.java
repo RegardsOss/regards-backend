@@ -286,8 +286,9 @@ public interface IAIPService {
      * Add tags to several AIPs, using query filters
      * This method returns before tags are updated, as this method just launch a job
      * @param filters REST query
+     * @return true on success
      */
-    void addTagsByQuery(AddAIPTagsFilters filters);
+    boolean addTagsByQuery(AddAIPTagsFilters filters);
 
     /**
      * Removes tags from a specified aip, through its ip id
@@ -312,8 +313,9 @@ public interface IAIPService {
      * Remove a set of tags from several AIPS, using query filters
      * This method returns before tags are updated, as this method just launch a job
      * @param request the request object
+     * @return true on success
      */
-    void removeTagsByQuery(RemoveAIPTagsFilters request);
+    boolean removeTagsByQuery(RemoveAIPTagsFilters request);
 
     /**
      * Retrieve one {@link AIPSession} by id.
