@@ -48,7 +48,6 @@ import fr.cnes.regards.framework.geojson.FeatureCollection;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
-import fr.cnes.regards.framework.oais.builder.ContentInformationBuilder;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
@@ -137,22 +136,32 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
                 Path thumbnailFile = Paths.get(entry.getParent().toString(), name + ".png");
                 Path descFile = Paths.get(entry.getParent().toString(), name + ".pdf");
 
-                ContentInformationBuilder cibuilder = new ContentInformationBuilder();
-
                 if (Files.exists(rawDataFile)) {
                     String checksum = ChecksumUtils.computeHexChecksum(new FileInputStream(rawDataFile.toFile()),
                                                                        "MD5");
-                    cibuilder.setDataObject(DataType.RAWDATA, rawDataFile.toAbsolutePath(), checksum);
+                    builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, rawDataFile.toAbsolutePath(),
+                                                                         rawDataFile.getFileName().toString(), "MD5",
+                                                                         checksum, rawDataFile.toFile().length());
+                    builder.addContentInformation();
                 }
                 if (Files.exists(thumbnailFile)) {
                     String checksum = ChecksumUtils.computeHexChecksum(new FileInputStream(thumbnailFile.toFile()),
                                                                        "MD5");
-                    cibuilder.setDataObject(DataType.THUMBNAIL, thumbnailFile.toAbsolutePath(), checksum);
+                    builder.getContentInformationBuilder().setDataObject(DataType.THUMBNAIL,
+                                                                         thumbnailFile.toAbsolutePath(),
+                                                                         thumbnailFile.getFileName().toString(), "MD5",
+                                                                         checksum, thumbnailFile.toFile().length());
+                    builder.addContentInformation();
                 }
                 if (Files.exists(descFile)) {
                     String checksum = ChecksumUtils.computeHexChecksum(new FileInputStream(descFile.toFile()), "MD5");
-                    cibuilder.setDataObject(DataType.DESCRIPTION, descFile.toAbsolutePath(), checksum);
+                    builder.getContentInformationBuilder().setDataObject(DataType.DESCRIPTION,
+                                                                         descFile.toAbsolutePath(),
+                                                                         descFile.getFileName().toString(), "MD5",
+                                                                         checksum, descFile.toFile().length());
+                    builder.addContentInformation();
                 }
+
                 SIP sip = builder.build();
                 sip.setGeometry(feature.getGeometry());
 

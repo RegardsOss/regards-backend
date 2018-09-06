@@ -56,6 +56,9 @@ public class GeojsonParserTest extends AbstractMultitenantServiceTest {
         Files.createDirectory(targetDir);
         Files.copy(Paths.get("src/test/resources/departements-version-simplifiee.geojson"),
                    Paths.get("target/output/departements-version-simplifiee.geojson"));
+        Files.copy(Paths.get("src/test/resources/Ain.pdf"), Paths.get("target/output/Ain.pdf"));
+        Files.copy(Paths.get("src/test/resources/Ain.png"), Paths.get("target/output/Ain.png"));
+        Files.copy(Paths.get("src/test/resources/Ain.dat"), Paths.get("target/output/Ain.dat"));
         plugin.setDirectoryToScan(targetDir.toString());
         plugin.setGson(gson);
         List<Path> paths = plugin.scan(Optional.empty());
