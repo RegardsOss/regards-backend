@@ -62,7 +62,7 @@ import fr.cnes.regards.modules.storage.domain.database.AIPSession;
  * @author Sylvain Vissiere-Guerinet
  */
 @TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=projectdb", "spring.application.name=storage" })
+        properties = { "spring.jpa.properties.hibernate.default_schema=projectdb", "spring.application.name=storage", "spring.jpa.properties.hibernate.show_sql=true" })
 @ContextConfiguration(classes = DAOTestConfiguration.class)
 public class DaoIT extends AbstractDaoTransactionalTest {
 

@@ -1,10 +1,5 @@
 package fr.cnes.regards.modules.storage.dao;
 
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
-import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -12,9 +7,18 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.storage.domain.AIP;
+import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 
 /**
  * Implementation of {@link IAIPDao}
@@ -22,6 +26,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class AIPDao implements IAIPDao {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AIPDao.class);
 
     /**
      * {@link IAIPEntityRepository} instance
@@ -42,11 +48,17 @@ public class AIPDao implements IAIPDao {
     @Override
     public AIP save(AIP toSave, AIPSession aipSession) {
         AIPEntity toSaveInDb = new AIPEntity(toSave, aipSession);
+        long startFindDBAIP = System.currentTimeMillis();
         Optional<AIPEntity> fromDb = repo.findOneByAipId(toSave.getId().toString());
+        long endFindDBAIP = System.currentTimeMillis();
+        LOGGER.trace("AIPDao#save: Finding AIP from DB, for ID, took {} ms", endFindDBAIP - startFindDBAIP);
         if (fromDb.isPresent()) {
             toSaveInDb.setId(fromDb.get().getId());
         }
+        long startSaveAIP = System.currentTimeMillis();
         AIPEntity saved = repo.save(toSaveInDb);
+        long endSaveAIP = System.currentTimeMillis();
+        LOGGER.trace("AIPDao#save: Saving AIP into DB took {} ms", endSaveAIP - startSaveAIP);
         return buildAipFromAIPEntity(saved);
     }
 
@@ -87,7 +99,7 @@ public class AIPDao implements IAIPDao {
         return repo.findAllByStateAndTagsInAndLastEventDateAfter(state, tags, fromLastUpdateDate, pageable)
                 .map(this::buildAipFromAIPEntity);
     }
-              
+
     @Override
     public Set<AIP> findAllByStateService(AIPState state) {
         return repo.findAllByStateIn(state).stream().map(this::buildAipFromAIPEntity).collect(Collectors.toSet());
