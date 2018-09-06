@@ -821,6 +821,7 @@ public class OrderService implements IOrderService {
             String filename = (file.getFilename() != null) ? file.getFilename()
                     : file.getUrl().substring(file.getUrl().lastIndexOf('/') + 1);
             xmlFile.setIdentity(filename);
+            xmlFile.setName(filename);
             if (file.getFilesize() != null) {
                 xmlFile.setSize(BigInteger.valueOf(file.getFilesize()));
             }
