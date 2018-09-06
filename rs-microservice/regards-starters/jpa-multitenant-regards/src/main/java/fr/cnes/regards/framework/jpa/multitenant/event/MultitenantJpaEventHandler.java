@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.Optional;
 
+import org.flywaydb.core.api.FlywayException;
 import org.hibernate.HibernateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -157,7 +158,7 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                 dataSources.put(tenantConnection.getTenant(), dataSource);
                 // Broadcast connection ready with a Spring event
                 localPublisher.publishConnectionReady(tenantConnection.getTenant());
-            } catch (PropertyVetoException | SQLException e) {
+            } catch (PropertyVetoException | SQLException | HibernateException | FlywayException | EncryptionException e) {
                 LOGGER.error("Cannot handle tenant connection for project {} and microservice {}",
                              tenantConnection.getTenant(),
                              eventMicroserviceName);
@@ -176,15 +177,6 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
                 LOGGER.error("Cannot enable datasource for project {} and microservice {}. Update fails.",
                              tenantConnection.getTenant(),
                              eventMicroserviceName);
-                LOGGER.error(e.getMessage(), e);
-            } catch (HibernateException e) {
-                // An error may occurs when update schema
-                LOGGER.error(e.getMessage(), e);
-            } catch (EncryptionException e) {
-                LOGGER.error(
-                        "Cannot enable datasource for project {} and microservice {} because of encryption issues. Update fails. Please check encryption key & IV.",
-                        tenantConnection.getTenant(),
-                        eventMicroserviceName);
                 LOGGER.error(e.getMessage(), e);
             }
         }
