@@ -15,7 +15,7 @@ public enum DataFileState {
     /**
      * Error during storage process
      */
-    ERROR;
+    ERROR, TO_BE_DELETED;
 
     @Override
     public String toString() {

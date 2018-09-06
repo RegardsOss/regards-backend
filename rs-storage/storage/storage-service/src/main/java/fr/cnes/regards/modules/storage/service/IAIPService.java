@@ -42,6 +42,7 @@ import fr.cnes.regards.modules.storage.domain.AipDataFiles;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
+import fr.cnes.regards.modules.storage.domain.RejectedSip;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
@@ -197,12 +198,12 @@ public interface IAIPService {
     Set<AIP> retrieveAipsByTag(String tag);
 
     /**
-     * Retrieve an aip thanks to its ip id
-     * @param ipId
+     * Retrieve an aip thanks to its aip id
+     * @param aipId
      * @return the aip
      * @throws EntityNotFoundException
      */
-    AIP retrieveAip(String ipId) throws EntityNotFoundException;
+    AIP retrieveAip(String aipId) throws EntityNotFoundException;
 
     /**
      * Update PDI and descriptive information of an aip according to updated. To add/remove ContentInformation,
@@ -251,6 +252,11 @@ public interface IAIPService {
      *         {@link fr.cnes.regards.modules.storage.domain.database.DataFileState#PENDING}
      */
     Set<StorageDataFile> deleteAip(AIP aip) throws ModuleException;
+
+    /**
+     * Schedule deletion of datafiles marked for deletion
+     */
+    void doDelete();
 
     /**
      * Remove {@link AIP}s associated the given sip, through its ip id
@@ -339,6 +345,8 @@ public interface IAIPService {
      * This method returns before AIPs are deleted, as this method just launch a job
      */
     void deleteAIPsByQuery(AIPQueryFilters request);
+
+    List<RejectedSip> deleteAipFromSips(Set<String> sipIds) throws ModuleException;
 
     /**
      * Retrieve all tags used by a set of AIPS, using query filters or a list of AIP id

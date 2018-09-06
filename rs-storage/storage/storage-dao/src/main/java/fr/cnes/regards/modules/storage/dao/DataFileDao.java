@@ -6,6 +6,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Sets;
@@ -53,6 +55,16 @@ public class DataFileDao implements IDataFileDao {
         } else {
             return Sets.newHashSet();
         }
+    }
+
+    @Override
+    public Set<StorageDataFile> findAllByState(DataFileState state) {
+        return repository.findAllByState(state);
+    }
+
+    @Override
+    public Page<StorageDataFile> findAllByState(DataFileState state, Pageable pageable) {
+        return repository.findAllByState(state, pageable);
     }
 
     @Override
@@ -147,6 +159,24 @@ public class DataFileDao implements IDataFileDao {
         return repository.getMonitoringAggregation();
     }
 
+    @Override
+    public long countByChecksumAndStorageDirectory(String checksum, String storageDirectory) {
+        if (storageDirectory != null) {
+            return repository.countByChecksumAndStorageDirectory(checksum, storageDirectory);
+        }
+        return repository.countByChecksum(checksum);
+    }
+
+    @Override
+    public long countByAip(AIP aip) {
+        Optional<AIPEntity> fromDbOpt = getAipDataBase(aip);
+        if (fromDbOpt.isPresent()) {
+            return repository.countByAipEntity(fromDbOpt.get());
+        } else {
+            return 0;
+        }
+    }
+
     private Optional<AIPEntity> getAipDataBase(AIP aip) {
         return aipRepo.findOneByAipId(aip.getId().toString());
     }
@@ -154,7 +184,6 @@ public class DataFileDao implements IDataFileDao {
     private Collection<AIPEntity> findAipsDataBase(Collection<AIP> aips) {
         return aipRepo.findAllByAipIdIn(aips.stream().map(aip -> aip.getId().toString()).collect(Collectors.toSet()));
     }
-
 
     private Optional<AIPEntity> getAipDataBase(StorageDataFile dataFile) {
         return aipRepo.findOneByAipId(dataFile.getAipEntity().getAipId());

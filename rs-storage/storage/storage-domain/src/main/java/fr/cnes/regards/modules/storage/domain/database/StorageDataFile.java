@@ -166,7 +166,6 @@ public class StorageDataFile {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "aip_ip_id", foreignKey = @ForeignKey(name = "fk_aip_data_file"))
-    @GsonIgnore
     private AIPEntity aipEntity;
 
     /**

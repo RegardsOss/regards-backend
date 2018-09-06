@@ -57,7 +57,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -101,9 +100,6 @@ import fr.cnes.regards.modules.storage.service.IAIPService;
 @RestController
 @RequestMapping(AIPController.AIP_PATH)
 public class AIPController implements IResourceController<AIP> {
-
-    @SuppressWarnings("unused")
-    private static final Logger LOGGER = LoggerFactory.getLogger(AIPController.class);
 
     /**
      * Controller path for retries
@@ -194,6 +190,9 @@ public class AIPController implements IResourceController<AIP> {
      * Controller path to search used tags by multiple AIPs
      */
     public static final String TAG_SEARCH_PATH = TAG_MANAGEMENT_PATH + "/search";
+
+    @SuppressWarnings("unused")
+    private static final Logger LOGGER = LoggerFactory.getLogger(AIPController.class);
 
     /**
      * {@link IResourceService} instance
@@ -311,7 +310,8 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(method = RequestMethod.POST, value = AIP_ID_RETRY_STORE_PATH)
     @ResponseBody
     @ResourceAccess(description = "Retry to store given aip, threw its ip id")
-    public ResponseEntity<RejectedAip> storeRetryUnit(@PathVariable(AIP_ID_PATH_PARAM) String ipId) throws ModuleException {
+    public ResponseEntity<RejectedAip> storeRetryUnit(@PathVariable(AIP_ID_PATH_PARAM) String ipId)
+            throws ModuleException {
         // we ask for one AIP to be stored, so we can only have one rejected aip in counter part
         ResponseEntity<List<RejectedAip>> listResponse = storeRetry(Sets.newHashSet(ipId));
         if (listResponse.getBody().isEmpty()) {
@@ -351,18 +351,11 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(value = AIP_BULK_DELETE, method = RequestMethod.POST)
     @ResourceAccess(description = "Delete AIPs associated to the given SIP", role = DefaultRole.ADMIN)
     public ResponseEntity<List<RejectedSip>> deleteAipFromSips(@RequestBody Set<String> sipIds) throws ModuleException {
-        List<RejectedSip> notHandledSips = Lists.newArrayList();
-        for (String sipId : sipIds) {
-            Set<StorageDataFile> notSuppressible = aipService.deleteAipFromSip(UniformResourceName.fromString(sipId));
-            if (!notSuppressible.isEmpty()) {
-                StringJoiner sj = new StringJoiner(", ",
-                        "This sip could not be deleted because at least one of its aip file has not be handle by the storage process: ",
-                        ".");
-                notSuppressible.stream().map(sdf -> sdf.getAipEntity())
-                        .forEach(aipEntity -> sj.add(aipEntity.getAipId()));
-                notHandledSips.add(new RejectedSip(sipId, sj.toString()));
-            }
-        }
+        List<RejectedSip> notHandledSips;
+        long methodStart = System.currentTimeMillis();
+        notHandledSips = aipService.deleteAipFromSips(sipIds);
+        long methodEnd = System.currentTimeMillis();
+        LOGGER.trace("Deleting {} sips took {} ms", sipIds.size(), methodEnd - methodStart);
         if (notHandledSips.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
@@ -422,15 +415,15 @@ public class AIPController implements IResourceController<AIP> {
     }
 
     /**
-     * Retrieve the aip of provided ip id
+     * Retrieve the aip for the given aipId
      * @return the aip
      */
     @RequestMapping(value = AIP_ID_PATH, method = RequestMethod.GET)
     @ResourceAccess(description = "allow to retrieve a given aip metadata thanks to its ipId")
     @ResponseBody
-    public ResponseEntity<AIP> retrieveAip(@PathVariable(name = AIP_ID_PATH_PARAM) String ipId)
+    public ResponseEntity<AIP> retrieveAip(@PathVariable(name = AIP_ID_PATH_PARAM) String aipId)
             throws EntityNotFoundException {
-        return new ResponseEntity<>(aipService.retrieveAip(ipId), HttpStatus.OK);
+        return new ResponseEntity<>(aipService.retrieveAip(aipId), HttpStatus.OK);
     }
 
     /**
@@ -517,7 +510,8 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(value = AIP_ID_PATH, method = RequestMethod.DELETE)
     @ResourceAccess(description = "allow to delete a given aip", role = DefaultRole.ADMIN)
     @ResponseBody
-    public ResponseEntity<String> deleteAip(@PathVariable(name = AIP_ID_PATH_PARAM) String ipId) throws ModuleException {
+    public ResponseEntity<String> deleteAip(@PathVariable(name = AIP_ID_PATH_PARAM) String ipId)
+            throws ModuleException {
         Set<StorageDataFile> notSuppressible = aipService.deleteAip(ipId);
         if (notSuppressible.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -550,8 +544,8 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(value = HISTORY_PATH, method = RequestMethod.GET)
     @ResourceAccess(description = "send the history of event occurred on each data file of the specified AIP")
     @ResponseBody
-    public ResponseEntity<List<Event>> retrieveAIPHistory(@PathVariable(AIP_ID_PATH_PARAM) @Valid UniformResourceName pIpId)
-            throws ModuleException {
+    public ResponseEntity<List<Event>> retrieveAIPHistory(
+            @PathVariable(AIP_ID_PATH_PARAM) @Valid UniformResourceName pIpId) throws ModuleException {
         List<Event> history = aipService.retrieveAIPHistory(pIpId);
         return new ResponseEntity<>(history, HttpStatus.OK);
     }

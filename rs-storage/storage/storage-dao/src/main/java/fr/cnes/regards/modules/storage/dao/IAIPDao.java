@@ -187,4 +187,7 @@ public interface IAIPDao {
      */
     Stream<UniformResourceName> findUrnsByAipIdIn(Collection<String> aipIds);
 
+    Set<AIP> findAllBySipIdIn(Collection<String> sipIds);
+
+    Page<AIP> findPageBySipIdIn(Collection<String> sipIds, Pageable page);
 }

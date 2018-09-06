@@ -6,6 +6,8 @@ import java.util.Set;
 
 import javax.persistence.LockModeType;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -33,6 +35,17 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
      */
     @EntityGraph(value = "graph.datafile.full")
     Set<StorageDataFile> findAllByStateAndAipEntity(DataFileState stored, AIPEntity aipEntity);
+
+    /**
+     * Find all data files which state is the given one
+     * @param stored
+     * @return data files which state is the given one
+     */
+    @EntityGraph(value = "graph.datafile.full")
+    Set<StorageDataFile> findAllByState(DataFileState stored);
+
+    @EntityGraph(value = "graph.datafile.full")
+    Page<StorageDataFile> findAllByState(DataFileState state, Pageable pageable);
 
     /**
      * Find all {@link StorageDataFile}s associated to the given aip entity
@@ -112,4 +125,10 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
      * @param pdsId {@link PrioritizedDataStorage} identifier
      */
     long countByPrioritizedDataStoragesId(Long pdsId);
+
+    long countByChecksum(String checksum);
+
+    long countByChecksumAndStorageDirectory(String checksum, String storageDirectory);
+
+    long countByAipEntity(AIPEntity aipEntity);
 }

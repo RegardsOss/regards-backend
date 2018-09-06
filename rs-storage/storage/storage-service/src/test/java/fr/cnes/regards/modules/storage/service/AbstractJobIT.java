@@ -47,7 +47,7 @@ import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=storage_test", "regards.amqp.enabled=true" },
         locations = { "classpath:storage.properties" })
-@ActiveProfiles({ "testAmqp", "disableStorageTasks" })
+@ActiveProfiles({ "testAmqp", "disableStorageTasks", "noschdule" })
 @EnableAsync
 @RunWith(SpringRunner.class)
 public abstract class AbstractJobIT extends AbstractMultitenantServiceTest {
