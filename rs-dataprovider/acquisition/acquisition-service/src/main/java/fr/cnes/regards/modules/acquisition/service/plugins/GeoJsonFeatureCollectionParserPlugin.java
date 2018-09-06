@@ -136,6 +136,8 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
                 Path thumbnailFile = Paths.get(entry.getParent().toString(), name + ".png");
                 Path descFile = Paths.get(entry.getParent().toString(), name + ".pdf");
 
+                boolean contentInformationFilled = false;
+
                 if (Files.exists(rawDataFile)) {
                     String checksum = ChecksumUtils.computeHexChecksum(new FileInputStream(rawDataFile.toFile()),
                                                                        "MD5");
@@ -165,8 +167,10 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
                 SIP sip = builder.build();
                 sip.setGeometry(feature.getGeometry());
 
-                Path file = Paths.get(entry.getParent().toString(), name + ".json");
-                generatedFiles.add(Files.write(file, Arrays.asList(gson.toJson(sip)), Charset.forName("UTF-8")));
+                if (sip.getProperties().getContentInformations().size() > 0) {
+                    Path file = Paths.get(entry.getParent().toString(), name + ".json");
+                    generatedFiles.add(Files.write(file, Arrays.asList(gson.toJson(sip)), Charset.forName("UTF-8")));
+                }
             }
 
         } catch (IOException | NoSuchAlgorithmException e) {
