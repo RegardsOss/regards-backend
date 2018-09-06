@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.autoconfigure;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
 import javax.persistence.Entity;
 import javax.sql.DataSource;
 import java.beans.PropertyVetoException;
@@ -199,7 +197,8 @@ public class DataSourcesAutoConfiguration {
                                               datasourceSchemaHelper,
                                               instanceSubscriber,
                                               multitenantResolver,
-                                              localPublisher());
+                                              localPublisher(),
+                                              encryptionService);
     }
 
     /**
