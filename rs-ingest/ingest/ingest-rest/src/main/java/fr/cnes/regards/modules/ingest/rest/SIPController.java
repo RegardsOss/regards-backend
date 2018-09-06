@@ -173,7 +173,7 @@ public class SIPController implements IResourceController<SIPEntity> {
         return new ResponseEntity<>(toResource(sip), HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "Delete one SIP by is providerId.")
+    @ResourceAccess(description = "Delete one SIP by its providerId.")
     @RequestMapping(method = RequestMethod.DELETE)
     public ResponseEntity<Collection<RejectedSip>> deleteSipEntityByProviderId(
             @RequestParam("providerId") String providerId) throws ModuleException {
