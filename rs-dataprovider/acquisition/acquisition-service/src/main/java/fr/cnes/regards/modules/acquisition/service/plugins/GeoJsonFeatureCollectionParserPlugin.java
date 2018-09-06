@@ -39,6 +39,7 @@ import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
@@ -144,6 +145,7 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
                     builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, rawDataFile.toAbsolutePath(),
                                                                          rawDataFile.getFileName().toString(), "MD5",
                                                                          checksum, rawDataFile.toFile().length());
+                    builder.getContentInformationBuilder().setSyntax(MediaType.APPLICATION_OCTET_STREAM);
                     builder.addContentInformation();
                 }
                 if (Files.exists(thumbnailFile)) {
@@ -153,6 +155,7 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
                                                                          thumbnailFile.toAbsolutePath(),
                                                                          thumbnailFile.getFileName().toString(), "MD5",
                                                                          checksum, thumbnailFile.toFile().length());
+                    builder.getContentInformationBuilder().setSyntax(MediaType.IMAGE_PNG);
                     builder.addContentInformation();
                 }
                 if (Files.exists(descFile)) {
@@ -161,6 +164,7 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
                                                                          descFile.toAbsolutePath(),
                                                                          descFile.getFileName().toString(), "MD5",
                                                                          checksum, descFile.toFile().length());
+                    builder.getContentInformationBuilder().setSyntax(MediaType.APPLICATION_PDF);
                     builder.addContentInformation();
                 }
 
