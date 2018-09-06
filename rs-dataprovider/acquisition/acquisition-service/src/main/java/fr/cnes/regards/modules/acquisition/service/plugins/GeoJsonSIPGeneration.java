@@ -50,7 +50,7 @@ public class GeoJsonSIPGeneration implements ISipGenerationPlugin {
 
     @Override
     public SIP generate(Product product) throws ModuleException {
-        if (product.getAcquisitionFiles().size() != 1) {
+        if (product.getActiveAcquisitionFiles().size() != 1) {
             throw new ModuleException("Each product should have only one json file");
         }
         AcquisitionFile file = product.getAcquisitionFiles().get(0);
