@@ -36,6 +36,7 @@ import com.google.gson.Gson;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 
@@ -61,8 +62,9 @@ public class GeojsonParserTest extends AbstractMultitenantServiceTest {
         Files.copy(Paths.get("src/test/resources/Ain.dat"), Paths.get("target/output/Ain.dat"));
         plugin.setDirectoryToScan(targetDir.toString());
         plugin.setGson(gson);
+        plugin.setFeatureId("nom");
         List<Path> paths = plugin.scan(Optional.empty());
-        Assert.assertEquals(96, paths.size());
+        Assert.assertEquals(1, paths.size());
     }
 
     @Test
@@ -73,7 +75,9 @@ public class GeojsonParserTest extends AbstractMultitenantServiceTest {
         Product product = new Product();
         AcquisitionFile af = new AcquisitionFile();
         af.setFilePath(Paths.get("src/test/resources/Ain.json"));
+        af.setState(AcquisitionFileState.ACQUIRED);
         product.addAcquisitionFile(af);
+
         SIP sip = plugin.generate(product);
         Assert.assertNotNull(sip);
         Assert.assertEquals("Ain", sip.getProperties().getDescriptiveInformation().get("nom"));

@@ -70,12 +70,18 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
 
     public static final String FIELD_DIR = "directoryToScan";
 
+    public static final String FIELD_FEATURE_ID = "featureId";
+
     @Autowired
     private Gson gson;
 
     @PluginParameter(name = FIELD_DIR,
             label = "Directories to scan to find *.json files containing geojson feature collections")
     private String directoryToScan;
+
+    @PluginParameter(name = FIELD_FEATURE_ID,
+            label = "Json path to access the identifier of each feature in the geojson file", optional = false)
+    private String featureId;
 
     @Override
     public List<Path> scan(Optional<OffsetDateTime> lastModificationDate) throws ModuleException {
@@ -126,7 +132,7 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
             FeatureCollection fc = gson.fromJson(reader, FeatureCollection.class);
 
             for (Feature feature : fc.getFeatures()) {
-                String name = (String) feature.getProperties().get("nom");
+                String name = (String) feature.getProperties().get(featureId);
                 SIPBuilder builder = new SIPBuilder(name);
                 for (String property : feature.getProperties().keySet()) {
                     builder.addDescriptiveInformation(property, feature.getProperties().get(property));
@@ -136,8 +142,6 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
                 Path rawDataFile = Paths.get(entry.getParent().toString(), name + ".dat");
                 Path thumbnailFile = Paths.get(entry.getParent().toString(), name + ".png");
                 Path descFile = Paths.get(entry.getParent().toString(), name + ".pdf");
-
-                boolean contentInformationFilled = false;
 
                 if (Files.exists(rawDataFile)) {
                     String checksum = ChecksumUtils.computeHexChecksum(new FileInputStream(rawDataFile.toFile()),
@@ -189,6 +193,10 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
 
     public void setGson(Gson gson) {
         this.gson = gson;
+    }
+
+    public void setFeatureId(String featureId) {
+        this.featureId = featureId;
     }
 
 }
