@@ -182,7 +182,7 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
             throw new IllegalArgumentException(errorMessage);
         }
 
-        LOGGER.info("Subtype \"{}\" mapped to \"{}\" value for tenant \"{}\"", pType, pDiscriminatorFieldValue,
+        LOGGER.debug("Subtype \"{}\" mapped to \"{}\" value for tenant \"{}\"", pType, pDiscriminatorFieldValue,
                     pTenant);
 
         // Retrieve tenant map
@@ -223,7 +223,7 @@ public class MultitenantPolymorphicTypeAdapterFactory<E> implements TypeAdapterF
         GSONUtils.assertNotNull(pType, "Sub type is required.");
         GSONUtils.assertNotNull(pDiscriminatorFieldValue, "Discriminator field value is required.");
 
-        LOGGER.info("Subtype \"{}\" unmapped to \"{}\" value", pType, pDiscriminatorFieldValue);
+        LOGGER.debug("Subtype \"{}\" unmapped to \"{}\" value", pType, pDiscriminatorFieldValue);
 
         // Retrieve tenant map
         Map<String, Class<?>> tenantDiscriminatorToSubtype = getTenantDiscriminatorToSubtype(pTenant);
