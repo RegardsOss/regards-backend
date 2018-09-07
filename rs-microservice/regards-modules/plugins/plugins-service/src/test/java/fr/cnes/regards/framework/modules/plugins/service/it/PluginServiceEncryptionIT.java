@@ -102,7 +102,7 @@ public class PluginServiceEncryptionIT extends AbstractRegardsServiceTransaction
         savedPlgConf.getParameter(SensitivePlugin.MESSAGE_PLUGIN_PARAM).setValue(updatedParamValue);
         PluginConfiguration updated = pluginService.updatePluginConfiguration(savedPlgConf);
         Assert.assertEquals("Plugin parameter value in DB should have been updated and encrypted",
-                            "\"[P4PXqn1DisXaK1g9X5koZ]A\\u003d\\u003d\"",
+                            "\"P4PXqn1DisXaK1g9X5koZA\\u003d\\u003d\"",
                             updated.getParameterValue(SensitivePlugin.MESSAGE_PLUGIN_PARAM));
     }
 
