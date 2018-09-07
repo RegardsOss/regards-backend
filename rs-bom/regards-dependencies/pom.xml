@@ -94,6 +94,7 @@
 
         <!-- Regards utils -->
         <file.utils.version>3.0.0-SNAPSHOT</file.utils.version>
+        <spring.utils.version>3.0.0-SNAPSHOT</spring.utils.version>
         <exception.utils.version>3.0.0-SNAPSHOT</exception.utils.version>
 
         <!-- Regards Modules -->
@@ -358,6 +359,11 @@
                 <groupId>fr.cnes.regards.framework.utils</groupId>
                 <artifactId>file-utils</artifactId>
                 <version>${file.utils.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework.utils</groupId>
+                <artifactId>spring-utils</artifactId>
+                <version>${spring.utils.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework.utils</groupId>
