@@ -79,7 +79,7 @@ public class GeoJsonLinkBuilder {
     }
 
     public static String getDataFileHref(String href, String token) {
-        return String.format("%s&token=%s", href, token);
+        return String.format("%s?token=%s", href, token);
     }
 
 }

@@ -48,6 +48,7 @@ import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.EngineConfig
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.extension.IOpenSearchExtension;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.IResponseBuilder;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.geojson.GeoJsonLinkBuilder;
 
 /**
  * Build open search responses in ATOM format through rome library handling :
@@ -172,7 +173,7 @@ public class AtomResponseBuilder implements IResponseBuilder<Feed> {
 
         entityLinks.forEach(link -> {
             Link feedEntityLink = new Link();
-            String href = String.format("%s&token=%s", link.getHref(), token);
+            String href = GeoJsonLinkBuilder.getDataFileHref(link.getHref(), token);
             feedEntityLink.setHref(href);
             feedEntityLink.setType(MediaType.APPLICATION_ATOM_XML_VALUE);
             if (link.getRel().equals(org.springframework.hateoas.Link.REL_SELF)) {
