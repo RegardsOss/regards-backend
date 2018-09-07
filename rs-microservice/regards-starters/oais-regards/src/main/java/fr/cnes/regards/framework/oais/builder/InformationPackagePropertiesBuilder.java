@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
+import javax.annotation.Nullable;
 import java.net.URL;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
@@ -25,13 +26,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
 import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
 
 import com.google.common.collect.Maps;
-
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.InformationPackageProperties;
@@ -102,11 +100,20 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     @Override
     public InformationPackageProperties build() {
-        ip.getContentInformations().addAll(cis);
+        addCis(cis);
         ip.setPdi(pdiBuilder.build());
         ip.getDescriptiveInformation().putAll(descriptiveInformation);
         ip.getMiscInformation().putAll(miscInformation);
         return ip;
+    }
+
+    private void addCis(List<ContentInformation> cis) {
+        List<ContentInformation> actualCis = ip.getContentInformations();
+        for (ContentInformation ci : cis) {
+            if (!actualCis.contains(ci)) {
+                actualCis.add(ci);
+            }
+        }
     }
 
     /**
@@ -114,7 +121,10 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
      * this information package being built
      */
     public void addContentInformation() {
-        cis.add(contentInformationBuilder.build());
+        ContentInformation newCi = contentInformationBuilder.build();
+        if(!cis.contains(newCi)) {
+            cis.add(newCi);
+        }
         contentInformationBuilder = new ContentInformationBuilder();
     }
 
