@@ -75,8 +75,11 @@ public class AtomResponseBuilder implements IResponseBuilder<Feed> {
 
     private final Feed feed = new Feed(ATOM_VERSION);
 
-    public AtomResponseBuilder(Gson gson) {
+    private final String token;
+
+    public AtomResponseBuilder(Gson gson, String token) {
         this.gson = gson;
+        this.token = token;
     }
 
     @Override
@@ -162,14 +165,15 @@ public class AtomResponseBuilder implements IResponseBuilder<Feed> {
         // Handle extensions
         for (IOpenSearchExtension extension : extensions) {
             if (extension.isActivated()) {
-                extension.formatAtomResponseEntry(entity, paramConfigurations, entry, gson);
+                extension.formatAtomResponseEntry(entity, paramConfigurations, entry, gson, token);
             }
         }
         entry.setModules(mods);
 
         entityLinks.forEach(link -> {
             Link feedEntityLink = new Link();
-            feedEntityLink.setHref(link.getHref());
+            String href = String.format("%s&token=%s", link.getHref(), token);
+            feedEntityLink.setHref(href);
             feedEntityLink.setType(MediaType.APPLICATION_ATOM_XML_VALUE);
             if (link.getRel().equals(org.springframework.hateoas.Link.REL_SELF)) {
                 feedEntityLink.setTitle(String.format("ATOM link for %s", entity.getId().toString()));

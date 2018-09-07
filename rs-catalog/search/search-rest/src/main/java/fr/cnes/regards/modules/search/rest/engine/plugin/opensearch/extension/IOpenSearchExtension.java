@@ -69,7 +69,7 @@ public interface IOpenSearchExtension {
      * @return {@link Module} from rome library
      */
     void formatAtomResponseEntry(EntityFeature entity, List<ParameterConfiguration> paramConfigurations, Entry entry,
-            Gson gson);
+            Gson gson, String token);
 
     /**
      * Add parameter into the given {@link Feature} for the {@link EntityFeature} for Geojson response
@@ -78,7 +78,7 @@ public interface IOpenSearchExtension {
      * @param feature {@link Feature} from geojson standard
      */
     void formatGeoJsonResponseFeature(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,
-            Feature feature);
+            Feature feature, String token);
 
     /**
      * Apply extension for the given {@link OpenSearchParameter} during opensearch xml descriptor build.

@@ -59,6 +59,13 @@ public class GeojsonResponseBuilder implements IResponseBuilder<FeatureWithPrope
      */
     private final FeatureWithPropertiesCollection response = new FeatureWithPropertiesCollection();
 
+    private final String token;
+
+    public GeojsonResponseBuilder(String token) {
+        super();
+        this.token = token;
+    }
+
     @Override
     public void addMetadata(String searchId, EngineConfiguration engineConf, String openSearchDescriptionUrl,
             SearchContext context, Configuration configuration, FacetPage<EntityFeature> page, List<Link> links) {
@@ -71,7 +78,7 @@ public class GeojsonResponseBuilder implements IResponseBuilder<FeatureWithPrope
         context.getQueryParams().forEach((name, values) -> values.forEach(value -> query.addFilter(name, value)));
         response.setQuery(query);
         response.setLinks(links.stream()
-                .map(l -> GeoJsonLinkBuilder.build(l, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE))
+                .map(l -> GeoJsonLinkBuilder.build(l, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE, token))
                 .collect(Collectors.toList()));
     }
 
@@ -86,7 +93,7 @@ public class GeojsonResponseBuilder implements IResponseBuilder<FeatureWithPrope
             String title = String.format("GeoJson link for %s", entity.getId());
             feature.setLinks(entityLinks.stream()
                     .map(l -> GeoJsonLinkBuilder.build(l, GeoJsonLink.LINK_ALTERNATE_REL, title,
-                                                       GeoJsonMediaType.APPLICATION_GEOJSON_VALUE))
+                                                       GeoJsonMediaType.APPLICATION_GEOJSON_VALUE, token))
                     .collect(Collectors.toList()));
             feature.setTitle(entity.getLabel());
             if (entityLastUpdate.isPresent()) {
@@ -95,7 +102,7 @@ public class GeojsonResponseBuilder implements IResponseBuilder<FeatureWithPrope
             // Handle extensions
             for (IOpenSearchExtension extension : extensions) {
                 if (extension.isActivated()) {
-                    extension.formatGeoJsonResponseFeature(entity, paramConfigurations, feature);
+                    extension.formatGeoJsonResponseFeature(entity, paramConfigurations, feature, token);
                 }
             }
             response.add(feature);

@@ -406,6 +406,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         DataFile quicklook = new DataFile();
         quicklook.setMimeType(MimeType.valueOf("application/jpg"));
         quicklook.setUri(URI.create("http://regards/le_quicklook.jpg"));
+        quicklook.setReference(false);
         quicklook.setImageWidth(100);
         quicklook.setImageHeight(100);
         planet.getFiles().put(DataType.QUICKLOOK_SD, quicklook);
@@ -415,6 +416,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         thumbnail.setUri(URI.create("http://regards/thumbnail.png"));
         thumbnail.setImageWidth(250);
         thumbnail.setImageHeight(250);
+        thumbnail.setReference(false);
         planet.getFiles().put(DataType.THUMBNAIL, thumbnail);
 
         DataFile rawdata = DataFile.build(DataType.RAWDATA, "test.nc", "http://regards/test.nc",

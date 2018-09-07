@@ -38,6 +38,7 @@ import org.springframework.util.MultiValueMap;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
@@ -117,6 +118,9 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     @Autowired
     private Configuration configuration;
+
+    @Autowired
+    private IAuthenticationResolver authResolver;
 
     @PluginParameter(name = ENGINE_PARAMETERS, label = "Search engine global configuration")
     private EngineConfiguration engineConfiguration;
@@ -316,9 +320,9 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     private IResponseBuilder<?> getBuilder(SearchContext context) throws UnsupportedMediaTypesException {
         IResponseBuilder<?> responseBuilder;
         if (context.getHeaders().getAccept().contains(MediaType.APPLICATION_ATOM_XML)) {
-            responseBuilder = new AtomResponseBuilder(gson);
+            responseBuilder = new AtomResponseBuilder(gson, authResolver.getToken());
         } else if (context.getHeaders().getAccept().contains(MediaType.APPLICATION_JSON)) {
-            responseBuilder = new GeojsonResponseBuilder();
+            responseBuilder = new GeojsonResponseBuilder(authResolver.getToken());
         } else {
             throw new UnsupportedMediaTypesException(context.getHeaders().getAccept());
         }

@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.g
 import org.springframework.hateoas.Link;
 
 import fr.cnes.regards.framework.geojson.GeoJsonLink;
+import fr.cnes.regards.modules.indexer.domain.DataFile;
 
 /**
  * Builder to convert a {@link Link} to a {@link GeoJsonLink}
@@ -46,9 +47,9 @@ public class GeoJsonLinkBuilder {
      * @param type MediaType to add into the geojson link
      * @return {@link GeoJsonLink}
      */
-    public static GeoJsonLink build(Link springLink, String type) {
+    public static GeoJsonLink build(Link springLink, String type, String token) {
         GeoJsonLink link = new GeoJsonLink();
-        link.setHref(springLink.getHref());
+        link.setHref(getDataFileHref(springLink.getHref(), token));
         link.setRel(springLink.getRel());
         link.setType(type);
         return link;
@@ -62,11 +63,23 @@ public class GeoJsonLinkBuilder {
      * @param type MediaType to add into the geojson link
      * @return {@link GeoJsonLink}
      */
-    public static GeoJsonLink build(Link springLink, String rel, String title, String type) {
-        GeoJsonLink link = GeoJsonLinkBuilder.build(springLink, type);
+    public static GeoJsonLink build(Link springLink, String rel, String title, String type, String token) {
+        GeoJsonLink link = GeoJsonLinkBuilder.build(springLink, type, token);
         link.setRel(rel);
         link.setTitle(title);
         return link;
+    }
+
+    public static String getDataFileHref(DataFile file, String token) {
+        String href = file.getUri();
+        if (!file.isReference()) {
+            return getDataFileHref(href, token);
+        }
+        return href;
+    }
+
+    public static String getDataFileHref(String href, String token) {
+        return String.format("%s&token=%s", href, token);
     }
 
 }

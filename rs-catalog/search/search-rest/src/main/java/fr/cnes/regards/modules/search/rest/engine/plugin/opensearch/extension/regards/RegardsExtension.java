@@ -61,7 +61,7 @@ public class RegardsExtension extends AbstractExtension {
 
     @Override
     public void formatGeoJsonResponseFeature(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,
-            Feature feature) {
+            Feature feature, String token) {
         for (AbstractAttribute<?> property : entity.getProperties()) {
             feature.addProperty(property.getName(), property.getValue());
         }
@@ -69,7 +69,7 @@ public class RegardsExtension extends AbstractExtension {
 
     @Override
     public void formatAtomResponseEntry(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,
-            Entry entry, Gson gson) {
+            Entry entry, Gson gson, String token) {
         RegardsModule rm = new RegardsModuleImpl();
         rm.setGsonBuilder(gson);
         rm.setEntity(entity);

@@ -94,13 +94,13 @@ public class GeoTimeExtension extends AbstractExtension {
 
     @Override
     public void formatGeoJsonResponseFeature(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,
-            Feature feature) {
+            Feature feature, String token) {
         feature.setGeometry(entity.getGeometry());
     }
 
     @Override
     public void formatAtomResponseEntry(EntityFeature entity, List<ParameterConfiguration> paramConfigurations,
-            Entry entry, Gson gson) {
+            Entry entry, Gson gson, String token) {
         // Add module generator
         entry.getModules().add(getAtomEntityResponseBuilder(entity, paramConfigurations, gson));
 
