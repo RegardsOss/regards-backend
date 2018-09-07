@@ -155,8 +155,8 @@
         <com.netflix.feign.version>8.18.0</com.netflix.feign.version>
         <!-- Take a version that retrieve a version of Hibernate that correctly
             manage uk naming while inheriting classes with JOINED strategy -->
-        <org.springframework.boot.spring-boot-dependencies.version>1.5.7.RELEASE</org.springframework.boot.spring-boot-dependencies.version>
-        <org.springframework.spring-core.version>4.3.10.RELEASE</org.springframework.spring-core.version>
+        <org.springframework.boot.spring-boot-dependencies.version>1.5.15.RELEASE</org.springframework.boot.spring-boot-dependencies.version>
+        <org.springframework.spring-core.version>4.3.18.RELEASE</org.springframework.spring-core.version>
         <org.apache.poi.poi-ooxml.version>3.15</org.apache.poi.poi-ooxml.version>
         <org.apache.maven.maven-plugin-api.version>3.0</org.apache.maven.maven-plugin-api.version>
         <org.apache.maven.plugin-tools.maven-plugin-annotations.version>3.4</org.apache.maven.plugin-tools.maven-plugin-annotations.version>
@@ -968,8 +968,25 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.ingest</groupId>
+                <artifactId>ingest-service</artifactId>
+                <version>${fr.cnes.regards.modules.ingest.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.ingest</groupId>
                 <artifactId>ingest-domain</artifactId>
                 <version>${fr.cnes.regards.modules.ingest.version}</version>
+            </dependency>
+            <!-- Ingest AIP generation plugin -->
+            <dependency>
+                <groupId>fr.cnes.regards.modules.ingest.plugins</groupId>
+                <artifactId>enhanced-descriptive-aip-generation</artifactId>
+                <version>3.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.ingest.plugins</groupId>
+                <artifactId>enhanced-descriptive-aip-generation</artifactId>
+                <version>3.0.0-SNAPSHOT</version>
+                <classifier>shaded</classifier>
             </dependency>
             <!-- CNES REMOTE STORAGES -->
             <dependency>
