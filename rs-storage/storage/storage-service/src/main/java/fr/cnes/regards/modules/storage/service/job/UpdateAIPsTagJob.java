@@ -130,10 +130,10 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
                 title = String.format("Failure while removing tag to %d AIPs", nbError.get());
             }
             StringBuilder message = new StringBuilder();
-            message.append(String.format("A job finished with %d successful updates and %d errors.  AIP concerned:  ", nbEntityUpdated.get(), nbError.get()));
+            message.append(String.format("A job finished with %d successful updates and %d errors.  \\nAIP concerned:  ", nbEntityUpdated.get(), nbError.get()));
             for (String ipId : entityFailed) {
                 message.append(ipId);
-                message.append("  ");
+                message.append("  \\n");
             }
             dataStorageService.notifyAdmins(title, message.toString(), NotificationType.ERROR);
         }
