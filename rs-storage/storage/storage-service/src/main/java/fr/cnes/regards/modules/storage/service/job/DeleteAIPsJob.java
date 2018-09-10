@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.modules.notification.domain.NotificationType;
 import fr.cnes.regards.modules.storage.dao.AIPQueryGenerator;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -30,6 +31,8 @@ import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.job.AIPQueryFilters;
 import fr.cnes.regards.modules.storage.domain.job.RemovedAipsInfos;
 import fr.cnes.regards.modules.storage.service.IAIPService;
+import fr.cnes.regards.modules.storage.service.IDataStorageService;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -59,6 +62,9 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
     @Autowired
     private IAIPDao aipDao;
 
+    @Autowired
+    private IDataStorageService dataStorageService;
+
     private Map<String, JobParameter> parameters;
 
     private AtomicInteger nbError;
@@ -66,6 +72,8 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
     private AtomicInteger nbEntityRemoved;
 
     private Integer nbEntity;
+
+    private ArrayList<String> entityFailed;
 
     @Override
     public void run() {
@@ -75,11 +83,17 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
         nbError = new AtomicInteger(0);
         nbEntityRemoved = new AtomicInteger(0);
         nbEntity = aips.size();
+        entityFailed = new ArrayList<>();
+
         aips.forEach(aip -> {
             try {
                 aipService.deleteAip(aip);
                 nbEntityRemoved.incrementAndGet();
             } catch (ModuleException e) {
+                // save first 100 AIP id in error
+                if (entityFailed.size() < 100) {
+                    entityFailed.add(aip.getId().toString());
+                }
                 // Exception thrown while removing AIP
                 LOGGER.error(e.getMessage(), e);
                 nbError.incrementAndGet();
@@ -87,8 +101,24 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
         });
         RemovedAipsInfos infos = new RemovedAipsInfos(nbError, nbEntityRemoved);
         this.setResult(infos);
+        handleErrors();
     }
 
+
+    private void handleErrors() {
+        // Handle errors
+        if (nbError.get() > 0) {
+            // Notify admins that the job had issues
+            String title = String.format("Failure while removing %d AIPs", nbError.get());
+            StringBuilder message = new StringBuilder();
+            message.append(String.format("A job finished with %d AIP correctly removed and %d errors.  AIP concerned:  ", nbEntityRemoved.get(), nbError.get()));
+            for (String ipId : entityFailed) {
+                message.append(ipId);
+                message.append("  \\n");
+            }
+            dataStorageService.notifyAdmins(title, message.toString(), NotificationType.ERROR);
+        }
+    }
 
     @Override
     public boolean needWorkspace() {
