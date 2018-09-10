@@ -83,11 +83,11 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent>, IDat
      */
     @Override
     public void handle(TenantWrapper<DataStorageEvent> wrapper) {
+        String tenant = wrapper.getTenant();
+        runtimeTenantResolver.forceTenant(tenant);
         LOG.debug("New DataStorageEvent received - action:{}/{} - pluginConfId:{} - dataFileId:{}",
                   wrapper.getContent().getStorageAction().toString(), wrapper.getContent().getType(),
                   wrapper.getContent().getStorageConfId(), wrapper.getContent().getDataFileId());
-        String tenant = wrapper.getTenant();
-        runtimeTenantResolver.forceTenant(tenant);
         DataStorageEvent event = wrapper.getContent();
         StorageAction action = event.getStorageAction();
         StorageEventType type = event.getType();
