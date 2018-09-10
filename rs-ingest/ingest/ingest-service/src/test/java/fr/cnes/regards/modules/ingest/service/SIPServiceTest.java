@@ -389,8 +389,8 @@ public class SIPServiceTest extends AbstractSIPTest {
         Collection<RejectedSip> rejectedSips = sipService.deleteSIPEntitiesForSessionId(COMPLEX_SESSION_ID);
         aipService.askForAipsDeletion();
         // 2 SIP per state in COMPLEX_SESSION_ID.
-        // Undeletable are QUEUED, VALID, DELETED
-        Assert.assertEquals(6, rejectedSips.size());
+        // Undeletable are QUEUED, VALID, TO_BE_DELETED, DELETED
+        Assert.assertEquals(8, rejectedSips.size());
         // Check call to storage client for deletion
         @SuppressWarnings("rawtypes") ArgumentCaptor<Set> argument = ArgumentCaptor.forClass(Set.class);
         Mockito.verify(aipClient, Mockito.times(1)).deleteAipFromSips(argument.capture());
