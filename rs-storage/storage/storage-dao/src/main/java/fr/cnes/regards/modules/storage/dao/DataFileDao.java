@@ -1,12 +1,15 @@
 package fr.cnes.regards.modules.storage.dao;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
@@ -64,7 +67,12 @@ public class DataFileDao implements IDataFileDao {
 
     @Override
     public Page<StorageDataFile> findAllByState(DataFileState state, Pageable pageable) {
-        return repository.findAllByState(state, pageable);
+        // first lets get the storageDataFile without any join(no graph)
+        Page<Long> ids = repository.findAllIdByState(state, pageable);
+        List<StorageDataFile> pageContent = repository.findAllByIdIn(ids.getContent());
+        return new PageImpl<>(pageContent, new PageRequest(new Long(ids.getNumber()).intValue(),
+                                                           new Long(ids.getSize()).intValue()),
+                              ids.getTotalElements());
     }
 
     @Override
