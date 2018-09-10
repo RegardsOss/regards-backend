@@ -18,12 +18,14 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service.workflow.state;
 
+import java.time.LocalDateTime;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
@@ -42,6 +44,11 @@ import fr.cnes.regards.modules.project.service.ITenantService;
 public class InactiveState extends AbstractDeletableState {
 
     /**
+     * In days. Provided by property file.
+     */
+    private Long accountValidityDuration;
+
+    /**
      * @param projectUsersClient
      * @param accountRepository
      * @param tenantService
@@ -51,15 +58,21 @@ public class InactiveState extends AbstractDeletableState {
      */
     public InactiveState(IProjectUsersClient projectUsersClient, IAccountRepository accountRepository,
             ITenantService tenantService, IRuntimeTenantResolver runtimeTenantResolver,
-            IPasswordResetService passwordResetService,
-            IAccountUnlockTokenService accountUnlockTokenService) {
-        super(projectUsersClient, accountRepository, tenantService, runtimeTenantResolver,
-              passwordResetService, accountUnlockTokenService);
+            IPasswordResetService passwordResetService, IAccountUnlockTokenService accountUnlockTokenService,
+            @Value("${regards.accounts.validity.duration}") Long accountValidityDuration) {
+        super(projectUsersClient,
+              accountRepository,
+              tenantService,
+              runtimeTenantResolver,
+              passwordResetService,
+              accountUnlockTokenService);
+        this.accountValidityDuration = accountValidityDuration;
     }
 
     @Override
     public void activeAccount(final Account pAccount) throws EntityTransitionForbiddenException {
         pAccount.setStatus(AccountStatus.ACTIVE);
+        pAccount.setInvalidityDate(LocalDateTime.now().plusDays(accountValidityDuration));
         accountRepository.save(pAccount);
     }
 
