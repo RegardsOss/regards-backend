@@ -153,11 +153,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
             throws ModuleException {
         FacetPage<EntityFeature> facetPage = searchService.search(parser.parse(context), context.getSearchType(), null,
                                                                   context.getPageable());
-        try {
-            return ResponseEntity.ok(formatResponse(facetPage, context));
-        } catch (UnsupportedMediaTypesException e) {
-            throw new ModuleException(e);
-        }
+        return ResponseEntity.ok(formatResponse(facetPage, context));
     }
 
     @Override
@@ -166,11 +162,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         EntityFeature entity = searchService.get(context.getUrn().get());
         FacetPage<EntityFeature> facetPage = new FacetPage<>(Arrays.asList(entity), Sets.newHashSet(),
                 context.getPageable(), 1);
-        try {
-            return ResponseEntity.ok(formatResponse(facetPage, context));
-        } catch (UnsupportedMediaTypesException e) {
-            throw new ModuleException(e);
-        }
+        return ResponseEntity.ok(formatResponse(facetPage, context));
     }
 
     public ICriterion parse(MultiValueMap<String, String> queryParams) throws ModuleException {
@@ -178,11 +170,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         QueryParser queryParser = new QueryParser(finder);
         ICriterion searchTermsCriterion = queryParser.parse(queryParams);
         // Then parse all parameters (open search parameters extension)
-        try {
-            return ICriterion.and(searchTermsCriterion, parseParametersExt(queryParams));
-        } catch (ExtensionException e) {
-            throw new ModuleException(e);
-        }
+        return ICriterion.and(searchTermsCriterion, parseParametersExt(queryParams));
     }
 
     @Override

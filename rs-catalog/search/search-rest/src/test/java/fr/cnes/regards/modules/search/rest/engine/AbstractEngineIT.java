@@ -187,15 +187,11 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         esRepository.setGeometryMapping(index, types);
     }
 
-    @Before
-    public void prepareData() throws ModuleException, InterruptedException {
-
+    protected void prepareProject() {
         // Needed for test on date in opensearch descriptors. Date are generated in test and compare with date generated
         // by elasticsearch on test server.
         // Test server is in UTC timezone, so to do comparasion we have to be in the same timezone.
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
-
-        astroObjects.clear();
 
         // Manage project
         Project project = new Project(1L, "Solar system project", "http://plop/icon.png", true, "SolarSystem");
@@ -239,6 +235,14 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         initIndex(getDefaultTenant());
 
         manageAccessRights();
+    }
+
+    @Before
+    public void prepareData() throws ModuleException, InterruptedException {
+
+        prepareProject();
+
+        astroObjects.clear();
 
         // - Import models
         // COLLECTION : Galaxy
@@ -256,6 +260,11 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
             EntityType type = invocation.getArgumentAt(0, EntityType.class);
             return ResponseEntity.ok(modelService.getModelAttrAssocsFor(type));
         });
+        Mockito.when(modelAttrAssocClientMock.getModelAttrAssocsForDataInDataset(Mockito.any()))
+                .thenAnswer(invocation -> {
+                    // UniformResourceName datasetUrn = invocation.getArgumentAt(0, UniformResourceName.class);
+                    return ResponseEntity.ok(modelService.getModelAttrAssocsFor(EntityType.DATA));
+                });
 
         // - Refresh attribute factory
         List<AttributeModel> atts = attributeModelService.getAttributes(null, null, null);
@@ -285,7 +294,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         initPlugins();
     }
 
-    private void initPlugins() throws ModuleException {
+    protected void initPlugins() throws ModuleException {
         PluginConfiguration legacyConf = PluginUtils
                 .getPluginConfiguration(PluginParametersFactory.build().getParameters(), LegacySearchEngine.class);
         legacyConf = pluginService.savePluginConfiguration(legacyConf);

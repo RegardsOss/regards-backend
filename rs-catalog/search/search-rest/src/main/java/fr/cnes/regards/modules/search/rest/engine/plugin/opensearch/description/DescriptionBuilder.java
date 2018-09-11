@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
@@ -34,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -43,6 +41,7 @@ import feign.FeignException;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -56,7 +55,6 @@ import fr.cnes.regards.modules.dam.domain.models.attributes.restriction.Restrict
 import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
@@ -85,12 +83,6 @@ public class DescriptionBuilder {
      * Class logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(DescriptionBuilder.class);
-
-    /**
-     * {@link IProjectsClient} instance
-     */
-    @Autowired
-    private IProjectsClient projectClient;
 
     /**
      * {@link IRuntimeTenantResolver} instance
@@ -125,22 +117,20 @@ public class DescriptionBuilder {
      * @param extensions {@link IOpenSearchExtension} extensions to use
      * @param parameterConfs {@link ParameterConfiguration}s parameters configuration.
      * @return {@link OpenSearchDescription}
-     * @throws UnsupportedEncodingException
      */
     public OpenSearchDescription build(SearchContext context, ICriterion criterion,
             List<IOpenSearchExtension> extensions, List<ParameterConfiguration> parameterConfs,
-            EngineConfiguration engineConf, Optional<EntityFeature> dataset) {
+            EngineConfiguration engineConf, Optional<EntityFeature> dataset) throws ModuleException {
 
         // Retrieve informations about current projet
         String currentTenant = tenantResolver.getTenant();
-        Project project = getProject(currentTenant);
 
         // Get all attributes for the given search type.
-        List<DescriptionParameter> descParameters = getDescParameters(criterion, context.getSearchType(),
-                                                                      parameterConfs, currentTenant);
+        List<DescriptionParameter> descParameters = getDescParameters(criterion, context, parameterConfs,
+                                                                      currentTenant);
 
         // Build descriptor generic metadatas
-        OpenSearchDescription desc = buildMetadata(project, engineConf, dataset);
+        OpenSearchDescription desc = buildMetadata(engineConf, dataset);
 
         // Build query
         desc.getQuery().add(buildQuery(descParameters));
@@ -150,11 +140,11 @@ public class DescriptionBuilder {
 
         // Build urls
         Link searchLink = SearchEngineController.buildPaginationLink(resourceService, context, "search");
-        desc.getUrl().add(buildUrl(project, parameters, searchLink.getHref(), MediaType.APPLICATION_ATOM_XML_VALUE,
+        desc.getUrl().add(buildUrl(parameters, searchLink.getHref(), MediaType.APPLICATION_ATOM_XML_VALUE,
                                    context.getQueryParams().isEmpty()));
-        desc.getUrl().add(buildUrl(project, parameters, searchLink.getHref(),
-                                   GeoJsonMediaType.APPLICATION_GEOJSON_VALUE, context.getQueryParams().isEmpty()));
-        desc.getUrl().add(buildUrl(project, parameters, searchLink.getHref(), MediaType.APPLICATION_JSON_VALUE,
+        desc.getUrl().add(buildUrl(parameters, searchLink.getHref(), GeoJsonMediaType.APPLICATION_GEOJSON_VALUE,
+                                   context.getQueryParams().isEmpty()));
+        desc.getUrl().add(buildUrl(parameters, searchLink.getHref(), MediaType.APPLICATION_JSON_VALUE,
                                    context.getQueryParams().isEmpty()));
 
         // Apply active extensions to global description
@@ -170,8 +160,7 @@ public class DescriptionBuilder {
      * @param attributes {@link AttributeModel}s attributes
      * @return
      */
-    private OpenSearchDescription buildMetadata(Project project, EngineConfiguration engineConf,
-            Optional<EntityFeature> dataset) {
+    private OpenSearchDescription buildMetadata(EngineConfiguration engineConf, Optional<EntityFeature> dataset) {
         OpenSearchDescription desc = new OpenSearchDescription();
         if (dataset.isPresent()) {
             desc.setDescription(dataset.get().getLabel());
@@ -202,14 +191,13 @@ public class DescriptionBuilder {
 
     /**
      * Build an {@link UrlType} to add into the {@link OpenSearchDescription}
-     * @param project {@link Project}
      * @param parameters {@link OpenSearchParameter}s parameters of the url
      * @param endpoint {@link String} endpoint of the search request
      * @param mediaType {@link String} MediaType of the search request response
      * @param queryDelimiter whether to inject "?" into template or not
      * @return {@link UrlType}
      */
-    private UrlType buildUrl(Project project, List<OpenSearchParameter> parameters, String endpoint, String mediaType,
+    private UrlType buildUrl(List<OpenSearchParameter> parameters, String endpoint, String mediaType,
             boolean queryDelimiter) {
         UrlType url = new UrlType();
         url.getParameter().addAll(parameters);
@@ -320,52 +308,60 @@ public class DescriptionBuilder {
      * {@link AttributeModel} is the attribute definition (metadatas)
      * {@link QueryableAttribute} is the attribute available informations for query as boundaries for example.
      * @param criterion {@link ICriterion} search criterion
-     * @param searchType {@link SearchType}
+     * @param context {@link SearchContext}
      * @param parameterConfs {@link ParameterConfiguration} configured parameters.
      * @param pCurrentTenant {@link String} tenant or project.
      * @return {@link Map}<{@link AttributeModel}, {@link QueryableAttribute}>
      */
-    private List<DescriptionParameter> getDescParameters(ICriterion criterion, SearchType searchType,
-            List<ParameterConfiguration> parameterConfs, String pCurrentTenant) {
+    private List<DescriptionParameter> getDescParameters(ICriterion criterion, SearchContext context,
+            List<ParameterConfiguration> parameterConfs, String pCurrentTenant) throws ModuleException {
 
         List<DescriptionParameter> parameters = Lists.newArrayList();
 
-        tenantResolver.forceTenant(pCurrentTenant);
-        FeignSecurityManager.asSystem();
+        // For each attribute retrieve the QueryableAttribute informations
+        List<QueryableAttribute> queryableAttributes = Lists.newArrayList();
+        for (ModelAttrAssoc maa : getModelAttributes(context)) {
+            maa.getAttribute().buildJsonPath(StaticProperties.FEATURE_PROPERTIES);
+            Optional<ParameterConfiguration> conf = parameterConfs.stream()
+                    .filter(pc -> pc.getAttributeModelJsonPath().equals(maa.getAttribute().getJsonPath())).findFirst();
+            QueryableAttribute queryableAtt = createEmptyQueryableAttribute(maa.getAttribute(), conf);
+            queryableAttributes.add(queryableAtt);
+            parameters.add(new DescriptionParameter(finder.findName(maa.getAttribute()), maa.getAttribute(),
+                    conf.orElse(null), queryableAtt));
+        }
         try {
-            // Retrieve all AttributeModel fot the given searchType
-            ResponseEntity<Collection<ModelAttrAssoc>> assocsResponse = modelAttrAssocClient
-                    .getModelAttrAssocsFor(getEntityType(searchType));
-            if (!HttpUtils.isSuccess(assocsResponse.getStatusCode())) {
-                LOGGER.error("Trying to contact microservice responsible for Model but couldn't contact it");
-            }
-
-            // For each attribute retrieve the QueryableAttribute informations
-            List<QueryableAttribute> queryableAttributes = Lists.newArrayList();
-            for (ModelAttrAssoc maa : assocsResponse.getBody()) {
-                maa.getAttribute().buildJsonPath(StaticProperties.FEATURE_PROPERTIES);
-                Optional<ParameterConfiguration> conf = parameterConfs.stream()
-                        .filter(pc -> pc.getAttributeModelJsonPath().equals(maa.getAttribute().getJsonPath()))
-                        .findFirst();
-                QueryableAttribute queryableAtt = createEmptyQueryableAttribute(maa.getAttribute(), conf);
-                queryableAttributes.add(queryableAtt);
-                parameters.add(new DescriptionParameter(finder.findName(maa.getAttribute()), maa.getAttribute(),
-                        conf.orElse(null), queryableAtt));
-            }
-            try {
-                // Run statistic search on each attributes. Results are set back into the QueryableAttributes parameter.
-                searchService.retrievePropertiesStats(criterion, searchType, queryableAttributes);
-            } catch (SearchException e) {
-                LOGGER.error("Error retrieving properties for each parameters of the OpenSearchDescription (parameter extension",
-                             e);
-            }
-        } catch (FeignException e) {
-            LOGGER.error("Error retrieving attributes from IModelAttrAssocClient", e);
-        } finally {
-            FeignSecurityManager.reset();
+            // Run statistic search on each attributes. Results are set back into the QueryableAttributes parameter.
+            searchService.retrievePropertiesStats(criterion, context.getSearchType(), queryableAttributes);
+        } catch (SearchException e) {
+            LOGGER.error("Error retrieving properties for each parameters of the OpenSearchDescription (parameter extension",
+                         e);
         }
 
         return parameters;
+    }
+
+    private Collection<ModelAttrAssoc> getModelAttributes(SearchContext context) throws ModuleException {
+        try {
+            FeignSecurityManager.asSystem();
+            // Retrieve all AttributeModel for the given searchType and dataset if any
+            ResponseEntity<Collection<ModelAttrAssoc>> assocsResponse;
+            if (context.getDatasetUrn().isPresent()) {
+                assocsResponse = modelAttrAssocClient.getModelAttrAssocsForDataInDataset(context.getDatasetUrn().get());
+            } else {
+                assocsResponse = modelAttrAssocClient.getModelAttrAssocsFor(getEntityType(context.getSearchType()));
+            }
+            if (!HttpUtils.isSuccess(assocsResponse.getStatusCode())) {
+                LOGGER.error("Trying to contact microservice responsible for Model but couldn't contact it");
+                throw new ModuleException("Unable to contact model controller");
+            } else {
+                return assocsResponse.getBody();
+            }
+        } catch (FeignException e) {
+            LOGGER.error("Cannot retrieve model attributes", e);
+            throw new ModuleException(e);
+        } finally {
+            FeignSecurityManager.reset();
+        }
     }
 
     /**
@@ -390,31 +386,6 @@ public class DescriptionBuilder {
         } else {
             return new QueryableAttribute(name, null, att.isTextAttribute(), 0);
         }
-    }
-
-    /**
-     * Retrieve {@link Project} information
-     * @param currentTenant {@link String} project name
-     * @return {@link Project}
-     */
-    private Project getProject(String currentTenant) {
-        Project project = new Project("Undefined", null, false, "Undefined");
-        try {
-            tenantResolver.forceTenant(currentTenant);
-            FeignSecurityManager.asSystem();
-            ResponseEntity<Resource<Project>> projectResponse = projectClient.retrieveProject(currentTenant);
-            FeignSecurityManager.reset();
-            // in case of a problem there is already a RuntimeException which is launch by feign
-            if (!HttpUtils.isSuccess(projectResponse.getStatusCode())) {
-                LOGGER.error("Error retrieve project from IProjectClient. response status : {}",
-                             projectResponse.getStatusCode());
-            } else {
-                project = projectResponse.getBody().getContent();
-            }
-        } catch (FeignException e) {
-            LOGGER.error("Error retrieve project from IProjectClient. response status :", e);
-        }
-        return project;
     }
 
     /**

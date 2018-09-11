@@ -18,12 +18,14 @@
  */
 package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+
 /**
- * Extension thrown by open search extesions.
+ * Extension thrown by open search extensions.
  * @author Sébastien Binda
  */
 @SuppressWarnings("serial")
-public class ExtensionException extends Exception {
+public class ExtensionException extends ModuleException {
 
     public ExtensionException() {
         super();

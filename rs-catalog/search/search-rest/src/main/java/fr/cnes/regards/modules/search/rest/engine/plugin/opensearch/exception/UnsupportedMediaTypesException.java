@@ -22,16 +22,19 @@ import java.util.List;
 
 import org.springframework.http.MediaType;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+
 /**
  * UnsupportedMediaTypesException
  * @author Sébastien Binda
  */
 @SuppressWarnings("serial")
-public class UnsupportedMediaTypesException extends Exception {
+public class UnsupportedMediaTypesException extends ModuleException {
 
     private final List<MediaType> mediaTypes;
 
     public UnsupportedMediaTypesException(List<MediaType> mediaTypes) {
+        super();
         this.mediaTypes = mediaTypes;
     }
 

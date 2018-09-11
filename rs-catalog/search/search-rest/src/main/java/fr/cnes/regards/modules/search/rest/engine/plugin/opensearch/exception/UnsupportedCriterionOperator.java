@@ -18,12 +18,14 @@
  */
 package fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.exception;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+
 /**
  * UnsupportedMediaTypesException
  * @author Sébastien Binda
  */
 @SuppressWarnings("serial")
-public class UnsupportedCriterionOperator extends Exception {
+public class UnsupportedCriterionOperator extends ModuleException {
 
     public UnsupportedCriterionOperator() {
         super();
