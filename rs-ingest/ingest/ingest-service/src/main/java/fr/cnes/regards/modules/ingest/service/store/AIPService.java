@@ -314,61 +314,61 @@ public class AIPService implements IAIPService {
     public void askForAipsDeletion() {
         List<RejectedSip> rejectedSips = new ArrayList<>();
         Page<SIPEntity> deletableSips = sipRepository.findPageByState(SIPState.TO_BE_DELETED, new PageRequest(0, 100));
-        ResponseEntity<List<RejectedSip>> response;
-        long askForAipDeletionStart = System.currentTimeMillis();
-        FeignSecurityManager.asSystem();
-        try {
-            response = aipClient
-                    .deleteAipFromSips(deletableSips.getContent().stream().map(sip -> sip.getSipId().toString())
-                                               .collect(Collectors.toSet()));
-            long askForAipDeletionEnd = System.currentTimeMillis();
-            LOGGER.trace("Asking SUCCESSFULLY for storage to delete {} sip took {} ms",
-                         deletableSips.getNumberOfElements(),
-                         askForAipDeletionEnd - askForAipDeletionStart);
-            if (HttpUtils.isSuccess(response.getStatusCode())) {
-                if (response.getBody() != null) {
-                    rejectedSips = response.getBody();
+        if(deletableSips.hasContent()) {
+            ResponseEntity<List<RejectedSip>> response;
+            long askForAipDeletionStart = System.currentTimeMillis();
+            FeignSecurityManager.asSystem();
+            try {
+                response = aipClient
+                        .deleteAipFromSips(deletableSips.getContent().stream().map(sip -> sip.getSipId().toString()).collect(Collectors.toSet()));
+                long askForAipDeletionEnd = System.currentTimeMillis();
+                LOGGER.trace("Asking SUCCESSFULLY for storage to delete {} sip took {} ms",
+                             deletableSips.getNumberOfElements(),
+                             askForAipDeletionEnd - askForAipDeletionStart);
+                if (HttpUtils.isSuccess(response.getStatusCode())) {
+                    if (response.getBody() != null) {
+                        rejectedSips = response.getBody();
+                    }
                 }
-            }
-        } catch (HttpClientErrorException e) {
-            // Feign only throws exceptions in case the response status is neither 404 or one of the 2xx,
-            // so lets catch the exception and if it not one of our API normal status rethrow it
-            if (e.getStatusCode() != HttpStatus.UNPROCESSABLE_ENTITY) {
-                throw e;
-            }
-            // first lets get the string from the body then lets deserialize it using gson
-            @SuppressWarnings("serial")
-            TypeToken<List<RejectedSip>> bodyTypeToken = new TypeToken<List<RejectedSip>>() {
+            } catch (HttpClientErrorException e) {
+                // Feign only throws exceptions in case the response status is neither 404 or one of the 2xx,
+                // so lets catch the exception and if it not one of our API normal status rethrow it
+                if (e.getStatusCode() != HttpStatus.UNPROCESSABLE_ENTITY) {
+                    throw e;
+                }
+                // first lets get the string from the body then lets deserialize it using gson
+                @SuppressWarnings("serial") TypeToken<List<RejectedSip>> bodyTypeToken = new TypeToken<List<RejectedSip>>() {
 
-            };
-            rejectedSips = gson.fromJson(e.getResponseBodyAsString(), bodyTypeToken.getType());
-        } finally {
-            long askForAipDeletionEnd = System.currentTimeMillis();
-            LOGGER.trace("Asking for storage to delete {} sip took {} ms",
-                         deletableSips.getNumberOfElements(),
-                         askForAipDeletionEnd - askForAipDeletionStart);
-            FeignSecurityManager.reset();
-        }
-        FeignSecurityManager.asSystem();
-        try {
-            if (!rejectedSips.isEmpty()) {
-                sendRejectedSipNotification(rejectedSips);
+                };
+                rejectedSips = gson.fromJson(e.getResponseBodyAsString(), bodyTypeToken.getType());
+            } finally {
+                long askForAipDeletionEnd = System.currentTimeMillis();
+                LOGGER.trace("Asking for storage to delete {} sip took {} ms",
+                             deletableSips.getNumberOfElements(),
+                             askForAipDeletionEnd - askForAipDeletionStart);
+                FeignSecurityManager.reset();
             }
-        } catch (HttpClientErrorException ce) {
-            LOGGER.error("Could not send notification because of client side error.", ce);
-            // probably a development error or version compatibility issue so lets rethrow the exception
-            throw new RsRuntimeException(ce);
-        } catch (HttpServerErrorException se) {
-            LOGGER.error("Could not send notification because of server side error. Check rs-admin logs.", se);
-        } finally {
-            FeignSecurityManager.reset();
-        }
-        // set state to deleted
-        Set<String> rejectedSipIds = rejectedSips.stream().map(RejectedSip::getSipId).collect(Collectors.toSet());
-        for (SIPEntity sip : deletableSips.getContent()) {
-            if (!rejectedSipIds.contains(sip.getSipId())) {
-                sip.setState(SIPState.DELETED);
-                sipRepository.save(sip);
+            FeignSecurityManager.asSystem();
+            try {
+                if (!rejectedSips.isEmpty()) {
+                    sendRejectedSipNotification(rejectedSips);
+                }
+            } catch (HttpClientErrorException ce) {
+                LOGGER.error("Could not send notification because of client side error.", ce);
+                // probably a development error or version compatibility issue so lets rethrow the exception
+                throw new RsRuntimeException(ce);
+            } catch (HttpServerErrorException se) {
+                LOGGER.error("Could not send notification because of server side error. Check rs-admin logs.", se);
+            } finally {
+                FeignSecurityManager.reset();
+            }
+            // set state to deleted
+            Set<String> rejectedSipIds = rejectedSips.stream().map(RejectedSip::getSipId).collect(Collectors.toSet());
+            for (SIPEntity sip : deletableSips.getContent()) {
+                if (!rejectedSipIds.contains(sip.getSipId())) {
+                    sip.setState(SIPState.DELETED);
+                    sipRepository.save(sip);
+                }
             }
         }
     }
