@@ -26,6 +26,10 @@ package fr.cnes.regards.framework.module.rest.exception;
 @SuppressWarnings("serial")
 public class ModuleException extends Exception {
 
+    public ModuleException() {
+        super();
+    }
+
     public ModuleException(String message) {
         super(message);
     }
@@ -36,5 +40,9 @@ public class ModuleException extends Exception {
 
     public ModuleException(String message, Throwable cause) {
         super(message, cause);
+    }
+
+    protected ModuleException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
     }
 }
