@@ -49,9 +49,7 @@ import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.StringMatchCriterion;
 import fr.cnes.regards.modules.opensearch.service.OpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.AttributeFinder;
-import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.AttributeModelCache;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
-import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeModelCache;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
 import fr.cnes.regards.modules.search.domain.Terms;
 import fr.cnes.regards.modules.search.service.cache.accessgroup.AccessGroupCache;
@@ -108,9 +106,7 @@ public class AccessRightFilterTest {
         IAttributeModelClient attributeModelClient = Mockito.mock(IAttributeModelClient.class);
         Mockito.when(attributeModelClient.getAttributes(null, null))
                 .thenReturn(new ResponseEntity<>(HateoasUtils.wrapList(SampleDataUtils.LIST), HttpStatus.OK));
-        IAttributeModelCache attributeModelCache = new AttributeModelCache(attributeModelClient, subscriber,
-                runtimeTenantResolver);
-        IAttributeFinder finder = new AttributeFinder(runtimeTenantResolver, attributeModelCache);
+        IAttributeFinder finder = new AttributeFinder(attributeModelClient, subscriber, runtimeTenantResolver);
 
         openSearchService = new OpenSearchService(finder);
 
@@ -125,7 +121,7 @@ public class AccessRightFilterTest {
                 .ok(pagedResources);
         Mockito.when(accessGroupMock.retrieveAccessGroupsList(Mockito.anyBoolean(), Mockito.anyInt(), Mockito.anyInt()))
                 .thenReturn(pageResponseEntity);
-        
+
         accessRightFilter = new AccessRightFilter(authResolver, accessGroupCache, runtimeTenantResolver,
                 projectUsersClient);
     }
