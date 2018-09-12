@@ -188,6 +188,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     }
 
     protected void prepareProject() {
+
         // Needed for test on date in opensearch descriptors. Date are generated in test and compare with date generated
         // by elasticsearch on test server.
         // Test server is in UTC timezone, so to do comparasion we have to be in the same timezone.
