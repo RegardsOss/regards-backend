@@ -20,7 +20,7 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Component
-@ConditionalOnProperty(name = "regards.xml.jackson.as.jaxb", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "regards.xml.jackson.as.jaxb", havingValue = "true")
 public class JacksonXmlAutoConfiguration {
 
     @Autowired
