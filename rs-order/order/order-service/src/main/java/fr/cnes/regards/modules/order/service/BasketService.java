@@ -201,8 +201,7 @@ public class BasketService implements IBasketService {
 
     /**
      * Create dated items selection
-     * @param openSearchRequest opensearch request from which this selection is created
-     * @param now date of selection
+     * @param selectionRequest opensearch request from which this selection is created
      * @param subSummary dataset  selection (sub-)summary
      * @return dated items selection (what else ?)
      */
@@ -248,34 +247,15 @@ public class BasketService implements IBasketService {
         }
     }
 
-    private static SearchRequest buildSearchRequest(String engineType, String datasetUrn,
-            MultiValueMap<String, String> searchParameters, Collection<String> entityIds,
-            OffsetDateTime searchDateLimit) {
-        SearchRequest request;
-        if ((entityIds != null) && !entityIds.isEmpty()) {
-            if ((searchParameters != null) && !searchParameters.isEmpty()) {
-                // A search request is configured, so entityIds are entity to exclude from the search result
-                request = new SearchRequest(engineType, datasetUrn, searchParameters, null, entityIds, searchDateLimit);
-            } else {
-                // No search request, so entityIds are the entity to search for.
-                request = new SearchRequest(engineType, datasetUrn, searchParameters, entityIds, null, searchDateLimit);
-            }
-        } else {
-            request = new SearchRequest(engineType, datasetUrn, searchParameters, null, null, searchDateLimit);
-        }
-
-        return request;
-
-    }
-
     public static ComplexSearchRequest buildSearchRequest(BasketSelectionRequest bascketSelectionRequest, int page,
             int size) {
         ComplexSearchRequest complexReq = new ComplexSearchRequest(DataTypeSelection.ALL.getFileTypes(), page, size);
         complexReq.getRequests()
-                .add(buildSearchRequest(bascketSelectionRequest.getEngineType(),
+                .add(new SearchRequest(bascketSelectionRequest.getEngineType(),
                                         bascketSelectionRequest.getDatasetUrn(),
                                         bascketSelectionRequest.getSearchParameters(),
-                                        bascketSelectionRequest.getIpIds(),
+                                        bascketSelectionRequest.getEntityIdsToInclude(),
+                                        bascketSelectionRequest.getEntityIdsToExclude(),
                                         bascketSelectionRequest.getSelectionDate()));
         return complexReq;
 
@@ -285,10 +265,11 @@ public class BasketService implements IBasketService {
         ComplexSearchRequest request = new ComplexSearchRequest(DataTypeSelection.ALL.getFileTypes(), page, size);
         datasetSelection.getItemsSelections().forEach(selectionItem -> {
             request.getRequests()
-                    .add(buildSearchRequest(selectionItem.getSelectionRequest().getEngineType(),
+                    .add(new SearchRequest(selectionItem.getSelectionRequest().getEngineType(),
                                             selectionItem.getSelectionRequest().getDatasetUrn(),
                                             selectionItem.getSelectionRequest().getSearchParameters(),
-                                            selectionItem.getSelectionRequest().getIpIds(),
+                                            selectionItem.getSelectionRequest().getEntityIdsToInclude(),
+                                            selectionItem.getSelectionRequest().getEntityIdsToExclude(),
                                             selectionItem.getSelectionRequest().getSelectionDate()));
         });
         return request;
