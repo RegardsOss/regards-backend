@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import java.util.List;
 import java.util.Optional;
 
@@ -94,6 +96,7 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
      * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.POST, value = ComplexSearchController.SUMMARY_MAPPING)
+    @ResourceAccess(description = "Provide a summary for a given dataset from user current basket", role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<DocFilesSummary> computeDatasetsSummary(
             @RequestBody ComplexSearchRequest complexSearchRequest) throws ModuleException {
         List<ICriterion> searchCriterions = Lists.newArrayList();
@@ -120,6 +123,7 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
      * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.POST)
+    @ResourceAccess(description = "Get features from a complex search", role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedResources<Resource<EntityFeature>>> searchDataObjects(
             @RequestBody ComplexSearchRequest complexSearchRequest, PagedResourcesAssembler<EntityFeature> assembler)
             throws ModuleException {
