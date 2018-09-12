@@ -36,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.util.MimeType;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -70,6 +71,7 @@ import fr.cnes.regards.modules.dam.service.models.ModelService;
 import fr.cnes.regards.modules.indexer.dao.IEsRepository;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.indexer.service.IIndexerService;
+import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
@@ -87,6 +89,7 @@ import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
  * Engine common methods
  * @author Marc Sordi
  */
+@DirtiesContext
 public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
     /**
@@ -150,6 +153,9 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     protected IAttributeModelClient attributeModelClientMock;
+
+    @Autowired
+    protected IAttributeFinder finder;
 
     @Autowired
     protected IProjectsClient projectsClientMock;
@@ -275,6 +281,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         List<Resource<AttributeModel>> resAtts = new ArrayList<>();
         atts.forEach(att -> resAtts.add(new Resource<AttributeModel>(att)));
         Mockito.when(attributeModelClientMock.getAttributes(null, null)).thenReturn(ResponseEntity.ok(resAtts));
+        finder.refresh(getDefaultTenant());
 
         // Create data
         indexerService.saveBulkEntities(getDefaultTenant(), createGalaxies(galaxyModel));

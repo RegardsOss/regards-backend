@@ -49,8 +49,8 @@ import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchEn
  * @author Marc Sordi
  *
  */
-@TestPropertySource(locations = { "classpath:test.properties" }, properties = { "regards.tenant=opensearch",
-        "spring.jpa.properties.hibernate.default_schema=opensearch" })
+@TestPropertySource(locations = { "classpath:test.properties" },
+        properties = { "regards.tenant=opensearch", "spring.jpa.properties.hibernate.default_schema=opensearch" })
 @MultitenantTransactional
 public class OpenSearchEngineControllerIT extends AbstractEngineIT {
 

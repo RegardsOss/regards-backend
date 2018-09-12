@@ -127,6 +127,7 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
         List<Resource<AttributeModel>> resAtts = new ArrayList<>();
         atts.forEach(att -> resAtts.add(new Resource<AttributeModel>(att)));
         Mockito.when(attributeModelClientMock.getAttributes(null, null)).thenReturn(ResponseEntity.ok(resAtts));
+        finder.refresh(getDefaultTenant());
 
         // Dataset
         france = new Dataset(countryModel, getDefaultTenant(), "France", "France");
