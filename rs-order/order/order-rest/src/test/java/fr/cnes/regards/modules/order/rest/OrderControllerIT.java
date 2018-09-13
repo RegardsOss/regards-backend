@@ -667,7 +667,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         customizer.addExpectation(MockMvcResultMatchers.status().isAccepted());
         customizer.customizeRequestParam().param("orderToken", lastDataFileToken);
         performDefaultGet(OrderDataFileController.ORDERS_AIPS_AIP_ID_FILES_ID, customizer, "Should return result",
-                          lastDataFileAipId, lastDataFileId);
+                          URLDecoder.decode(lastDataFileAipId, "UTF-8"), lastDataFileId);
     }
 
     private Order createOrderAsRunning() throws URISyntaxException {

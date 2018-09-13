@@ -47,18 +47,23 @@ public class BasketSelectionRequest {
     private MultiValueMap<String, String> searchParameters;
 
     /**
-     * A set of IP_ID to exclude if openSearchRequest exists OR the set of IP_ID concerned by the request
+     * A set of IP_ID to exclude
      */
-    private Set<String> ipIds;
+    private Set<String> entityIdsToExclude;
+
+    /**
+     * A set of IP_ID to include
+     */
+    private Set<String> entityIdsToInclude;
 
     private final OffsetDateTime selectionDate = OffsetDateTime.now();
 
-    public Set<String> getIpIds() {
-        return ipIds;
+    public Set<String> getEntityIdsToExclude() {
+        return entityIdsToExclude;
     }
 
-    public void setIpIds(Set<String> ipIds) {
-        this.ipIds = ipIds;
+    public void setEntityIdsToExclude(Set<String> entityIdsToExclude) {
+        this.entityIdsToExclude = entityIdsToExclude;
     }
 
     public String getEngineType() {
@@ -89,4 +94,11 @@ public class BasketSelectionRequest {
         return selectionDate;
     }
 
+    public Set<String> getEntityIdsToInclude() {
+        return entityIdsToInclude;
+    }
+
+    public void setEntityIdsToInclude(Set<String> entityIdsToInclude) {
+        this.entityIdsToInclude = entityIdsToInclude;
+    }
 }
