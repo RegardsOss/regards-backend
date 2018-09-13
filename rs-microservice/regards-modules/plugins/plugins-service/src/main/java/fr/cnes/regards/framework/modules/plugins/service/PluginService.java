@@ -246,12 +246,7 @@ public class PluginService implements IPluginService {
                                 "As only one active configuration is allowed, the plugin {} is disabled. The new active plugin is {}",
                                 conf.getLabel(),
                                 plgConf.getLabel());
-                        //                        try {
                         updatePluginConfiguration(conf);
-                        //                        } catch (EntityNotFoundException e) {
-                        //                            LOGGER.error("DEVELOPMENT ERROR, plugin configuration cannot be missing as we just got it",
-                        //                                         e);
-                        //                        }
                     }
                 }
             }
