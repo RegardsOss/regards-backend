@@ -154,7 +154,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
     public ResponseEntity<Object> search(SearchContext context, ISearchEngine<?, ?, ?, ?> parser)
             throws ModuleException {
         FacetPage<EntityFeature> facetPage = searchService.search(parser.parse(context), context.getSearchType(), null,
-                                                                  context.getPageable());
+                                                                  getPagination(context));
         return ResponseEntity.ok(formatResponse(facetPage, context));
     }
 
@@ -163,7 +163,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         // Retrieve entity
         EntityFeature entity = searchService.get(context.getUrn().get());
         FacetPage<EntityFeature> facetPage = new FacetPage<>(Arrays.asList(entity), Sets.newHashSet(),
-                context.getPageable(), 1);
+                getPagination(context), 1);
         return ResponseEntity.ok(formatResponse(facetPage, context));
     }
 
