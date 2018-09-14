@@ -216,8 +216,8 @@ public class SearchContext {
             // Filter spring pagination parameters if any
             MultiValueMap<String, String> queryParamsPaginationLess = new LinkedMultiValueMap<>();
             queryParamsPaginationLess.putAll(queryParams);
-            queryParamsPaginationLess.remove("page");
-            queryParamsPaginationLess.remove("size");
+            // queryParamsPaginationLess.remove("page");
+            // queryParamsPaginationLess.remove("size");
             queryParamsPaginationLess.remove(SearchEngineMappings.SEARCH_REQUEST_PARSER);
             context.setQueryParams(queryParamsPaginationLess);
         }

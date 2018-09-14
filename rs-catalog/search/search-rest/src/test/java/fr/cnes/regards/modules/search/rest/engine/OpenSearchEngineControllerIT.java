@@ -92,8 +92,8 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         // Test specific opensearch pagination parameters
-        customizer.customizeRequestParam().param("startPage", "0");
-        customizer.customizeRequestParam().param("count", "100");
+        customizer.customizeRequestParam().param(DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE_NAME, "1");
+        customizer.customizeRequestParam().param(DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT_NAME, "100");
         customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(9)));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
