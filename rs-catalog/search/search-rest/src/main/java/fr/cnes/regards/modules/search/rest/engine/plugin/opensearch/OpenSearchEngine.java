@@ -357,8 +357,8 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
      * @return
      */
     private Pageable getPagination(SearchContext context) {
-        List<String> count = context.getQueryParams().get(DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT);
-        List<String> startPage = context.getQueryParams().get(DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE);
+        List<String> count = context.getQueryParams().get(DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT_NAME);
+        List<String> startPage = context.getQueryParams().get(DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE_NAME);
 
         int size = context.getPageable().getPageSize();
         if ((count != null) && (count.size() == 1)) {

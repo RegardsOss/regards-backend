@@ -89,6 +89,16 @@ public class DescriptionBuilder {
     public static final String OPENSEARCH_PAGINATION_PAGE = "startPage";
 
     /**
+     * Workaround for Mizar implementation. As it does not use the value but the parameter name.
+     */
+    public static final String OPENSEARCH_PAGINATION_COUNT_NAME = "maxRecords";
+
+    /**
+     * Workaround for Mizar implementation. As it does not use the value but the parameter name.
+     */
+    public static final String OPENSEARCH_PAGINATION_PAGE_NAME = "page";
+
+    /**
      * {@link IRuntimeTenantResolver} instance
      */
     @Autowired
@@ -262,13 +272,15 @@ public class DescriptionBuilder {
         // Add pagination parameters
         OpenSearchParameter countParameter = new OpenSearchParameter();
         countParameter.setTitle(OPENSEARCH_PAGINATION_COUNT);
-        countParameter.setName(OPENSEARCH_PAGINATION_COUNT);
+        countParameter.setName(OPENSEARCH_PAGINATION_COUNT_NAME);
         countParameter.setValue(String.format("{%s}", OPENSEARCH_PAGINATION_COUNT));
+        countParameter.setMaxExclusive("1000");
+        countParameter.setMinInclusive("0");
         parameters.add(countParameter);
 
         OpenSearchParameter startPageParameter = new OpenSearchParameter();
         startPageParameter.setTitle(OPENSEARCH_PAGINATION_PAGE);
-        startPageParameter.setName(OPENSEARCH_PAGINATION_PAGE);
+        startPageParameter.setName(OPENSEARCH_PAGINATION_PAGE_NAME);
         startPageParameter.setValue(String.format("{%s}", OPENSEARCH_PAGINATION_PAGE));
         parameters.add(startPageParameter);
 
