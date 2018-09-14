@@ -271,15 +271,15 @@ public class DescriptionBuilder {
 
         // Add pagination parameters
         OpenSearchParameter countParameter = new OpenSearchParameter();
-        countParameter.setTitle(OPENSEARCH_PAGINATION_COUNT);
+        countParameter.setTitle("Number of results returned per page (default 20, max 1000)");
         countParameter.setName(OPENSEARCH_PAGINATION_COUNT_NAME);
         countParameter.setValue(String.format("{%s}", OPENSEARCH_PAGINATION_COUNT));
-        countParameter.setMaxExclusive("1000");
+        countParameter.setMaxInclusive("1000");
         countParameter.setMinInclusive("1");
         parameters.add(countParameter);
 
         OpenSearchParameter startPageParameter = new OpenSearchParameter();
-        startPageParameter.setTitle(OPENSEARCH_PAGINATION_PAGE);
+        startPageParameter.setTitle("Results page to return");
         startPageParameter.setName(OPENSEARCH_PAGINATION_PAGE_NAME);
         startPageParameter.setValue(String.format("{%s}", OPENSEARCH_PAGINATION_PAGE));
         startPageParameter.setMinInclusive("1");
