@@ -247,7 +247,6 @@ public class AIPMiscAllocationStrategyPlugin implements IAllocationStrategy {
     private void addPluginConfiguration(AIPMiscStorageInformation info, StorageDataFile file,
             PluginConfiguration pluginConf, List<PluginConfiguration> pluginConfigurations) {
         if (!noEmptyDirectory || (info.getDirectory() != null)) {
-            file.increaseNotYetStoredBy();
             file.setStorageDirectory(info.getDirectory());
             pluginConfigurations.add(pluginConf);
         } else {

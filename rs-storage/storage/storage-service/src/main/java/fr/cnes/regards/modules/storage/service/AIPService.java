@@ -443,8 +443,10 @@ public class AIPService implements IAIPService {
                      storageWorkingSetMap.keySet().size());
         // as we are trusty people, we check that the dispatch gave us back all DataFiles into the WorkingSubSets
         checkDispatch(dataFilesToStore, storageWorkingSetMap, dispatchErrors);
-        // now that those who should be in error are handled, lets save into DB those to be stored (mainly because of
-        // "notYetStoredBy")
+        // now that those who should be in error are handled,  lets set notYetStoredBy and save data files
+        for(StorageDataFile df : storageWorkingSetMap.values()) {
+            df.increaseNotYetStoredBy();
+        }
         dataFileDao.save(storageWorkingSetMap.values());
         return storageWorkingSetMap;
     }

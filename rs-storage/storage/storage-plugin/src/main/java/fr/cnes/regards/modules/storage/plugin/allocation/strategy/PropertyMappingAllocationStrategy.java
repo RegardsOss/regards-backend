@@ -129,7 +129,6 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
             // now lets extract the property value from the AIP
             if (dataFile.isOnlineMandatory()) {
                 //This allocation strategy only allows files to be stored into 1 DataStorage
-                dataFile.increaseNotYetStoredBy();
                 dispatch.put(quicklookDataStorageConfigurationId, dataFile);
             } else {
                 try {
@@ -143,7 +142,6 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
                         errors.addDispatchError(dataFile, failureCause);
                     } else {
                         //This allocation strategy only allows files to be stored into 1 DataStorage
-                        dataFile.increaseNotYetStoredBy();
                         dispatch.put(chosenOne, dataFile);
                     }
                 } catch (PathNotFoundException e) {

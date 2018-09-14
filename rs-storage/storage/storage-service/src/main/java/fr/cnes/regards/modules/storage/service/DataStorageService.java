@@ -489,8 +489,8 @@ public class DataStorageService implements IDataStorageService {
                 }
             }
         } else {
-            dataFileDao.save(storedDataFile);
             LOGGER.debug("Datafile not fully stored missing {} confs.", storedDataFile.getNotYetStoredBy());
+            dataFileDao.save(storedDataFile);
         }
     }
 
