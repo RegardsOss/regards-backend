@@ -27,6 +27,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.postgresql.util.ServerErrorMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,14 +37,19 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
+import com.google.gson.Gson;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
+import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.ProjectUserSpecification;
@@ -63,7 +69,6 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
  * {@link IProjectUserService} implementation
- *
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
  */
@@ -97,6 +102,11 @@ public class ProjectUserService implements IProjectUserService {
     private final IAuthenticationResolver authResolver;
 
     /**
+     * Gson serializer/deserializer
+     */
+    private final Gson gson;
+
+    /**
      * A filter on meta data to keep visible ones only
      */
     private final Predicate<? super MetaData> keepVisibleMetaData = m -> !UserVisibility.HIDDEN
@@ -107,32 +117,23 @@ public class ProjectUserService implements IProjectUserService {
      */
     private final String instanceAdminUserEmail;
 
-    public ProjectUserService(IAuthenticationResolver authResolver, final IProjectUserRepository pProjectUserRepository,
-            final IRoleService pRoleService, final IAccountsClient accountsClient,
-            @Value("${regards.accounts.root.user.login}") final String pInstanceAdminUserEmail) {
+    public ProjectUserService(IAuthenticationResolver authResolver, IProjectUserRepository pProjectUserRepository,
+            final IRoleService pRoleService, IAccountsClient accountsClient,
+            @Value("${regards.accounts.root.user.login}") String pInstanceAdminUserEmail, Gson gson) {
         super();
         this.authResolver = authResolver;
         projectUserRepository = pProjectUserRepository;
         roleService = pRoleService;
         instanceAdminUserEmail = pInstanceAdminUserEmail;
         this.accountsClient = accountsClient;
+        this.gson = gson;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#retrieveUserList()
-     */
     @Override
     public Page<ProjectUser> retrieveUserList(String status, String emailStart, final Pageable pageable) {
         return projectUserRepository.findAll(ProjectUserSpecification.search(status, emailStart), pageable);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#retrieveUser(java.lang.Long)
-     */
     @Override
     public ProjectUser retrieveUser(final Long pUserId) throws EntityNotFoundException {
         final ProjectUser user = projectUserRepository.findOne(pUserId);
@@ -157,7 +158,7 @@ public class ProjectUserService implements IProjectUserService {
         final ProjectUser user;
         if (instanceAdminUserEmail.equals(pUserEmail)) {
             user = new ProjectUser(pUserEmail, new Role(DefaultRole.INSTANCE_ADMIN.toString(), null), new ArrayList<>(),
-                    new ArrayList<>());
+                                   new ArrayList<>());
         } else {
             user = projectUserRepository.findOneByEmail(pUserEmail)
                     .orElseThrow(() -> new EntityNotFoundException(pUserEmail, ProjectUser.class));
@@ -260,8 +261,8 @@ public class ProjectUserService implements IProjectUserService {
         try (final Stream<ResourcesAccess> previous = user.getPermissions().stream();
                 final Stream<ResourcesAccess> updated = pUpdatedUserAccessRights.stream();
                 final Stream<ResourcesAccess> merged = Stream.concat(updated, previous)) {
-            user.setPermissions(merged.filter(RegardsStreamUtils.distinctByKey(r -> r.getId()))
-                    .collect(Collectors.toList()));
+            user.setPermissions(
+                    merged.filter(RegardsStreamUtils.distinctByKey(r -> r.getId())).collect(Collectors.toList()));
         }
 
         save(user);
@@ -343,7 +344,7 @@ public class ProjectUserService implements IProjectUserService {
                 returnedRole = borrowedRole;
             } else {
                 throw new EntityOperationForbiddenException(pBorrowedRoleName, Role.class,
-                        "Borrowed role must be hierachically inferior to the project user's role");
+                                                            "Borrowed role must be hierachically inferior to the project user's role");
             }
         }
 
@@ -361,15 +362,20 @@ public class ProjectUserService implements IProjectUserService {
     }
 
     @Override
-    public ProjectUser createProjectUser(final AccessRequestDto pDto) throws EntityAlreadyExistsException {
-
-        ResponseEntity<Resource<Account>> accountResponse = accountsClient.retrieveAccounByEmail(pDto.getEmail());
-        if(accountResponse.getStatusCode() == HttpStatus.NOT_FOUND) {
-            final Account newAccount = new Account(pDto.getEmail(), pDto.getFirstName(), pDto.getLastName(),
-                                                   pDto.getPassword());
-            newAccount.setStatus(AccountStatus.ACTIVE);
-            AccountNPassword newAccountWithPassword = new AccountNPassword(newAccount, newAccount.getPassword());
-            accountsClient.createAccount(newAccountWithPassword);
+    public ProjectUser createProjectUser(final AccessRequestDto pDto) throws EntityAlreadyExistsException,
+            EntityInvalidException {
+        try {
+            ResponseEntity<Resource<Account>> accountResponse = accountsClient.retrieveAccounByEmail(pDto.getEmail());
+            if (accountResponse.getStatusCode() == HttpStatus.NOT_FOUND) {
+                Account newAccount = new Account(pDto.getEmail(), pDto.getFirstName(), pDto.getLastName(),
+                                                 pDto.getPassword());
+                newAccount.setStatus(AccountStatus.ACTIVE);
+                AccountNPassword newAccountWithPassword = new AccountNPassword(newAccount, newAccount.getPassword());
+                accountsClient.createAccount(newAccountWithPassword);
+            }
+        } catch (HttpServerErrorException | HttpClientErrorException e) {
+            ServerErrorResponse errorResponse = gson.fromJson(e.getResponseBodyAsString(), ServerErrorResponse.class);
+            throw new EntityInvalidException(errorResponse.getMessages());
         }
 
         if (!existUser(pDto.getEmail())) {
@@ -397,7 +403,6 @@ public class ProjectUserService implements IProjectUserService {
         } else {
             throw new EntityAlreadyExistsException("Project user already exists");
         }
-
     }
 
     /*
@@ -422,9 +427,7 @@ public class ProjectUserService implements IProjectUserService {
 
     /**
      * Specific on-save operations
-     *
-     * @param pProjectUser
-     *            The user to save
+     * @param pProjectUser The user to save
      */
     private ProjectUser save(final ProjectUser pProjectUser) {
         pProjectUser.setLastUpdate(OffsetDateTime.now());

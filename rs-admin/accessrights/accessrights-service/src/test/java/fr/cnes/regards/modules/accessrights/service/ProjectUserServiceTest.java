@@ -42,10 +42,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import com.google.gson.Gson;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -176,12 +178,13 @@ public class ProjectUserServiceTest {
                                                     projectUserRepository,
                                                     roleService,
                                                     accountsClient,
-                                                    "instance_admin@regards.fr");
+                                                    "instance_admin@regards.fr",
+                                                    new Gson());
     }
 
     @Test
     @Purpose("Check that the system allows to create a new projectUser and the associated account.")
-    public void createUserByBypassingRegristrationProcess() throws EntityNotFoundException {
+    public void createUserByBypassingRegristrationProcess() throws EntityNotFoundException, EntityInvalidException {
         Mockito.when(accountsClient.retrieveAccounByEmail("test@regards.fr"))
                 .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
         Mockito.when(projectUserRepository.findOneByEmail("test@regards.fr")).thenReturn(Optional.ofNullable(null));
@@ -210,7 +213,8 @@ public class ProjectUserServiceTest {
 
     @Test
     @Purpose("Check that the system allows to create a new projectUser with the associated account.")
-    public void createUserByBypassingRegristrationProcessWithoutAccount() throws EntityNotFoundException {
+    public void createUserByBypassingRegristrationProcessWithoutAccount()
+            throws EntityNotFoundException, EntityInvalidException {
         Mockito.when(accountsClient.retrieveAccounByEmail("test@regards.fr"))
                 .thenReturn(new ResponseEntity<>(new Resource<>(new Account("test@regards.fr",
                                                                             "pFirstName",
@@ -242,7 +246,8 @@ public class ProjectUserServiceTest {
 
     @Test
     @Purpose("Check that the system allows to create a new projectUser with the associated account.")
-    public void createUserByBypassingRegristrationProcessError() throws EntityNotFoundException {
+    public void createUserByBypassingRegristrationProcessError() throws EntityNotFoundException,
+            EntityInvalidException {
 
         Mockito.when(accountsClient.retrieveAccounByEmail("test@regards.fr"))
                 .thenReturn(new ResponseEntity<>(new Resource<>(new Account("test@regards.fr",
