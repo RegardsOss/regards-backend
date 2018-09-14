@@ -35,7 +35,7 @@
 	<properties>
 		<microservice.heap.size>512m</microservice.heap.size>
 		<fr.cnes.regards.docker.image.name>rs-administration</fr.cnes.regards.docker.image.name>
-		<docker.entryPoint>["./wait-for-it.sh", "rs-config:9031", "-t", "0", "--", "./wait-for-it.sh", "rs-registry:9032", "-t", "0", "--", "./wait-for-it.sh", "rs-rabbitmq:15672", "-t", "0", "--", "./wait-for-it.sh", "rs-admin_instance:9037", "-t", "0", "--", "java", "-Xmx300m", "-Djava.security.egd=file:/dev/./urandom", "-agentlib:jdwp=transport=dt_socket,address=10500,server=y,suspend=n", "-jar", "/${project.build.finalName}.${project.packaging}"]</docker.entryPoint>
+		<docker.entryPoint>["./wait-for-it.sh", "rs-config:9031", "-t", "0", "--", "./wait-for-it.sh", "rs-registry:9032", "-t", "0", "--", "./wait-for-it.sh", "rs-rabbitmq:15672", "-t", "0", "--", "./wait-for-it.sh", "rs-admin-instance:9037", "-t", "0", "--", "java", "-Xmx300m", "-Djava.security.egd=file:/dev/./urandom", "-agentlib:jdwp=transport=dt_socket,address=10500,server=y,suspend=n", "-jar", "/${project.build.finalName}.${project.packaging}"]</docker.entryPoint>
 	</properties>
 
 	<dependencies>
