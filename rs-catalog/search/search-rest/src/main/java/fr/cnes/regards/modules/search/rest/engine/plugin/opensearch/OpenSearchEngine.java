@@ -30,6 +30,8 @@ import org.elasticsearch.common.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Link;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -344,6 +346,39 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
                                                                        context.getDateTypes().get());
         // Build response
         return ResponseEntity.ok(summary);
+    }
+
+    /**
+     * Try to read pagination parameters from :<ul>
+     * <li>1. From opensearch specific parameters 'count' & 'startPage'</li>
+     * <li>2. From spring standard parameters 'size' & 'page'
+     * </ul>
+     * @param context
+     * @return
+     */
+    private Pageable getPagination(SearchContext context) {
+        List<String> count = context.getQueryParams().get(DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT);
+        List<String> startPage = context.getQueryParams().get(DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE);
+
+        int size = context.getPageable().getPageSize();
+        if ((count != null) && (count.size() == 1)) {
+            try {
+                size = Integer.valueOf(count.get(0));
+            } catch (NumberFormatException e) {
+                LOGGER.error(e.getMessage(), e);
+            }
+        }
+
+        int start = context.getPageable().getPageNumber();
+        if ((startPage != null) && (startPage.size() == 1)) {
+            try {
+                start = Integer.valueOf(startPage.get(0));
+            } catch (NumberFormatException e) {
+                LOGGER.error(e.getMessage(), e);
+            }
+        }
+
+        return new PageRequest(start, size);
     }
 
 }

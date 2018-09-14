@@ -42,6 +42,7 @@ import fr.cnes.regards.modules.dam.domain.entities.attribute.AbstractAttribute;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchEngine;
+import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.description.DescriptionBuilder;
 
 /**
  * Search engine tests
@@ -90,8 +91,9 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        customizer.customizeRequestParam().param("page", "0");
-        customizer.customizeRequestParam().param("size", "100");
+        // Test specific opensearch pagination parameters
+        customizer.customizeRequestParam().param("startPage", "0");
+        customizer.customizeRequestParam().param("count", "100");
         customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(9)));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
@@ -198,7 +200,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.addExpectation(MockMvcResultMatchers.xpath(geoJsonUrl).exists());
 
         // Check url parameters
-        customizer.addExpectation(MockMvcResultMatchers.xpath(atomUrl + "[count(Parameter)=12]").exists());
+        customizer.addExpectation(MockMvcResultMatchers.xpath(atomUrl + "[count(Parameter)=14]").exists());
         customizer.addExpectation(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='q']").exists());
         customizer.addExpectation(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='planet']").exists());
         customizer.addExpectation(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='planet_type']").exists());
@@ -218,6 +220,19 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
                 .xpath(atomUrl + "/Parameter[@name='lat' and @value='{geo:lat}']").exists());
         customizer.addExpectation(MockMvcResultMatchers
                 .xpath(atomUrl + "/Parameter[@name='radius' and @value='{geo:radius}']").exists());
+        customizer.addExpectation(
+                                  MockMvcResultMatchers
+                                          .xpath(atomUrl + String.format("/Parameter[@name='%s' and @value='{%s}']",
+                                                                         DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE,
+                                                                         DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE))
+                                          .exists());
+        customizer.addExpectation(
+                                  MockMvcResultMatchers
+                                          .xpath(atomUrl
+                                                  + String.format("/Parameter[@name='%s' and @value='{%s}']",
+                                                                  DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT,
+                                                                  DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT))
+                                          .exists());
 
         // Check options
         customizer.addExpectation(MockMvcResultMatchers

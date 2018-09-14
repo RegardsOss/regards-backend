@@ -84,6 +84,10 @@ public class DescriptionBuilder {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(DescriptionBuilder.class);
 
+    public static final String OPENSEARCH_PAGINATION_COUNT = "count";
+
+    public static final String OPENSEARCH_PAGINATION_PAGE = "startPage";
+
     /**
      * {@link IRuntimeTenantResolver} instance
      */
@@ -254,6 +258,19 @@ public class DescriptionBuilder {
                 parameters.addAll(ext.addParametersToDescription());
             }
         }
+
+        // Add pagination parameters
+        OpenSearchParameter countParameter = new OpenSearchParameter();
+        countParameter.setTitle(OPENSEARCH_PAGINATION_COUNT);
+        countParameter.setName(OPENSEARCH_PAGINATION_COUNT);
+        countParameter.setValue(String.format("{%s}", OPENSEARCH_PAGINATION_COUNT));
+        parameters.add(countParameter);
+
+        OpenSearchParameter startPageParameter = new OpenSearchParameter();
+        startPageParameter.setTitle(OPENSEARCH_PAGINATION_PAGE);
+        startPageParameter.setName(OPENSEARCH_PAGINATION_PAGE);
+        startPageParameter.setValue(String.format("{%s}", OPENSEARCH_PAGINATION_PAGE));
+        parameters.add(startPageParameter);
 
         return parameters;
     }
