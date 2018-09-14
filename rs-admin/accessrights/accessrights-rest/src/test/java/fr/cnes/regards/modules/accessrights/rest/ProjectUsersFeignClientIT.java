@@ -36,6 +36,8 @@ import fr.cnes.regards.framework.feign.FeignClientBuilder;
 import fr.cnes.regards.framework.feign.TokenClientProvider;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
@@ -154,12 +156,14 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
     /**
      *
      * Check that the accounts Feign Client can retrieve all accounts.
+     * @throws EntityInvalidException
+     * @throws EntityAlreadyExistsException
      *
      * @since 1.0-SNAPSHOT
      */
     @Test
     @Ignore
-    public void isAdminProjectUserFromFeignClient() throws EntityAlreadyExistsException {
+    public void isAdminProjectUserFromFeignClient() throws EntityException {
         final AccessRequestDto accessRequest = new AccessRequestDto("test@c-s.fr", "pFirstName", "pLastName",
                 DefaultRole.ADMIN.toString(), null, "pPassword", "pOriginUrl", "pRequestLink");
 
