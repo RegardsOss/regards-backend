@@ -294,7 +294,7 @@ public class AIPController implements IResourceController<AIP> {
         if (!rejectedAips.isEmpty()) {
             rejectedAips.forEach(ra -> aipIpIds.remove(ra.getAipId()));
             if (aipIpIds.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.UNPROCESSABLE_ENTITY);
+                return new ResponseEntity<>(rejectedAips, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             aipService.storeRetry(aipIpIds);
             return new ResponseEntity<>(rejectedAips, HttpStatus.PARTIAL_CONTENT);
@@ -314,10 +314,11 @@ public class AIPController implements IResourceController<AIP> {
             throws ModuleException {
         // we ask for one AIP to be stored, so we can only have one rejected aip in counter part
         ResponseEntity<List<RejectedAip>> listResponse = storeRetry(Sets.newHashSet(ipId));
-        if (listResponse.getBody().isEmpty()) {
-            return new ResponseEntity<>(listResponse.getStatusCode());
-        } else {
+        // as their is only one ip id, storeRetry can only give us a UNPROCESSABLE_ENTITY or NO_CONTENT
+        if(listResponse.getStatusCode().equals(HttpStatus.UNPROCESSABLE_ENTITY)) {
             return new ResponseEntity<>(listResponse.getBody().get(0), listResponse.getStatusCode());
+        } else {
+            return new ResponseEntity<>(listResponse.getStatusCode());
         }
     }
 
