@@ -350,7 +350,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     /**
      * Try to read pagination parameters from :<ul>
-     * <li>1. From opensearch specific parameters 'count' & 'startPage'</li>
+     * <li>1. From opensearch specific parameters 'count' & 'startPage'. Startpage is from 1 to X where X is last page.</li>
      * <li>2. From spring standard parameters 'size' & 'page'
      * </ul>
      * @param context
@@ -364,6 +364,10 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         if ((count != null) && (count.size() == 1)) {
             try {
                 size = Integer.valueOf(count.get(0));
+                // Handle page count starts at 1 but 0 for spring Pageable
+                if (size > 0) {
+                    size = size - 1;
+                }
             } catch (NumberFormatException e) {
                 LOGGER.error(e.getMessage(), e);
             }

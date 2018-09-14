@@ -275,13 +275,14 @@ public class DescriptionBuilder {
         countParameter.setName(OPENSEARCH_PAGINATION_COUNT_NAME);
         countParameter.setValue(String.format("{%s}", OPENSEARCH_PAGINATION_COUNT));
         countParameter.setMaxExclusive("1000");
-        countParameter.setMinInclusive("0");
+        countParameter.setMinInclusive("1");
         parameters.add(countParameter);
 
         OpenSearchParameter startPageParameter = new OpenSearchParameter();
         startPageParameter.setTitle(OPENSEARCH_PAGINATION_PAGE);
         startPageParameter.setName(OPENSEARCH_PAGINATION_PAGE_NAME);
         startPageParameter.setValue(String.format("{%s}", OPENSEARCH_PAGINATION_PAGE));
+        startPageParameter.setMinInclusive("1");
         parameters.add(startPageParameter);
 
         return parameters;
