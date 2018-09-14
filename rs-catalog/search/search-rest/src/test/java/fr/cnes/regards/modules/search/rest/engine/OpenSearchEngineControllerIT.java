@@ -222,15 +222,16 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
                 .xpath(atomUrl + "/Parameter[@name='radius' and @value='{geo:radius}']").exists());
         customizer.addExpectation(
                                   MockMvcResultMatchers
-                                          .xpath(atomUrl + String.format("/Parameter[@name='%s' and @value='{%s}']",
-                                                                         DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE,
-                                                                         DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE))
+                                          .xpath(atomUrl
+                                                  + String.format("/Parameter[@name='%s' and @value='{%s}']",
+                                                                  DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE_NAME,
+                                                                  DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE))
                                           .exists());
         customizer.addExpectation(
                                   MockMvcResultMatchers
                                           .xpath(atomUrl
                                                   + String.format("/Parameter[@name='%s' and @value='{%s}']",
-                                                                  DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT,
+                                                                  DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT_NAME,
                                                                   DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT))
                                           .exists());
 
