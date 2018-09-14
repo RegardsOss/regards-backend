@@ -364,10 +364,6 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         if ((count != null) && (count.size() == 1)) {
             try {
                 size = Integer.valueOf(count.get(0));
-                // Handle page count starts at 1 but 0 for spring Pageable
-                if (size > 0) {
-                    size = size - 1;
-                }
             } catch (NumberFormatException e) {
                 LOGGER.error(e.getMessage(), e);
             }
@@ -377,6 +373,10 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         if ((startPage != null) && (startPage.size() == 1)) {
             try {
                 start = Integer.valueOf(startPage.get(0));
+                // Handle page starts at 1 but 0 for spring Pageable
+                if (start > 0) {
+                    start = start - 1;
+                }
             } catch (NumberFormatException e) {
                 LOGGER.error(e.getMessage(), e);
             }
