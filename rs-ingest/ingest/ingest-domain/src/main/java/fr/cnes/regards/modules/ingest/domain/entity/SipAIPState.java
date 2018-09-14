@@ -16,6 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
+
+package fr.cnes.regards.modules.ingest.domain.entity;
+
+import fr.cnes.regards.modules.storage.domain.IAipState;
+
 /**
  *
  * SIP lifecycle
@@ -37,10 +42,6 @@
  * @author Marc Sordi
  *
  */
-package fr.cnes.regards.modules.ingest.domain.entity;
-
-import fr.cnes.regards.modules.storage.domain.IAipState;
-
 public enum SipAIPState implements IAipState {
     /**
      * AIP is ready to be stored
@@ -61,7 +62,11 @@ public enum SipAIPState implements IAipState {
     /**
      * AIP is indexed
      */
-    INDEXED;
+    INDEXED,
+    /**
+     * AIP cannot be indexed
+     */
+    INDEX_ERROR;
 
     @Override
     public String getName() {

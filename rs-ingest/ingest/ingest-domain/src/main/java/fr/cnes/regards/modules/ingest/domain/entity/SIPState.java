@@ -93,6 +93,10 @@ public enum SIPState implements ISipState {
      */
     INDEXED,
     /**
+     * SIP failed to be indexed
+     */
+    INDEX_ERROR,
+    /**
      * SIP is partially stored.
      */
     INCOMPLETE,

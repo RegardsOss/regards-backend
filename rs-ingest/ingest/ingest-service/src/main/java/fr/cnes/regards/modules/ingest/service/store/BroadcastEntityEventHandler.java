@@ -85,6 +85,8 @@ public class BroadcastEntityEventHandler
                 case INDEXED:
                     handleEntitiesIndexed(event.getAipIds(), wrapper.getTenant());
                     break;
+                case INDEX_ERROR:
+                    handleEntitiesNotIndexed(event.getAipIds(), wrapper.getTenant());
                 case DELETE:
                 case CREATE:
                 case UPDATE:
@@ -108,15 +110,41 @@ public class BroadcastEntityEventHandler
                 AIPEntity aip = oAip.get();
                 aipService.setAipToIndexed(aip);
                 LOGGER.info("AIP \"{}\" is now indexed.", ipId.toString());
-                // If all AIP are indexed update SIP state to STORED
+                // If all AIPs of current SIP are indexed then update SIP state to INDEXED
                 Set<AIPEntity> sipAips = aipRepository.findBySip(aip.getSip());
-                if (sipAips.stream().allMatch(a -> SipAIPState.INDEXED.equals(a.getState()))) {
+                if (sipAips.stream().allMatch(aipEntity -> aipEntity.getState() == SipAIPState.INDEXED)) {
                     SIPEntity sip = aip.getSip();
                     sip.setState(SIPState.INDEXED);
                     sipService.saveSIPEntity(sip);
                     LOGGER.info("SIP \"{}\" is now indexed.", sip.getSipId());
-                    // AIPs are no longer usefull here we can delete them
+                    // AIPs are no longer useful here we can delete them
                     aipRepository.delete(sipAips);
+                }
+            }
+        }
+        runtimeTenantResolver.clearTenant();
+    }
+
+    /**
+     * Handle the case of entities not indexed (due to error of course)
+     * @param ipIds of all entities that cannot be indexed
+     */
+    private void handleEntitiesNotIndexed(UniformResourceName[] ipIds, String tenant) {
+        runtimeTenantResolver.forceTenant(tenant);
+        // Check if AIPs matchs ipIds
+        for (UniformResourceName ipId : ipIds) {
+            Optional<AIPEntity> oAip = aipService.searchAip(ipId);
+            if (oAip.isPresent()) {
+                AIPEntity aip = oAip.get();
+                aipService.setAipToIndexed(aip);
+                LOGGER.info("AIP \"{}\" is now indexed.", ipId.toString());
+                // If one AIP of current SIP is at INDEX_ERROR than update SIP state to INDEX_ERROR
+                Set<AIPEntity> sipAips = aipRepository.findBySip(aip.getSip());
+                if (sipAips.stream().anyMatch(aipEntity -> aipEntity.getState() == SipAIPState.INDEX_ERROR)) {
+                    SIPEntity sip = aip.getSip();
+                    sip.setState(SIPState.INDEX_ERROR);
+                    sipService.saveSIPEntity(sip);
+                    LOGGER.info("SIP \"{}\" cannot be indexed.", sip.getSipId());
                 }
             }
         }
