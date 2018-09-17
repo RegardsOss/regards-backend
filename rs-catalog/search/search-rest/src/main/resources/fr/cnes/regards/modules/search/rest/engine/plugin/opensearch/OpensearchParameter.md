@@ -1,5 +1,6 @@
 # Parameters configuration
 
+## Description 
 This configuration allows you to specify informations for a specific catalogue attribute.
 For exemple if you have an attribute named MyAttribute in fragment named "Exemple" you can define this attribute as below :
 
@@ -12,7 +13,8 @@ For exemple if you have an attribute named MyAttribute in fragment named "Exempl
 In the above exemple the catalogue "MyAttribute" will be exposed in the opensearchDescriptor as "{exemple_ns:publicName}.
 Also, into the descriptor will be provided for this attribute the first 50 values available.
 
-**NOTE :** 
+## Usage
+
 The namespace defined for the attribute is used to know how to search for attribute values in future search requests.
 For exemple for **time extension** you have to define the two below attributes :
 
@@ -29,7 +31,7 @@ For exemple for **time extension** you have to define the two below attributes :
  - Limit number of possible values : -
  - Full json path of the asscoiated REGARDS attribute : properties.stop_date
 
-** EXISTING EXTENSIONS **
+## EXISTING EXTENSIONS ##
  - **Time** : To specify parameter configure them with "time" namespace.
  - **Geo** : To specify parameter configure them with "geo" namespace. By default geometry parameter is associated to properties.geometry of all entities. Nevertheless you can set the geometry parameter to use for this extension to an other attribute if you need to. 
  - **Regards** : To specify parameter configure them with "regards" namespace.
