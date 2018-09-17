@@ -406,7 +406,7 @@ public class SIPServiceTest extends AbstractSIPTest {
                                                     Lists.newArrayList(SIPState.DELETED),
                                                     null,
                                                     new PageRequest(0, 100));
-        Assert.assertEquals(22, results.getTotalElements());
+        Assert.assertEquals(24, results.getTotalElements());
 
     }
 
