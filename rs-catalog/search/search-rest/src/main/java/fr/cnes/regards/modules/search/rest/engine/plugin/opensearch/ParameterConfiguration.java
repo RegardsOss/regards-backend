@@ -51,7 +51,7 @@ public class ParameterConfiguration {
     /**
      * Maximum number of options or -1 for all values.
      */
-    @PluginParameter(name = "optionsCardinality", label = "Limit number of possbile values",
+    @PluginParameter(name = "optionsCardinality", label = "Limit number of possbile values", optional = true,
             description = "Only used if the optionsEnabled parameter is set to TRUE. Limit the number of possbile values of the parameter in the opensearch descriptor xml file.")
     private int optionsCardinality;
 
