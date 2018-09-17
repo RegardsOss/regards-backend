@@ -138,9 +138,9 @@ public class AIPService implements IAIPService {
             SIPEntity sip = aip.getSip();
             sip.setState(SIPState.STORE_ERROR);
             // Save the errorMessage inside SIP rejections errors
-            sip.getRejectionCauses().add(String.format("Storage of AIP(%s) failed due to the following error: %s",
-                                                       aipId,
-                                                       errorMessage));
+            sip.getRejectionCauses()
+                    .add(String.format("Storage of AIP(%s) failed due to the following error: %s", aipId,
+                                       errorMessage));
             sipService.saveSIPEntity(sip);
         }
     }
@@ -183,8 +183,8 @@ public class AIPService implements IAIPService {
             if (oSip.isPresent()) {
                 SIPEntity sip = oSip.get();
                 // If all AIPs are deleted, update sip to DELETED state
-                if (result.getBody().getContent().stream()
-                        .allMatch(resource -> fr.cnes.regards.modules.storage.domain.AIPState.DELETED
+                if (result.getBody().getContent().stream().allMatch(
+                        resource -> fr.cnes.regards.modules.storage.domain.AIPState.DELETED
                                 .equals(resource.getContent().getState()))) {
                     sip.setState(SIPState.DELETED);
                 } else {
@@ -232,10 +232,9 @@ public class AIPService implements IAIPService {
         for (IngestProcessingChain ipc : ipcs) {
             // Check if submission not already scheduled
             if (!aipRepository.isAlreadyWorking(ipc.getName())) {
-                Page<AIPEntity> page = aipRepository.findWithLockBySipProcessingAndState(ipc.getName(),
-                                                                                         SipAIPState.CREATED,
-                                                                                         new PageRequest(0,
-                                                                                                         bulkRequestLimit));
+                Page<AIPEntity> page = aipRepository
+                        .findWithLockBySipProcessingAndState(ipc.getName(), SipAIPState.CREATED,
+                                                             new PageRequest(0, bulkRequestLimit));
                 if (page.hasContent()) {
                     // Schedule AIP page submission
                     for (AIPEntity aip : page.getContent()) {
@@ -314,17 +313,16 @@ public class AIPService implements IAIPService {
     public void askForAipsDeletion() {
         List<RejectedSip> rejectedSips = new ArrayList<>();
         Page<SIPEntity> deletableSips = sipRepository.findPageByState(SIPState.TO_BE_DELETED, new PageRequest(0, 100));
-        if(deletableSips.hasContent()) {
+        if (deletableSips.hasContent()) {
             ResponseEntity<List<RejectedSip>> response;
             long askForAipDeletionStart = System.currentTimeMillis();
             FeignSecurityManager.asSystem();
             try {
-                response = aipClient
-                        .deleteAipFromSips(deletableSips.getContent().stream().map(sip -> sip.getSipId().toString()).collect(Collectors.toSet()));
+                response = aipClient.deleteAipFromSips(
+                        deletableSips.getContent().stream().map(SIPEntity::getSipId).collect(Collectors.toSet()));
                 long askForAipDeletionEnd = System.currentTimeMillis();
                 LOGGER.trace("Asking SUCCESSFULLY for storage to delete {} sip took {} ms",
-                             deletableSips.getNumberOfElements(),
-                             askForAipDeletionEnd - askForAipDeletionStart);
+                             deletableSips.getNumberOfElements(), askForAipDeletionEnd - askForAipDeletionStart);
                 if (HttpUtils.isSuccess(response.getStatusCode())) {
                     if (response.getBody() != null) {
                         rejectedSips = response.getBody();
@@ -337,14 +335,14 @@ public class AIPService implements IAIPService {
                     throw e;
                 }
                 // first lets get the string from the body then lets deserialize it using gson
-                @SuppressWarnings("serial") TypeToken<List<RejectedSip>> bodyTypeToken = new TypeToken<List<RejectedSip>>() {
+                @SuppressWarnings("serial")
+                TypeToken<List<RejectedSip>> bodyTypeToken = new TypeToken<List<RejectedSip>>() {
 
                 };
                 rejectedSips = gson.fromJson(e.getResponseBodyAsString(), bodyTypeToken.getType());
             } finally {
                 long askForAipDeletionEnd = System.currentTimeMillis();
-                LOGGER.trace("Asking for storage to delete {} sip took {} ms",
-                             deletableSips.getNumberOfElements(),
+                LOGGER.trace("Asking for storage to delete {} sip took {} ms", deletableSips.getNumberOfElements(),
                              askForAipDeletionEnd - askForAipDeletionStart);
                 FeignSecurityManager.reset();
             }
@@ -376,7 +374,6 @@ public class AIPService implements IAIPService {
     /**
      * Be aware that this method does not touch to FeignSecurityManager.
      * Be sure to handle FeignSecurityManager issues before and after calling this method.
-     * @param rejectedSips
      */
     private void sendRejectedSipNotification(List<RejectedSip> rejectedSips) {
         // lets prepare the notification message
@@ -389,10 +386,8 @@ public class AIPService implements IAIPService {
         } catch (EntityNotFoundException enf) {
             throw new MaintenanceException(enf.getMessage(), enf);
         }
-        notificationClient.notifyRoles(email.getText(),
-                                       "Errors during SIPs deletions",
-                                       "rs-ingest",
-                                       NotificationType.ERROR,
-                                       DefaultRole.ADMIN);
+        notificationClient
+                .notifyRoles(email.getText(), "Errors during SIPs deletions", "rs-ingest", NotificationType.ERROR,
+                             DefaultRole.ADMIN);
     }
 }

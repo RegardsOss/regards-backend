@@ -221,6 +221,7 @@ public class SIPService implements ISIPService {
             case STORE_ERROR:
             case INCOMPLETE:
             case INDEXED:
+            case INDEX_ERROR:
                 return true;
             default:
                 return false;

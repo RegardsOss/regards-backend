@@ -35,8 +35,8 @@ import fr.cnes.regards.modules.storage.domain.IAipState;
  *  REJECTED___|_______ SUBMISSION_ERROR
  *             |
  *         {AIPState}
- *             |
- *          INDEXED
+ *           /   \
+ *     INDEXED   INDEX_ERROR
  * </pre>
  *
  * @author Marc Sordi

@@ -395,8 +395,8 @@ public class SIPServiceTest extends AbstractSIPTest {
         @SuppressWarnings("rawtypes") ArgumentCaptor<Set> argument = ArgumentCaptor.forClass(Set.class);
         Mockito.verify(aipClient, Mockito.times(1)).deleteAipFromSips(argument.capture());
         // Valid SIP for deletion are other states (CREATED, AIP_CREATED, INVALID, AIP_GEN_ERROR, REJECTED, STORED,
-        // STORE_ERROR, INCOMPLETE, INDEXED, TO_BE_DELETED)
-        Assert.assertEquals(10, argument.getValue().size());
+        // STORE_ERROR, INCOMPLETE, INDEXED, INDEX_ERROR, TO_BE_DELETED)
+        Assert.assertEquals(12, argument.getValue().size());
         // Check that not stored SIP are already in DELETED state
         // Not stored state are CREATED, AIP_CREATED, INVALID, AIP_GEN_ERROR, REJECTED, DELETED
         Page<SIPEntity> results = sipService.search(null,
