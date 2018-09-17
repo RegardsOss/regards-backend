@@ -7,8 +7,6 @@ import java.util.Map;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
 import fr.cnes.regards.framework.oais.adapter.InformationPackageMap;
 
 /**
@@ -20,9 +18,9 @@ import fr.cnes.regards.framework.oais.adapter.InformationPackageMap;
 public class InformationPackageProperties {
 
     /**
-     * The content informations
+     * The content informations<br/>
+     * Can be empty for metadata only information packages like datasets and collections.
      */
-    @NotEmpty(message = "At least one content information is required")
     @Valid
     private List<ContentInformation> contentInformations;
 
@@ -93,10 +91,10 @@ public class InformationPackageProperties {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = (prime * result) + ((contentInformations == null) ? 0 : contentInformations.hashCode());
-        result = (prime * result) + ((miscInformation == null) ? 0 : miscInformation.hashCode());
-        result = (prime * result) + ((descriptiveInformation == null) ? 0 : descriptiveInformation.hashCode());
-        result = (prime * result) + ((pdi == null) ? 0 : pdi.hashCode());
+        result = prime * result + (contentInformations == null ? 0 : contentInformations.hashCode());
+        result = prime * result + (miscInformation == null ? 0 : miscInformation.hashCode());
+        result = prime * result + (descriptiveInformation == null ? 0 : descriptiveInformation.hashCode());
+        result = prime * result + (pdi == null ? 0 : pdi.hashCode());
         return result;
     }
 
@@ -111,7 +109,7 @@ public class InformationPackageProperties {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        InformationPackageProperties other = (InformationPackageProperties) obj;
+        final InformationPackageProperties other = (InformationPackageProperties) obj;
         if (contentInformations == null) {
             if (other.contentInformations != null) {
                 return false;
