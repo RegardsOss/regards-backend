@@ -132,6 +132,9 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
             retrieveConf(conf.getId());
             checkConfAlreadyExists(conf);
         }
+        // First save plugin conf update
+        pluginService.updatePluginConfiguration(conf.getConfiguration());
+        // Then save engine conf
         return addDatasetLabel(repository.save(conf), Lists.newArrayList());
     }
 
