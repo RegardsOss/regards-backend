@@ -65,8 +65,8 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_ATOM_XML));
-        customizer.customizeRequestParam().param("page", "1");
-        customizer.customizeRequestParam().param("size", "3");
+        customizer.customizeRequestParam().param("page", "2");
+        customizer.customizeRequestParam().param("maxRecords", "3");
         customizer.addExpectation(MockMvcResultMatchers.xpath("feed/itemsPerPage").string(Matchers.is("3")));
         customizer.addExpectation(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("9")));
         customizer.addExpectation(MockMvcResultMatchers.xpath("feed/startIndex").string(Matchers.is("4")));
@@ -79,8 +79,8 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_ATOM_XML));
-        customizer.customizeRequestParam().param("page", "0");
-        customizer.customizeRequestParam().param("size", "10");
+        customizer.customizeRequestParam().param("page", "1");
+        customizer.customizeRequestParam().param("maxRecords", "10");
         customizer.customizeRequestParam().param("properties.planet", "Mercury");
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
@@ -104,8 +104,8 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        customizer.customizeRequestParam().param("page", "0");
-        customizer.customizeRequestParam().param("size", "100");
+        customizer.customizeRequestParam().param("page", "1");
+        customizer.customizeRequestParam().param("maxRecords", "100");
         customizer.customizeRequestParam().param("planet", "Mercury");
         customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(1)));
         customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.features.length()", Matchers.equalTo(1)));
@@ -120,8 +120,8 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_ATOM_XML));
-        customizer.customizeRequestParam().param("page", "0");
-        customizer.customizeRequestParam().param("size", "100");
+        customizer.customizeRequestParam().param("page", "1");
+        customizer.customizeRequestParam().param("maxRecords", "100");
         customizer.customizeRequestParam().param("box", "15.0,15.0,20.0,20.0");
         customizer.addExpectation(MockMvcResultMatchers.xpath("feed/itemsPerPage").string(Matchers.is("100")));
         customizer.addExpectation(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("1")));
@@ -148,8 +148,8 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        customizer.customizeRequestParam().param("page", "0");
-        customizer.customizeRequestParam().param("size", "100");
+        customizer.customizeRequestParam().param("page", "1");
+        customizer.customizeRequestParam().param("maxRecords", "100");
         customizer.customizeRequestParam().param("box", "15.0,15.0,20.0,20.0");
         customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(1)));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
@@ -161,8 +161,8 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        customizer.customizeRequestParam().param("page", "0");
-        customizer.customizeRequestParam().param("size", "100");
+        customizer.customizeRequestParam().param("page", "1");
+        customizer.customizeRequestParam().param("maxRecords", "100");
         customizer.customizeRequestParam().param("lon", "20.0");
         customizer.customizeRequestParam().param("lat", "20.0");
         customizer.customizeRequestParam().param("radius", "5.0");
@@ -296,8 +296,8 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.customizeHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.customizeRequestParam().param("page", "0");
-        customizer.customizeRequestParam().param("size", "100");
+        customizer.customizeRequestParam().param("page", "1");
+        customizer.customizeRequestParam().param("maxRecords", "100");
         customizer.addExpectation(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("13")));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_ALL_MAPPING, customizer,
                           "Search all error", ENGINE_TYPE);
@@ -308,8 +308,8 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.customizeHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.customizeRequestParam().param("page", "0");
-        customizer.customizeRequestParam().param("size", "100");
+        customizer.customizeRequestParam().param("page", "1");
+        customizer.customizeRequestParam().param("maxRecords", "100");
         customizer.addExpectation(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("9")));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
@@ -325,8 +325,8 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.customizeHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.customizeRequestParam().param("page", "0");
-        customizer.customizeRequestParam().param("size", "100");
+        customizer.customizeRequestParam().param("page", "1");
+        customizer.customizeRequestParam().param("maxRecords", "100");
         customizer.addExpectation(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("8")));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE, solarSystem.getIpId().toString());
@@ -337,8 +337,8 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.customizeHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.customizeRequestParam().param("page", "0");
-        customizer.customizeRequestParam().param("size", "100");
+        customizer.customizeRequestParam().param("page", "1");
+        customizer.customizeRequestParam().param("maxRecords", "100");
         customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(13)));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_ALL_MAPPING, customizer,
                           "Search all error", ENGINE_TYPE);
