@@ -102,7 +102,7 @@ public interface IProductService {
     /**
      * Count number of products associated to the given {@link AcquisitionProcessingChain} and in the given state
      * @param processingChain {@link AcquisitionProcessingChain}
-     * @param states {@link ProductState}s
+     * @param productStates {@link ProductState}s
      * @return number of matching {@link Product}
      */
     long countByChainAndStateIn(AcquisitionProcessingChain processingChain, List<ProductState> productStates);
@@ -110,7 +110,7 @@ public interface IProductService {
     /**
      * Count number of products associated to the given {@link AcquisitionProcessingChain} and in the given state
      * @param processingChain {@link AcquisitionProcessingChain}
-     * @param states {@link ProductState}s
+     * @param productSipStates {@link ProductState}s
      * @return number of matching {@link Product}
      */
     long countByProcessingChainAndSipStateIn(AcquisitionProcessingChain processingChain,
@@ -143,9 +143,14 @@ public interface IProductService {
     void scheduleProductSIPSubmission();
 
     /**
-     * Handle product SIP submission failure
+     * Handle product {@link SIPSubmissionJob} failure
      */
-    void handleProductJobEvent(JobEvent jobEvent);
+    void handleSIPSubmissiontError(JobInfo jobInfo);
+
+    /**
+     * Handle product {@link fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob} failure
+     */
+    void handleSIPGenerationError(JobInfo jobInfo);
 
     /**
      * Retry product SIP submission for resetting product SIP state to {@link ProductSIPState#GENERATED}

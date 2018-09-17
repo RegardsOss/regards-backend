@@ -25,6 +25,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
@@ -174,4 +175,9 @@ public interface IAcquisitionProcessingService {
      */
     Page<AcquisitionProcessingChainMonitor> buildAcquisitionProcessingChainSummaries(String label, Boolean running,
             AcquisitionProcessingChainMode mode, Pageable pageable) throws ModuleException;
+
+    /**
+     * Handle {@link fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob} errors
+     */
+    void handleProductAcquisitionError(JobInfo jobInfo);
 }

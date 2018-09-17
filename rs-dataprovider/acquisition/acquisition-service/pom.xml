@@ -106,8 +106,12 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>oais-starter</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.notification</groupId>
+			<artifactId>notification-client</artifactId>
+		</dependency>
 		<!-- TEST dependencies -->
-        <dependency>
+		<dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
             <artifactId>regards-integration-test</artifactId>
             <scope>test</scope>
@@ -117,5 +121,5 @@
 			<artifactId>jpa-multitenant-regards-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
+    </dependencies>
 </project>
