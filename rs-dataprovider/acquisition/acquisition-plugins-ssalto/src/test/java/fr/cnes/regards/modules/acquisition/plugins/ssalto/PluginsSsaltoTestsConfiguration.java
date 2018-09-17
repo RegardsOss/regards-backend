@@ -18,11 +18,14 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 
+import org.mockito.Mockito;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.autoconfigure.AcquisitionPluginSsaltoAutoConfigure;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
 
 /**
  * @author Christophe Mertz
@@ -32,4 +35,9 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.autoconfigure.Acquisit
 @ComponentScan(basePackageClasses = { AcquisitionPluginSsaltoAutoConfigure.class })
 @PropertySource({ "classpath:application-test.properties" })
 public class PluginsSsaltoTestsConfiguration {
+
+    @Bean
+    public INotificationClient notificationClient() {
+        return Mockito.mock(INotificationClient.class);
+    }
 }
