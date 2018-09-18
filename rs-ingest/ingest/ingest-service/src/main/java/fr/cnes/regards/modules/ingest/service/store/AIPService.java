@@ -207,14 +207,34 @@ public class AIPService implements IAIPService {
         aip.setState(SipAIPState.INDEXED);
         aip.setErrorMessage(null);
         aipRepository.save(aip);
-        // If all AIP are stored update SIP state to STORED
+        LOGGER.info("AIP \"{}\" is now indexed.", aip.getAipIdUrn().toString());
+        // If all AIPs of current SIP are indexed then update SIP state to INDEXED
         Set<AIPEntity> sipAips = aipRepository.findBySip(aip.getSip());
-        if (sipAips.stream().allMatch(a -> SipAIPState.INDEXED.equals(a.getState()))) {
+        if (sipAips.stream().allMatch(aipEntity -> aipEntity.getState() == SipAIPState.INDEXED)) {
             SIPEntity sip = aip.getSip();
             sip.setState(SIPState.INDEXED);
             sipService.saveSIPEntity(sip);
-            // AIPs are no longer usefull here we can delete them
+            LOGGER.info("SIP \"{}\" is now indexed.", sip.getSipId());
+            // AIPs are no longer useful here we can delete them
             aipRepository.delete(sipAips);
+        }
+        return aip;
+    }
+
+    @Override
+    public AIPEntity setAipToIndexError(AIPEntity aip) {
+        aip.setState(SipAIPState.INDEX_ERROR);
+        aip.setErrorMessage(null);
+        aipRepository.save(aip);
+
+        LOGGER.info("AIP \"{}\" is now indexed.", aip.getAipIdUrn().toString());
+        // If one AIP of current SIP is at INDEX_ERROR than update SIP state to INDEX_ERROR
+        Set<AIPEntity> sipAips = aipRepository.findBySip(aip.getSip());
+        if (sipAips.stream().anyMatch(aipEntity -> aipEntity.getState() == SipAIPState.INDEX_ERROR)) {
+            SIPEntity sip = aip.getSip();
+            sip.setState(SIPState.INDEX_ERROR);
+            sipService.saveSIPEntity(sip);
+            LOGGER.info("SIP \"{}\" cannot be indexed.", sip.getSipId());
         }
         return aip;
     }

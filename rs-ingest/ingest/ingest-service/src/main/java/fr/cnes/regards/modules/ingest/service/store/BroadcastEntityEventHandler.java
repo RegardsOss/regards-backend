@@ -109,17 +109,6 @@ public class BroadcastEntityEventHandler
             if (oAip.isPresent()) {
                 AIPEntity aip = oAip.get();
                 aipService.setAipToIndexed(aip);
-                LOGGER.info("AIP \"{}\" is now indexed.", ipId.toString());
-                // If all AIPs of current SIP are indexed then update SIP state to INDEXED
-                Set<AIPEntity> sipAips = aipRepository.findBySip(aip.getSip());
-                if (sipAips.stream().allMatch(aipEntity -> aipEntity.getState() == SipAIPState.INDEXED)) {
-                    SIPEntity sip = aip.getSip();
-                    sip.setState(SIPState.INDEXED);
-                    sipService.saveSIPEntity(sip);
-                    LOGGER.info("SIP \"{}\" is now indexed.", sip.getSipId());
-                    // AIPs are no longer useful here we can delete them
-                    aipRepository.delete(sipAips);
-                }
             }
         }
         runtimeTenantResolver.clearTenant();
@@ -136,8 +125,8 @@ public class BroadcastEntityEventHandler
             Optional<AIPEntity> oAip = aipService.searchAip(ipId);
             if (oAip.isPresent()) {
                 AIPEntity aip = oAip.get();
-                aipService.setAipToIndexed(aip);
-                LOGGER.info("AIP \"{}\" is now indexed.", ipId.toString());
+                aipService.setAipToIndexError(aip);
+                LOGGER.info("AIP \"{}\" cannot be indexed.", ipId.toString());
                 // If one AIP of current SIP is at INDEX_ERROR than update SIP state to INDEX_ERROR
                 Set<AIPEntity> sipAips = aipRepository.findBySip(aip.getSip());
                 if (sipAips.stream().anyMatch(aipEntity -> aipEntity.getState() == SipAIPState.INDEX_ERROR)) {

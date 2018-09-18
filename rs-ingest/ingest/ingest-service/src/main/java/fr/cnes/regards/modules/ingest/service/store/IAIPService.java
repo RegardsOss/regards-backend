@@ -66,6 +66,13 @@ public interface IAIPService {
     AIPEntity setAipToIndexed(AIPEntity aip);
 
     /**
+     * Set {@link AIPEntity} state to {@link SipAIPState#INDEX_ERROR}
+     * @return {@link AIPEntity} updated
+     */
+    AIPEntity setAipToIndexError(AIPEntity aip);
+
+
+    /**
      * Search for a {@link AIPEntity} by its ipId
      */
     Optional<AIPEntity> searchAip(UniformResourceName aipId);
