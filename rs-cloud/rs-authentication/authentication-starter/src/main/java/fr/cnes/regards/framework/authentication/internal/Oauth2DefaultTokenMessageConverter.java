@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.authentication.internal;
 
+import java.lang.reflect.Type;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
@@ -52,4 +54,12 @@ public class Oauth2DefaultTokenMessageConverter extends MappingJackson2HttpMessa
         return false;
     }
 
+    @Override
+    public boolean canRead(Type type, Class<?> contextClass, MediaType mediaType) {
+        // Only user Jackson for Oauth2 Token.
+        if (DefaultOAuth2AccessToken.class.getTypeName().equals(type.getTypeName())) {
+            return super.canRead(type, contextClass, mediaType);
+        }
+        return false;
+    }
 }
