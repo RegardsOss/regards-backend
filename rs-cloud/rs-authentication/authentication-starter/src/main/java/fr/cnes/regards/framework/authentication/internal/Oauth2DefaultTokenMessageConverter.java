@@ -35,21 +35,13 @@ import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 public class Oauth2DefaultTokenMessageConverter extends MappingJackson2HttpMessageConverter {
 
     @Override
-    public boolean canWrite(Class<?> clazz, MediaType mediaType) {
+    public boolean canWrite(final Class<?> pClazz, final MediaType pMedia) {
+        boolean result = false;
         // Only user Jackson for Oauth2 Token.
-        if (DefaultOAuth2AccessToken.class.equals(clazz)) {
-            return super.canWrite(clazz, mediaType);
+        if (DefaultOAuth2AccessToken.class.equals(pClazz)) {
+            result = super.canWrite(pClazz, pMedia);
         }
-        return false;
-    }
-
-    @Override
-    public boolean canRead(Class<?> clazz, MediaType mediaType) {
-        // Only user Jackson for Oauth2 Token.
-        if (DefaultOAuth2AccessToken.class.equals(clazz)) {
-            return super.canRead(clazz, mediaType);
-        }
-        return false;
+        return result;
     }
 
 }
