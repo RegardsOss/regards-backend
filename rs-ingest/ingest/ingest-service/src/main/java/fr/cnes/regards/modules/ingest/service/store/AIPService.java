@@ -45,10 +45,12 @@ import org.springframework.web.client.HttpServerErrorException;
 import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.microservice.maintenance.MaintenanceException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -91,7 +93,6 @@ import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 @MultitenantTransactional
 public class AIPService implements IAIPService {
 
-    @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPService.class);
 
     @Autowired
@@ -128,7 +129,7 @@ public class AIPService implements IAIPService {
     private ITemplateService templateService;
 
     @Override
-    public void setAipInError(UniformResourceName aipId, IAipState state, String errorMessage) {
+    public void setAipInError(UniformResourceName aipId, IAipState state, String errorMessage, SIPState sipState) {
         Optional<AIPEntity> oAip = aipRepository.findByAipId(aipId.toString());
         if (oAip.isPresent()) {
             // Update AIP State
@@ -136,11 +137,10 @@ public class AIPService implements IAIPService {
             aipRepository.updateAIPEntityStateAndErrorMessage(state, aipId.toString(), errorMessage);
             // Update SIP associated State
             SIPEntity sip = aip.getSip();
-            sip.setState(SIPState.STORE_ERROR);
+            sip.setState(sipState);
             // Save the errorMessage inside SIP rejections errors
             sip.getRejectionCauses().add(String.format("Storage of AIP(%s) failed due to the following error: %s",
-                                                       aipId,
-                                                       errorMessage));
+                                                       aipId, errorMessage));
             sipService.saveSIPEntity(sip);
         }
     }
@@ -178,7 +178,7 @@ public class AIPService implements IAIPService {
         ResponseEntity<PagedResources<Resource<fr.cnes.regards.modules.storage.domain.database.AIPEntity>>> result = aipEntityClient
                 .retrieveAIPEntities(sipId.toString(), 0, 100);
         FeignSecurityManager.reset();
-        if (result.getStatusCode().equals(HttpStatus.OK) && (result.getBody() != null)) {
+        if (result.getStatusCode().equals(HttpStatus.OK) && result.getBody() != null) {
             Optional<SIPEntity> oSip = sipRepository.findOneBySipId(sipId.toString());
             if (oSip.isPresent()) {
                 SIPEntity sip = oSip.get();
@@ -232,10 +232,9 @@ public class AIPService implements IAIPService {
         for (IngestProcessingChain ipc : ipcs) {
             // Check if submission not already scheduled
             if (!aipRepository.isAlreadyWorking(ipc.getName())) {
-                Page<AIPEntity> page = aipRepository.findWithLockBySipProcessingAndState(ipc.getName(),
-                                                                                         SipAIPState.CREATED,
-                                                                                         new PageRequest(0,
-                                                                                                         bulkRequestLimit));
+                Page<AIPEntity> page = aipRepository
+                        .findWithLockBySipProcessingAndState(ipc.getName(), SipAIPState.CREATED,
+                                                             new PageRequest(0, bulkRequestLimit));
                 if (page.hasContent()) {
                     // Schedule AIP page submission
                     for (AIPEntity aip : page.getContent()) {
@@ -270,10 +269,11 @@ public class AIPService implements IAIPService {
             Map<String, JobParameter> params = jobInfo.getParametersAsMap();
             String ingestChain = params.get(AIPSubmissionJob.INGEST_CHAIN_PARAMETER).getValue();
             // Set to submission error
-            Set<AIPEntity> aips = aipRepository
-                    .findBySipProcessingAndState(ingestChain, SipAIPState.SUBMISSION_SCHEDULED);
+            Set<AIPEntity> aips = aipRepository.findBySipProcessingAndState(ingestChain,
+                                                                            SipAIPState.SUBMISSION_SCHEDULED);
             for (AIPEntity aip : aips) {
-                setAipInError(aip.getAipIdUrn(), SipAIPState.SUBMISSION_ERROR, "Submission job error");
+                setAipInError(aip.getAipIdUrn(), SipAIPState.SUBMISSION_ERROR, "Submission job error",
+                              SIPState.SUBMISSION_ERROR);
             }
         }
     }
@@ -283,7 +283,7 @@ public class AIPService implements IAIPService {
         UniformResourceName aipId = UniformResourceName.fromString(aipEvent.getAipId());
         switch (aipEvent.getAipState()) {
             case STORAGE_ERROR:
-                setAipInError(aipId, aipEvent.getAipState(), aipEvent.getFailureCause());
+                setAipInError(aipId, aipEvent.getAipState(), aipEvent.getFailureCause(), SIPState.STORE_ERROR);
                 break;
             case STORED:
                 setAipToStored(aipId, aipEvent.getAipState());
@@ -314,17 +314,16 @@ public class AIPService implements IAIPService {
     public void askForAipsDeletion() {
         List<RejectedSip> rejectedSips = new ArrayList<>();
         Page<SIPEntity> deletableSips = sipRepository.findPageByState(SIPState.TO_BE_DELETED, new PageRequest(0, 100));
-        if(deletableSips.hasContent()) {
+        if (deletableSips.hasContent()) {
             ResponseEntity<List<RejectedSip>> response;
             long askForAipDeletionStart = System.currentTimeMillis();
             FeignSecurityManager.asSystem();
             try {
-                response = aipClient
-                        .deleteAipFromSips(deletableSips.getContent().stream().map(sip -> sip.getSipId().toString()).collect(Collectors.toSet()));
+                response = aipClient.deleteAipFromSips(deletableSips.getContent().stream()
+                        .map(sip -> sip.getSipId().toString()).collect(Collectors.toSet()));
                 long askForAipDeletionEnd = System.currentTimeMillis();
                 LOGGER.trace("Asking SUCCESSFULLY for storage to delete {} sip took {} ms",
-                             deletableSips.getNumberOfElements(),
-                             askForAipDeletionEnd - askForAipDeletionStart);
+                             deletableSips.getNumberOfElements(), askForAipDeletionEnd - askForAipDeletionStart);
                 if (HttpUtils.isSuccess(response.getStatusCode())) {
                     if (response.getBody() != null) {
                         rejectedSips = response.getBody();
@@ -337,14 +336,14 @@ public class AIPService implements IAIPService {
                     throw e;
                 }
                 // first lets get the string from the body then lets deserialize it using gson
-                @SuppressWarnings("serial") TypeToken<List<RejectedSip>> bodyTypeToken = new TypeToken<List<RejectedSip>>() {
+                @SuppressWarnings("serial")
+                TypeToken<List<RejectedSip>> bodyTypeToken = new TypeToken<List<RejectedSip>>() {
 
                 };
                 rejectedSips = gson.fromJson(e.getResponseBodyAsString(), bodyTypeToken.getType());
             } finally {
                 long askForAipDeletionEnd = System.currentTimeMillis();
-                LOGGER.trace("Asking for storage to delete {} sip took {} ms",
-                             deletableSips.getNumberOfElements(),
+                LOGGER.trace("Asking for storage to delete {} sip took {} ms", deletableSips.getNumberOfElements(),
                              askForAipDeletionEnd - askForAipDeletionStart);
                 FeignSecurityManager.reset();
             }
@@ -389,10 +388,20 @@ public class AIPService implements IAIPService {
         } catch (EntityNotFoundException enf) {
             throw new MaintenanceException(enf.getMessage(), enf);
         }
-        notificationClient.notifyRoles(email.getText(),
-                                       "Errors during SIPs deletions",
-                                       "rs-ingest",
-                                       NotificationType.ERROR,
-                                       DefaultRole.ADMIN);
+        notificationClient.notifyRoles(email.getText(), "Errors during SIPs deletions", "rs-ingest",
+                                       NotificationType.ERROR, DefaultRole.ADMIN);
+    }
+
+    @Override
+    public void retryAipSubmission(String sessionId) throws ModuleException {
+        // Find all AIP in SUBMISSION error
+        Set<AIPEntity> aips = aipRepository.findByStateAndSipSessionId(SipAIPState.SUBMISSION_ERROR, sessionId);
+        for (AIPEntity aip : aips) {
+            aip.setState(SipAIPState.CREATED);
+            aip.getSip().setState(SIPState.AIP_CREATED);
+            aip.getSip().getRejectionCauses().clear();
+            sipService.saveSIPEntity(aip.getSip());
+            save(aip);
+        }
     }
 }

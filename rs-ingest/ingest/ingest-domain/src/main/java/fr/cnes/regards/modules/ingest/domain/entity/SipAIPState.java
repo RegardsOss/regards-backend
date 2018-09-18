@@ -23,10 +23,10 @@
  * <pre>
  *             o
  *             |
- *          CREATED
- *             |
- *      SUBMISSION_SCHEDULED
- *             |
+ *          CREATED <------------|
+ *             |                 |
+ *      SUBMISSION_SCHEDULED     |
+ *             |                 |
  *  REJECTED___|_______ SUBMISSION_ERROR
  *             |
  *         {AIPState}

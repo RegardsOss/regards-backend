@@ -96,11 +96,15 @@ public class SIPSessionService implements ISIPSessionService {
         long generatedSipsCount = sipRepository
                 .countBySessionIdAndStateIn(session.getId(),
                                             Sets.newHashSet(SIPState.AIP_CREATED, SIPState.STORED, SIPState.INDEXED,
-                                                            SIPState.INCOMPLETE, SIPState.STORE_ERROR));
-        long errorSipsCount = sipRepository.countBySessionIdAndStateIn(session.getId(), Sets
-                .newHashSet(SIPState.AIP_GEN_ERROR, SIPState.REJECTED, SIPState.STORE_ERROR, SIPState.INVALID));
-        long deletedSipsCount = sipRepository.countBySessionIdAndStateIn(session.getId(), Sets
-                .newHashSet(SIPState.DELETED));
+                                                            SIPState.INCOMPLETE, SIPState.SUBMISSION_ERROR,
+                                                            SIPState.STORE_ERROR));
+        long errorSipsCount = sipRepository
+                .countBySessionIdAndStateIn(session.getId(),
+                                            Sets.newHashSet(SIPState.AIP_GEN_ERROR, SIPState.REJECTED,
+                                                            SIPState.SUBMISSION_ERROR, SIPState.STORE_ERROR,
+                                                            SIPState.INVALID));
+        long deletedSipsCount = sipRepository.countBySessionIdAndStateIn(session.getId(),
+                                                                         Sets.newHashSet(SIPState.DELETED));
         session.setErrorSipsCount(errorSipsCount);
         session.setGeneratedSipsCount(generatedSipsCount);
         session.setIndexedSipsCount(indexedSipsCount);

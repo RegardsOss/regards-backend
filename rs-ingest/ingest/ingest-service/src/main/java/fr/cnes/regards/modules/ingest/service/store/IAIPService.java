@@ -21,10 +21,13 @@ package fr.cnes.regards.modules.ingest.service.store;
 import java.util.Optional;
 import java.util.Set;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
+import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.IAipState;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 
@@ -45,9 +48,9 @@ public interface IAIPService {
     void handleAipEvent(AIPEvent aipEvent);
 
     /**
-     * Set the status of the given AIP to {@link SipAIPState#STORE_ERROR}
+     * Set the status of the given AIP
      */
-    void setAipInError(UniformResourceName aipId, IAipState storeError, String failureCause);
+    void setAipInError(UniformResourceName aipId, IAipState storeError, String failureCause, SIPState sipState);
 
     /**
      * Delete the {@link AIPEntity} by his ipId
@@ -55,7 +58,7 @@ public interface IAIPService {
     void deleteAip(UniformResourceName aipId, UniformResourceName sipId, IAipState state);
 
     /**
-     * Set {@link AIPEntity} state to {@link SipAIPState#STORED}
+     * Set {@link AIPEntity} to {@link AIPState#STORED}
      */
     void setAipToStored(UniformResourceName aipId, IAipState state);
 
@@ -68,8 +71,6 @@ public interface IAIPService {
 
     /**
      * Search for a {@link AIPEntity} by its ipId
-     * @param ipId
-     * @return
      */
     Optional<AIPEntity> searchAip(UniformResourceName aipId);
 
@@ -92,4 +93,9 @@ public interface IAIPService {
      * Look for sips in state {@link fr.cnes.regards.modules.ingest.domain.entity.SIPState#TO_BE_DELETED} and ask to rs-storage to delete them per page of 100.
      */
     void askForAipsDeletion();
+
+    /**
+     * Reactivate AIP submission for AIP and its SIP in submission error
+     */
+    void retryAipSubmission(String sessionId) throws ModuleException;
 }

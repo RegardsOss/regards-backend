@@ -58,6 +58,11 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
     Set<AIPEntity> findBySipSipId(String sipId);
 
     /**
+     * Retrieve all {@link AIPEntity} associated to the given session with the given state
+     */
+    Set<AIPEntity> findByStateAndSipSessionId(IAipState state, String sessionId);
+
+    /**
      * Retrieve an {@link AIPEntity} by its {@link AIPEntity#getAipId()}
      * @param aipId SIP identifier
      * @return optional {@link AIPEntity}

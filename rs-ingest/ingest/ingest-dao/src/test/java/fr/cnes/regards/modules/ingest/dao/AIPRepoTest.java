@@ -53,4 +53,9 @@ public class AIPRepoTest extends AbstractDaoTransactionalTest {
         Assert.assertNotNull(aips);
     }
 
+    @Test
+    public void test3() {
+        Set<AIPEntity> aips = aipRepo.findByStateAndSipSessionId(SipAIPState.SUBMISSION_ERROR, "session");
+        Assert.assertNotNull(aips);
+    }
 }

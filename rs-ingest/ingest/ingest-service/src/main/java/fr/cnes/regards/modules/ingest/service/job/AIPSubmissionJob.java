@@ -40,6 +40,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.ingest.service.store.IAIPService;
 import fr.cnes.regards.modules.storage.client.IAipClient;
@@ -152,6 +153,6 @@ public class AIPSubmissionJob extends AbstractJob<Void> {
         logger.warn("AIP {} has been rejected by archival storage microservice for store action", aipId);
         StringJoiner errorMessage = new StringJoiner(", ");
         rejectionCauses.forEach(cause -> errorMessage.add(cause));
-        aipService.setAipInError(aipId, SipAIPState.REJECTED, errorMessage.toString());
+        aipService.setAipInError(aipId, SipAIPState.REJECTED, errorMessage.toString(), SIPState.STORE_ERROR);
     }
 }
