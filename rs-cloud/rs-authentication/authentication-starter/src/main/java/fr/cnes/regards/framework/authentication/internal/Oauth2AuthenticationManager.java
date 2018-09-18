@@ -42,6 +42,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import feign.FeignException;
 import fr.cnes.regards.framework.authentication.exception.AuthenticationException;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -289,8 +290,18 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             throw new BadCredentialsException(message);
         }
         LOG.info("Creating new account for user email=" + pUserEmail);
-        client.requestAccess(new AccessRequestDto(pUserEmail, pUserEmail, pUserEmail, DefaultRole.PUBLIC.name(), null,
-                null, pOrigineUrl, pRequestLink));
+        try {
+            FeignSecurityManager.asSystem();
+            client.requestAccess(new AccessRequestDto(pUserEmail, pUserEmail, pUserEmail, DefaultRole.PUBLIC.name(),
+                    null, null, pOrigineUrl, pRequestLink));
+        } catch (FeignException e) {
+            final String message = String.format("Error creation new account for user %s. Cause : %s", pUserEmail,
+                                                 e.getMessage());
+            LOG.error(message);
+            throw new BadCredentialsException(message);
+        } finally {
+            FeignSecurityManager.reset();
+        }
     }
 
     /**
