@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storage.domain.plugin;
 
 import java.util.Collection;
+import java.util.Map;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -38,7 +39,7 @@ public interface IDataStorage<T extends IWorkingSubset> {
     /**
      * Generate all working subsets divided by archiving mode {@link DataStorageAccessModeEnum}
      * @param dataFiles {@link Collection} of {@link StorageDataFile} to dispatch
-     * @param pMode {@link DataStorageAccessModeEnum}
+     * @param mode {@link DataStorageAccessModeEnum}
      * @return {@link WorkingSubsetWrapper} containing all working subsets
      */
     WorkingSubsetWrapper<T> prepare(Collection<StorageDataFile> dataFiles, DataStorageAccessModeEnum mode);
@@ -96,7 +97,9 @@ public interface IDataStorage<T extends IWorkingSubset> {
             PluginConfiguration currentConfiguration, boolean filesAlreadyStored);
 
     /**
+     * Return type being a {@link Map}, you can add whatever information. Plugin configuration information are added on service level
+     *
      * @return debug information specific to plugin implementation
      */
-    Object getDiagnosticInfo();
+    Map<String, Object> getDiagnosticInfo();
 }

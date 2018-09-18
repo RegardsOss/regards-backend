@@ -509,18 +509,19 @@ public class DataStorageService implements IDataStorageService {
     }
 
     @Override
-    public List<Object> getDiagnostics() {
+    public List<Map<String, Object>> getDiagnostics() {
         List<PluginConfiguration> dataStorageConfigurations = pluginService
                 .getPluginConfigurationsByType(IDataStorage.class);
         // lets take only the activated ones
         Set<PluginConfiguration> activeDataStorageConfs = dataStorageConfigurations.stream().filter(pc -> pc.isActive())
                 .collect(Collectors.toSet());
-        List<Object> diagnostic = new ArrayList<>(activeDataStorageConfs.size());
+        List<Map<String, Object>> diagnostic = new ArrayList<>(activeDataStorageConfs.size());
         for(PluginConfiguration dataStorageConf: activeDataStorageConfs) {
             try {
                 IDataStorage<?> activeDataStorage = pluginService.getPlugin(dataStorageConf.getId());
-
-                diagnostic.add(activeDataStorage.getDiagnosticInfo());
+                Map<String, Object> diagInfo = activeDataStorage.getDiagnosticInfo();
+                diagInfo.put("Plugin Conf", dataStorageConf);
+                diagnostic.add(diagInfo);
             } catch (ModuleException e) {
                 // We do not really care about issues here, we are getting diagnostic information so we probably
                 // have access to logs to see issues

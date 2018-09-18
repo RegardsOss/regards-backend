@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.storage.service.plugins;
 
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Map;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -61,7 +62,7 @@ public class NearlineNoRetrieveDataStorage implements INearlineDataStorage<Local
     }
 
     @Override
-    public Object getDiagnosticInfo() {
+    public Map<String, Object> getDiagnosticInfo() {
         return null;
     }
 }

@@ -26,6 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -207,7 +208,7 @@ public class SimpleOnlineDataStorage implements IOnlineDataStorage<LocalWorkingS
     }
 
     @Override
-    public Object getDiagnosticInfo() {
+    public Map<String, Object> getDiagnosticInfo() {
         return null;
     }
 }

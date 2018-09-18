@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.notification.domain.NotificationType;
@@ -85,5 +86,5 @@ public interface IDataStorageService {
     /**
      * @return all diagnostic information from all active {@link IDataStorage}s configuration
      */
-    List<Object> getDiagnostics();
+    List<Map<String,Object>> getDiagnostics();
 }

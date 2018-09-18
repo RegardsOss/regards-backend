@@ -3,6 +3,7 @@ package fr.cnes.regards.modules.storage.rest;
 import javax.tools.Diagnostic;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
@@ -66,8 +67,8 @@ public class StorageMonitoringController implements IResourceController<PluginSt
     @RequestMapping(path = DIAGNOSTIC, method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "Endpoint allowing to get some diagnostic information on datastorages.")
-    public ResponseEntity<List<Object>> getDiagnostic() {
-        return new ResponseEntity<List<Object>>(dataStorageService.getDiagnostics(), HttpStatus.OK);
+    public ResponseEntity<List<Map<String, Object>>> getDiagnostic() {
+        return new ResponseEntity<>(dataStorageService.getDiagnostics(), HttpStatus.OK);
     }
 
     @Override

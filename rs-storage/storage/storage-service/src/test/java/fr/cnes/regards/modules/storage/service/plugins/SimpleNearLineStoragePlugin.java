@@ -24,6 +24,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -109,7 +110,7 @@ public class SimpleNearLineStoragePlugin implements INearlineDataStorage<LocalWo
     }
 
     @Override
-    public Object getDiagnosticInfo() {
+    public Map<String, Object> getDiagnosticInfo() {
         return null;
     }
 }
