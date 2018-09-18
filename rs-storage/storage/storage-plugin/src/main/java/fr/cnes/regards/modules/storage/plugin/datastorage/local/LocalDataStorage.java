@@ -289,4 +289,9 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
         }
 
     }
+
+    @Override
+    public Object getDiagnosticInfo() {
+        return null;
+    }
 }

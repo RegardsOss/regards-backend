@@ -87,4 +87,9 @@ public class NearlineDataStorageTestPlugin implements INearlineDataStorage<Local
         return PluginConfUpdatable.allowUpdate();
     }
 
+    @Override
+    public Object getDiagnosticInfo() {
+        return null;
+    }
+
 }

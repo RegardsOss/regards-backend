@@ -94,4 +94,9 @@ public interface IDataStorage<T extends IWorkingSubset> {
      */
     PluginConfUpdatable allowConfigurationUpdate(PluginConfiguration newConfiguration,
             PluginConfiguration currentConfiguration, boolean filesAlreadyStored);
+
+    /**
+     * @return debug information specific to plugin implementation
+     */
+    Object getDiagnosticInfo();
 }

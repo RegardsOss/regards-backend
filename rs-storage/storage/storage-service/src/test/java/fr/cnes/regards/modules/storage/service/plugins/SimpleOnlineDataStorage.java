@@ -205,4 +205,9 @@ public class SimpleOnlineDataStorage implements IOnlineDataStorage<LocalWorkingS
         }
 
     }
+
+    @Override
+    public Object getDiagnosticInfo() {
+        return null;
+    }
 }

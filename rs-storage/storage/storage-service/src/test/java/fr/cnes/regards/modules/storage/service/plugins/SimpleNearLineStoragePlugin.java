@@ -107,4 +107,9 @@ public class SimpleNearLineStoragePlugin implements INearlineDataStorage<LocalWo
             PluginConfiguration currentConfiguration, boolean filesAlreadyStored) {
         return PluginConfUpdatable.allowUpdate();
     }
+
+    @Override
+    public Object getDiagnosticInfo() {
+        return null;
+    }
 }

@@ -59,4 +59,9 @@ public class NearlineNoRetrieveDataStorage implements INearlineDataStorage<Local
             PluginConfiguration currentConfiguration, boolean filesAlreadyStored) {
         return PluginConfUpdatable.allowUpdate();
     }
+
+    @Override
+    public Object getDiagnosticInfo() {
+        return null;
+    }
 }

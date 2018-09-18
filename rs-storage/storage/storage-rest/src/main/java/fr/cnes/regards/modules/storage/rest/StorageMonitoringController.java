@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.storage.rest;
 
+import javax.tools.Diagnostic;
 import java.io.IOException;
 import java.util.List;
 
@@ -25,13 +26,16 @@ import fr.cnes.regards.modules.storage.service.IDataStorageService;
  *
  * @author Sylvain VISSIERE-GUERINET
  */
-@RestController(StorageMonitoringController.PATH)
+@RestController
+@RequestMapping(StorageMonitoringController.PATH)
 public class StorageMonitoringController implements IResourceController<PluginStorageInfo> {
 
     /**
      * Controller base path
      */
     public static final String PATH = PrioritizedDataStorageController.BASE_PATH + "/monitoring";
+
+    private static final String DIAGNOSTIC = "/diagnostic";
 
     /**
      * {@link IDataStorageService} instance
@@ -51,12 +55,19 @@ public class StorageMonitoringController implements IResourceController<PluginSt
      * @throws ModuleException
      * @throws IOException
      */
-    @RequestMapping(value = PATH, method = RequestMethod.GET)
+    @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "send the list of all active data storage monitoring information")
     public ResponseEntity<List<Resource<PluginStorageInfo>>> retrieveMonitoringInfos()
             throws ModuleException, IOException {
         return new ResponseEntity<>(toResources(dataStorageService.getMonitoringInfos()), HttpStatus.OK);
+    }
+
+    @RequestMapping(path = DIAGNOSTIC, method = RequestMethod.GET)
+    @ResponseBody
+    @ResourceAccess(description = "Endpoint allowing to get some diagnostic information on datastorages.")
+    public ResponseEntity<List<Object>> getDiagnostic() {
+        return new ResponseEntity<List<Object>>(dataStorageService.getDiagnostics(), HttpStatus.OK);
     }
 
     @Override
