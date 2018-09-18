@@ -372,9 +372,9 @@ public class SIPServiceTest extends AbstractSIPTest {
         // There is 2 SIPS for each state in this simulated session
         Assert.assertTrue(session.getSipsCount() == (SIPState.values().length * 2));
         Assert.assertTrue(session.getIndexedSipsCount() == 2);
-        Assert.assertTrue(session.getStoredSipsCount() == 4);
-        Assert.assertTrue(session.getGeneratedSipsCount() == 10);
-        Assert.assertTrue(session.getErrorSipsCount() == 8);
+        Assert.assertTrue(session.getStoredSipsCount() == 6);
+        Assert.assertTrue(session.getGeneratedSipsCount() == 12);
+        Assert.assertTrue(session.getErrorSipsCount() == 10);
         Assert.assertTrue(session.getDeletedSipsCount() == 2);
 
     }
