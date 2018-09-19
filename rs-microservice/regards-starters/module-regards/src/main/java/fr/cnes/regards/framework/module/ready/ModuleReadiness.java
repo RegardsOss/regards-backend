@@ -20,7 +20,7 @@ public class ModuleReadiness<T> {
     /**
      * Microservice specifications
      */
-    private final T specifications;
+    private T specifications;
 
     /**
      * Constructor setting the readiness of the module and the reasons why it is not
@@ -65,6 +65,10 @@ public class ModuleReadiness<T> {
 
     public T getSpecifications() {
         return specifications;
+    }
+
+    public void setSpecifications(T specifications) {
+        this.specifications = specifications;
     }
 
 }

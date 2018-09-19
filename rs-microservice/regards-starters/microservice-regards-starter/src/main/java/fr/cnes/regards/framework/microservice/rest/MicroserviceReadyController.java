@@ -45,6 +45,7 @@ public class MicroserviceReadyController {
             for (IModuleReady<?> moduleReady : moduleReadies) {
                 ModuleReadiness<?> moduleReadiness = moduleReady.isReady();
                 microserviceReadiness.setReady(microserviceReadiness.isReady() && moduleReadiness.isReady());
+                microserviceReadiness.setSpecifications(moduleReadiness.getSpecifications());
                 microserviceReadiness.getReasons().addAll(moduleReadiness.getReasons());
 
             }
