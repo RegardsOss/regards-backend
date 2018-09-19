@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -32,6 +31,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
@@ -72,8 +72,6 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
 
     /**
      * Find one {@link SIPEntity} by its unique ipId
-     * @param ipId
-     * @return
      */
     @EntityGraph("graph.sip.entity.complete")
     Optional<SIPEntity> findOneBySipId(String sipId);
@@ -111,6 +109,13 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
     @Modifying
     @Query("UPDATE SIPEntity s set s.state = ?1 where s.id = ?2")
     void updateSIPEntityState(SIPState state, Long id);
+
+    /**
+     * Switch state for a given session
+     */
+    @Modifying
+    @Query("UPDATE SIPEntity s set s.state = ?1 where s.state = ?2 AND s.session = ?3")
+    void updateSIPEntityStateByStateAndSessionId(SIPState state, SIPState filterState, SIPSession session);
 
     /**
      * Count number of {@link SIPEntity} associated to a given session
@@ -154,8 +159,6 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
 
     /**
      * Check if SIP is already ingested based on its checksum
-     * @param checksum
-     * @return
      */
     default Boolean isAlreadyIngested(String checksum) {
         return countByChecksum(checksum) == 1;

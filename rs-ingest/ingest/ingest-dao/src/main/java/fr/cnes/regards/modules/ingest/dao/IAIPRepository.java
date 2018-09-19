@@ -58,11 +58,6 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
     Set<AIPEntity> findBySipSipId(String sipId);
 
     /**
-     * Retrieve all {@link AIPEntity} associated to the given session with the given state
-     */
-    Set<AIPEntity> findByStateAndSipSessionId(IAipState state, String sessionId);
-
-    /**
      * Retrieve an {@link AIPEntity} by its {@link AIPEntity#getAipId()}
      * @param aipId SIP identifier
      * @return optional {@link AIPEntity}
@@ -97,4 +92,12 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
     @Query("UPDATE AIPEntity a set a.state = ?1, a.errorMessage = ?3 where a.aipId = ?2")
     void updateAIPEntityStateAndErrorMessage(IAipState state, String aipId, String errorMessage);
 
+    /**
+     * Switch state for a given session
+     */
+    @Modifying
+    @Query(value = "UPDATE {h-schema}t_aip set state = ?1, error_message = ?2 FROM {h-schema}t_sip sip WHERE t_aip.sip_id = sip.id AND t_aip.state = ?3 AND sip.session = ?4",
+            nativeQuery = true)
+    void updateAIPEntityStateAndErrorMessageByStateAndSessionId(IAipState state, String errorMessage,
+            String filterState, String sessionId);
 }

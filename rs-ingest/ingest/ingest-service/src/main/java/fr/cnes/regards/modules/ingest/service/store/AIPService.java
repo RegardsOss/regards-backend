@@ -62,6 +62,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
+import fr.cnes.regards.modules.ingest.domain.builder.SIPSessionBuilder;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
@@ -413,14 +414,10 @@ public class AIPService implements IAIPService {
 
     @Override
     public void retryAipSubmission(String sessionId) throws ModuleException {
-        // Find all AIP in SUBMISSION error
-        Set<AIPEntity> aips = aipRepository.findByStateAndSipSessionId(SipAIPState.SUBMISSION_ERROR, sessionId);
-        for (AIPEntity aip : aips) {
-            aip.setState(SipAIPState.CREATED);
-            aip.getSip().setState(SIPState.AIP_CREATED);
-            aip.getSip().getRejectionCauses().clear();
-            sipService.saveSIPEntity(aip.getSip());
-            save(aip);
-        }
+        aipRepository.updateAIPEntityStateAndErrorMessageByStateAndSessionId(SipAIPState.CREATED, null,
+                                                                             SipAIPState.SUBMISSION_ERROR.getName(),
+                                                                             sessionId);
+        sipRepository.updateSIPEntityStateByStateAndSessionId(SIPState.SUBMISSION_ERROR, SIPState.AIP_CREATED,
+                                                              SIPSessionBuilder.build(sessionId));
     }
 }
