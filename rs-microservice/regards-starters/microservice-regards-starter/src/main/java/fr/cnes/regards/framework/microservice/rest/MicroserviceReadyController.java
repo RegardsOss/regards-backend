@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.module.ready.IModuleReady;
 import fr.cnes.regards.framework.module.ready.ModuleReadiness;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -30,18 +31,19 @@ public class MicroserviceReadyController {
      * List of all {@link IModuleReady} instantiated
      */
     @Autowired(required = false)
-    private List<IModuleReady> moduleReadies;
+    private List<IModuleReady<?>> moduleReadies;
 
     /**
      * @return whether the microservice is ready or not with the reasons
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "allows to known if the microservice is ready to work")
-    public ResponseEntity<ModuleReadiness> isReady() {
-        ModuleReadiness microserviceReadiness = new ModuleReadiness(Boolean.TRUE, Lists.newArrayList());
-        if (moduleReadies != null && !moduleReadies.isEmpty()) {
-            for (IModuleReady moduleReady : moduleReadies) {
-                ModuleReadiness moduleReadiness = moduleReady.isReady();
+    public ResponseEntity<ModuleReadiness<?>> isReady() {
+        ModuleReadiness<?> microserviceReadiness = new ModuleReadiness<Object>(Boolean.TRUE, Lists.newArrayList(),
+                null);
+        if ((moduleReadies != null) && !moduleReadies.isEmpty()) {
+            for (IModuleReady<?> moduleReady : moduleReadies) {
+                ModuleReadiness<?> moduleReadiness = moduleReady.isReady();
                 microserviceReadiness.setReady(microserviceReadiness.isReady() && moduleReadiness.isReady());
                 microserviceReadiness.getReasons().addAll(moduleReadiness.getReasons());
 

@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-public class ModuleReadiness {
+public class ModuleReadiness<T> {
 
     /**
      * Whether the module is ready or not
@@ -18,13 +18,19 @@ public class ModuleReadiness {
     private List<String> reasons;
 
     /**
+     * Microservice specifications
+     */
+    private final T specifications;
+
+    /**
      * Constructor setting the readiness of the module and the reasons why it is not
      * @param ready
      * @param reasons
      */
-    public ModuleReadiness(boolean ready, List<String> reasons) {
+    public ModuleReadiness(boolean ready, List<String> reasons, T specifications) {
         this.ready = ready;
         this.reasons = reasons;
+        this.specifications = specifications;
     }
 
     /**
@@ -56,4 +62,9 @@ public class ModuleReadiness {
     public void setReasons(List<String> reasons) {
         this.reasons = reasons;
     }
+
+    public T getSpecifications() {
+        return specifications;
+    }
+
 }
