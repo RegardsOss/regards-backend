@@ -39,7 +39,7 @@ public class MicroserviceReadyController {
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "allows to known if the microservice is ready to work")
     public ResponseEntity<ModuleReadiness<?>> isReady() {
-        ModuleReadiness<?> microserviceReadiness = new ModuleReadiness<Object>(Boolean.TRUE, Lists.newArrayList(),
+        ModuleReadiness<Object> microserviceReadiness = new ModuleReadiness<Object>(Boolean.TRUE, Lists.newArrayList(),
                 null);
         if ((moduleReadies != null) && !moduleReadies.isEmpty()) {
             for (IModuleReady<?> moduleReady : moduleReadies) {
@@ -50,6 +50,6 @@ public class MicroserviceReadyController {
 
             }
         }
-        return new ResponseEntity(microserviceReadiness, HttpStatus.OK);
+        return new ResponseEntity<ModuleReadiness<?>>(microserviceReadiness, HttpStatus.OK);
     }
 }
