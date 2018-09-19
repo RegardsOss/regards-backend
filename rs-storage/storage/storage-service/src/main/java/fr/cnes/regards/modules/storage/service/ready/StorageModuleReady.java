@@ -43,7 +43,7 @@ public class StorageModuleReady implements IModuleReady<StorageReadySpecificatio
         //lets check allocation strategy
         Set<PluginConfiguration> strategies = pluginService.getPluginConfigurationsByType(IAllocationStrategy.class)
                 .stream().filter(pc -> pc.isActive()).collect(Collectors.toSet());
-        if (strategies.size() <= 1) {
+        if (strategies.size() != 1) {
             reasons.add("There should be one and only one Allocation Strategy configured and active in the system. There is currently: "
                     + strategies.size());
             ready = false;
