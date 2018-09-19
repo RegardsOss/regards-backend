@@ -27,7 +27,6 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
-import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.IAipState;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 
@@ -48,7 +47,7 @@ public interface IAIPService {
     void handleAipEvent(AIPEvent aipEvent);
 
     /**
-     * Set the status of the given AIP
+     * Set the status of the given AIP to given one
      */
     void setAipInError(UniformResourceName aipId, IAipState storeError, String failureCause, SIPState sipState);
 
@@ -58,16 +57,21 @@ public interface IAIPService {
     void deleteAip(UniformResourceName aipId, UniformResourceName sipId, IAipState state);
 
     /**
-     * Set {@link AIPEntity} to {@link AIPState#STORED}
+     * Set {@link AIPEntity} state to give none
      */
     void setAipToStored(UniformResourceName aipId, IAipState state);
 
     /**
      * Set {@link AIPEntity} state to {@link SipAIPState#INDEXED}
-     * @param ipId
      * @return {@link AIPEntity} updated
      */
     AIPEntity setAipToIndexed(AIPEntity aip);
+
+    /**
+     * Set {@link AIPEntity} state to {@link SipAIPState#INDEX_ERROR}
+     * @return {@link AIPEntity} updated
+     */
+    AIPEntity setAipToIndexError(AIPEntity aip);
 
     /**
      * Search for a {@link AIPEntity} by its ipId
@@ -90,7 +94,8 @@ public interface IAIPService {
     Set<AIPEntity> findAIPToSubmit(String ingestProcessingChain);
 
     /**
-     * Look for sips in state {@link fr.cnes.regards.modules.ingest.domain.entity.SIPState#TO_BE_DELETED} and ask to rs-storage to delete them per page of 100.
+     * Look for sips in state {@link fr.cnes.regards.modules.ingest.domain.entity.SIPState#TO_BE_DELETED} and
+     * ask to rs-storage to delete them per page of 100.
      */
     void askForAipsDeletion();
 

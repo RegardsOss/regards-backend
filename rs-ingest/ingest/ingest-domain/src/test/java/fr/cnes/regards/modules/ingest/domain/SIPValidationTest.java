@@ -25,6 +25,7 @@ import java.util.HashMap;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -140,6 +141,7 @@ public class SIPValidationTest {
     /**
      * Check validation on SIP passed by value. See {@link InformationPackageProperties} for constraint list.
      */
+    @Ignore("A Sip can have no data file (cf. M.Sordi, 18/09/2018)")
     @Test
     @Requirement("REGARDS_DSL_ING_PRO_140")
     @Purpose("SIP validation")
