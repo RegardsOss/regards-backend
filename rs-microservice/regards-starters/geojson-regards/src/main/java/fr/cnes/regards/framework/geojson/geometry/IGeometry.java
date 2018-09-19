@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.geojson.geometry;
 
 import java.util.Arrays;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -293,8 +294,8 @@ public interface IGeometry {
     }
 
     /**
-     * Create a simple polygon (no hole, only exterior ring), specifying alternatively longitude and latitude of all
-     * points. No need to close the polygon by specifying last two values as first twos.<br/>
+     * Create a simple polygon (no hole, only exterior ring counterclockwised), specifying alternatively longitude and
+     * latitude of all points. No need to close the polygon by specifying last two values as first twos.<br/>
      * As parameter is double[] instead of Double[], int values can also be used.<br/>
      * Intent of this method is principaly to be used for tests
      * @param lonLats point1 longitude, point2 latitude, point2 long, point2 latitude, ...
@@ -314,4 +315,26 @@ public interface IGeometry {
         return polygon(toPolygonCoordinates(positions(positions)));
     }
 
+    /**
+     * Create a clockwised simple polygon (no hole, only exterior ring), specifying alternatively longitude and latitude of all
+     * points. No need to close the polygon by specifying last two values as first twos.<br/>
+     * As parameter is double[] instead of Double[], int values can also be used.<br/>
+     * Intent of this method is principaly to be used for tests
+     * @param lonLats point1 longitude, point2 latitude, point2 long, point2 latitude, ...
+     */
+    static Polygon simpleClockwisePolygon(double... lonLats) {
+        Preconditions.checkNotNull(lonLats);
+        Preconditions.checkArgument(lonLats.length > 2);
+        Preconditions.checkArgument(lonLats.length % 2 == 0);
+        Preconditions.checkArgument(
+                (lonLats[0] != lonLats[lonLats.length - 2]) || (lonLats[1] != lonLats[lonLats.length - 1]));
+
+        Position[] positions = new Position[lonLats.length / 2 + 1];
+        for (int i = 0; i < lonLats.length; i += 2) {
+            positions[i / 2] = IGeometry.position(lonLats[i], lonLats[i + 1]);
+        }
+        positions[positions.length - 1] = position(lonLats[0], lonLats[1]);
+        ArrayUtils.reverse(positions);
+        return polygon(toPolygonCoordinates(positions(positions)));
+    }
 }
