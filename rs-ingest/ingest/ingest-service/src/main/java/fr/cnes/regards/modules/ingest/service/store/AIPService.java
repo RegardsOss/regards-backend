@@ -417,7 +417,7 @@ public class AIPService implements IAIPService {
         aipRepository.updateAIPEntityStateAndErrorMessageByStateAndSessionId(SipAIPState.CREATED.toString(), null,
                                                                              SipAIPState.SUBMISSION_ERROR.toString(),
                                                                              sessionId);
-        sipRepository.updateSIPEntityStateByStateAndSessionId(SIPState.SUBMISSION_ERROR, SIPState.AIP_CREATED,
+        sipRepository.updateSIPEntityStateByStateAndSessionId(SIPState.AIP_CREATED, SIPState.SUBMISSION_ERROR,
                                                               SIPSessionBuilder.build(sessionId));
     }
 }
