@@ -122,8 +122,10 @@ public class SIPSessionController implements IResourceController<SIPSession> {
                                 MethodParamFactory.build(String.class, sipSession.getId()));
         resourceService.addLink(resource, this.getClass(), "deleteSipEntityBySessionId", LinkRels.DELETE,
                                 MethodParamFactory.build(String.class, sipSession.getId()));
-        resourceService.addLink(resource, this.getClass(), "retrySessionSubmission", "retry",
-                                MethodParamFactory.build(String.class, sipSession.getId()));
+        if (sipSession.getSubmissionErrorCount() > 0) {
+            resourceService.addLink(resource, this.getClass(), "retrySessionSubmission", "retry",
+                                    MethodParamFactory.build(String.class, sipSession.getId()));
+        }
         return resource;
     }
 

@@ -18,13 +18,14 @@
  */
 package fr.cnes.regards.modules.ingest.domain.entity;
 
+import java.time.OffsetDateTime;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
-import java.time.OffsetDateTime;
 
 /**
  * Entities to group {@link SIPEntity}s. The {@link SIPSession#getLastActivationDate()}
@@ -58,6 +59,9 @@ public class SIPSession {
 
     @Transient
     private long errorSipsCount = 0;
+
+    @Transient
+    private long submissionErrorCount = 0;
 
     @Transient
     private long deletedSipsCount = 0;
@@ -126,4 +130,11 @@ public class SIPSession {
         this.lastActivationDate = lastActivationDate;
     }
 
+    public long getSubmissionErrorCount() {
+        return submissionErrorCount;
+    }
+
+    public void setSubmissionErrorCount(long submissionErrorCount) {
+        this.submissionErrorCount = submissionErrorCount;
+    }
 }
