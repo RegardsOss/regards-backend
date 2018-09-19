@@ -98,6 +98,6 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
     @Modifying
     @Query(value = "UPDATE {h-schema}t_aip set state = ?1, error_message = ?2 FROM {h-schema}t_sip sip WHERE t_aip.sip_id = sip.id AND t_aip.state = ?3 AND sip.session = ?4",
             nativeQuery = true)
-    void updateAIPEntityStateAndErrorMessageByStateAndSessionId(IAipState state, String errorMessage,
-            String filterState, String sessionId);
+    void updateAIPEntityStateAndErrorMessageByStateAndSessionId(String state, String errorMessage, String filterState,
+            String sessionId);
 }

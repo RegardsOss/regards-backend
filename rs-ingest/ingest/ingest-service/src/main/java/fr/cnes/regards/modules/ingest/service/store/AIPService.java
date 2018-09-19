@@ -414,8 +414,8 @@ public class AIPService implements IAIPService {
 
     @Override
     public void retryAipSubmission(String sessionId) throws ModuleException {
-        aipRepository.updateAIPEntityStateAndErrorMessageByStateAndSessionId(SipAIPState.CREATED, null,
-                                                                             SipAIPState.SUBMISSION_ERROR.getName(),
+        aipRepository.updateAIPEntityStateAndErrorMessageByStateAndSessionId(SipAIPState.CREATED.toString(), null,
+                                                                             SipAIPState.SUBMISSION_ERROR.toString(),
                                                                              sessionId);
         sipRepository.updateSIPEntityStateByStateAndSessionId(SIPState.SUBMISSION_ERROR, SIPState.AIP_CREATED,
                                                               SIPSessionBuilder.build(sessionId));
