@@ -211,8 +211,7 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         int wait = 0;
         // lets wait for this AIP to be stored
-        while ((aipDao.findOneByAipId(aip.getId().toString()).get().getState() != AIPState.STORED)
-                && (wait < MAX_WAIT)) {
+        while (aipDao.findOneByAipId(aip.getId().toString()).get().getState() != AIPState.STORED && wait < MAX_WAIT) {
             Thread.sleep(1000);
             wait += 1000;
         }
@@ -294,7 +293,7 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
     @Test
     @Requirement("REGARDS_DSL_STO_ARC_200")
     @Requirement("REGARDS_DSL_STO_AIP_130")
-    // @Ignore
+    @Ignore
     public void testDownload() throws InterruptedException {
         // lets make files available
         // first lets make available the file
