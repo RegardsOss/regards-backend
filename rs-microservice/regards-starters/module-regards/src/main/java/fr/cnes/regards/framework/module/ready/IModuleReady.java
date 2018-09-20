@@ -9,11 +9,11 @@ package fr.cnes.regards.framework.module.ready;
  *
  * @author Sylvain VISSIERE-GUERINET
  */
-public interface IModuleReady {
+public interface IModuleReady<T> {
 
     /**
      * @return whether or not the module is considered ready
      */
-    ModuleReadiness isReady();
+    ModuleReadiness<T> isReady();
 
 }
