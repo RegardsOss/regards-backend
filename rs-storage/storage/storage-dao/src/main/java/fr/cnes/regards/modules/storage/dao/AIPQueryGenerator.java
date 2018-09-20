@@ -88,21 +88,21 @@ public class AIPQueryGenerator {
         if (session != null) {
             predicates.add("(session = '" + session.getId() + "')");
         }
-        if ((aipIds != null) && !aipIds.isEmpty()) {
+        if (aipIds != null && !aipIds.isEmpty()) {
             Set<String> aipIncludedPredicates = Sets.newHashSet();
             for (String aipId : aipIds) {
                 aipIncludedPredicates.add("'" + aipId + "'");
             }
             predicates.add("(aip_id in (" + String.join(" , ", aipIncludedPredicates) + "))");
         }
-        if ((aipIdsExcluded != null) && !aipIdsExcluded.isEmpty()) {
+        if (aipIdsExcluded != null && !aipIdsExcluded.isEmpty()) {
             Set<String> aipExcludedPredicates = Sets.newHashSet();
             for (String aipId : aipIdsExcluded) {
                 aipExcludedPredicates.add("'" + aipId + "'");
             }
             predicates.add("(aip_id not in (" + String.join(" , ", aipExcludedPredicates) + "))");
         }
-        if ((tags != null) && !tags.isEmpty()) {
+        if (tags != null && !tags.isEmpty()) {
             Set<String> tagPredicates = Sets.newHashSet();
             for (String tag : tags) {
                 tagPredicates.add("'" + tag + "'");
@@ -110,8 +110,8 @@ public class AIPQueryGenerator {
             predicates.add("(json_aip->'properties'->'pdi'->'contextInformation'->'tags' @> jsonb_build_array("
                     + String.join(" , ", tagPredicates) + "))");
         }
-        if (((providerId != null) && !providerId.isEmpty())) {
-            predicates.add("(providerId like '%" + providerId + "%')");
+        if (providerId != null && !providerId.isEmpty()) {
+            predicates.add("(provider_id like '%" + providerId + "%')");
         }
         return predicates;
     }
