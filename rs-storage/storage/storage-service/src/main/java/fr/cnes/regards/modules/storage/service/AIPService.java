@@ -417,9 +417,9 @@ public class AIPService implements IAIPService {
         // first lets get AIP that are not fully stored(at least metadata are not stored)
         metadataToStore.addAll(prepareNotFullyStored());
         if (metadataToStore.isEmpty()) {
-            LOGGER.debug("No updated metadata files to store.");
+            LOGGER.debug("No new metadata files to store.");
         } else {
-            LOGGER.debug("Scheduling {} updated metadata files for storage.", metadataToStore.size());
+            LOGGER.debug("Scheduling {} new metadata files for storage.", metadataToStore.size());
             // now that we know all the metadata that should be stored, lets schedule their storage!
             scheduleStorageMetadata(metadataToStore);
         }
