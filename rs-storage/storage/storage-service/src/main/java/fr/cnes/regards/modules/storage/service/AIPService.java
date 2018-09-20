@@ -741,11 +741,11 @@ public class AIPService implements IAIPService {
             Long dataStorageConfId, DataStorageAccessModeEnum accessMode) throws ModuleException {
         if (pluginService.canInstantiate(dataStorageConfId)) {
             IDataStorage<IWorkingSubset> storage = pluginService.getPlugin(dataStorageConfId);
-            LOGGER.trace("Getting working subsets for data storage of id {}", dataStorageConfId);
+            LOGGER.debug("Getting working subsets for data storage of id {}", dataStorageConfId);
             WorkingSubsetWrapper<?> workingSubsetWrapper = storage.prepare(dataFilesToSubSet, accessMode);
             @SuppressWarnings("unchecked")
             Set<IWorkingSubset> workingSubSets = (Set<IWorkingSubset>) workingSubsetWrapper.getWorkingSubSets();
-            LOGGER.trace("{} data objects were dispatched into {} working subsets",
+            LOGGER.debug("{} data objects were dispatched into {} working subsets",
                          dataFilesToSubSet.size(),
                          workingSubSets.size());
             // as we are trusty people, we check that the prepare gave us back all DataFiles into the WorkingSubSets
