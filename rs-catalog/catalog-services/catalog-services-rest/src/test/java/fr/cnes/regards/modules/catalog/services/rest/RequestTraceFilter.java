@@ -22,11 +22,10 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.actuate.trace.TraceProperties;
 import org.springframework.boot.actuate.trace.TraceRepository;
 import org.springframework.boot.actuate.trace.WebRequestTraceFilter;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 /**
@@ -37,20 +36,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class RequestTraceFilter extends WebRequestTraceFilter {
 
-    private static final Logger LOG = LoggerFactory.getLogger(RequestTraceFilter.class);
-
     RequestTraceFilter(TraceRepository repository, TraceProperties properties) {
         super(repository, properties);
     }
 
     @Override
     protected void enhanceTrace(Map<String, Object> trace, HttpServletResponse response) {
-        LOG.info("response {}", response.getStatus());
-        if (response.getHeaderNames() != null) {
-            LOG.info("response {}", response.getHeaderNames().size());
+        if (!response.getContentType().equals(MediaType.IMAGE_PNG_VALUE)
+                && !response.getContentType().equals(MediaType.APPLICATION_OCTET_STREAM_VALUE)) {
             super.enhanceTrace(trace, response);
-        } else {
-            LOG.error("ERROR --------------------> Unable to trace request response headers !!!!!!");
         }
     }
 }
