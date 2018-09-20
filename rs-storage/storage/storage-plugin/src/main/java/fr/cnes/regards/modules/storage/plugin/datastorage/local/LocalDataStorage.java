@@ -28,6 +28,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.StringJoiner;
 
@@ -288,5 +290,12 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
             return PluginConfUpdatable.allowUpdate();
         }
 
+    }
+
+    @Override
+    public Map<String, Object> getDiagnosticInfo() {
+        Map<String, Object> diagInfo = new HashMap<>();
+        diagInfo.put("Plugin Id", "Local");
+        return diagInfo;
     }
 }

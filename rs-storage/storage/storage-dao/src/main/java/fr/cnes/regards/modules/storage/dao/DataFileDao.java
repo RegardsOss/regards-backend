@@ -1,16 +1,20 @@
 package fr.cnes.regards.modules.storage.dao;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
@@ -63,7 +67,12 @@ public class DataFileDao implements IDataFileDao {
 
     @Override
     public Page<StorageDataFile> findAllByState(DataFileState state, Pageable pageable) {
-        return repository.findAllByState(state, pageable);
+        // first lets get the storageDataFile without any join(no graph)
+        Page<Long> ids = repository.findAllIdByState(state, pageable);
+        List<StorageDataFile> pageContent = repository.findAllByIdIn(ids.getContent());
+        return new PageImpl<>(pageContent, new PageRequest(new Long(ids.getNumber()).intValue(),
+                                                           new Long(ids.getSize()).intValue()),
+                              ids.getTotalElements());
     }
 
     @Override
@@ -159,8 +168,21 @@ public class DataFileDao implements IDataFileDao {
     }
 
     @Override
-    public long countByChecksum(String checksum) {
+    public long countByChecksumAndStorageDirectory(String checksum, String storageDirectory) {
+        if (storageDirectory != null) {
+            return repository.countByChecksumAndStorageDirectory(checksum, storageDirectory);
+        }
         return repository.countByChecksum(checksum);
+    }
+
+    @Override
+    public long countByAip(AIP aip) {
+        Optional<AIPEntity> fromDbOpt = getAipDataBase(aip);
+        if (fromDbOpt.isPresent()) {
+            return repository.countByAipEntity(fromDbOpt.get());
+        } else {
+            return 0;
+        }
     }
 
     private Optional<AIPEntity> getAipDataBase(AIP aip) {

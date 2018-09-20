@@ -2,6 +2,7 @@ package fr.cnes.regards.modules.storage.dao;
 
 import javax.persistence.LockModeType;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -11,6 +12,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
@@ -43,8 +45,8 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
     @EntityGraph(value = "graph.datafile.full")
     Set<StorageDataFile> findAllByState(DataFileState stored);
 
-    @EntityGraph(value = "graph.datafile.full")
-    Page<StorageDataFile> findAllByState(DataFileState state, Pageable pageable);
+    @Query("select sdf.id from StorageDataFile sdf where sdf.state = :state")
+    Page<Long> findAllIdByState(@Param("state") DataFileState state, Pageable pageable);
 
     /**
      * Find all {@link StorageDataFile}s associated to the given aip entity
@@ -126,4 +128,11 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
     long countByPrioritizedDataStoragesId(Long pdsId);
 
     long countByChecksum(String checksum);
+
+    long countByChecksumAndStorageDirectory(String checksum, String storageDirectory);
+
+    long countByAipEntity(AIPEntity aipEntity);
+
+    @EntityGraph(value = "graph.datafile.full")
+    List<StorageDataFile> findAllByIdIn(List<Long> content);
 }

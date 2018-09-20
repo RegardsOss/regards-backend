@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storage.plugins.datastorage.allocation.strategy;
 
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Map;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -85,6 +86,11 @@ public class NearlineDataStorageTestPlugin implements INearlineDataStorage<Local
     public PluginConfUpdatable allowConfigurationUpdate(PluginConfiguration newConfiguration,
             PluginConfiguration currentConfiguration, boolean filesAlreadyStored) {
         return PluginConfUpdatable.allowUpdate();
+    }
+
+    @Override
+    public Map<String, Object> getDiagnosticInfo() {
+        return null;
     }
 
 }

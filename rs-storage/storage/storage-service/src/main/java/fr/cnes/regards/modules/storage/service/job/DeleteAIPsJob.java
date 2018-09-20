@@ -18,11 +18,21 @@
  */
 package fr.cnes.regards.modules.storage.service.job;
 
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
+import fr.cnes.regards.modules.notification.domain.NotificationType;
 import fr.cnes.regards.modules.storage.dao.AIPQueryGenerator;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -30,12 +40,7 @@ import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.job.AIPQueryFilters;
 import fr.cnes.regards.modules.storage.domain.job.RemovedAipsInfos;
 import fr.cnes.regards.modules.storage.service.IAIPService;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import fr.cnes.regards.modules.storage.service.IDataStorageService;
 
 /**
  * Add or remove tags to several AIPs, inside a job.
@@ -59,6 +64,9 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
     @Autowired
     private IAIPDao aipDao;
 
+    @Autowired
+    private IDataStorageService dataStorageService;
+
     private Map<String, JobParameter> parameters;
 
     private AtomicInteger nbError;
@@ -67,19 +75,29 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
 
     private Integer nbEntity;
 
+    private ArrayList<String> entityFailed;
+
     @Override
     public void run() {
         AIPQueryFilters tagFilter = parameters.get(FILTER_PARAMETER_NAME).getValue();
         AIPSession aipSession = aipService.getSession(tagFilter.getSession(), false);
-        Set<AIP> aips = aipDao.findAll(AIPQueryGenerator.search(tagFilter.getState(), tagFilter.getFrom(), tagFilter.getTo(), tagFilter.getTags(), aipSession, tagFilter.getAipIds(), tagFilter.getAipIdsExcluded()));
+        Set<AIP> aips = aipDao.findAll(AIPQueryGenerator
+                .search(tagFilter.getState(), tagFilter.getFrom(), tagFilter.getTo(), tagFilter.getTags(), aipSession,
+                        tagFilter.getProviderId(), tagFilter.getAipIds(), tagFilter.getAipIdsExcluded()));
         nbError = new AtomicInteger(0);
         nbEntityRemoved = new AtomicInteger(0);
         nbEntity = aips.size();
+        entityFailed = new ArrayList<>();
+
         aips.forEach(aip -> {
             try {
                 aipService.deleteAip(aip);
                 nbEntityRemoved.incrementAndGet();
             } catch (ModuleException e) {
+                // save first 100 AIP id in error
+                if (entityFailed.size() < 100) {
+                    entityFailed.add(aip.getId().toString());
+                }
                 // Exception thrown while removing AIP
                 LOGGER.error(e.getMessage(), e);
                 nbError.incrementAndGet();
@@ -87,8 +105,25 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
         });
         RemovedAipsInfos infos = new RemovedAipsInfos(nbError, nbEntityRemoved);
         this.setResult(infos);
+        handleErrors();
     }
 
+    private void handleErrors() {
+        // Handle errors
+        if (nbError.get() > 0) {
+            // Notify admins that the job had issues
+            String title = String.format("Failure while removing %d AIPs", nbError.get());
+            StringBuilder message = new StringBuilder();
+            message.append(String
+                    .format("A job finished with %d AIP correctly removed and %d errors.  AIP concerned:  ",
+                            nbEntityRemoved.get(), nbError.get()));
+            for (String ipId : entityFailed) {
+                message.append(ipId);
+                message.append("  \\n");
+            }
+            dataStorageService.notifyAdmins(title, message.toString(), NotificationType.ERROR);
+        }
+    }
 
     @Override
     public boolean needWorkspace() {
@@ -97,31 +132,33 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
 
     @Override
     public int getCompletionCount() {
-        if (nbError.get() + nbEntityRemoved.get() == 0) {
+        if ((nbError.get() + nbEntityRemoved.get()) == 0) {
             return 0;
         }
-        return (int) Math.floor(100 * (nbError.get() + nbEntityRemoved.get()) / nbEntity);
+        return (int) Math.floor((100 * (nbError.get() + nbEntityRemoved.get())) / nbEntity);
     }
 
     @Override
-    public void setParameters(Map<String, JobParameter> parameters) throws JobParameterMissingException, JobParameterInvalidException {
+    public void setParameters(Map<String, JobParameter> parameters)
+            throws JobParameterMissingException, JobParameterInvalidException {
         checkParameters(parameters);
         this.parameters = parameters;
     }
 
-    private void checkParameters(Map<String, JobParameter> parameters) throws JobParameterInvalidException, JobParameterMissingException {
+    private void checkParameters(Map<String, JobParameter> parameters)
+            throws JobParameterInvalidException, JobParameterMissingException {
         JobParameter filterParam = parameters.get(FILTER_PARAMETER_NAME);
         if (filterParam == null) {
 
-            JobParameterMissingException e = new JobParameterMissingException(
-                    String.format("Job %s: parameter %s not provided", this.getClass().getName(), FILTER_PARAMETER_NAME));
+            JobParameterMissingException e = new JobParameterMissingException(String
+                    .format("Job %s: parameter %s not provided", this.getClass().getName(), FILTER_PARAMETER_NAME));
             logger.error(e.getMessage(), e);
             throw e;
         }
         // Check if the filterParam can be correctly parsed, depending of its type
         if (!(filterParam.getValue() instanceof AIPQueryFilters)) {
-            JobParameterInvalidException e = new JobParameterInvalidException(
-                    String.format("Job %s: cannot read the parameter %s", this.getClass().getName(), FILTER_PARAMETER_NAME));
+            JobParameterInvalidException e = new JobParameterInvalidException(String
+                    .format("Job %s: cannot read the parameter %s", this.getClass().getName(), FILTER_PARAMETER_NAME));
             logger.error(e.getMessage(), e);
             throw e;
         }

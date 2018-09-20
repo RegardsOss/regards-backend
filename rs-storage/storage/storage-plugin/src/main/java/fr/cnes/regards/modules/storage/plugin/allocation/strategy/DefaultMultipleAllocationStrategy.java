@@ -55,7 +55,6 @@ public class DefaultMultipleAllocationStrategy implements IAllocationStrategy {
                                                                          dataFilesToHandle.size());
         for (Long dataStorageId : dataStorageIds) {
             for (StorageDataFile dataFile : dataFilesToHandle) {
-                dataFile.increaseNotYetStoredBy();
                 dispatched.put(dataStorageId, dataFile);
             }
         }

@@ -246,9 +246,10 @@ public class AIPController implements IResourceController<AIP> {
             @RequestParam(name = "to",
                     required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to,
             @RequestParam(name = "tags", required = false) List<String> tags,
+            @RequestParam(name = "providerId", required = false) String providerId,
             @RequestParam(name = "session", required = false) String session, final Pageable pPageable,
             final PagedResourcesAssembler<AIP> pAssembler) throws ModuleException {
-        Page<AIP> aips = aipService.retrieveAIPs(pState, from, to, tags, session, pPageable);
+        Page<AIP> aips = aipService.retrieveAIPs(pState, from, to, tags, session, providerId, pPageable);
         return new ResponseEntity<>(toPagedResources(aips, pAssembler), HttpStatus.OK);
     }
 
@@ -294,7 +295,7 @@ public class AIPController implements IResourceController<AIP> {
         if (!rejectedAips.isEmpty()) {
             rejectedAips.forEach(ra -> aipIpIds.remove(ra.getAipId()));
             if (aipIpIds.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.UNPROCESSABLE_ENTITY);
+                return new ResponseEntity<>(rejectedAips, HttpStatus.UNPROCESSABLE_ENTITY);
             }
             aipService.storeRetry(aipIpIds);
             return new ResponseEntity<>(rejectedAips, HttpStatus.PARTIAL_CONTENT);
@@ -314,10 +315,11 @@ public class AIPController implements IResourceController<AIP> {
             throws ModuleException {
         // we ask for one AIP to be stored, so we can only have one rejected aip in counter part
         ResponseEntity<List<RejectedAip>> listResponse = storeRetry(Sets.newHashSet(ipId));
-        if (listResponse.getBody().isEmpty()) {
-            return new ResponseEntity<>(listResponse.getStatusCode());
-        } else {
+        // as their is only one ip id, storeRetry can only give us a UNPROCESSABLE_ENTITY or NO_CONTENT
+        if (listResponse.getStatusCode().equals(HttpStatus.UNPROCESSABLE_ENTITY)) {
             return new ResponseEntity<>(listResponse.getBody().get(0), listResponse.getStatusCode());
+        } else {
+            return new ResponseEntity<>(listResponse.getStatusCode());
         }
     }
 
@@ -355,7 +357,7 @@ public class AIPController implements IResourceController<AIP> {
         long methodStart = System.currentTimeMillis();
         notHandledSips = aipService.deleteAipFromSips(sipIds);
         long methodEnd = System.currentTimeMillis();
-        LOGGER.debug("Deleting {} sips took {} ms", sipIds.size(), methodEnd - methodStart);
+        LOGGER.trace("Deleting {} sips took {} ms", sipIds.size(), methodEnd - methodStart);
         if (notHandledSips.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
@@ -446,8 +448,11 @@ public class AIPController implements IResourceController<AIP> {
     @ResourceAccess(description = "allow to add multiple tags to several aips")
     @ResponseBody
     public ResponseEntity<Void> addTagsByQuery(@RequestBody AddAIPTagsFilters request) {
-        aipService.addTagsByQuery(request);
-        return new ResponseEntity<>(HttpStatus.OK);
+        boolean succeed = aipService.addTagsByQuery(request);
+        if (succeed) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.CONFLICT);
     }
 
     /**
@@ -470,8 +475,11 @@ public class AIPController implements IResourceController<AIP> {
     @ResourceAccess(description = "allow to remove multiple tags to several aips")
     @ResponseBody
     public ResponseEntity<Void> removeTagsByQuery(@RequestBody RemoveAIPTagsFilters request) {
-        aipService.removeTagsByQuery(request);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        boolean succeed = aipService.removeTagsByQuery(request);
+        if (succeed) {
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.CONFLICT);
     }
 
     /**
