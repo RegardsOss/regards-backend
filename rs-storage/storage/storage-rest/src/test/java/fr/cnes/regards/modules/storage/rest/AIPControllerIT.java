@@ -144,7 +144,7 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
-                .parameterWithName(AIPController.AIP_ID_PATH_PARAM).description("the AIP identifier")
+                .parameterWithName(AIPController.AIP_ID_PATH_PARAM).description("the AIP identifier (i.e. feature id)")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName()),
                             Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                                     .value("Should respect UniformResourceName pattern"))));
@@ -294,7 +294,7 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
     @Test
     @Requirement("REGARDS_DSL_STO_ARC_200")
     @Requirement("REGARDS_DSL_STO_AIP_130")
-    @Ignore
+    // @Ignore
     public void testDownload() throws InterruptedException {
         // lets make files available
         // first lets make available the file
