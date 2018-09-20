@@ -65,6 +65,11 @@ public abstract class AbstractFeature<P, ID> extends AbstractGeoJsonObject {
     @Valid
     protected IGeometry geometry = IGeometry.unlocated();
 
+    /**
+     * Same as geometry but normalized (see crawler) to be used on a cylindric project.
+     */
+    private IGeometry normalizedGeometry = IGeometry.unlocated();
+
     @Valid
     protected P properties;
 
@@ -86,6 +91,14 @@ public abstract class AbstractFeature<P, ID> extends AbstractGeoJsonObject {
 
     public void setGeometry(IGeometry geometry) {
         this.geometry = geometry;
+    }
+
+    public IGeometry getNormalizedGeometry() {
+        return normalizedGeometry;
+    }
+
+    public void setNormalizedGeometry(IGeometry normalizedGeometry) {
+        this.normalizedGeometry = normalizedGeometry;
     }
 
     public P getProperties() {
