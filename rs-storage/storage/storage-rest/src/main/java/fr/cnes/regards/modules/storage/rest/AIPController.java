@@ -191,7 +191,6 @@ public class AIPController implements IResourceController<AIP> {
      */
     public static final String TAG_SEARCH_PATH = TAG_MANAGEMENT_PATH + "/search";
 
-    @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPController.class);
 
     /**
@@ -269,7 +268,7 @@ public class AIPController implements IResourceController<AIP> {
         if (!Strings.isNullOrEmpty(fromLastUpdateDate)) {
             fromLastUpdate = OffsetDateTimeAdapter.parse(fromLastUpdateDate);
         }
-        Set<String> tags = (inTags == null) ? Collections.emptySet() : inTags;
+        Set<String> tags = inTags == null ? Collections.emptySet() : inTags;
         Page<AipDataFiles> page = aipService.retrieveAipDataFiles(state, tags, fromLastUpdate, pageable);
         List<AipDataFiles> content = page.getContent();
         for (AipDataFiles aipData : content) {
@@ -594,7 +593,8 @@ public class AIPController implements IResourceController<AIP> {
                                 MethodParamFactory.build(AIPState.class),
                                 MethodParamFactory.build(OffsetDateTime.class),
                                 MethodParamFactory.build(OffsetDateTime.class), MethodParamFactory.build(List.class),
-                                MethodParamFactory.build(String.class), MethodParamFactory.build(Pageable.class),
+                                MethodParamFactory.build(String.class), MethodParamFactory.build(String.class),
+                                MethodParamFactory.build(Pageable.class),
                                 MethodParamFactory.build(PagedResourcesAssembler.class));
         resourceService.addLink(resource, this.getClass(), "retrieveAip", LinkRels.SELF,
                                 MethodParamFactory.build(String.class, pElement.getId().toString()));
