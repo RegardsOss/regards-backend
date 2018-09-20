@@ -246,9 +246,10 @@ public class AIPController implements IResourceController<AIP> {
             @RequestParam(name = "to",
                     required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to,
             @RequestParam(name = "tags", required = false) List<String> tags,
+            @RequestParam(name = "providerId", required = false) String providerId,
             @RequestParam(name = "session", required = false) String session, final Pageable pPageable,
             final PagedResourcesAssembler<AIP> pAssembler) throws ModuleException {
-        Page<AIP> aips = aipService.retrieveAIPs(pState, from, to, tags, session, pPageable);
+        Page<AIP> aips = aipService.retrieveAIPs(pState, from, to, tags, session, providerId, pPageable);
         return new ResponseEntity<>(toPagedResources(aips, pAssembler), HttpStatus.OK);
     }
 
@@ -315,7 +316,7 @@ public class AIPController implements IResourceController<AIP> {
         // we ask for one AIP to be stored, so we can only have one rejected aip in counter part
         ResponseEntity<List<RejectedAip>> listResponse = storeRetry(Sets.newHashSet(ipId));
         // as their is only one ip id, storeRetry can only give us a UNPROCESSABLE_ENTITY or NO_CONTENT
-        if(listResponse.getStatusCode().equals(HttpStatus.UNPROCESSABLE_ENTITY)) {
+        if (listResponse.getStatusCode().equals(HttpStatus.UNPROCESSABLE_ENTITY)) {
             return new ResponseEntity<>(listResponse.getBody().get(0), listResponse.getStatusCode());
         } else {
             return new ResponseEntity<>(listResponse.getStatusCode());

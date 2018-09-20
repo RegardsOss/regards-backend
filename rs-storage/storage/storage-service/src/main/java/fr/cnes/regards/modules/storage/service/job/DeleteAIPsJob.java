@@ -18,6 +18,15 @@
  */
 package fr.cnes.regards.modules.storage.service.job;
 
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -32,13 +41,6 @@ import fr.cnes.regards.modules.storage.domain.job.AIPQueryFilters;
 import fr.cnes.regards.modules.storage.domain.job.RemovedAipsInfos;
 import fr.cnes.regards.modules.storage.service.IAIPService;
 import fr.cnes.regards.modules.storage.service.IDataStorageService;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Add or remove tags to several AIPs, inside a job.
@@ -79,7 +81,9 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
     public void run() {
         AIPQueryFilters tagFilter = parameters.get(FILTER_PARAMETER_NAME).getValue();
         AIPSession aipSession = aipService.getSession(tagFilter.getSession(), false);
-        Set<AIP> aips = aipDao.findAll(AIPQueryGenerator.search(tagFilter.getState(), tagFilter.getFrom(), tagFilter.getTo(), tagFilter.getTags(), aipSession, tagFilter.getAipIds(), tagFilter.getAipIdsExcluded()));
+        Set<AIP> aips = aipDao.findAll(AIPQueryGenerator
+                .search(tagFilter.getState(), tagFilter.getFrom(), tagFilter.getTo(), tagFilter.getTags(), aipSession,
+                        tagFilter.getProviderId(), tagFilter.getAipIds(), tagFilter.getAipIdsExcluded()));
         nbError = new AtomicInteger(0);
         nbEntityRemoved = new AtomicInteger(0);
         nbEntity = aips.size();
@@ -104,14 +108,15 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
         handleErrors();
     }
 
-
     private void handleErrors() {
         // Handle errors
         if (nbError.get() > 0) {
             // Notify admins that the job had issues
             String title = String.format("Failure while removing %d AIPs", nbError.get());
             StringBuilder message = new StringBuilder();
-            message.append(String.format("A job finished with %d AIP correctly removed and %d errors.  AIP concerned:  ", nbEntityRemoved.get(), nbError.get()));
+            message.append(String
+                    .format("A job finished with %d AIP correctly removed and %d errors.  AIP concerned:  ",
+                            nbEntityRemoved.get(), nbError.get()));
             for (String ipId : entityFailed) {
                 message.append(ipId);
                 message.append("  \\n");
@@ -127,31 +132,33 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
 
     @Override
     public int getCompletionCount() {
-        if (nbError.get() + nbEntityRemoved.get() == 0) {
+        if ((nbError.get() + nbEntityRemoved.get()) == 0) {
             return 0;
         }
-        return (int) Math.floor(100 * (nbError.get() + nbEntityRemoved.get()) / nbEntity);
+        return (int) Math.floor((100 * (nbError.get() + nbEntityRemoved.get())) / nbEntity);
     }
 
     @Override
-    public void setParameters(Map<String, JobParameter> parameters) throws JobParameterMissingException, JobParameterInvalidException {
+    public void setParameters(Map<String, JobParameter> parameters)
+            throws JobParameterMissingException, JobParameterInvalidException {
         checkParameters(parameters);
         this.parameters = parameters;
     }
 
-    private void checkParameters(Map<String, JobParameter> parameters) throws JobParameterInvalidException, JobParameterMissingException {
+    private void checkParameters(Map<String, JobParameter> parameters)
+            throws JobParameterInvalidException, JobParameterMissingException {
         JobParameter filterParam = parameters.get(FILTER_PARAMETER_NAME);
         if (filterParam == null) {
 
-            JobParameterMissingException e = new JobParameterMissingException(
-                    String.format("Job %s: parameter %s not provided", this.getClass().getName(), FILTER_PARAMETER_NAME));
+            JobParameterMissingException e = new JobParameterMissingException(String
+                    .format("Job %s: parameter %s not provided", this.getClass().getName(), FILTER_PARAMETER_NAME));
             logger.error(e.getMessage(), e);
             throw e;
         }
         // Check if the filterParam can be correctly parsed, depending of its type
         if (!(filterParam.getValue() instanceof AIPQueryFilters)) {
-            JobParameterInvalidException e = new JobParameterInvalidException(
-                    String.format("Job %s: cannot read the parameter %s", this.getClass().getName(), FILTER_PARAMETER_NAME));
+            JobParameterInvalidException e = new JobParameterInvalidException(String
+                    .format("Job %s: cannot read the parameter %s", this.getClass().getName(), FILTER_PARAMETER_NAME));
             logger.error(e.getMessage(), e);
             throw e;
         }

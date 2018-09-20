@@ -124,11 +124,12 @@ public interface IAIPService {
      * @param pTo {@link OffsetDateTime} stop date of AIP to retrieve
      * @param tags
      * @param sessionId
+     * @param providerId
      * @param pPageable {@link Pageable} Pagination information
      * @return {@link AIP}s corresponding to parameters given.
      */
     Page<AIP> retrieveAIPs(AIPState pState, OffsetDateTime pFrom, OffsetDateTime pTo, List<String> tags,
-            String sessionId, Pageable pPageable) throws ModuleException;
+            String sessionId, String providerId, Pageable pPageable) throws ModuleException;
 
     /**
      * Retrieve pages of AIP with files public information filtered according to the parameters

@@ -18,6 +18,16 @@
  */
 package fr.cnes.regards.modules.storage.service.job;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -35,14 +45,6 @@ import fr.cnes.regards.modules.storage.domain.job.UpdateAIPsTagJobType;
 import fr.cnes.regards.modules.storage.domain.job.UpdatedAipsInfos;
 import fr.cnes.regards.modules.storage.service.IAIPService;
 import fr.cnes.regards.modules.storage.service.IDataStorageService;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Add or remove tags to several AIPs, inside a job.
@@ -89,7 +91,9 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
         UpdateAIPsTagJobType updateType = parameters.get(UPDATE_TYPE_PARAMETER_NAME).getValue();
         AIPQueryFilters tagFilter = getFilter(updateType);
         AIPSession aipSession = aipService.getSession(tagFilter.getSession(), false);
-        Set<AIP> aips = aipDao.findAll(AIPQueryGenerator.search(tagFilter.getState(), tagFilter.getFrom(), tagFilter.getTo(), tagFilter.getTags(), aipSession, tagFilter.getAipIds(), tagFilter.getAipIdsExcluded()));
+        Set<AIP> aips = aipDao.findAll(AIPQueryGenerator
+                .search(tagFilter.getState(), tagFilter.getFrom(), tagFilter.getTo(), tagFilter.getTags(), aipSession,
+                        tagFilter.getProviderId(), tagFilter.getAipIds(), tagFilter.getAipIdsExcluded()));
         nbError = new AtomicInteger(0);
         nbEntityUpdated = new AtomicInteger(0);
         nbEntity = aips.size();
@@ -130,7 +134,9 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
                 title = String.format("Failure while removing tag to %d AIPs", nbError.get());
             }
             StringBuilder message = new StringBuilder();
-            message.append(String.format("A job finished with %d successful updates and %d errors.  \\nAIP concerned:  ", nbEntityUpdated.get(), nbError.get()));
+            message.append(String
+                    .format("A job finished with %d successful updates and %d errors.  \\nAIP concerned:  ",
+                            nbEntityUpdated.get(), nbError.get()));
             for (String ipId : entityFailed) {
                 message.append(ipId);
                 message.append("  \\n");
@@ -139,7 +145,6 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
         }
     }
 
-
     @Override
     public boolean needWorkspace() {
         return false;
@@ -147,29 +152,33 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
 
     @Override
     public int getCompletionCount() {
-        if (nbError.get() + nbEntityUpdated.get() == 0) {
+        if ((nbError.get() + nbEntityUpdated.get()) == 0) {
             return 0;
         }
-        return (int) Math.floor(100 * (nbError.get() + nbEntityUpdated.get()) / nbEntity);
+        return (int) Math.floor((100 * (nbError.get() + nbEntityUpdated.get())) / nbEntity);
     }
 
     @Override
-    public void setParameters(Map<String, JobParameter> parameters) throws JobParameterMissingException, JobParameterInvalidException {
+    public void setParameters(Map<String, JobParameter> parameters)
+            throws JobParameterMissingException, JobParameterInvalidException {
         checkParameters(parameters);
         this.parameters = parameters;
     }
 
-    private void checkParameters(Map<String, JobParameter> parameters) throws JobParameterInvalidException, JobParameterMissingException {
+    private void checkParameters(Map<String, JobParameter> parameters)
+            throws JobParameterInvalidException, JobParameterMissingException {
         JobParameter typeParam = parameters.get(UPDATE_TYPE_PARAMETER_NAME);
         if (typeParam == null) {
             JobParameterMissingException e = new JobParameterMissingException(
-                    String.format("Job %s: parameter %s not provided", this.getClass().getName(), UPDATE_TYPE_PARAMETER_NAME));
+                    String.format("Job %s: parameter %s not provided", this.getClass().getName(),
+                                  UPDATE_TYPE_PARAMETER_NAME));
             logger.error(e.getMessage(), e);
             throw e;
         }
         if (!(typeParam.getValue() instanceof UpdateAIPsTagJobType)) {
             JobParameterInvalidException e = new JobParameterInvalidException(
-                    String.format("Job %s: cannot read the parameter %s", this.getClass().getName(), UPDATE_TYPE_PARAMETER_NAME));
+                    String.format("Job %s: cannot read the parameter %s", this.getClass().getName(),
+                                  UPDATE_TYPE_PARAMETER_NAME));
             logger.error(e.getMessage(), e);
             throw e;
         }
@@ -177,16 +186,18 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
         JobParameter filterParam = parameters.get(FILTER_PARAMETER_NAME);
         if (filterParam == null) {
 
-            JobParameterMissingException e = new JobParameterMissingException(
-                    String.format("Job %s: parameter %s not provided", this.getClass().getName(), FILTER_PARAMETER_NAME));
+            JobParameterMissingException e = new JobParameterMissingException(String
+                    .format("Job %s: parameter %s not provided", this.getClass().getName(), FILTER_PARAMETER_NAME));
             logger.error(e.getMessage(), e);
             throw e;
         }
         // Check if the filterParam can be correctly parsed, depending of its type
-        if ((typeParam.getValue() == UpdateAIPsTagJobType.ADD && !(filterParam.getValue() instanceof AddAIPTagsFilters)) ||
-                (typeParam.getValue() == UpdateAIPsTagJobType.REMOVE && !(filterParam.getValue() instanceof RemoveAIPTagsFilters))) {
-            JobParameterInvalidException e = new JobParameterInvalidException(
-                    String.format("Job %s: cannot read the parameter %s", this.getClass().getName(), FILTER_PARAMETER_NAME));
+        if (((typeParam.getValue() == UpdateAIPsTagJobType.ADD)
+                && !(filterParam.getValue() instanceof AddAIPTagsFilters))
+                || ((typeParam.getValue() == UpdateAIPsTagJobType.REMOVE)
+                        && !(filterParam.getValue() instanceof RemoveAIPTagsFilters))) {
+            JobParameterInvalidException e = new JobParameterInvalidException(String
+                    .format("Job %s: cannot read the parameter %s", this.getClass().getName(), FILTER_PARAMETER_NAME));
             logger.error(e.getMessage(), e);
             throw e;
         }
@@ -203,6 +214,7 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
             AddAIPTagsFilters query = parameters.get(FILTER_PARAMETER_NAME).getValue();
             tagFilter.setSession(query.getSession());
             tagFilter.setState(query.getState());
+            tagFilter.setProviderId(query.getProviderId());
             tagFilter.setFrom(query.getFrom());
             tagFilter.setTo(query.getTo());
             tagFilter.setAipIds(query.getAipIds());
@@ -211,6 +223,7 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
             RemoveAIPTagsFilters query = parameters.get(FILTER_PARAMETER_NAME).getValue();
             tagFilter.setSession(query.getSession());
             tagFilter.setState(query.getState());
+            tagFilter.setProviderId(query.getProviderId());
             tagFilter.setFrom(query.getFrom());
             tagFilter.setTo(query.getTo());
             tagFilter.setAipIds(query.getAipIds());
@@ -218,6 +231,5 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
         }
         return tagFilter;
     }
-
 
 }
