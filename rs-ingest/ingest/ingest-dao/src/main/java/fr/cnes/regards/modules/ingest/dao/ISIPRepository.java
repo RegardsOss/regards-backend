@@ -106,7 +106,7 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
      * @param state new {@link SIPState}
      * @param id id of the {@link SIPEntity} to update
      */
-    @Modifying
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("UPDATE SIPEntity s set s.state = ?1 where s.id = ?2")
     void updateSIPEntityState(SIPState state, Long id);
 

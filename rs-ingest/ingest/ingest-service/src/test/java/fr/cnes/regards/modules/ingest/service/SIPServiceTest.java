@@ -289,8 +289,7 @@ public class SIPServiceTest extends AbstractSIPTest {
                               sipWithManyVersions.size() > 1);
             Mockito.verify(aipClient, Mockito.times(1))
                     .deleteAipFromSips(Sets
-                            .union(sipWithManyVersions.stream().map(sip -> sip.getSipId().toString())
-                                    .collect(Collectors.toSet()),
+                            .union(sipWithManyVersions.stream().map(sip -> sip.getSipId()).collect(Collectors.toSet()),
                                    complexSessionSips.stream().filter(sip -> sip.getState() == SIPState.TO_BE_DELETED)
                                            .map(SIPEntity::getSipId).collect(Collectors.toSet())));
             for (SIPEntity sip : sipWithManyVersions) {
