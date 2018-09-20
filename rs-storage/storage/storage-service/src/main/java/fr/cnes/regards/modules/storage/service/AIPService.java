@@ -438,7 +438,7 @@ public class AIPService implements IAIPService {
         DispatchErrors dispatchErrors = new DispatchErrors();
         Multimap<Long, StorageDataFile> storageWorkingSetMap = allocationStrategy
                 .dispatch(dataFilesToStore, dispatchErrors);
-        LOGGER.trace("{} data objects has been dispatched between {} data storage by allocation strategy",
+        LOGGER.debug("{} data objects has been dispatched between {} data storage by allocation strategy",
                      dataFilesToStore.size(),
                      storageWorkingSetMap.keySet().size());
         // as we are trusty people, we check that the dispatch gave us back all DataFiles into the WorkingSubSets
