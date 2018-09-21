@@ -73,17 +73,6 @@ public interface IAIPService {
     List<RejectedAip> validateAndStore(AIPCollection aips) throws ModuleException;
 
     /**
-     * Asynchronously makes the heavy work of storing AIP following these steps :
-     * <ul>
-     * <li>Extract data files from {@link AIP}</li>
-     * <li>Dispatch them on {@link IDataStorage} plugins through the single active {@link IAllocationStrategy}
-     * plugin</li>
-     * <li>Prepare and schedule storage jobs for data files</li>
-     * </ul>
-     */
-    void store() throws ModuleException;
-
-    /**
      * Asynchronusly makes the heavy work of storing AIP metadata.
      */
     void storeMetadata();
@@ -391,7 +380,13 @@ public interface IAIPService {
     void removeDeletedAIPMetadatas();
 
     /**
-     * Schedule storage for the given page of AIP data.
+     * Schedule storage for the given page of AIP data following these steps :
+     * <ul>
+     * <li>Extract data files from {@link AIP}</li>
+     * <li>Dispatch them on {@link IDataStorage} plugins through the single active {@link IAllocationStrategy}
+     * plugin</li>
+     * <li>Prepare and schedule storage jobs for data files</li>
+     * </ul>
      * @return page of sheduled AIP data.
      * @throws ModuleException
      */

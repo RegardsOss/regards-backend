@@ -54,7 +54,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.util.Pair;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.util.MimeType;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
@@ -362,18 +361,6 @@ public class AIPService implements IAIPService {
             }
         }
         return validAips;
-    }
-
-    @MultitenantTransactional(propagation = Propagation.SUPPORTS)
-    @Override
-    public void store() throws ModuleException {
-        // Extract data files from valid AIP (microservice concurrent action)
-        Pageable page = new PageRequest(0, aipIterationLimit);
-        Page<AIP> createdAips;
-        do {
-            createdAips = storePage(page);
-            page = createdAips.nextPageable();
-        } while (createdAips.hasNext());
     }
 
     @Override
