@@ -53,7 +53,7 @@ import fr.cnes.regards.framework.gson.strategy.SerializationExclusionStrategy;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.microservice.manager.MicroserviceConfiguration;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
-import fr.cnes.regards.framework.module.manager.IModuleConfigurationManager;
+import fr.cnes.regards.framework.module.manager.IModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItemAdapter;
@@ -87,7 +87,7 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
     private Gson gson;
 
     @Autowired(required = false)
-    private List<IModuleConfigurationManager> managers;
+    private List<IModuleManager> managers;
 
     @Autowired
     private GsonBuilderFactory gsonBuilderFactory;
@@ -144,7 +144,7 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
                 new InputStreamReader(this.getClass().getResourceAsStream("config-rs-catalog.json"), "UTF-8"))) {
             MicroserviceConfiguration microConfig = getConfigGson().fromJson(reader, MicroserviceConfiguration.class);
             for (ModuleConfiguration module : microConfig.getModules()) {
-                for (IModuleConfigurationManager manager : managers) {
+                for (IModuleManager manager : managers) {
                     if (manager.isApplicable(module)) {
                         manager.importConfigurationAndLog(module);
                     }

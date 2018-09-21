@@ -9,9 +9,10 @@ import org.elasticsearch.common.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.module.manager.AbstractModuleConfigurationManager;
+import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
+import fr.cnes.regards.framework.module.manager.ModuleReadinessReport;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
@@ -23,7 +24,7 @@ import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Component
-public class SearchEngineConfigurationManager extends AbstractModuleConfigurationManager {
+public class SearchEngineConfigurationManager extends AbstractModuleManager<Void> {
 
     @Autowired
     private ISearchEngineConfigurationService searchEngineConfigurationService;
@@ -35,17 +36,15 @@ public class SearchEngineConfigurationManager extends AbstractModuleConfiguratio
             if (SearchEngineConfiguration.class.isAssignableFrom(item.getKey())) {
                 SearchEngineConfiguration toImport = item.getTypedValue();
                 if (!Strings.isNullOrEmpty(toImport.getDatasetUrn())) {
-                    importErrors.add(String.format(
-                            "Skipping import of search engine configuration %s because it is linked to a dataset %s",
-                            toImport.getLabel(),
-                            toImport.getDatasetUrn()));
+                    importErrors.add(String
+                            .format("Skipping import of search engine configuration %s because it is linked to a dataset %s",
+                                    toImport.getLabel(), toImport.getDatasetUrn()));
                 } else {
                     try {
                         searchEngineConfigurationService.createConf(toImport);
                     } catch (ModuleException e) {
                         importErrors.add(String.format("Skipping import of search engine configuration %s: %s",
-                                                       toImport.getLabel(),
-                                                       e.getMessage()));
+                                                       toImport.getLabel(), e.getMessage()));
                         logger.error(e.getMessage(), e);
                     }
                 }
@@ -65,5 +64,10 @@ public class SearchEngineConfigurationManager extends AbstractModuleConfiguratio
             }
         }
         return ModuleConfiguration.build(info, configurations);
+    }
+
+    @Override
+    public ModuleReadinessReport<Void> isReady() {
+        return new ModuleReadinessReport<Void>(true, null, null);
     }
 }
