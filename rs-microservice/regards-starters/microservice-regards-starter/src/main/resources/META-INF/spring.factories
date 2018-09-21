@@ -3,6 +3,5 @@ fr.cnes.regards.framework.microservice.autoconfigure.MicroserviceAutoConfigurati
 fr.cnes.regards.framework.microservice.rest.ManagerController,\
 fr.cnes.regards.framework.microservice.rest.MaintenanceController,\
 fr.cnes.regards.framework.microservice.rest.MaintenanceExceptionManager,\
-fr.cnes.regards.framework.microservice.rest.MicroserviceReadyController,\
-fr.cnes.regards.framework.microservice.rest.MicroserviceConfigurationController,\
+fr.cnes.regards.framework.microservice.rest.ModuleManagerController,\
 fr.cnes.regards.framework.microservice.configurer.JettyConfiguration

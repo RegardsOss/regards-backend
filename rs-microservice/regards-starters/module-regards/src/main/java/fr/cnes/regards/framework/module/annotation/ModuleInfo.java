@@ -23,12 +23,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import fr.cnes.regards.framework.module.manager.AbstractModuleConfigurationManager;
-import fr.cnes.regards.framework.module.manager.IModuleConfigurationManager;
+import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
+import fr.cnes.regards.framework.module.manager.IModuleManager;
 
 /**
  * This annotation is deprecated. You have to create a file "module.properties" in association with your
- * {@link IModuleConfigurationManager}. You can see {@link AbstractModuleConfigurationManager} for required content.
+ * {@link IModuleManager}. You can see {@link AbstractModuleManager} for required content.
  *
  * @author Marc Sordi
  *

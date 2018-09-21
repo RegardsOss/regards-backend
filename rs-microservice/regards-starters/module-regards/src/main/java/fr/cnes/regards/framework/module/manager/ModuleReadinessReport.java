@@ -1,11 +1,11 @@
-package fr.cnes.regards.framework.module.ready;
+package fr.cnes.regards.framework.module.manager;
 
 import java.util.List;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-public class ModuleReadiness<T> {
+public class ModuleReadinessReport<T> {
 
     /**
      * Whether the module is ready or not
@@ -27,7 +27,7 @@ public class ModuleReadiness<T> {
      * @param ready
      * @param reasons
      */
-    public ModuleReadiness(boolean ready, List<String> reasons, T specifications) {
+    public ModuleReadinessReport(boolean ready, List<String> reasons, T specifications) {
         this.ready = ready;
         this.reasons = reasons;
         this.specifications = specifications;

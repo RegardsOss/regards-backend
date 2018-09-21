@@ -21,12 +21,13 @@ package fr.cnes.regards.framework.module.manager;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
- * Bean contract for module configuration management
+ * Bean contract for module management
  *
  * @author Marc Sordi
  *
+ * @param <S> module specifications for {@link ModuleReadinessReport}
  */
-public interface IModuleConfigurationManager {
+public interface IModuleManager<S> {
 
     /**
      * Module information
@@ -48,4 +49,18 @@ public interface IModuleConfigurationManager {
      * Export configuration
      */
     ModuleConfiguration exportConfiguration() throws ModuleException;
+
+    /**
+     * Restart module after crashing. Inconsistent state should be detected and cleaned.
+     */
+    ModuleRestartReport restart();
+
+    /**
+     * Detect if current module is ready to run, i.e. all required configurations are done!<br/>
+     * Module specification may be given to fulfill missing configuration.<br/>
+     * For instance, most of the time, minimal configuration will require at least one plugin configuration.
+     *
+     * @return whether or not the module is considered ready
+     */
+    ModuleReadinessReport<S> isReady();
 }

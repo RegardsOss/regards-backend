@@ -12,16 +12,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import fr.cnes.regards.framework.microservice.rest.MicroserviceConfigurationController;
+import fr.cnes.regards.framework.microservice.rest.ModuleManagerController;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-@ContextConfiguration(classes = MicroserviceConfigurationControllerIT.Config.class)
+@ContextConfiguration(classes = ModuleManagerControllerIT.Config.class)
 @EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
-public class MicroserviceConfigurationControllerIT extends AbstractRegardsIT {
+public class ModuleManagerControllerIT extends AbstractRegardsIT {
 
     @Autowired
     private TestConfigurationManager testConfigurationManager;
@@ -32,9 +32,8 @@ public class MicroserviceConfigurationControllerIT extends AbstractRegardsIT {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
 
-        performDefaultGet(MicroserviceConfigurationController.TYPE_MAPPING,
-                          requestBuilderCustomizer,
-                          "Should export configuration");
+        performDefaultGet(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
+                          requestBuilderCustomizer, "Should export configuration");
     }
 
     @Test
@@ -49,10 +48,8 @@ public class MicroserviceConfigurationControllerIT extends AbstractRegardsIT {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
 
-        performDefaultFileUpload(MicroserviceConfigurationController.TYPE_MAPPING,
-                                 filePath,
-                                 requestBuilderCustomizer,
-                                 "Should be able to import configuration");
+        performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
+                                 filePath, requestBuilderCustomizer, "Should be able to import configuration");
     }
 
     @Test
@@ -66,10 +63,8 @@ public class MicroserviceConfigurationControllerIT extends AbstractRegardsIT {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isPartialContent());
 
-        performDefaultFileUpload(MicroserviceConfigurationController.TYPE_MAPPING,
-                                 filePath,
-                                 requestBuilderCustomizer,
-                                 "Should be able to import configuration");
+        performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
+                                 filePath, requestBuilderCustomizer, "Should be able to import configuration");
     }
 
     @Test
@@ -84,10 +79,24 @@ public class MicroserviceConfigurationControllerIT extends AbstractRegardsIT {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isConflict());
 
-        performDefaultFileUpload(MicroserviceConfigurationController.TYPE_MAPPING,
-                                 filePath,
-                                 requestBuilderCustomizer,
-                                 "Should be able to import configuration");
+        performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
+                                 filePath, requestBuilderCustomizer, "Should be able to import configuration");
+    }
+
+    @Test
+    public void testReady() {
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        performDefaultGet(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.READY_MAPPING,
+                          requestBuilderCustomizer, "Ready endpoint should be reached!");
+    }
+
+    @Test
+    public void testRestart() {
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        performDefaultGet(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.RESTART_MAPPING,
+                          requestBuilderCustomizer, "Restart endpoint should be reached!");
     }
 
     @Configuration

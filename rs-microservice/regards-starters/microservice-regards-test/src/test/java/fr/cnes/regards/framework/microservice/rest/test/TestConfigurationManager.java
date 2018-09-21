@@ -5,12 +5,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.context.annotation.Configuration;
-
 import fr.cnes.regards.framework.microservice.rest.test.domain.ConfigurationPojo;
-import fr.cnes.regards.framework.module.manager.AbstractModuleConfigurationManager;
+import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
+import fr.cnes.regards.framework.module.manager.ModuleReadinessReport;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
@@ -18,7 +17,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  *
  * @author Sylvain VISSIERE-GUERINET
  */
-public class TestConfigurationManager extends AbstractModuleConfigurationManager {
+public class TestConfigurationManager extends AbstractModuleManager<Void> {
 
     private boolean totalFail;
 
@@ -75,5 +74,10 @@ public class TestConfigurationManager extends AbstractModuleConfigurationManager
 
     public void setPartialFail(boolean partialFail) {
         this.partialFail = partialFail;
+    }
+
+    @Override
+    public ModuleReadinessReport<Void> isReady() {
+        return new ModuleReadinessReport<Void>(true, null, null);
     }
 }
