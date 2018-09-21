@@ -87,7 +87,7 @@ public class ScheduleStorageTasks {
                     page = createdAips.nextPageable();
                 } while (createdAips.hasNext());
 
-                LOGGER.trace("Project {} AIP data scheduled in {}ms", System.currentTimeMillis() - startTime);
+                LOGGER.trace("AIP data scheduled in {}ms", System.currentTimeMillis() - startTime);
 
             } finally {
                 runtimeTenantResolver.clearTenant();
