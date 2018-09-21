@@ -928,8 +928,8 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public Set<AIP> retrieveAipsByTag(String tag) {
-        return aipDao.findAllByTags(tag);
+    public Page<AIP> retrieveAipsByTag(String tag, Pageable page) {
+        return aipDao.findAllByTags(tag, page);
     }
 
     @Override

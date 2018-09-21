@@ -25,7 +25,6 @@ import java.security.NoSuchAlgorithmException;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.Random;
-import java.util.Set;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -328,45 +327,45 @@ public class DaoIT extends AbstractDaoTransactionalTest {
     public void testFindAllByTags() {
         // aips have been generated with there own ipId as tag(except for aip12 which is tagged by aip1 ipId), lets
         // retrieve them according to there ipId
-        Set<AIP> aips = dao.findAllByTags(aip1.getId().toString());
-        Assert.assertTrue(aips.contains(aip1));
-        Assert.assertTrue(aips.contains(aip12));
-        Assert.assertFalse(aips.contains(aip2));
-        Assert.assertFalse(aips.contains(aip3));
-        Assert.assertFalse(aips.contains(aip4));
-        Assert.assertFalse(aips.contains(aip5));
+        Page<AIP> aips = dao.findAllByTags(aip1.getId().toString(), new PageRequest(0, 100));
+        Assert.assertTrue(aips.getContent().contains(aip1));
+        Assert.assertTrue(aips.getContent().contains(aip12));
+        Assert.assertFalse(aips.getContent().contains(aip2));
+        Assert.assertFalse(aips.getContent().contains(aip3));
+        Assert.assertFalse(aips.getContent().contains(aip4));
+        Assert.assertFalse(aips.getContent().contains(aip5));
 
-        aips = dao.findAllByTags(aip2.getId().toString());
-        Assert.assertFalse(aips.contains(aip1));
-        Assert.assertFalse(aips.contains(aip12));
-        Assert.assertTrue(aips.contains(aip2));
-        Assert.assertFalse(aips.contains(aip3));
-        Assert.assertFalse(aips.contains(aip4));
-        Assert.assertFalse(aips.contains(aip5));
+        aips = dao.findAllByTags(aip2.getId().toString(), new PageRequest(0, 100));
+        Assert.assertFalse(aips.getContent().contains(aip1));
+        Assert.assertFalse(aips.getContent().contains(aip12));
+        Assert.assertTrue(aips.getContent().contains(aip2));
+        Assert.assertFalse(aips.getContent().contains(aip3));
+        Assert.assertFalse(aips.getContent().contains(aip4));
+        Assert.assertFalse(aips.getContent().contains(aip5));
 
-        aips = dao.findAllByTags(aip3.getId().toString());
-        Assert.assertFalse(aips.contains(aip1));
-        Assert.assertFalse(aips.contains(aip12));
-        Assert.assertFalse(aips.contains(aip2));
-        Assert.assertTrue(aips.contains(aip3));
-        Assert.assertFalse(aips.contains(aip4));
-        Assert.assertFalse(aips.contains(aip5));
+        aips = dao.findAllByTags(aip3.getId().toString(), new PageRequest(0, 100));
+        Assert.assertFalse(aips.getContent().contains(aip1));
+        Assert.assertFalse(aips.getContent().contains(aip12));
+        Assert.assertFalse(aips.getContent().contains(aip2));
+        Assert.assertTrue(aips.getContent().contains(aip3));
+        Assert.assertFalse(aips.getContent().contains(aip4));
+        Assert.assertFalse(aips.getContent().contains(aip5));
 
-        aips = dao.findAllByTags(aip4.getId().toString());
-        Assert.assertFalse(aips.contains(aip1));
-        Assert.assertFalse(aips.contains(aip12));
-        Assert.assertFalse(aips.contains(aip2));
-        Assert.assertFalse(aips.contains(aip3));
-        Assert.assertTrue(aips.contains(aip4));
-        Assert.assertFalse(aips.contains(aip5));
+        aips = dao.findAllByTags(aip4.getId().toString(), new PageRequest(0, 100));
+        Assert.assertFalse(aips.getContent().contains(aip1));
+        Assert.assertFalse(aips.getContent().contains(aip12));
+        Assert.assertFalse(aips.getContent().contains(aip2));
+        Assert.assertFalse(aips.getContent().contains(aip3));
+        Assert.assertTrue(aips.getContent().contains(aip4));
+        Assert.assertFalse(aips.getContent().contains(aip5));
 
-        aips = dao.findAllByTags(aip5.getId().toString());
-        Assert.assertFalse(aips.contains(aip1));
-        Assert.assertFalse(aips.contains(aip12));
-        Assert.assertFalse(aips.contains(aip2));
-        Assert.assertFalse(aips.contains(aip3));
-        Assert.assertFalse(aips.contains(aip4));
-        Assert.assertTrue(aips.contains(aip5));
+        aips = dao.findAllByTags(aip5.getId().toString(), new PageRequest(0, 100));
+        Assert.assertFalse(aips.getContent().contains(aip1));
+        Assert.assertFalse(aips.getContent().contains(aip12));
+        Assert.assertFalse(aips.getContent().contains(aip2));
+        Assert.assertFalse(aips.getContent().contains(aip3));
+        Assert.assertFalse(aips.getContent().contains(aip4));
+        Assert.assertTrue(aips.getContent().contains(aip5));
     }
 
     @Test

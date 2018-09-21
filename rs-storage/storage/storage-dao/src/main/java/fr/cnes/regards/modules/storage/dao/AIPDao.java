@@ -8,14 +8,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
-
-import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -92,10 +91,7 @@ public class AIPDao implements IAIPDao {
 
     @Override
     public Page<AIP> findAllByIpIdStartingWith(String aipIdWithoutVersion, Pageable page) {
-        Page<AIPEntity> aipEntities = repo.findAllByAipIdStartingWith(aipIdWithoutVersion, page);
-        return new PageImpl<>(
-                aipEntities.getContent().stream().map(this::buildAipFromAIPEntity).collect(Collectors.toList()), page,
-                aipEntities.getContent().size());
+        return buildAIPPage(repo.findAllByAipIdStartingWith(aipIdWithoutVersion, page), page);
     }
 
     @Override
@@ -107,12 +103,7 @@ public class AIPDao implements IAIPDao {
 
     @Override
     public Page<AIP> findAllByStateService(AIPState state, Pageable page) {
-        Page<AIPEntity> aipEntities = repo.findAllByStateIn(state, page);
-        Set<AIP> aips = Sets.newHashSet();
-        if (!aipEntities.getContent().isEmpty()) {
-            aips = aipEntities.getContent().stream().map(this::buildAipFromAIPEntity).collect(Collectors.toSet());
-        }
-        return new PageImpl<>(aips.stream().collect(Collectors.toList()), page, aips.size());
+        return buildAIPPage(repo.findAllByStateIn(state, page), page);
     }
 
     @Override
@@ -132,10 +123,7 @@ public class AIPDao implements IAIPDao {
 
     @Override
     public Page<AIP> findAllByStateInService(Collection<AIPState> states, Pageable page) {
-        Page<AIPEntity> aipEntities = repo.findAllByStateIn(states, page);
-        return new PageImpl<AIP>(
-                aipEntities.getContent().stream().map(this::buildAipFromAIPEntity).collect(Collectors.toList()), page,
-                aipEntities.getContent().size());
+        return buildAIPPage(repo.findAllByStateIn(states, page), page);
     }
 
     @Override
@@ -157,8 +145,8 @@ public class AIPDao implements IAIPDao {
     }
 
     @Override
-    public Set<AIP> findAllByTags(String tag) {
-        return repo.findAllByTags(tag).stream().map(this::buildAipFromAIPEntity).collect(Collectors.toSet());
+    public Page<AIP> findAllByTags(String tag, Pageable page) {
+        return buildAIPPage(repo.findAllByTags(tag, page), page);
     }
 
     @Override
@@ -179,8 +167,7 @@ public class AIPDao implements IAIPDao {
     @Override
     public Page<AIP> findAllByStateAndLastEventDateAfter(AIPState state, OffsetDateTime fromLastUpdateDate,
             Pageable pageable) {
-        return repo.findAllByStateAndLastEventDateAfter(state, fromLastUpdateDate, pageable)
-                .map(this::buildAipFromAIPEntity);
+        return buildAIPPage(repo.findAllByStateAndLastEventDateAfter(state, fromLastUpdateDate, pageable), pageable);
     }
 
     @Override
@@ -201,6 +188,16 @@ public class AIPDao implements IAIPDao {
     @Override
     public List<String> findAllByCustomQuery(String query) {
         return custoRepo.getDistinctTags(query);
+    }
+
+    private Page<AIP> buildAIPPage(Page<AIPEntity> aipEntities, Pageable page) {
+        if ((aipEntities == null) || aipEntities.getContent().isEmpty()) {
+            return new PageImpl<AIP>(Lists.newArrayList(), page, 0);
+        } else {
+            return new PageImpl<AIP>(
+                    aipEntities.getContent().stream().map(this::buildAipFromAIPEntity).collect(Collectors.toList()),
+                    page, aipEntities.getTotalElements());
+        }
     }
 
 }

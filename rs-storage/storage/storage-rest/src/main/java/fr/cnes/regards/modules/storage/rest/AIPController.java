@@ -526,19 +526,6 @@ public class AIPController implements IResourceController<AIP> {
     }
 
     /**
-     * Retrieve all aips which are tagged by the provided tag
-     * @return aips tagged by the tag
-     */
-    @RequestMapping(value = TAG, method = RequestMethod.GET)
-    @ResourceAccess(description = "retrieve a collection of AIP according to a tag")
-    @ResponseBody
-    public ResponseEntity<AIPCollection> retrieveAipsByTag(@PathVariable("tag") String tag) {
-        AIPCollection aipCollection = new AIPCollection();
-        aipCollection.addAll(aipService.retrieveAipsByTag(tag));
-        return ResponseEntity.ok(aipCollection);
-    }
-
-    /**
      * Retrieve the history of events that occurred on a given aip, represented by its ip id
      * @return the history of events that occurred to the aip
      */
