@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.time.OffsetDateTime;
 
+import javax.annotation.Nullable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -99,9 +100,8 @@ public class AcquisitionFile {
     private OffsetDateTime acqDate;
 
     /**
-     * Data file checksum
+     * Data file checksum. It can be null in case the checksum could not be computed
      */
-    @NotBlank(message = "Checksum is required")
     @Column(name = "checksum", length = 255)
     private String checksum;
 
