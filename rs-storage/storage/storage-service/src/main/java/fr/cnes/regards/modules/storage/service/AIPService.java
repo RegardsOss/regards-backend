@@ -634,10 +634,17 @@ public class AIPService implements IAIPService {
 
     @Override
     public List<String> retrieveAIPVersionHistory(UniformResourceName pIpId) {
+        List<String> versions = Lists.newArrayList();
         String ipIdWithoutVersion = pIpId.toString();
         ipIdWithoutVersion = ipIdWithoutVersion.substring(0, ipIdWithoutVersion.indexOf(":V"));
-        Set<AIP> versions = aipDao.findAllByIpIdStartingWith(ipIdWithoutVersion);
-        return versions.stream().map(a -> a.getId().toString()).collect(Collectors.toList());
+        Pageable page = new PageRequest(0, aipIterationLimit);
+        Page<AIP> aips;
+        do {
+            aips = aipDao.findAllByIpIdStartingWith(ipIdWithoutVersion, page);
+            page = aips.nextPageable();
+            versions.addAll(aips.getContent().stream().map(a -> a.getId().toString()).collect(Collectors.toList()));
+        } while (aips.hasNext());
+        return versions;
     }
 
     /**

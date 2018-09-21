@@ -61,8 +61,8 @@ import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 /**
  * @author Sylvain Vissiere-Guerinet
  */
-@TestPropertySource(
-        properties = { "spring.jpa.properties.hibernate.default_schema=projectdb", "spring.application.name=storage", "spring.jpa.properties.hibernate.show_sql=true" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=projectdb",
+        "spring.application.name=storage", "spring.jpa.properties.hibernate.show_sql=true" })
 @ContextConfiguration(classes = DAOTestConfiguration.class)
 public class DaoIT extends AbstractDaoTransactionalTest {
 
@@ -315,13 +315,13 @@ public class DaoIT extends AbstractDaoTransactionalTest {
     public void testFindAllByIpIdStartingWith() {
         String ipIdWithoutVersion = aip1.getId().toString();
         ipIdWithoutVersion = ipIdWithoutVersion.substring(0, ipIdWithoutVersion.indexOf(":V"));
-        Set<AIP> aips = dao.findAllByIpIdStartingWith(ipIdWithoutVersion);
-        Assert.assertTrue(aips.contains(aip1));
-        Assert.assertTrue(aips.contains(aip12));
-        Assert.assertFalse(aips.contains(aip2));
-        Assert.assertFalse(aips.contains(aip3));
-        Assert.assertFalse(aips.contains(aip4));
-        Assert.assertFalse(aips.contains(aip5));
+        Page<AIP> aips = dao.findAllByIpIdStartingWith(ipIdWithoutVersion, new PageRequest(0, 100));
+        Assert.assertTrue(aips.getContent().contains(aip1));
+        Assert.assertTrue(aips.getContent().contains(aip12));
+        Assert.assertFalse(aips.getContent().contains(aip2));
+        Assert.assertFalse(aips.getContent().contains(aip3));
+        Assert.assertFalse(aips.getContent().contains(aip4));
+        Assert.assertFalse(aips.getContent().contains(aip5));
     }
 
     @Test

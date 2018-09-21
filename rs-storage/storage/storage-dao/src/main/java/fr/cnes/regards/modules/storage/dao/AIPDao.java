@@ -8,13 +8,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.assertj.core.util.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -90,9 +91,11 @@ public class AIPDao implements IAIPDao {
     }
 
     @Override
-    public Set<AIP> findAllByIpIdStartingWith(String aipIdWithoutVersion) {
-        return repo.findAllByAipIdStartingWith(aipIdWithoutVersion).stream().map(this::buildAipFromAIPEntity)
-                .collect(Collectors.toSet());
+    public Page<AIP> findAllByIpIdStartingWith(String aipIdWithoutVersion, Pageable page) {
+        Page<AIPEntity> aipEntities = repo.findAllByAipIdStartingWith(aipIdWithoutVersion, page);
+        return new PageImpl<>(
+                aipEntities.getContent().stream().map(this::buildAipFromAIPEntity).collect(Collectors.toList()), page,
+                aipEntities.getContent().size());
     }
 
     @Override
@@ -109,7 +112,6 @@ public class AIPDao implements IAIPDao {
         if (!aipEntities.getContent().isEmpty()) {
             aips = aipEntities.getContent().stream().map(this::buildAipFromAIPEntity).collect(Collectors.toSet());
         }
-
         return new PageImpl<>(aips.stream().collect(Collectors.toList()), page, aips.size());
     }
 
@@ -129,8 +131,11 @@ public class AIPDao implements IAIPDao {
     }
 
     @Override
-    public Set<AIP> findAllByStateInService(AIPState... states) {
-        return repo.findAllByStateIn(states).stream().map(this::buildAipFromAIPEntity).collect(Collectors.toSet());
+    public Page<AIP> findAllByStateInService(Collection<AIPState> states, Pageable page) {
+        Page<AIPEntity> aipEntities = repo.findAllByStateIn(states, page);
+        return new PageImpl<AIP>(
+                aipEntities.getContent().stream().map(this::buildAipFromAIPEntity).collect(Collectors.toList()), page,
+                aipEntities.getContent().size());
     }
 
     @Override

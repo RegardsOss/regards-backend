@@ -80,9 +80,10 @@ public interface IAIPDao {
     /**
      * Retrieve all existing {@link AIP}s with given starting ipId {@link String}
      * @param aipIdWithoutVersion starting aipId {@link String}
+     * @param page
      * @return {@link AIP}s
      */
-    Set<AIP> findAllByIpIdStartingWith(String aipIdWithoutVersion);
+    Page<AIP> findAllByIpIdStartingWith(String aipIdWithoutVersion, Pageable page);
 
     /**
      * Retrieve all aips which state is the one given
@@ -108,7 +109,7 @@ public interface IAIPDao {
      * @param states
      * @return aips which state is one of the requested
      */
-    Set<AIP> findAllByStateInService(AIPState... states);
+    Page<AIP> findAllByStateInService(Collection<AIPState> states, Pageable page);
 
     /**
      * Remove the given aip from the database

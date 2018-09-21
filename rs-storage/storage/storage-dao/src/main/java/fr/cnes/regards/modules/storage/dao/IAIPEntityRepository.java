@@ -61,7 +61,7 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      * Find all aips which state is one of the provided one
      * @return aips which state is one of the provided one
      */
-    Set<AIPEntity> findAllByStateIn(AIPState... states);
+    Page<AIPEntity> findAllByStateIn(Collection<AIPState> states, Pageable pageable);
 
     /**
      * Retrieve a page of aip which state is the one provided and contains the provided tags and which last event
@@ -85,8 +85,7 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      * Retrieve all aips which ip id starts with the provided string
      * @return aips respecting the constraints
      */
-    @Query("from AIPEntity aip where aip.aipId LIKE :urnWithoutVersion%")
-    Set<AIPEntity> findAllByAipIdStartingWith(@Param("urnWithoutVersion") String urnWithoutVersion);
+    Page<AIPEntity> findAllByAipIdStartingWith(String urnWithoutVersion, Pageable page);
 
     /**
      * Retrieve an aip by its ip id
