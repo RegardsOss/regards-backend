@@ -364,7 +364,7 @@ public class TemplateServiceTest {
         final SimpleMailMessage message = templateService.writeToEmail(CODE, DATA, RECIPIENTS);
 
         // Check
-        Assert.assertEquals(expectedSubject, message.getSubject());
+        Assert.assertEquals("[Regards] " + expectedSubject, message.getSubject());
         Assert.assertEquals(expectedText, message.getText());
         Assert.assertArrayEquals(RECIPIENTS, message.getTo());
     }
