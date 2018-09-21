@@ -598,8 +598,10 @@ public class AIPController implements IResourceController<AIP> {
                                 MethodParamFactory.build(PagedResourcesAssembler.class));
         resourceService.addLink(resource, this.getClass(), "retrieveAip", LinkRels.SELF,
                                 MethodParamFactory.build(String.class, pElement.getId().toString()));
-        resourceService.addLink(resource, this.getClass(), "storeRetryUnit", "retry",
-                                MethodParamFactory.build(String.class, pElement.getId().toString()));
+        if (AIPState.STORAGE_ERROR.equals(pElement.getState())) {
+            resourceService.addLink(resource, this.getClass(), "storeRetryUnit", "retry",
+                                    MethodParamFactory.build(String.class, pElement.getId().toString()));
+        }
         // If the AIP is not being deleted, add the hateoas delete key
         if (!AIPState.DELETED.equals(pElement.getState())) {
             resourceService.addLink(resource, this.getClass(), "deleteAip", "delete",
