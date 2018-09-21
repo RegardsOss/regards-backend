@@ -201,8 +201,8 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
 
-        performDefaultGet(ModuleManagerController.TYPE_MAPPING, requestBuilderCustomizer,
-                          "Should export configuration");
+        performDefaultGet(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
+                          requestBuilderCustomizer, "Should export configuration");
     }
 
     @Test
@@ -215,8 +215,8 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
                                                                                                     // chain already
                                                                                                     // exists
 
-        performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING, filePath, requestBuilderCustomizer,
-                                 "Should be able to import configuration");
+        performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
+                                 filePath, requestBuilderCustomizer, "Should be able to import configuration");
     }
 
     @Test
