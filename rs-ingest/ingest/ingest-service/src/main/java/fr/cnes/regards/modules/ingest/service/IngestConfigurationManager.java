@@ -26,9 +26,10 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.module.manager.AbstractModuleConfigurationManager;
+import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
+import fr.cnes.regards.framework.module.manager.ModuleReadinessReport;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
@@ -39,7 +40,7 @@ import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingService;
  * @author Marc Sordi
  */
 @Service
-public class IngestConfigurationManager extends AbstractModuleConfigurationManager {
+public class IngestConfigurationManager extends AbstractModuleManager<Void> {
 
     @Autowired
     private IIngestProcessingService processingService;
@@ -54,15 +55,14 @@ public class IngestConfigurationManager extends AbstractModuleConfigurationManag
             if (IngestProcessingChain.class.isAssignableFrom(item.getKey())) {
                 IngestProcessingChain ipc = item.getTypedValue();
                 if (processingService.existsChain(ipc.getName())) {
-                    importErrors.add(String.format(
-                            "Ingest processing chain already exists with same name, skipping import of %s.",
-                            ipc.getName()));
+                    importErrors.add(String
+                            .format("Ingest processing chain already exists with same name, skipping import of %s.",
+                                    ipc.getName()));
                 } else {
                     try {
                         processingService.createNewChain(ipc);
                     } catch (ModuleException e) {
-                        importErrors.add(String.format("Skipping import of IngestProcessingChain %s: %s",
-                                                       ipc.getName(),
+                        importErrors.add(String.format("Skipping import of IngestProcessingChain %s: %s", ipc.getName(),
                                                        e.getMessage()));
                         logger.error(e.getMessage(), e);
                     }
@@ -79,5 +79,10 @@ public class IngestConfigurationManager extends AbstractModuleConfigurationManag
             configuration.add(ModuleConfigurationItem.build(ipc));
         }
         return ModuleConfiguration.build(info, configuration);
+    }
+
+    @Override
+    public ModuleReadinessReport<Void> isReady() {
+        return new ModuleReadinessReport<Void>(true, null, null);
     }
 }

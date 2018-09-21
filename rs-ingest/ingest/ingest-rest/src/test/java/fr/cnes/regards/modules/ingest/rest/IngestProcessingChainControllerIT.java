@@ -39,7 +39,7 @@ import com.jayway.jsonpath.JsonPath;
 
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
-import fr.cnes.regards.framework.microservice.rest.MicroserviceConfigurationController;
+import fr.cnes.regards.framework.microservice.rest.ModuleManagerController;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
@@ -201,7 +201,7 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
 
-        performDefaultGet(MicroserviceConfigurationController.TYPE_MAPPING, requestBuilderCustomizer,
+        performDefaultGet(ModuleManagerController.TYPE_MAPPING, requestBuilderCustomizer,
                           "Should export configuration");
     }
 
@@ -215,7 +215,7 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
                                                                                                     // chain already
                                                                                                     // exists
 
-        performDefaultFileUpload(MicroserviceConfigurationController.TYPE_MAPPING, filePath, requestBuilderCustomizer,
+        performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING, filePath, requestBuilderCustomizer,
                                  "Should be able to import configuration");
     }
 
