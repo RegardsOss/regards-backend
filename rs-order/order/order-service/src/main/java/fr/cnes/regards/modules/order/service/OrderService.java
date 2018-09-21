@@ -457,7 +457,7 @@ public class OrderService implements IOrderService {
         SimpleMailMessage email;
         try {
             email = templateService.writeToEmail(TemplateServiceConfiguration.ORDER_CREATED_TEMPLATE_CODE,
-                                                 String.format("Your order %d is OK", order.getId()), dataMap,
+                                                 String.format("Order number %d is confirmed", order.getId()), dataMap,
                                                  order.getOwner());
         } catch (EntityNotFoundException e) {
             throw new RsRuntimeException(e);
@@ -938,8 +938,9 @@ public class OrderService implements IOrderService {
             SimpleMailMessage email;
             try {
                 email = templateService
-                        .writeToEmail(TemplateServiceConfiguration.ASIDE_ORDERS_NOTIFICATION_TEMPLATE_CODE, dataMap,
-                                      entry.getKey());
+                        .writeToEmail(TemplateServiceConfiguration.ASIDE_ORDERS_NOTIFICATION_TEMPLATE_CODE,
+                                      "Reminder: some orders are waiting for you",
+                                      dataMap, entry.getKey());
             } catch (EntityNotFoundException e) {
                 throw new RsRuntimeException(e);
             }
