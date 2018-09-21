@@ -18,11 +18,12 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
-import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
-import java.util.Collection;
 import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 
 public interface ICustomizedAIPEntityRepository {
 
@@ -37,6 +38,4 @@ public interface ICustomizedAIPEntityRepository {
      * Retrieve all AIPEntity that matches the provided query
      */
     Page<AIPEntity> findAll(String sqlQuery, Pageable pPageable);
-
-    Collection<AIPEntity> findAll(String sqlQuery);
 }

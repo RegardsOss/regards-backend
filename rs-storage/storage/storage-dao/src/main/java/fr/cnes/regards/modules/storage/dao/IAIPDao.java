@@ -89,7 +89,7 @@ public interface IAIPDao {
      * @param state
      * @return aips which state is the requested one
      */
-    Set<AIP> findAllByStateService(AIPState state);
+    Page<AIP> findAllByStateService(AIPState state, Pageable page);
 
     /**
      * Retrieve a single aip according to its ip id
@@ -153,12 +153,6 @@ public interface IAIPDao {
      * @return
      */
     Page<AIP> findAll(String query, Pageable pPageable);
-
-    /**
-     * Retrieve all aips
-     * @return aips
-     */
-    Set<AIP> findAll(String query);
 
     /**
      * Count number of {@link AIP} associated to a given session

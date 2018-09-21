@@ -8,9 +8,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.assertj.core.util.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
@@ -34,7 +36,7 @@ public class AIPDao implements IAIPDao {
      */
     private final IAIPEntityRepository repo;
 
-    private ICustomizedAIPEntityRepository custoRepo;
+    private final ICustomizedAIPEntityRepository custoRepo;
 
     /**
      * Constructor setting the parameter as attribute
@@ -101,8 +103,14 @@ public class AIPDao implements IAIPDao {
     }
 
     @Override
-    public Set<AIP> findAllByStateService(AIPState state) {
-        return repo.findAllByStateIn(state).stream().map(this::buildAipFromAIPEntity).collect(Collectors.toSet());
+    public Page<AIP> findAllByStateService(AIPState state, Pageable page) {
+        Page<AIPEntity> aipEntities = repo.findAllByStateIn(state, page);
+        Set<AIP> aips = Sets.newHashSet();
+        if (!aipEntities.getContent().isEmpty()) {
+            aips = aipEntities.getContent().stream().map(this::buildAipFromAIPEntity).collect(Collectors.toSet());
+        }
+
+        return new PageImpl<>(aips.stream().collect(Collectors.toList()), page, aips.size());
     }
 
     @Override
@@ -173,11 +181,6 @@ public class AIPDao implements IAIPDao {
     @Override
     public Page<AIP> findAll(String sqlQuery, Pageable pPageable) {
         return custoRepo.findAll(sqlQuery, pPageable).map(this::buildAipFromAIPEntity);
-    }
-
-    @Override
-    public Set<AIP> findAll(String sqlQuery) {
-        return custoRepo.findAll(sqlQuery).stream().map(this::buildAipFromAIPEntity).collect(Collectors.toSet());
     }
 
     @Override

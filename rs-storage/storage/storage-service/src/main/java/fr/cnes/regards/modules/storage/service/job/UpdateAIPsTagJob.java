@@ -21,12 +21,15 @@ package fr.cnes.regards.modules.storage.service.job;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
@@ -73,6 +76,12 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
     @Autowired
     private IAIPDao aipDao;
 
+    /**
+     * Number of created AIPs processed on each iteration by project
+     */
+    @Value("${regards.storage.aips.iteration.limit:100}")
+    private Integer aipIterationLimit;
+
     @Autowired
     private IDataStorageService dataStorageService;
 
@@ -84,40 +93,46 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
 
     private List<String> entityFailed;
 
-    private Integer nbEntity;
+    private Long nbEntity;
 
     @Override
     public void run() {
         UpdateAIPsTagJobType updateType = parameters.get(UPDATE_TYPE_PARAMETER_NAME).getValue();
         AIPQueryFilters tagFilter = getFilter(updateType);
         AIPSession aipSession = aipService.getSession(tagFilter.getSession(), false);
-        Set<AIP> aips = aipDao.findAll(AIPQueryGenerator
-                .search(tagFilter.getState(), tagFilter.getFrom(), tagFilter.getTo(), tagFilter.getTags(), aipSession,
-                        tagFilter.getProviderId(), tagFilter.getAipIds(), tagFilter.getAipIdsExcluded()));
-        nbError = new AtomicInteger(0);
-        nbEntityUpdated = new AtomicInteger(0);
-        nbEntity = aips.size();
-        entityFailed = new ArrayList<>();
-        aips.forEach(aip -> {
-            try {
-                if (updateType == UpdateAIPsTagJobType.ADD) {
-                    AddAIPTagsFilters query = parameters.get(FILTER_PARAMETER_NAME).getValue();
-                    aipService.addTags(aip, query.getTagsToAdd());
-                } else {
-                    RemoveAIPTagsFilters query = parameters.get(FILTER_PARAMETER_NAME).getValue();
-                    aipService.removeTags(aip, query.getTagsToRemove());
+        Pageable pageRequest = new PageRequest(0, aipIterationLimit);
+        Page<AIP> aipsPage;
+        do {
+            aipsPage = aipDao
+                    .findAll(AIPQueryGenerator.search(tagFilter.getState(), tagFilter.getFrom(), tagFilter.getTo(),
+                                                      tagFilter.getTags(), aipSession, tagFilter.getProviderId(),
+                                                      tagFilter.getAipIds(), tagFilter.getAipIdsExcluded()),
+                             pageRequest);
+            nbError = new AtomicInteger(0);
+            nbEntityUpdated = new AtomicInteger(0);
+            entityFailed = new ArrayList<>();
+            aipsPage.forEach(aip -> {
+                try {
+                    if (updateType == UpdateAIPsTagJobType.ADD) {
+                        AddAIPTagsFilters query = parameters.get(FILTER_PARAMETER_NAME).getValue();
+                        aipService.addTags(aip, query.getTagsToAdd());
+                    } else {
+                        RemoveAIPTagsFilters query = parameters.get(FILTER_PARAMETER_NAME).getValue();
+                        aipService.removeTags(aip, query.getTagsToRemove());
+                    }
+                    nbEntityUpdated.incrementAndGet();
+                } catch (ModuleException e) {
+                    // save first 100 AIP id in error
+                    if (entityFailed.size() < 100) {
+                        entityFailed.add(aip.getId().toString());
+                    }
+                    nbError.incrementAndGet();
+                    // Exception thrown while updating tag list on AIP
+                    LOGGER.error(e.getMessage(), e);
                 }
-                nbEntityUpdated.incrementAndGet();
-            } catch (ModuleException e) {
-                // save first 100 AIP id in error
-                if (entityFailed.size() < 100) {
-                    entityFailed.add(aip.getId().toString());
-                }
-                nbError.incrementAndGet();
-                // Exception thrown while updating tag list on AIP
-                LOGGER.error(e.getMessage(), e);
-            }
-        });
+            });
+        } while (aipsPage.hasNext());
+        nbEntity = aipsPage.getTotalElements();
         UpdatedAipsInfos infos = new UpdatedAipsInfos(nbError, nbEntityUpdated);
         handleErrors(updateType);
         this.setResult(infos);
