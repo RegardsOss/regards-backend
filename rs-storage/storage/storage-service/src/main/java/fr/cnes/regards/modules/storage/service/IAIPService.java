@@ -389,4 +389,11 @@ public interface IAIPService {
      * StorageDataFile. This state is reached when all locations of all DataObject are deleted for an AIP metadata.
      */
     void removeDeletedAIPMetadatas();
+
+    /**
+     * Schedule storage for the given page of AIP data.
+     * @return page of sheduled AIP data.
+     * @throws ModuleException
+     */
+    Page<AIP> storePage(Pageable page) throws ModuleException;
 }

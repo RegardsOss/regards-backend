@@ -54,6 +54,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.util.Pair;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.util.MimeType;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
@@ -363,44 +364,53 @@ public class AIPService implements IAIPService {
         return validAips;
     }
 
+    @MultitenantTransactional(propagation = Propagation.SUPPORTS)
     @Override
     public void store() throws ModuleException {
-
-        long startTime = System.currentTimeMillis();
         // Extract data files from valid AIP (microservice concurrent action)
-        Page<AIP> createdAips = aipDao.findAllWithLockByState(AIPState.VALID, new PageRequest(0, aipIterationLimit));
-        if (createdAips.hasContent()) {
-            List<AIP> aips = createdAips.getContent();
-            Set<StorageDataFile> dataFilesToStore = Sets.newHashSet();
+        Pageable page = new PageRequest(0, aipIterationLimit);
+        Page<AIP> createdAips;
+        do {
+            createdAips = storePage(page);
+            page = createdAips.nextPageable();
+        } while (createdAips.hasNext());
+    }
 
-            for (AIP aip : aips) {
-                // Retrieve data files to store
-                Collection<StorageDataFile> dataFiles;
-                if (aip.isRetry()) {
-                    dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.ERROR, aip);
-                } else {
-                    dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.PENDING, aip);
-                }
-                dataFilesToStore.addAll(dataFiles);
-                aip.setState(AIPState.PENDING);
-                aip.setRetry(false);
-                save(aip, true);
+    @Override
+    public Page<AIP> storePage(Pageable page) throws ModuleException {
+        long startTime = System.currentTimeMillis();
+        Page<AIP> createdAips = aipDao.findAllWithLockByState(AIPState.VALID, page);
+        List<AIP> aips = createdAips.getContent();
+        Set<StorageDataFile> dataFilesToStore = Sets.newHashSet();
+
+        for (AIP aip : aips) {
+            // Retrieve data files to store
+            Collection<StorageDataFile> dataFiles;
+            if (aip.isRetry()) {
+                dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.ERROR, aip);
+            } else {
+                dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.PENDING, aip);
             }
-            long aipUpdateStateTime = System.currentTimeMillis();
-            LOGGER.trace("Updating AIP state of {} AIP(s) for {} tenant took {} ms", aips.size(),
-                         runtimeTenantResolver.getTenant(), aipUpdateStateTime - startTime);
-            // Dispatch and check data files
-            Multimap<Long, StorageDataFile> storageWorkingSetMap = dispatchAndCheck(dataFilesToStore);
-            long dispatchTime = System.currentTimeMillis();
-            LOGGER.trace("Dispatching {} StorageDataFile(s) for {} tenant tooks {} ms", dataFilesToStore.size(),
-                         runtimeTenantResolver.getTenant(), dispatchTime - startTime);
-            // Schedule storage jobs
-            scheduleStorage(storageWorkingSetMap, true);
-
-            long scheduleTime = System.currentTimeMillis();
-            LOGGER.info("Scheduling storage jobs of {} AIP(s) for {} tenant (scheduling time : {} ms)", aips.size(),
-                        runtimeTenantResolver.getTenant(), scheduleTime - startTime);
+            dataFilesToStore.addAll(dataFiles);
+            aip.setState(AIPState.PENDING);
+            aip.setRetry(false);
+            save(aip, true);
         }
+        long aipUpdateStateTime = System.currentTimeMillis();
+        LOGGER.trace("Updating AIP state of {} AIP(s) for {} tenant took {} ms", aips.size(),
+                     runtimeTenantResolver.getTenant(), aipUpdateStateTime - startTime);
+        // Dispatch and check data files
+        Multimap<Long, StorageDataFile> storageWorkingSetMap = dispatchAndCheck(dataFilesToStore);
+        long dispatchTime = System.currentTimeMillis();
+        LOGGER.trace("Dispatching {} StorageDataFile(s) for {} tenant tooks {} ms", dataFilesToStore.size(),
+                     runtimeTenantResolver.getTenant(), dispatchTime - startTime);
+        // Schedule storage jobs
+        scheduleStorage(storageWorkingSetMap, true);
+
+        long scheduleTime = System.currentTimeMillis();
+        LOGGER.info("Scheduling storage jobs of {} AIP(s) for {} tenant (scheduling time : {} ms)", aips.size(),
+                    runtimeTenantResolver.getTenant(), scheduleTime - startTime);
+        return createdAips;
     }
 
     @Override
@@ -708,7 +718,7 @@ public class AIPService implements IAIPService {
      * {@link StorageDataFile}s.<br/>
      * A Job is scheduled for each {@link IWorkingSubset} of each {@link PluginConfiguration}.<br/>
      * @param storageWorkingSetMap List of {@link StorageDataFile} to storeAndCreate per {@link PluginConfiguration}.
-     * @param storingData FALSE to storeAndCreate {@link DataType#AIP}, or TRUE for all other type of
+     * @param storingData FALSE to store {@link DataType#AIP}, or TRUE for all other type of
      *            {@link StorageDataFile}.
      * @return List of {@link UUID} of jobs scheduled.
      */
@@ -732,7 +742,7 @@ public class AIPService implements IAIPService {
                     jobIds.add(jobInfoService.createAsQueued(new JobInfo(false, 0, parameters, authResolver.getUser(),
                             StoreDataFilesJob.class.getName())).getId());
                 } else {
-                    jobIds.add(jobInfoService.createAsQueued(new JobInfo(false, 0, parameters, authResolver.getUser(),
+                    jobIds.add(jobInfoService.createAsQueued(new JobInfo(false, 10, parameters, authResolver.getUser(),
                             StoreMetadataFilesJob.class.getName())).getId());
                 }
 
