@@ -26,9 +26,10 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.module.manager.AbstractModuleConfigurationManager;
+import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
+import fr.cnes.regards.framework.module.manager.ModuleReadinessReport;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 
@@ -37,7 +38,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
  * @author Marc Sordi
  */
 @Service
-public class AcquisitionConfigurationManager extends AbstractModuleConfigurationManager {
+public class AcquisitionConfigurationManager extends AbstractModuleManager<Void> {
 
     @Autowired
     private IAcquisitionProcessingService processingService;
@@ -53,8 +54,7 @@ public class AcquisitionConfigurationManager extends AbstractModuleConfiguration
                 try {
                     processingService.createChain(apc);
                 } catch (ModuleException e) {
-                    importErrors.add(String.format("Skipping import of chain with label %s: %s",
-                                                   apc.getLabel(),
+                    importErrors.add(String.format("Skipping import of chain with label %s: %s", apc.getLabel(),
                                                    e.getMessage()));
                     logger.error(e.getMessage(), e);
                 }
@@ -72,4 +72,8 @@ public class AcquisitionConfigurationManager extends AbstractModuleConfiguration
         return ModuleConfiguration.build(info, configuration);
     }
 
+    @Override
+    public ModuleReadinessReport<Void> isReady() {
+        return new ModuleReadinessReport<Void>(true, null, null);
+    }
 }
