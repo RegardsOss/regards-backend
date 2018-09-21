@@ -196,7 +196,7 @@ public interface IAIPService {
      * @param tag
      * @return tagged aips
      */
-    Set<AIP> retrieveAipsByTag(String tag);
+    Page<AIP> retrieveAipsByTag(String tag, Pageable page);
 
     /**
      * Retrieve an aip thanks to its aip id

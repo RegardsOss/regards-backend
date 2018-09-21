@@ -8,9 +8,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
@@ -34,7 +36,7 @@ public class AIPDao implements IAIPDao {
      */
     private final IAIPEntityRepository repo;
 
-    private ICustomizedAIPEntityRepository custoRepo;
+    private final ICustomizedAIPEntityRepository custoRepo;
 
     /**
      * Constructor setting the parameter as attribute
@@ -88,9 +90,8 @@ public class AIPDao implements IAIPDao {
     }
 
     @Override
-    public Set<AIP> findAllByIpIdStartingWith(String aipIdWithoutVersion) {
-        return repo.findAllByAipIdStartingWith(aipIdWithoutVersion).stream().map(this::buildAipFromAIPEntity)
-                .collect(Collectors.toSet());
+    public Page<AIP> findAllByIpIdStartingWith(String aipIdWithoutVersion, Pageable page) {
+        return buildAIPPage(repo.findAllByAipIdStartingWith(aipIdWithoutVersion, page), page);
     }
 
     @Override
@@ -101,8 +102,8 @@ public class AIPDao implements IAIPDao {
     }
 
     @Override
-    public Set<AIP> findAllByStateService(AIPState state) {
-        return repo.findAllByStateIn(state).stream().map(this::buildAipFromAIPEntity).collect(Collectors.toSet());
+    public Page<AIP> findAllByStateService(AIPState state, Pageable page) {
+        return buildAIPPage(repo.findAllByStateIn(state, page), page);
     }
 
     @Override
@@ -121,8 +122,8 @@ public class AIPDao implements IAIPDao {
     }
 
     @Override
-    public Set<AIP> findAllByStateInService(AIPState... states) {
-        return repo.findAllByStateIn(states).stream().map(this::buildAipFromAIPEntity).collect(Collectors.toSet());
+    public Page<AIP> findAllByStateInService(Collection<AIPState> states, Pageable page) {
+        return buildAIPPage(repo.findAllByStateIn(states, page), page);
     }
 
     @Override
@@ -144,8 +145,8 @@ public class AIPDao implements IAIPDao {
     }
 
     @Override
-    public Set<AIP> findAllByTags(String tag) {
-        return repo.findAllByTags(tag).stream().map(this::buildAipFromAIPEntity).collect(Collectors.toSet());
+    public Page<AIP> findAllByTags(String tag, Pageable page) {
+        return buildAIPPage(repo.findAllByTags(tag, page), page);
     }
 
     @Override
@@ -166,18 +167,12 @@ public class AIPDao implements IAIPDao {
     @Override
     public Page<AIP> findAllByStateAndLastEventDateAfter(AIPState state, OffsetDateTime fromLastUpdateDate,
             Pageable pageable) {
-        return repo.findAllByStateAndLastEventDateAfter(state, fromLastUpdateDate, pageable)
-                .map(this::buildAipFromAIPEntity);
+        return buildAIPPage(repo.findAllByStateAndLastEventDateAfter(state, fromLastUpdateDate, pageable), pageable);
     }
 
     @Override
     public Page<AIP> findAll(String sqlQuery, Pageable pPageable) {
         return custoRepo.findAll(sqlQuery, pPageable).map(this::buildAipFromAIPEntity);
-    }
-
-    @Override
-    public Set<AIP> findAll(String sqlQuery) {
-        return custoRepo.findAll(sqlQuery).stream().map(this::buildAipFromAIPEntity).collect(Collectors.toSet());
     }
 
     @Override
@@ -193,6 +188,16 @@ public class AIPDao implements IAIPDao {
     @Override
     public List<String> findAllByCustomQuery(String query) {
         return custoRepo.getDistinctTags(query);
+    }
+
+    private Page<AIP> buildAIPPage(Page<AIPEntity> aipEntities, Pageable page) {
+        if ((aipEntities == null) || aipEntities.getContent().isEmpty()) {
+            return new PageImpl<AIP>(Lists.newArrayList(), page, 0);
+        } else {
+            return new PageImpl<AIP>(
+                    aipEntities.getContent().stream().map(this::buildAipFromAIPEntity).collect(Collectors.toList()),
+                    page, aipEntities.getTotalElements());
+        }
     }
 
 }

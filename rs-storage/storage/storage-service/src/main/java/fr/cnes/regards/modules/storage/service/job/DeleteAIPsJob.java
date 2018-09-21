@@ -19,13 +19,17 @@
 package fr.cnes.regards.modules.storage.service.job;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
@@ -67,13 +71,19 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
     @Autowired
     private IDataStorageService dataStorageService;
 
+    /**
+     * Number of created AIPs processed on each iteration by project
+     */
+    @Value("${regards.storage.aips.iteration.limit:100}")
+    private Integer aipIterationLimit;
+
     private Map<String, JobParameter> parameters;
 
     private AtomicInteger nbError;
 
     private AtomicInteger nbEntityRemoved;
 
-    private Integer nbEntity;
+    private Long nbEntity;
 
     private ArrayList<String> entityFailed;
 
@@ -81,28 +91,36 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
     public void run() {
         AIPQueryFilters tagFilter = parameters.get(FILTER_PARAMETER_NAME).getValue();
         AIPSession aipSession = aipService.getSession(tagFilter.getSession(), false);
-        Set<AIP> aips = aipDao.findAll(AIPQueryGenerator
-                .search(tagFilter.getState(), tagFilter.getFrom(), tagFilter.getTo(), tagFilter.getTags(), aipSession,
-                        tagFilter.getProviderId(), tagFilter.getAipIds(), tagFilter.getAipIdsExcluded()));
+        Pageable pageRequest = new PageRequest(0, aipIterationLimit);
+        Page<AIP> aipsPage;
         nbError = new AtomicInteger(0);
         nbEntityRemoved = new AtomicInteger(0);
-        nbEntity = aips.size();
         entityFailed = new ArrayList<>();
+        do {
+            aipsPage = aipDao
+                    .findAll(AIPQueryGenerator.search(tagFilter.getState(), tagFilter.getFrom(), tagFilter.getTo(),
+                                                      tagFilter.getTags(), aipSession, tagFilter.getProviderId(),
+                                                      tagFilter.getAipIds(), tagFilter.getAipIdsExcluded()),
+                             pageRequest);
+            List<AIP> aips = aipsPage.getContent();
 
-        aips.forEach(aip -> {
-            try {
-                aipService.deleteAip(aip);
-                nbEntityRemoved.incrementAndGet();
-            } catch (ModuleException e) {
-                // save first 100 AIP id in error
-                if (entityFailed.size() < 100) {
-                    entityFailed.add(aip.getId().toString());
+            aips.forEach(aip -> {
+                try {
+                    aipService.deleteAip(aip);
+                    nbEntityRemoved.incrementAndGet();
+                } catch (ModuleException e) {
+                    // save first 100 AIP id in error
+                    if (entityFailed.size() < 100) {
+                        entityFailed.add(aip.getId().toString());
+                    }
+                    // Exception thrown while removing AIP
+                    LOGGER.error(e.getMessage(), e);
+                    nbError.incrementAndGet();
                 }
-                // Exception thrown while removing AIP
-                LOGGER.error(e.getMessage(), e);
-                nbError.incrementAndGet();
-            }
-        });
+            });
+            pageRequest = aipsPage.nextPageable();
+        } while (aipsPage.hasNext());
+        nbEntity = aipsPage.getTotalElements();
         RemovedAipsInfos infos = new RemovedAipsInfos(nbError, nbEntityRemoved);
         this.setResult(infos);
         handleErrors();

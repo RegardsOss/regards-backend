@@ -1,20 +1,23 @@
 package fr.cnes.regards.modules.storage.service;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.data.domain.PageRequest;
+
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.storage.domain.job.AddAIPTagsFilters;
 import fr.cnes.regards.modules.storage.domain.job.RemoveAIPTagsFilters;
 import fr.cnes.regards.modules.storage.domain.job.UpdatedAipsInfos;
-import java.util.HashSet;
-import java.util.Set;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * @author Léo Mieulet
  */
-public class UpdateAIPsTagJobIT  extends AbstractJobIT {
+public class UpdateAIPsTagJobIT extends AbstractJobIT {
 
     @Test
     @Requirement("REGARDS_DSL_STO_AIP_420")
@@ -39,7 +42,8 @@ public class UpdateAIPsTagJobIT  extends AbstractJobIT {
         Assert.assertEquals("should not produce error", 0, result.getNbErrors());
         int nbUpdated = 20;
         Assert.assertEquals("should produce updated AIP", nbUpdated, result.getNbUpdated());
-        Assert.assertEquals("AIP shall be tagged", nbUpdated, aipDao.findAllByTags("new tag").size());
+        Assert.assertEquals("AIP shall be tagged", nbUpdated,
+                            aipDao.findAllByTags("new tag", new PageRequest(0, 100)).getTotalElements());
     }
 
     @Test
@@ -62,7 +66,9 @@ public class UpdateAIPsTagJobIT  extends AbstractJobIT {
         Assert.assertEquals("should not produce error", 0, result.getNbErrors());
         int nbUpdated = 20;
         Assert.assertEquals("should produce updated AIP", nbUpdated, result.getNbUpdated());
-        Assert.assertEquals("no more AIP shall be tagged with the tag", 0, aipDao.findAllByTags("first tag").size());
-        Assert.assertEquals("AIP still have this tag", nbUpdated, aipDao.findAllByTags("second tag").size());
+        Assert.assertEquals("no more AIP shall be tagged with the tag", 0,
+                            aipDao.findAllByTags("first tag", new PageRequest(0, 100)).getTotalElements());
+        Assert.assertEquals("AIP still have this tag", nbUpdated,
+                            aipDao.findAllByTags("second tag", new PageRequest(0, 100)).getTotalElements());
     }
 }

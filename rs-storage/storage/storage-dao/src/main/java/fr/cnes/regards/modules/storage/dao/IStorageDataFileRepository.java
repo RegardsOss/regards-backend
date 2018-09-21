@@ -1,10 +1,11 @@
 package fr.cnes.regards.modules.storage.dao;
 
-import javax.persistence.LockModeType;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
+import javax.persistence.LockModeType;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -43,10 +44,10 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
      * @return data files which state is the given one
      */
     @EntityGraph(value = "graph.datafile.full")
-    Set<StorageDataFile> findAllByState(DataFileState stored);
+    Page<StorageDataFile> findAllByState(DataFileState stored, Pageable page);
 
     @Query("select sdf.id from StorageDataFile sdf where sdf.state = :state")
-    Page<Long> findAllIdByState(@Param("state") DataFileState state, Pageable pageable);
+    Page<Long> findIdPageByState(@Param("state") DataFileState state, Pageable pageable);
 
     /**
      * Find all {@link StorageDataFile}s associated to the given aip entity
@@ -96,6 +97,9 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
      */
     @EntityGraph(value = "graph.datafile.full")
     Set<StorageDataFile> findAllByChecksumIn(Set<String> checksums);
+
+    @Query("select sdf.id from StorageDataFile sdf where sdf.checksum IN :checksums")
+    Page<Long> findIdPageByChecksumIn(@Param("checksums") Set<String> checksums, Pageable pageable);
 
     /**
      * Find all data files which state is the provided one and that are associated to at least one of the provided aip entities

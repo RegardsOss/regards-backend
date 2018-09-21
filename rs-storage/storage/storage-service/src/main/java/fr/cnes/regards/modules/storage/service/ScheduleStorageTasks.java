@@ -96,7 +96,7 @@ public class ScheduleStorageTasks {
      * reference on the interface to profit from transaction management from spring. This is a self reference because
      * AIPService is annotated @Service with default component scope which is "spring' SINGLETON
      */
-    @Scheduled(fixedDelayString = "${regards.storage.update.aip.metadata.delay:7200000}") // 2 hours
+    @Scheduled(fixedDelayString = "${regards.storage.update.aip.metadata.delay:120000}") // 2 minutes
     public void updateAlreadyStoredMetadata() {
         // Then lets get AIP that should be stored again after an update
         for (String tenant : tenantResolver.getAllActiveTenants()) {

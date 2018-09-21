@@ -42,6 +42,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.EventListener;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -155,6 +158,12 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     private Long cacheFilesMinTtl;
 
     /**
+     * Number of created AIPs processed on each iteration by project
+     */
+    @Value("${regards.storage.cache.files.iteration.limit:100}")
+    private Integer filesIterationLimit;
+
+    /**
      * {@link IDataFileDao} instance
      */
     @Autowired
@@ -211,19 +220,32 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
 
     private void checkDiskDBCoherence(String tenant) throws IOException {
         runtimeTenantResolver.forceTenant(tenant);
-        Set<CachedFile> shouldBeAvailableSet = cachedFileRepository.findAllByState(CachedFileState.AVAILABLE);
-        for (CachedFile shouldBeAvailable : shouldBeAvailableSet) {
-            if (Files.notExists(Paths.get(shouldBeAvailable.getLocation().getPath()))) {
-                cachedFileRepository.delete(shouldBeAvailable);
+        Page<CachedFile> shouldBeAvailableSet;
+        Pageable page = new PageRequest(0, filesIterationLimit);
+        do {
+            shouldBeAvailableSet = cachedFileRepository.findAllByState(CachedFileState.AVAILABLE, page);
+            for (CachedFile shouldBeAvailable : shouldBeAvailableSet) {
+                if (Files.notExists(Paths.get(shouldBeAvailable.getLocation().getPath()))) {
+                    cachedFileRepository.delete(shouldBeAvailable);
+                }
             }
-        }
-        Set<String> availableFilePaths = cachedFileRepository.findAllByState(CachedFileState.AVAILABLE).stream()
-                .map(availableFile -> availableFile.getLocation().getPath().toString()).collect(Collectors.toSet());
-        Files.walk(getTenantCachePath()).filter(path -> availableFilePaths.contains(path.toAbsolutePath().toString()))
-                .forEach(path -> notificationClient.notifyRoles(String
-                        .format("File %s is present in cache directory while it shouldn't be. Please remove this file from the cache directory",
-                                path.toString()), "Dirty cache", springApplicationName, NotificationType.WARNING,
-                                                                DefaultRole.PROJECT_ADMIN));
+            page = page.next();
+        } while (shouldBeAvailableSet.hasNext());
+
+        page = new PageRequest(0, filesIterationLimit);
+        Page<CachedFile> availableFiles;
+        do {
+            availableFiles = cachedFileRepository.findAllByState(CachedFileState.AVAILABLE, page);
+            Set<String> availableFilePaths = availableFiles.getContent().stream()
+                    .map(availableFile -> availableFile.getLocation().getPath().toString()).collect(Collectors.toSet());
+            Files.walk(getTenantCachePath())
+                    .filter(path -> availableFilePaths.contains(path.toAbsolutePath().toString()))
+                    .forEach(path -> notificationClient.notifyRoles(String
+                            .format("File %s is present in cache directory while it shouldn't be. Please remove this file from the cache directory",
+                                    path.toString()), "Dirty cache", springApplicationName, NotificationType.WARNING,
+                                                                    DefaultRole.PROJECT_ADMIN));
+            page = availableFiles.nextPageable();
+        } while (availableFiles.hasNext());
         runtimeTenantResolver.clearTenant();
     }
 
@@ -392,7 +414,13 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
      */
     private void purgeExpiredCachedFiles() {
         LOGGER.debug("Deleting expired files from cache. Current date : {}", OffsetDateTime.now().toString());
-        deleteCachedFiles(cachedFileRepository.findByExpirationBefore(OffsetDateTime.now()));
+        Pageable page = new PageRequest(0, filesIterationLimit);
+        Page<CachedFile> files;
+        do {
+            files = cachedFileRepository.findByExpirationBefore(OffsetDateTime.now(), page);
+            deleteCachedFiles(files.getContent());
+            page = files.nextPageable();
+        } while (files.hasNext());
     }
 
     /**
@@ -410,36 +438,48 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
                 && (cacheSizePurgeUpperThreshold > cacheSizePurgeLowerThreshold)) {
             // If files are in queued mode, so delete older files if there minimum time to live (minTtl) is reached.
             // This limit is configurable is sprinf properties of the current microservice.
-            if (!cachedFileRepository.findAllByState(CachedFileState.QUEUED).isEmpty()) {
+            if (cachedFileRepository.countByState(CachedFileState.QUEUED) > 0) {
                 LOGGER.warn("Cache is overloaded.({}Mo) Deleting older files from cache to reached lower threshold ({}Mo). ",
                             cacheCurrentSize / (1024 * 1024), cacheSizePurgeLowerThresholdInOctets / (1024 * 1024));
                 Long filesTotalSizeToDelete = cacheCurrentSize - cacheSizePurgeLowerThresholdInOctets;
-                Set<CachedFile> allOlderDeletableCachedFiles = cachedFileRepository
-                        .findByStateAndLastRequestDateBeforeOrderByLastRequestDateAsc(CachedFileState.AVAILABLE,
-                                                                                      OffsetDateTime.now()
-                                                                                              .minusHours(this.cacheFilesMinTtl));
-                Long fileSizesSum = 0L;
-                Set<CachedFile> filesToDelete = Sets.newHashSet();
-                Iterator<CachedFile> it = allOlderDeletableCachedFiles.iterator();
-                while ((fileSizesSum < filesTotalSizeToDelete) && it.hasNext()) {
-                    CachedFile fileToDelete = it.next();
-                    filesToDelete.add(fileToDelete);
-                    fileSizesSum += fileToDelete.getFileSize();
-                }
-                deleteCachedFiles(filesToDelete);
+                Pageable page = new PageRequest(0, filesIterationLimit);
+                Page<CachedFile> allOlderDeletableCachedFiles;
+                do {
+                    allOlderDeletableCachedFiles = cachedFileRepository
+                            .findByStateAndLastRequestDateBeforeOrderByLastRequestDateAsc(CachedFileState.AVAILABLE,
+                                                                                          OffsetDateTime.now()
+                                                                                                  .minusHours(this.cacheFilesMinTtl),
+                                                                                          page);
+                    Long fileSizesSum = 0L;
+                    Set<CachedFile> filesToDelete = Sets.newHashSet();
+                    Iterator<CachedFile> it = allOlderDeletableCachedFiles.iterator();
+                    while ((fileSizesSum < filesTotalSizeToDelete) && it.hasNext()) {
+                        CachedFile fileToDelete = it.next();
+                        filesToDelete.add(fileToDelete);
+                        fileSizesSum += fileToDelete.getFileSize();
+                    }
+                    deleteCachedFiles(filesToDelete);
+                    page = allOlderDeletableCachedFiles.nextPageable();
+                } while (allOlderDeletableCachedFiles.hasNext());
             }
         }
     }
 
     @Override
     public void restoreQueued() {
-        Set<CachedFile> queuedFilesToCache = cachedFileRepository.findAllByState(CachedFileState.QUEUED);
-        LOGGER.debug("{} queued files to restore in cache for tenant {}", queuedFilesToCache.size(),
-                     runtimeTenantResolver.getTenant());
-        Set<String> checksums = queuedFilesToCache.stream().map(CachedFile::getChecksum).collect(Collectors.toSet());
-        Set<StorageDataFile> dataFiles = dataFileDao.findAllByChecksumIn(checksums);
-        // Set an expiration date minimum of 24hours
-        restore(dataFiles, OffsetDateTime.now().plusDays(1));
+        Pageable page = new PageRequest(0, filesIterationLimit);
+        Page<CachedFile> queuedFilesToCache;
+        do {
+            queuedFilesToCache = cachedFileRepository.findAllByState(CachedFileState.QUEUED, page);
+            LOGGER.debug("{} queued files to restore in cache for tenant {}", queuedFilesToCache.getNumberOfElements(),
+                         runtimeTenantResolver.getTenant());
+            Set<String> checksums = queuedFilesToCache.getContent().stream().map(CachedFile::getChecksum)
+                    .collect(Collectors.toSet());
+            Set<StorageDataFile> dataFiles = dataFileDao.findAllByChecksumIn(checksums);
+            // Set an expiration date minimum of 24hours
+            restore(dataFiles, OffsetDateTime.now().plusDays(1));
+            page = queuedFilesToCache.nextPageable();
+        } while (queuedFilesToCache.hasNext());
     }
 
     /**
@@ -450,7 +490,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
      * </ul>
      * @param filesToDelete {@link Set}<{@link CachedFile}> to delete.
      */
-    private void deleteCachedFiles(Set<CachedFile> filesToDelete) {
+    private void deleteCachedFiles(Collection<CachedFile> filesToDelete) {
         LOGGER.debug("Deleting {} files from cache.", filesToDelete.size());
         for (CachedFile cachedFile : filesToDelete) {
             if (cachedFile.getLocation() != null) {

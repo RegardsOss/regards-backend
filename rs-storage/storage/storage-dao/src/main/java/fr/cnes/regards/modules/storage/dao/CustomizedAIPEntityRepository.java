@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.storage.dao;
 
 import java.math.BigInteger;
-import java.util.Collection;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -46,6 +45,7 @@ public class CustomizedAIPEntityRepository implements ICustomizedAIPEntityReposi
     @Override
     public List<String> getDistinctTags(String sql) {
         Query q = entityManager.createNativeQuery(sql);
+        @SuppressWarnings("unchecked")
         List<String> resultList = q.getResultList();
         return resultList;
     }
@@ -57,8 +57,9 @@ public class CustomizedAIPEntityRepository implements ICustomizedAIPEntityReposi
         Query q = entityManager.createNativeQuery(sqlQuery, AIPEntity.class);
         q.setFirstResult(pPageable.getOffset());
         q.setMaxResults(pPageable.getPageSize());
+        @SuppressWarnings("unchecked")
         List<AIPEntity> resultList = q.getResultList();
-        Page<AIPEntity> result = new PageImpl(resultList, pPageable, numberResults);
+        Page<AIPEntity> result = new PageImpl<>(resultList, pPageable, numberResults);
         return result;
     }
 
@@ -68,12 +69,5 @@ public class CustomizedAIPEntityRepository implements ICustomizedAIPEntityReposi
         Query qCount = entityManager.createNativeQuery(request.toString());
         Long totalResults = ((BigInteger) qCount.getSingleResult()).longValue();
         return totalResults;
-    }
-
-    @Override
-    public Collection<AIPEntity> findAll(String sqlQuery) {
-        Query q = entityManager.createNativeQuery(sqlQuery, AIPEntity.class);
-        List<AIPEntity> resultList = q.getResultList();
-        return resultList;
     }
 }

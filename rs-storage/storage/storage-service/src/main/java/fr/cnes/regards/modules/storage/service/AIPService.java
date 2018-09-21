@@ -251,9 +251,6 @@ public class AIPService implements IAIPService {
     @Autowired
     private ICachedFileService cachedFileService;
 
-    @Autowired
-    private IDataStorageService datastorageService;
-
     /**
      * {@link Validator} instance
      */
@@ -459,54 +456,82 @@ public class AIPService implements IAIPService {
 
     @Override
     public AvailabilityResponse loadFiles(AvailabilityRequest availabilityRequest) throws ModuleException {
-        Set<String> requestedChecksums = availabilityRequest.getChecksums();
-        Set<StorageDataFile> dataFiles = dataFileDao.findAllByChecksumIn(requestedChecksums);
+        // lets define result variables
+        Set<StorageDataFile> onlineFiles = Sets.newHashSet();
+        CoupleAvailableError nearlineAvailableAndError = new CoupleAvailableError(new HashSet<>(), new HashSet<>());
         Set<String> errors = Sets.newHashSet();
 
-        // 1. Check for invalid files.
-        if (dataFiles.size() != requestedChecksums.size()) {
-            Set<String> dataFilesChecksums = dataFiles.stream().map(df -> df.getChecksum()).collect(Collectors.toSet());
-            Set<String> checksumNotFound = Sets.difference(requestedChecksums, dataFilesChecksums);
-            errors.addAll(checksumNotFound);
-            checksumNotFound.stream()
-                    .forEach(cs -> LOGGER.error("File to restore with checksum {} is not stored by REGARDS.", cs));
+        Set<String> requestedChecksums = availabilityRequest.getChecksums();
+        // Until proven otherwise, none of requested checksums are handled by REGARDS.
+        Set<String> checksumNotFound = Sets.newHashSet(requestedChecksums);
+        // Same for accesses
+        Set<String> checksumsWithoutAccess = Sets.newHashSet(requestedChecksums);
+        Pageable page = new PageRequest(0, 500);
+        Page<StorageDataFile> dataFilePage = dataFileDao.findPageByChecksumIn(requestedChecksums, page);
+        while (dataFilePage.hasContent()) {
+
+            Set<StorageDataFile> dataFiles = Sets.newHashSet(dataFilePage.getContent());
+            // 1. Check for invalid files.
+            // Because we only have a page of data file here, we must intersect the ones missing with the ones we have not found before too.
+            if (dataFilePage.getTotalElements() != requestedChecksums.size()) {
+                Set<String> dataFilesChecksumsForThisPage = dataFiles.stream().map(df -> df.getChecksum())
+                        .collect(Collectors.toSet());
+                Set<String> checksumNotFoundForThisPage = Sets.difference(requestedChecksums,
+                                                                          dataFilesChecksumsForThisPage);
+                checksumNotFound = Sets.intersection(checksumNotFound, checksumNotFoundForThisPage);
+            }
+
+            Set<StorageDataFile> dataFilesWithAccess = checkLoadFilesAccessRights(dataFiles);
+
+            // Once we know to which file we have access, lets set the others in error.
+            // As a file can be associated to multiple AIP, we have to compare their checksums.
+            Set<String> checksumsWithoutAccessForThisPage = Sets
+                    .difference(dataFiles.stream().map(df -> df.getChecksum()).collect(Collectors.toSet()),
+                                dataFilesWithAccess.stream().map(df -> df.getChecksum()).collect(Collectors.toSet()));
+            checksumsWithoutAccess = Sets.intersection(checksumsWithoutAccess, checksumsWithoutAccessForThisPage);
+
+            Set<StorageDataFile> nearlineFiles = Sets.newHashSet();
+
+            // 2. Check for online files. Online files don't need to be stored in the cache
+            // they can be accessed directly where they are stored.
+            for (StorageDataFile df : dataFilesWithAccess) {
+                if (df.getPrioritizedDataStorages() != null) {
+                    Optional<PrioritizedDataStorage> onlinePrioritizedDataStorageOpt = df.getPrioritizedDataStorages()
+                            .stream().filter(pds -> pds.getDataStorageType().equals(DataStorageType.ONLINE))
+                            .findFirst();
+                    if (onlinePrioritizedDataStorageOpt.isPresent()) {
+                        onlineFiles.add(df);
+                    } else {
+                        nearlineFiles.add(df);
+                    }
+                } else {
+                    LOGGER.error("File to restore {} has no storage plugin information. Restoration failed.",
+                                 df.getId());
+                }
+            }
+            // now lets ask the cache service to handle nearline restoration and give us the already available ones
+            nearlineAvailableAndError = cachedFileService.restore(nearlineFiles,
+                                                                  availabilityRequest.getExpirationDate());
+            for (StorageDataFile inError : nearlineAvailableAndError.getErrors()) {
+                errors.add(inError.getChecksum());
+            }
+
+            // Before getting the next page, lets evict actual entities from cache
+            em.flush();
+            em.clear();
+            // now that hibernate cache has been cleared, lets get the next page
+            page = page.next();
+            dataFilePage = dataFileDao.findPageByChecksumIn(requestedChecksums, page);
+
         }
-
-        Set<StorageDataFile> dataFilesWithAccess = checkLoadFilesAccessRights(dataFiles);
-
-        // Once we know to which file we have access, lets set the others in error.
-        // As a file can be associated to multiple AIP, we have to compare their checksums.
-        Set<String> checksumsWithoutAccess = Sets
-                .difference(dataFiles.stream().map(df -> df.getChecksum()).collect(Collectors.toSet()),
-                            dataFilesWithAccess.stream().map(df -> df.getChecksum()).collect(Collectors.toSet()));
+        // lets logs not found now that we know that remaining checksums are not handled by REGARDS
+        errors.addAll(checksumNotFound);
+        checksumNotFound.stream()
+                .forEach(cs -> LOGGER.error("File to restore with checksum {} is not stored by REGARDS.", cs));
+        // same for accesses
         checksumsWithoutAccess.forEach(cs -> LOGGER.error("User {} does not have access to file with checksum {}.",
                                                           authResolver.getUser(), cs));
         errors.addAll(checksumsWithoutAccess);
-
-        Set<StorageDataFile> onlineFiles = Sets.newHashSet();
-        Set<StorageDataFile> nearlineFiles = Sets.newHashSet();
-
-        // 2. Check for online files. Online files don't need to be stored in the cache
-        // they can be accessed directly where they are stored.
-        for (StorageDataFile df : dataFilesWithAccess) {
-            if (df.getPrioritizedDataStorages() != null) {
-                Optional<PrioritizedDataStorage> onlinePrioritizedDataStorageOpt = df.getPrioritizedDataStorages()
-                        .stream().filter(pds -> pds.getDataStorageType().equals(DataStorageType.ONLINE)).findFirst();
-                if (onlinePrioritizedDataStorageOpt.isPresent()) {
-                    onlineFiles.add(df);
-                } else {
-                    nearlineFiles.add(df);
-                }
-            } else {
-                LOGGER.error("File to restore {} has no storage plugin information. Restoration failed.", df.getId());
-            }
-        }
-        // now lets ask the cache service to handle nearline restoration and give us the already available ones
-        CoupleAvailableError nearlineAvailableAndError = cachedFileService
-                .restore(nearlineFiles, availabilityRequest.getExpirationDate());
-        for (StorageDataFile inError : nearlineAvailableAndError.getErrors()) {
-            errors.add(inError.getChecksum());
-        }
         // lets construct the result
         return new AvailabilityResponse(errors, onlineFiles, nearlineAvailableAndError.getAvailables());
     }
@@ -556,8 +581,8 @@ public class AIPService implements IAIPService {
             if ((tags == null) || tags.isEmpty()) {
                 aips = aipDao.findAllByState(state, pageable);
             } else {
-                aips = aipDao.findAll(AIPQueryGenerator.search(state, null, null, new ArrayList(tags), null, null, null,
-                                                               null),
+                aips = aipDao.findAll(AIPQueryGenerator.search(state, null, null, new ArrayList<>(tags), null, null,
+                                                               null, null),
                                       pageable);
             }
         } else {
@@ -609,10 +634,17 @@ public class AIPService implements IAIPService {
 
     @Override
     public List<String> retrieveAIPVersionHistory(UniformResourceName pIpId) {
+        List<String> versions = Lists.newArrayList();
         String ipIdWithoutVersion = pIpId.toString();
         ipIdWithoutVersion = ipIdWithoutVersion.substring(0, ipIdWithoutVersion.indexOf(":V"));
-        Set<AIP> versions = aipDao.findAllByIpIdStartingWith(ipIdWithoutVersion);
-        return versions.stream().map(a -> a.getId().toString()).collect(Collectors.toList());
+        Pageable page = new PageRequest(0, aipIterationLimit);
+        Page<AIP> aips;
+        do {
+            aips = aipDao.findAllByIpIdStartingWith(ipIdWithoutVersion, page);
+            page = aips.nextPageable();
+            versions.addAll(aips.getContent().stream().map(a -> a.getId().toString()).collect(Collectors.toList()));
+        } while (aips.hasNext());
+        return versions;
     }
 
     /**
@@ -728,8 +760,7 @@ public class AIPService implements IAIPService {
             WorkingSubsetWrapper<?> workingSubsetWrapper = storage.prepare(dataFilesToSubSet, accessMode);
             @SuppressWarnings("unchecked")
             Set<IWorkingSubset> workingSubSets = (Set<IWorkingSubset>) workingSubsetWrapper.getWorkingSubSets();
-            LOGGER.debug("{} data objects were dispatched into {} working subsets",
-                         dataFilesToSubSet.size(),
+            LOGGER.debug("{} data objects were dispatched into {} working subsets", dataFilesToSubSet.size(),
                          workingSubSets.size());
             // as we are trusty people, we check that the prepare gave us back all DataFiles into the WorkingSubSets
             Set<StorageDataFile> subSetDataFiles = workingSubSets.stream().flatMap(wss -> wss.getDataFiles().stream())
@@ -897,8 +928,8 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public Set<AIP> retrieveAipsByTag(String tag) {
-        return aipDao.findAllByTags(tag);
+    public Page<AIP> retrieveAipsByTag(String tag, Pageable page) {
+        return aipDao.findAllByTags(tag, page);
     }
 
     @Override
@@ -1129,8 +1160,8 @@ public class AIPService implements IAIPService {
 
     @Override
     public void doDelete() {
-        Page<StorageDataFile> pageToDelete = dataFileDao.findAllByState(DataFileState.TO_BE_DELETED,
-                                                                        new PageRequest(0, aipIterationLimit));
+        Page<StorageDataFile> pageToDelete = dataFileDao.findPageByState(DataFileState.TO_BE_DELETED,
+                                                                         new PageRequest(0, aipIterationLimit));
         if (pageToDelete.hasContent()) {
             try {
                 scheduleDeletion(pageToDelete.getContent());
@@ -1274,7 +1305,7 @@ public class AIPService implements IAIPService {
     @Override
     public Set<UpdatableMetadataFile> prepareUpdatedAIP() {
         Set<UpdatableMetadataFile> result = Sets.newHashSet();
-        Set<AIP> updatedAips = aipDao.findAllByStateService(AIPState.UPDATED);
+        Page<AIP> updatedAips = aipDao.findAllByStateService(AIPState.UPDATED, new PageRequest(0, aipIterationLimit));
         for (AIP updatedAip : updatedAips) {
             // Store the associated dataFile.
             Optional<StorageDataFile> optionalExistingAIPMetadataFile = dataFileDao.findByAipAndType(updatedAip,
@@ -1431,7 +1462,7 @@ public class AIPService implements IAIPService {
 
     @Override
     public void removeDeletedAIPMetadatas() {
-        Set<AIP> aips = aipDao.findAllByStateService(AIPState.DELETED);
+        Page<AIP> aips = aipDao.findAllByStateService(AIPState.DELETED, new PageRequest(0, aipIterationLimit));
         for (AIP aip : aips) {
             // lets count the number of datafiles per aip:
             // if there is none:
