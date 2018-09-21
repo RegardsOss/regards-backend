@@ -492,6 +492,18 @@ public class AIPController implements IResourceController<AIP> {
     }
 
     /**
+     * Retrieve all aips which are tagged by the provided tag
+     * @return aips tagged by the tag
+     */
+    @RequestMapping(value = TAG, method = RequestMethod.GET)
+    @ResourceAccess(description = "retrieve a collection of AIP according to a tag")
+    @ResponseBody
+    public ResponseEntity<PagedResources<Resource<AIP>>> retrieveAipsByTag(@PathVariable("tag") String tag,
+            Pageable page, final PagedResourcesAssembler<AIP> assembler) {
+        return ResponseEntity.ok(toPagedResources(aipService.retrieveAipsByTag(tag, page), assembler));
+    }
+
+    /**
      * Update an aip, represented by its ip id, thanks to the provided pojo
      * @return updated aip
      */

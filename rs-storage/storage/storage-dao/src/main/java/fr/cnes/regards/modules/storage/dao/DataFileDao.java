@@ -61,8 +61,8 @@ public class DataFileDao implements IDataFileDao {
     }
 
     @Override
-    public Set<StorageDataFile> findAllByState(DataFileState state) {
-        return repository.findAllByState(state);
+    public Page<StorageDataFile> findAllByState(DataFileState state, Pageable page) {
+        return repository.findAllByState(state, page);
     }
 
     @Override
@@ -70,9 +70,9 @@ public class DataFileDao implements IDataFileDao {
         // first lets get the storageDataFile without any join(no graph)
         Page<Long> ids = repository.findIdPageByState(state, pageable);
         List<StorageDataFile> pageContent = repository.findAllByIdIn(ids.getContent());
-        return new PageImpl<>(pageContent, new PageRequest(new Long(ids.getNumber()).intValue(),
-                                                           new Long(ids.getSize()).intValue()),
-                              ids.getTotalElements());
+        return new PageImpl<>(pageContent,
+                new PageRequest(new Long(ids.getNumber()).intValue(), new Long(ids.getSize()).intValue()),
+                ids.getTotalElements());
     }
 
     @Override
@@ -162,9 +162,9 @@ public class DataFileDao implements IDataFileDao {
         // first lets get the storageDataFile without any join(no graph)
         Page<Long> ids = repository.findIdPageByChecksumIn(checksums, pageable);
         List<StorageDataFile> pageContent = repository.findAllByIdIn(ids.getContent());
-        return new PageImpl<>(pageContent, new PageRequest(new Long(ids.getNumber()).intValue(),
-                                                           new Long(ids.getSize()).intValue()),
-                              ids.getTotalElements());
+        return new PageImpl<>(pageContent,
+                new PageRequest(new Long(ids.getNumber()).intValue(), new Long(ids.getSize()).intValue()),
+                ids.getTotalElements());
     }
 
     @Override

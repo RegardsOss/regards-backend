@@ -44,7 +44,7 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
      * @return data files which state is the given one
      */
     @EntityGraph(value = "graph.datafile.full")
-    Set<StorageDataFile> findAllByState(DataFileState stored);
+    Page<StorageDataFile> findAllByState(DataFileState stored, Pageable page);
 
     @Query("select sdf.id from StorageDataFile sdf where sdf.state = :state")
     Page<Long> findIdPageByState(@Param("state") DataFileState state, Pageable pageable);
