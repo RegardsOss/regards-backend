@@ -191,7 +191,6 @@ public class AIPController implements IResourceController<AIP> {
      */
     public static final String TAG_SEARCH_PATH = TAG_MANAGEMENT_PATH + "/search";
 
-    @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPController.class);
 
     /**
@@ -246,9 +245,10 @@ public class AIPController implements IResourceController<AIP> {
             @RequestParam(name = "to",
                     required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to,
             @RequestParam(name = "tags", required = false) List<String> tags,
+            @RequestParam(name = "providerId", required = false) String providerId,
             @RequestParam(name = "session", required = false) String session, final Pageable pPageable,
             final PagedResourcesAssembler<AIP> pAssembler) throws ModuleException {
-        Page<AIP> aips = aipService.retrieveAIPs(pState, from, to, tags, session, pPageable);
+        Page<AIP> aips = aipService.retrieveAIPs(pState, from, to, tags, session, providerId, pPageable);
         return new ResponseEntity<>(toPagedResources(aips, pAssembler), HttpStatus.OK);
     }
 
@@ -268,7 +268,7 @@ public class AIPController implements IResourceController<AIP> {
         if (!Strings.isNullOrEmpty(fromLastUpdateDate)) {
             fromLastUpdate = OffsetDateTimeAdapter.parse(fromLastUpdateDate);
         }
-        Set<String> tags = (inTags == null) ? Collections.emptySet() : inTags;
+        Set<String> tags = inTags == null ? Collections.emptySet() : inTags;
         Page<AipDataFiles> page = aipService.retrieveAipDataFiles(state, tags, fromLastUpdate, pageable);
         List<AipDataFiles> content = page.getContent();
         for (AipDataFiles aipData : content) {
@@ -315,7 +315,7 @@ public class AIPController implements IResourceController<AIP> {
         // we ask for one AIP to be stored, so we can only have one rejected aip in counter part
         ResponseEntity<List<RejectedAip>> listResponse = storeRetry(Sets.newHashSet(ipId));
         // as their is only one ip id, storeRetry can only give us a UNPROCESSABLE_ENTITY or NO_CONTENT
-        if(listResponse.getStatusCode().equals(HttpStatus.UNPROCESSABLE_ENTITY)) {
+        if (listResponse.getStatusCode().equals(HttpStatus.UNPROCESSABLE_ENTITY)) {
             return new ResponseEntity<>(listResponse.getBody().get(0), listResponse.getStatusCode());
         } else {
             return new ResponseEntity<>(listResponse.getStatusCode());
@@ -593,12 +593,15 @@ public class AIPController implements IResourceController<AIP> {
                                 MethodParamFactory.build(AIPState.class),
                                 MethodParamFactory.build(OffsetDateTime.class),
                                 MethodParamFactory.build(OffsetDateTime.class), MethodParamFactory.build(List.class),
-                                MethodParamFactory.build(String.class), MethodParamFactory.build(Pageable.class),
+                                MethodParamFactory.build(String.class), MethodParamFactory.build(String.class),
+                                MethodParamFactory.build(Pageable.class),
                                 MethodParamFactory.build(PagedResourcesAssembler.class));
         resourceService.addLink(resource, this.getClass(), "retrieveAip", LinkRels.SELF,
                                 MethodParamFactory.build(String.class, pElement.getId().toString()));
-        resourceService.addLink(resource, this.getClass(), "storeRetryUnit", "retry",
-                                MethodParamFactory.build(String.class, pElement.getId().toString()));
+        if (AIPState.STORAGE_ERROR.equals(pElement.getState())) {
+            resourceService.addLink(resource, this.getClass(), "storeRetryUnit", "retry",
+                                    MethodParamFactory.build(String.class, pElement.getId().toString()));
+        }
         // If the AIP is not being deleted, add the hateoas delete key
         if (!AIPState.DELETED.equals(pElement.getState())) {
             resourceService.addLink(resource, this.getClass(), "deleteAip", "delete",

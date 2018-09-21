@@ -42,7 +42,6 @@ import java.util.UUID;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-import org.hsqldb.lib.Storage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -444,7 +443,7 @@ public class AIPService implements IAIPService {
         // as we are trusty people, we check that the dispatch gave us back all DataFiles into the WorkingSubSets
         checkDispatch(dataFilesToStore, storageWorkingSetMap, dispatchErrors);
         // now that those who should be in error are handled,  lets set notYetStoredBy and save data files
-        for(StorageDataFile df : storageWorkingSetMap.values()) {
+        for (StorageDataFile df : storageWorkingSetMap.values()) {
             df.increaseNotYetStoredBy();
         }
         dataFileDao.save(storageWorkingSetMap.values());
@@ -479,13 +478,14 @@ public class AIPService implements IAIPService {
         Page<StorageDataFile> dataFilePage = dataFileDao.findPageByChecksumIn(requestedChecksums, page);
         while (dataFilePage.hasContent()) {
 
-
             Set<StorageDataFile> dataFiles = Sets.newHashSet(dataFilePage.getContent());
             // 1. Check for invalid files.
             // Because we only have a page of data file here, we must intersect the ones missing with the ones we have not found before too.
             if (dataFilePage.getTotalElements() != requestedChecksums.size()) {
-                Set<String> dataFilesChecksumsForThisPage = dataFiles.stream().map(df -> df.getChecksum()).collect(Collectors.toSet());
-                Set<String> checksumNotFoundForThisPage = Sets.difference(requestedChecksums, dataFilesChecksumsForThisPage);
+                Set<String> dataFilesChecksumsForThisPage = dataFiles.stream().map(df -> df.getChecksum())
+                        .collect(Collectors.toSet());
+                Set<String> checksumNotFoundForThisPage = Sets
+                        .difference(requestedChecksums, dataFilesChecksumsForThisPage);
                 checksumNotFound = Sets.intersection(checksumNotFound, checksumNotFoundForThisPage);
             }
 
@@ -493,8 +493,9 @@ public class AIPService implements IAIPService {
 
             // Once we know to which file we have access, lets set the others in error.
             // As a file can be associated to multiple AIP, we have to compare their checksums.
-            Set<String> checksumsWithoutAccessForThisPage = Sets.difference(dataFiles.stream().map(df -> df.getChecksum()).collect(Collectors.toSet()),
-                                                                 dataFilesWithAccess.stream().map(df -> df.getChecksum()).collect(Collectors.toSet()));
+            Set<String> checksumsWithoutAccessForThisPage = Sets
+                    .difference(dataFiles.stream().map(df -> df.getChecksum()).collect(Collectors.toSet()),
+                                dataFilesWithAccess.stream().map(df -> df.getChecksum()).collect(Collectors.toSet()));
             checksumsWithoutAccess = Sets.intersection(checksumsWithoutAccess, checksumsWithoutAccessForThisPage);
 
             Set<StorageDataFile> nearlineFiles = Sets.newHashSet();
@@ -503,7 +504,8 @@ public class AIPService implements IAIPService {
             // they can be accessed directly where they are stored.
             for (StorageDataFile df : dataFilesWithAccess) {
                 if (df.getPrioritizedDataStorages() != null) {
-                    Optional<PrioritizedDataStorage> onlinePrioritizedDataStorageOpt = df.getPrioritizedDataStorages().stream().filter(pds -> pds.getDataStorageType().equals(DataStorageType.ONLINE))
+                    Optional<PrioritizedDataStorage> onlinePrioritizedDataStorageOpt = df.getPrioritizedDataStorages()
+                            .stream().filter(pds -> pds.getDataStorageType().equals(DataStorageType.ONLINE))
                             .findFirst();
                     if (onlinePrioritizedDataStorageOpt.isPresent()) {
                         onlineFiles.add(df);
@@ -511,7 +513,8 @@ public class AIPService implements IAIPService {
                         nearlineFiles.add(df);
                     }
                 } else {
-                    LOGGER.error("File to restore {} has no storage plugin information. Restoration failed.", df.getId());
+                    LOGGER.error("File to restore {} has no storage plugin information. Restoration failed.",
+                                 df.getId());
                 }
             }
             // now lets ask the cache service to handle nearline restoration and give us the already available ones
@@ -568,12 +571,13 @@ public class AIPService implements IAIPService {
 
     @Override
     public Page<AIP> retrieveAIPs(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags,
-            String session, Pageable pageable) throws ModuleException {
+            String session, String providerId, Pageable pageable) throws ModuleException {
         if (!getSecurityDelegationPlugin().hasAccessToListFeature()) {
             throw new EntityOperationForbiddenException("Only Admins can access this feature.");
         }
         AIPSession aipSession = getSession(session, false);
-        return aipDao.findAll(AIPQueryGenerator.search(state, from, to, tags, aipSession, null, null), pageable);
+        return aipDao
+                .findAll(AIPQueryGenerator.search(state, from, to, tags, aipSession, providerId, null, null), pageable);
     }
 
     @Override
@@ -586,9 +590,9 @@ public class AIPService implements IAIPService {
             if ((tags == null) || tags.isEmpty()) {
                 aips = aipDao.findAllByState(state, pageable);
             } else {
-                aips = aipDao
-                        .findAll(AIPQueryGenerator.search(state, null, null, new ArrayList(tags), null, null, null),
-                                 pageable);
+                aips = aipDao.findAll(AIPQueryGenerator
+                                              .search(state, null, null, new ArrayList(tags), null, null, null, null),
+                                      pageable);
             }
         } else {
             if ((tags == null) || tags.isEmpty()) {
@@ -1656,6 +1660,7 @@ public class AIPService implements IAIPService {
                                                                                    request.getTo(),
                                                                                    request.getTags(),
                                                                                    aipSession,
+                                                                                   request.getProviderId(),
                                                                                    request.getAipIds(),
                                                                                    request.getAipIdsExcluded()));
     }

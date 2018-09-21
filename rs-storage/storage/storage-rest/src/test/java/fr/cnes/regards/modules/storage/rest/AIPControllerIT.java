@@ -144,7 +144,7 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
-                .parameterWithName(AIPController.AIP_ID_PATH_PARAM).description("the AIP identifier")
+                .parameterWithName(AIPController.AIP_ID_PATH_PARAM).description("the AIP identifier (i.e. feature id)")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName()),
                             Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                                     .value("Should respect UniformResourceName pattern"))));
@@ -211,8 +211,7 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         int wait = 0;
         // lets wait for this AIP to be stored
-        while ((aipDao.findOneByAipId(aip.getId().toString()).get().getState() != AIPState.STORED)
-                && (wait < MAX_WAIT)) {
+        while (aipDao.findOneByAipId(aip.getId().toString()).get().getState() != AIPState.STORED && wait < MAX_WAIT) {
             Thread.sleep(1000);
             wait += 1000;
         }
