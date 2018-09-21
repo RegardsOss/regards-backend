@@ -5,14 +5,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.framework.module.manager.AbstractModuleConfigurationManager;
+import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
+import fr.cnes.regards.framework.module.manager.ModuleReadinessReport;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.configuration.domain.Theme;
 
@@ -22,7 +21,7 @@ import fr.cnes.regards.modules.configuration.domain.Theme;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Component
-public class UiConfigurationManager extends AbstractModuleConfigurationManager {
+public class UiConfigurationManager extends AbstractModuleManager<Void> {
 
     public static final String ALREADY_EXISTS = "Skipping import because a theme with same name(%s) already exists";
 
@@ -52,5 +51,10 @@ public class UiConfigurationManager extends AbstractModuleConfigurationManager {
             configurations.add(ModuleConfigurationItem.build(theme));
         }
         return ModuleConfiguration.build(info, configurations);
+    }
+
+    @Override
+    public ModuleReadinessReport<Void> isReady() {
+        return new ModuleReadinessReport<Void>(true, null, null);
     }
 }
