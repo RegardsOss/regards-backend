@@ -36,6 +36,10 @@
 			<groupId>fr.cnes.regards.modules.notification</groupId>
 			<artifactId>notification-service</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>hateoas-regards-starter</artifactId>
+		</dependency>
 		<!-- Tests -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>

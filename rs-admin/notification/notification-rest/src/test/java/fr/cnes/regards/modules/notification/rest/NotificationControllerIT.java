@@ -1,9 +1,12 @@
 package fr.cnes.regards.modules.notification.rest;
 
-import java.util.List;
+import java.io.IOException;
+import java.net.URISyntaxException;
 
 import org.assertj.core.util.Lists;
 import org.hamcrest.Matchers;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -14,10 +17,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -64,30 +67,31 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
         return LoggerFactory.getLogger(this.getClass());
     }
 
+    @Before
+    public void init() {
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+    }
+
+    @After
+    public void cleanUp() throws URISyntaxException, IOException, InterruptedException {
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+    }
+
     @Test
     public void testCreateNotification() throws EntityNotFoundException {
         String roleName = DefaultRole.PROJECT_ADMIN.name();
-        ProjectUser pu = new ProjectUser("project.admin@test.fr",
-                                         new Role(roleName),
-                                         Lists.newArrayList(),
-                                         Lists.newArrayList());
+        ProjectUser pu = new ProjectUser("project.admin@test.fr", new Role(roleName), Lists.newArrayList(),
+                Lists.newArrayList());
         Mockito.when(projectUsersClient.retrieveRoleProjectUsersList(roleName, 0, 100)).thenReturn(new ResponseEntity<>(
-                HateoasUtils.wrapToPagedResources(Lists.newArrayList(pu)),
-                HttpStatus.OK));
-        NotificationDTO notif = new NotificationDTO("Lets test",
-                                                    Sets.newHashSet(),
-                                                    Sets.newHashSet(roleName),
-                                                    "microservice",
-                                                    "test",
-                                                    NotificationType.INFO);
+                HateoasUtils.wrapToPagedResources(Lists.newArrayList(pu)), HttpStatus.OK));
+        NotificationDTO notif = new NotificationDTO("Lets test", Sets.newHashSet(), Sets.newHashSet(roleName),
+                "microservice", "test", NotificationType.INFO);
         Mockito.when(rolesClient.retrieveRoleDescendants(roleName))
                 .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(roleName)), HttpStatus.OK));
 
-        List<ResultMatcher> expectations = Lists.newArrayList();
-        expectations.add(MockMvcResultMatchers.status().isCreated());
-
-        performDefaultPost(NotificationController.NOTIFICATION_PATH, notif, expectations, "error");
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+        performDefaultPost(NotificationController.NOTIFICATION_PATH, notif, requestBuilderCustomizer, "error");
         sendingScheduler.sendDaily();
     }
 
@@ -98,50 +102,51 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
         ProjectUser pu = new ProjectUser("project.admin@test.fr", pa, Lists.newArrayList(), Lists.newArrayList());
         Mockito.when(projectUsersClient.retrieveRoleProjectUserList(pa.getId(), 0, 100))
                 .thenReturn(new ResponseEntity<>(HateoasUtils.wrapToPagedResources(Lists.newArrayList(pu)),
-                                                 HttpStatus.OK));
-        NotificationDTO notif = new NotificationDTO("Bonne",
-                                                    Sets.newHashSet(),
-                                                    Sets.newHashSet(roleName),
-                                                    "microservice",
-                                                    "test",
-                                                    NotificationType.INFO);
-        notificationService.createNotification(notif);
-        notif = new NotificationDTO("Année",
-                                    Sets.newHashSet(),
-                                    Sets.newHashSet(roleName),
-                                    "microservice",
-                                    "test",
-                                    NotificationType.INFO);
+                        HttpStatus.OK));
         Mockito.when(rolesClient.retrieveRoleDescendants(roleName))
                 .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(roleName)), HttpStatus.OK));
+        NotificationDTO notif = new NotificationDTO("Bonne", Sets.newHashSet(), Sets.newHashSet(roleName),
+                "microservice", "test", NotificationType.INFO);
         notificationService.createNotification(notif);
-        notif = new NotificationDTO("2018",
-                                    Sets.newHashSet(),
-                                    Sets.newHashSet(roleName),
-                                    "microservice",
-                                    "test",
-                                    NotificationType.INFO);
-        Mockito.when(rolesClient.retrieveRoleDescendants(roleName))
-                .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(roleName)), HttpStatus.OK));
+        notif = new NotificationDTO("Année", Sets.newHashSet(), Sets.newHashSet(roleName), "microservice", "test",
+                NotificationType.INFO);
+        notificationService.createNotification(notif);
+        notif = new NotificationDTO("2018", Sets.newHashSet(), Sets.newHashSet(roleName), "microservice", "test",
+                NotificationType.INFO);
         notificationService.createNotification(notif);
         //some lorem ipsum so we have a notification with content
         notif = new NotificationDTO(
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus sed magna turpis. Curabitur ultrices scelerisque magna pretium mollis. Sed suscipit, ligula eu tempus pretium, lorem quam vehicula urna, vel efficitur leo mauris quis mauris. Pellentesque ac ullamcorper lectus. Aliquam sed tempor massa. Proin ex massa, sodales vel turpis non, sodales rhoncus lacus. Maecenas a convallis nisi. Aliquam felis justo, pellentesque id vestibulum id, tempus sit amet dui. Quisque quis lacus vehicula, gravida lectus a, elementum erat. In vitae venenatis turpis, et venenatis lacus. Phasellus facilisis pellentesque elit, in lacinia enim placerat quis.",
-                Sets.newHashSet(),
-                Sets.newHashSet(roleName),
-                "microservice",
-                "test",
-                NotificationType.INFO);
-        Mockito.when(rolesClient.retrieveRoleDescendants(roleName))
-                .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(roleName)), HttpStatus.OK));
+                Sets.newHashSet(), Sets.newHashSet(roleName), "microservice", "test", NotificationType.INFO);
         notificationService.createNotification(notif);
         RequestBuilderCustomizer requestCustomizer = getNewRequestBuilderCustomizer();
         requestCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT, Matchers.hasSize(4)));
-        String token = jwtService.generateToken(DEFAULT_TENANT, "project.admin@test.fr", pa.getName());
-        performGet(NotificationController.NOTIFICATION_PATH,
-                   token,
-                   requestCustomizer,
+        requestCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT, Matchers.hasSize(0)));
+        requestCustomizer.customizeRequestParam().param("state", NotificationStatus.READ.toString());
+        String token = jwtService.generateToken(getDefaultTenant(), "project.admin@test.fr", roleName);
+        performGet(NotificationController.NOTIFICATION_PATH, token, requestCustomizer,
+                   "Could not retrieve notifications");
+
+        requestCustomizer = getNewRequestBuilderCustomizer();
+        requestCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT, Matchers.hasSize(4)));
+        performGet(NotificationController.NOTIFICATION_PATH, token, requestCustomizer,
+                   "Could not retrieve notifications");
+
+        requestCustomizer = getNewRequestBuilderCustomizer();
+        requestCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT, Matchers.hasSize(4)));
+        requestCustomizer.customizeRequestParam().param("state", NotificationStatus.UNREAD.toString());
+        performGet(NotificationController.NOTIFICATION_PATH, token, requestCustomizer,
+                   "Could not retrieve notifications");
+
+        requestCustomizer = getNewRequestBuilderCustomizer();
+        requestCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT, Matchers.hasSize(2)));
+        requestCustomizer.customizeRequestParam().param("state", NotificationStatus.UNREAD.toString());
+        requestCustomizer.customizeRequestParam().param("page", "0");
+        requestCustomizer.customizeRequestParam().param("size", "2");
+        performGet(NotificationController.NOTIFICATION_PATH, token, requestCustomizer,
                    "Could not retrieve notifications");
     }
 
@@ -152,23 +157,16 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
         ProjectUser pu = new ProjectUser("project.admin@test.fr", pa, Lists.newArrayList(), Lists.newArrayList());
         Mockito.when(projectUsersClient.retrieveRoleProjectUserList(pa.getId(), 0, 100))
                 .thenReturn(new ResponseEntity<>(HateoasUtils.wrapToPagedResources(Lists.newArrayList(pu)),
-                                                 HttpStatus.OK));
-        NotificationDTO notificationDTO = new NotificationDTO("Bonne",
-                                                              Sets.newHashSet(),
-                                                              Sets.newHashSet(roleName),
-                                                              "microservice",
-                                                              "test",
-                                                              NotificationType.INFO);
+                        HttpStatus.OK));
+        NotificationDTO notificationDTO = new NotificationDTO("Bonne", Sets.newHashSet(), Sets.newHashSet(roleName),
+                "microservice", "test", NotificationType.INFO);
         Mockito.when(rolesClient.retrieveRoleDescendants(roleName))
                 .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(roleName)), HttpStatus.OK));
         Notification notification = notificationService.createNotification(notificationDTO);
         RequestBuilderCustomizer requestCustomizer = getNewRequestBuilderCustomizer();
         requestCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         performDefaultPut(NotificationController.NOTIFICATION_PATH + NotificationController.NOTIFICATION_READ_PATH,
-                          null,
-                          requestCustomizer,
-                          "Could not set the notification to READ",
-                          notification.getId());
+                          null, requestCustomizer, "Could not set the notification to READ", notification.getId());
     }
 
     @Test
@@ -179,13 +177,9 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
         ProjectUser pu = new ProjectUser("project.admin@test.fr", pa, Lists.newArrayList(), Lists.newArrayList());
         Mockito.when(projectUsersClient.retrieveRoleProjectUserList(pa.getId(), 0, 100))
                 .thenReturn(new ResponseEntity<>(HateoasUtils.wrapToPagedResources(Lists.newArrayList(pu)),
-                                                 HttpStatus.OK));
-        NotificationDTO notificationDTO = new NotificationDTO("Bonne",
-                                                              Sets.newHashSet(),
-                                                              Sets.newHashSet(roleName),
-                                                              "microservice",
-                                                              "test",
-                                                              NotificationType.INFO);
+                        HttpStatus.OK));
+        NotificationDTO notificationDTO = new NotificationDTO("Bonne", Sets.newHashSet(), Sets.newHashSet(roleName),
+                "microservice", "test", NotificationType.INFO);
         Mockito.when(rolesClient.retrieveRoleDescendants(roleName))
                 .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(roleName)), HttpStatus.OK));
         Notification notification = notificationService.createNotification(notificationDTO);
@@ -195,25 +189,20 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer requestCustomizer = getNewRequestBuilderCustomizer();
         requestCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         performDefaultPut(NotificationController.NOTIFICATION_PATH + NotificationController.NOTIFICATION_UNREAD_PATH,
-                          null,
-                          requestCustomizer,
-                          "Could not set the notification to UNREAD",
-                          notification.getId());
+                          null, requestCustomizer, "Could not set the notification to UNREAD", notification.getId());
     }
 
     @Test
     public void testRetrieveNotifSetting() {
         RequestBuilderCustomizer requestCustomizer = getNewRequestBuilderCustomizer();
         requestCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestCustomizer
-                .addExpectation(MockMvcResultMatchers.jsonPath("$.id", Matchers.notNullValue(Long.class)));
-        requestCustomizer
-                .addExpectation(MockMvcResultMatchers.jsonPath("$.projectUserEmail", Matchers.notNullValue(Long.class)));
+        requestCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.id", Matchers.notNullValue(Long.class)));
+        requestCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.projectUserEmail",
+                                                                        Matchers.notNullValue(Long.class)));
         requestCustomizer
                 .addExpectation(MockMvcResultMatchers.jsonPath("$.frequency", Matchers.notNullValue(Long.class)));
         performDefaultGet(NotificationController.NOTIFICATION_PATH + NotificationController.NOTIFICATION_SETTINGS,
-                          requestCustomizer,
-                          "could not retrieve notification settings");
+                          requestCustomizer, "could not retrieve notification settings");
     }
 
     @Configuration

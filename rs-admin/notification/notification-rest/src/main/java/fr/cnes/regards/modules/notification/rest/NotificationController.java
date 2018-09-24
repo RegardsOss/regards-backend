@@ -18,20 +18,30 @@
  */
 package fr.cnes.regards.modules.notification.rest;
 
-import javax.validation.Valid;
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -50,10 +60,8 @@ import fr.cnes.regards.modules.notification.service.INotificationSettingsService
  *
  */
 @RestController
-@ModuleInfo(name = "notification", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping(NotificationController.NOTIFICATION_PATH)
-public class NotificationController {
+public class NotificationController implements IResourceController<Notification> {
 
     /**
      * Controller base path
@@ -93,6 +101,12 @@ public class NotificationController {
     private INotificationSettingsService notificationSettingsService;
 
     /**
+     * {@link IResourceService} instance
+     */
+    @Autowired
+    private IResourceService resourceService;
+
+    /**
      * Define the endpoint for retrieving the list of notifications for the logged user
      *
      * @return A {@link List} of {@link Notification} wrapped in a {@link ResponseEntity}
@@ -100,10 +114,13 @@ public class NotificationController {
      *             thrown when no current user could be found
      */
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve the list of notifications for the logged user", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<List<Notification>> retrieveNotifications() throws EntityNotFoundException {
-        final List<Notification> notifications = notificationService.retrieveNotifications();
-        return new ResponseEntity<>(notifications, HttpStatus.OK);
+    @ResourceAccess(description = "Retrieve the list of notifications for the logged user",
+            role = DefaultRole.REGISTERED_USER)
+    public ResponseEntity<PagedResources<Resource<Notification>>> retrieveNotifications(
+            @RequestParam(name = "state", required = false) NotificationStatus state, Pageable page,
+            final PagedResourcesAssembler<Notification> pAssembler) throws EntityNotFoundException {
+        final Page<Notification> notifications = notificationService.retrieveNotifications(page, state);
+        return new ResponseEntity<>(toPagedResources(notifications, pAssembler), HttpStatus.OK);
     }
 
     /**
@@ -131,7 +148,8 @@ public class NotificationController {
      * @return The {@link Notification} wrapped in a {@link ResponseEntity}
      */
     @RequestMapping(value = NOTIFICATION_ID_PATH, method = RequestMethod.GET)
-    @ResourceAccess(description = "Define the endpoint for retrieving a notification", role = DefaultRole.REGISTERED_USER)
+    @ResourceAccess(description = "Define the endpoint for retrieving a notification",
+            role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<Notification> retrieveNotification(@PathVariable("notification_id") final Long pId)
             throws EntityNotFoundException {
         final Notification notification = notificationService.retrieveNotification(pId);
@@ -150,8 +168,10 @@ public class NotificationController {
      */
     @ResponseBody
     @RequestMapping(value = NOTIFICATION_READ_PATH, method = RequestMethod.PUT)
-    @ResourceAccess(description = "Define the endpoint for updating the notification status", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<Notification> setNotificationRead(@PathVariable("notification_id") final Long id) throws EntityNotFoundException {
+    @ResourceAccess(description = "Define the endpoint for updating the notification status",
+            role = DefaultRole.REGISTERED_USER)
+    public ResponseEntity<Notification> setNotificationRead(@PathVariable("notification_id") final Long id)
+            throws EntityNotFoundException {
         final Notification notification = notificationService.updateNotificationStatus(id, NotificationStatus.READ);
         return new ResponseEntity<>(notification, HttpStatus.OK);
     }
@@ -167,8 +187,10 @@ public class NotificationController {
      */
     @ResponseBody
     @RequestMapping(value = NOTIFICATION_UNREAD_PATH, method = RequestMethod.PUT)
-    @ResourceAccess(description = "Define the endpoint for updating the notification status", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<Notification> setNotificationUnRead(@PathVariable("notification_id") final Long id) throws EntityNotFoundException {
+    @ResourceAccess(description = "Define the endpoint for updating the notification status",
+            role = DefaultRole.REGISTERED_USER)
+    public ResponseEntity<Notification> setNotificationUnRead(@PathVariable("notification_id") final Long id)
+            throws EntityNotFoundException {
         final Notification notification = notificationService.updateNotificationStatus(id, NotificationStatus.UNREAD);
         return new ResponseEntity<>(notification, HttpStatus.OK);
     }
@@ -198,7 +220,8 @@ public class NotificationController {
      *             thrown when no current user could be found
      */
     @RequestMapping(value = NOTIFICATION_SETTINGS, method = RequestMethod.GET)
-    @ResourceAccess(description = "Define the endpoint for retrieving the notification settings for the logged user", role = DefaultRole.REGISTERED_USER)
+    @ResourceAccess(description = "Define the endpoint for retrieving the notification settings for the logged user",
+            role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<NotificationSettings> retrieveNotificationSettings() throws EntityNotFoundException {
         final NotificationSettings settings = notificationSettingsService.retrieveNotificationSettings();
         return new ResponseEntity<>(settings, HttpStatus.OK);
@@ -214,12 +237,30 @@ public class NotificationController {
      *             Thrown when no notification settings with passed <code>id</code> could be found
      */
     @RequestMapping(value = NOTIFICATION_SETTINGS, method = RequestMethod.PUT)
-    @ResourceAccess(description = "Define the endpoint for updating the notification settings", role = DefaultRole.REGISTERED_USER)
+    @ResourceAccess(description = "Define the endpoint for updating the notification settings",
+            role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<NotificationSettings> updateNotificationSettings(
             @RequestBody NotificationSettingsDTO pNotificationSettings) throws EntityNotFoundException {
         final NotificationSettings settings = notificationSettingsService
                 .updateNotificationSettings(pNotificationSettings);
         return new ResponseEntity<>(settings, HttpStatus.OK);
+    }
+
+    @Override
+    public Resource<Notification> toResource(Notification element, Object... extras) {
+        Resource<Notification> resource = resourceService.toResource(element);
+        resourceService.addLink(resource, this.getClass(), "retrieveNotification", LinkRels.SELF,
+                                MethodParamFactory.build(Long.class, element.getId()));
+        resourceService.addLink(resource, this.getClass(), "deleteNotification", LinkRels.DELETE,
+                                MethodParamFactory.build(Long.class, element.getId()));
+        if (element.getStatus().equals(NotificationStatus.UNREAD)) {
+            resourceService.addLink(resource, this.getClass(), "setNotificationRead", "read",
+                                    MethodParamFactory.build(Long.class, element.getId()));
+        } else {
+            resourceService.addLink(resource, this.getClass(), "setNotificationUnRead", "unread",
+                                    MethodParamFactory.build(Long.class, element.getId()));
+        }
+        return resource;
     }
 
 }

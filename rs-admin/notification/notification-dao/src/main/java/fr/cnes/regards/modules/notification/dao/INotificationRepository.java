@@ -18,11 +18,11 @@
  */
 package fr.cnes.regards.modules.notification.dao;
 
-import java.util.List;
-import java.util.Set;
-
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
@@ -36,7 +36,8 @@ import fr.cnes.regards.modules.notification.domain.NotificationStatus;
  *
  * @author Xavier-Alexandre Brochard
  */
-public interface INotificationRepository extends JpaRepository<Notification, Long> {
+public interface INotificationRepository
+        extends JpaRepository<Notification, Long>, JpaSpecificationExecutor<Notification> {
 
     /**
      * Find all notifications having the passed project user or the passed role as recipient.
@@ -45,8 +46,27 @@ public interface INotificationRepository extends JpaRepository<Notification, Lon
      * @param role The required role recipient
      * @return The list of found notifications
      */
-    @Query("select distinct n from Notification n left join n.projectUserRecipients p left join n.roleRecipients r where p = ?1 or r = ?2")
-    List<Notification> findByRecipientsContaining(String projectUser, String role);
+    @Query(value = "select distinct on (n.id) n.* from {h-schema}t_notification n "
+            + "left join {h-schema}ta_notification_role_name r on r.notification_id = n.id "
+            + "left join {h-schema}ta_notification_projectuser_email e on e.notification_id = n.id "
+            + "where e.projectuser_email = ?1 or r.role_name= ?2 " + "GROUP BY n.id ORDER BY n.id, ?#{#pageable}",
+            nativeQuery = true)
+    Page<Notification> findByRecipientsContaining(String projectUser, String role, Pageable pageable);
+
+    /**
+     * Find all notifications having the passed project user or the passed role as recipient.
+     *
+     * @param projectUser The required project user recipient
+     * @param role The required role recipient
+     * @return The list of found notifications
+     */
+    @Query(value = "select distinct on (n.id) n.* from {h-schema}t_notification n "
+            + "left join {h-schema}ta_notification_role_name r on r.notification_id = n.id "
+            + "left join {h-schema}ta_notification_projectuser_email e on e.notification_id = n.id "
+            + "where n.status= ?1 and (e.projectuser_email = ?2 or r.role_name= ?3) "
+            + "GROUP BY n.id ORDER BY n.id, ?#{#pageable}", nativeQuery = true)
+    Page<Notification> findByStatusAndRecipientsContaining(String status, String projectUser, String role,
+            Pageable page);
 
     /**
      * Find all notifications with passed <code>status</code>
@@ -55,19 +75,19 @@ public interface INotificationRepository extends JpaRepository<Notification, Lon
      *            The notification status
      * @return The list of notifications
      */
-    List<Notification> findByStatus(NotificationStatus pStatus);
+    Page<Notification> findByStatus(NotificationStatus pStatus, Pageable page);
 
     /**
      * Find all notifications which recipients contains the given user, represented by its email
      * @param email
      * @return all notifications which recipients contains the given user, represented by its email
      */
-    Set<Notification> findAllByProjectUserRecipientsContaining(String email);
+    Page<Notification> findAllByProjectUserRecipientsContaining(String email, Pageable page);
 
     /**
      * Find all notifications which recipients contains the given role, represented by its name
      * @param role
      * @return all notifications which recipients contains the given role, represented by its name
      */
-    Set<Notification> findAllByRoleRecipientsContaining(String role);
+    Page<Notification> findAllByRoleRecipientsContaining(String role, Pageable page);
 }
