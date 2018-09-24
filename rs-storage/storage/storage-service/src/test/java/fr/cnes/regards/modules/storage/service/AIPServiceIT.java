@@ -47,6 +47,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
@@ -282,7 +283,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
     private void storeAIP(AIP aipToStore, Boolean storeMeta) throws ModuleException, InterruptedException {
         aipService.validateAndStore(new AIPCollection(aipToStore));
-        aipService.store();
+        aipService.storePage(new PageRequest(0, 100));
         waitForJobsFinished();
         if (storeMeta) {
             aipService.storeMetadata();
@@ -372,7 +373,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         try {
             // Run AIP storage
             aipService.validateAndStore(new AIPCollection(aip));
-            aipService.store();
+            aipService.storePage(new PageRequest(0, 100));
             waitForJobsFinished();
             LOG.info("Waiting for storage jobs ends OK");
             // to make the process fail just on metadata storage, lets remove permissions from the workspace
