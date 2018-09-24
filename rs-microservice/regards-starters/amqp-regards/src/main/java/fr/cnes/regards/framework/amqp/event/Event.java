@@ -35,7 +35,7 @@ import java.lang.annotation.RetentionPolicy;
  * be received by ALL handlers of a ALL microservice instances which type is the same as the PUBLISHING
  * one.</li>
  * <li>{@link WorkerMode#BROADCAST} / {@link Target#ONE_PER_MICROSERVICE_TYPE} : event will
- * be received by ALL handlers of ONE microservice instance PER microservice instance.</li>
+ * be received by ALL handlers of ONE microservice instance PER microservice type.</li>
  * <li>{@link WorkerMode#UNICAST} / {@link Target#MICROSERVICE} : event will
  * be received by a SINGLE handler of a SINGLE microservice instance which type is the same as the PUBLISHING
  * one.</li>

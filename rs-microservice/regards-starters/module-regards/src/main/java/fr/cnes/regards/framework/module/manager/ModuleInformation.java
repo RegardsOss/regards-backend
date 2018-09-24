@@ -22,7 +22,7 @@ import org.hibernate.validator.constraints.NotBlank;
 
 /**
  * Module information are loaded from <b>module.properties</b> that must exist in same package as
- * {@link IModuleConfigurationManager}
+ * {@link IModuleManager}
  * bean implementation.
  *
  * @author Marc Sordi
