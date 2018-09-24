@@ -129,7 +129,7 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
             String title = String.format("Failure while removing %d AIPs", nbError.get());
             StringBuilder message = new StringBuilder();
             message.append(String
-                    .format("A job finished with %d AIP correctly removed and %d errors.  AIP concerned:  ",
+                    .format("A job finished with %d AIP correctly removed and %d errors.%nAIP concerned:  ",
                             nbEntityRemoved.get(), nbError.get()));
             for (String ipId : entityFailed) {
                 message.append(ipId);

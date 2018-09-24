@@ -150,7 +150,7 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
             }
             StringBuilder message = new StringBuilder();
             message.append(String
-                    .format("A job finished with %d successful updates and %d errors.  \\nAIP concerned:  ",
+                    .format("A job finished with %d successful updates and %d errors.%nAIP concerned:  ",
                             nbEntityUpdated.get(), nbError.get()));
             for (String ipId : entityFailed) {
                 message.append(ipId);
