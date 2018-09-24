@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.notification.service;
 
 import java.time.OffsetDateTime;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -30,6 +29,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -137,12 +138,12 @@ public class NotificationService implements INotificationService, ApplicationLis
     }
 
     @Override
-    public List<Notification> retrieveNotifications() throws EntityNotFoundException {
+    public Page<Notification> retrieveNotifications(Pageable page) throws EntityNotFoundException {
         if (notificationMode == NotificationMode.MULTITENANT) {
             return notificationRepository.findByRecipientsContaining(authenticationResolver.getUser(),
-                                                                     authenticationResolver.getRole());
+                                                                     authenticationResolver.getRole(), page);
         } else {
-            return notificationRepository.findAll();
+            return notificationRepository.findAll(page);
         }
     }
 
@@ -166,8 +167,6 @@ public class NotificationService implements INotificationService, ApplicationLis
 
         // Save it in db
         notification = notificationRepository.save(notification);
-
-        // TODO Trigger NOTIFICATION event on message broker
 
         return notification;
     }
@@ -223,8 +222,8 @@ public class NotificationService implements INotificationService, ApplicationLis
     }
 
     @Override
-    public List<Notification> retrieveNotificationsToSend() {
-        return notificationRepository.findByStatus(NotificationStatus.UNREAD);
+    public Page<Notification> retrieveNotificationsToSend(Pageable page) {
+        return notificationRepository.findByStatus(NotificationStatus.UNREAD, page);
     }
 
     @Override
@@ -259,16 +258,26 @@ public class NotificationService implements INotificationService, ApplicationLis
 
     @Override
     public void removeReceiver(String email) {
-        Set<Notification> notifications = notificationRepository.findAllByProjectUserRecipientsContaining(email);
-        notifications.forEach(notification -> notification.getProjectUserRecipients().remove(email));
-        notificationRepository.save(notifications);
+        Pageable page = new PageRequest(0, 500);
+        Page<Notification> notifications;
+        do {
+            notifications = notificationRepository.findAllByProjectUserRecipientsContaining(email, page);
+            notifications.forEach(notification -> notification.getProjectUserRecipients().remove(email));
+            notificationRepository.save(notifications);
+            page = notifications.nextPageable();
+        } while (notifications.hasNext());
     }
 
     @Override
     public void removeRoleReceiver(String role) {
-        Set<Notification> notifications = notificationRepository.findAllByRoleRecipientsContaining(role);
-        notifications.forEach(notification -> notification.getRoleRecipients().remove(role));
-        notificationRepository.save(notifications);
+        Pageable page = new PageRequest(0, 500);
+        Page<Notification> notifications;
+        do {
+            notifications = notificationRepository.findAllByRoleRecipientsContaining(role, page);
+            notifications.forEach(notification -> notification.getRoleRecipients().remove(role));
+            notificationRepository.save(notifications);
+            page = notifications.nextPageable();
+        } while (notifications.hasNext());
     }
 
     @Override
@@ -317,6 +326,22 @@ public class NotificationService implements INotificationService, ApplicationLis
                 runtimeTenantResolver.clearTenant();
                 FeignSecurityManager.reset();
             }
+        }
+    }
+
+    @Override
+    public Page<Notification> retrieveNotifications(Pageable page, NotificationStatus state)
+            throws EntityNotFoundException {
+        if (state != null) {
+            if (notificationMode == NotificationMode.MULTITENANT) {
+                return notificationRepository
+                        .findByStatusAndRecipientsContaining(state.toString(), authenticationResolver.getUser(),
+                                                             authenticationResolver.getRole(), page);
+            } else {
+                return notificationRepository.findByStatus(state, page);
+            }
+        } else {
+            return retrieveNotifications(page);
         }
     }
 }

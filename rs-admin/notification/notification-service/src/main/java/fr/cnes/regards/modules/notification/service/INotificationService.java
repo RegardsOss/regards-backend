@@ -21,6 +21,9 @@ package fr.cnes.regards.modules.notification.service;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
@@ -40,7 +43,7 @@ public interface INotificationService {
      * @throws EntityNotFoundException
      *             thrown when no current user could be found
      */
-    List<Notification> retrieveNotifications() throws EntityNotFoundException;
+    Page<Notification> retrieveNotifications(Pageable page) throws EntityNotFoundException;
 
     /**
      * Save a new notification in db for later sending by a scheluder.
@@ -96,7 +99,7 @@ public interface INotificationService {
      *
      * @return The list of notifications
      */
-    List<Notification> retrieveNotificationsToSend();
+    Page<Notification> retrieveNotificationsToSend(Pageable page);
 
     /**
      * Gather the list of recipients on a notification
@@ -118,4 +121,11 @@ public interface INotificationService {
      * @param role
      */
     void removeRoleReceiver(String role);
+
+    /**
+     * Retrieve notifications for the given status
+     * @param state {@link NotificationStatus}
+     * @throws EntityNotFoundException
+     */
+    Page<Notification> retrieveNotifications(Pageable page, NotificationStatus state) throws EntityNotFoundException;
 }

@@ -23,14 +23,24 @@ import java.util.List;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -51,7 +61,7 @@ import fr.cnes.regards.modules.notification.service.INotificationSettingsService
  */
 @RestController
 @RequestMapping(NotificationController.NOTIFICATION_PATH)
-public class NotificationController {
+public class NotificationController implements IResourceController<Notification> {
 
     /**
      * Controller base path
@@ -101,6 +111,12 @@ public class NotificationController {
     private INotificationSettingsService notificationSettingsService;
 
     /**
+     * {@link IResourceService} instance
+     */
+    @Autowired
+    private IResourceService resourceService;
+
+    /**
      * Define the endpoint for retrieving the list of notifications for the logged user
      *
      * @return A {@link List} of {@link Notification} wrapped in a {@link ResponseEntity}
@@ -110,9 +126,11 @@ public class NotificationController {
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve the list of notifications for the logged user",
             role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<List<Notification>> retrieveNotifications() throws EntityNotFoundException {
-        final List<Notification> notifications = notificationService.retrieveNotifications();
-        return new ResponseEntity<>(notifications, HttpStatus.OK);
+    public ResponseEntity<PagedResources<Resource<Notification>>> retrieveNotifications(
+            @RequestParam(name = "state", required = false) NotificationStatus state, Pageable page,
+            final PagedResourcesAssembler<Notification> pAssembler) throws EntityNotFoundException {
+        final Page<Notification> notifications = notificationService.retrieveNotifications(page, state);
+        return new ResponseEntity<>(toPagedResources(notifications, pAssembler), HttpStatus.OK);
     }
 
     /**
@@ -253,6 +271,23 @@ public class NotificationController {
         final NotificationSettings settings = notificationSettingsService
                 .updateNotificationSettings(pNotificationSettings);
         return new ResponseEntity<>(settings, HttpStatus.OK);
+    }
+
+    @Override
+    public Resource<Notification> toResource(Notification element, Object... extras) {
+        Resource<Notification> resource = resourceService.toResource(element);
+        resourceService.addLink(resource, this.getClass(), "retrieveNotification", LinkRels.SELF,
+                                MethodParamFactory.build(Long.class, element.getId()));
+        resourceService.addLink(resource, this.getClass(), "deleteNotification", LinkRels.DELETE,
+                                MethodParamFactory.build(Long.class, element.getId()));
+        if (element.getStatus().equals(NotificationStatus.UNREAD)) {
+            resourceService.addLink(resource, this.getClass(), "setNotificationRead", "read",
+                                    MethodParamFactory.build(Long.class, element.getId()));
+        } else {
+            resourceService.addLink(resource, this.getClass(), "setNotificationUnRead", "unread",
+                                    MethodParamFactory.build(Long.class, element.getId()));
+        }
+        return resource;
     }
 
 }

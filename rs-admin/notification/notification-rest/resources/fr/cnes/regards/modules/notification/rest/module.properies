@@ -1,0 +1,8 @@
+# Notifications controller module
+module.id=notificationControllerModule
+module.name=Notifications controller
+module.description=Rest controller to manage admin notifications.
+module.version=3.0.0
+module.author=CSSI
+module.legalOwner=CNES
+module.documentation=https://github.com/RegardsOss
