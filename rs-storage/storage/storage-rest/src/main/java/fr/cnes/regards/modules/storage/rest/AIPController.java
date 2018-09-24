@@ -241,11 +241,10 @@ public class AIPController implements IResourceController<AIP> {
     @ResourceAccess(description = "send a page of aips")
     public ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(
             @RequestParam(name = "state", required = false) AIPState pState,
-            @RequestParam(name = "from",
-                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
-            @RequestParam(name = "to",
-                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to,
-            @RequestParam(name = "tags", required = false) List<String> tags,
+            @RequestParam(name = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                    OffsetDateTime from,
+            @RequestParam(name = "to", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                    OffsetDateTime to, @RequestParam(name = "tags", required = false) List<String> tags,
             @RequestParam(name = "session", required = false) String session, final Pageable pPageable,
             final PagedResourcesAssembler<AIP> pAssembler) throws ModuleException {
         Page<AIP> aips = aipService.retrieveAIPs(pState, from, to, tags, session, pPageable);
@@ -271,14 +270,24 @@ public class AIPController implements IResourceController<AIP> {
         Set<String> tags = (inTags == null) ? Collections.emptySet() : inTags;
         Page<AipDataFiles> page = aipService.retrieveAipDataFiles(state, tags, fromLastUpdate, pageable);
         List<AipDataFiles> content = page.getContent();
+        // Now that we have our data files, lets compute their public URL
+        // First lets get the public hostname from rs-admin-instance
+        FeignSecurityManager.asSystem();
+        String projectHost = projectsClient.retrieveProject(runtimeTenantResolver.getTenant()).getBody().getContent()
+                .getHost();
+        FeignSecurityManager.reset();
+
         for (AipDataFiles aipData : content) {
             for (DataFileDto dataFileDto : aipData.getDataFiles()) {
-                toPublicDataFile(dataFileDto, aipData.getAip());
+                toPublicDataFile(projectHost, dataFileDto, aipData.getAip());
             }
         }
         // small hack to be used thanks to GSON which does not know how to deserialize Page or PageImpl
-        PagedResources<AipDataFiles> aipDataFiles = new PagedResources<>(content, new PagedResources.PageMetadata(
-                page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages()));
+        PagedResources<AipDataFiles> aipDataFiles = new PagedResources<>(content,
+                                                                         new PagedResources.PageMetadata(page.getSize(),
+                                                                                                         page.getNumber(),
+                                                                                                         page.getTotalElements(),
+                                                                                                         page.getTotalPages()));
         return new ResponseEntity<>(aipDataFiles, HttpStatus.OK);
     }
 
@@ -315,7 +324,7 @@ public class AIPController implements IResourceController<AIP> {
         // we ask for one AIP to be stored, so we can only have one rejected aip in counter part
         ResponseEntity<List<RejectedAip>> listResponse = storeRetry(Sets.newHashSet(ipId));
         // as their is only one ip id, storeRetry can only give us a UNPROCESSABLE_ENTITY or NO_CONTENT
-        if(listResponse.getStatusCode().equals(HttpStatus.UNPROCESSABLE_ENTITY)) {
+        if (listResponse.getStatusCode().equals(HttpStatus.UNPROCESSABLE_ENTITY)) {
             return new ResponseEntity<>(listResponse.getBody().get(0), listResponse.getStatusCode());
         } else {
             return new ResponseEntity<>(listResponse.getStatusCode());
@@ -518,8 +527,8 @@ public class AIPController implements IResourceController<AIP> {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
             StringJoiner sj = new StringJoiner(", ",
-                    "This aip could not be deleted because at least one of his files has not be handle by the storage process: ",
-                    ".");
+                                               "This aip could not be deleted because at least one of his files has not be handle by the storage process: ",
+                                               ".");
             notSuppressible.stream().map(sdf -> sdf.getAipEntity()).forEach(aipEntity -> sj.add(aipEntity.getAipId()));
             return new ResponseEntity<>(sj.toString(), HttpStatus.CONFLICT);
         }
@@ -612,13 +621,9 @@ public class AIPController implements IResourceController<AIP> {
      * should see them.
      * For example, change URL from file:// to http://[project_host]/[gateway prefix]/rs-storage/...
      */
-    private void toPublicDataFile(DataFileDto dataFile, AIP owningAip) throws MalformedURLException {
+    private void toPublicDataFile(String projectHost, DataFileDto dataFile, AIP owningAip)
+            throws MalformedURLException {
         // Lets reconstruct the public url of rs-storage
-        // First lets get the public hostname from rs-admin-instance
-        FeignSecurityManager.asSystem();
-        String projectHost = projectsClient.retrieveProject(runtimeTenantResolver.getTenant()).getBody().getContent()
-                .getHost();
-        FeignSecurityManager.reset();
         // now lets add it the gateway prefix and the microservice name and the endpoint path to it
         StringBuilder sb = new StringBuilder();
         sb.append(projectHost);
@@ -628,7 +633,7 @@ public class AIPController implements IResourceController<AIP> {
         sb.append(microserviceName);
         sb.append(AIP_PATH);
         sb.append(DOWNLOAD_AIP_FILE.replaceAll("\\{" + AIP_ID_PATH_PARAM + "\\}", owningAip.getId().toString())
-                .replaceAll("\\{checksum\\}", dataFile.getChecksum()));
+                          .replaceAll("\\{checksum\\}", dataFile.getChecksum()));
         URL downloadUrl = new URL(sb.toString());
         dataFile.setUrl(downloadUrl);
     }
