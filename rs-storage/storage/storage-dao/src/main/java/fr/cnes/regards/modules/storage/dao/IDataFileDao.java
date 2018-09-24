@@ -33,9 +33,9 @@ public interface IDataFileDao {
      * @param state
      * @return data files which state is the given one
      */
-    Set<StorageDataFile> findAllByState(DataFileState state);
-
     Page<StorageDataFile> findAllByState(DataFileState state, Pageable pageable);
+
+    Page<StorageDataFile> findPageByState(DataFileState state, Pageable pageable);
 
     /**
      * Find all data files which state is the provided one and that are associated to at least one of the provided aips
@@ -101,6 +101,8 @@ public interface IDataFileDao {
      * @return data files which checksum is one of the provided ones
      */
     Set<StorageDataFile> findAllByChecksumIn(Set<String> checksums);
+
+    Page<StorageDataFile> findPageByChecksumIn(Set<String> checksums, Pageable pageable);
 
     /**
      * Remove a data file from the database

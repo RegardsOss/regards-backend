@@ -61,7 +61,7 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      * Find all aips which state is one of the provided one
      * @return aips which state is one of the provided one
      */
-    Set<AIPEntity> findAllByStateIn(AIPState... states);
+    Page<AIPEntity> findAllByStateIn(Collection<AIPState> states, Pageable pageable);
 
     /**
      * Retrieve a page of aip which state is the one provided and contains the provided tags and which last event
@@ -85,8 +85,7 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      * Retrieve all aips which ip id starts with the provided string
      * @return aips respecting the constraints
      */
-    @Query("from AIPEntity aip where aip.aipId LIKE :urnWithoutVersion%")
-    Set<AIPEntity> findAllByAipIdStartingWith(@Param("urnWithoutVersion") String urnWithoutVersion);
+    Page<AIPEntity> findAllByAipIdStartingWith(String urnWithoutVersion, Pageable page);
 
     /**
      * Retrieve an aip by its ip id
@@ -111,9 +110,10 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      * Retrieve all aips which are tagged by the provided tag
      * @return aips which respects the constraints
      */
-    @Query(value = "select * from {h-schema}t_aip where json_aip->'properties'->'pdi'->'contextInformation'->'tags' @> to_jsonb(:tag)",
+    @Query(value = "select * from {h-schema}t_aip where json_aip->'properties'->'pdi'->'contextInformation'->'tags' @> to_jsonb(?1)  ORDER BY ?#{#pageable}",
+            countQuery = "select count(*) from {h-schema}t_aip where json_aip->'properties'->'pdi'->'contextInformation'->'tags' @> to_jsonb(?1)",
             nativeQuery = true)
-    Set<AIPEntity> findAllByTags(@Param("tag") String tag);
+    Page<AIPEntity> findAllByTags(String tag, Pageable page);
 
     /**
      * Retrieve all aips which sip id is the provided one

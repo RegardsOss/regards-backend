@@ -45,9 +45,9 @@ public class AIPQueryGenerator {
      * Return an SQL query that retrieve all entities matching provided criteria
      */
     public static String search(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags,
-            AIPSession session, Set<String> aipIds, Set<String> aipIdsExcluded) {
+            AIPSession session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded) {
         StringBuilder request = new StringBuilder("SELECT * " + "FROM {h-schema}t_aip ");
-        Set<String> predicates = generatePredicates(state, from, to, tags, session, aipIds, aipIdsExcluded);
+        Set<String> predicates = generatePredicates(state, from, to, tags, session, providerId, aipIds, aipIdsExcluded);
         if (!predicates.isEmpty()) {
             request.append("WHERE ");
             Joiner.on(" AND ").appendTo(request, predicates);
@@ -59,11 +59,11 @@ public class AIPQueryGenerator {
      * Return an SQL query that retrieve all tags used by a set of entities
      */
     public static String searchAipTagsUsingSQL(AIPState state, OffsetDateTime from, OffsetDateTime to,
-            List<String> tags, AIPSession session, Set<String> aipIds, Set<String> aipIdsExcluded) {
+            List<String> tags, AIPSession session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded) {
         StringBuilder request = new StringBuilder(
                 "SELECT distinct jsonb_array_elements_text(json_aip->'properties'->'pdi'->'contextInformation'->'tags') "
                         + "FROM {h-schema}t_aip ");
-        Set<String> predicates = generatePredicates(state, from, to, tags, session, aipIds, aipIdsExcluded);
+        Set<String> predicates = generatePredicates(state, from, to, tags, session, providerId, aipIds, aipIdsExcluded);
         if (!predicates.isEmpty()) {
             request.append("WHERE ");
             Joiner.on(" AND ").appendTo(request, predicates);
@@ -72,7 +72,7 @@ public class AIPQueryGenerator {
     }
 
     private static Set<String> generatePredicates(AIPState state, OffsetDateTime from, OffsetDateTime to,
-            List<String> tags, AIPSession session, Set<String> aipIds, Set<String> aipIdsExcluded) {
+            List<String> tags, AIPSession session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded) {
         Set<String> predicates = Sets.newHashSet();
         if (state != null) {
             predicates.add("(state = '" + state.getName() + "')");
@@ -88,27 +88,30 @@ public class AIPQueryGenerator {
         if (session != null) {
             predicates.add("(session = '" + session.getId() + "')");
         }
-        if ((aipIds != null) && !aipIds.isEmpty()) {
+        if (aipIds != null && !aipIds.isEmpty()) {
             Set<String> aipIncludedPredicates = Sets.newHashSet();
             for (String aipId : aipIds) {
                 aipIncludedPredicates.add("'" + aipId + "'");
             }
             predicates.add("(aip_id in (" + String.join(" , ", aipIncludedPredicates) + "))");
         }
-        if ((aipIdsExcluded != null) && !aipIdsExcluded.isEmpty()) {
+        if (aipIdsExcluded != null && !aipIdsExcluded.isEmpty()) {
             Set<String> aipExcludedPredicates = Sets.newHashSet();
             for (String aipId : aipIdsExcluded) {
                 aipExcludedPredicates.add("'" + aipId + "'");
             }
             predicates.add("(aip_id not in (" + String.join(" , ", aipExcludedPredicates) + "))");
         }
-        if ((tags != null) && !tags.isEmpty()) {
+        if (tags != null && !tags.isEmpty()) {
             Set<String> tagPredicates = Sets.newHashSet();
             for (String tag : tags) {
                 tagPredicates.add("'" + tag + "'");
             }
             predicates.add("(json_aip->'properties'->'pdi'->'contextInformation'->'tags' @> jsonb_build_array("
                     + String.join(" , ", tagPredicates) + "))");
+        }
+        if (providerId != null && !providerId.isEmpty()) {
+            predicates.add("(provider_id like '%" + providerId + "%')");
         }
         return predicates;
     }

@@ -226,7 +226,7 @@ public class DataStorageService implements IDataStorageService {
                         if (ratio >= criticalThreshold) {
                             String message = String
                                     .format("Data storage(configuration id: %s, configuration label: %s) has reach its "
-                                            + "disk usage critical threshold. Actual occupation: %.2f%%, critical threshold: %s%%",
+                                            + "disk usage critical threshold. %nActual occupation: %.2f%%, critical threshold: %s%%",
                                             activeDataStorageConf.getId().toString(), activeDataStorageConf.getLabel(),
                                             ratio, criticalThreshold);
                             LOGGER.error(message);
@@ -238,7 +238,7 @@ public class DataStorageService implements IDataStorageService {
                         if (ratio >= threshold) {
                             String message = String
                                     .format("Data storage(configuration id: %s, configuration label: %s) has reach its "
-                                            + "disk usage threshold. Actual occupation: %.2f%%, threshold: %s%%",
+                                            + "disk usage threshold. %nActual occupation: %.2f%%, threshold: %s%%",
                                             activeDataStorageConf.getId().toString(), activeDataStorageConf.getLabel(),
                                             ratio, threshold);
                             LOGGER.warn(message);

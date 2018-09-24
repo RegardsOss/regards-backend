@@ -18,13 +18,15 @@
  */
 package fr.cnes.regards.modules.storage.domain.job;
 
-import fr.cnes.regards.modules.storage.domain.AIPState;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import javax.validation.constraints.NotNull;
+
+import fr.cnes.regards.modules.storage.domain.AIPState;
 
 /**
  * This object allows several query filters to be passed to a POST endpoint or to Job.
@@ -36,6 +38,11 @@ public class AIPQueryFilters {
      *  state of the AIP (optional)
      */
     private AIPState state;
+
+    /**
+     * AIP provider id
+     */
+    private String providerId;
 
     /**
      * (optional)
@@ -125,5 +132,13 @@ public class AIPQueryFilters {
 
     public void setTags(List<String> tags) {
         this.tags = tags;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
     }
 }

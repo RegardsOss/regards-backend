@@ -80,16 +80,17 @@ public interface IAIPDao {
     /**
      * Retrieve all existing {@link AIP}s with given starting ipId {@link String}
      * @param aipIdWithoutVersion starting aipId {@link String}
+     * @param page
      * @return {@link AIP}s
      */
-    Set<AIP> findAllByIpIdStartingWith(String aipIdWithoutVersion);
+    Page<AIP> findAllByIpIdStartingWith(String aipIdWithoutVersion, Pageable page);
 
     /**
      * Retrieve all aips which state is the one given
      * @param state
      * @return aips which state is the requested one
      */
-    Set<AIP> findAllByStateService(AIPState state);
+    Page<AIP> findAllByStateService(AIPState state, Pageable page);
 
     /**
      * Retrieve a single aip according to its ip id
@@ -108,7 +109,7 @@ public interface IAIPDao {
      * @param states
      * @return aips which state is one of the requested
      */
-    Set<AIP> findAllByStateInService(AIPState... states);
+    Page<AIP> findAllByStateInService(Collection<AIPState> states, Pageable page);
 
     /**
      * Remove the given aip from the database
@@ -128,7 +129,7 @@ public interface IAIPDao {
      * @param tag
      * @return aip tagged by tag
      */
-    Set<AIP> findAllByTags(String tag);
+    Page<AIP> findAllByTags(String tag, Pageable page);
 
     /**
      * Retrieve all aips which sip ip id is the given one
@@ -153,12 +154,6 @@ public interface IAIPDao {
      * @return
      */
     Page<AIP> findAll(String query, Pageable pPageable);
-
-    /**
-     * Retrieve all aips
-     * @return aips
-     */
-    Set<AIP> findAll(String query);
 
     /**
      * Count number of {@link AIP} associated to a given session

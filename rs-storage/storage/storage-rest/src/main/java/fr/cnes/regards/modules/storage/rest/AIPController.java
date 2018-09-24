@@ -191,7 +191,6 @@ public class AIPController implements IResourceController<AIP> {
      */
     public static final String TAG_SEARCH_PATH = TAG_MANAGEMENT_PATH + "/search";
 
-    @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPController.class);
 
     /**
@@ -241,13 +240,15 @@ public class AIPController implements IResourceController<AIP> {
     @ResourceAccess(description = "send a page of aips")
     public ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(
             @RequestParam(name = "state", required = false) AIPState pState,
-            @RequestParam(name = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                    OffsetDateTime from,
-            @RequestParam(name = "to", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                    OffsetDateTime to, @RequestParam(name = "tags", required = false) List<String> tags,
+            @RequestParam(name = "from",
+                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
+            @RequestParam(name = "to",
+                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to,
+            @RequestParam(name = "tags", required = false) List<String> tags,
+            @RequestParam(name = "providerId", required = false) String providerId,
             @RequestParam(name = "session", required = false) String session, final Pageable pPageable,
             final PagedResourcesAssembler<AIP> pAssembler) throws ModuleException {
-        Page<AIP> aips = aipService.retrieveAIPs(pState, from, to, tags, session, pPageable);
+        Page<AIP> aips = aipService.retrieveAIPs(pState, from, to, tags, session, providerId, pPageable);
         return new ResponseEntity<>(toPagedResources(aips, pAssembler), HttpStatus.OK);
     }
 
@@ -267,7 +268,7 @@ public class AIPController implements IResourceController<AIP> {
         if (!Strings.isNullOrEmpty(fromLastUpdateDate)) {
             fromLastUpdate = OffsetDateTimeAdapter.parse(fromLastUpdateDate);
         }
-        Set<String> tags = (inTags == null) ? Collections.emptySet() : inTags;
+        Set<String> tags = inTags == null ? Collections.emptySet() : inTags;
         Page<AipDataFiles> page = aipService.retrieveAipDataFiles(state, tags, fromLastUpdate, pageable);
         List<AipDataFiles> content = page.getContent();
         // Now that we have our data files, lets compute their public URL
@@ -501,6 +502,18 @@ public class AIPController implements IResourceController<AIP> {
     }
 
     /**
+     * Retrieve all aips which are tagged by the provided tag
+     * @return aips tagged by the tag
+     */
+    @RequestMapping(value = TAG, method = RequestMethod.GET)
+    @ResourceAccess(description = "retrieve a collection of AIP according to a tag")
+    @ResponseBody
+    public ResponseEntity<PagedResources<Resource<AIP>>> retrieveAipsByTag(@PathVariable("tag") String tag,
+            Pageable page, final PagedResourcesAssembler<AIP> assembler) {
+        return ResponseEntity.ok(toPagedResources(aipService.retrieveAipsByTag(tag, page), assembler));
+    }
+
+    /**
      * Update an aip, represented by its ip id, thanks to the provided pojo
      * @return updated aip
      */
@@ -532,19 +545,6 @@ public class AIPController implements IResourceController<AIP> {
             notSuppressible.stream().map(sdf -> sdf.getAipEntity()).forEach(aipEntity -> sj.add(aipEntity.getAipId()));
             return new ResponseEntity<>(sj.toString(), HttpStatus.CONFLICT);
         }
-    }
-
-    /**
-     * Retrieve all aips which are tagged by the provided tag
-     * @return aips tagged by the tag
-     */
-    @RequestMapping(value = TAG, method = RequestMethod.GET)
-    @ResourceAccess(description = "retrieve a collection of AIP according to a tag")
-    @ResponseBody
-    public ResponseEntity<AIPCollection> retrieveAipsByTag(@PathVariable("tag") String tag) {
-        AIPCollection aipCollection = new AIPCollection();
-        aipCollection.addAll(aipService.retrieveAipsByTag(tag));
-        return ResponseEntity.ok(aipCollection);
     }
 
     /**
@@ -602,12 +602,15 @@ public class AIPController implements IResourceController<AIP> {
                                 MethodParamFactory.build(AIPState.class),
                                 MethodParamFactory.build(OffsetDateTime.class),
                                 MethodParamFactory.build(OffsetDateTime.class), MethodParamFactory.build(List.class),
-                                MethodParamFactory.build(String.class), MethodParamFactory.build(Pageable.class),
+                                MethodParamFactory.build(String.class), MethodParamFactory.build(String.class),
+                                MethodParamFactory.build(Pageable.class),
                                 MethodParamFactory.build(PagedResourcesAssembler.class));
         resourceService.addLink(resource, this.getClass(), "retrieveAip", LinkRels.SELF,
                                 MethodParamFactory.build(String.class, pElement.getId().toString()));
-        resourceService.addLink(resource, this.getClass(), "storeRetryUnit", "retry",
-                                MethodParamFactory.build(String.class, pElement.getId().toString()));
+        if (AIPState.STORAGE_ERROR.equals(pElement.getState())) {
+            resourceService.addLink(resource, this.getClass(), "storeRetryUnit", "retry",
+                                    MethodParamFactory.build(String.class, pElement.getId().toString()));
+        }
         // If the AIP is not being deleted, add the hateoas delete key
         if (!AIPState.DELETED.equals(pElement.getState())) {
             resourceService.addLink(resource, this.getClass(), "deleteAip", "delete",

@@ -35,6 +35,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
@@ -168,12 +169,12 @@ public class CDPPStoreTest extends AbstractMultitenantServiceTest {
         LOGGER.info("Submission time : {}", submitTime - startTime);
 
         // Wait until all AIP are STORED
-        int storedAIP = 0;
+        Long storedAIP = 0L;
         int expected = 1;
         int loops = 120;
         do {
             Thread.sleep(1_000);
-            storedAIP = aipRepository.findAllByStateIn(AIPState.STORED).size();
+            storedAIP = aipRepository.findAllByStateIn(AIPState.STORED, new PageRequest(0, 100)).getTotalElements();
             loops--;
         } while ((storedAIP != expected) && (loops != 0));
 

@@ -73,17 +73,6 @@ public interface IAIPService {
     List<RejectedAip> validateAndStore(AIPCollection aips) throws ModuleException;
 
     /**
-     * Asynchronously makes the heavy work of storing AIP following these steps :
-     * <ul>
-     * <li>Extract data files from {@link AIP}</li>
-     * <li>Dispatch them on {@link IDataStorage} plugins through the single active {@link IAllocationStrategy}
-     * plugin</li>
-     * <li>Prepare and schedule storage jobs for data files</li>
-     * </ul>
-     */
-    void store() throws ModuleException;
-
-    /**
      * Asynchronusly makes the heavy work of storing AIP metadata.
      */
     void storeMetadata();
@@ -124,11 +113,12 @@ public interface IAIPService {
      * @param pTo {@link OffsetDateTime} stop date of AIP to retrieve
      * @param tags
      * @param sessionId
+     * @param providerId
      * @param pPageable {@link Pageable} Pagination information
      * @return {@link AIP}s corresponding to parameters given.
      */
     Page<AIP> retrieveAIPs(AIPState pState, OffsetDateTime pFrom, OffsetDateTime pTo, List<String> tags,
-            String sessionId, Pageable pPageable) throws ModuleException;
+            String sessionId, String providerId, Pageable pPageable) throws ModuleException;
 
     /**
      * Retrieve pages of AIP with files public information filtered according to the parameters
@@ -195,7 +185,7 @@ public interface IAIPService {
      * @param tag
      * @return tagged aips
      */
-    Set<AIP> retrieveAipsByTag(String tag);
+    Page<AIP> retrieveAipsByTag(String tag, Pageable page);
 
     /**
      * Retrieve an aip thanks to its aip id
@@ -388,4 +378,17 @@ public interface IAIPService {
      * StorageDataFile. This state is reached when all locations of all DataObject are deleted for an AIP metadata.
      */
     void removeDeletedAIPMetadatas();
+
+    /**
+     * Schedule storage for the given page of AIP data following these steps :
+     * <ul>
+     * <li>Extract data files from {@link AIP}</li>
+     * <li>Dispatch them on {@link IDataStorage} plugins through the single active {@link IAllocationStrategy}
+     * plugin</li>
+     * <li>Prepare and schedule storage jobs for data files</li>
+     * </ul>
+     * @return page of sheduled AIP data.
+     * @throws ModuleException
+     */
+    Page<AIP> storePage(Pageable page) throws ModuleException;
 }
