@@ -26,8 +26,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.notification.domain.Notification;
@@ -39,6 +41,7 @@ import fr.cnes.regards.modules.notification.domain.NotificationType;
  *
  */
 @Ignore("Fix multitenant and instance conflicts")
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema:notif_dao" })
 @ContextConfiguration(classes = { NotificationDaoTestConfig.class })
 public class NotificationDaoIT extends AbstractDaoTransactionalTest {
 
@@ -94,4 +97,9 @@ public class NotificationDaoIT extends AbstractDaoTransactionalTest {
         return notif;
     }
 
+    @Test
+    public void testUpdateAll() {
+        notificationRepository.updateAllNotificationStatusByRole(NotificationStatus.READ, "ADMIN");
+        notificationRepository.updateAllNotificationStatusByUser(NotificationStatus.READ, "regards@c-s.fr");
+    }
 }

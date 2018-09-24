@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
@@ -70,4 +71,15 @@ public interface INotificationRepository extends JpaRepository<Notification, Lon
      * @return all notifications which recipients contains the given role, represented by its name
      */
     Set<Notification> findAllByRoleRecipientsContaining(String role);
+
+    @Modifying
+    @Query(value = "UPDATE {h-schema}t_notification set status = ?1 FROM {h-schema}ta_notification_role_name recipient WHERE t_notification.id = recipient.notification_id AND recipient.role_name = ?2",
+            nativeQuery = true)
+    void updateAllNotificationStatusByRole(NotificationStatus status, String role);
+
+    @Modifying
+    @Query(value = "UPDATE {h-schema}t_notification set status = ?1 FROM {h-schema}ta_notification_projectuser_email recipient WHERE t_notification.id = recipient.notification_id AND recipient.projectuser_email = ?2",
+            nativeQuery = true)
+    void updateAllNotificationStatusByUser(NotificationStatus status, String projectUser);
+
 }

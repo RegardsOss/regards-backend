@@ -77,6 +77,11 @@ public interface INotificationService {
     Notification updateNotificationStatus(Long pId, NotificationStatus pStatus) throws EntityNotFoundException;
 
     /**
+     * Mark all notifications as specified status
+     */
+    void markAllNotificationAs(NotificationStatus status);
+
+    /**
      * Delete a notification
      *
      * @param pId

@@ -38,6 +38,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -138,8 +139,8 @@ public class NotificationService implements INotificationService, ApplicationLis
     @Override
     public List<Notification> retrieveNotifications() throws EntityNotFoundException {
         if (notificationMode == NotificationMode.MULTITENANT) {
-            return notificationRepository
-                    .findByRecipientsContaining(authenticationResolver.getUser(), authenticationResolver.getRole());
+            return notificationRepository.findByRecipientsContaining(authenticationResolver.getUser(),
+                                                                     authenticationResolver.getRole());
         } else {
             return notificationRepository.findAll();
         }
@@ -207,6 +208,13 @@ public class NotificationService implements INotificationService, ApplicationLis
     }
 
     @Override
+    public void markAllNotificationAs(NotificationStatus status) {
+        Assert.notNull(status, "Notification status is required");
+        notificationRepository.updateAllNotificationStatusByRole(status, authenticationResolver.getRole());
+        notificationRepository.updateAllNotificationStatusByUser(status, authenticationResolver.getUser());
+    }
+
+    @Override
     public void deleteNotification(final Long pId) throws EntityNotFoundException {
         if (!notificationRepository.exists(pId)) {
             throw new EntityNotFoundException(pId.toString(), Notification.class);
@@ -226,14 +234,14 @@ public class NotificationService implements INotificationService, ApplicationLis
                 final Stream<String> usersStream = pNotification.getProjectUserRecipients().stream()) {
 
             // Merge the two streams
-            return Stream.concat(usersStream,
-                                 rolesStream.flatMap(// Define a function mapping each role to its project users by
-                                                     // calling the roles client
-                                                     r -> HateoasUtils.retrieveAllPages(100,
-                                                                                        pageable -> retrieveRoleProjectUserList(
-                                                                                                r,
-                                                                                                pageable)).stream()
-                                                             .map(ProjectUser::getEmail))).distinct();
+            return Stream.concat(usersStream, rolesStream.flatMap(// Define a function mapping each role to its project users by
+                                                                  // calling the roles client
+                                                                  r -> HateoasUtils
+                                                                          .retrieveAllPages(100,
+                                                                                            pageable -> retrieveRoleProjectUserList(r,
+                                                                                                                                    pageable))
+                                                                          .stream().map(ProjectUser::getEmail)))
+                    .distinct();
         }
     }
 
@@ -242,9 +250,8 @@ public class NotificationService implements INotificationService, ApplicationLis
         final ResponseEntity<PagedResources<Resource<ProjectUser>>> response = projectUserClient
                 .retrieveRoleProjectUsersList(pRole, pPageable.getPageNumber(), pPageable.getPageSize());
 
-        if (!response.getStatusCode().equals(HttpStatus.OK) || (response.getBody() == null)) {
-            LOG.warn("Error retrieving projet users for role {}. Remote administration response is {}",
-                     pRole,
+        if (!response.getStatusCode().equals(HttpStatus.OK) || response.getBody() == null) {
+            LOG.warn("Error retrieving projet users for role {}. Remote administration response is {}", pRole,
                      response.getStatusCode());
         }
         return response;
