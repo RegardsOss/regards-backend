@@ -51,15 +51,15 @@ public class CustomizedAIPEntityRepository implements ICustomizedAIPEntityReposi
     }
 
     @Override
-    public Page<AIPEntity> findAll(String sqlQuery, Pageable pPageable) {
+    public Page<AIPEntity> findAll(String sqlQuery, Pageable pageable) {
         Long numberResults = countNumberOfResults(sqlQuery);
 
         Query q = entityManager.createNativeQuery(sqlQuery, AIPEntity.class);
-        q.setFirstResult(pPageable.getOffset());
-        q.setMaxResults(pPageable.getPageSize());
+        q.setFirstResult(pageable.getOffset());
+        q.setMaxResults(pageable.getPageSize());
         @SuppressWarnings("unchecked")
         List<AIPEntity> resultList = q.getResultList();
-        Page<AIPEntity> result = new PageImpl<>(resultList, pPageable, numberResults);
+        Page<AIPEntity> result = new PageImpl<>(resultList, pageable, numberResults);
         return result;
     }
 

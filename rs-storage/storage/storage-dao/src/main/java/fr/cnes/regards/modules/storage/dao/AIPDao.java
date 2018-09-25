@@ -171,8 +171,8 @@ public class AIPDao implements IAIPDao {
     }
 
     @Override
-    public Page<AIP> findAll(String sqlQuery, Pageable pPageable) {
-        return custoRepo.findAll(sqlQuery, pPageable).map(this::buildAipFromAIPEntity);
+    public Page<AIP> findAll(String sqlQuery, Pageable pageable) {
+        return custoRepo.findAll(sqlQuery, pageable).map(this::buildAipFromAIPEntity);
     }
 
     @Override

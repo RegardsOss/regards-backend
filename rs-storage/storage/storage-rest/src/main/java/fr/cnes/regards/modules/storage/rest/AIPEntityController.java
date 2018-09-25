@@ -2,6 +2,8 @@ package fr.cnes.regards.modules.storage.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -33,7 +35,7 @@ public class AIPEntityController implements IResourceController<AIPEntity> {
     /**
      * Controller base path
      */
-    public static final String BASE_PATH = "sips/{sip_id}/aips";
+    static final String BASE_PATH = "sips/{sip_id}/aips";
 
     /**
      * {@link IResourceService} instance
@@ -58,7 +60,8 @@ public class AIPEntityController implements IResourceController<AIPEntity> {
     @ResourceAccess(description = "send pages of AIPEntity")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<PagedResources<Resource<AIPEntity>>> retrieveAIPEntities(
-            @PathVariable("sip_id") String sipId, Pageable pageable,
+            @PathVariable("sip_id") String sipId,
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<AIPEntity> pagedResourcesAssembler) {
         return new ResponseEntity<>(toPagedResources(aipEntityService.retrieveBySip(sipId, pageable),
                                                      pagedResourcesAssembler), HttpStatus.OK);
