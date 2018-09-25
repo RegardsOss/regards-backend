@@ -140,7 +140,7 @@ public interface IAipClient {
      * Same than {@link IAipClient#storeRetryUnit(String)} but for a bunch of aips
      */
     @RequestMapping(method = RequestMethod.POST, value = RETRY_STORE_PATH)
-    ResponseEntity<List<RejectedAip>> storeRetry(@RequestBody @Valid Set<String> aiipIds);
+    ResponseEntity<List<RejectedAip>> storeRetry(@RequestBody @Valid Set<String> aipIds);
 
     /**
      * Allows to ask for the storage of an aip which has failed
@@ -154,13 +154,13 @@ public interface IAipClient {
      * @return list of sip for which we could not delete the linked aips
      */
     @RequestMapping(value = AIP_BULK_DELETE, method = RequestMethod.POST)
-    public ResponseEntity<List<RejectedSip>> deleteAifromSips(@RequestBody Set<String> siipIds);
+    ResponseEntity<List<RejectedSip>> deleteAipFromSips(@RequestBody Set<String> sipIds);
 
     /**
      * Delete an aip, represented by its ip id
      */
     @RequestMapping(value = ID_PATH, method = RequestMethod.DELETE)
-    public ResponseEntity<String> deleteAip(@PathVariable(name = "ip_id") String ipId);
+    ResponseEntity<String> deleteAip(@PathVariable(name = "ip_id") String ipId);
 
     /**
      * Retrieve the meta data of files associated to an aip, represented by its ip id
