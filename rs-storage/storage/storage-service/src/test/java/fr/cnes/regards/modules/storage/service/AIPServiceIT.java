@@ -29,6 +29,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.time.OffsetDateTime;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -295,6 +296,43 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         aipService.updateAip(aip.getId().toString(), aip);
         aipService.updateAipMetadata();
         waitForJobsFinished();
+    }
+
+    // Test for storage performance with 500 AIPs to store.
+    //@Test
+    public void performanceTest() throws ModuleException, InterruptedException, MalformedURLException {
+
+        Date date = new Date();
+        LOG.info("Starting creating AIPs");
+        AIPCollection col = new AIPCollection();
+        // 1. Generate 500 AIPs in db
+        for (int i = 0; i < 500; i++) {
+            col.add(getAIP());
+        }
+        aipService.validateAndStore(col);
+        Date dateAfter = new Date();
+        LOG.info("AIPs created in {}ms", dateAfter.getTime() - date.getTime());
+
+        Assert.assertEquals(500, aipDao.findAllByState(AIPState.VALID, new PageRequest(0, 500)).getTotalElements());
+
+        date = new Date();
+        LOG.info("Start storage ...");
+        aipService.storePage(new PageRequest(0, 500));
+        dateAfter = new Date();
+        LOG.info("Start storage run after {}ms", dateAfter.getTime() - date.getTime());
+        waitForJobsFinished();
+        dateAfter = new Date();
+        LOG.info("Jobs done after {}ms", dateAfter.getTime() - date.getTime());
+
+        date = new Date();
+        LOG.info("Storing metadata");
+        aipService.storeMetadata();
+        dateAfter = new Date();
+        LOG.info("Storing metadata run after {}ms", dateAfter.getTime() - date.getTime());
+        waitForJobsFinished();
+        dateAfter = new Date();
+        LOG.info("Jobs done after {}ms", dateAfter.getTime() - date.getTime());
+
     }
 
     @Test
