@@ -150,10 +150,10 @@ public interface IAIPDao {
     /**
      * Allow to make a research
      * @param query A SQL query
-     * @param pPageable
+     * @param pageable
      * @return
      */
-    Page<AIP> findAll(String query, Pageable pPageable);
+    Page<AIP> findAll(String query, Pageable pageable);
 
     /**
      * Count number of {@link AIP} associated to a given session

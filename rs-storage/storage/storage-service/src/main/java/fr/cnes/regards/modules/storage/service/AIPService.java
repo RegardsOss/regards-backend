@@ -571,11 +571,6 @@ public class AIPService implements IAIPService {
     @Override
     public Page<AipDataFiles> retrieveAipDataFiles(AIPState state, Set<String> tags, OffsetDateTime fromLastUpdateDate,
             Pageable pageable) {
-        if (pageable instanceof PageRequest) {
-            if (((PageRequest) pageable).getSort() == null) {
-                pageable = new PageRequest(pageable.getPageNumber(), pageable.getPageSize(), Sort.Direction.ASC, "id");
-            }
-        }
         // first lets get the page of aips
         // we have two cases: there is a date or not
         Page<AIP> aips;
