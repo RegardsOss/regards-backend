@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
+import javax.persistence.LockModeType;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
-
-import javax.persistence.LockModeType;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -69,8 +68,11 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      * @return a page of aip which state is the one provided and contains the provided tags and which last event
      *         occurred after the given date
      */
-    @Query(value = "select * from {h-schema}t_aip where json_aip->'properties'->'pdi'->'contextInformation'->'tags' @> jsonb_build_array(:tags) "
-            + "AND state=:state AND date > :lastUpdate " + "ORDER BY aip_id DESC \n-- #pageable\n", nativeQuery = true)
+    @Query(value =
+            "select * from {h-schema}t_aip where json_aip->'properties'->'pdi'->'contextInformation'->'tags' @> jsonb_build_array(:tags) "
+                    + "AND state=:state AND date > :lastUpdate ORDER BY ?#{#pageable}", countQuery =
+            "select count(*) from {h-schema}t_aip where json_aip->'properties'->'pdi'->'contextInformation'->'tags' @> jsonb_build_array(:tags)"
+                    + " AND state=:state AND date > :lastUpdate", nativeQuery = true)
     Page<AIPEntity> findAllByStateAndTagsInAndLastEventDateAfter(@Param("state") String state,
             @Param("tags") Set<String> tags, @Param("lastUpdate") Timestamp fromLastUpdateDate, Pageable pageable);
 
