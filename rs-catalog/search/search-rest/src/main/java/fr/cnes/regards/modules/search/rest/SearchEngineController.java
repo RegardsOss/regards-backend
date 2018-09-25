@@ -33,6 +33,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -143,7 +145,8 @@ public class SearchEngineController {
     @ResourceAccess(description = "Extra mapping for global search", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchAllExtra(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
             @PathVariable(SearchEngineMappings.EXTRA) String extra, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) throws ModuleException {
+            @RequestParam MultiValueMap<String, String> queryParams,
+            Pageable pageable) throws ModuleException {
         LOGGER.debug("Extra mapping \"{}\" handling delegated to engine \"{}\"", extra, engineType);
         return dispatcher.dispatchRequest(SearchContext
                 .build(SearchType.ALL, engineType, headers, getDecodedParams(queryParams), pageable).withExtra(extra));

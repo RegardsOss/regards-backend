@@ -26,6 +26,8 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -91,7 +93,8 @@ public class SearchEngineConfigurationController implements IResourceController<
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve all search engine confiurations", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<PagedResources<Resource<SearchEngineConfiguration>>> retrieveConfs(
-            @RequestParam(value = ENGINE_TYPE, required = false) final String engineType, final Pageable pageable,
+            @RequestParam(value = ENGINE_TYPE, required = false) final String engineType,
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             final PagedResourcesAssembler<SearchEngineConfiguration> assembler) throws ModuleException {
         final Page<SearchEngineConfiguration> confs = service.retrieveConfs(Optional.ofNullable(engineType), pageable);
         final PagedResources<Resource<SearchEngineConfiguration>> resources = toPagedResources(confs, assembler);
@@ -139,8 +142,8 @@ public class SearchEngineConfigurationController implements IResourceController<
         final Resource<SearchEngineConfiguration> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "retrieveConf", LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, element.getId()));
-        if ((element.getDatasetUrn() != null)
-                || !element.getConfiguration().getPluginId().equals(LegacySearchEngine.PLUGIN_ID)) {
+        if ((element.getDatasetUrn() != null) || !element.getConfiguration().getPluginId()
+                .equals(LegacySearchEngine.PLUGIN_ID)) {
             resourceService.addLink(resource, this.getClass(), "deleteConf", LinkRels.DELETE,
                                     MethodParamFactory.build(Long.class, element.getId()));
         }

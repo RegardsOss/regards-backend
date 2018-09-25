@@ -43,21 +43,21 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 @RequestMapping(value = IAccessRights.TYPE_MAPPING, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IAccessRights {
 
-    static final String TYPE_MAPPING = "/entities";
+    String TYPE_MAPPING = "/entities";
 
     /**
      * To check access rights
      */
-    static final String ACCESS_RIGHTS_MAPPING = "/access";
+    String ACCESS_RIGHTS_MAPPING = "/access";
 
     /**
      * To retrieve a single entity
      */
-    static final String URN_MAPPING = "/{urn}";
+    String URN_MAPPING = "/{urn}";
 
-    static final String HAS_ACCESS_MAPPING = ACCESS_RIGHTS_MAPPING;
+    String HAS_ACCESS_MAPPING = ACCESS_RIGHTS_MAPPING;
 
-    static final String ENTITY_HAS_ACCESS_MAPPING = URN_MAPPING + ACCESS_RIGHTS_MAPPING;
+    String ENTITY_HAS_ACCESS_MAPPING = URN_MAPPING + ACCESS_RIGHTS_MAPPING;
 
     @RequestMapping(method = RequestMethod.GET, value = ENTITY_HAS_ACCESS_MAPPING)
     ResponseEntity<Boolean> hasAccess(@Valid @PathVariable("urn") UniformResourceName urn);

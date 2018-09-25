@@ -48,9 +48,9 @@ import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResource
         consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IComplexSearchClient {
 
-    static final String TYPE_MAPPING = "/complex/search";
+    String TYPE_MAPPING = "/complex/search";
 
-    static final String SUMMARY_MAPPING = "/summary";
+    String SUMMARY_MAPPING = "/summary";
 
     /**
      * Compute a DocFileSummary for current user, for specified request context, for asked file types (see
