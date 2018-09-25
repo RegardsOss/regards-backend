@@ -551,7 +551,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     }
 
     /**
-     * Caclulate the {@link StorageDataFile}s restorable to not over the max cache size limit {@link #maxCacheSizeKo}.
+     * Compute the {@link StorageDataFile}s restorable to not over the max cache size limit {@link #maxCacheSizeKo}.
      * @param dataFilesToRestore {@link StorageDataFile}s to restore
      * @param expirationDate {@link OffsetDateTime} Expiration date of the {@link CachedFile} to restore in cache.
      * @return the {@link StorageDataFile}s restorable
