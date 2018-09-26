@@ -73,7 +73,7 @@ public class ScheduledIngestTasks {
         }
     }
 
-    @Scheduled(fixedRateString = "${regards.ingest.process.new.aips.storage.delay:60000}")
+    @Scheduled(fixedRateString = "${regards.ingest.process.new.aips.storage.delay:30000}")
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void processNewAipsBulkRequest() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
