@@ -42,14 +42,11 @@ import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsService;
 
 /**
- *
  * Class AccountSettingsController
  *
  * REST Controller to manage access global settings. Accesses are the state of project users during the activation
  * process
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 @RestController
 @ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
@@ -76,43 +73,36 @@ public class AccessSettingsController implements IResourceController<AccessSetti
 
     /**
      * Retrieve the {@link AccessSettings}.
-     *
      * @return The {@link AccessSettings}
-     * @throws EntityNotFoundException
-     *             Thrown when an {@link AccessSettings} with passed id could not be found
+     * @throws EntityNotFoundException Thrown when an {@link AccessSettings} with passed id could not be found
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieves the settings managing the access requests",
             role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<AccessSettings>> retrieveAccessSettings() throws EntityNotFoundException {
-        final AccessSettings accessSettings = accessSettingsService.retrieve();
-        final Resource<AccessSettings> resource = new Resource<>(accessSettings);
-        return new ResponseEntity<>(resource, HttpStatus.OK);
+    public ResponseEntity<Resource<AccessSettings>> retrieveAccessSettings() {
+        AccessSettings accessSettings = accessSettingsService.retrieve();
+        return new ResponseEntity<>(toResource(accessSettings), HttpStatus.OK);
     }
 
     /**
      * Update the {@link AccessSettings}.
-     *
-     * @param pAccessSettings
-     *            The {@link AccessSettings}
+     * @param accessSettings The {@link AccessSettings}
      * @return The updated access settings
-     * @throws EntityNotFoundException
-     *             if no entity found!
+     * @throws EntityNotFoundException if no entity found!
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.PUT)
     @ResourceAccess(description = "Updates the setting managing the access requests", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<Resource<AccessSettings>> updateAccessSettings(
-            @Valid @RequestBody final AccessSettings pAccessSettings) throws EntityNotFoundException {
-        final AccessSettings accessSettings = accessSettingsService.update(pAccessSettings);
-        final Resource<AccessSettings> resource = new Resource<>(accessSettings);
-        return new ResponseEntity<>(resource, HttpStatus.OK);
+            @Valid @RequestBody AccessSettings accessSettings) throws EntityNotFoundException {
+        accessSettings = accessSettingsService.update(accessSettings);
+        return new ResponseEntity<>(toResource(accessSettings), HttpStatus.OK);
     }
 
     @Override
-    public Resource<AccessSettings> toResource(final AccessSettings pElement, final Object... pExtras) {
-        final Resource<AccessSettings> resource = resourceService.toResource(pElement);
+    public Resource<AccessSettings> toResource(final AccessSettings element, final Object... extras) {
+        Resource<AccessSettings> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "retrieveAccessSettings", LinkRels.SELF);
         resourceService.addLink(resource, this.getClass(), "updateAccessSettings", LinkRels.UPDATE,
                                 MethodParamFactory.build(AccessSettings.class));

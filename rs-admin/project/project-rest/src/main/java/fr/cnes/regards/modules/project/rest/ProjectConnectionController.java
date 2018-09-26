@@ -24,6 +24,8 @@ import javax.validation.Valid;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -46,14 +48,12 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
 import fr.cnes.regards.modules.project.service.IProjectConnectionService;
 
 /**
- *
  * Project connection API
- *
  * @author Marc Sordi
- *
  */
 @RestController
-@ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS", documentation = "http://test")
+@ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
+        documentation = "http://test")
 @RequestMapping(ProjectConnectionController.TYPE_MAPPING)
 public class ProjectConnectionController implements IResourceController<ProjectConnection> {
 
@@ -85,38 +85,33 @@ public class ProjectConnectionController implements IResourceController<ProjectC
 
     /**
      * Retrieve all project connections
-     *
-     * @param projectName
-     *            project name (i.e. tenant)
-     * @param pPageable
-     *            pageable
-     * @param pAssembler
-     *            assembler
+     * @param projectName project name (i.e. tenant)
+     * @param pageable pageable
+     * @param assembler assembler
      * @return all project connections
      */
     @RequestMapping(method = RequestMethod.GET)
-    @ResourceAccess(description = "Retrieve all projects connections for a given project/tenant", role = DefaultRole.INSTANCE_ADMIN)
+    @ResourceAccess(description = "Retrieve all projects connections for a given project/tenant",
+            role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<PagedResources<Resource<ProjectConnection>>> getAllProjectConnections(
-            @PathVariable String projectName, Pageable pPageable,
-            PagedResourcesAssembler<ProjectConnection> pAssembler) {
-        Page<ProjectConnection> connections = projectConnectionService.retrieveProjectsConnectionsByProject(projectName,
-                                                                                                            pPageable);
-        return ResponseEntity.ok(toPagedResources(connections, pAssembler));
+            @PathVariable String projectName,
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            PagedResourcesAssembler<ProjectConnection> assembler) {
+        Page<ProjectConnection> connections = projectConnectionService
+                .retrieveProjectsConnectionsByProject(projectName, pageable);
+        return ResponseEntity.ok(toPagedResources(connections, assembler));
     }
 
     /**
      * Retrieve a single project connection by identifier
-     *
-     * @param projectName
-     *            project name
-     * @param connectionId
-     *            connection identifier
+     * @param projectName project name
+     * @param connectionId connection identifier
      * @return a project connection
-     * @throws ModuleException
-     *             if error occurs
+     * @throws ModuleException if error occurs
      */
     @RequestMapping(method = RequestMethod.GET, value = ProjectConnectionController.RESOURCE_ID_MAPPING)
-    @ResourceAccess(description = "Retrieve a project connection of a given project/tenant", role = DefaultRole.INSTANCE_ADMIN)
+    @ResourceAccess(description = "Retrieve a project connection of a given project/tenant",
+            role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<ProjectConnection>> getProjectConnection(@PathVariable String projectName,
             @PathVariable Long connectionId) throws ModuleException {
         ProjectConnection pConn = projectConnectionService.retrieveProjectConnectionById(connectionId);
@@ -125,59 +120,44 @@ public class ProjectConnectionController implements IResourceController<ProjectC
 
     /**
      * Create a new project connection
-     *
-     * @param projectName
-     *            project name
-     * @param pProjectConnection
-     *            connection to create
+     * @param projectName project name
+     * @param projectConnection connection to create
      * @return the create project connection
-     * @throws ModuleException
-     *             if error occurs
+     * @throws ModuleException if error occurs
      */
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Create a new project connection", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<ProjectConnection>> createProjectConnection(@PathVariable String projectName,
-            @Valid @RequestBody final ProjectConnection pProjectConnection)
-            throws ModuleException, BadPaddingException, IllegalBlockSizeException {
-        ProjectConnection connection = projectConnectionService.createProjectConnection(pProjectConnection, false);
+            @Valid @RequestBody ProjectConnection projectConnection) throws ModuleException {
+        ProjectConnection connection = projectConnectionService.createProjectConnection(projectConnection, false);
         return ResponseEntity.ok(toResource(connection));
     }
 
     /**
      * Update an existing project connection
-     *
-     * @param projectName
-     *            project name
-     * @param connectionId
-     *            project connection identifier
-     * @param pProjectConnection
-     *            project connection
+     * @param projectName project name
+     * @param connectionId project connection identifier
+     * @param projectConnection project connection
      * @return updated connection
-     * @throws ModuleException
-     *             if error occurs
+     * @throws ModuleException if error occurs
      */
     @RequestMapping(method = RequestMethod.PUT, value = ProjectConnectionController.RESOURCE_ID_MAPPING)
     @ResourceAccess(description = "Update a project connection", role = DefaultRole.INSTANCE_ADMIN)
 
     public ResponseEntity<Resource<ProjectConnection>> updateProjectConnection(@PathVariable String projectName,
-            @PathVariable Long connectionId, @Valid @RequestBody final ProjectConnection pProjectConnection)
-            throws ModuleException, BadPaddingException, IllegalBlockSizeException {
-        ProjectConnection connection = projectConnectionService.updateProjectConnection(connectionId,
-                                                                                        pProjectConnection);
+            @PathVariable Long connectionId, @Valid @RequestBody ProjectConnection projectConnection)
+            throws ModuleException {
+        ProjectConnection connection = projectConnectionService
+                .updateProjectConnection(connectionId, projectConnection);
         return ResponseEntity.ok(toResource(connection));
     }
 
     /**
-     *
      * Delete an existing project connection
-     *
-     * @param projectName
-     *            project name
-     * @param connectionId
-     *            project connection identifier
+     * @param projectName project name
+     * @param connectionId project connection identifier
      * @return {@link Void}
-     * @throws ModuleException
-     *             if error occurs
+     * @throws ModuleException if error occurs
      */
     @RequestMapping(method = RequestMethod.DELETE, value = ProjectConnectionController.RESOURCE_ID_MAPPING)
     @ResourceAccess(description = "delete a project connection", role = DefaultRole.INSTANCE_ADMIN)
@@ -188,20 +168,20 @@ public class ProjectConnectionController implements IResourceController<ProjectC
     }
 
     @Override
-    public Resource<ProjectConnection> toResource(ProjectConnection pElement, Object... pExtras) {
-        final Resource<ProjectConnection> resource = resourceService.toResource(pElement);
+    public Resource<ProjectConnection> toResource(ProjectConnection element, Object... extras) {
+        final Resource<ProjectConnection> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "getProjectConnection", LinkRels.SELF,
-                                MethodParamFactory.build(String.class, pElement.getProject().getName()),
-                                MethodParamFactory.build(Long.class, pElement.getId()));
+                                MethodParamFactory.build(String.class, element.getProject().getName()),
+                                MethodParamFactory.build(Long.class, element.getId()));
         resourceService.addLink(resource, this.getClass(), "updateProjectConnection", LinkRels.UPDATE,
-                                MethodParamFactory.build(String.class, pElement.getProject().getName()),
-                                MethodParamFactory.build(Long.class, pElement.getId()),
+                                MethodParamFactory.build(String.class, element.getProject().getName()),
+                                MethodParamFactory.build(Long.class, element.getId()),
                                 MethodParamFactory.build(ProjectConnection.class));
         resourceService.addLink(resource, this.getClass(), "deleteProjectConnection", LinkRels.DELETE,
-                                MethodParamFactory.build(String.class, pElement.getProject().getName()),
-                                MethodParamFactory.build(Long.class, pElement.getId()));
+                                MethodParamFactory.build(String.class, element.getProject().getName()),
+                                MethodParamFactory.build(Long.class, element.getId()));
         resourceService.addLink(resource, this.getClass(), "getAllProjectConnections", LinkRels.LIST,
-                                MethodParamFactory.build(String.class, pElement.getProject().getName()),
+                                MethodParamFactory.build(String.class, element.getProject().getName()),
                                 MethodParamFactory.build(Pageable.class),
                                 MethodParamFactory.build(PagedResourcesAssembler.class));
         return resource;

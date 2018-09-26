@@ -22,6 +22,8 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -46,12 +48,10 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.service.resources.IResourcesService;
 
 /**
- *
  * Resource management API
  *
  * Rest controller to access ResourcesAccess entities. ResourceAccess are the security configuration to allow access for
  * given roles to microservices endpoints. This configuration is made for each project of the regards instance.
- *
  * @author Sébastien Binda
  * @since 1.0-SNASHOT
  */
@@ -85,80 +85,66 @@ public class ResourceController implements IResourceController<ResourcesAccess> 
 
     /**
      * Retrieve resource accesses available to the user
-     *
-     * @param pPageable
-     *            pagination information
-     * @param pPagedResourcesAssembler
-     *            page assembler
+     * @param pageable pagination information
+     * @param assembler page assembler
      * @return list of user resource accesses
-     * @throws ModuleException
-     *             if error occurs
+     * @throws ModuleException if error occurs
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve accessible resource accesses of the user among the system",
             role = DefaultRole.PUBLIC)
-    public ResponseEntity<PagedResources<Resource<ResourcesAccess>>> getAllResourceAccesses(final Pageable pPageable,
-            final PagedResourcesAssembler<ResourcesAccess> pPagedResourcesAssembler) throws ModuleException {
-        return new ResponseEntity<>(
-                toPagedResources(resourceService.retrieveRessources(null, pPageable), pPagedResourcesAssembler),
-                HttpStatus.OK);
+    public ResponseEntity<PagedResources<Resource<ResourcesAccess>>> getAllResourceAccesses(
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            PagedResourcesAssembler<ResourcesAccess> assembler) throws ModuleException {
+        return new ResponseEntity<>(toPagedResources(resourceService.retrieveRessources(null, pageable), assembler),
+                                    HttpStatus.OK);
     }
 
     /**
-     *
      * Retrieve the ResourceAccess with given id {@link Long} exists.
-     *
-     * @param pResourceId
-     *            resource id
+     * @param resourceId resource id
      * @return {@link ResourcesAccess}
-     * @throws ModuleException
-     *             Exception if resource with given id does not exists
+     * @throws ModuleException Exception if resource with given id does not exists
      * @since 1.0-SNAPSHOT
      */
     @RequestMapping(method = RequestMethod.GET, value = RESOURCE_MAPPING)
     @ResourceAccess(description = "Retrieve all resource accesses of the REGARDS system", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Resource<ResourcesAccess>> getResourceAccess(
-            @PathVariable("resource_id") final Long pResourceId) throws ModuleException {
-        return new ResponseEntity<>(toResource(resourceService.retrieveRessource(pResourceId)), HttpStatus.OK);
+    public ResponseEntity<Resource<ResourcesAccess>> getResourceAccess(@PathVariable("resource_id") Long resourceId)
+            throws ModuleException {
+        return new ResponseEntity<>(toResource(resourceService.retrieveRessource(resourceId)), HttpStatus.OK);
     }
 
     /**
-     *
      * Update given resource access informations
-     *
-     * @param pResourceId
-     *            Resource access identifier
-     * @param pResourceAccessToUpdate
-     *            Resource access to update
+     * @param resourceId Resource access identifier
+     * @param resourceAccessToUpdate Resource access to update
      * @return updated ResourcesAccess
-     * @throws ModuleException
-     *             Exception if resource with given id does not exists
+     * @throws ModuleException Exception if resource with given id does not exists
      * @since 1.0-SNAPSHOT
      */
     @RequestMapping(method = RequestMethod.PUT, value = RESOURCE_MAPPING)
     @ResourceAccess(description = "Update access to a given resource", role = DefaultRole.ADMIN)
-    public ResponseEntity<Resource<ResourcesAccess>> updateResourceAccess(
-            @PathVariable("resource_id") final Long pResourceId,
-            @Valid @RequestBody final ResourcesAccess pResourceAccessToUpdate) throws ModuleException {
-        if ((pResourceAccessToUpdate.getId() == null) || !pResourceAccessToUpdate.getId().equals(pResourceId)) {
+    public ResponseEntity<Resource<ResourcesAccess>> updateResourceAccess(@PathVariable("resource_id") Long resourceId,
+            @Valid @RequestBody ResourcesAccess resourceAccessToUpdate) throws ModuleException {
+        if ((resourceAccessToUpdate.getId() == null) || !resourceAccessToUpdate.getId().equals(resourceId)) {
             throw new EntityInvalidException(
                     String.format("Resource to update with id %d do not match the required resource id %d",
-                                  pResourceAccessToUpdate.getId(), pResourceId));
+                                  resourceAccessToUpdate.getId(), resourceId));
         }
-        return new ResponseEntity<>(toResource(resourceService.updateResource(pResourceAccessToUpdate)), HttpStatus.OK);
+        return new ResponseEntity<>(toResource(resourceService.updateResource(resourceAccessToUpdate)), HttpStatus.OK);
     }
 
     @Override
-    public Resource<ResourcesAccess> toResource(final ResourcesAccess pElement, final Object... pExtras) {
-        final Resource<ResourcesAccess> resource = hateoasService.toResource(pElement);
+    public Resource<ResourcesAccess> toResource(final ResourcesAccess element, final Object... extras) {
+        final Resource<ResourcesAccess> resource = hateoasService.toResource(element);
         hateoasService.addLink(resource, this.getClass(), "getAllResourceAccesses", LinkRels.LIST,
                                MethodParamFactory.build(Pageable.class),
                                MethodParamFactory.build(PagedResourcesAssembler.class));
         hateoasService.addLink(resource, this.getClass(), "getResourceAccess", LinkRels.SELF,
-                               MethodParamFactory.build(Long.class, pElement.getId()));
+                               MethodParamFactory.build(Long.class, element.getId()));
         hateoasService.addLink(resource, this.getClass(), "updateResourceAccess", LinkRels.UPDATE,
-                               MethodParamFactory.build(Long.class, pElement.getId()),
-                               MethodParamFactory.build(pElement.getClass()));
+                               MethodParamFactory.build(Long.class, element.getId()),
+                               MethodParamFactory.build(element.getClass()));
         return resource;
     }
 }

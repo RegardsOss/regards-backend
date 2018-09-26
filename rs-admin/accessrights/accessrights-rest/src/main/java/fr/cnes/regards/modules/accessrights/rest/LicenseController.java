@@ -109,15 +109,15 @@ public class LicenseController implements IResourceController<LicenseDTO> {
 
     /**
      *
-     * @param pElement
+     * @param element
      *            element to convert
-     * @param pExtras
+     * @param extras
      *            Extra URL path parameters for links extra[0] has to be given and should be the projectName
      * @return
      */
     @Override
-    public Resource<LicenseDTO> toResource(LicenseDTO pElement, Object... pExtras) {
-        Resource<LicenseDTO> resource = resourceService.toResource(pElement);
+    public Resource<LicenseDTO> toResource(LicenseDTO element, Object... extras) {
+        Resource<LicenseDTO> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "retrieveLicense", LinkRels.SELF);
         resourceService.addLink(resource, this.getClass(), "acceptLicense", LinkRels.UPDATE);
         resourceService.addLink(resource, this.getClass(), "resetLicense", LinkRels.DELETE);

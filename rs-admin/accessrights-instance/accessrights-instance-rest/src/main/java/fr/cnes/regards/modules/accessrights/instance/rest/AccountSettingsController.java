@@ -42,11 +42,9 @@ import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
 import fr.cnes.regards.modules.accessrights.instance.service.IAccountSettingsService;
 
 /**
- *
  * Class AccountSettingsController
  *
  * REST Controller to manage accounts global settings
- *
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
@@ -75,7 +73,6 @@ public class AccountSettingsController implements IResourceController<AccountSet
 
     /**
      * Retrieve the {@link AccountSettings} for the instance.
-     *
      * @return The {@link AccountSettings} wrapped in a {@link Resource} and a {@link ResponseEntity}
      */
     @ResponseBody
@@ -83,30 +80,27 @@ public class AccountSettingsController implements IResourceController<AccountSet
     @ResourceAccess(description = "retrieve the list of setting managing the accounts",
             role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<AccountSettings>> retrieveAccountSettings() {
-        final AccountSettings settings = accountSettingsService.retrieve();
+        AccountSettings settings = accountSettingsService.retrieve();
         return new ResponseEntity<>(toResource(settings), HttpStatus.OK);
     }
 
     /**
      * Update the {@link AccountSettings} for the instance.
-     *
-     * @param pUpdatedAccountSetting
-     *            The {@link AccountSettings}
+     * @param updatedAccountSetting The {@link AccountSettings}
      * @return The updated {@link AccountSettings}
-     * @throws EntityNotFoundException
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.PUT)
     @ResourceAccess(description = "update the setting managing the account", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<AccountSettings>> updateAccountSetting(
-            @Valid @RequestBody final AccountSettings pUpdatedAccountSetting) throws EntityNotFoundException {
-        final AccountSettings updated = accountSettingsService.update(pUpdatedAccountSetting);
+            @Valid @RequestBody AccountSettings updatedAccountSetting) throws EntityNotFoundException {
+        AccountSettings updated = accountSettingsService.update(updatedAccountSetting);
         return new ResponseEntity<>(toResource(updated), HttpStatus.OK);
     }
 
     @Override
-    public Resource<AccountSettings> toResource(final AccountSettings pElement, final Object... pExtras) {
-        final Resource<AccountSettings> resource = resourceService.toResource(pElement);
+    public Resource<AccountSettings> toResource(AccountSettings element, final Object... extras) {
+        Resource<AccountSettings> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "retrieveAccountSettings", LinkRels.SELF);
         resourceService.addLink(resource, this.getClass(), "updateAccountSetting", LinkRels.UPDATE,
                                 MethodParamFactory.build(AccountSettings.class));

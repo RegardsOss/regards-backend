@@ -32,11 +32,8 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.project.service.ITenantService;
 
 /**
- *
  * Specific controller to retrieve tenants from other microservices
- *
  * @author Marc Sordi
- *
  */
 @RestController
 @RequestMapping(TenantController.BASE_PATH)
@@ -50,7 +47,7 @@ public class TenantController {
     /**
      * Additional path for microservice
      */
-    public static final String MICROSERVICE_PATH = "/{pMicroserviceName}";
+    public static final String MICROSERVICE_PATH = "/{microserviceName}";
 
     /**
      * Administration project service
@@ -66,8 +63,7 @@ public class TenantController {
 
     @ResourceAccess(description = "List all fully configured tenants", role = DefaultRole.INSTANCE_ADMIN)
     @RequestMapping(method = RequestMethod.GET, value = MICROSERVICE_PATH)
-    public ResponseEntity<Set<String>> getAllActiveTenants(
-            @PathVariable("pMicroserviceName") String pMicroserviceName) {
-        return ResponseEntity.ok(tenantService.getAllActiveTenants(pMicroserviceName));
+    public ResponseEntity<Set<String>> getAllActiveTenants(@PathVariable("microserviceName") String microserviceName) {
+        return ResponseEntity.ok(tenantService.getAllActiveTenants(microserviceName));
     }
 }

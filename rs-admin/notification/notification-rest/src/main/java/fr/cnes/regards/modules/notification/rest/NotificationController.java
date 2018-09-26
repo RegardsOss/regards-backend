@@ -18,13 +18,14 @@
  */
 package fr.cnes.regards.modules.notification.rest;
 
-import java.util.List;
-
 import javax.validation.Valid;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -54,10 +55,8 @@ import fr.cnes.regards.modules.notification.service.INotificationSettingsService
 
 /**
  * Controller defining the REST entry points of the module
- *
  * @author Xavier-Alexandre Brochard
  * @author Marc SORDI
- *
  */
 @RestController
 @RequestMapping(NotificationController.NOTIFICATION_PATH)
@@ -118,69 +117,59 @@ public class NotificationController implements IResourceController<Notification>
 
     /**
      * Define the endpoint for retrieving the list of notifications for the logged user
-     *
      * @return A {@link List} of {@link Notification} wrapped in a {@link ResponseEntity}
-     * @throws EntityNotFoundException
-     *             thrown when no current user could be found
+     * @throws EntityNotFoundException thrown when no current user could be found
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve the list of notifications for the logged user",
             role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<PagedResources<Resource<Notification>>> retrieveNotifications(
-            @RequestParam(name = "state", required = false) NotificationStatus state, Pageable page,
-            final PagedResourcesAssembler<Notification> pAssembler) throws EntityNotFoundException {
-        final Page<Notification> notifications = notificationService.retrieveNotifications(page, state);
-        return new ResponseEntity<>(toPagedResources(notifications, pAssembler), HttpStatus.OK);
+            @RequestParam(name = "state", required = false) NotificationStatus state,
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable page,
+            PagedResourcesAssembler<Notification> assembler) throws EntityNotFoundException {
+        Page<Notification> notifications = notificationService.retrieveNotifications(page, state);
+        return new ResponseEntity<>(toPagedResources(notifications, assembler), HttpStatus.OK);
     }
 
     /**
      * Define the endpoint for creating a new notification in db for later sending by a scheluder.
-     *
-     * @param pDto
-     *            A DTO for easy parsing of the response body. Mapping to true {@link Notification} is done in service.
+     * @param dto A DTO for easy parsing of the response body. Mapping to true {@link Notification} is done in service.
      * @return The sent notification as {@link Notification} wrapped in a {@link ResponseEntity}
      */
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Define the endpoint for sending an notification to recipients")
-    public ResponseEntity<Notification> createNotification(@Valid @RequestBody final NotificationDTO pDto) {
-        final Notification notification = notificationService.createNotification(pDto);
+    public ResponseEntity<Notification> createNotification(@Valid @RequestBody NotificationDTO dto) {
+        Notification notification = notificationService.createNotification(dto);
         return new ResponseEntity<>(notification, HttpStatus.CREATED);
     }
 
     /**
      * Define the endpoint for retrieving a notification
-     *
-     * @param pId
-     *            The notification <code>id</code>
-     * @throws EntityNotFoundException
-     *             Thrown when no notification with passed <code>id</code> could be found
+     * @param id The notification <code>id</code>
      * @return The {@link Notification} wrapped in a {@link ResponseEntity}
+     * @throws EntityNotFoundException Thrown when no notification with passed <code>id</code> could be found
      */
     @RequestMapping(value = NOTIFICATION_ID_PATH, method = RequestMethod.GET)
     @ResourceAccess(description = "Define the endpoint for retrieving a notification",
             role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<Notification> retrieveNotification(@PathVariable("notification_id") final Long pId)
+    public ResponseEntity<Notification> retrieveNotification(@PathVariable("notification_id") Long id)
             throws EntityNotFoundException {
-        final Notification notification = notificationService.retrieveNotification(pId);
+        Notification notification = notificationService.retrieveNotification(id);
         return new ResponseEntity<>(notification, HttpStatus.OK);
     }
 
     /**
      * Allows to set a notification to status read
-     *
-     * @param id
-     *            The notification <code>id</code>
+     * @param id The notification <code>id</code>
      * @return The updated {@link Notification} wrapped in a {@link ResponseEntity}
-     * @throws EntityNotFoundException
-     *             Thrown when no notification with passed <code>id</code> could be found
-     *
+     * @throws EntityNotFoundException Thrown when no notification with passed <code>id</code> could be found
      */
     @RequestMapping(value = NOTIFICATION_READ_PATH, method = RequestMethod.PUT)
     @ResourceAccess(description = "Define the endpoint for updating the notification status",
             role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<Notification> setNotificationRead(@PathVariable("notification_id") final Long id)
+    public ResponseEntity<Notification> setNotificationRead(@PathVariable("notification_id") Long id)
             throws EntityNotFoundException {
-        final Notification notification = notificationService.updateNotificationStatus(id, NotificationStatus.READ);
+        Notification notification = notificationService.updateNotificationStatus(id, NotificationStatus.READ);
         return new ResponseEntity<>(notification, HttpStatus.OK);
     }
 
@@ -196,19 +185,16 @@ public class NotificationController implements IResourceController<Notification>
 
     /**
      * Allows to set a notification to status unread
-     *
-     * @param id
-     *            The notification <code>id</code>
+     * @param id The notification <code>id</code>
      * @return The updated {@link Notification} wrapped in a {@link ResponseEntity}
-     * @throws EntityNotFoundException
-     *             Thrown when no notification with passed <code>id</code> could be found
+     * @throws EntityNotFoundException Thrown when no notification with passed <code>id</code> could be found
      */
     @RequestMapping(value = NOTIFICATION_UNREAD_PATH, method = RequestMethod.PUT)
     @ResourceAccess(description = "Define the endpoint for updating the notification status",
             role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<Notification> setNotificationUnRead(@PathVariable("notification_id") final Long id)
+    public ResponseEntity<Notification> setNotificationUnRead(@PathVariable("notification_id") Long id)
             throws EntityNotFoundException {
-        final Notification notification = notificationService.updateNotificationStatus(id, NotificationStatus.UNREAD);
+        Notification notification = notificationService.updateNotificationStatus(id, NotificationStatus.UNREAD);
         return new ResponseEntity<>(notification, HttpStatus.OK);
     }
 
@@ -224,52 +210,43 @@ public class NotificationController implements IResourceController<Notification>
 
     /**
      * Define the endpoint for deleting a notification
-     *
-     * @param pId
-     *            The notification <code>id</code>
-     * @throws EntityNotFoundException
-     *             Thrown when no notification with passed <code>id</code> could be found
+     * @param id The notification <code>id</code>
      * @return void
+     * @throws EntityNotFoundException Thrown when no notification with passed <code>id</code> could be found
      */
     @RequestMapping(value = NOTIFICATION_ID_PATH, method = RequestMethod.DELETE)
     @ResourceAccess(description = "Define the endpoint for deleting a notification")
-    public ResponseEntity<Void> deleteNotification(@PathVariable("notification_id") final Long pId)
+    public ResponseEntity<Void> deleteNotification(@PathVariable("notification_id") Long id)
             throws EntityNotFoundException {
-        notificationService.deleteNotification(pId);
+        notificationService.deleteNotification(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /**
      * Define the endpoint for retrieving the notification configuration parameters for the logged user
-     *
      * @return The {@link NotificationSettings} wrapped in a {@link ResponseEntity}
-     * @throws EntityNotFoundException
-     *             thrown when no current user could be found
+     * @throws EntityNotFoundException thrown when no current user could be found
      */
     @RequestMapping(value = NOTIFICATION_SETTINGS, method = RequestMethod.GET)
     @ResourceAccess(description = "Define the endpoint for retrieving the notification settings for the logged user",
             role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<NotificationSettings> retrieveNotificationSettings() throws EntityNotFoundException {
-        final NotificationSettings settings = notificationSettingsService.retrieveNotificationSettings();
+        NotificationSettings settings = notificationSettingsService.retrieveNotificationSettings();
         return new ResponseEntity<>(settings, HttpStatus.OK);
     }
 
     /**
      * Define the endpoint for updating the {@link Notification#status}
-     *
-     * @param pNotificationSettings
-     *            The facade exposing user updatable fields of notification settings
+     * @param notificationSettings The facade exposing user updatable fields of notification settings
      * @return The updated {@link NotificationSettings} wrapped in a {@link ResponseEntity}
-     * @throws EntityNotFoundException
-     *             Thrown when no notification settings with passed <code>id</code> could be found
+     * @throws EntityNotFoundException Thrown when no notification settings with passed <code>id</code> could be found
      */
     @RequestMapping(value = NOTIFICATION_SETTINGS, method = RequestMethod.PUT)
     @ResourceAccess(description = "Define the endpoint for updating the notification settings",
             role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<NotificationSettings> updateNotificationSettings(
-            @RequestBody NotificationSettingsDTO pNotificationSettings) throws EntityNotFoundException {
-        final NotificationSettings settings = notificationSettingsService
-                .updateNotificationSettings(pNotificationSettings);
+            @RequestBody NotificationSettingsDTO notificationSettings) throws EntityNotFoundException {
+        NotificationSettings settings = notificationSettingsService.updateNotificationSettings(notificationSettings);
         return new ResponseEntity<>(settings, HttpStatus.OK);
     }
 

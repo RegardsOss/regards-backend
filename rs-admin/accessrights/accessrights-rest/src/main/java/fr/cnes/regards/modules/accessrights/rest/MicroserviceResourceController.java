@@ -23,6 +23,8 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -45,11 +47,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.service.resources.IResourcesService;
 
 /**
- *
  * Microservice resource management API
- *
  * @author Marc Sordi
- *
  */
 @RestController
 @RequestMapping(MicroserviceResourceController.TYPE_MAPPING)
@@ -90,87 +89,73 @@ public class MicroserviceResourceController implements IResourceController<Resou
 
     /**
      * Retrieve the resource accesses available to the user of the given microservice
-     *
-     * @param pMicroserviceName
-     *            microservice
-     * @param pPageable
-     *            pagination information
-     * @param pPagedResourcesAssembler
-     *            page assembler
+     * @param microserviceName microservice
+     * @param pageable pagination information
+     * @param assembler page assembler
      * @return list of user resource accesses for given microservice
-     * @throws ModuleException
-     *             if error occurs
+     * @throws ModuleException if error occurs
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve accessible resource accesses of the user among the given microservice",
             role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedResources<Resource<ResourcesAccess>>> getAllResourceAccessesByMicroservice(
-            @PathVariable("microservicename") final String pMicroserviceName, final Pageable pPageable,
-            final PagedResourcesAssembler<ResourcesAccess> pPagedResourcesAssembler) throws ModuleException {
-        return new ResponseEntity<>(toPagedResources(resourceService.retrieveRessources(pMicroserviceName, pPageable),
-                                                     pPagedResourcesAssembler),
+            @PathVariable("microservicename") String microserviceName,
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            PagedResourcesAssembler<ResourcesAccess> assembler) throws ModuleException {
+        return new ResponseEntity<>(
+                toPagedResources(resourceService.retrieveRessources(microserviceName, pageable), assembler),
                 HttpStatus.OK);
     }
 
     /**
-     *
-     * @param pMicroserviceName
-     *            microservice name
-     * @param pResourcesToRegister
-     *            resource to register for the specified microservice
+     * @param microserviceName microservice name
+     * @param toRegisterResources resource to register for the specified microservice
      * @return {@link Void}
-     * @throws ModuleException
-     *             if error occurs
+     * @throws ModuleException if error occurs
      */
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Register all endpoints of a microservice", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> registerMicroserviceEndpoints(
-            @PathVariable("microservicename") final String pMicroserviceName,
-            @RequestBody @Valid final List<ResourceMapping> pResourcesToRegister) throws ModuleException {
-        resourceService.registerResources(pResourcesToRegister, pMicroserviceName);
+    public ResponseEntity<Void> registerMicroserviceEndpoints(@PathVariable("microservicename") String microserviceName,
+            @RequestBody @Valid List<ResourceMapping> toRegisterResources) throws ModuleException {
+        resourceService.registerResources(toRegisterResources, microserviceName);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
      * Retrieve all resource controller names for the given microservice.
-     *
-     * @param pMicroserviceName
-     *            microservice
+     * @param microserviceName microservice
      * @return list of all controllers associated to the specified microservice
      */
     @RequestMapping(method = RequestMethod.GET, value = CONTROLLERS_MAPPING)
     @ResourceAccess(description = "Retrieve all resources for the given microservice and the given controller",
             role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<List<String>> retrieveMicroserviceControllers(
-            @PathVariable("microservicename") final String pMicroserviceName) {
-        final List<String> controllers = resourceService.retrieveMicroserviceControllers(pMicroserviceName,
-                                                                                         authResolver.getRole());
+            @PathVariable("microservicename") String microserviceName) {
+        final List<String> controllers = resourceService
+                .retrieveMicroserviceControllers(microserviceName, authResolver.getRole());
         controllers.sort(null);
         return new ResponseEntity<>(controllers, HttpStatus.OK);
     }
 
     /**
      * Retrieve all resources for the given microservice and the given controller name
-     *
-     * @param pMicroserviceName
-     *            microservice
-     * @param pControllerName
-     *            controller
+     * @param microserviceName microservice
+     * @param controllerName controller
      * @return List of accessible resources for the specified microservice and controller
      */
     @RequestMapping(method = RequestMethod.GET, value = CONTROLLER_MAPPING)
     @ResourceAccess(description = "Retrieve all resources for the given microservice and the given controller",
             role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveMicroserviceControllerEndpoints(
-            @PathVariable("microservicename") final String pMicroserviceName,
-            @PathVariable("controllername") final String pControllerName) {
+            @PathVariable("microservicename") String microserviceName,
+            @PathVariable("controllername") String controllerName) {
         final List<ResourcesAccess> resources = resourceService
-                .retrieveMicroserviceControllerEndpoints(pMicroserviceName, pControllerName, authResolver.getRole());
+                .retrieveMicroserviceControllerEndpoints(microserviceName, controllerName, authResolver.getRole());
         return new ResponseEntity<>(toResources(resources), HttpStatus.OK);
     }
 
     @Override
-    public Resource<ResourcesAccess> toResource(ResourcesAccess pElement, Object... pExtras) {
-        return hateoasService.toResource(pElement);
+    public Resource<ResourcesAccess> toResource(ResourcesAccess element, Object... extras) {
+        return hateoasService.toResource(element);
     }
 }

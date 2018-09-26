@@ -44,14 +44,10 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 
 /**
- *
  * Controller responsible for the /users(/*)? endpoints
- *
  * @author svissier
  * @author Sébastien Binda
- *
  * @since 1.0-SNAPSHOT
- *
  */
 @RestController
 @ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
@@ -78,64 +74,53 @@ public class ProjectUserMetadataController implements IResourceController<MetaDa
 
     /**
      * Return the {@link List} of {@link MetaData} on the {@link ProjectUser} of passed <code>id</code>.
-     *
-     * @param pUserId
-     *            The {@link ProjectUser}'s <code>id</code>
+     * @param userId The {@link ProjectUser}'s <code>id</code>
      * @return a{@link List} of {@link MetaData}
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
+     * @throws EntityNotFoundException Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "retrieve the list of all metadata of the user", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<List<Resource<MetaData>>> retrieveProjectUserMetaData(
-            @PathVariable("user_id") final Long pUserId) throws EntityNotFoundException {
-        final List<MetaData> metaDatas = projectUserService.retrieveUserMetaData(pUserId);
+    public ResponseEntity<List<Resource<MetaData>>> retrieveProjectUserMetaData(@PathVariable("user_id") Long userId)
+            throws EntityNotFoundException {
+        final List<MetaData> metaDatas = projectUserService.retrieveUserMetaData(userId);
         return new ResponseEntity<>(toResources(metaDatas), HttpStatus.OK);
     }
 
     /**
      * Set the passed {@link MetaData} onto the {@link ProjectUser} of passed <code>id</code>.
-     *
-     * @param pUserId
-     *            The {@link ProjectUser}'s <code>id</code>
-     * @param pUpdatedUserMetaData
-     *            The {@link List} of {@link MetaData} to set
+     * @param userId The {@link ProjectUser}'s <code>id</code>
+     * @param updatedUserMetaData The {@link List} of {@link MetaData} to set
      * @return void
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
+     * @throws EntityNotFoundException Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.PUT)
     @ResourceAccess(description = "update the list of all metadata of the user", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<List<Resource<MetaData>>> updateProjectUserMetaData(
-            @PathVariable("user_id") final Long pUserId, @Valid @RequestBody final List<MetaData> pUpdatedUserMetaData)
-            throws EntityNotFoundException {
-        final List<MetaData> updated = projectUserService.updateUserMetaData(pUserId, pUpdatedUserMetaData);
+    public ResponseEntity<List<Resource<MetaData>>> updateProjectUserMetaData(@PathVariable("user_id") Long userId,
+            @Valid @RequestBody List<MetaData> updatedUserMetaData) throws EntityNotFoundException {
+        List<MetaData> updated = projectUserService.updateUserMetaData(userId, updatedUserMetaData);
         return new ResponseEntity<>(toResources(updated), HttpStatus.OK);
     }
 
     /**
      * Clear the {@link List} of {@link MetaData} of the {@link ProjectUser} with passed <code>id</code>.
-     *
-     * @param pUserId
-     *            The {@link ProjectUser} <code>id</code>
+     * @param userId The {@link ProjectUser} <code>id</code>
      * @return void
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
+     * @throws EntityNotFoundException Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.DELETE)
     @ResourceAccess(description = "remove all the metadata of the user", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> removeProjectUserMetaData(@PathVariable("user_id") final Long pUserId)
+    public ResponseEntity<Void> removeProjectUserMetaData(@PathVariable("user_id") Long userId)
             throws EntityNotFoundException {
-        projectUserService.removeUserMetaData(pUserId);
+        projectUserService.removeUserMetaData(userId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @Override
-    public Resource<MetaData> toResource(final MetaData pElement, final Object... pExtras) {
-        return resourceService.toResource(pElement);
+    public Resource<MetaData> toResource(final MetaData element, final Object... extras) {
+        return resourceService.toResource(element);
     }
 
 }

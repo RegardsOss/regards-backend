@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -52,13 +54,10 @@ import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.service.IProjectService;
 
 /**
- *
  * Class ProjectsController
  *
  * Controller for REST Access to Project entities
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 @RestController
 @RequestMapping("/projects")
@@ -88,76 +87,60 @@ public class ProjectController implements IResourceController<Project> {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
-     *
      * Retrieve projects list
-     *
      * @return List of projects
-     * @since 1.0-SNAPSHOT
      */
     @RequestMapping(method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     @ResourceAccess(description = "retrieve the list of project of instance", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<PagedResources<Resource<Project>>> retrieveProjectList(final Pageable pPageable,
-            final PagedResourcesAssembler<Project> pAssembler) {
-        final Page<Project> projects = projectService.retrieveProjectList(pPageable);
-        return ResponseEntity.ok(toPagedResources(projects, pAssembler));
+    public ResponseEntity<PagedResources<Resource<Project>>> retrieveProjectList(
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            PagedResourcesAssembler<Project> assembler) {
+        Page<Project> projects = projectService.retrieveProjectList(pageable);
+        return ResponseEntity.ok(toPagedResources(projects, assembler));
     }
 
     /**
-     *
      * Retrieve projects list
-     *
      * @return List of projects
-     * @since 1.0-SNAPSHOT
      */
     @RequestMapping(value = "/public", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     @ResourceAccess(description = "retrieve the list of project of instance", role = DefaultRole.PUBLIC)
-    public ResponseEntity<PagedResources<Resource<Project>>> retrievePublicProjectList(final Pageable pPageable,
-            final PagedResourcesAssembler<Project> pAssembler) {
-        final Page<Project> projects = projectService.retrievePublicProjectList(pPageable);
-        return ResponseEntity.ok(toPagedResources(projects, pAssembler));
+    public ResponseEntity<PagedResources<Resource<Project>>> retrievePublicProjectList(
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            PagedResourcesAssembler<Project> assembler) {
+        Page<Project> projects = projectService.retrievePublicProjectList(pageable);
+        return ResponseEntity.ok(toPagedResources(projects, assembler));
     }
 
     /**
-     *
      * Create a new project
-     *
-     * @param pNewProject
-     *            new Project to create
+     * @param newProject new Project to create
      * @return Created project
-     * @throws ModuleException
-     *             If Project already exists for the given name
-     * @since 1.0-SNAPSHOT
+     * @throws ModuleException If Project already exists for the given name
      */
     @RequestMapping(method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     @ResponseBody
     @ResourceAccess(description = "create a new project", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Resource<Project>> createProject(@Valid @RequestBody final Project pNewProject)
+    public ResponseEntity<Resource<Project>> createProject(@Valid @RequestBody Project newProject)
             throws ModuleException {
-        final Project project = projectService.createProject(pNewProject);
+        Project project = projectService.createProject(newProject);
         return new ResponseEntity<>(toResource(project), HttpStatus.CREATED);
     }
 
     /**
-     *
      * Retrieve a project by name
-     *
-     * @param pProjectName
-     *            Project name
+     * @param projectName Project name
      * @return Project
-     * @throws ModuleException
-     *             {@link EntityNotFoundException} project does not exists
-     * @since 1.0-SNAPSHOT
+     * @throws ModuleException {@link EntityNotFoundException} project does not exists
      */
     @RequestMapping(method = RequestMethod.GET, value = "/{project_name}", produces = "application/json")
     @ResponseBody
     @ResourceAccess(description = "retrieve the project project_name", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Resource<Project>> retrieveProject(@PathVariable("project_name") final String pProjectName)
+    public ResponseEntity<Resource<Project>> retrieveProject(@PathVariable("project_name") String projectName)
             throws ModuleException {
-
-        final Project project = projectService.retrieveProject(pProjectName);
-        return ResponseEntity.ok(toResource(project));
+        return ResponseEntity.ok(toResource(projectService.retrieveProject(projectName)));
     }
 
     @RequestMapping(method = RequestMethod.PUT, value = "/{project_name}/license/reset")
@@ -177,50 +160,37 @@ public class ProjectController implements IResourceController<Project> {
     }
 
     /**
-     *
      * Update given project.
-     *
-     * @param pProjectName
-     *            project name
-     * @param pProjectToUpdate
-     *            project to update
-     * @throws ModuleException
-     *             {@link EntityNotFoundException} project does not exists
+     * @param projectName project name
+     * @param projectToUpdate project to update
      * @return Updated Project
-     * @since 1.0-SNAPSHOT
+     * @throws ModuleException {@link EntityNotFoundException} project does not exists
      */
     @RequestMapping(method = RequestMethod.PUT, value = "/{project_name}")
     @ResponseBody
     @ResourceAccess(description = "update the project project_name", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Resource<Project>> updateProject(@PathVariable("project_name") final String pProjectName,
-            @Valid @RequestBody final Project pProjectToUpdate) throws ModuleException {
-        final Project project = projectService.updateProject(pProjectName, pProjectToUpdate);
+    public ResponseEntity<Resource<Project>> updateProject(@PathVariable("project_name") String projectName,
+            @Valid @RequestBody Project projectToUpdate) throws ModuleException {
+        Project project = projectService.updateProject(projectName, projectToUpdate);
         return ResponseEntity.ok(toResource(project));
     }
 
     /**
-     *
      * Delete given project
-     *
-     * @param pProjectName
-     *            Project name to delete
-     * @throws ModuleException
-     *             {@link EntityNotFoundException} project does not exists
+     * @param projectName Project name to delete
      * @return Void
-     * @since 1.0-SNAPSHOT
+     * @throws ModuleException {@link EntityNotFoundException} project does not exists
      */
     @RequestMapping(method = RequestMethod.DELETE, value = "/{project_name}")
     @ResponseBody
     @ResourceAccess(description = "remove the project project_name", role = DefaultRole.INSTANCE_ADMIN)
-    public ResponseEntity<Void> deleteProject(@PathVariable("project_name") final String pProjectName)
-            throws ModuleException {
-        projectService.deleteProject(pProjectName);
+    public ResponseEntity<Void> deleteProject(@PathVariable("project_name") String projectName) throws ModuleException {
+        projectService.deleteProject(projectName);
         return ResponseEntity.noContent().build();
     }
 
     @Override
     public Resource<Project> toResource(Project project, Object... extras) {
-
         Resource<Project> resource = null;
         if ((project != null) && (project.getName() != null)) {
             resource = resourceService.toResource(project);

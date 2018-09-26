@@ -46,7 +46,6 @@ import fr.cnes.regards.modules.accessrights.service.registration.IRegistrationSe
 
 /**
  * Endpoints to handle Users registration for a project.
- *
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
  * @since 1.0-SNAPSHOT
@@ -113,136 +112,113 @@ public class RegistrationController {
 
     /**
      * Request a new access, i.e. a new project user
-     *
-     * @param pDto
-     *            A Dto containing all information for creating the account/project user and sending the activation link
+     * @param accessRequestDto A Dto containing all information for creating the account/project user and sending the activation link
      * @return the passed Dto
-     * @throws EntityException
-     *             if error occurs.
+     * @throws EntityException if error occurs.
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Request for a new projectUser (Public feature).", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Void> requestAccess(@Valid @RequestBody final AccessRequestDto pDto) throws EntityException {
-        registrationService.requestAccess(pDto);
+    public ResponseEntity<Void> requestAccess(@Valid @RequestBody final AccessRequestDto accessRequestDto) throws EntityException {
+        registrationService.requestAccess(accessRequestDto);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-
-
     /**
      * Confirm the registration by email.
-     *
-     * @param pToken
-     *            the token
+     * @param token the token
      * @return void
-     * @throws EntityException
-     *             when no verification token associated to this account could be found
+     * @throws EntityException when no verification token associated to this account could be found
      */
     @RequestMapping(value = VERIFY_EMAIL_RELATIVE_PATH, method = RequestMethod.GET)
     @ResourceAccess(description = "Confirm the registration by email", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Void> verifyEmail(@PathVariable("token") final String pToken) throws EntityException {
-        final EmailVerificationToken emailVerificationToken = emailVerificationTokenService.findByToken(pToken);
+    public ResponseEntity<Void> verifyEmail(@PathVariable("token") final String token) throws EntityException {
+        final EmailVerificationToken emailVerificationToken = emailVerificationTokenService.findByToken(token);
         projectUserWorkflowManager.verifyEmail(emailVerificationToken);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
      * Grants access to the project user
-     *
-     * @param pAccessId
-     *            the project user id
+     * @param accessId the project user id
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityTransitionForbiddenException} if no project user could be found<br>
-     *             {@link EntityNotFoundException} if project user is in illegal status for denial<br>
+     * @throws EntityException <br>
+     *                         {@link EntityTransitionForbiddenException} if no project user could be found<br>
+     *                         {@link EntityNotFoundException} if project user is in illegal status for denial<br>
      */
     @RequestMapping(value = ACCEPT_ACCESS_RELATIVE_PATH, method = RequestMethod.PUT)
     @ResourceAccess(description = "Accepts the access request", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> acceptAccessRequest(@PathVariable("access_id") final Long pAccessId)
+    public ResponseEntity<Void> acceptAccessRequest(@PathVariable("access_id") final Long accessId)
             throws EntityException {
-        final ProjectUser projectUser = projectUserService.retrieveUser(pAccessId);
+        final ProjectUser projectUser = projectUserService.retrieveUser(accessId);
         projectUserWorkflowManager.grantAccess(projectUser);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
      * Denies access to the project user
-     *
-     * @param pAccessId
-     *            the project user id
+     * @param accessId the project user id
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityTransitionForbiddenException} if no project user could be found<br>
-     *             {@link EntityNotFoundException} if project user is in illegal status for denial<br>
+     * @throws EntityException <br>
+     *                         {@link EntityTransitionForbiddenException} if no project user could be found<br>
+     *                         {@link EntityNotFoundException} if project user is in illegal status for denial<br>
      */
     @ResponseBody
     @RequestMapping(value = DENY_ACCESS_RELATIVE_PATH, method = RequestMethod.PUT)
     @ResourceAccess(description = "Denies the access request", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> denyAccessRequest(@PathVariable("access_id") final Long pAccessId)
+    public ResponseEntity<Void> denyAccessRequest(@PathVariable("access_id") final Long accessId)
             throws EntityException {
-        final ProjectUser projectUser = projectUserService.retrieveUser(pAccessId);
+        final ProjectUser projectUser = projectUserService.retrieveUser(accessId);
         projectUserWorkflowManager.denyAccess(projectUser);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
      * Activates an inactive user
-     *
-     * @param pAccessId
-     *            the project user id
+     * @param accessId the project user id
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityTransitionForbiddenException} if no project user could be found<br>
-     *             {@link EntityNotFoundException} if project user is in illegal status for activation<br>
+     * @throws EntityException <br>
+     *                         {@link EntityTransitionForbiddenException} if no project user could be found<br>
+     *                         {@link EntityNotFoundException} if project user is in illegal status for activation<br>
      */
     @ResponseBody
     @RequestMapping(value = ACTIVE_ACCESS_RELATIVE_PATH, method = RequestMethod.PUT)
     @ResourceAccess(description = "Activates an inactive user", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> activeAccess(@PathVariable("access_id") final Long pAccessId) throws EntityException {
-        final ProjectUser projectUser = projectUserService.retrieveUser(pAccessId);
+    public ResponseEntity<Void> activeAccess(@PathVariable("access_id") final Long accessId) throws EntityException {
+        final ProjectUser projectUser = projectUserService.retrieveUser(accessId);
         projectUserWorkflowManager.activeAccess(projectUser);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
      * Deactivates an active user
-     *
-     * @param pAccessId
-     *            the project user id
+     * @param accessId the project user id
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityTransitionForbiddenException} if no project user could be found<br>
-     *             {@link EntityNotFoundException} if project user is in illegal status for deactivation<br>
+     * @throws EntityException <br>
+     *                         {@link EntityTransitionForbiddenException} if no project user could be found<br>
+     *                         {@link EntityNotFoundException} if project user is in illegal status for deactivation<br>
      */
     @ResponseBody
     @RequestMapping(value = INACTIVE_ACCESS_RELATIVE_PATH, method = RequestMethod.PUT)
     @ResourceAccess(description = "Deactivates an active user", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> inactiveAccess(@PathVariable("access_id") final Long pAccessId) throws EntityException {
-        final ProjectUser projectUser = projectUserService.retrieveUser(pAccessId);
+    public ResponseEntity<Void> inactiveAccess(@PathVariable("access_id") final Long accessId) throws EntityException {
+        final ProjectUser projectUser = projectUserService.retrieveUser(accessId);
         projectUserWorkflowManager.inactiveAccess(projectUser);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
      * Rejects the access request
-     *
-     * @param pAccessId
-     *            the project user id
+     * @param accessId the project user id
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
-     * @throws EntityException
-     *             if error occurs!
+     * @throws EntityException if error occurs!
      */
     @ResponseBody
     @RequestMapping(value = "/{access_id}", method = RequestMethod.DELETE)
     @ResourceAccess(description = "Rejects the access request", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> removeAccessRequest(@PathVariable("access_id") final Long pAccessId)
+    public ResponseEntity<Void> removeAccessRequest(@PathVariable("access_id") final Long accessId)
             throws EntityException {
-        final ProjectUser projectUser = projectUserService.retrieveUser(pAccessId);
+        final ProjectUser projectUser = projectUserService.retrieveUser(accessId);
         projectUserWorkflowManager.removeAccess(projectUser);
         return new ResponseEntity<>(HttpStatus.OK);
     }

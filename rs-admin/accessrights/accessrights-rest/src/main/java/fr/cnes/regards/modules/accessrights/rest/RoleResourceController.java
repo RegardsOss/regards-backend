@@ -26,13 +26,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.base.Preconditions;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
@@ -48,9 +48,7 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
  * Role resource management API
- *
  * @author Marc Sordi
- *
  */
 @RestController
 @RequestMapping(RoleResourceController.TYPE_MAPPING)
@@ -86,35 +84,34 @@ public class RoleResourceController implements IResourceController<ResourcesAcce
 
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Get all resource accesses of a role", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<List<Resource<ResourcesAccess>>> getRoleResources(
-            @PathVariable("role_name") final String pRoleName) throws ModuleException {
-        final Role role = roleService.retrieveRole(pRoleName);
-        final Set<ResourcesAccess> resources = roleService.retrieveRoleResourcesAccesses(role.getId());
-        return new ResponseEntity<>(toResources(resources, pRoleName), HttpStatus.OK);
+    public ResponseEntity<List<Resource<ResourcesAccess>>> getRoleResources(@PathVariable("role_name") String roleName)
+            throws ModuleException {
+        Role role = roleService.retrieveRole(roleName);
+        Set<ResourcesAccess> resources = roleService.retrieveRoleResourcesAccesses(role.getId());
+        return new ResponseEntity<>(toResources(resources, roleName), HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Add access to one resource for a role", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Resource<ResourcesAccess>> addRoleResource(@PathVariable("role_name") final String pRoleName,
-            @RequestBody @Valid final ResourcesAccess pNewResourcesAccess) throws ModuleException {
-        final Role role = roleService.retrieveRole(pRoleName);
-        roleService.addResourceAccesses(role.getId(), pNewResourcesAccess);
-        return new ResponseEntity<>(toResource(pNewResourcesAccess, pRoleName), HttpStatus.CREATED);
+    public ResponseEntity<Resource<ResourcesAccess>> addRoleResource(@PathVariable("role_name") String roleName,
+            @RequestBody @Valid ResourcesAccess newResourcesAccess) throws ModuleException {
+        Role role = roleService.retrieveRole(roleName);
+        roleService.addResourceAccesses(role.getId(), newResourcesAccess);
+        return new ResponseEntity<>(toResource(newResourcesAccess, roleName), HttpStatus.CREATED);
     }
 
     @RequestMapping(method = RequestMethod.DELETE, value = SINGLE_RESOURCE_MAPPING)
     @ResourceAccess(description = "Remove one resource access from a role", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> deleteRoleResource(@PathVariable("role_name") final String pRoleName,
-            @PathVariable("resources_access_id") final Long pResourcesAccessId) throws ModuleException {
-        resourceService.removeRoleResourcesAccess(pRoleName, pResourcesAccessId);
+    public ResponseEntity<Void> deleteRoleResource(@PathVariable("role_name") String roleName,
+            @PathVariable("resources_access_id") Long resourcesAccessId) throws ModuleException {
+        resourceService.removeRoleResourcesAccess(roleName, resourcesAccessId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @Override
-    public Resource<ResourcesAccess> toResource(ResourcesAccess resourcesAccess, Object... pExtras) {
-
-        Assert.notNull(pExtras);
-        String roleName = (String) pExtras[0];
+    public Resource<ResourcesAccess> toResource(ResourcesAccess resourcesAccess, Object... extras) {
+        Preconditions.checkNotNull(extras);
+        String roleName = (String) extras[0];
 
         Resource<ResourcesAccess> resource = hateoasService.toResource(resourcesAccess);
         hateoasService.addLink(resource, this.getClass(), "getRoleResources", LinkRels.LIST,
@@ -133,9 +130,6 @@ public class RoleResourceController implements IResourceController<ResourcesAcce
 
     /**
      * Removal of resource accesses is tricky: we can only remove a resource which is attached to PUBLIC if we are working on a native role.
-     *
-     * @param resourcesAccess
-     * @param roleName
      * @return whether the resource access can be removed from the given role
      */
     private boolean isRemovable(ResourcesAccess resourcesAccess, String roleName) {
