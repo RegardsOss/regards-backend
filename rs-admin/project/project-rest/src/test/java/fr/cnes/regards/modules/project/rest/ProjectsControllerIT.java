@@ -137,6 +137,7 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
                 .jsonPath(JSON_PATH_ROOT + ".metadata.totalElements", Matchers.is(3)));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalPages",
                                                                                Matchers.is(1)));
+        requestBuilderCustomizer.customizeRequestParam().param("size","20");
         performGet("/projects", instanceAdmintoken, requestBuilderCustomizer, "Error there must be project results");
     }
 

@@ -129,6 +129,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
                                                                                Matchers.is(1)));
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.number", Matchers.is(0)));
+        requestBuilderCustomizer.customizeRequestParam().param("size","20");
         performGet(ProjectConnectionController.TYPE_MAPPING, instanceAdmintoken, requestBuilderCustomizer, "error",
                    PROJECT_TEST);
     }
