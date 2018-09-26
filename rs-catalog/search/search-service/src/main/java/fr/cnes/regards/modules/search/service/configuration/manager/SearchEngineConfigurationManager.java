@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
-import fr.cnes.regards.framework.module.manager.ModuleReadinessReport;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
@@ -64,10 +63,5 @@ public class SearchEngineConfigurationManager extends AbstractModuleManager<Void
             }
         }
         return ModuleConfiguration.build(info, configurations);
-    }
-
-    @Override
-    public ModuleReadinessReport<Void> isReady() {
-        return new ModuleReadinessReport<Void>(true, null, null);
     }
 }
