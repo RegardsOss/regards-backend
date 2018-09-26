@@ -122,14 +122,4 @@ public abstract class AbstractModuleManager<S> implements IModuleManager<S> {
      * @return Errors for each configuration element that could not be imported
      */
     protected abstract Set<String> importConfiguration(ModuleConfiguration configuration);
-
-    /**
-     * Default restart implementation
-     */
-    @Override
-    public ModuleRestartReport restart() {
-        ModuleRestartReport report = new ModuleRestartReport(info);
-        report.addMessage("Restart process not implemented!");
-        return report;
-    }
 }

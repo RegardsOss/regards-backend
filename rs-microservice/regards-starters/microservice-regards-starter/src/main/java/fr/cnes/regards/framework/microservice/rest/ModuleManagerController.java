@@ -77,13 +77,19 @@ public class ModuleManagerController {
 
     public static final String TYPE_MAPPING = "/microservice";
 
+    private static final String ENABLED_MAPPING = "/enabled";
+
     public static final String CONFIGURATION_MAPPING = "/configuration";
 
-    public static final String ENABLED_MAPPING = CONFIGURATION_MAPPING + "/enabled";
+    public static final String CONFIGURATION_ENABLED_MAPPING = CONFIGURATION_MAPPING + ENABLED_MAPPING;
 
     public static final String READY_MAPPING = "/ready";
 
+    public static final String READY_ENABLED_MAPPING = READY_MAPPING + ENABLED_MAPPING;
+
     public static final String RESTART_MAPPING = "/restart";
+
+    public static final String RESTART_ENABLED_MAPPING = RESTART_MAPPING + ENABLED_MAPPING;
 
     /**
      * Prefix for imported/exported filename
@@ -108,7 +114,7 @@ public class ModuleManagerController {
     @Autowired(required = false)
     private List<IModuleManager<?>> managers;
 
-    @RequestMapping(method = RequestMethod.GET, value = ENABLED_MAPPING)
+    @RequestMapping(method = RequestMethod.GET, value = CONFIGURATION_ENABLED_MAPPING)
     @ResourceAccess(description = "Import/export support information")
     public ResponseEntity<Void> isConfigurationEnabled() throws ModuleException {
         if (managers != null && !managers.isEmpty()) {
@@ -227,29 +233,65 @@ public class ModuleManagerController {
                 Lists.newArrayList(), null);
         if (managers != null && !managers.isEmpty()) {
             for (IModuleManager<?> manager : managers) {
-                ModuleReadinessReport<?> moduleReadiness = manager.isReady();
-                microserviceReadiness.setReady(microserviceReadiness.isReady() && moduleReadiness.isReady());
-                microserviceReadiness.setSpecifications(moduleReadiness.getSpecifications());
-                if (moduleReadiness.getReasons() != null) {
-                    microserviceReadiness.getReasons().addAll(moduleReadiness.getReasons());
+                if (manager.isReadyImplemented()) {
+                    ModuleReadinessReport<?> moduleReadiness = manager.isReady();
+                    microserviceReadiness.setReady(microserviceReadiness.isReady() && moduleReadiness.isReady());
+                    microserviceReadiness.setSpecifications(moduleReadiness.getSpecifications());
+                    if (moduleReadiness.getReasons() != null) {
+                        microserviceReadiness.getReasons().addAll(moduleReadiness.getReasons());
+                    }
                 }
             }
         }
         return new ResponseEntity<ModuleReadinessReport<?>>(microserviceReadiness, HttpStatus.OK);
     }
 
+    @RequestMapping(method = RequestMethod.GET, value = READY_ENABLED_MAPPING)
+    @ResourceAccess(description = "Check if microservice modules ready feature is enabled")
+    public ResponseEntity<Void> isReadyEnabled() {
+        if (managers != null && !managers.isEmpty()) {
+            for (IModuleManager<?> manager : managers) {
+                if (manager.isReadyImplemented()) {
+                    // At least one module can be asked for "readyness"
+                    return ResponseEntity.ok().build();
+                }
+            }
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+        }
+    }
+
     /**
-     * Restart all microservice modules
+     * Restart all or part of microservice modules
      */
     @RequestMapping(method = RequestMethod.GET, value = RESTART_MAPPING)
-    @ResourceAccess(description = "allows to known if the microservice is ready to work")
+    @ResourceAccess(description = "Allows to restart all microservice modules")
     public ResponseEntity<Set<ModuleRestartReport>> restart() {
         Set<ModuleRestartReport> reports = new HashSet<>();
         if (managers != null && !managers.isEmpty()) {
             for (IModuleManager<?> manager : managers) {
-                reports.add(manager.restart());
+                if (manager.isRestartImplemented()) {
+                    reports.add(manager.restart());
+                }
             }
         }
         return new ResponseEntity<>(reports, HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = RESTART_ENABLED_MAPPING)
+    @ResourceAccess(description = "Check if microservice modules restart is enabled")
+    public ResponseEntity<Void> isRestartEnabled() {
+        if (managers != null && !managers.isEmpty()) {
+            for (IModuleManager<?> manager : managers) {
+                if (manager.isRestartImplemented()) {
+                    // At least one module can be restarted
+                    return ResponseEntity.ok().build();
+                }
+            }
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+        }
     }
 }

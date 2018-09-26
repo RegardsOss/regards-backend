@@ -51,16 +51,36 @@ public interface IModuleManager<S> {
     ModuleConfiguration exportConfiguration() throws ModuleException;
 
     /**
-     * Restart module after crashing. Inconsistent state should be detected and cleaned.
+     * Restart module after crashing. Inconsistent state should be detected and cleaned.<br/>
+     * To implement this method, override it and {@link #isRestartImplemented()}
      */
-    ModuleRestartReport restart();
+    default ModuleRestartReport restart() {
+        throw new UnsupportedOperationException("Restart feature not implemented");
+    }
+
+    /**
+     * Flag to indicate if restart feature is implemented for current module
+     */
+    default boolean isRestartImplemented() {
+        return false;
+    }
 
     /**
      * Detect if current module is ready to run, i.e. all required configurations are done!<br/>
      * Module specification may be given to fulfill missing configuration.<br/>
-     * For instance, most of the time, minimal configuration will require at least one plugin configuration.
+     * For instance, most of the time, minimal configuration will require at least one plugin configuration.<br/>
+     * To implement this method, override it and {@link #isReadyImplemented()}
      *
      * @return whether or not the module is considered ready
      */
-    ModuleReadinessReport<S> isReady();
+    default ModuleReadinessReport<S> isReady() {
+        throw new UnsupportedOperationException("Ready feature not implemented");
+    }
+
+    /**
+     * Flag to indicate if ready feature is implemented for current module.
+     */
+    default boolean isReadyImplemented() {
+        return false;
+    }
 }
