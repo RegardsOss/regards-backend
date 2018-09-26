@@ -195,7 +195,7 @@ public class ModuleController implements IResourceController<Module> {
             throws EntityNotFoundException, EntityInvalidException, URISyntaxException, MalformedURLException {
         // Retrieve login information for link generation
         String queryParams;
-        if (DefaultRole.valueOf(authenticationResolver.getRole()) == DefaultRole.PUBLIC) {
+        if (authenticationResolver.getRole().equals(DefaultRole.PUBLIC.toString())) {
             // Handle user not logged in
             String tenant = runtimeTenantResolver.getTenant();
             queryParams = "scope=" + tenant;
