@@ -99,7 +99,7 @@ public class NotificationDaoIT extends AbstractDaoTransactionalTest {
 
     @Test
     public void testUpdateAll() {
-        notificationRepository.updateAllNotificationStatusByRole(NotificationStatus.READ, "ADMIN");
-        notificationRepository.updateAllNotificationStatusByUser(NotificationStatus.READ, "regards@c-s.fr");
+        notificationRepository.updateAllNotificationStatusByRole(NotificationStatus.READ.toString(), "ADMIN");
+        notificationRepository.updateAllNotificationStatusByUser(NotificationStatus.READ.toString(), "regards@c-s.fr");
     }
 }

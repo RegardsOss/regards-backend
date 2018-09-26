@@ -95,10 +95,10 @@ public interface INotificationRepository
     @Modifying
     @Query(value = "UPDATE {h-schema}t_notification set status = ?1 FROM {h-schema}ta_notification_role_name recipient WHERE t_notification.id = recipient.notification_id AND recipient.role_name = ?2",
             nativeQuery = true)
-    void updateAllNotificationStatusByRole(NotificationStatus status, String role);
+    void updateAllNotificationStatusByRole(String status, String role);
 
     @Modifying
     @Query(value = "UPDATE {h-schema}t_notification set status = ?1 FROM {h-schema}ta_notification_projectuser_email recipient WHERE t_notification.id = recipient.notification_id AND recipient.projectuser_email = ?2",
             nativeQuery = true)
-    void updateAllNotificationStatusByUser(NotificationStatus status, String projectUser);
+    void updateAllNotificationStatusByUser(String status, String projectUser);
 }

@@ -209,8 +209,8 @@ public class NotificationService implements INotificationService, ApplicationLis
     @Override
     public void markAllNotificationAs(NotificationStatus status) {
         Assert.notNull(status, "Notification status is required");
-        notificationRepository.updateAllNotificationStatusByRole(status, authenticationResolver.getRole());
-        notificationRepository.updateAllNotificationStatusByUser(status, authenticationResolver.getUser());
+        notificationRepository.updateAllNotificationStatusByRole(status.toString(), authenticationResolver.getRole());
+        notificationRepository.updateAllNotificationStatusByUser(status.toString(), authenticationResolver.getUser());
     }
 
     @Override
