@@ -168,4 +168,9 @@ public class StorageConfigurationManager extends AbstractModuleManager<StorageRe
         return new ModuleReadinessReport<StorageReadySpecifications>(ready, reasons,
                 new StorageReadySpecifications(allocationStrategy, storages));
     }
+
+    @Override
+    public boolean isReadyImplemented() {
+        return true;
+    }
 }
