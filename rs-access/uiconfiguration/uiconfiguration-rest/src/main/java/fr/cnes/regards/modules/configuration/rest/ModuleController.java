@@ -35,16 +35,20 @@ import fr.cnes.regards.modules.configuration.domain.Layout;
 import fr.cnes.regards.modules.configuration.domain.Module;
 import fr.cnes.regards.modules.configuration.service.IModuleService;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
+
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.data.web.SortDefault;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
@@ -74,6 +78,7 @@ public class ModuleController implements IResourceController<Module> {
     public static final String MODULE_ID_MAPPING = "/{moduleId}";
 
     public static final String MAP_CONFIG = MODULE_ID_MAPPING + "/map";
+
     @Autowired
     private IModuleService service;
 
@@ -89,22 +94,20 @@ public class ModuleController implements IResourceController<Module> {
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
-
     @Value("${zuul.prefix}")
     private String gatewayPrefix;
 
     /**
      * Entry point to retrieve a modules for a given application id {@link Module}.
      * @return {@link Layout}
-     * @throws EntityNotFoundException
      */
     @RequestMapping(value = MODULE_ID_MAPPING, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve an IHM module for given application", role = DefaultRole.PUBLIC)
-    public HttpEntity<Resource<Module>> retrieveModule(@PathVariable("applicationId") final String pApplicationId,
-            @PathVariable("moduleId") final Long pModuleId) throws EntityNotFoundException {
-        final Module module = service.retrieveModule(pModuleId);
-        final Resource<Module> resource = toResource(module);
+    public HttpEntity<Resource<Module>> retrieveModule(@PathVariable("applicationId") String applicationId,
+            @PathVariable("moduleId") Long moduleId) throws EntityNotFoundException {
+        Module module = service.retrieveModule(moduleId);
+        Resource<Module> resource = toResource(module);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
@@ -112,105 +115,88 @@ public class ModuleController implements IResourceController<Module> {
      * Entry point to retrieve all modules for a given application id {@link Module}. Query parameter active
      * [true|false]
      * @return {@link Layout}
-     * @throws EntityNotFoundException
      */
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve IHM modules for given application", role = DefaultRole.PUBLIC)
     public HttpEntity<PagedResources<Resource<Module>>> retrieveModules(
-            @PathVariable("applicationId") final String pApplicationId,
-            @RequestParam(value = "active", required = false) final String pOnlyActive,
-            @RequestParam(value = "type", required = false) final String type, final Pageable pPageable,
-            final PagedResourcesAssembler<Module> pAssembler) {
-        Boolean activeBool = null;
-        if (pOnlyActive != null) {
-            activeBool = Boolean.parseBoolean(pOnlyActive);
-        }
-        final Page<Module> modules = service.retrieveModules(pApplicationId, activeBool, type, pPageable);
-        final PagedResources<Resource<Module>> resources = toPagedResources(modules, pAssembler);
+            @PathVariable("applicationId") String applicationId,
+            @RequestParam(value = "active", required = false) String onlyActive,
+            @RequestParam(value = "type", required = false) String type,
+            @SortDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            PagedResourcesAssembler<Module> assembler) {
+        Boolean activeBool = (onlyActive != null) ? Boolean.parseBoolean(onlyActive) : null;
+        Page<Module> modules = service.retrieveModules(applicationId, activeBool, type, pageable);
+        PagedResources<Resource<Module>> resources = toPagedResources(modules, assembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
     /**
      * Entry point to save a new ihm module.
      * @return {@link Module}
-     * @throws EntityInvalidException
-     * @throws EntityNotFoundException
      */
     @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to save a new IHM module for given application",
             role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<Resource<Module>> saveModule(@PathVariable("applicationId") final String pApplicationId,
-            @Valid @RequestBody final Module pModule) throws EntityInvalidException {
+    public HttpEntity<Resource<Module>> saveModule(@PathVariable("applicationId") String applicationId,
+            @Valid @RequestBody Module module) throws EntityInvalidException {
 
-        if (!pModule.getApplicationId().equals(pApplicationId)) {
+        if (!module.getApplicationId().equals(applicationId)) {
             throw new EntityInvalidException("Invalid application identifier for new module");
         }
-        final Module module = service.saveModule(pModule);
-        final Resource<Module> resource = toResource(module);
-        return new ResponseEntity<>(resource, HttpStatus.OK);
+        return new ResponseEntity<>(toResource(service.saveModule(module)), HttpStatus.OK);
     }
 
     /**
      * Entry point to save a new ihm module.
      * @return {@link Module}
-     * @throws EntityInvalidException
-     * @throws EntityNotFoundException
      */
     @RequestMapping(value = MODULE_ID_MAPPING, method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to save a new IHM module for given application",
             role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<Resource<Module>> updateModule(@PathVariable("applicationId") final String pApplicationId,
-            @PathVariable("moduleId") final Long pModuleId, @Valid @RequestBody final Module pModule)
-            throws EntityException {
-
-        if (!pModule.getApplicationId().equals(pApplicationId)) {
+    public HttpEntity<Resource<Module>> updateModule(@PathVariable("applicationId") String applicationId,
+            @PathVariable("moduleId") Long moduleId, @Valid @RequestBody Module module) throws EntityException {
+        if (!module.getApplicationId().equals(applicationId)) {
             throw new EntityInvalidException("Invalid application identifier for module update");
         }
-
-        if (!pModule.getId().equals(pModuleId)) {
+        if (!module.getId().equals(moduleId)) {
             throw new EntityInvalidException("Invalid module identifier for module update");
         }
-        final Module module = service.updateModule(pModule);
-        final Resource<Module> resource = toResource(module);
-        return new ResponseEntity<>(resource, HttpStatus.OK);
+        return new ResponseEntity<>(toResource(service.updateModule(module)), HttpStatus.OK);
     }
 
     /**
      * Entry point to delete an ihm module.
      * @return {@link Module}
-     * @throws EntityInvalidException
-     * @throws EntityNotFoundException
      */
     @RequestMapping(value = MODULE_ID_MAPPING, method = RequestMethod.DELETE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to save a new IHM module for given application",
             role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<Resource<Void>> deleteModule(@PathVariable("applicationId") final String pApplicationId,
-            @PathVariable("moduleId") final Long pModuleId) throws EntityNotFoundException {
-        service.deleteModule(pModuleId);
+    public HttpEntity<Resource<Void>> deleteModule(@PathVariable("applicationId") String applicationId,
+            @PathVariable("moduleId") Long moduleId) throws EntityNotFoundException {
+        service.deleteModule(moduleId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
-
 
     /**
      * Entry point to retrieve a Mizar config for a given module id {@link Module}.
      * It retrieves the list of dataset visible by this user and returns the corresponding Mizar configuration
      * @return {@link JsonObject} mizar configuration
-     * @throws EntityNotFoundException
      */
     @RequestMapping(value = MAP_CONFIG, method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve Mizar config", role = DefaultRole.PUBLIC)
-    public HttpEntity<JsonObject> retrieveMapConfig(@PathVariable("applicationId") final String pApplicationId,
-            @PathVariable("moduleId") final Long pModuleId, HttpServletRequest request) throws EntityNotFoundException, EntityInvalidException, URISyntaxException, MalformedURLException {
+    public HttpEntity<JsonObject> retrieveMapConfig(@PathVariable("applicationId") String applicationId,
+            @PathVariable("moduleId") Long moduleId, HttpServletRequest request)
+            throws EntityNotFoundException, EntityInvalidException, URISyntaxException, MalformedURLException {
         // Retrieve login information for link generation
         String queryParams;
-        if (DefaultRole.PUBLIC.equals(authenticationResolver.getRole())) {
-            // Handle user not log in
+        if (DefaultRole.valueOf(authenticationResolver.getRole()) == DefaultRole.PUBLIC) {
+            // Handle user not logged in
             String tenant = runtimeTenantResolver.getTenant();
             queryParams = "scope=" + tenant;
         } else {
@@ -218,8 +204,10 @@ public class ModuleController implements IResourceController<Module> {
             queryParams = "token=" + token;
         }
         // Retrieve the URI for the opensearch endpoint (with public gateway IP/Port)
-        URI uriDatasetDescriptor = HttpUtils.retrievePublicURI(request, gatewayPrefix+"/rs-catalog/engines/opensearch/datasets/DATASET_ID/dataobjects/search/opensearchDescription.xml", queryParams);
-        final Module module = service.retrieveModule(pModuleId);
+        URI uriDatasetDescriptor = HttpUtils.retrievePublicURI(request, gatewayPrefix
+                                                                       + "/rs-catalog/engines/opensearch/datasets/DATASET_ID/dataobjects/search/opensearchDescription.xml",
+                                                               queryParams);
+        final Module module = service.retrieveModule(moduleId);
         MultiValueMap attr = new LinkedMultiValueMap();
         ResponseEntity datasets = searchClient.searchDatasets(attr);
         if (!HttpUtils.isSuccess(datasets.getStatusCode())) {
@@ -230,20 +218,19 @@ public class ModuleController implements IResourceController<Module> {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-
     @Override
     public Resource<Module> toResource(final Module pElement, final Object... pExtras) {
         final Resource<Module> resource = resourceService.toResource(pElement);
         resourceService.addLink(resource, this.getClass(), "retrieveModule", LinkRels.SELF,
-                MethodParamFactory.build(String.class, pElement.getApplicationId()),
-                MethodParamFactory.build(Long.class, pElement.getId()));
+                                MethodParamFactory.build(String.class, pElement.getApplicationId()),
+                                MethodParamFactory.build(Long.class, pElement.getId()));
         resourceService.addLink(resource, this.getClass(), "updateModule", LinkRels.UPDATE,
-                MethodParamFactory.build(String.class, pElement.getApplicationId()),
-                MethodParamFactory.build(Long.class, pElement.getId()),
-                MethodParamFactory.build(Module.class));
+                                MethodParamFactory.build(String.class, pElement.getApplicationId()),
+                                MethodParamFactory.build(Long.class, pElement.getId()),
+                                MethodParamFactory.build(Module.class));
         resourceService.addLink(resource, this.getClass(), "deleteModule", LinkRels.DELETE,
-                MethodParamFactory.build(String.class, pElement.getApplicationId()),
-                MethodParamFactory.build(Long.class, pElement.getId()));
+                                MethodParamFactory.build(String.class, pElement.getApplicationId()),
+                                MethodParamFactory.build(Long.class, pElement.getId()));
         return resource;
     }
 
