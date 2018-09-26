@@ -76,6 +76,7 @@ public class GeojsonResponseBuilder implements IResponseBuilder<FeatureWithPrope
                                     context.getPageable().getPageSize());
         Query query = new Query();
         context.getQueryParams().forEach((name, values) -> values.forEach(value -> query.addFilter(name, value)));
+        query.addFilter("token", token);
         response.setQuery(query);
         response.setLinks(links.stream()
                 .map(l -> GeoJsonLinkBuilder.build(l, GeoJsonMediaType.APPLICATION_GEOJSON_VALUE, token))
