@@ -54,7 +54,8 @@ public interface INotificationRepository
             countQuery = "select count(distinct n.id) from {h-schema}t_notification n "
                     + "left join {h-schema}ta_notification_role_name r on r.notification_id = n.id "
                     + "left join {h-schema}ta_notification_projectuser_email e on e.notification_id = n.id "
-                    + "where e.projectuser_email = ?1 or r.role_name= ?2 GROUP BY n.id",
+                    + "where e.projectuser_email = ?1 or r.role_name= ?2 GROUP BY n.id "
+                    + "ORDER BY n.id, ?#{#pageable}",
             nativeQuery = true)
     Page<Notification> findByRecipientsContaining(String projectUser, String role, Pageable pageable);
 
@@ -73,7 +74,8 @@ public interface INotificationRepository
             countQuery = "select count(distinct n.id) from {h-schema}t_notification n "
                     + "left join {h-schema}ta_notification_role_name r on r.notification_id = n.id "
                     + "left join {h-schema}ta_notification_projectuser_email e on e.notification_id = n.id "
-                    + "where n.status= ?1 and (e.projectuser_email = ?2 or r.role_name= ?3) " + "GROUP BY n.id",
+                    + "where n.status= ?1 and (e.projectuser_email = ?2 or r.role_name= ?3) " + "GROUP BY n.id "
+                    + "ORDER BY n.id, ?#{#pageable}",
             nativeQuery = true)
     Page<Notification> findByStatusAndRecipientsContaining(String status, String projectUser, String role,
             Pageable page);
