@@ -179,7 +179,7 @@ public class AIPService implements IAIPService {
         ResponseEntity<PagedResources<Resource<fr.cnes.regards.modules.storage.domain.database.AIPEntity>>> result = aipEntityClient
                 .retrieveAIPEntities(sipId.toString(), 0, 100);
         FeignSecurityManager.reset();
-        if (result.getStatusCode().equals(HttpStatus.OK) && result.getBody() != null) {
+        if (result.getStatusCode().equals(HttpStatus.OK) && (result.getBody() != null)) {
             Optional<SIPEntity> oSip = sipRepository.findOneBySipId(sipId.toString());
             if (oSip.isPresent()) {
                 SIPEntity sip = oSip.get();
@@ -302,6 +302,8 @@ public class AIPService implements IAIPService {
     @Override
     public void handleAipEvent(AIPEvent aipEvent) {
         UniformResourceName aipId = UniformResourceName.fromString(aipEvent.getAipId());
+        LOGGER.info("[AIP Event received] {} - {} - {}", aipEvent.getAipId(), aipEvent.getAipState(),
+                    aipEvent.getFailureCause() != null ? aipEvent.getFailureCause() : "ok");
         switch (aipEvent.getAipState()) {
             case STORAGE_ERROR:
                 setAipInError(aipId, aipEvent.getAipState(), aipEvent.getFailureCause(), SIPState.STORE_ERROR);

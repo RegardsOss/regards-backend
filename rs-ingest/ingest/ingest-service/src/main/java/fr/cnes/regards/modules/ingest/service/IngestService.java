@@ -29,6 +29,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Optional;
 
+import javax.persistence.EntityManager;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,6 +107,9 @@ public class IngestService implements IIngestService {
 
     @Autowired
     private Validator validator;
+
+    @Autowired
+    private EntityManager em;
 
     @Override
     public Collection<SIPDto> ingest(SIPCollection sips) throws ModuleException {
@@ -208,6 +213,7 @@ public class IngestService implements IIngestService {
      */
     private SIPDto store(SIP sip, IngestMetadata metadata) {
 
+        LOGGER.info("Handling new SIP {}", sip.getId());
         // Manage version
         Integer version = sipRepository.getNextVersion(sip.getId());
 
@@ -234,8 +240,10 @@ public class IngestService implements IIngestService {
 
         try {
             // Compute checksum
+            LOGGER.info("Handling new SIP {} -> MD5 sum ....", sip.getId());
             String checksum = SIPEntityBuilder.calculateChecksum(gson, sip, MD5_ALGORITHM);
             entity.setChecksum(checksum);
+            LOGGER.info("Handling new SIP {} -> MD5 sum ok", sip.getId());
 
             // Prevent SIP from being ingested twice
             if (sipRepository.isAlreadyIngested(checksum)) {
@@ -256,6 +264,10 @@ public class IngestService implements IIngestService {
             entity.setState(SIPState.REJECTED);
             entity.getRejectionCauses().add("Not able to generate internal SIP checksum");
         }
+
+        // Ensure permformance by flushing transaction cache
+        em.flush();
+        em.clear();
 
         return entity.toDto();
     }
