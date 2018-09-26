@@ -102,15 +102,15 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
         AIPSession aipSession = aipService.getSession(tagFilter.getSession(), false);
         Pageable pageRequest = new PageRequest(0, aipIterationLimit);
         Page<AIP> aipsPage;
+        nbError = new AtomicInteger(0);
+        nbEntityUpdated = new AtomicInteger(0);
+        entityFailed = new ArrayList<>();
         do {
             aipsPage = aipDao
                     .findAll(AIPQueryGenerator.search(tagFilter.getState(), tagFilter.getFrom(), tagFilter.getTo(),
                                                       tagFilter.getTags(), aipSession, tagFilter.getProviderId(),
                                                       tagFilter.getAipIds(), tagFilter.getAipIdsExcluded()),
                              pageRequest);
-            nbError = new AtomicInteger(0);
-            nbEntityUpdated = new AtomicInteger(0);
-            entityFailed = new ArrayList<>();
             aipsPage.forEach(aip -> {
                 try {
                     if (updateType == UpdateAIPsTagJobType.ADD) {
@@ -134,8 +134,8 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
         } while (aipsPage.hasNext());
         nbEntity = aipsPage.getTotalElements();
         UpdatedAipsInfos infos = new UpdatedAipsInfos(nbError, nbEntityUpdated);
-        handleErrors(updateType);
         this.setResult(infos);
+        handleErrors(updateType);
     }
 
     private void handleErrors(UpdateAIPsTagJobType updateType) {
@@ -150,7 +150,7 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
             }
             StringBuilder message = new StringBuilder();
             message.append(String
-                    .format("A job finished with %d successful updates and %d errors.  \\nAIP concerned:  ",
+                    .format("A job finished with %d successful updates and %d errors.%nAIP concerned:  ",
                             nbEntityUpdated.get(), nbError.get()));
             for (String ipId : entityFailed) {
                 message.append(ipId);

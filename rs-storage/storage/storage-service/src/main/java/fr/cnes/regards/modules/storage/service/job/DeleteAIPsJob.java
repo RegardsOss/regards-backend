@@ -18,19 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.service.job;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -45,6 +32,16 @@ import fr.cnes.regards.modules.storage.domain.job.AIPQueryFilters;
 import fr.cnes.regards.modules.storage.domain.job.RemovedAipsInfos;
 import fr.cnes.regards.modules.storage.service.IAIPService;
 import fr.cnes.regards.modules.storage.service.IDataStorageService;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 /**
  * Add or remove tags to several AIPs, inside a job.
@@ -102,9 +99,8 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
                                                       tagFilter.getTags(), aipSession, tagFilter.getProviderId(),
                                                       tagFilter.getAipIds(), tagFilter.getAipIdsExcluded()),
                              pageRequest);
-            List<AIP> aips = aipsPage.getContent();
 
-            aips.forEach(aip -> {
+            aipsPage.forEach(aip -> {
                 try {
                     aipService.deleteAip(aip);
                     nbEntityRemoved.incrementAndGet();
@@ -133,7 +129,7 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
             String title = String.format("Failure while removing %d AIPs", nbError.get());
             StringBuilder message = new StringBuilder();
             message.append(String
-                    .format("A job finished with %d AIP correctly removed and %d errors.  AIP concerned:  ",
+                    .format("A job finished with %d AIP correctly removed and %d errors.%nAIP concerned:  ",
                             nbEntityRemoved.get(), nbError.get()));
             for (String ipId : entityFailed) {
                 message.append(ipId);

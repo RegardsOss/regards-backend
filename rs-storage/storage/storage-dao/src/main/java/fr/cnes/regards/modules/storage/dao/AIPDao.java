@@ -9,8 +9,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.compress.utils.Lists;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -28,8 +26,6 @@ import fr.cnes.regards.modules.storage.domain.database.AIPSession;
  */
 @Component
 public class AIPDao implements IAIPDao {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(AIPDao.class);
 
     /**
      * {@link IAIPEntityRepository} instance
@@ -50,18 +46,18 @@ public class AIPDao implements IAIPDao {
     @Override
     public AIP save(AIP toSave, AIPSession aipSession) {
         AIPEntity toSaveInDb = new AIPEntity(toSave, aipSession);
-        long startFindDBAIP = System.currentTimeMillis();
         Optional<AIPEntity> fromDb = repo.findOneByAipId(toSave.getId().toString());
-        long endFindDBAIP = System.currentTimeMillis();
-        LOGGER.trace("AIPDao#save: Finding AIP from DB, for ID, took {} ms", endFindDBAIP - startFindDBAIP);
         if (fromDb.isPresent()) {
             toSaveInDb.setId(fromDb.get().getId());
         }
-        long startSaveAIP = System.currentTimeMillis();
         AIPEntity saved = repo.save(toSaveInDb);
-        long endSaveAIP = System.currentTimeMillis();
-        LOGGER.trace("AIPDao#save: Saving AIP into DB took {} ms", endSaveAIP - startSaveAIP);
         return buildAipFromAIPEntity(saved);
+    }
+
+    @Override
+    public void updateAIPStateAndRetry(AIP aip) {
+        Optional<Long> id = repo.findIdByAipId(aip.getId().toString());
+        repo.updateAIPStateAndRetry(aip.getState().toString(), aip.isRetry(), aip.getId().toString());
     }
 
     /**
@@ -171,8 +167,8 @@ public class AIPDao implements IAIPDao {
     }
 
     @Override
-    public Page<AIP> findAll(String sqlQuery, Pageable pPageable) {
-        return custoRepo.findAll(sqlQuery, pPageable).map(this::buildAipFromAIPEntity);
+    public Page<AIP> findAll(String sqlQuery, Pageable pageable) {
+        return custoRepo.findAll(sqlQuery, pageable).map(this::buildAipFromAIPEntity);
     }
 
     @Override

@@ -37,5 +37,5 @@ public interface ICustomizedAIPEntityRepository {
     /**
      * Retrieve all AIPEntity that matches the provided query
      */
-    Page<AIPEntity> findAll(String sqlQuery, Pageable pPageable);
+    Page<AIPEntity> findAll(String sqlQuery, Pageable pageable);
 }

@@ -29,6 +29,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.time.OffsetDateTime;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -47,6 +48,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
@@ -282,7 +284,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
     private void storeAIP(AIP aipToStore, Boolean storeMeta) throws ModuleException, InterruptedException {
         aipService.validateAndStore(new AIPCollection(aipToStore));
-        aipService.store();
+        aipService.storePage(new PageRequest(0, 100));
         waitForJobsFinished();
         if (storeMeta) {
             aipService.storeMetadata();
@@ -294,6 +296,43 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         aipService.updateAip(aip.getId().toString(), aip);
         aipService.updateAipMetadata();
         waitForJobsFinished();
+    }
+
+    // Test for storage performance with 500 AIPs to store.
+    //@Test
+    public void performanceTest() throws ModuleException, InterruptedException, MalformedURLException {
+
+        Date date = new Date();
+        LOG.info("Starting creating AIPs");
+        AIPCollection col = new AIPCollection();
+        // 1. Generate 500 AIPs in db
+        for (int i = 0; i < 500; i++) {
+            col.add(getAIP());
+        }
+        aipService.validateAndStore(col);
+        Date dateAfter = new Date();
+        LOG.info("AIPs created in {}ms", dateAfter.getTime() - date.getTime());
+
+        Assert.assertEquals(500, aipDao.findAllByState(AIPState.VALID, new PageRequest(0, 500)).getTotalElements());
+
+        date = new Date();
+        LOG.info("Start storage ...");
+        aipService.storePage(new PageRequest(0, 500));
+        dateAfter = new Date();
+        LOG.info("Start storage run after {}ms", dateAfter.getTime() - date.getTime());
+        waitForJobsFinished();
+        dateAfter = new Date();
+        LOG.info("Jobs done after {}ms", dateAfter.getTime() - date.getTime());
+
+        date = new Date();
+        LOG.info("Storing metadata");
+        aipService.storeMetadata();
+        dateAfter = new Date();
+        LOG.info("Storing metadata run after {}ms", dateAfter.getTime() - date.getTime());
+        waitForJobsFinished();
+        dateAfter = new Date();
+        LOG.info("Jobs done after {}ms", dateAfter.getTime() - date.getTime());
+
     }
 
     @Test
@@ -372,7 +411,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         try {
             // Run AIP storage
             aipService.validateAndStore(new AIPCollection(aip));
-            aipService.store();
+            aipService.storePage(new PageRequest(0, 100));
             waitForJobsFinished();
             LOG.info("Waiting for storage jobs ends OK");
             // to make the process fail just on metadata storage, lets remove permissions from the workspace

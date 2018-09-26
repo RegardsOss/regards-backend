@@ -51,6 +51,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Pair;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
@@ -172,7 +173,6 @@ import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
  * </ul>
  * <br/>
  * The cache system to make nearline files accessible is handled by the {@link ICachedFileService}.<br/>
- *
  * @author Sylvain Vissiere-Guerinet
  * @author Sébastien Binda
  */
@@ -298,6 +298,8 @@ public class AIPService implements IAIPService {
         if (publish) {
             publisher.publish(new AIPEvent(daoAip));
         }
+        em.flush();
+        em.clear();
         return daoAip;
     }
 
@@ -321,6 +323,9 @@ public class AIPService implements IAIPService {
                 df.setState(DataFileState.PENDING);
                 dataFileDao.save(df);
             });
+            // To avoid performance problems due to hibernate cache size. We flush entity manager after each entity to save.
+            em.flush();
+            em.clear();
         }
 
         return rejectedAips;
@@ -378,10 +383,11 @@ public class AIPService implements IAIPService {
             } else {
                 dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.PENDING, aip);
             }
-            dataFilesToStore.addAll(dataFiles);
             aip.setState(AIPState.PENDING);
             aip.setRetry(false);
-            save(aip, true);
+            aipDao.updateAIPStateAndRetry(aip);
+            dataFilesToStore.addAll(dataFiles);
+            publisher.publish(new AIPEvent(aip));
         }
         long aipUpdateStateTime = System.currentTimeMillis();
         LOGGER.trace("Updating AIP state of {} AIP(s) for {} tenant took {} ms", aips.size(),
@@ -395,8 +401,8 @@ public class AIPService implements IAIPService {
         scheduleStorage(storageWorkingSetMap, true);
 
         long scheduleTime = System.currentTimeMillis();
-        LOGGER.info("Scheduling storage jobs of {} AIP(s) for {} tenant (scheduling time : {} ms)", aips.size(),
-                    runtimeTenantResolver.getTenant(), scheduleTime - startTime);
+        LOGGER.trace("Scheduling storage jobs of {} AIP(s) for {} tenant (scheduling time : {} ms)", aips.size(),
+                     runtimeTenantResolver.getTenant(), scheduleTime - startTime);
         return createdAips;
     }
 
@@ -430,12 +436,19 @@ public class AIPService implements IAIPService {
         LOGGER.debug("{} data objects has been dispatched between {} data storage by allocation strategy",
                      dataFilesToStore.size(), storageWorkingSetMap.keySet().size());
         // as we are trusty people, we check that the dispatch gave us back all DataFiles into the WorkingSubSets
+        LOGGER.debug("Cheking dispatch results ....");
         checkDispatch(dataFilesToStore, storageWorkingSetMap, dispatchErrors);
+        LOGGER.debug("Dispatch results checked !");
         // now that those who should be in error are handled,  lets set notYetStoredBy and save data files
         for (StorageDataFile df : storageWorkingSetMap.values()) {
             df.increaseNotYetStoredBy();
         }
-        dataFileDao.save(storageWorkingSetMap.values());
+        // Save dataFiles
+        for (StorageDataFile file : storageWorkingSetMap.values()) {
+            dataFileDao.save(file);
+            em.flush();
+            em.clear();
+        }
         return storageWorkingSetMap;
     }
 
@@ -589,14 +602,18 @@ public class AIPService implements IAIPService {
                 aips = aipDao.findAllByStateAndTagsInAndLastEventDateAfter(state, tags, fromLastUpdateDate, pageable);
             }
         }
-        // now lets get the data files for each aip which are the aip metadata itself
+        // Associate data files with their AIP (=> multimap)
         List<AipDataFiles> aipDataFiles = new ArrayList<>();
         Multimap<AIP, StorageDataFile> multimap = HashMultimap.create();
-        dataFileDao.findAllByAipIn(aips.getContent()).stream().filter(sdf -> sdf.getDataType() != DataType.AIP)
-                .forEach(sdf -> multimap.put(sdf.getAip(), sdf));
+        for (StorageDataFile storageDataFile : dataFileDao.findAllByAipIn(aips.getContent())) {
+            // Don't take AIP data type (which in fact is AIP metadata)
+            if (storageDataFile.getDataType() != DataType.AIP) {
+                multimap.put(storageDataFile.getAip(), storageDataFile);
+            }
+        }
+        // Build AipDataFiles objects (an AipDataFiles is a sort of Pair<AIP, Set<Datafiles>>)
         for (Map.Entry<AIP, Collection<StorageDataFile>> entry : multimap.asMap().entrySet()) {
-            aipDataFiles.add(new AipDataFiles(entry.getKey(),
-                    entry.getValue().toArray(new StorageDataFile[entry.getValue().size()])));
+            aipDataFiles.add(new AipDataFiles(entry.getKey(), entry.getValue()));
         }
         return new PageImpl<>(aipDataFiles, pageable, aips.getTotalElements());
     }
@@ -706,7 +723,7 @@ public class AIPService implements IAIPService {
      * A Job is scheduled for each {@link IWorkingSubset} of each {@link PluginConfiguration}.<br/>
      * @param storageWorkingSetMap List of {@link StorageDataFile} to storeAndCreate per {@link PluginConfiguration}.
      * @param storingData FALSE to store {@link DataType#AIP}, or TRUE for all other type of
-     *            {@link StorageDataFile}.
+     * {@link StorageDataFile}.
      * @return List of {@link UUID} of jobs scheduled.
      */
     public Set<UUID> scheduleStorage(Multimap<Long, StorageDataFile> storageWorkingSetMap, boolean storingData)
@@ -738,7 +755,11 @@ public class AIPService implements IAIPService {
         // now that files are given to the jobs, lets remove the source url so once stored we only have the good urls
         Collection<StorageDataFile> storageDataFiles = storageWorkingSetMap.values();
         storageDataFiles.forEach(file -> file.setUrls(new HashSet<>()));
-        dataFileDao.save(storageDataFiles);
+        for (StorageDataFile dataFile : storageDataFiles) {
+            dataFileDao.save(dataFile);
+            em.flush();
+            em.clear();
+        }
         return jobIds;
     }
 
@@ -898,6 +919,8 @@ public class AIPService implements IAIPService {
                     // now if we have a meta to store, lets add it
                     meta.setState(DataFileState.PENDING);
                     dataFileDao.save(meta);
+                    em.flush();
+                    em.clear();
                     metadataToStore.add(meta);
                 } catch (IOException | FileCorruptedException e) {
                     // if we don't have a meta to storeAndCreate that means a problem happened and we set the aip to
@@ -1643,7 +1666,6 @@ public class AIPService implements IAIPService {
 
     /**
      * Create a {@link AIPSession} for the session id.
-     * @param session
      * @return {@link AIPSession}
      */
     private AIPSession addSessionSipInformations(AIPSession session) {
