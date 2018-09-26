@@ -401,7 +401,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
 
-        performDefaultGet(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.ENABLED_MAPPING,
+        performDefaultGet(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_ENABLED_MAPPING,
                           requestBuilderCustomizer, "Shoulb be enabled");
     }
 }

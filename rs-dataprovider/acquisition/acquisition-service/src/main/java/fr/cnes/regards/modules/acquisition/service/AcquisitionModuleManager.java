@@ -29,7 +29,6 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
-import fr.cnes.regards.framework.module.manager.ModuleReadinessReport;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 
@@ -38,7 +37,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
  * @author Marc Sordi
  */
 @Service
-public class AcquisitionConfigurationManager extends AbstractModuleManager<Void> {
+public class AcquisitionModuleManager extends AbstractModuleManager<Void> {
 
     @Autowired
     private IAcquisitionProcessingService processingService;
@@ -70,10 +69,5 @@ public class AcquisitionConfigurationManager extends AbstractModuleManager<Void>
             configuration.add(ModuleConfigurationItem.build(apc));
         }
         return ModuleConfiguration.build(info, configuration);
-    }
-
-    @Override
-    public ModuleReadinessReport<Void> isReady() {
-        return new ModuleReadinessReport<Void>(true, null, null);
     }
 }
