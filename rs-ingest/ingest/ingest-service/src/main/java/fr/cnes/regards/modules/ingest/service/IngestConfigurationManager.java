@@ -29,7 +29,6 @@ import org.springframework.stereotype.Service;
 import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
-import fr.cnes.regards.framework.module.manager.ModuleReadinessReport;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
@@ -79,10 +78,5 @@ public class IngestConfigurationManager extends AbstractModuleManager<Void> {
             configuration.add(ModuleConfigurationItem.build(ipc));
         }
         return ModuleConfiguration.build(info, configuration);
-    }
-
-    @Override
-    public ModuleReadinessReport<Void> isReady() {
-        return new ModuleReadinessReport<Void>(true, null, null);
     }
 }
