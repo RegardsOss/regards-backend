@@ -100,13 +100,12 @@ public class ScheduleStorageTasks {
      * looking for all associated {@link StorageDataFile} states. An {@link AIP} is STORED
      * when all his {@link StorageDataFile}s are STORED.
      */
-    @Scheduled(fixedDelayString = "${regards.storage.check.aip.metadata.delay:60000}")
+    @Scheduled(fixedDelayString = "${regards.storage.check.aip.metadata.delay:30000}")
     public void storeMetadata() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
-            LOGGER.debug(" [METADATA STORAGE DAEMON] Start scheduling AIP metadata storage for tenant {}.", tenant);
             runtimeTenantResolver.forceTenant(tenant);
             aipService.storeMetadata();
-            LOGGER.debug(" [METADATA STORAGE DAEMON] Scheduling metadata storage has finished for tenant {}.", tenant);
+            runtimeTenantResolver.clearTenant();
         }
     }
 
@@ -120,16 +119,9 @@ public class ScheduleStorageTasks {
         // Then lets get AIP that should be stored again after an update
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            LOGGER.debug(String.format("[METADATA UPDATE DAEMON] Starting to prepare update jobs for tenant %s",
-                                       tenant));
             aipService.updateAipMetadata();
-            LOGGER.debug(String.format("[METADATA UPDATE DAEMON] Update jobs for tenant %s have been scheduled",
-                                       tenant));
-            LOGGER.debug(String.format("[METADATA DELETION DAEMON] Starting to prepare deletion jobs for tenant %s",
-                                       tenant));
             aipService.removeDeletedAIPMetadatas();
-            LOGGER.debug(String.format("[METADATA DELETION DAEMON] Deletion jobs for tenant %s have been scheduled",
-                                       tenant));
+            runtimeTenantResolver.clearTenant();
         }
     }
 
@@ -140,11 +132,8 @@ public class ScheduleStorageTasks {
     public void deleteMetadata() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            LOGGER.debug(String.format("[METADATA DELETION DAEMON] Starting to prepare deletion jobs for tenant %s",
-                                       tenant));
             aipService.removeDeletedAIPMetadatas();
-            LOGGER.debug(String.format("[METADATA DELETION DAEMON] Deletion jobs for tenant %s have been scheduled",
-                                       tenant));
+            runtimeTenantResolver.clearTenant();
         }
     }
 
@@ -155,11 +144,8 @@ public class ScheduleStorageTasks {
     public void deleteData() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            LOGGER.debug(String.format("[DATA DELETION DAEMON] Starting to prepare deletion jobs for tenant %s",
-                                       tenant));
             aipService.doDelete();
-            LOGGER.debug(String.format("[DATA DELETION DAEMON] Deletion jobs for tenant %s have been scheduled",
-                                       tenant));
+            runtimeTenantResolver.clearTenant();
         }
     }
 
@@ -171,9 +157,7 @@ public class ScheduleStorageTasks {
     public void cleanCache() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            LOGGER.debug(" -----------------> Clean cache for tenant {} START <-----------------------", tenant);
             cachedFileService.purge();
-            LOGGER.debug(" -----------------> Clean cache for tenant {} END <-----------------------", tenant);
             runtimeTenantResolver.clearTenant();
         }
     }
@@ -186,11 +170,7 @@ public class ScheduleStorageTasks {
     public void restoreToCache() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            LOGGER.debug(" -----------------> Handle queued cache restoration files for tenant {} START <-----------------------",
-                         tenant);
             cachedFileService.restoreQueued();
-            LOGGER.debug(" -----------------> Handle queued cache restoration files for tenant {} END <-----------------------",
-                         tenant);
             runtimeTenantResolver.clearTenant();
         }
     }

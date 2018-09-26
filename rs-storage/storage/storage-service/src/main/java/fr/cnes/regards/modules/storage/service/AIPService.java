@@ -51,7 +51,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Pair;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
@@ -370,54 +369,45 @@ public class AIPService implements IAIPService {
 
     @Override
     public Page<AIP> storePage(Pageable page) throws ModuleException {
-        long startTime = System.currentTimeMillis();
         Page<AIP> createdAips = aipDao.findAllWithLockByState(AIPState.VALID, page);
-        List<AIP> aips = createdAips.getContent();
-        Set<StorageDataFile> dataFilesToStore = Sets.newHashSet();
+        if (createdAips.getNumberOfElements() > 0) {
+            List<AIP> aips = createdAips.getContent();
+            Set<StorageDataFile> dataFilesToStore = Sets.newHashSet();
 
-        for (AIP aip : aips) {
-            // Retrieve data files to store
-            Collection<StorageDataFile> dataFiles;
-            if (aip.isRetry()) {
-                dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.ERROR, aip);
-            } else {
-                dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.PENDING, aip);
+            for (AIP aip : aips) {
+                // Retrieve data files to store
+                Collection<StorageDataFile> dataFiles;
+                if (aip.isRetry()) {
+                    dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.ERROR, aip);
+                } else {
+                    dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.PENDING, aip);
+                }
+                aip.setState(AIPState.PENDING);
+                aip.setRetry(false);
+                aipDao.updateAIPStateAndRetry(aip);
+                dataFilesToStore.addAll(dataFiles);
+                publisher.publish(new AIPEvent(aip));
             }
-            aip.setState(AIPState.PENDING);
-            aip.setRetry(false);
-            aipDao.updateAIPStateAndRetry(aip);
-            dataFilesToStore.addAll(dataFiles);
-            publisher.publish(new AIPEvent(aip));
+            // Dispatch and check data files
+            Multimap<Long, StorageDataFile> storageWorkingSetMap = dispatchAndCheck(dataFilesToStore);
+            // Schedule storage jobs
+            scheduleStorage(storageWorkingSetMap, true);
         }
-        long aipUpdateStateTime = System.currentTimeMillis();
-        LOGGER.trace("Updating AIP state of {} AIP(s) for {} tenant took {} ms", aips.size(),
-                     runtimeTenantResolver.getTenant(), aipUpdateStateTime - startTime);
-        // Dispatch and check data files
-        Multimap<Long, StorageDataFile> storageWorkingSetMap = dispatchAndCheck(dataFilesToStore);
-        long dispatchTime = System.currentTimeMillis();
-        LOGGER.trace("Dispatching {} StorageDataFile(s) for {} tenant tooks {} ms", dataFilesToStore.size(),
-                     runtimeTenantResolver.getTenant(), dispatchTime - startTime);
-        // Schedule storage jobs
-        scheduleStorage(storageWorkingSetMap, true);
-
-        long scheduleTime = System.currentTimeMillis();
-        LOGGER.trace("Scheduling storage jobs of {} AIP(s) for {} tenant (scheduling time : {} ms)", aips.size(),
-                     runtimeTenantResolver.getTenant(), scheduleTime - startTime);
         return createdAips;
     }
 
     @Override
     public void storeMetadata() {
-        Set<StorageDataFile> metadataToStore = Sets.newHashSet();
-        // first lets get AIP that are not fully stored(at least metadata are not stored)
-        metadataToStore.addAll(prepareNotFullyStored());
-        if (metadataToStore.isEmpty()) {
-            LOGGER.debug("No new metadata files to store.");
-        } else {
-            LOGGER.debug("Scheduling {} new metadata files for storage.", metadataToStore.size());
+        Set<StorageDataFile> metadataToStore;
+        do {
+            // first lets get AIP that are not fully stored(at least metadata are not stored)
+            metadataToStore = prepareNotFullyStored();
             // now that we know all the metadata that should be stored, lets schedule their storage!
-            scheduleStorageMetadata(metadataToStore);
-        }
+            if (!metadataToStore.isEmpty()) {
+                LOGGER.debug("Scheduling {} new metadata files for storage.", metadataToStore.size());
+                scheduleStorageMetadata(metadataToStore);
+            }
+        } while (!metadataToStore.isEmpty());
     }
 
     /**
