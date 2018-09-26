@@ -113,9 +113,7 @@ public abstract class AbstractFeature<P, ID> extends AbstractGeoJsonObject {
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = (prime * result) + ((geometry == null) ? 0 : geometry.hashCode());
         result = (prime * result) + ((id == null) ? 0 : id.hashCode());
-        result = (prime * result) + ((properties == null) ? 0 : properties.hashCode());
         return result;
     }
 
@@ -132,25 +130,11 @@ public abstract class AbstractFeature<P, ID> extends AbstractGeoJsonObject {
         }
         @SuppressWarnings("rawtypes")
         AbstractFeature other = (AbstractFeature) obj;
-        if (geometry == null) {
-            if (other.geometry != null) {
-                return false;
-            }
-        } else if (!geometry.equals(other.geometry)) {
-            return false;
-        }
         if (id == null) {
             if (other.id != null) {
                 return false;
             }
         } else if (!id.equals(other.id)) {
-            return false;
-        }
-        if (properties == null) {
-            if (other.properties != null) {
-                return false;
-            }
-        } else if (!properties.equals(other.properties)) {
             return false;
         }
         return true;
