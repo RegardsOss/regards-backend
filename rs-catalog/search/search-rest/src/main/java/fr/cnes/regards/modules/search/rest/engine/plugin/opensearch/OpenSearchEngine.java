@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.commons.compress.utils.Lists;
 import org.elasticsearch.common.Strings;
@@ -33,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Link;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
@@ -56,6 +58,7 @@ import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.opensearch.service.parser.QueryParser;
+import fr.cnes.regards.modules.search.domain.PropertyBound;
 import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
@@ -73,6 +76,7 @@ import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.at
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.formatter.geojson.GeojsonResponseBuilder;
 import fr.cnes.regards.modules.search.schema.OpenSearchDescription;
 import fr.cnes.regards.modules.search.service.IBusinessSearchService;
+import fr.cnes.regards.modules.search.service.ICatalogSearchService;
 
 /**
  * OpenSearch engine plugin
@@ -123,6 +127,9 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     @Autowired
     private IAuthenticationResolver authResolver;
+
+    @Autowired
+    protected ICatalogSearchService catalogSearchService;
 
     @PluginParameter(name = ENGINE_PARAMETERS, label = "Search engine global configuration")
     private EngineConfiguration engineConfiguration;
@@ -331,7 +338,8 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         String partialText = context.getQueryParams().getFirst(LegacySearchEngine.PARTIAL_TEXT);
         // Do business search
         List<String> values = searchService.retrieveEnumeratedPropertyValues(criterion, context.getSearchType(),
-                                                                             context.getPropertyName().get(),
+                                                                             context.getPropertyNames().stream()
+                                                                                     .findFirst().get(),
                                                                              context.getMaxCount().get(), partialText);
         // Build response
         return ResponseEntity.ok(values);
@@ -384,6 +392,15 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         }
 
         return new PageRequest(start, size);
+    }
+
+    @Override
+    public ResponseEntity<List<Resource<PropertyBound<?>>>> getPropertiesBounds(SearchContext context)
+            throws ModuleException {
+        List<PropertyBound<?>> bounds = catalogSearchService
+                .retrievePropertiesBounds(context.getPropertyNames(), parse(context), context.getSearchType());
+        return ResponseEntity
+                .ok(bounds.stream().map(bound -> new Resource<PropertyBound<?>>(bound)).collect(Collectors.toList()));
     }
 
 }

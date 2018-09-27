@@ -33,8 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.hateoas.Link;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -145,8 +143,7 @@ public class SearchEngineController {
     @ResourceAccess(description = "Extra mapping for global search", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchAllExtra(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
             @PathVariable(SearchEngineMappings.EXTRA) String extra, @RequestHeader HttpHeaders headers,
-            @RequestParam MultiValueMap<String, String> queryParams,
-            Pageable pageable) throws ModuleException {
+            @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) throws ModuleException {
         LOGGER.debug("Extra mapping \"{}\" handling delegated to engine \"{}\"", extra, engineType);
         return dispatcher.dispatchRequest(SearchContext
                 .build(SearchType.ALL, engineType, headers, getDecodedParams(queryParams), pageable).withExtra(extra));
@@ -389,6 +386,17 @@ public class SearchEngineController {
         return dispatcher.dispatchRequest(SearchContext
                 .build(SearchType.DATAOBJECTS, engineType, headers, getDecodedParams(queryParams), null)
                 .withPropertyName(propertyName).withMaxCount(maxCount));
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATAOBJECTS_PROPERTIES_BOUNDS)
+    @ResourceAccess(description = "Get dataobject property values", role = DefaultRole.PUBLIC)
+    public ResponseEntity<?> searchDataobjectPropertiesBounds(
+            @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType, @RequestHeader HttpHeaders headers,
+            @RequestParam MultiValueMap<String, String> queryParams) throws SearchException, ModuleException {
+        LOGGER.debug("Search dataobject properties bounds valuesdelegated to engine \"{}\"", engineType);
+        return dispatcher.dispatchRequest(SearchContext
+                .build(SearchType.DATAOBJECTS, engineType, headers, getDecodedParams(queryParams), null)
+                .withPropertyNames(queryParams.get(SearchEngineMappings.PROPERTY_NAMES)).withBoundCalculation());
     }
 
     /**

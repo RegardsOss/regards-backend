@@ -41,6 +41,7 @@ import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
+import fr.cnes.regards.modules.search.domain.PropertyBound;
 import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
@@ -48,6 +49,7 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResources;
 import fr.cnes.regards.modules.search.rest.SearchEngineController;
 import fr.cnes.regards.modules.search.service.IBusinessSearchService;
+import fr.cnes.regards.modules.search.service.ICatalogSearchService;
 
 /**
  * Legacy search engine for compatibility with legacy system
@@ -94,6 +96,9 @@ public class LegacySearchEngine implements
      */
     @Autowired
     protected IBusinessSearchService searchService;
+
+    @Autowired
+    protected ICatalogSearchService catalogSearchService;
 
     /**
      * To build resource links
@@ -223,7 +228,8 @@ public class LegacySearchEngine implements
         String partialText = context.getQueryParams().getFirst(PARTIAL_TEXT);
         // Do business search
         List<String> values = searchService.retrieveEnumeratedPropertyValues(criterion, context.getSearchType(),
-                                                                             context.getPropertyName().get(),
+                                                                             context.getPropertyNames().stream()
+                                                                                     .findFirst().get(),
                                                                              context.getMaxCount().get(), partialText);
         // Build response
         return ResponseEntity.ok(values);
@@ -239,5 +245,14 @@ public class LegacySearchEngine implements
                                                                        context.getDateTypes().get());
         // Build response
         return ResponseEntity.ok(summary);
+    }
+
+    @Override
+    public ResponseEntity<List<Resource<PropertyBound<?>>>> getPropertiesBounds(SearchContext context)
+            throws ModuleException {
+        List<PropertyBound<?>> bounds = catalogSearchService
+                .retrievePropertiesBounds(context.getPropertyNames(), parse(context), context.getSearchType());
+        return ResponseEntity
+                .ok(bounds.stream().map(bound -> new Resource<PropertyBound<?>>(bound)).collect(Collectors.toList()));
     }
 }

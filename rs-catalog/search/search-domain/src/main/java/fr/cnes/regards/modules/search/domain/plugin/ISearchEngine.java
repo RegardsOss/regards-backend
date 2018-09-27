@@ -19,14 +19,17 @@
 package fr.cnes.regards.modules.search.domain.plugin;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
+import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
+import fr.cnes.regards.modules.search.domain.PropertyBound;
 
 /**
  * Search engine plugin contract<br/>
@@ -105,7 +108,7 @@ public interface ISearchEngine<R, E, T, V extends Collection<?>> {
      * Search context :
      * <ol>
      * <li>{@link SearchContext} contains property name path parameter, get it using {@link Optional#get()} on
-     * {@link SearchContext#getPropertyName()}</li>
+     * {@link SearchContext#getPropertyNames()}</li>
      * <li>{@link SearchContext} contains max count result, get it using {@link Optional#get()} on
      * {@link SearchContext#getMaxCount()}</li>
      * <li>{@link SearchContext} may contain a dataset URN so you have to consider it using {@link Optional#isPresent()}
@@ -132,5 +135,23 @@ public interface ISearchEngine<R, E, T, V extends Collection<?>> {
     default ResponseEntity<DocFilesSummary> getSummary(SearchContext context) throws ModuleException {
         throw new UnsupportedOperationException(
                 "Computing file summary not implemented for engine " + context.getEngineType());
+    }
+
+    /**
+     * Get contextual properties bounds.<br/>
+     * <hr/>
+     * Search context :
+     * <ol>
+     * <li>{@link SearchContext} contains property names path parameter, get it using {@link Optional#get()} on
+     * {@link SearchContext#getPropertyNames()}</li>
+     * <li>{@link SearchContext} may contain a dataset URN so you have to consider it using {@link Optional#isPresent()}
+     * method on {@link SearchContext#getDatasetUrn()} and add it to the search criterions.</li>
+     * </ol>
+     * @throws ModuleException
+     */
+    default ResponseEntity<List<Resource<PropertyBound<?>>>> getPropertiesBounds(SearchContext context)
+            throws ModuleException {
+        throw new UnsupportedOperationException(
+                "Bound calculation not implemented for engine " + context.getEngineType());
     }
 }

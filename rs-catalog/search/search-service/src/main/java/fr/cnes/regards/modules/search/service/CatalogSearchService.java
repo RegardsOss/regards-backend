@@ -31,7 +31,10 @@ import java.util.StringJoiner;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.assertj.core.util.Lists;
 import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.metrics.stats.ParsedStats;
+import org.elasticsearch.search.aggregations.metrics.stats.StatsAggregationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +45,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 
@@ -54,6 +58,7 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
 import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.criterion.IFeatureCriterion;
 import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
@@ -73,6 +78,7 @@ import fr.cnes.regards.modules.opensearch.service.IOpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
+import fr.cnes.regards.modules.search.domain.PropertyBound;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
@@ -479,5 +485,58 @@ public class CatalogSearchService implements ICatalogSearchService {
             default:
                 throw new UnsupportedOperationException("Unsupported search type : " + searchType);
         }
+    }
+
+    @Override
+    public List<PropertyBound<?>> retrievePropertiesBounds(Set<String> propertyNames, ICriterion criterion,
+            SearchType type) throws SearchException {
+        List<PropertyBound<?>> bounds = Lists.newArrayList();
+        Map<AttributeModel, QueryableAttribute> qas = Maps.newHashMap();
+        propertyNames.forEach(property -> {
+            AttributeModel attr;
+            try {
+                attr = finder.findByName(property);
+                qas.put(attr, new QueryableAttribute(StaticProperties.FEATURE_NS + attr.getJsonPath(), null, false, 0));
+            } catch (OpenSearchUnknownParameter e) {
+                LOGGER.warn(e.getMessage(), e);
+            }
+        });
+        retrievePropertiesStats(criterion, type, qas.values());
+        qas.entrySet().forEach(qa -> {
+            AttributeModel attribute = qa.getKey();
+            Aggregation aggregation = qa.getValue().getAggregation();
+            if ((aggregation != null) && aggregation.getType().equals(StatsAggregationBuilder.NAME)) {
+                ParsedStats stats = (ParsedStats) aggregation;
+                switch (attribute.getType()) {
+                    case DATE_ARRAY:
+                    case DATE_INTERVAL:
+                    case DATE_ISO8601:
+                        bounds.add(new PropertyBound<String>(attribute.getJsonPath(), stats.getMinAsString(),
+                                stats.getMaxAsString()));
+                        break;
+                    case DOUBLE:
+                    case DOUBLE_ARRAY:
+                    case DOUBLE_INTERVAL:
+                    case INTEGER:
+                    case INTEGER_ARRAY:
+                    case INTEGER_INTERVAL:
+                        bounds.add(new PropertyBound<Double>(attribute.getJsonPath(), stats.getMin(), stats.getMax()));
+                        break;
+                    case LONG:
+                    case LONG_ARRAY:
+                    case LONG_INTERVAL:
+                        bounds.add(new PropertyBound<Long>(attribute.getJsonPath(),
+                                Double.doubleToLongBits(stats.getMin()), Double.doubleToLongBits(stats.getMax())));
+                        break;
+                    case STRING:
+                    case STRING_ARRAY:
+                    case URL:
+                    case BOOLEAN:
+                    default:
+                        break;
+                }
+            }
+        });
+        return bounds;
     }
 }

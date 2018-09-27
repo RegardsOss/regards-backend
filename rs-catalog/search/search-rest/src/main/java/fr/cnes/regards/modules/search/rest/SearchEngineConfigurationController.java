@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.search.rest;
 
 import java.util.Optional;
 
-import javax.annotation.PostConstruct;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,12 +47,10 @@ import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.legacy.LegacySearchEngine;
-import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchEngine;
 import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
 
 /**
@@ -80,15 +77,6 @@ public class SearchEngineConfigurationController implements IResourceController<
 
     @Autowired
     private ISearchEngineConfigurationService service;
-
-    @Autowired
-    private IPluginService pluginService;
-
-    @PostConstruct
-    public void init() {
-        pluginService.addPluginPackage(LegacySearchEngine.class.getPackage().getName());
-        pluginService.addPluginPackage(OpenSearchEngine.class.getPackage().getName());
-    }
 
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve all search engine confiurations", role = DefaultRole.PROJECT_ADMIN)
@@ -142,8 +130,8 @@ public class SearchEngineConfigurationController implements IResourceController<
         final Resource<SearchEngineConfiguration> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "retrieveConf", LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, element.getId()));
-        if ((element.getDatasetUrn() != null) || !element.getConfiguration().getPluginId()
-                .equals(LegacySearchEngine.PLUGIN_ID)) {
+        if ((element.getDatasetUrn() != null)
+                || !element.getConfiguration().getPluginId().equals(LegacySearchEngine.PLUGIN_ID)) {
             resourceService.addLink(resource, this.getClass(), "deleteConf", LinkRels.DELETE,
                                     MethodParamFactory.build(Long.class, element.getId()));
         }

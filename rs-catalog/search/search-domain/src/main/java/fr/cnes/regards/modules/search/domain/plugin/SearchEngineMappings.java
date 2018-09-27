@@ -63,6 +63,11 @@ public final class SearchEngineMappings {
      */
     private static final String PROPERTY_VALUES_MAPPING = "/properties/{propertyName}/values";
 
+    /**
+     * To get properties bounds
+     */
+    private static final String PROPERTIES_BOUNDS_MAPPING = "/properties/bounds";
+
     // Search on all entities
 
     private static final String ENTITIES_MAPPING = "/entities";
@@ -123,6 +128,9 @@ public final class SearchEngineMappings {
     public static final String SEARCH_DATAOBJECTS_PROPERTY_VALUES = SEARCH_DATAOBJECTS_MAPPING
             + PROPERTY_VALUES_MAPPING;
 
+    public static final String SEARCH_DATAOBJECTS_PROPERTIES_BOUNDS = SEARCH_DATAOBJECTS_MAPPING
+            + PROPERTIES_BOUNDS_MAPPING;
+
     public static final String GET_DATAOBJECT_MAPPING = DATAOBJECTS_MAPPING + URN_MAPPING;
 
     // Search dataobjects on a single dataset mapping
@@ -156,6 +164,8 @@ public final class SearchEngineMappings {
     public static final String URN = "urn";
 
     public static final String PROPERTY_NAME = "propertyName";
+
+    public static final String PROPERTY_NAMES = "properties";
 
     public static final String DATASET_URN = "datasetUrn";
 

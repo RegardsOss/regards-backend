@@ -18,8 +18,10 @@
  */
 package fr.cnes.regards.modules.search.domain.plugin;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
@@ -29,6 +31,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -83,7 +87,7 @@ public class SearchContext {
     /**
      * Property name to retrieve its available values
      */
-    private String propertyName;
+    private final Set<String> propertyNames = Sets.newHashSet();
 
     /**
      * Maximum result count for property values
@@ -105,6 +109,11 @@ public class SearchContext {
      * Request query parameters
      */
     private MultiValueMap<String, String> queryParams;
+
+    /**
+     * Indicates if the search context is a bound calculation or not.
+     */
+    private Boolean boundCalculation = false;
 
     /**
      * Pagination properties
@@ -151,12 +160,16 @@ public class SearchContext {
         this.extra = extra;
     }
 
-    public Optional<String> getPropertyName() {
-        return Optional.ofNullable(propertyName);
+    public Set<String> getPropertyNames() {
+        return this.propertyNames;
     }
 
-    public void setPropertyName(String propertyName) {
-        this.propertyName = propertyName;
+    public void setPropertyNames(Collection<String> propertyNames) {
+        this.propertyNames.addAll(propertyNames);
+    }
+
+    public void addPropertyName(String propertyName) {
+        this.propertyNames.add(propertyName);
     }
 
     public Optional<Integer> getMaxCount() {
@@ -197,6 +210,14 @@ public class SearchContext {
 
     public void setPageable(Pageable pageable) {
         this.pageable = pageable;
+    }
+
+    public Boolean getBoundCalculation() {
+        return boundCalculation;
+    }
+
+    public void setBoundCalculation(Boolean boundCalculation) {
+        this.boundCalculation = boundCalculation;
     }
 
     /**
@@ -253,7 +274,12 @@ public class SearchContext {
      * Fluent API
      */
     public SearchContext withPropertyName(String propertyName) {
-        this.propertyName = propertyName;
+        this.propertyNames.add(propertyName);
+        return this;
+    }
+
+    public SearchContext withPropertyNames(Collection<String> propertyNames) {
+        this.propertyNames.addAll(propertyNames);
         return this;
     }
 
@@ -280,4 +306,10 @@ public class SearchContext {
     public void setEngineRequestParserType(String engineType) {
         this.engineRequestParserType = engineType;
     }
+
+    public SearchContext withBoundCalculation() {
+        this.boundCalculation = true;
+        return this;
+    }
+
 }

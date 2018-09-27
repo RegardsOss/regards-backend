@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.search.service;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.springframework.data.domain.Pageable;
@@ -40,6 +41,7 @@ import fr.cnes.regards.modules.indexer.domain.aggregation.QueryableAttribute;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
+import fr.cnes.regards.modules.search.domain.PropertyBound;
 import fr.cnes.regards.modules.search.domain.plugin.SearchType;
 
 /**
@@ -163,4 +165,12 @@ public interface ICatalogSearchService {
      */
     List<Aggregation> retrievePropertiesStats(ICriterion criterion, SearchType searchType,
             Collection<QueryableAttribute> attributes) throws SearchException;
+
+    /**
+     * Retrieve {@link PropertyBound}s for each property given and {@link ICriterion} search.
+     * @return @link PropertyBound}s
+     * @throws SearchException
+     */
+    List<PropertyBound<?>> retrievePropertiesBounds(Set<String> propertyNames, ICriterion parse, SearchType type)
+            throws SearchException;
 }

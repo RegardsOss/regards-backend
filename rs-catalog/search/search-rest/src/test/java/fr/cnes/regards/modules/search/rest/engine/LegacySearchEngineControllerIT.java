@@ -206,6 +206,36 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
+    public void searchDataobjectPropertyBounds() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.length()", Matchers.equalTo(3)));
+        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$..[?(@.propertyName=='properties.diameter')]")
+                .exists());
+        customizer.addExpectation(MockMvcResultMatchers
+                .jsonPath("$..[?(@.propertyName=='properties.diameter')].lowerBound", Matchers.hasItem(1000.0)));
+        customizer.addExpectation(MockMvcResultMatchers
+                .jsonPath("$..[?(@.propertyName=='properties.diameter')].upperBound", Matchers.hasItem(143000.0)));
+
+        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$..[?(@.propertyName=='properties.sun_distance')]")
+                .exists());
+        customizer.addExpectation(MockMvcResultMatchers
+                .jsonPath("$..[?(@.propertyName=='properties.sun_distance')].lowerBound",
+                          Matchers.hasItem(4721979696256909312L)));
+        customizer.addExpectation(MockMvcResultMatchers
+                .jsonPath("$..[?(@.propertyName=='properties.sun_distance')].upperBound",
+                          Matchers.hasItem(4751501522070667264L)));
+
+        customizer.addExpectation(MockMvcResultMatchers
+                .jsonPath("$..[?(@.propertyName=='properties.TimePeriod.startDate')]").exists());
+
+        customizer.customizeRequestParam().param("properties", "diameter", "sun_distance", "TimePeriod.startDate",
+                                                 "unknown.attribute");
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_PROPERTIES_BOUNDS,
+                          customizer, "Search all error", ENGINE_TYPE);
+    }
+
+    @Test
     public void searchDataobjectsInDataset() {
 
         // Search dataset

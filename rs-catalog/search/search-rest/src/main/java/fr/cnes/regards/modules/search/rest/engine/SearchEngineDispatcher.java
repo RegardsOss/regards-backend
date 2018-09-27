@@ -102,11 +102,15 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
             if (context.getUrn().isPresent()) {
                 LOGGER.debug("Getting entity with URN : {}", context.getUrn().get().toString());
             }
-            if (context.getPropertyName().isPresent()) {
-                LOGGER.debug("Search values for property : {}", context.getPropertyName().get());
+            if (!context.getPropertyNames().isEmpty()) {
+                LOGGER.debug("Search values for properties : {}",
+                             context.getPropertyNames().stream().reduce("", (result, name) -> result + "," + name));
             }
             if (context.getMaxCount().isPresent()) {
                 LOGGER.debug("Maximum result count for property values : {}", context.getMaxCount().get());
+            }
+            if (context.getBoundCalculation()) {
+                LOGGER.debug("Search for properties bounds");
             }
             if (context.getDateTypes().isPresent()) {
                 context.getDateTypes().get().forEach(dataType -> LOGGER.debug("Summary data type : {}", dataType));
@@ -126,8 +130,10 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
             return (ResponseEntity<T>) searchEngine.extra(context);
         } else if (context.getUrn().isPresent()) {
             return (ResponseEntity<T>) searchEngine.getEntity(context);
-        } else if (context.getPropertyName().isPresent()) {
+        } else if (!context.getPropertyNames().isEmpty() && !context.getBoundCalculation()) {
             return (ResponseEntity<T>) searchEngine.getPropertyValues(context);
+        } else if (!context.getPropertyNames().isEmpty() && context.getBoundCalculation()) {
+            return (ResponseEntity<T>) searchEngine.getPropertiesBounds(context);
         } else if (context.getDateTypes().isPresent()) {
             return (ResponseEntity<T>) searchEngine.getSummary(context);
         } else {
@@ -145,6 +151,7 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
 
     }
 
+    @Override
     public ISearchEngine<?, ?, ?, ?> getSearchEngine(Optional<UniformResourceName> datasetUrn, String engineType)
             throws ModuleException {
         SearchEngineConfiguration conf = searchEngineService.retrieveConf(datasetUrn, engineType);
