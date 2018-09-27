@@ -46,10 +46,11 @@ import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 
 /**
- * Allocation strategy that map a given property value to a {@link IDataStorage}
+ * Allocation strategy that map a given property value to a {@link IDataStorage}.
  * @author Sylvain VISSIERE-GUERINET
  */
-@Plugin(author = "REGARDS Team", description = "Allocation Strategy plugin that map a property value to a data storage",
+@Plugin(author = "REGARDS Team", description = "Allocation Strategy plugin that map a property value to a data storage. "
+        + "In case the property is not set or the value is not mapped, it can be dispatched to a default datastorage.",
         id = "PropertyMappingAllocationStrategy", version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3",
         owner = "CNES", url = "https://regardsoss.github.io/")
 public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
@@ -65,6 +66,8 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
     public static final String PROPERTY_VALUE_DATA_STORAGE_MAPPING = "Property_value_data_storage_mapping";
 
     public static final String QUICKLOOK_DATA_STORAGE_CONFIGURATION_ID = "Quicklook_data_storage_configuration_id";
+    
+    public static final String DEFAULT_DATA_STORAGE_CONFIGURATION_ID = "Default_data_storage_configuration_id";
 
     /**
      * Class logger
@@ -101,6 +104,11 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
             label = "Quicklook data storage configuration id")
     private Long quicklookDataStorageConfigurationId;
 
+    @PluginParameter(name = DEFAULT_DATA_STORAGE_CONFIGURATION_ID,
+            description = "Data storage to use if there is no other property value match",
+            label = "Default data storage configuration id", optional = true)
+    private Long defaultDataStorageConfId;
+
     /**
      * Plugin init method
      */
@@ -135,21 +143,33 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
                     String propertyValue = JsonPath.read(gson.toJson(dataFile.getAip()), propertyPath);
                     Long chosenOne = valueConfIdMap.get(propertyValue);
                     if (chosenOne == null) {
-                        String failureCause = String
-                                .format("File(urls: %s) could not be associated to any data storage the allocation strategy do not have any mapping for the value of the property.",
-                                        dataFile.getUrls());
-                        LOG.error(failureCause);
-                        errors.addDispatchError(dataFile, failureCause);
+                        // in case the value is unknown, lets set it into the default
+                        if(defaultDataStorageConfId != null) {
+                            dispatch.put(defaultDataStorageConfId, dataFile);
+                        } else {
+                            String failureCause = String.format(
+                                    "File(urls: %s) could not be associated to any data storage the allocation strategy do not have any mapping for the value of the property.",
+                                    dataFile.getUrls());
+                            LOG.error(failureCause);
+                            errors.addDispatchError(dataFile, failureCause);
+                        }
                     } else {
                         //This allocation strategy only allows files to be stored into 1 DataStorage
                         dispatch.put(chosenOne, dataFile);
                     }
                 } catch (PathNotFoundException e) {
-                    String failureCause = String
-                            .format("File(url: %s) could not be associated to any data storage because the aip associated(ipId: %s) do not have the following property: %s",
-                                    dataFile.getUrls(), dataFile.getAip().getId(), propertyPath);
-                    LOG.error(failureCause, e);
-                    errors.addDispatchError(dataFile, failureCause);
+                    // in case the property is not present, lets set it into the default too.
+                    if(defaultDataStorageConfId != null) {
+                        dispatch.put(defaultDataStorageConfId, dataFile);
+                    } else {
+                        String failureCause = String.format(
+                                "File(url: %s) could not be associated to any data storage because the aip associated(ipId: %s) do not have the following property: %s",
+                                dataFile.getUrls(),
+                                dataFile.getAip().getId(),
+                                propertyPath);
+                        LOG.error(failureCause, e);
+                        errors.addDispatchError(dataFile, failureCause);
+                    }
                 }
             }
         }
