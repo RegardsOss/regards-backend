@@ -213,18 +213,17 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
         customizer.addExpectation(MockMvcResultMatchers.jsonPath("$..[?(@.propertyName=='properties.diameter')]")
                 .exists());
         customizer.addExpectation(MockMvcResultMatchers
-                .jsonPath("$..[?(@.propertyName=='properties.diameter')].lowerBound", Matchers.hasItem(1000.0)));
+                .jsonPath("$..[?(@.propertyName=='properties.diameter')].lowerBound", Matchers.hasItem(1000)));
         customizer.addExpectation(MockMvcResultMatchers
-                .jsonPath("$..[?(@.propertyName=='properties.diameter')].upperBound", Matchers.hasItem(143000.0)));
+                .jsonPath("$..[?(@.propertyName=='properties.diameter')].upperBound", Matchers.hasItem(143000)));
 
         customizer.addExpectation(MockMvcResultMatchers.jsonPath("$..[?(@.propertyName=='properties.sun_distance')]")
                 .exists());
         customizer.addExpectation(MockMvcResultMatchers
-                .jsonPath("$..[?(@.propertyName=='properties.sun_distance')].lowerBound",
-                          Matchers.hasItem(4721979696256909312L)));
+                .jsonPath("$..[?(@.propertyName=='properties.sun_distance')].lowerBound", Matchers.hasItem(50000000)));
         customizer.addExpectation(MockMvcResultMatchers
                 .jsonPath("$..[?(@.propertyName=='properties.sun_distance')].upperBound",
-                          Matchers.hasItem(4751501522070667264L)));
+                          Matchers.hasItem(4_489_435_980L)));
 
         customizer.addExpectation(MockMvcResultMatchers
                 .jsonPath("$..[?(@.propertyName=='properties.TimePeriod.startDate')]").exists());

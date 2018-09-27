@@ -517,16 +517,19 @@ public class CatalogSearchService implements ICatalogSearchService {
                     case DOUBLE:
                     case DOUBLE_ARRAY:
                     case DOUBLE_INTERVAL:
+                        bounds.add(new PropertyBound<Double>(attribute.getJsonPath(), stats.getMin(), stats.getMax()));
+                        break;
                     case INTEGER:
                     case INTEGER_ARRAY:
                     case INTEGER_INTERVAL:
-                        bounds.add(new PropertyBound<Double>(attribute.getJsonPath(), stats.getMin(), stats.getMax()));
+                        bounds.add(new PropertyBound<Integer>(attribute.getJsonPath(),
+                                (new Double(stats.getMin())).intValue(), (new Double(stats.getMax())).intValue()));
                         break;
                     case LONG:
                     case LONG_ARRAY:
                     case LONG_INTERVAL:
                         bounds.add(new PropertyBound<Long>(attribute.getJsonPath(),
-                                Double.doubleToLongBits(stats.getMin()), Double.doubleToLongBits(stats.getMax())));
+                                (new Double(stats.getMin())).longValue(), (new Double(stats.getMax())).longValue()));
                         break;
                     case STRING:
                     case STRING_ARRAY:
