@@ -26,7 +26,7 @@ import fr.cnes.regards.modules.storage.domain.IAipState;
  *
  * @author Marc Sordi
  */
-public class AipStateManager {
+public final class AipStateManager {
 
     private AipStateManager() {
         // Nothing to do

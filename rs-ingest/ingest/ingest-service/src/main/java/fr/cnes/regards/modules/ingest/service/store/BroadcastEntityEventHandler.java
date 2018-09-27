@@ -87,6 +87,7 @@ public class BroadcastEntityEventHandler
                     break;
                 case INDEX_ERROR:
                     handleEntitiesNotIndexed(event.getAipIds(), wrapper.getTenant());
+                    break;
                 case DELETE:
                 case CREATE:
                 case UPDATE:
