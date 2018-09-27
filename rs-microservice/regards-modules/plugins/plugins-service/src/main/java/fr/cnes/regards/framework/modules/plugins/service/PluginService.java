@@ -237,7 +237,7 @@ public class PluginService implements IPluginService {
                 // First disable all other active configurations
                 List<PluginConfiguration> confs = repos.findAll();
                 for (PluginConfiguration conf : confs) {
-                    if ((conf.getId().longValue() != plgConf.getId().longValue()) && conf.isActive() && !Collections
+                    if (!conf.getId().equals(plgConf.getId()) && conf.isActive() && !Collections
                             .disjoint(conf.getInterfaceNames(), uniqueActiveConfInterfaces)) {
                         conf.setIsActive(false);
                         LOGGER.info(
