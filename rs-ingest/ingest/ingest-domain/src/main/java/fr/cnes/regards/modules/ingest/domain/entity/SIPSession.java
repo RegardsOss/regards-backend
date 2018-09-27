@@ -66,6 +66,9 @@ public class SIPSession {
     @Transient
     private long deletedSipsCount = 0;
 
+    @Transient
+    private long generationErrorCount = 0;
+
     public String getId() {
         return id;
     }
@@ -136,5 +139,13 @@ public class SIPSession {
 
     public void setSubmissionErrorCount(long submissionErrorCount) {
         this.submissionErrorCount = submissionErrorCount;
+    }
+
+    public long getGenerationErrorCount() {
+        return generationErrorCount;
+    }
+
+    public void setGenerationErrorCount(long generationErrorCount) {
+        this.generationErrorCount = generationErrorCount;
     }
 }

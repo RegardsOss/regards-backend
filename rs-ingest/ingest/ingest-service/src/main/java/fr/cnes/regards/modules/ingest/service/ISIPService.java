@@ -94,11 +94,6 @@ public interface ISIPService {
     Boolean isDeletable(UniformResourceName sipId) throws EntityNotFoundException;
 
     /**
-     * Check if the SIP with the given ipId is available for new ingestion submission
-     */
-    Boolean isRetryable(UniformResourceName sipId) throws EntityNotFoundException;
-
-    /**
      * Save the given {@link SIPEntity} in DAO and update the associated session
      * @param {@link SIPEntity} to update
      * @return {@link SIPEntity} updated

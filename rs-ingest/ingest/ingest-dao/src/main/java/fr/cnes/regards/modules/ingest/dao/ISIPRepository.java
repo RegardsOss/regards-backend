@@ -29,6 +29,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
@@ -78,7 +79,7 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
 
     /**
      * Retrieve all {@link SIPEntity} for the given ipIds
-     * @param ipIds
+     * @param sipIds
      * @return {@link SIPEntity}s
      */
     @EntityGraph("graph.sip.entity.complete")
@@ -114,8 +115,9 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
      * Switch state for a given session
      */
     @Modifying
-    @Query("UPDATE SIPEntity s set s.state = ?1 where s.state = ?2 AND s.session = ?3")
-    void updateSIPEntityStateByStateAndSessionId(SIPState state, SIPState filterState, SIPSession session);
+    @Query("UPDATE SIPEntity s set s.state = :newState where s.state = :state AND s.session = :session")
+    void updateSIPEntityStateByStateAndSession(@Param("newState") SIPState state,
+            @Param("state") SIPState filterState, @Param("session") SIPSession session);
 
     /**
      * Count number of {@link SIPEntity} associated to a given session

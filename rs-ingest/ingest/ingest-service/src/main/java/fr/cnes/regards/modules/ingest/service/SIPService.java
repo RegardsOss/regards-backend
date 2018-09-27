@@ -153,22 +153,6 @@ public class SIPService implements ISIPService {
     }
 
     @Override
-    public Boolean isRetryable(UniformResourceName sipId) throws EntityNotFoundException {
-        Optional<SIPEntity> os = sipRepository.findOneBySipId(sipId.toString());
-        if (os.isPresent()) {
-            switch (os.get().getState()) {
-                case INVALID:
-                case AIP_GEN_ERROR:
-                    return true;
-                default:
-                    return false;
-            }
-        } else {
-            throw new EntityNotFoundException(sipId.toString(), SIPEntity.class);
-        }
-    }
-
-    @Override
     public SIPEntity saveSIPEntity(SIPEntity sip) {
         // do save SIP
         SIPEntity savedSip = sipRepository.save(sip);
