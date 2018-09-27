@@ -31,7 +31,6 @@ import java.util.StringJoiner;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.assertj.core.util.Lists;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.metrics.stats.ParsedStats;
 import org.elasticsearch.search.aggregations.metrics.stats.StatsAggregationBuilder;
@@ -45,6 +44,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
