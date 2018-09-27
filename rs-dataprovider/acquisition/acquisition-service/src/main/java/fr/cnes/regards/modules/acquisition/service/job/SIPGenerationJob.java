@@ -91,8 +91,8 @@ public class SIPGenerationJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        logger.info("[{}] : starting SIP generation job for the product <{}>", processingChain.getLabel(),
-                    product.getProductName());
+        logger.trace("[{}] : starting SIP generation job for the product <{}>", processingChain.getLabel(),
+                     product.getProductName());
 
         try {
             // Get an instance of the plugin

@@ -21,14 +21,12 @@ package fr.cnes.regards.modules.acquisition.service;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
@@ -78,16 +76,10 @@ public interface IProductService {
     void delete(Product product);
 
     /**
-     * @return list of {@link ProductState#FINISHED} or {@link ProductState#COMPLETED} products for specified
-     *         acquisition chain <b>not already scheduled</b>.
-     */
-    Set<Product> findChainProductsToSchedule(AcquisitionProcessingChain chain);
-
-    /**
-     * @return list of all products related to specified
+     * @return page of products related to specified
      *         acquisition chain.
      */
-    Set<Product> findChainProducts(AcquisitionProcessingChain chain);
+    Page<Product> findChainProducts(AcquisitionProcessingChain chain, Pageable pageable);
 
     /**
      * Schedule {@link Product} SIP generation
@@ -96,8 +88,6 @@ public interface IProductService {
      * @return scheduled {@link JobInfo}
      */
     JobInfo scheduleProductSIPGeneration(Product product, AcquisitionProcessingChain chain);
-
-    Set<Product> findByStatus(ProductState status);
 
     /**
      * Count number of products associated to the given {@link AcquisitionProcessingChain} and in the given state
@@ -186,9 +176,6 @@ public interface IProductService {
 
     /**
      * Search for a {@link Product} by his name
-     * @param productName
-     * @return
-     * @throws ModuleException
      */
     Optional<Product> searchProduct(String productName) throws ModuleException;
 

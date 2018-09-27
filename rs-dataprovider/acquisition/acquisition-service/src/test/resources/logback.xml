@@ -35,6 +35,7 @@
 	<logger name="fr.cnes.regards.framework.jpa.multitenant.resolver" level="INFO" />
 	<logger name="org.hibernate.engine.transaction.internal" level="INFO" />
 	<logger name="org.hibernate" level="INFO" />
+	<logger name="fr.cnes.regards.modules" level="DEBUG" />
 
 	<root level="info">
 		<appender-ref ref="STDOUT" />

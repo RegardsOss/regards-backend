@@ -20,7 +20,6 @@
 package fr.cnes.regards.modules.acquisition.service.job;
 
 import java.util.Map;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -30,11 +29,9 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
-import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
-import fr.cnes.regards.modules.acquisition.service.IProductService;
 
 /**
  * This class manages data driven product creation using following steps :
@@ -54,9 +51,6 @@ import fr.cnes.regards.modules.acquisition.service.IProductService;
 public class ProductAcquisitionJob extends AbstractJob<Void> {
 
     public static final String CHAIN_PARAMETER_ID = "chain";
-
-    @Autowired
-    private IProductService productService;
 
     @Autowired
     private IAcquisitionProcessingService processingService;
@@ -84,16 +78,7 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
             // First step : scan and register files
             processingService.scanAndRegisterFiles(processingChain);
             // Second step : validate in progress files
-            processingService.validateFiles(processingChain);
-            // Third step : build products with valid files
-            processingService.buildProducts(processingChain);
-
-            // For each complete product, creates and schedules a job to generate SIP
-            Set<Product> products = productService.findChainProductsToSchedule(processingChain);
-            for (Product p : products) {
-                productService.scheduleProductSIPGeneration(p, processingChain);
-            }
-
+            processingService.manageRegisteredFiles(processingChain);
         } catch (ModuleException e) {
             logger.error("Business error", e);
             throw new JobRuntimeException(e);

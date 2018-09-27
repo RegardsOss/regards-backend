@@ -127,12 +127,12 @@ public class Jason2IgdrProcessingChainTest extends AbstractAcquisitionChainTest 
     }
 
     @Override
-    protected int getExpectedFiles() {
+    protected long getExpectedFiles() {
         return 3;
     }
 
     @Override
-    protected int getExpectedProducts() {
+    protected long getExpectedProducts() {
         return 3;
     }
 
