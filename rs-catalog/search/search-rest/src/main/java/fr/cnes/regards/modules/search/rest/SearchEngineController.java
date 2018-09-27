@@ -392,11 +392,12 @@ public class SearchEngineController {
     @ResourceAccess(description = "Get dataobject property values", role = DefaultRole.PUBLIC)
     public ResponseEntity<?> searchDataobjectPropertiesBounds(
             @PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType, @RequestHeader HttpHeaders headers,
+            @RequestParam(name = SearchEngineMappings.PROPERTY_NAMES) List<String> propertyNames,
             @RequestParam MultiValueMap<String, String> queryParams) throws SearchException, ModuleException {
         LOGGER.debug("Search dataobject properties bounds valuesdelegated to engine \"{}\"", engineType);
         return dispatcher.dispatchRequest(SearchContext
                 .build(SearchType.DATAOBJECTS, engineType, headers, getDecodedParams(queryParams), null)
-                .withPropertyNames(queryParams.get(SearchEngineMappings.PROPERTY_NAMES)).withBoundCalculation());
+                .withPropertyNames(propertyNames).withBoundCalculation());
     }
 
     /**

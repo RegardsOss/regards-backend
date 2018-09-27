@@ -279,7 +279,9 @@ public class SearchContext {
     }
 
     public SearchContext withPropertyNames(Collection<String> propertyNames) {
-        this.propertyNames.addAll(propertyNames);
+        if ((propertyNames != null) && !propertyNames.isEmpty()) {
+            this.propertyNames.addAll(propertyNames);
+        }
         return this;
     }
 
