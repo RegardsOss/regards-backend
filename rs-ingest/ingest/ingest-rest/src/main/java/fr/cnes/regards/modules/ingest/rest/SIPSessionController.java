@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.PagedResources;
@@ -83,11 +85,11 @@ public class SIPSessionController implements IResourceController<SIPSession> {
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<PagedResources<Resource<SIPSession>>> search(
             @RequestParam(name = REQUEST_PARAM_ID, required = false) String id,
-            @RequestParam(name = REQUEST_PARAM_FROM,
-                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
-            @RequestParam(name = REQUEST_PARAM_TO,
-                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to,
-            Pageable pageable, PagedResourcesAssembler<SIPSession> pAssembler) {
+            @RequestParam(name = REQUEST_PARAM_FROM, required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
+            @RequestParam(name = REQUEST_PARAM_TO, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                    OffsetDateTime to, @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            PagedResourcesAssembler<SIPSession> pAssembler) {
         Page<SIPSession> sipSessions = sipSessionService.search(id, from, to, pageable);
         PagedResources<Resource<SIPSession>> resources = toPagedResources(sipSessions, pAssembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
