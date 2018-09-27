@@ -237,7 +237,7 @@ public class SIPController implements IResourceController<SIPEntity> {
                 resourceService.addLink(resource, this.getClass(), "deleteSipEntity", LinkRels.DELETE,
                                         MethodParamFactory.build(String.class, sipEntity.getSipId().toString()));
             }
-            if (sipService.isRetryable(sipEntity.getSipIdUrn())) {
+            if (ingestService.isRetryable(sipEntity.getSipIdUrn())) {
                 resourceService.addLink(resource, this.getClass(), "retrySipEntityIngest", "retry",
                                         MethodParamFactory.build(String.class, sipEntity.getSipId().toString()));
             }
