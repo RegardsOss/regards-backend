@@ -66,13 +66,15 @@ public interface ICachedFileService {
 
     /**
      * Purge cache
+     * @return number of purged files
      */
-    void purge();
+    int purge();
 
     /**
      * Restore all files waiting for restoring
+     * @returnnumber of restoration scheduled
      */
-    void restoreQueued();
+    int restoreQueued();
 
     void processEvent(TenantConnectionReady event);
 }

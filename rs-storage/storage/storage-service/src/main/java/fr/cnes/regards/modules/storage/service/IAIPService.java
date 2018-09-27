@@ -74,8 +74,9 @@ public interface IAIPService {
 
     /**
      * Asynchronusly makes the heavy work of storing AIP metadata.
+     * @return number of AIP metadata schduled for storage
      */
-    void storeMetadata();
+    long storeMetadata();
 
     /**
      * Schedule asynchronous jobs to handle failed storage of existing {@link AIP}.<br/>
@@ -226,8 +227,9 @@ public interface IAIPService {
 
     /**
      * Updates all AIP metadta to update.
+     * @return number of AIP update scheduled.
      */
-    void updateAipMetadata();
+    int updateAipMetadata();
 
     /**
      * Remove an aip from the system. Its file are deleted if and only if no other aip point to them.
@@ -245,8 +247,9 @@ public interface IAIPService {
 
     /**
      * Schedule deletion of datafiles marked for deletion
+     * @return number of scheduled aip to delete
      */
-    void doDelete();
+    int doDelete();
 
     /**
      * Remove {@link AIP}s associated the given sip, through its ip id
@@ -376,8 +379,9 @@ public interface IAIPService {
     /**
      * Handle physical deletion of AIPs for each entity in state DELETED and associated to no other
      * StorageDataFile. This state is reached when all locations of all DataObject are deleted for an AIP metadata.
+     * @return number of elements deleted or scheduled for deletion
      */
-    void removeDeletedAIPMetadatas();
+    int removeDeletedAIPMetadatas();
 
     /**
      * Schedule storage for the given page of AIP data following these steps :

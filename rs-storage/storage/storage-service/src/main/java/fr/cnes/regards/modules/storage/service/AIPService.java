@@ -397,17 +397,20 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public void storeMetadata() {
+    public long storeMetadata() {
+        long nbScheduled = 0;
         Set<StorageDataFile> metadataToStore;
         do {
             // first lets get AIP that are not fully stored(at least metadata are not stored)
             metadataToStore = prepareNotFullyStored();
+            nbScheduled = nbScheduled + metadataToStore.size();
             // now that we know all the metadata that should be stored, lets schedule their storage!
             if (!metadataToStore.isEmpty()) {
                 LOGGER.debug("Scheduling {} new metadata files for storage.", metadataToStore.size());
                 scheduleStorageMetadata(metadataToStore);
             }
         } while (!metadataToStore.isEmpty());
+        return nbScheduled;
     }
 
     /**
@@ -1079,11 +1082,12 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public void updateAipMetadata() {
+    public int updateAipMetadata() {
         Set<UpdatableMetadataFile> metadataToUpdate = prepareUpdatedAIP();
         if (!metadataToUpdate.isEmpty()) {
             scheduleStorageMetadataUpdate(metadataToUpdate);
         }
+        return metadataToUpdate.size();
     }
 
     @Override
@@ -1169,7 +1173,7 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public void doDelete() {
+    public int doDelete() {
         Page<StorageDataFile> pageToDelete = dataFileDao.findPageByState(DataFileState.TO_BE_DELETED,
                                                                          new PageRequest(0, aipIterationLimit));
         if (pageToDelete.hasContent()) {
@@ -1179,6 +1183,7 @@ public class AIPService implements IAIPService {
                 LOGGER.error("ERROR occured during deletion scheduling of datafiles.", e);
             }
         }
+        return pageToDelete.getNumberOfElements();
     }
 
     @Override
@@ -1471,7 +1476,7 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public void removeDeletedAIPMetadatas() {
+    public int removeDeletedAIPMetadatas() {
         Page<AIP> aips = aipDao.findAllByStateService(AIPState.DELETED, new PageRequest(0, aipIterationLimit));
         for (AIP aip : aips) {
             // lets count the number of datafiles per aip:
@@ -1500,6 +1505,7 @@ public class AIPService implements IAIPService {
                 //if there is more than one then deletion has not been executed yet, do nothing
             }
         }
+        return aips.getNumberOfElements();
     }
 
     @Override

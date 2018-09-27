@@ -78,16 +78,18 @@ public class ScheduleStorageTasks {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
+                long count = 0;
                 long startTime = System.currentTimeMillis();
                 // Extract data files from valid AIP (microservice concurrent action)
                 Pageable page = new PageRequest(0, aipIterationLimit);
                 Page<AIP> createdAips;
                 do {
                     createdAips = aipService.storePage(page);
+                    count = count + createdAips.getNumberOfElements();
                     page = createdAips.nextPageable();
                 } while (createdAips.hasNext());
 
-                LOGGER.trace("AIP data scheduled in {}ms", System.currentTimeMillis() - startTime);
+                LOGGER.trace("AIP data scheduled in {}ms for {} aips", System.currentTimeMillis() - startTime, count);
 
             } finally {
                 runtimeTenantResolver.clearTenant();
@@ -104,7 +106,10 @@ public class ScheduleStorageTasks {
     public void storeMetadata() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            aipService.storeMetadata();
+            long startTime = System.currentTimeMillis();
+            long nbScheduled = aipService.storeMetadata();
+            LOGGER.trace("AIP metadata scheduled in {}ms for {} aips", System.currentTimeMillis() - startTime,
+                         nbScheduled);
             runtimeTenantResolver.clearTenant();
         }
     }
@@ -119,8 +124,11 @@ public class ScheduleStorageTasks {
         // Then lets get AIP that should be stored again after an update
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            aipService.updateAipMetadata();
+            long startTime = System.currentTimeMillis();
+            int nbScheduled = aipService.updateAipMetadata();
             aipService.removeDeletedAIPMetadatas();
+            LOGGER.trace("AIP metadata update scheduled in {}ms for {} aips", System.currentTimeMillis() - startTime,
+                         nbScheduled);
             runtimeTenantResolver.clearTenant();
         }
     }
@@ -132,7 +140,10 @@ public class ScheduleStorageTasks {
     public void deleteMetadata() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            aipService.removeDeletedAIPMetadatas();
+            long startTime = System.currentTimeMillis();
+            int nbDeleted = aipService.removeDeletedAIPMetadatas();
+            LOGGER.trace("AIP metadata delete scheduled in {}ms for {} aips", System.currentTimeMillis() - startTime,
+                         nbDeleted);
             runtimeTenantResolver.clearTenant();
         }
     }
@@ -144,7 +155,10 @@ public class ScheduleStorageTasks {
     public void deleteData() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            aipService.doDelete();
+            long startTime = System.currentTimeMillis();
+            int nbScheduled = aipService.doDelete();
+            LOGGER.trace("AIP data delete scheduled in {}ms for {} aips", System.currentTimeMillis() - startTime,
+                         nbScheduled);
             runtimeTenantResolver.clearTenant();
         }
     }
@@ -157,7 +171,9 @@ public class ScheduleStorageTasks {
     public void cleanCache() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            cachedFileService.purge();
+            long startTime = System.currentTimeMillis();
+            int nbPurged = cachedFileService.purge();
+            LOGGER.trace("Cache clean done in {}ms for {} files", System.currentTimeMillis() - startTime, nbPurged);
             runtimeTenantResolver.clearTenant();
         }
     }
@@ -170,7 +186,10 @@ public class ScheduleStorageTasks {
     public void restoreToCache() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            cachedFileService.restoreQueued();
+            long startTime = System.currentTimeMillis();
+            int nbScheduled = cachedFileService.restoreQueued();
+            LOGGER.trace("Cache restoration done in {}ms for {} files", System.currentTimeMillis() - startTime,
+                         nbScheduled);
             runtimeTenantResolver.clearTenant();
         }
     }
@@ -180,7 +199,9 @@ public class ScheduleStorageTasks {
     public void monitorDataStorages() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
+            long startTime = System.currentTimeMillis();
             dataStorageService.monitorDataStorages();
+            LOGGER.trace("Data storages monitoring done in {}ms", System.currentTimeMillis() - startTime);
             runtimeTenantResolver.clearTenant();
         }
     }
