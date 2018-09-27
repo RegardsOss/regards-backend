@@ -30,6 +30,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -86,7 +88,8 @@ public class IngestProcessingChainController implements IResourceController<Inge
     @ResourceAccess(description = "Search for IngestProcessingChain with optional criterion.")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<PagedResources<Resource<IngestProcessingChain>>> search(
-            @RequestParam(name = "name", required = false) String name, Pageable pageable,
+            @RequestParam(name = "name", required = false) String name,
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<IngestProcessingChain> pAssembler) {
         Page<IngestProcessingChain> chains = ingestProcessingService.searchChains(name, pageable);
         PagedResources<Resource<IngestProcessingChain>> resources = toPagedResources(chains, pAssembler);
@@ -147,9 +150,9 @@ public class IngestProcessingChainController implements IResourceController<Inge
             // FIXME maybe already done!
             pResponse.getOutputStream().flush();
         } catch (IOException e) {
-            String message = String.format(
-                                           "Error with servlet output stream while exporting ingest processing chain %s.",
-                                           chain.getName());
+            String message = String
+                    .format("Error with servlet output stream while exporting ingest processing chain %s.",
+                            chain.getName());
             LOGGER.error(message, e);
             throw new ModuleException(e);
         }

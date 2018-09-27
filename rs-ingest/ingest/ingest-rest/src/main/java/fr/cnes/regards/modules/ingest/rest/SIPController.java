@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.PagedResources;
@@ -157,7 +159,8 @@ public class SIPController implements IResourceController<SIPEntity> {
                     required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
             @RequestParam(name = REQUEST_PARAM_STATE, required = false) List<SIPState> state,
             @RequestParam(name = REQUEST_PARAM_PROCESSING, required = false) String processing,
-            @RequestParam(name = REQUEST_PARAM_SESSION_ID, required = false) String sessionId, Pageable pageable,
+            @RequestParam(name = REQUEST_PARAM_SESSION_ID, required = false) String sessionId,
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<SIPEntity> pAssembler) {
         Page<SIPEntity> sipEntities = sipService.search(providerId, sessionId, owner, from, state, processing,
                                                         pageable);
