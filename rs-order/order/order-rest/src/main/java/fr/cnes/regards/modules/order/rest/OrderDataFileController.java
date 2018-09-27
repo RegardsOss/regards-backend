@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.order.rest;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -94,6 +95,9 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
         int cpt = 0;
         List<OrderDataFile> dataFiles = new ArrayList<>();
         for (FilesTask filesTask : dsTask.getReliantTasks()) {
+            // Sort by filename before managinf pagination
+            List<OrderDataFile> sortedDataFiles = new ArrayList<>(filesTask.getFiles());
+            sortedDataFiles.sort(Comparator.comparing(OrderDataFile::getFilename));
             for (OrderDataFile dataFile : filesTask.getFiles()) {
                 if ((cpt >= pageRequest.getOffset()) && (cpt < (pageRequest.getOffset() + pageRequest.getPageSize()))) {
                     dataFiles.add(dataFile);

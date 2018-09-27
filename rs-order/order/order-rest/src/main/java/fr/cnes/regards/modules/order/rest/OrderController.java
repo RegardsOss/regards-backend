@@ -181,8 +181,9 @@ public class OrderController implements IResourceController<OrderDto> {
     @RequestMapping(method = RequestMethod.GET, path = ADMIN_ROOT_PATH)
     public ResponseEntity<PagedResources<Resource<OrderDto>>> findAll(
             @RequestParam(value = "user", required = false) String user, Pageable pageRequest) {
-        Page<Order> orderPage = (Strings.isNullOrEmpty(user)) ? orderService.findAll(pageRequest)
-                : orderService.findAll(user, pageRequest);
+        Page<Order> orderPage = (Strings.isNullOrEmpty(user)) ?
+                orderService.findAll(pageRequest) :
+                orderService.findAll(user, pageRequest);
         return ResponseEntity.ok(toPagedResources(orderPage.map(OrderDto::fromOrder), orderDtoPagedResourcesAssembler));
     }
 
@@ -199,10 +200,8 @@ public class OrderController implements IResourceController<OrderDto> {
     public ResponseEntity<PagedResources<Resource<OrderDto>>> findAll(Pageable pageRequest) {
         String user = authResolver.getUser();
         return ResponseEntity.ok(toPagedResources(
-                                                  orderService.findAll(user, pageRequest, OrderStatus.DELETED,
-                                                                       OrderStatus.REMOVED)
-                                                          .map(OrderDto::fromOrder),
-                                                  orderDtoPagedResourcesAssembler));
+                orderService.findAll(user, pageRequest, OrderStatus.DELETED, OrderStatus.REMOVED)
+                        .map(OrderDto::fromOrder), orderDtoPagedResourcesAssembler));
     }
 
     @ResourceAccess(description = "Download a Zip file containing all currently available files",
@@ -225,7 +224,7 @@ public class OrderController implements IResourceController<OrderDto> {
 
         // Stream the response
         return new ResponseEntity<>(os -> orderService.downloadOrderCurrentZip(order.getOwner(), availableFiles, os),
-                HttpStatus.OK);
+                                    HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Download a Metalink file containing all files", role = DefaultRole.REGISTERED_USER)
@@ -266,8 +265,9 @@ public class OrderController implements IResourceController<OrderDto> {
      */
     private ResponseEntity<StreamingResponseBody> createMetalinkDownloadResponse(@PathVariable("orderId") Long orderId,
             HttpServletResponse response) {
-        response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=order_" + orderId + "_"
-                + OffsetDateTime.now().toString() + ".metalink");
+        response.addHeader(HttpHeaders.CONTENT_DISPOSITION,
+                           "attachment;filename=order_" + orderId + "_" + OffsetDateTime.now().toString()
+                                   + ".metalink");
         response.setContentType("application/metalink+xml");
 
         // Stream the response

@@ -145,7 +145,7 @@ public class BasketController implements IResourceController<Basket> {
     @RequestMapping(method = RequestMethod.DELETE)
     public ResponseEntity<Void> empty() {
         basketService.deleteIfExists(authResolver.getUser());
-        return ResponseEntity.<Void> noContent().build();
+        return ResponseEntity.<Void>noContent().build();
     }
 
     @Override
