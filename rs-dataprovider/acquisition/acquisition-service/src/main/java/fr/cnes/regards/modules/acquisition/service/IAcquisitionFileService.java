@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 
 /**
- * Interface to handle {@link Acquisitionfile} entities
+ * Interface to handle {@link AcquisitionFile} entities
  * @author Sébastien Binda
  *
  */
@@ -43,21 +43,21 @@ public interface IAcquisitionFileService {
      * @param states {@link AcquisitionFileState}s
      * @return number of matching {@link AcquisitionFile}s
      */
-    public long countByChainAndStateIn(AcquisitionProcessingChain chain, List<AcquisitionFileState> states);
+     long countByChainAndStateIn(AcquisitionProcessingChain chain, List<AcquisitionFileState> states);
 
     /**
      * Count number of {@link AcquisitionFile}s associated to the given {@link AcquisitionProcessingChain}
      * @param chain {@link AcquisitionProcessingChain}
      * @return number of matching {@link AcquisitionFile}s
      */
-    public long countByChain(AcquisitionProcessingChain chain);
+     long countByChain(AcquisitionProcessingChain chain);
 
     /**
      * Save or update given {@link AcquisitionFile}
      * @param file {@link AcquisitionFile}
      * @return saved or updated {@link AcquisitionFile}
      */
-    public AcquisitionFile save(AcquisitionFile file);
+     AcquisitionFile save(AcquisitionFile file);
 
     /**
      * Search for {@link AcquisitionFile} entities matching parameters
@@ -69,7 +69,7 @@ public interface IAcquisitionFileService {
      * @param pageable
      * @return {@link AcquisitionFile}s
      */
-    public Page<AcquisitionFile> search(String filePath, List<AcquisitionFileState> state, Long productId, Long chainId,
+     Page<AcquisitionFile> search(String filePath, List<AcquisitionFileState> state, Long productId, Long chainId,
             OffsetDateTime from, Pageable pageable);
 
 }

@@ -24,6 +24,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.PagedResources;
@@ -75,8 +77,6 @@ public class AcquisitionFileController implements IResourceController<Acquisitio
      * @param state {@link AcquisitionFileState}
      * @param productId {@link Long} identifier of {@link Product}
      * @param from {@link OffsetDateTime}
-     * @param pageable
-     * @param assembler
      * @return {@link AcquisitionFile}s
      */
     @RequestMapping(method = RequestMethod.GET)
@@ -86,9 +86,10 @@ public class AcquisitionFileController implements IResourceController<Acquisitio
             @RequestParam(name = REQUEST_PARAM_STATE, required = false) List<AcquisitionFileState> state,
             @RequestParam(name = REQUEST_PARAM_PRODUCT_ID, required = false) Long productId,
             @RequestParam(name = REQUEST_PARAM_CHAIN_ID, required = false) Long chainId,
-            @RequestParam(name = REQUEST_PARAM_FROM,
-                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
-            Pageable pageable, PagedResourcesAssembler<AcquisitionFile> assembler) {
+            @RequestParam(name = REQUEST_PARAM_FROM, required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            PagedResourcesAssembler<AcquisitionFile> assembler) {
         Page<AcquisitionFile> files = fileService.search(filePath, state, productId, chainId, from, pageable);
         return new ResponseEntity<>(toPagedResources(files, assembler), HttpStatus.OK);
     }

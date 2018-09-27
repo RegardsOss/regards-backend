@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.acquisition.rest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -63,17 +65,15 @@ public class MonitoringController implements IResourceController<AcquisitionProc
      * @param mode {@link AcquisitionProcessingChainMode} search criteria
      * @param running {@link Boolean} search criteria
      * @param label {@link String} search criteria
-     * @param pageable
-     * @param assembler
      * @return page of {@link AcquisitionProcessingChainMonitor}s
-     * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Search for acquisition processing chain summaries", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<PagedResources<Resource<AcquisitionProcessingChainMonitor>>> search(
             @RequestParam(name = "mode", required = false) AcquisitionProcessingChainMode mode,
             @RequestParam(name = "running", required = false) Boolean running,
-            @RequestParam(name = "label", required = false) String label, Pageable pageable,
+            @RequestParam(name = "label", required = false) String label,
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<AcquisitionProcessingChainMonitor> assembler) throws ModuleException {
         Page<AcquisitionProcessingChainMonitor> results = service
                 .buildAcquisitionProcessingChainSummaries(label, running, mode, pageable);
@@ -85,10 +85,11 @@ public class MonitoringController implements IResourceController<AcquisitionProc
             Object... pExtras) {
         Resource<AcquisitionProcessingChainMonitor> resource = resourceService.toResource(element);
         if ((element != null) && (element.getChain() != null)) {
-            if (AcquisitionProcessingChainMode.MANUAL.equals(element.getChain().getMode())
-                    && !element.getChain().isLocked() && element.getChain().isActive()) {
-                resourceService.addLink(resource, AcquisitionProcessingChainController.class, "startManualChain",
-                                        "start", MethodParamFactory.build(Long.class, element.getChain().getId()));
+            if (AcquisitionProcessingChainMode.MANUAL.equals(element.getChain().getMode()) && !element.getChain()
+                    .isLocked() && element.getChain().isActive()) {
+                resourceService
+                        .addLink(resource, AcquisitionProcessingChainController.class, "startManualChain", "start",
+                                 MethodParamFactory.build(Long.class, element.getChain().getId()));
             }
             if (element.isActive()) {
                 resourceService.addLink(resource, AcquisitionProcessingChainController.class, "stopChain", "stop",

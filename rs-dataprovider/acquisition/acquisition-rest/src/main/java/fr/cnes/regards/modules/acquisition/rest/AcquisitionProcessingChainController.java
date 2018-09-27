@@ -41,6 +41,8 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -67,9 +69,7 @@ import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService
 
 /**
  * {@link AcquisitionProcessingChain} REST module controller
- *
  * @author Christophe Mertz
- *
  */
 @RestController
 @RequestMapping(AcquisitionProcessingChainController.TYPE_PATH)
@@ -103,10 +103,11 @@ public class AcquisitionProcessingChainController implements IResourceController
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "List all the chains", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<PagedResources<Resource<AcquisitionProcessingChain>>> retrieveAll(Pageable pageable,
+    public ResponseEntity<PagedResources<Resource<AcquisitionProcessingChain>>> retrieveAll(
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<AcquisitionProcessingChain> assembler) throws ModuleException {
         return new ResponseEntity<>(toPagedResources(processingService.getAllChains(pageable), assembler),
-                HttpStatus.OK);
+                                    HttpStatus.OK);
     }
 
     /**
@@ -180,8 +181,8 @@ public class AcquisitionProcessingChainController implements IResourceController
         resourceService.addLink(resource, this.getClass(), "update", LinkRels.UPDATE,
                                 MethodParamFactory.build(Long.class, element.getId()),
                                 MethodParamFactory.build(AcquisitionProcessingChain.class));
-        if (AcquisitionProcessingChainMode.MANUAL.equals(element.getMode()) && !element.isLocked()
-                && element.isActive()) {
+        if (AcquisitionProcessingChainMode.MANUAL.equals(element.getMode()) && !element.isLocked() && element
+                .isActive()) {
             resourceService.addLink(resource, this.getClass(), "startManualChain", "start",
                                     MethodParamFactory.build(Long.class, element.getId()));
         }
