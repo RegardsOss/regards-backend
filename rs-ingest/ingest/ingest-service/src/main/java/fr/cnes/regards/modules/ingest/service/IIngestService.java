@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.service;
 import java.io.InputStream;
 import java.util.Collection;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
@@ -57,4 +58,10 @@ public interface IIngestService {
      * @throws ModuleException
      */
     SIPDto retryIngest(UniformResourceName sipId) throws ModuleException;
+
+    /**
+     * Check if the SIP with the given ipId is available for new ingestion submission
+     */
+    Boolean isRetryable(UniformResourceName sipId) throws EntityNotFoundException;
+
 }

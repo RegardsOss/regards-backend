@@ -57,4 +57,5 @@ public interface ISIPSessionService {
      */
     Collection<RejectedSip> deleteSIPSession(String id) throws ModuleException;
 
+    void retryAipGeneration(String id);
 }

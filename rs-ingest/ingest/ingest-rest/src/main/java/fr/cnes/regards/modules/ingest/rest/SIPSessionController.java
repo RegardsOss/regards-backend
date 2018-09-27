@@ -61,7 +61,9 @@ public class SIPSessionController implements IResourceController<SIPSession> {
 
     public static final String REQUEST_PARAM_TO = "to";
 
-    public static final String RETRY_MAPPING = ID_PATH + "/retry";
+    public static final String RETRY_SUBMISSION_MAPPING = ID_PATH + "/retry/submission";
+
+    public static final String RETRY_GENERATION_MAPPING = ID_PATH + "/retry/generation";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPSessionController.class);
 
@@ -102,9 +104,16 @@ public class SIPSessionController implements IResourceController<SIPSession> {
     }
 
     @ResourceAccess(description = "Retry session AIP submission")
-    @RequestMapping(value = RETRY_MAPPING, method = RequestMethod.PUT)
+    @RequestMapping(value = RETRY_SUBMISSION_MAPPING, method = RequestMethod.PUT)
     public ResponseEntity<Void> retrySessionSubmission(@PathVariable("id") String id) throws ModuleException {
         aipService.retryAipSubmission(id);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @ResourceAccess(description = "Retry session AIP generation")
+    @RequestMapping(value = RETRY_GENERATION_MAPPING, method = RequestMethod.PUT)
+    public ResponseEntity<Void> retrySessionGeneration(@PathVariable("id") String id) throws ModuleException {
+        sipSessionService.retryAipGeneration(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -123,7 +132,11 @@ public class SIPSessionController implements IResourceController<SIPSession> {
         resourceService.addLink(resource, this.getClass(), "deleteSipEntityBySessionId", LinkRels.DELETE,
                                 MethodParamFactory.build(String.class, sipSession.getId()));
         if (sipSession.getSubmissionErrorCount() > 0) {
-            resourceService.addLink(resource, this.getClass(), "retrySessionSubmission", "retry",
+            resourceService.addLink(resource, this.getClass(), "retrySessionSubmission", "retrySubmission",
+                                    MethodParamFactory.build(String.class, sipSession.getId()));
+        }
+        if(sipSession.getGenerationErrorCount() > 0) {
+            resourceService.addLink(resource, this.getClass(), "retrySessionGeneration", "retryGeneration",
                                     MethodParamFactory.build(String.class, sipSession.getId()));
         }
         return resource;
