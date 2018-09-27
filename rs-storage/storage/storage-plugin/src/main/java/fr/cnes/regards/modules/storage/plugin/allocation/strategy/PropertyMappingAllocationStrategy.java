@@ -32,7 +32,6 @@ import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
@@ -49,8 +48,9 @@ import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
  * Allocation strategy that map a given property value to a {@link IDataStorage}.
  * @author Sylvain VISSIERE-GUERINET
  */
-@Plugin(author = "REGARDS Team", description = "Allocation Strategy plugin that map a property value to a data storage. "
-        + "In case the property is not set or the value is not mapped, it can be dispatched to a default datastorage.",
+@Plugin(author = "REGARDS Team",
+        description = "Allocation Strategy plugin that map a property value to a data storage. "
+                + "In case the property is not set or the value is not mapped, it can be dispatched to a default datastorage.",
         id = "PropertyMappingAllocationStrategy", version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3",
         owner = "CNES", url = "https://regardsoss.github.io/")
 public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
@@ -66,13 +66,15 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
     public static final String PROPERTY_VALUE_DATA_STORAGE_MAPPING = "Property_value_data_storage_mapping";
 
     public static final String QUICKLOOK_DATA_STORAGE_CONFIGURATION_ID = "Quicklook_data_storage_configuration_id";
-    
+
     public static final String DEFAULT_DATA_STORAGE_CONFIGURATION_ID = "Default_data_storage_configuration_id";
 
     /**
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(PropertyMappingAllocationStrategy.class);
+
+    private static final String STORAGE_DIRECTORY = "Storage_directory";
 
     /**
      * {@link Gson} instance
@@ -109,6 +111,9 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
             label = "Default data storage configuration id", optional = true)
     private Long defaultDataStorageConfId;
 
+    @PluginParameter(name = STORAGE_DIRECTORY, label = "Storage directory for plugin that requires it", optional = true)
+    private String storageDirectory;
+
     /**
      * Plugin init method
      */
@@ -131,9 +136,13 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
             DispatchErrors errors) {
         Multimap<Long, StorageDataFile> dispatch = HashMultimap.create();
         // First lets construct a map, which is way better to manipulate
-        Map<String, Long> valueConfIdMap = propertyDataStorageMappings.stream().collect(Collectors
-                .toMap(PropertyDataStorageMapping::getPropertyValue, PropertyDataStorageMapping::getDataStorageConfId));
+        Map<String, Long> valueConfIdMap = propertyDataStorageMappings.stream().collect(Collectors.toMap(
+                PropertyDataStorageMapping::getPropertyValue,
+                PropertyDataStorageMapping::getDataStorageConfId));
         for (StorageDataFile dataFile : dataFilesToHandle) {
+            if (storageDirectory != null) {
+                dataFile.setStorageDirectory(storageDirectory);
+            }
             // now lets extract the property value from the AIP
             if (dataFile.isOnlineMandatory()) {
                 //This allocation strategy only allows files to be stored into 1 DataStorage
@@ -144,7 +153,7 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
                     Long chosenOne = valueConfIdMap.get(propertyValue);
                     if (chosenOne == null) {
                         // in case the value is unknown, lets set it into the default
-                        if(defaultDataStorageConfId != null) {
+                        if (defaultDataStorageConfId != null) {
                             dispatch.put(defaultDataStorageConfId, dataFile);
                         } else {
                             String failureCause = String.format(
@@ -159,7 +168,7 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
                     }
                 } catch (PathNotFoundException e) {
                     // in case the property is not present, lets set it into the default too.
-                    if(defaultDataStorageConfId != null) {
+                    if (defaultDataStorageConfId != null) {
                         dispatch.put(defaultDataStorageConfId, dataFile);
                     } else {
                         String failureCause = String.format(
