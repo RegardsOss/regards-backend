@@ -80,6 +80,7 @@ public class GlobDiskScanning implements IScanPlugin {
     }
 
     private List<Path> scanDirectory(Path dirPath, Optional<OffsetDateTime> lastModificationDate) {
+        long startTime = System.currentTimeMillis();
         List<Path> scannedFiles = new ArrayList<>();
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirPath, glob)) {
@@ -100,6 +101,8 @@ public class GlobDiskScanning implements IScanPlugin {
             throw new PluginUtilsRuntimeException("Scanning failure", x);
         }
 
+        LOGGER.info("{} new file(s) scanned inside the directory {} in {} milliseconds", scannedFiles.size(), dirPath,
+                    System.currentTimeMillis() - startTime);
         return scannedFiles;
     }
 }

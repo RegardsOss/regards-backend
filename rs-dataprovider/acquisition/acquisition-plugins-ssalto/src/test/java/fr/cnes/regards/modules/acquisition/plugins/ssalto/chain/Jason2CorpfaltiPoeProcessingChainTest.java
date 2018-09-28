@@ -120,12 +120,12 @@ public class Jason2CorpfaltiPoeProcessingChainTest extends AbstractAcquisitionCh
     }
 
     @Override
-    protected int getExpectedFiles() {
+    protected long getExpectedFiles() {
         return 1;
     }
 
     @Override
-    protected int getExpectedProducts() {
+    protected long getExpectedProducts() {
         return 1;
     }
 

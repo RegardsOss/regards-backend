@@ -18,9 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 import javax.persistence.LockModeType;
 
@@ -56,23 +54,7 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
     @EntityGraph("graph.acquisition.file.complete")
     Product findCompleteByIpId(String ipId);
 
-    Set<Product> findByState(ProductState state);
-
-    Set<Product> findByProcessingChainAndSipStateAndStateIn(AcquisitionProcessingChain processingChain,
-            ProductSIPState sipState, List<ProductState> productStates);
-
-    Set<Product> findByProcessingChain(AcquisitionProcessingChain processingChain);
-
-    /**
-     * Find {@link ProductState#COMPLETED} or{@link ProductState#FINISHED} products not already scheduled for SIP
-     * generation and for the specified acquisition chain.
-     * @param processingChain acquisition processing chain
-     * @return a set of {@link Product} to schedule
-     */
-    default Set<Product> findChainProductsToSchedule(AcquisitionProcessingChain processingChain) {
-        return findByProcessingChainAndSipStateAndStateIn(processingChain, ProductSIPState.NOT_SCHEDULED,
-                                                          Arrays.asList(ProductState.COMPLETED, ProductState.FINISHED));
-    }
+    Page<Product> findByProcessingChainOrderByIdAsc(AcquisitionProcessingChain processingChain, Pageable pageable);
 
     /**
      * Find all products according to specified filters
@@ -94,30 +76,8 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
      * @param pageable page limit
      * @return a page of products with the above properties
      */
-    Page<Product> findByProcessingChainIngestChainAndSipState(String ingestChain, ISipState sipState,
+    Page<Product> findByProcessingChainIngestChainAndSipStateOrderByIdAsc(String ingestChain, ISipState sipState,
             Pageable pageable);
-
-    /**
-     * Find all products according to specified filters
-     *
-     * @param ingestChain ingest chain
-     * @param session session name
-     * @param sipState {@link ISipState}
-     * @param pageable page limit
-     * @return a page of products with the above properties
-     */
-    Set<Product> findByProcessingChainIngestChainAndSessionAndSipState(String ingestChain, String session,
-            ISipState sipState);
-
-    /**
-     * Find all products according to specified filters (no session)
-     *
-     * @param ingestChain ingest chain
-     * @param sipState {@link ISipState}
-     * @param pageable page limit
-     * @return a page of products with the above properties
-     */
-    Set<Product> findByProcessingChainIngestChainAndSipState(String ingestChain, ISipState sipState);
 
     /**
      * Find {@link Product} by state in transaction with pessimistic read lock
@@ -125,7 +85,7 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
      * @return a set of products with the above properties
      */
     @Lock(LockModeType.PESSIMISTIC_READ)
-    Set<Product> findWithLockBySipState(ISipState sipState);
+    Page<Product> findWithLockBySipStateOrderByIdAsc(ISipState sipState, Pageable pageable);
 
     /**
      * Find {@link Product} by state in transaction with pessimistic read lock
@@ -134,15 +94,15 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
      * @return a set of products with the above properties
      */
     @Lock(LockModeType.PESSIMISTIC_READ)
-    Set<Product> findWithLockByProcessingChainAndSipState(AcquisitionProcessingChain processingChain,
-            ProductSIPState sipState);
+    Page<Product> findWithLockByProcessingChainAndSipStateOrderByIdAsc(AcquisitionProcessingChain processingChain,
+            ProductSIPState sipState, Pageable pageable);
 
     /**
      * Find {@link Product} by state
      * @param sipState {@link ISipState}
      * @return a set of products with the above properties
      */
-    Set<Product> findBySipState(ISipState sipState);
+    Page<Product> findBySipState(ISipState sipState, Pageable pageable);
 
     /**
      * Count number of products associated to the given {@link AcquisitionProcessingChain} and in the given state

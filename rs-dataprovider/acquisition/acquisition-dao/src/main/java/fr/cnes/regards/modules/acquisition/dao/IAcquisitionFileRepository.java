@@ -18,8 +18,11 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
+import java.util.Collection;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -38,20 +41,21 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 public interface IAcquisitionFileRepository
         extends JpaRepository<AcquisitionFile, Long>, JpaSpecificationExecutor<AcquisitionFile> {
 
+    Page<AcquisitionFile> findByStateAndFileInfoInOrderByAcqDateAsc(AcquisitionFileState state,
+            Collection<AcquisitionFileInfo> fileInfos, Pageable pageable);
+
     /**
      * Search all acquisition files for specified filters
-     * @param state {@link AcquisitionFileState} filter
-     * @param fileInfo {@link AcquisitionFileInfo} filter
-     * @return
      */
-    List<AcquisitionFile> findByStateAndFileInfo(AcquisitionFileState state, AcquisitionFileInfo fileInfo);
+    Page<AcquisitionFile> findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState state, AcquisitionFileInfo fileInfo,
+            Pageable pageable);
 
     /**
      * Search all acquisition files for the given {@link AcquisitionFileState}
      * @param state {@link AcquisitionFileState}
      * @return {@link AcquisitionFile}s
      */
-    List<AcquisitionFile> findByState(AcquisitionFileState state);
+    Page<AcquisitionFile> findByStateOrderByIdAsc(AcquisitionFileState state, Pageable pageable);
 
     /**
      * Count number of {@link AcquisitionFile} associated to the given {@link AcquisitionFileInfo}

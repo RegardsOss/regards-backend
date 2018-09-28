@@ -21,10 +21,7 @@ package fr.cnes.regards.modules.acquisition.service;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -42,7 +39,6 @@ import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.oais.urn.DataType;
@@ -52,11 +48,11 @@ import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
-import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
@@ -84,13 +80,14 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
     @Autowired
     private IProductService productService;
 
+    @SuppressWarnings("unused")
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
 
     @Autowired
     private IAcquisitionFileService fileService;
 
-    public AcquisitionProcessingChain createProcessingChain() throws ModuleException {
+    public AcquisitionProcessingChain createProcessingChain(Path searchDir) throws ModuleException {
 
         // Create a processing chain
         AcquisitionProcessingChain processingChain = new AcquisitionProcessingChain();
@@ -105,9 +102,6 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         fileInfo.setComment("A comment");
         fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         fileInfo.setDataType(DataType.RAWDATA);
-
-        // Search directory
-        Path searchDir = Paths.get("src", "test", "resources", "data", "plugins", "scan");
 
         List<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(GlobDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString())).getParameters();
@@ -150,56 +144,52 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
     @Test
     public void acquisitionWorkflowTest() throws ModuleException {
 
-        AcquisitionProcessingChain processingChain = createProcessingChain();
+        AcquisitionProcessingChain processingChain = createProcessingChain(Paths.get("src", "test", "resources", "data",
+                                                                                     "plugins", "scan"));
         AcquisitionFileInfo fileInfo = processingChain.getFileInfos().get(0);
 
         processingService.scanAndRegisterFiles(processingChain);
 
         // Check registered files
-        List<AcquisitionFile> inProgressFiles = acqFileRepository
-                .findByStateAndFileInfo(AcquisitionFileState.IN_PROGRESS, fileInfo);
-        Assert.assertTrue(inProgressFiles.size() == 4);
+        Page<AcquisitionFile> inProgressFiles = acqFileRepository
+                .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.IN_PROGRESS, fileInfo, new PageRequest(0, 1));
+        Assert.assertTrue(inProgressFiles.getTotalElements() == 4);
 
-        processingService.validateFiles(processingChain);
-
-        // Check registered files
-        inProgressFiles = acqFileRepository.findByStateAndFileInfo(AcquisitionFileState.IN_PROGRESS,
-                                                                   processingChain.getFileInfos().get(0));
-        Assert.assertTrue(inProgressFiles.size() == 0);
-        List<AcquisitionFile> validFiles = acqFileRepository.findByStateAndFileInfo(AcquisitionFileState.VALID,
-                                                                                    fileInfo);
-        Assert.assertTrue(validFiles.size() == 4);
-
-        processingService.buildProducts(processingChain);
+        processingService.manageRegisteredFiles(processingChain);
 
         // Check registered files
-        inProgressFiles = acqFileRepository.findByStateAndFileInfo(AcquisitionFileState.IN_PROGRESS,
-                                                                   processingChain.getFileInfos().get(0));
-        Assert.assertTrue(inProgressFiles.size() == 0);
-        validFiles = acqFileRepository.findByStateAndFileInfo(AcquisitionFileState.VALID, fileInfo);
-        Assert.assertTrue(validFiles.size() == 0);
-        List<AcquisitionFile> acquiredFiles = acqFileRepository.findByStateAndFileInfo(AcquisitionFileState.ACQUIRED,
-                                                                                       fileInfo);
-        Assert.assertTrue(acquiredFiles.size() == 4);
+        inProgressFiles = acqFileRepository.findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.IN_PROGRESS,
+                                                                               processingChain.getFileInfos().get(0),
+                                                                               new PageRequest(0, 1));
+        Assert.assertTrue(inProgressFiles.getTotalElements() == 0);
+
+        Page<AcquisitionFile> validFiles = acqFileRepository
+                .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.VALID, fileInfo, new PageRequest(0, 1));
+        Assert.assertTrue(validFiles.getTotalElements() == 0);
+
+        Page<AcquisitionFile> acquiredFiles = acqFileRepository
+                .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.ACQUIRED, fileInfo, new PageRequest(0, 1));
+        Assert.assertTrue(acquiredFiles.getTotalElements() == 4);
 
         // Find product to schedule
-        Set<Product> products = productService.findChainProductsToSchedule(processingChain);
-        Assert.assertTrue(products.size() == 4);
+        long scheduled = productService.countByProcessingChainAndSipStateIn(processingChain,
+                                                                            Arrays.asList(ProductSIPState.SCHEDULED));
+        Assert.assertTrue(scheduled == 4);
 
-        // Test job algo synchronously
-        for (Product product : products) {
-
-            SIPGenerationJob genJob = new SIPGenerationJob();
-            beanFactory.autowireBean(genJob);
-
-            Map<String, JobParameter> parameters = new HashMap<>();
-            parameters.put(SIPGenerationJob.CHAIN_PARAMETER_ID,
-                           new JobParameter(SIPGenerationJob.CHAIN_PARAMETER_ID, processingChain.getId()));
-            parameters.put(SIPGenerationJob.PRODUCT_ID, new JobParameter(SIPGenerationJob.PRODUCT_ID, product.getId()));
-
-            genJob.setParameters(parameters);
-            genJob.run();
-        }
+        //        // Test job algo synchronously
+        //        for (Product product : products) {
+        //
+        //            SIPGenerationJob genJob = new SIPGenerationJob();
+        //            beanFactory.autowireBean(genJob);
+        //
+        //            Map<String, JobParameter> parameters = new HashMap<>();
+        //            parameters.put(SIPGenerationJob.CHAIN_PARAMETER_ID,
+        //                           new JobParameter(SIPGenerationJob.CHAIN_PARAMETER_ID, processingChain.getId()));
+        //            parameters.put(SIPGenerationJob.PRODUCT_ID, new JobParameter(SIPGenerationJob.PRODUCT_ID, product.getId()));
+        //
+        //            genJob.setParameters(parameters);
+        //            genJob.run();
+        //        }
 
         Assert.assertTrue(fileService.countByChain(processingChain) == 4);
         Assert.assertTrue(fileService.countByChainAndStateIn(processingChain,
@@ -217,4 +207,20 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         Assert.assertTrue(monitor.getContent().get(0).getNbProductErrors() == 0);
         // Assert.assertTrue(monitor.getContent().get(0).getNbProductsInProgress() == 0);
     }
+    //
+    //    @Test
+    //    public void testScan() throws ModuleException {
+    //        runtimeTenantResolver.forceTenant(getDefaultTenant());
+    //
+    //        AcquisitionProcessingChain processingChain = createProcessingChain(Paths
+    //                .get("/home/msordi/git/rs-e2e/data/cdpp/dataobjects/DA_TC_ARC_ISO_DENSITE/results/data2"));
+    //
+    //        long startTime = System.currentTimeMillis();
+    //        processingService.scanAndRegisterFiles(processingChain);
+    //
+    //        LOGGER.info("Scan action took {} milliseconds", System.currentTimeMillis() - startTime);
+    //
+    //        processingService.manageRegisteredFiles(processingChain);
+    //
+    //    }
 }

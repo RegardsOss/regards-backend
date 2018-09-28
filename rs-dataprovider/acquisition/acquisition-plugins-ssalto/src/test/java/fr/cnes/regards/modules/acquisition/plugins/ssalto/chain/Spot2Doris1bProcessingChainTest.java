@@ -131,12 +131,12 @@ public class Spot2Doris1bProcessingChainTest extends AbstractAcquisitionChainTes
     }
 
     @Override
-    protected int getExpectedFiles() {
+    protected long getExpectedFiles() {
         return 1;
     }
 
     @Override
-    protected int getExpectedProducts() {
+    protected long getExpectedProducts() {
         return 1;
     }
 }

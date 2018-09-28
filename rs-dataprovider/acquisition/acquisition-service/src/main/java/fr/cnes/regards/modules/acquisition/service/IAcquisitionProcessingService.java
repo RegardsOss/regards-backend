@@ -26,7 +26,6 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
@@ -88,20 +87,17 @@ public interface IAcquisitionProcessingService {
     /**
      * Lock processing chain
      * @param id {@link AcquisitionProcessingChain} identifier
-     * @throws ModuleException if error occurs!
      */
     void lockChain(Long id);
 
     /**
      * Unlock processing chain
      * @param id {@link AcquisitionProcessingChain} identifier
-     * @throws ModuleException if error occurs!
      */
     void unlockChain(Long id);
 
     /**
      * Start all automatic chains according to several conditions
-     * @throws ModuleException if error occurs!
      */
     void startAutomaticChains();
 
@@ -144,27 +140,30 @@ public interface IAcquisitionProcessingService {
     void scanAndRegisterFiles(AcquisitionProcessingChain processingChain) throws ModuleException;
 
     /**
-     * Register a new file
+     * Register multiple files in one transaction
+     * @param filePaths paths of the files to register
+     * @param info related file info
+     * @return number of registered files
+     */
+    int registerFiles(List<Path> filePaths, AcquisitionFileInfo info) throws ModuleException;
+
+    /**
+     * Register a new file in one transaction
      * @param filePath path of the file to register
      * @param info related file info
-     * @throws ModuleException
      */
     void registerFile(Path filePath, AcquisitionFileInfo info) throws ModuleException;
 
     /**
-     * Validate {@link AcquisitionFileState#IN_PROGRESS} files for specified {@link AcquisitionProcessingChain}
-     * @param processingChain processing chain
-     * @throws ModuleException if error occurs!
+     * Manage new registered file : prepare or fulfill products and schedule SIP generation as soon as possible<br/>
+     * This method is not transactional
      */
-    void validateFiles(AcquisitionProcessingChain processingChain) throws ModuleException;
+    void manageRegisteredFiles(AcquisitionProcessingChain processingChain) throws ModuleException;
 
     /**
-     * Build products according to {@link AcquisitionFileState#VALID} files for specified
-     * {@link AcquisitionProcessingChain}
-     * @param processingChain processing chain
-     * @throws ModuleException if error occurs!
+     * Same action as {@link #manageRegisteredFiles(AcquisitionProcessingChain)} but in transaction and by page
      */
-    void buildProducts(AcquisitionProcessingChain processingChain) throws ModuleException;
+    boolean manageNewFilesByPage(AcquisitionProcessingChain processingChain) throws ModuleException;
 
     /**
      * Build summaries list of {@link AcquisitionProcessingChain}s.
