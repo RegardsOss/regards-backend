@@ -23,7 +23,7 @@ import org.springframework.beans.BeanUtils;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
 
 /**
- * DatasetTask Dto to avoid loading FilesTask and all associted files
+ * DatasetTask Dto to avoid loading FilesTask and all associated files
  * @author oroussel
  */
 public class DatasetTaskDto {

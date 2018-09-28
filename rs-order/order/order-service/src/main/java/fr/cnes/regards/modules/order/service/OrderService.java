@@ -112,6 +112,7 @@ import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
+import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
 import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
@@ -384,11 +385,15 @@ public class OrderService implements IOrderService {
     private void dispatchFeatureFilesInBuckets(Basket basket, Order order, String role, EntityFeature feature,
             Set<OrderDataFile> storageBucketFiles, Set<OrderDataFile> externalBucketFiles) {
         for (DataFile dataFile : feature.getFiles().values()) {
-            // Referenced dataFiles are externaly stored.
-            if (!dataFile.isReference()) {
-                addInternalFileToStorageBucket(basket, order, role, storageBucketFiles, dataFile, feature);
-            } else {
-                addExternalFileToExternalBucket(order, externalBucketFiles, dataFile, feature);
+            // ONLY orderable data files can be ordered !!! (ie RAWDATA and QUICKLOOKS
+            if (DataTypeSelection.ALL.getFileTypes().contains(dataFile.getDataType())) {
+                // Referenced dataFiles are externaly stored.
+                if (!dataFile.isReference()) {
+                    addInternalFileToStorageBucket(basket, order, role, storageBucketFiles, dataFile, feature);
+                } else {
+                    addExternalFileToExternalBucket(order, externalBucketFiles, dataFile, feature);
+                }
+                break;
             }
         }
     }
