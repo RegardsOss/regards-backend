@@ -694,7 +694,7 @@ public class OrderService implements IOrderService {
         List<OrderDataFile> availableFiles = new ArrayList<>(inDataFiles);
         List<OrderDataFile> downloadErrorFiles = new ArrayList<>();
 
-        try (ZipOutputStream zos = new ZipOutputStream(os)) {
+        try (ZipOutputStream zos = new ZipOutputStream(os, Charset.forName("UTF-8"))) {
             // A multiset to manage multi-occurrences of files
             Multiset<String> dataFiles = HashMultiset.create();
             for (Iterator<OrderDataFile> i = availableFiles.iterator(); i.hasNext();) {
