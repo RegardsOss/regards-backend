@@ -51,6 +51,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.util.Pair;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
@@ -469,7 +470,7 @@ public class AIPService implements IAIPService {
         Set<String> checksumNotFound = Sets.newHashSet(requestedChecksums);
         // Same for accesses
         Set<String> checksumsWithoutAccess = Sets.newHashSet(requestedChecksums);
-        Pageable page = new PageRequest(0, 500);
+        Pageable page = new PageRequest(0, 500, Sort.Direction.ASC, "id");
         Page<StorageDataFile> dataFilePage = dataFileDao.findPageByChecksumIn(requestedChecksums, page);
         while (dataFilePage.hasContent()) {
 

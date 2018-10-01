@@ -98,7 +98,7 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
     @EntityGraph(value = "graph.datafile.full")
     Set<StorageDataFile> findAllByChecksumIn(Set<String> checksums);
 
-    @Query("select sdf.id from StorageDataFile sdf where sdf.checksum IN :checksums")
+    @Query("select sdf.id from StorageDataFile sdf where sdf.checksum IN :checksums ORDER BY ?#{#pageable}")
     Page<Long> findIdPageByChecksumIn(@Param("checksums") Set<String> checksums, Pageable pageable);
 
     /**
