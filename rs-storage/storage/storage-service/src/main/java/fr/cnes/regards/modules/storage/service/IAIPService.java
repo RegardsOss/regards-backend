@@ -73,8 +73,14 @@ public interface IAIPService {
     List<RejectedAip> validateAndStore(AIPCollection aips) throws ModuleException;
 
     /**
-     * Asynchronusly makes the heavy work of storing AIP metadata.
-     * @return number of AIP metadata schduled for storage
+     * Asynchronusly makes the heavy work of storing AIP metadata.<ul>
+     * <li>1. Search for all AIP ready to store their metadata (all DataFile are in STORED state).</li>
+     * <li>2. Schedule a unique job perf IDataStorage configuration to store all AIP metadata files found.</li>
+     * <ul>
+     * <br/>
+     * NOTE : We do not schedule StoreJob for each AIP found, to avoid multiple access to IDataStorage.
+     *
+     * @return number of AIP metadata scheduled for storage
      */
     long storeMetadata();
 

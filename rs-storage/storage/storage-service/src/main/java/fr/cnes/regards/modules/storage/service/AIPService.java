@@ -915,6 +915,8 @@ public class AIPService implements IAIPService {
                     em.flush();
                     em.clear();
                     metadataToStore.add(meta);
+                    // We do not schedule StoreJob for this AIP here, to avoid multiple access to IDataStorage.
+                    // The StoreJob is scheduled after with all the AIP DataFiles to store.
                 } catch (IOException | FileCorruptedException e) {
                     // if we don't have a meta to storeAndCreate that means a problem happened and we set the aip to
                     // STORAGE_ERROR
@@ -1485,7 +1487,7 @@ public class AIPService implements IAIPService {
             if (nbDataFile == 0) {
                 // Error case recovering. If AIP is in DELETED state and there is no DataFile linked to it, we can
                 // delete aip from database.
-                LOGGER.warn("Delete AIP {} wich is not associated to any datafile.", aip.getId());
+                LOGGER.warn("Delete AIP {} which is not associated to any datafile.", aip.getId());
                 publisher.publish(new AIPEvent(aip));
                 aipDao.remove(aip);
             } else {
