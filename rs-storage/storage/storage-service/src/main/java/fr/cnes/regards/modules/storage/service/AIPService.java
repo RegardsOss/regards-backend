@@ -528,10 +528,14 @@ public class AIPService implements IAIPService {
             dataFilePage = dataFileDao.findPageByChecksumIn(requestedChecksums, page);
 
         }
-        // lets logs not found now that we know that remaining checksums are not handled by REGARDS
-        errors.addAll(checksumNotFound);
-        checksumNotFound.stream()
-                .forEach(cs -> LOGGER.error("File to restore with checksum {} is not stored by REGARDS.", cs));
+        // the if is needed here too because otherwise checksumNotFound being all checksums requested,
+        // everything is considered not found
+        if (dataFilePage.getTotalElements() != requestedChecksums.size()) {
+            // lets logs not found now that we know that remaining checksums are not handled by REGARDS
+            errors.addAll(checksumNotFound);
+            checksumNotFound.stream()
+                    .forEach(cs -> LOGGER.error("File to restore with checksum {} is not stored by REGARDS.", cs));
+        }
         // same for accesses
         checksumsWithoutAccess.forEach(cs -> LOGGER.error("User {} does not have access to file with checksum {}.",
                                                           authResolver.getUser(), cs));
