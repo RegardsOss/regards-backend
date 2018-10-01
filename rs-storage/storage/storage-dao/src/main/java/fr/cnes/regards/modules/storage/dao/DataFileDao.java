@@ -14,7 +14,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
@@ -71,8 +70,8 @@ public class DataFileDao implements IDataFileDao {
         Page<Long> ids = repository.findIdPageByState(state, pageable);
         List<StorageDataFile> pageContent = repository.findAllByIdIn(ids.getContent());
         return new PageImpl<>(pageContent,
-                new PageRequest(new Long(ids.getNumber()).intValue(), new Long(ids.getSize()).intValue()),
-                ids.getTotalElements());
+                              new PageRequest(new Long(ids.getNumber()).intValue(), new Long(ids.getSize()).intValue()),
+                              ids.getTotalElements());
     }
 
     @Override
@@ -161,10 +160,11 @@ public class DataFileDao implements IDataFileDao {
     public Page<StorageDataFile> findPageByChecksumIn(Set<String> checksums, Pageable pageable) {
         // first lets get the storageDataFile without any join(no graph)
         Page<Long> ids = repository.findIdPageByChecksumIn(checksums, pageable);
-        List<StorageDataFile> pageContent = repository.findAllByIdIn(ids.getContent());
+        List<StorageDataFile> pageContent = repository.findAllByIdIn(ids.getContent()).stream().distinct()
+                .collect(Collectors.toList());
         return new PageImpl<>(pageContent,
-                new PageRequest(new Long(ids.getNumber()).intValue(), new Long(ids.getSize()).intValue()),
-                ids.getTotalElements());
+                              new PageRequest(new Long(ids.getNumber()).intValue(), new Long(ids.getSize()).intValue()),
+                              ids.getTotalElements());
     }
 
     @Override
