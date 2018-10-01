@@ -77,9 +77,9 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
                         + "status in ('RUNNING', 'PAUSED')) " + "AND df.state IN (?2) GROUP BY o.id ORDER BY o.id",
                 resultSetMapping = "countMapping", name = "selectCountFilesByOrderIdAndStates"),
         @NamedNativeQuery( // WARNING : this request permits to count all available files EVEN  external files which
-                // haven't a size (but have an online value set to NULL)
+                // haven't a size (but are tagged as reference)
                 query = "SELECT o.*, count(df.*) as count FROM {h-schema}t_data_file df, {h-schema}t_order o WHERE "
-                        + "df.order_id = o.id AND (df.size is not NULL OR (df.size is NULL AND df.online is NULL)) AND "
+                        + "df.order_id = o.id AND (df.size is not NULL OR (df.size is NULL AND df.reference is TRUE)) AND "
                         + "o.id IN (SELECT id FROM {h-schema}t_order WHERE ?1 <= expiration_date) "
                         + "AND df.state IN (?2) GROUP BY o.id ORDER BY o.id",
                 resultSetMapping = "countMapping", name = "selectCountFilesByOrderIdAndStates4AllOrders") })
