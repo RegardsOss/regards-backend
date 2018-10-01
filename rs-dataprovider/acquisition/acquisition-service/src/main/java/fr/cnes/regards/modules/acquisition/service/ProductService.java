@@ -91,6 +91,9 @@ public class ProductService implements IProductService {
     @Value("${regards.acquisition.sip.bulk.request.limit:1000}")
     private Integer bulkRequestLimit;
 
+    @Value("${regards.acquisition.pagination.default.page.size:1000}")
+    private Integer defaultPageSize;
+
     @Override
     public Product save(Product product) {
         product.setLastUpdate(OffsetDateTime.now());
@@ -276,7 +279,7 @@ public class ProductService implements IProductService {
 
         // Find all products already scheduled for submission
         Page<Product> products;
-        Pageable pageable = new PageRequest(0, 1000);
+        Pageable pageable = new PageRequest(0, defaultPageSize);
         do {
             products = productRepository.findWithLockBySipStateOrderByIdAsc(ProductSIPState.SUBMISSION_SCHEDULED,
                                                                             pageable);
@@ -297,7 +300,7 @@ public class ProductService implements IProductService {
 
         // Find all products with available SIPs ready for submission
         // Reset pagination
-        pageable = new PageRequest(0, 1000);
+        pageable = new PageRequest(0, defaultPageSize);
         do {
             products = productRepository.findWithLockBySipStateOrderByIdAsc(ProductSIPState.GENERATED, pageable);
             if (products.hasNext()) {
@@ -420,12 +423,12 @@ public class ProductService implements IProductService {
                 products = productRepository
                         .findByProcessingChainIngestChainAndSipStateOrderByIdAsc(ingestChain,
                                                                                  ProductSIPState.SUBMISSION_SCHEDULED,
-                                                                                 new PageRequest(0, 1000));
+                                                                                 new PageRequest(0, defaultPageSize));
             } else {
                 products = productRepository
                         .findByProcessingChainIngestChainAndSessionAndSipState(ingestChain, session,
                                                                                ProductSIPState.SUBMISSION_SCHEDULED,
-                                                                               new PageRequest(0, 1000));
+                                                                               new PageRequest(0, defaultPageSize));
             }
             if (products.hasContent()) {
                 for (Product product : products) {
@@ -457,7 +460,7 @@ public class ProductService implements IProductService {
         Page<Product> products;
         do {
             products = productRepository.findWithLockBySipStateOrderByIdAsc(ProductSIPState.SUBMISSION_ERROR,
-                                                                            new PageRequest(0, 1000));
+                                                                            new PageRequest(0, defaultPageSize));
             for (Product product : products) {
                 product.setSipState(ProductSIPState.GENERATED);
                 save(product);
@@ -521,7 +524,7 @@ public class ProductService implements IProductService {
 
         // Handle SIP generation jobs
         Page<Product> products;
-        Pageable pageable = new PageRequest(0, 1000);
+        Pageable pageable = new PageRequest(0, defaultPageSize);
         do {
             products = productRepository.findWithLockByProcessingChainAndSipStateOrderByIdAsc(processingChain,
                                                                                               ProductSIPState.SCHEDULED,
@@ -535,7 +538,7 @@ public class ProductService implements IProductService {
         } while (products.hasNext());
 
         // Handle SIP submission jobs
-        pageable = new PageRequest(0, 1000);
+        pageable = new PageRequest(0, defaultPageSize);
         do {
             products = productRepository
                     .findWithLockByProcessingChainAndSipStateOrderByIdAsc(processingChain,
@@ -558,7 +561,7 @@ public class ProductService implements IProductService {
     public boolean isProductJobStoppedAndCleaned(AcquisitionProcessingChain processingChain) throws ModuleException {
         // Handle SIP generation jobs
         Page<Product> products;
-        Pageable pageable = new PageRequest(0, 1000);
+        Pageable pageable = new PageRequest(0, defaultPageSize);
         do {
             products = productRepository.findWithLockByProcessingChainAndSipStateOrderByIdAsc(processingChain,
                                                                                               ProductSIPState.SCHEDULED,
@@ -578,7 +581,7 @@ public class ProductService implements IProductService {
         } while (products.hasNext());
 
         // Handle SIP submission jobs
-        pageable = new PageRequest(0, 1000);
+        pageable = new PageRequest(0, defaultPageSize);
         do {
             products = productRepository
                     .findWithLockByProcessingChainAndSipStateOrderByIdAsc(processingChain,

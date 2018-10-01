@@ -37,6 +37,7 @@ import javax.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -95,6 +96,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
      * Parameter to register scanned files by group avoiding too many commits
      */
     private static final int ENTITY_CREATION_BEFORE_COMMIT = 1000;
+
+    @Value("${regards.acquisition.pagination.default.page.size:1000}")
+    private Integer defaultPageSize;
 
     @Autowired
     private IAcquisitionProcessingChainRepository acqChainRepository;
@@ -358,7 +362,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         }
 
         Page<Product> products;
-        Pageable pageable = new PageRequest(0, 1000);
+        Pageable pageable = new PageRequest(0, defaultPageSize);
         do {
             products = productService.findChainProducts(processingChain, pageable);
             if (products.hasNext()) {
@@ -632,8 +636,12 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     @MultitenantTransactional(propagation = Propagation.SUPPORTS)
     @Override
     public void manageRegisteredFiles(AcquisitionProcessingChain processingChain) throws ModuleException {
-        while (manageNewFilesByPage(processingChain)) {
+        while (!Thread.interrupted() && manageNewFilesByPage(processingChain)) {
             // Works as long as there is at least one page left
+        }
+        // Just trace interruption
+        if (Thread.interrupted()) {
+            LOGGER.debug("{} thread has been interrupted", this.getClass().getName());
         }
     }
 
@@ -643,7 +651,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         // - Retrieve first page of new registered files
         Page<AcquisitionFile> page = acqFileRepository
                 .findByStateAndFileInfoInOrderByAcqDateAsc(AcquisitionFileState.IN_PROGRESS,
-                                                           processingChain.getFileInfos(), new PageRequest(0, 1000));
+                                                           processingChain.getFileInfos(),
+                                                           new PageRequest(0, defaultPageSize));
         LOGGER.debug("Managing {}/{} new registered files", page.getNumberOfElements(), page.getTotalElements());
         // Report informations
         int errors = 0;
@@ -749,8 +758,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     private boolean handleProductAcquisitionErrorByPage(AcquisitionFileInfo fileInfo) {
-        Page<AcquisitionFile> page = acqFileRepository.findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.IN_PROGRESS,
-                                                                              fileInfo, new PageRequest(0, 1000));
+        Page<AcquisitionFile> page = acqFileRepository
+                .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.IN_PROGRESS, fileInfo,
+                                                    new PageRequest(0, defaultPageSize));
         for (AcquisitionFile acqFile : page) {
             acqFile.setState(AcquisitionFileState.ERROR);
         }
