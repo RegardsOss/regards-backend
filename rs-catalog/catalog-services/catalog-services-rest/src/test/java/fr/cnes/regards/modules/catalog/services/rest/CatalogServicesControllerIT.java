@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
@@ -73,6 +74,7 @@ import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDataset
 /**
  * @author Sylvain Vissiere-Guerinet
  */
+@DirtiesContext
 @TestPropertySource(locations = "classpath:test.properties")
 @ContextConfiguration(classes = { CatalogServicesITConfiguration.class })
 @MultitenantTransactional
