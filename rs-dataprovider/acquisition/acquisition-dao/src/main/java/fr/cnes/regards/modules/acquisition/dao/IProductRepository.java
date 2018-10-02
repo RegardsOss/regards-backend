@@ -18,7 +18,9 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.LockModeType;
 
@@ -50,6 +52,9 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
 
     @EntityGraph("graph.acquisition.file.complete")
     Product findCompleteByProductName(String productName);
+
+    @EntityGraph("graph.acquisition.file.complete")
+    Set<Product> findCompleteByProductNameIn(Collection<String> productNames);
 
     @EntityGraph("graph.acquisition.file.complete")
     Product findCompleteByIpId(String ipId);

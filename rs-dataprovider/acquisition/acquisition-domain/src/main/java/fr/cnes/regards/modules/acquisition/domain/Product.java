@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.acquisition.domain;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -169,7 +170,7 @@ public class Product {
     public int hashCode() { // NOSONAR
         final int prime = 31;
         int result = 1;
-        result = (prime * result) + ((productName == null) ? 0 : productName.hashCode()); // NOSONAR
+        result = prime * result + (productName == null ? 0 : productName.hashCode()); // NOSONAR
         return result;
     }
 
@@ -209,6 +210,10 @@ public class Product {
 
     public void addAcquisitionFile(AcquisitionFile acqFile) {
         this.fileList.add(acqFile);
+    }
+
+    public void addAcquisitionFiles(Collection<AcquisitionFile> acqFiles) {
+        this.fileList.addAll(acqFiles);
     }
 
     public List<AcquisitionFile> getAcquisitionFiles() {

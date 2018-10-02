@@ -207,7 +207,7 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         Assert.assertTrue(monitor.getContent().get(0).getNbProductErrors() == 0);
         // Assert.assertTrue(monitor.getContent().get(0).getNbProductsInProgress() == 0);
     }
-    //
+
     //    @Test
     //    public void testScan() throws ModuleException {
     //        runtimeTenantResolver.forceTenant(getDefaultTenant());

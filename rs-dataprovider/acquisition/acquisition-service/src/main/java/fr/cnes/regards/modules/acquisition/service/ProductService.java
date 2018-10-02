@@ -20,12 +20,15 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +50,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.ProductSpecifications;
@@ -57,6 +61,7 @@ import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
 import fr.cnes.regards.modules.acquisition.service.job.PostAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
@@ -75,6 +80,9 @@ import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 public class ProductService implements IProductService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductService.class);
+
+    @Autowired
+    private IPluginService pluginService;
 
     @Autowired
     private IProductRepository productRepository;
@@ -155,7 +163,7 @@ public class ProductService implements IProductService {
         JobInfo jobInfo = new JobInfo(true);
         jobInfo.setPriority(AcquisitionJobPriority.SIP_GENERATION_JOB_PRIORITY.getPriority());
         jobInfo.setParameters(new JobParameter(SIPGenerationJob.CHAIN_PARAMETER_ID, chain.getId()),
-                              new JobParameter(SIPGenerationJob.PRODUCT_ID, product.getId()));
+                              new JobParameter(SIPGenerationJob.PRODUCT_NAME, product.getProductName()));
         jobInfo.setClassName(SIPGenerationJob.class.getName());
         jobInfo.setOwner(authResolver.getUser());
         jobInfo = jobInfoService.createAsQueued(jobInfo);
@@ -168,7 +176,7 @@ public class ProductService implements IProductService {
         // Change product SIP state
         product.setSipState(ProductSIPState.SCHEDULED);
         product.setLastSIPGenerationJobInfo(jobInfo);
-        productRepository.save(product);
+        save(product);
 
         return jobInfo;
     }
@@ -214,20 +222,79 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public Product linkAcquisitionFileToProduct(String session, AcquisitionFile acqFile, String productName,
-            AcquisitionProcessingChain processingChain) throws ModuleException {
-        // Get the product if exists
-        Product currentProduct = productRepository.findCompleteByProductName(productName);
+    public Set<Product> linkAcquisitionFilesToProducts(AcquisitionProcessingChain processingChain,
+            List<AcquisitionFile> validFiles) throws ModuleException {
 
-        if (currentProduct == null) {
-            // It is a new Product, create it
-            currentProduct = new Product();
-            currentProduct.setProductName(productName);
-            currentProduct.setProcessingChain(processingChain);
-        } else {
+        // Get product plugin
+        IProductPlugin productPlugin = pluginService.getPlugin(processingChain.getProductPluginConf().getId());
+
+        // Compute the  list of products to create or update
+        Set<String> productNames = new HashSet<>();
+        Multimap<String, AcquisitionFile> validFilesByProductName = ArrayListMultimap.create();
+        for (AcquisitionFile validFile : validFiles) {
+
+            try {
+                String productName = productPlugin.getProductName(validFile.getFilePath());
+                if (productName != null && !productName.isEmpty()) {
+                    productNames.add(productName);
+                    validFilesByProductName.put(productName, validFile);
+                } else {
+                    // Continue silently but register error in database
+                    String errorMessage = String.format("Error computing product name for file %s : %s",
+                                                        validFile.getFilePath().toString(),
+                                                        "Null or empty product name");
+                    LOGGER.error(errorMessage);
+                    validFile.setError(errorMessage);
+                    validFile.setState(AcquisitionFileState.ERROR);
+                    acqFileRepository.save(validFile);
+                }
+            } catch (ModuleException e) {
+                // Continue silently but register error in database
+                String errorMessage = String.format("Error computing product name for file %s : %s",
+                                                    validFile.getFilePath().toString(), e.getMessage());
+                LOGGER.error(errorMessage, e);
+                validFile.setError(errorMessage);
+                validFile.setState(AcquisitionFileState.ERROR);
+                acqFileRepository.save(validFile);
+            }
+
+        }
+
+        // Find all existing product by using one database request
+        Set<Product> products = productRepository.findCompleteByProductNameIn(productNames);
+        Map<String, Product> productMap = products.stream()
+                .collect(Collectors.toMap(Product::getProductName, Function.identity()));
+
+        // Build all current products
+        for (String productName : validFilesByProductName.keySet()) {
+
+            // Get product
+            Product currentProduct = productMap.get(productName);
+            if (currentProduct == null) {
+                // It is a new Product, create it
+                currentProduct = new Product();
+                currentProduct.setProductName(productName);
+                currentProduct.setProcessingChain(processingChain);
+                productMap.put(productName, currentProduct);
+            }
+
+            // Fulfill product with new valid acquired files
+            fulfillProduct(validFilesByProductName.get(productName), currentProduct, processingChain);
+        }
+
+        return new HashSet<>(productMap.values());
+    }
+
+    /**
+     * Fulfill product with new valid acquired files
+     */
+    private Product fulfillProduct(Collection<AcquisitionFile> validFiles, Product currentProduct,
+            AcquisitionProcessingChain processingChain) throws ModuleException {
+
+        for (AcquisitionFile validFile : validFiles) {
             // Mark old file as superseded
             for (AcquisitionFile existing : currentProduct.getAcquisitionFiles()) {
-                if (existing.getFileInfo().equals(acqFile.getFileInfo())) {
+                if (existing.getFileInfo().equals(validFile.getFileInfo())) {
                     if (AcquisitionFileState.ACQUIRED.equals(existing.getState())) {
                         existing.setState(AcquisitionFileState.SUPERSEDED);
                         acqFileRepository.save(existing);
@@ -238,16 +305,23 @@ public class ProductService implements IProductService {
                     }
                 }
             }
+            // Mark file as acquired
+            validFile.setState(AcquisitionFileState.ACQUIRED);
+            acqFileRepository.save(validFile);
         }
 
         currentProduct.setSipState(ProductSIPState.NOT_SCHEDULED); // Required to be re-integrated in SIP workflow
-        currentProduct.setSession(session);
-        currentProduct.addAcquisitionFile(acqFile);
+        currentProduct.setSession(processingChain.getSession().orElse(null));
+        currentProduct.addAcquisitionFiles(validFiles);
         computeProductState(currentProduct);
 
-        // Mark file as acquired
-        acqFile.setState(AcquisitionFileState.ACQUIRED);
-        acqFileRepository.save(acqFile);
+        // Schedule SIP generation conditionally
+        if (currentProduct.getSipState() == ProductSIPState.NOT_SCHEDULED
+                && (currentProduct.getState() == ProductState.COMPLETED
+                        || currentProduct.getState() == ProductState.FINISHED)) {
+            LOGGER.trace("Scheduling SIP generation for product {}", currentProduct.getProductName());
+            scheduleProductSIPGeneration(currentProduct, processingChain);
+        }
 
         return save(currentProduct);
     }
@@ -441,11 +515,11 @@ public class ProductService implements IProductService {
 
     @Override
     public void handleSIPGenerationError(JobInfo jobInfo) {
-        JobParameter productIdParam = jobInfo.getParametersAsMap().get(SIPGenerationJob.PRODUCT_ID);
-        if (productIdParam != null) {
-            Long productId = productIdParam.getValue();
+        JobParameter productNameParam = jobInfo.getParametersAsMap().get(SIPGenerationJob.PRODUCT_NAME);
+        if (productNameParam != null) {
+            String productName = productNameParam.getValue();
             try {
-                Product product = loadProduct(productId);
+                Product product = retrieve(productName);
                 product.setSipState(ProductSIPState.GENERATION_ERROR);
                 product.setError(jobInfo.getStatus().getStackTrace());
                 save(product);
@@ -489,7 +563,7 @@ public class ProductService implements IProductService {
             }
 
             product.setSipState(event.getState());
-            productRepository.save(product);
+            save(product);
         } else {
             LOGGER.debug("SIP with IP ID \"{}\" is not managed by data provider", event.getSipId());
         }
@@ -575,7 +649,7 @@ public class ProductService implements IProductService {
                 } else {
                     // Clean product state
                     product.setSipState(ProductSIPState.NOT_SCHEDULED);
-                    productRepository.save(product);
+                    save(product);
                 }
             }
         } while (products.hasNext());
@@ -596,7 +670,7 @@ public class ProductService implements IProductService {
                 } else {
                     // Clean product state
                     product.setSipState(ProductSIPState.GENERATED);
-                    productRepository.save(product);
+                    save(product);
                 }
             }
         } while (products.hasNext());

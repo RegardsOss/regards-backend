@@ -49,7 +49,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
 
     public static final String CHAIN_PARAMETER_ID = "chain_id";
 
-    public static final String PRODUCT_ID = "product_id";
+    public static final String PRODUCT_NAME = "product_name";
 
     @Autowired
     private IProductService productService;
@@ -81,11 +81,11 @@ public class SIPGenerationJob extends AbstractJob<Void> {
             handleInvalidParameter(CHAIN_PARAMETER_ID, e);
         }
 
-        Long productId = getValue(parameters, PRODUCT_ID);
+        String productName = getValue(parameters, PRODUCT_NAME);
         try {
-            product = productService.loadProduct(productId);
+            product = productService.retrieve(productName);
         } catch (ModuleException e) {
-            handleInvalidParameter(PRODUCT_ID, e);
+            handleInvalidParameter(PRODUCT_NAME, e);
         }
     }
 

@@ -22,7 +22,6 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.time.OffsetDateTime;
 
-import javax.annotation.Nullable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;

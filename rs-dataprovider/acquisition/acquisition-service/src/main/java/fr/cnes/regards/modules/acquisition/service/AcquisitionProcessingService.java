@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
@@ -67,12 +68,10 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
-import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
-import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
@@ -653,88 +652,50 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 .findByStateAndFileInfoInOrderByAcqDateAsc(AcquisitionFileState.IN_PROGRESS,
                                                            processingChain.getFileInfos(),
                                                            new PageRequest(0, defaultPageSize));
-        LOGGER.debug("Managing {}/{} new registered files", page.getNumberOfElements(), page.getTotalElements());
-        // Report informations
-        int errors = 0;
-        int scheduledProducts = 0;
-        int notScheduledProducts = 0;
+        LOGGER.debug("Managing next new {} registered files (of {})", page.getNumberOfElements(),
+                     page.getTotalElements());
         long startTime = System.currentTimeMillis();
 
         // Get validation plugin
         IValidationPlugin validationPlugin = pluginService.getPlugin(processingChain.getValidationPluginConf().getId());
+        List<AcquisitionFile> validFiles = new ArrayList<>();
         for (AcquisitionFile inProgressFile : page.getContent()) {
             // Validate files
             if (validationPlugin.validate(inProgressFile.getFilePath())) {
                 inProgressFile.setState(AcquisitionFileState.VALID);
-                // File is valid, fulfill related product
-                Product product = manageProduct(inProgressFile, processingChain);
-                // Statistics
-                if (product != null) {
-                    if (product.getSipState() == ProductSIPState.SCHEDULED) {
-                        scheduledProducts++;
-                    } else {
-                        notScheduledProducts++;
-                    }
-                } else {
-                    errors++;
-                }
+                validFiles.add(inProgressFile);
             } else {
                 // FIXME move invalid files? Might be delegated to validation plugin!
                 inProgressFile.setState(AcquisitionFileState.INVALID);
                 acqFileRepository.save(inProgressFile);
-                errors++;
             }
         }
-        LOGGER.debug("{}/{} scheduled product(s), {}/{} not scheduled, {}/{} errors ({} milliseconds)",
-                     scheduledProducts, page.getNumberOfElements(), notScheduledProducts, page.getNumberOfElements(),
-                     errors, page.getNumberOfElements(), System.currentTimeMillis() - startTime);
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Validation of {} file(s) finished with {} valid and {} invalid.", page.getNumberOfElements(),
+                         validFiles.size(), page.getNumberOfElements() - validFiles.size());
+        }
+
+        // Build and schedule products
+        Set<Product> products = productService.linkAcquisitionFilesToProducts(processingChain, validFiles);
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("{} file(s) handles, {} product(s) created or updated in {} milliseconds",
+                         page.getNumberOfElements(), products.size(), System.currentTimeMillis() - startTime);
+            // Statistics
+            int scheduledProducts = 0;
+            int notScheduledProducts = 0;
+            for (Product product : products) {
+                if (product.getSipState() == ProductSIPState.SCHEDULED) {
+                    scheduledProducts++;
+                } else {
+                    notScheduledProducts++;
+                }
+            }
+            LOGGER.debug("{} product(s) scheduled and {} not.", scheduledProducts, notScheduledProducts);
+        }
+
         return page.hasNext();
-    }
-
-    /**
-     * Link valid file to a product and if product is completed or finished, schedule a SIP generation job
-     * @return if product created or updated or null if error occurs with file
-     */
-    private Product manageProduct(AcquisitionFile validFile, AcquisitionProcessingChain processingChain)
-            throws ModuleException {
-
-        // Get product plugin
-        IProductPlugin productPlugin = pluginService.getPlugin(processingChain.getProductPluginConf().getId());
-
-        // - Compute product name
-        String productName = null;
-        try {
-            productName = productPlugin.getProductName(validFile.getFilePath());
-        } catch (ModuleException e) {
-            // Continue silently but register error in database
-            String errorMessage = String.format("Error computing product name for file %s : %s",
-                                                validFile.getFilePath().toString(), e.getMessage());
-            LOGGER.error(errorMessage, e);
-            validFile.setError(errorMessage);
-            validFile.setState(AcquisitionFileState.ERROR);
-            acqFileRepository.save(validFile);
-        }
-
-        // - Fulfill product
-        if (productName != null && !productName.isEmpty()) {
-            Product product = productService.linkAcquisitionFileToProduct(processingChain.getSession().orElse(null),
-                                                                          validFile, productName, processingChain);
-            // - Schedule SIP generation conditionally
-            if (product.getSipState() == ProductSIPState.NOT_SCHEDULED
-                    && (product.getState() == ProductState.COMPLETED || product.getState() == ProductState.FINISHED)) {
-                productService.scheduleProductSIPGeneration(product, processingChain);
-            }
-            return product;
-        } else {
-            // Continue silently but register error in database
-            String errorMessage = String.format("Error computing product name for file %s : %s",
-                                                validFile.getFilePath().toString(), "Null or empty product name");
-            LOGGER.error(errorMessage);
-            validFile.setError(errorMessage);
-            validFile.setState(AcquisitionFileState.ERROR);
-            acqFileRepository.save(validFile);
-        }
-        return null;
     }
 
     @Override

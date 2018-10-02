@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.acquisition.service;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -107,8 +108,8 @@ public interface IProductService {
             List<ISipState> productSipStates);
 
     /**
-     * Get the {@link Product} corresponding to the productName and calculate the {@link ProductState}.<br>
-     * If it does not exists, create this {@link Product}. Create or update the product in database.
+     * Link acquired files to theirs products creating or updating them.<br/>
+     * If product is completed or finished, a SIP generation job is scheduled.
      *
      * @param session the current session
      * @param acqFile the {@link AcquisitionFile} to add to the {@link Product}
@@ -116,8 +117,8 @@ public interface IProductService {
      * @param processingChain the related {@link AcquisitionProcessingChain}
      * @return the existing {@link Product} corresponding to the product name
      */
-    Product linkAcquisitionFileToProduct(String session, AcquisitionFile acqFile, String productName,
-            AcquisitionProcessingChain processingChain) throws ModuleException;
+    Set<Product> linkAcquisitionFilesToProducts(AcquisitionProcessingChain processingChain,
+            List<AcquisitionFile> validFiles) throws ModuleException;
 
     /**
      * @param ingestChain ingest processing chain name
