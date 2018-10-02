@@ -295,7 +295,13 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
     private void updateAIP(AIP aipToUpdate) throws InterruptedException, ModuleException {
         aipService.updateAip(aip.getId().toString(), aip);
         waitForJobsFinished();
+        // Simulate store scheduler
+        aipService.storePage(new PageRequest(0, 500));
+        // Simulate storeMetadata scheduler
         aipService.storeMetadata();
+        waitForJobsFinished();
+        // Simulate deletion of data files scheduler
+        aipService.doDelete();
         waitForJobsFinished();
     }
 
@@ -443,6 +449,10 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
     @Test
     @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_030"), @Requirement("REGARDS_DSL_STO_AIP_040") })
     public void testUpdate() throws InterruptedException, ModuleException, URISyntaxException {
+        // Allow deletion for all files to allow update.
+        dsConfWithDeleteDisabled.getParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION)
+                .setValue(Boolean.TRUE.toString());
+        pluginService.updatePluginConfiguration(dsConfWithDeleteDisabled);
         // first lets storeAndCreate the aip
         createSuccessTest();
         mockEventHandler.clear();
@@ -468,12 +478,14 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         Assert.assertTrue("Updated AIP should contains new tag", updatedAip.getTags().contains(newTag));
         Set<Event> updateEvents = updatedAip.getHistory().stream()
                 .filter(e -> e.getType().equals(EventType.UPDATE.toString())).collect(Collectors.toSet());
-        Assert.assertEquals("There should be one update event in the updated aip history", 1, updateEvents.size());
+        // 3 update events : 1 update for update request, 2 updates for deletion of two metadata file in two storage
+        Assert.assertEquals("There should be 3 update event in the updated aip history", 3, updateEvents.size());
 
         // After job is done, the new AIP metadata file should be present in local datastorage
-        StorageDataFile file = dataFileDao.findByAipAndType(updatedAip, DataType.AIP).stream().findFirst().get();
+        Set<StorageDataFile> metadatas = dataFileDao.findByAipAndType(updatedAip, DataType.AIP);
+        Assert.assertEquals(1, metadatas.size());
 
-        for (URL url : file.getUrls()) {
+        for (URL url : metadatas.stream().findFirst().get().getUrls()) {
             Assert.assertTrue("The new data file should exists !" + url.getPath(),
                               Files.exists(Paths.get(url.getPath())));
         }
