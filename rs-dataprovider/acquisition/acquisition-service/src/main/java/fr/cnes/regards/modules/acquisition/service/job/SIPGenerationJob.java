@@ -20,6 +20,7 @@
 package fr.cnes.regards.modules.acquisition.service.job;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -49,7 +50,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
 
     public static final String CHAIN_PARAMETER_ID = "chain_id";
 
-    public static final String PRODUCT_NAME = "product_name";
+    public static final String PRODUCT_NAMES = "product_names";
 
     @Autowired
     private IProductService productService;
@@ -68,7 +69,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
     /**
      * The product used for SIP generation
      */
-    private Product product;
+    private Set<Product> products;
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
@@ -81,37 +82,40 @@ public class SIPGenerationJob extends AbstractJob<Void> {
             handleInvalidParameter(CHAIN_PARAMETER_ID, e);
         }
 
-        String productName = getValue(parameters, PRODUCT_NAME);
+        Set<String> productNames = getValue(parameters, PRODUCT_NAMES);
         try {
-            product = productService.retrieve(productName);
+            products = productService.retrieve(productNames);
         } catch (ModuleException e) {
-            handleInvalidParameter(PRODUCT_NAME, e);
+            handleInvalidParameter(PRODUCT_NAMES, e);
         }
     }
 
     @Override
     public void run() {
-        logger.trace("[{}] : starting SIP generation job for the product <{}>", processingChain.getLabel(),
-                     product.getProductName());
+        logger.debug("[{}] : starting SIP generation job of {} product(s) <{}>", processingChain.getLabel(),
+                     products.size());
+        long startTime = System.currentTimeMillis();
 
         try {
             // Get an instance of the plugin
             ISipGenerationPlugin generateSipPlugin = pluginService
                     .getPlugin(processingChain.getGenerateSipPluginConf().getId());
+
             // Launch generation plugin
-            SIP sip = generateSipPlugin.generate(product);
+            for (Product product : products) {
+                logger.trace("Generating SIP for product {}", product.getProductName());
+                SIP sip = generateSipPlugin.generate(product);
 
-            // Update product
-            product.setSip(sip);
-            product.setSipState(ProductSIPState.GENERATED);
-            productService.save(product);
+                // Update product
+                product.setSip(sip);
+                product.setSipState(ProductSIPState.GENERATED);
+                productService.save(product);
+            }
 
+            logger.debug("[{}] : {} SIP(s) generated in {} milliseconds", processingChain.getLabel(), products.size(),
+                         System.currentTimeMillis() - startTime);
         } catch (ModuleException e) {
             logger.error(e.getMessage(), e);
-            // Update product
-            product.setSipState(ProductSIPState.GENERATION_ERROR);
-            product.setError(e.getMessage());
-            productService.save(product);
             throw new JobRuntimeException(e.getMessage());
         }
     }

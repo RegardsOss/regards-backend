@@ -38,8 +38,6 @@ import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 
 /**
- * This job runs a set of step :<br>
- * <li>a step {@link IPostAcquisitionStep}
  *
  * This job runs for one {@link Product}
  *

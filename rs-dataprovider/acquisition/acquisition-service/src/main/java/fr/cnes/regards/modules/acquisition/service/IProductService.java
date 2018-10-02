@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.acquisition.service;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -65,6 +66,12 @@ public interface IProductService {
     Product retrieve(String productName) throws ModuleException;
 
     /**
+     * Retrieve a collection of product by names
+     * @param productNames list of all product names
+     */
+    Set<Product> retrieve(Collection<String> productNames) throws ModuleException;
+
+    /**
      * Delete one specified {@link Product}
      * @param id {@link Product}
      */
@@ -83,12 +90,11 @@ public interface IProductService {
     Page<Product> findChainProducts(AcquisitionProcessingChain chain, Pageable pageable);
 
     /**
-     * Schedule {@link Product} SIP generation
-     * @param product product for which SIP generation has to be scheduled
+     * Schedule {@link Product} SIP generations
+     * @param products products for which SIP generation has to be scheduled
      * @param chain related chain reference
-     * @return scheduled {@link JobInfo}
      */
-    JobInfo scheduleProductSIPGeneration(Product product, AcquisitionProcessingChain chain);
+    JobInfo scheduleProductSIPGenerations(Set<Product> products, AcquisitionProcessingChain chain);
 
     /**
      * Count number of products associated to the given {@link AcquisitionProcessingChain} and in the given state

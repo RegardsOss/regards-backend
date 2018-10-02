@@ -129,6 +129,11 @@ public class ProductService implements IProductService {
     }
 
     @Override
+    public Set<Product> retrieve(Collection<String> productNames) throws ModuleException {
+        return productRepository.findCompleteByProductNameIn(productNames);
+    }
+
+    @Override
     public Optional<Product> searchProduct(String productName) throws ModuleException {
         return Optional.ofNullable(productRepository.findCompleteByProductName(productName));
     }
@@ -153,30 +158,31 @@ public class ProductService implements IProductService {
         return productRepository.findByProcessingChainOrderByIdAsc(chain, pageable);
     }
 
-    /**
-     * Schedule a {@link SIPGenerationJob} and update product SIP state in same transaction.
-     */
     @Override
-    public JobInfo scheduleProductSIPGeneration(Product product, AcquisitionProcessingChain chain) {
+    public JobInfo scheduleProductSIPGenerations(Set<Product> products, AcquisitionProcessingChain chain) {
+
+        Set<String> productNames = products.stream().map(Product::getProductName).collect(Collectors.toSet());
 
         // Schedule job
         JobInfo jobInfo = new JobInfo(true);
         jobInfo.setPriority(AcquisitionJobPriority.SIP_GENERATION_JOB_PRIORITY.getPriority());
         jobInfo.setParameters(new JobParameter(SIPGenerationJob.CHAIN_PARAMETER_ID, chain.getId()),
-                              new JobParameter(SIPGenerationJob.PRODUCT_NAME, product.getProductName()));
+                              new JobParameter(SIPGenerationJob.PRODUCT_NAMES, productNames));
         jobInfo.setClassName(SIPGenerationJob.class.getName());
         jobInfo.setOwner(authResolver.getUser());
         jobInfo = jobInfoService.createAsQueued(jobInfo);
 
         // Release lock
-        if (product.getLastSIPGenerationJobInfo() != null) {
-            jobInfoService.unlock(product.getLastSIPGenerationJobInfo());
-        }
+        for (Product product : products) {
+            if (product.getLastSIPGenerationJobInfo() != null) {
+                jobInfoService.unlock(product.getLastSIPGenerationJobInfo());
+            }
 
-        // Change product SIP state
-        product.setSipState(ProductSIPState.SCHEDULED);
-        product.setLastSIPGenerationJobInfo(jobInfo);
-        save(product);
+            // Change product SIP state
+            product.setSipState(ProductSIPState.SCHEDULED);
+            product.setLastSIPGenerationJobInfo(jobInfo);
+            save(product);
+        }
 
         return jobInfo;
     }
@@ -264,6 +270,7 @@ public class ProductService implements IProductService {
         Set<Product> products = productRepository.findCompleteByProductNameIn(productNames);
         Map<String, Product> productMap = products.stream()
                 .collect(Collectors.toMap(Product::getProductName, Function.identity()));
+        Set<Product> productsToSchedule = new HashSet<>();
 
         // Build all current products
         for (String productName : validFilesByProductName.keySet()) {
@@ -280,6 +287,20 @@ public class ProductService implements IProductService {
 
             // Fulfill product with new valid acquired files
             fulfillProduct(validFilesByProductName.get(productName), currentProduct, processingChain);
+
+            // Store for scheduling
+            if (currentProduct.getSipState() == ProductSIPState.NOT_SCHEDULED
+                    && (currentProduct.getState() == ProductState.COMPLETED
+                            || currentProduct.getState() == ProductState.FINISHED)) {
+                LOGGER.trace("Product {} is candidate for SIP generation", currentProduct.getProductName());
+                productsToSchedule.add(currentProduct);
+            }
+        }
+
+        // Schedule SIP generation conditionally
+        if (!productsToSchedule.isEmpty()) {
+            LOGGER.debug("Scheduling SIP generation for {} product(s)", productsToSchedule.size());
+            scheduleProductSIPGenerations(productsToSchedule, processingChain);
         }
 
         return new HashSet<>(productMap.values());
@@ -314,14 +335,6 @@ public class ProductService implements IProductService {
         currentProduct.setSession(processingChain.getSession().orElse(null));
         currentProduct.addAcquisitionFiles(validFiles);
         computeProductState(currentProduct);
-
-        // Schedule SIP generation conditionally
-        if (currentProduct.getSipState() == ProductSIPState.NOT_SCHEDULED
-                && (currentProduct.getState() == ProductState.COMPLETED
-                        || currentProduct.getState() == ProductState.FINISHED)) {
-            LOGGER.trace("Scheduling SIP generation for product {}", currentProduct.getProductName());
-            scheduleProductSIPGeneration(currentProduct, processingChain);
-        }
 
         return save(currentProduct);
     }
@@ -515,14 +528,16 @@ public class ProductService implements IProductService {
 
     @Override
     public void handleSIPGenerationError(JobInfo jobInfo) {
-        JobParameter productNameParam = jobInfo.getParametersAsMap().get(SIPGenerationJob.PRODUCT_NAME);
+        JobParameter productNameParam = jobInfo.getParametersAsMap().get(SIPGenerationJob.PRODUCT_NAMES);
         if (productNameParam != null) {
-            String productName = productNameParam.getValue();
+            Set<String> productNames = productNameParam.getValue();
             try {
-                Product product = retrieve(productName);
-                product.setSipState(ProductSIPState.GENERATION_ERROR);
-                product.setError(jobInfo.getStatus().getStackTrace());
-                save(product);
+                Set<Product> products = retrieve(productNames);
+                for (Product product : products) {
+                    product.setSipState(ProductSIPState.GENERATION_ERROR);
+                    product.setError(jobInfo.getStatus().getStackTrace());
+                    save(product);
+                }
             } catch (ModuleException e) {
                 LOGGER.error("Error handling SIP generation error", e);
             }
