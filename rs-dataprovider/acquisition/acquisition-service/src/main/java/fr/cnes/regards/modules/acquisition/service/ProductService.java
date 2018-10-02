@@ -297,7 +297,7 @@ public class ProductService implements IProductService {
             }
         }
 
-        // Schedule SIP generation conditionally
+        // Schedule SIP generation
         if (!productsToSchedule.isEmpty()) {
             LOGGER.debug("Scheduling SIP generation for {} product(s)", productsToSchedule.size());
             scheduleProductSIPGenerations(productsToSchedule, processingChain);
@@ -662,8 +662,9 @@ public class ProductService implements IProductService {
                 if (!product.getLastSIPGenerationJobInfo().getStatus().getStatus().isFinished()) {
                     return false;
                 } else {
+                    jobInfoService.unlock(product.getLastSIPGenerationJobInfo());
                     // Clean product state
-                    product.setSipState(ProductSIPState.NOT_SCHEDULED);
+                    product.setSipState(ProductSIPState.SCHEDULED_INTERRUPTED);
                     save(product);
                 }
             }
@@ -691,5 +692,20 @@ public class ProductService implements IProductService {
         } while (products.hasNext());
 
         return true;
+    }
+
+    @Override
+    public boolean restartInterruptedJobsByPage(AcquisitionProcessingChain processingChain) {
+
+        Page<Product> products = productRepository
+                .findWithLockByProcessingChainAndSipStateOrderByIdAsc(processingChain,
+                                                                      ProductSIPState.SCHEDULED_INTERRUPTED,
+                                                                      new PageRequest(0, defaultPageSize));
+        // Schedule SIP generation
+        if (products.hasContent()) {
+            LOGGER.debug("Restarting SIP generation for {} product(s)", products.getContent().size());
+            scheduleProductSIPGenerations(new HashSet<>(products.getContent()), processingChain);
+        }
+        return products.hasNext();
     }
 }

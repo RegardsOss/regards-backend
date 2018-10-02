@@ -79,6 +79,8 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
             processingService.scanAndRegisterFiles(processingChain);
             // Second step : validate in progress files
             processingService.manageRegisteredFiles(processingChain);
+            // Third step : restart interrupted jobs
+            processingService.restartInterruptedJobs(processingChain);
         } catch (ModuleException e) {
             logger.error("Business error", e);
             throw new JobRuntimeException(e);

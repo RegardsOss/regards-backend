@@ -635,7 +635,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     @MultitenantTransactional(propagation = Propagation.SUPPORTS)
     @Override
     public void manageRegisteredFiles(AcquisitionProcessingChain processingChain) throws ModuleException {
-        while (!Thread.interrupted() && manageNewFilesByPage(processingChain)) {
+        while (!Thread.interrupted() && self.manageNewFilesByPage(processingChain)) {
             // Works as long as there is at least one page left
         }
         // Just trace interruption
@@ -696,6 +696,14 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         }
 
         return page.hasNext();
+    }
+
+    @MultitenantTransactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public void restartInterruptedJobs(AcquisitionProcessingChain processingChain) throws ModuleException {
+        while (!Thread.interrupted() && productService.restartInterruptedJobsByPage(processingChain)) {
+            // Works as long as there is at least one page left
+        }
     }
 
     @Override

@@ -202,4 +202,9 @@ public interface IProductService {
      */
     boolean isProductJobStoppedAndCleaned(AcquisitionProcessingChain processingChain) throws ModuleException;
 
+    /**
+     * Restart SIP generation jobs for interrupted product processes
+     */
+    boolean restartInterruptedJobsByPage(AcquisitionProcessingChain processingChain);
+
 }

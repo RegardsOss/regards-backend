@@ -26,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
@@ -164,6 +165,11 @@ public interface IAcquisitionProcessingService {
      * Same action as {@link #manageRegisteredFiles(AcquisitionProcessingChain)} but in transaction and by page
      */
     boolean manageNewFilesByPage(AcquisitionProcessingChain processingChain) throws ModuleException;
+
+    /**
+     * Restart jobs in {@link ProductSIPState#SCHEDULED_INTERRUPTED} for processing chain
+     */
+    void restartInterruptedJobs(AcquisitionProcessingChain processingChain) throws ModuleException;
 
     /**
      * Build summaries list of {@link AcquisitionProcessingChain}s.
