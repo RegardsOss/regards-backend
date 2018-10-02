@@ -60,6 +60,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.DispatchErrors;
@@ -117,18 +118,20 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
         AIPBuilder builder = new AIPBuilder(aipWithProperty);
         builder.getPDIBuilder().addAdditionalProvenanceInformation("property", PROPERTY_VALUE);
         propertyDataFile = new StorageDataFile(Sets.newHashSet(new URL("file", "", "truc.json")), "checksum", "MD5",
-                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aipWithProperty, aipSession, "truc", null);
+                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, new AIPEntity(aipWithProperty, aipSession),
+                aipSession, "truc", null);
         dataFiles.add(propertyDataFile);
         AIP aipWithoutProperty = getAIP();
         otherDataFile = new StorageDataFile(Sets.newHashSet(new URL("file", "", "local.json")), "checksum2", "MD5",
-                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aipWithoutProperty, aipSession, "local", null);
+                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, new AIPEntity(aipWithoutProperty, aipSession),
+                aipSession, "local", null);
         dataFiles.add(otherDataFile);
         AIP aipWithPropertyWrongVal = getAIP();
         builder = new AIPBuilder(aipWithPropertyWrongVal);
         builder.getPDIBuilder().addAdditionalProvenanceInformation("property", PROPERTY_VALUE + 3);
         propertyWrongValDataFile = new StorageDataFile(Sets.newHashSet(new URL("file", "", "truc.json")), "checksum3",
-                "MD5", DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aipWithPropertyWrongVal, aipSession, "truc",
-                null);
+                "MD5", DataType.OTHER, 666L, MediaType.APPLICATION_JSON,
+                new AIPEntity(aipWithPropertyWrongVal, aipSession), aipSession, "truc", null);
         dataFiles.add(propertyWrongValDataFile);
     }
 

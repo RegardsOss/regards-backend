@@ -294,7 +294,8 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
     private void updateAIP(AIP aipToUpdate) throws InterruptedException, ModuleException {
         aipService.updateAip(aip.getId().toString(), aip);
-        aipService.updateAipMetadata();
+        waitForJobsFinished();
+        aipService.storeMetadata();
         waitForJobsFinished();
     }
 
@@ -449,14 +450,16 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         aip = aipDao.findOneByAipId(aip.getId().toString()).get();
         String newTag = "Exemple Tag For Fun";
         aip.getTags().add(newTag);
-        Optional<StorageDataFile> oldDataFile = dataFileDao.findByAipAndType(aip, DataType.AIP);
+        Set<StorageDataFile> oldDataFiles = dataFileDao.findByAipAndType(aip, DataType.AIP);
         updateAIP(aip);
         Set<AIPEvent> events = waitForEventsReceived(AIPState.STORED, 1);
         Assert.assertEquals("There should be only one stored event for updated AIP", 1, events.size());
-        Assert.assertTrue(oldDataFile.isPresent());
-        for (URL url : oldDataFile.get().getUrls()) {
-            Assert.assertFalse("The old data file should not exists anymore !" + url.getPath(),
-                               Files.exists(Paths.get(url.getPath())));
+        Assert.assertTrue(!oldDataFiles.isEmpty());
+        for (StorageDataFile oldDataFile : oldDataFiles) {
+            for (URL url : oldDataFile.getUrls()) {
+                Assert.assertFalse("The old data file should not exists anymore !" + url.getPath(),
+                                   Files.exists(Paths.get(url.getPath())));
+            }
         }
 
         AIP updatedAip = aipDao.findOneByAipId(aip.getId().toString()).get();
@@ -468,7 +471,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         Assert.assertEquals("There should be one update event in the updated aip history", 1, updateEvents.size());
 
         // After job is done, the new AIP metadata file should be present in local datastorage
-        StorageDataFile file = dataFileDao.findByAipAndType(updatedAip, DataType.AIP).get();
+        StorageDataFile file = dataFileDao.findByAipAndType(updatedAip, DataType.AIP).stream().findFirst().get();
 
         for (URL url : file.getUrls()) {
             Assert.assertTrue("The new data file should exists !" + url.getPath(),

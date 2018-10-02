@@ -113,26 +113,7 @@ public class ScheduleStorageTasks {
             runtimeTenantResolver.clearTenant();
         }
     }
-
-    /*
-     * Non javadoc, but explanatory: due to settings only interfaces are proxyfied by spring, so we need to use a self
-     * reference on the interface to profit from transaction management from spring. This is a self reference because
-     * AIPService is annotated @Service with default component scope which is "spring' SINGLETON
-     */
-    @Scheduled(fixedDelayString = "${regards.storage.update.aip.metadata.delay:120000}") // 2 minutes
-    public void updateAlreadyStoredMetadata() {
-        // Then lets get AIP that should be stored again after an update
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
-            runtimeTenantResolver.forceTenant(tenant);
-            long startTime = System.currentTimeMillis();
-            int nbScheduled = aipService.updateAipMetadata();
-            aipService.removeDeletedAIPMetadatas();
-            LOGGER.trace("AIP metadata update scheduled in {}ms for {} aips", System.currentTimeMillis() - startTime,
-                         nbScheduled);
-            runtimeTenantResolver.clearTenant();
-        }
-    }
-
+    
     /**
      * Periodicaly delete AIPs metadata in status DELETED. Delete physical file and reference in database.
      */

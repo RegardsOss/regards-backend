@@ -78,6 +78,7 @@ import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
@@ -165,7 +166,7 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
         aipSession.setId(aip.getSession());
 
         df = new StorageDataFile(Sets.newHashSet(source), "de89a907d33a9716d11765582102b2e0", "MD5", DataType.OTHER, 0L,
-                new MimeType("text", "plain"), aip, aipSession, "data.txt", null);
+                new MimeType("text", "plain"), new AIPEntity(aip, aipSession), aipSession, "data.txt", null);
         workingSubset = new LocalWorkingSubset(Sets.newHashSet(df));
         // now that we have some parameters, lets storeAndCreate the job
         parameters = Sets.newHashSet();
@@ -194,7 +195,8 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
         aipSession.setId(aip.getSession());
 
         StorageDataFile df = new StorageDataFile(Sets.newHashSet(source), "540e72d5ac22f25c70d9c72b9b36fb96", "MD5",
-                DataType.QUICKLOOK_SD, 0L, new MimeType("image", "png"), aip, aipSession, "quicklook.png", null);
+                DataType.QUICKLOOK_SD, 0L, new MimeType("image", "png"), new AIPEntity(aip, aipSession), aipSession,
+                "quicklook.png", null);
         IWorkingSubset workingSubset = new LocalWorkingSubset(Sets.newHashSet(df));
 
         Set<JobParameter> jobParameters = Sets.newHashSet();

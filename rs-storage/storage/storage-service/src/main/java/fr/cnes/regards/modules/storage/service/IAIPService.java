@@ -232,12 +232,6 @@ public interface IAIPService {
             throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException;
 
     /**
-     * Updates all AIP metadta to update.
-     * @return number of AIP update scheduled.
-     */
-    int updateAipMetadata();
-
-    /**
      * Remove an aip from the system. Its file are deleted if and only if no other aip point to them.
      * @return not suppressible files because they are in state
      *         {@link fr.cnes.regards.modules.storage.domain.database.DataFileState#PENDING}
@@ -369,18 +363,6 @@ public interface IAIPService {
      * @param metadataToUpdate
      */
     void scheduleStorageMetadataUpdate(Set<UpdatableMetadataFile> metadataToUpdate);
-
-    /**
-     * Prepare the aip metadata of already stored aip that has been updated
-     * @return the new and old aip metadata associated data file
-     */
-    Set<UpdatableMetadataFile> prepareUpdatedAIP();
-
-    /**
-     * Prepare the aip metadata that are not yet stored
-     * @return data files to store
-     */
-    Set<StorageDataFile> prepareNotFullyStored();
 
     /**
      * Handle physical deletion of AIPs for each entity in state DELETED and associated to no other

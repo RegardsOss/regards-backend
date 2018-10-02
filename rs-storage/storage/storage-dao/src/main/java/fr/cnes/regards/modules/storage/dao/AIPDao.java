@@ -113,6 +113,16 @@ public class AIPDao implements IAIPDao {
     }
 
     @Override
+    public Optional<AIP> findOneWithLockByAipId(String aipId) {
+        Optional<AIPEntity> aipDatabase = repo.findOneWithLockByAipId(aipId);
+        if (aipDatabase.isPresent()) {
+            return Optional.of(buildAipFromAIPEntity(aipDatabase.get()));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    @Override
     public void deleteAll() {
         repo.deleteAll();
     }

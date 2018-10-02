@@ -170,9 +170,9 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
         try {
             fullPathToFile = getStorageLocation(data);
         } catch (IOException ioe) {
-            String failureCause = String.format(
-                                                "Storage of StorageDataFile(%s) failed due to the following IOException: %s",
-                                                data.getChecksum(), ioe.toString());
+            String failureCause = String
+                    .format("Storage of StorageDataFile(%s) failed due to the following IOException: %s",
+                            data.getChecksum(), ioe.toString());
             LOG.error(failureCause, ioe);
             progressManager.storageFailed(data, Optional.empty(), failureCause);
             return;
@@ -195,19 +195,19 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
             if (sourceUrl == null) {
                 StringJoiner stringedUrls = new StringJoiner(",");
                 data.getUrls().forEach(url -> stringedUrls.add(url.toExternalForm()));
-                String errorMsg = String.format(
-                                                "Error trying to retrieve file(checksum: %s). We could not find any accessible url(Actual urls: %s)",
-                                                data.getChecksum(), stringedUrls.toString());
+                String errorMsg = String
+                        .format("Error trying to retrieve file(checksum: %s). We could not find any accessible url(Actual urls: %s)",
+                                data.getChecksum(), stringedUrls.toString());
                 LOG.error(errorMsg);
-                progressManager.storageFailed(data, Optional.of(new URL(fullPathToFile)), errorMsg);
+                progressManager.storageFailed(data, Optional.of(new URL("file", "", fullPathToFile)), errorMsg);
                 return;
             }
             boolean downloadOk = DownloadUtils.downloadAndCheckChecksum(sourceUrl, Paths.get(fullPathToFile),
                                                                         data.getAlgorithm(), data.getChecksum());
             if (!downloadOk) {
-                String failureCause = String.format(
-                                                    "Storage of StorageDataFile(%s) failed at the following location: %s. Its checksum once stored do not match with expected",
-                                                    data.getChecksum(), fullPathToFile);
+                String failureCause = String
+                        .format("Storage of StorageDataFile(%s) failed at the following location: %s. Its checksum once stored do not match with expected",
+                                data.getChecksum(), fullPathToFile);
                 Files.deleteIfExists(Paths.get(fullPathToFile));
                 progressManager.storageFailed(data, Optional.of(new URL("file", "", fullPathToFile)), failureCause);
             } else {
@@ -225,9 +225,9 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
                       re);
             throw re;
         } catch (IOException ioe) {
-            String failureCause = String.format(
-                                                "Storage of StorageDataFile(%s) failed due to the following IOException: %s",
-                                                data.getChecksum(), ioe.toString());
+            String failureCause = String
+                    .format("Storage of StorageDataFile(%s) failed due to the following IOException: %s",
+                            data.getChecksum(), ioe.toString());
             LOG.error(failureCause, ioe);
             Paths.get(fullPathToFile).toFile().delete();
             progressManager.storageFailed(data, Optional.empty(), failureCause);
@@ -262,9 +262,9 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
                 Files.deleteIfExists(location);
                 progressManager.deletionSucceed(data, location.toUri().toURL());
             } catch (IOException ioe) {
-                String failureCause = String.format(
-                                                    "Deletion of StorageDataFile(%s) failed due to the following IOException: %s",
-                                                    data.getChecksum(), ioe.getMessage());
+                String failureCause = String
+                        .format("Deletion of StorageDataFile(%s) failed due to the following IOException: %s",
+                                data.getChecksum(), ioe.getMessage());
                 LOG.error(failureCause, ioe);
                 progressManager.deletionFailed(data, Optional.empty(), failureCause);
             }
