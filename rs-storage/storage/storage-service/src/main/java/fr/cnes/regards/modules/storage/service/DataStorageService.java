@@ -312,6 +312,8 @@ public class DataStorageService implements IDataStorageService {
                     // Maybe the file can be deleted later. So do nothing and just notify administrator.
                     String message = String.format("Error deleting file (id: %s, checksum: %s).", event.getDataFileId(),
                                                    event.getChecksum());
+                    data.get().setState(DataFileState.TO_BE_DELETED);
+                    dataFileDao.save(data.get());
                     LOGGER.error(message);
                     notifyAdmins("File deletion error", message, NotificationType.INFO);
                     break;

@@ -137,7 +137,7 @@ public class ScheduleStorageTasks {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
             long startTime = System.currentTimeMillis();
-            int nbScheduled = aipService.doDelete();
+            Long nbScheduled = aipService.doDelete();
             LOGGER.trace("AIP data delete scheduled in {}ms for {} aips", System.currentTimeMillis() - startTime,
                          nbScheduled);
             runtimeTenantResolver.clearTenant();

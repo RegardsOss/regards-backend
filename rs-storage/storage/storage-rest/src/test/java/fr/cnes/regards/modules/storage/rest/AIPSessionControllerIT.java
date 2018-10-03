@@ -40,7 +40,7 @@ public class AIPSessionControllerIT extends AbstractAIPControllerIT {
         int nbAipsSession1 = 8;
         int nbDeletedAipsSession1 = 2;
         int nbErrorAipsSession1 = 2;
-        int nbQueueAipsSession1 = 3;
+        int nbQueueAipsSession1 = 2;
         int nbStoredAipsSession1 = 2;
         int nbAipsSession2 = 1;
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();

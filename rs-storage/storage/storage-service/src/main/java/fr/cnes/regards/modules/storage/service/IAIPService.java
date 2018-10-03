@@ -236,7 +236,7 @@ public interface IAIPService {
      * Schedule deletion of datafiles marked for deletion
      * @return number of scheduled aip to delete
      */
-    int doDelete();
+    Long doDelete();
 
     /**
      * Remove {@link AIP}s associated the given sip, through its ip id

@@ -1232,17 +1232,20 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public int doDelete() {
-        Page<StorageDataFile> pageToDelete = dataFileDao.findPageByState(DataFileState.TO_BE_DELETED,
-                                                                         new PageRequest(0, aipIterationLimit));
-        if (pageToDelete.hasContent()) {
+    public Long doDelete() {
+        Pageable page = new PageRequest(0, aipIterationLimit);
+        Page<StorageDataFile> pageToDelete;
+        do {
+            pageToDelete = dataFileDao.findPageByState(DataFileState.TO_BE_DELETED, page);
             try {
                 scheduleDeletion(pageToDelete.getContent());
             } catch (ModuleException e) {
                 LOGGER.error("ERROR occured during deletion scheduling of datafiles.", e);
             }
-        }
-        return pageToDelete.getNumberOfElements();
+            page = pageToDelete.nextPageable();
+        } while (pageToDelete.hasNext());
+
+        return pageToDelete.getTotalElements();
     }
 
     @Override
@@ -1292,8 +1295,11 @@ public class AIPService implements IAIPService {
         // when we delete DataFiles, we have to get the DataStorages to use thanks to DB informations
         Multimap<Long, StorageDataFile> deletionWorkingSetMultimap = HashMultimap.create();
         for (StorageDataFile toDelete : dataFilesToDelete) {
-            toDelete.getPrioritizedDataStorages()
-                    .forEach(dataStorage -> deletionWorkingSetMultimap.put(dataStorage.getId(), toDelete));
+            toDelete.getPrioritizedDataStorages().forEach(dataStorage -> {
+                deletionWorkingSetMultimap.put(dataStorage.getId(), toDelete);
+            });
+            toDelete.setState(DataFileState.DELETION_PENDING);
+            dataFileDao.save(toDelete);
         }
         Set<UUID> jobIds = Sets.newHashSet();
         for (Long dataStorageConfId : deletionWorkingSetMultimap.keySet()) {
