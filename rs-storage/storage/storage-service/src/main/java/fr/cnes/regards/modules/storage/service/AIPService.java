@@ -1300,6 +1300,8 @@ public class AIPService implements IAIPService {
             });
             toDelete.setState(DataFileState.DELETION_PENDING);
             dataFileDao.save(toDelete);
+            em.flush();
+            em.clear();
         }
         Set<UUID> jobIds = Sets.newHashSet();
         for (Long dataStorageConfId : deletionWorkingSetMultimap.keySet()) {
