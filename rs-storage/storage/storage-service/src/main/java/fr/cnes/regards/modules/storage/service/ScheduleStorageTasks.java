@@ -113,7 +113,7 @@ public class ScheduleStorageTasks {
             runtimeTenantResolver.clearTenant();
         }
     }
-    
+
     /**
      * Periodicaly delete AIPs metadata in status DELETED. Delete physical file and reference in database.
      */
@@ -183,6 +183,19 @@ public class ScheduleStorageTasks {
             long startTime = System.currentTimeMillis();
             dataStorageService.monitorDataStorages();
             LOGGER.trace("Data storages monitoring done in {}ms", System.currentTimeMillis() - startTime);
+            runtimeTenantResolver.clearTenant();
+        }
+    }
+
+    @Scheduled(fixedRateString = "${regards.storage.check.data.storage.disk.usage.rate:30000}",
+            initialDelay = 60 * 1000)
+    public void handleUpdateRequests() throws ModuleException {
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            long startTime = System.currentTimeMillis();
+            int nbRequestsHandled = aipService.handleUpdateRequests();
+            LOGGER.trace("Handle pending update requests done in {}ms for {} aips.",
+                         System.currentTimeMillis() - startTime, nbRequestsHandled);
             runtimeTenantResolver.clearTenant();
         }
     }

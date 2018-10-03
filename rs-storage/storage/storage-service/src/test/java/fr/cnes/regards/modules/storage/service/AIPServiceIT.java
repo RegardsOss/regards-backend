@@ -91,6 +91,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
+import fr.cnes.regards.modules.storage.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.dao.IPrioritizedDataStorageRepository;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -171,6 +172,9 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private IJobInfoService jobInfoService;
+
+    @Autowired
+    private IAIPUpdateRequestRepository aipUpdateRepo;
 
     private AIP aip;
 
@@ -292,9 +296,15 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         }
     }
 
-    private void updateAIP(AIP aipToUpdate) throws InterruptedException, ModuleException {
-        aipService.updateAip(aip.getId().toString(), aip);
+    private void updateAIP(AIP aipToUpdate, boolean partialProcess) throws InterruptedException, ModuleException {
+        aipService.updateAip(aip.getId().toString(), aip, "Test update AIP");
         waitForJobsFinished();
+        if (!partialProcess) {
+            processStorage();
+        }
+    }
+
+    private void processStorage() throws ModuleException, InterruptedException {
         // Simulate store scheduler
         aipService.storePage(new PageRequest(0, 500));
         // Simulate storeMetadata scheduler
@@ -461,7 +471,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         String newTag = "Exemple Tag For Fun";
         aip.getTags().add(newTag);
         Set<StorageDataFile> oldDataFiles = dataFileDao.findByAipAndType(aip, DataType.AIP);
-        updateAIP(aip);
+        updateAIP(aip, false);
         Set<AIPEvent> events = waitForEventsReceived(AIPState.STORED, 1);
         Assert.assertEquals("There should be only one stored event for updated AIP", 1, events.size());
         Assert.assertTrue(!oldDataFiles.isEmpty());
@@ -489,6 +499,91 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
             Assert.assertTrue("The new data file should exists !" + url.getPath(),
                               Files.exists(Paths.get(url.getPath())));
         }
+    }
+
+    @Test
+    @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_030"), @Requirement("REGARDS_DSL_STO_AIP_040") })
+    public void testMultipleUpdates() throws InterruptedException, ModuleException, URISyntaxException {
+        // Allow deletion for all files to allow update.
+        dsConfWithDeleteDisabled.getParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION)
+                .setValue(Boolean.TRUE.toString());
+        pluginService.updatePluginConfiguration(dsConfWithDeleteDisabled);
+        // first lets storeAndCreate the aip
+        LOG.info("############## 1. Store new AIP");
+        createSuccessTest();
+        LOG.info("############## 1. Store new AIP OK");
+        mockEventHandler.clear();
+        // now that it is correctly created, lets say it has been updated and add a tag
+        aip = aipDao.findOneByAipId(aip.getId().toString()).get();
+        String newTag = "Exemple Tag For Fun";
+        aip.getTags().add(newTag);
+        // Run first update request
+        LOG.info("############## 1. Update AIP Request");
+        updateAIP(aip, true);
+        LOG.info("############## 1. Update AIP Request done");
+        // Run second update request
+        String newTag2 = "Another tag for fun";
+        aip.getTags().add(newTag2);
+        LOG.info("############## 1. Update AIP Request");
+        updateAIP(aip, true);
+        LOG.info("############## 1. Update AIP Request done");
+        // Run a third update request
+        String newTag3 = "Another tag for more fun";
+        aip.getTags().add(newTag3);
+        LOG.info("############## 1. Update AIP Request");
+        updateAIP(aip, true);
+        LOG.info("############## 1. Update AIP Request done");
+
+        // Result  should be
+        // - AIP should be in VALID state. Ready to be handled by storage process (StorePage -> StoreMeta)
+        // - Only last update request should be saved in db. This request will be handled by update scheduler.
+        Optional<AIP> runningAip = aipDao.findOneByAipId(aip.getId().toString());
+        Assert.assertEquals("After an update request the AIP should be in VALID state", AIPState.VALID.toString(),
+                            runningAip.get().getState().toString());
+        Assert.assertEquals("There should be only one AIP update request in db", 1, aipUpdateRepo.count());
+
+        // Run update scheduler to check that the request cannot be handled yet cause the AIP is still not in STORED state.
+        aipService.handleUpdateRequests();
+        runningAip = aipDao.findOneByAipId(aip.getId().toString());
+        Assert.assertEquals("After an update request the AIP should be in VALID state", AIPState.VALID.toString(),
+                            runningAip.get().getState().toString());
+        Assert.assertEquals("There should be only one AIP update request in db", 1, aipUpdateRepo.count());
+
+        // Run process to end first update pending.
+        LOG.info("############## 1. Process first Update AIP Request");
+        processStorage();
+        LOG.info("############## 1. First Update AIP Request done");
+        runningAip = aipDao.findOneByAipId(aip.getId().toString());
+        Assert.assertEquals("After storage process the AIP should be in STORED state", AIPState.STORED.toString(),
+                            runningAip.get().getState().toString());
+        Assert.assertEquals("There should be only one AIP update request in db", 1, aipUpdateRepo.count());
+
+        Assert.assertTrue("Updated AIP should contains new tag", runningAip.get().getTags().contains(newTag));
+        Assert.assertFalse("Updated AIP should not contains second update new tag",
+                           runningAip.get().getTags().contains(newTag2));
+        Assert.assertFalse("Updated AIP should not contains third update new tag",
+                           runningAip.get().getTags().contains(newTag3));
+
+        // Run update scheduler to handle the update request nw that the aip is in STORED state
+        LOG.info("############## 1. Process second Update AIP Request");
+        aipService.handleUpdateRequests();
+        runningAip = aipDao.findOneByAipId(aip.getId().toString());
+        Assert.assertEquals("After an update request the AIP should be in VALID state", AIPState.VALID.toString(),
+                            runningAip.get().getState().toString());
+        Assert.assertEquals("There should be no more AIP update request in db.", 0, aipUpdateRepo.count());
+        // Run process to end last update request
+        processStorage();
+        LOG.info("############## 1. Process second Update AIP Request done");
+
+        Set<AIPEvent> events = waitForEventsReceived(AIPState.STORED, 2);
+        Assert.assertEquals("There should be two stored events for updated AIP", 2, events.size());
+
+        Optional<AIP> updatedAip = aipDao.findOneByAipId(aip.getId().toString());
+
+        Assert.assertTrue("Updated AIP should contains new tag", updatedAip.get().getTags().contains(newTag));
+        Assert.assertTrue("Updated AIP should contains new tag", updatedAip.get().getTags().contains(newTag2));
+        Assert.assertTrue("Updated AIP should contains new tag", updatedAip.get().getTags().contains(newTag3));
+
     }
 
     @Test
@@ -662,7 +757,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         AIPBuilder updated = new AIPBuilder(aip);
         updated.addEvent(EventType.UPDATE.name(), "lets test update", OffsetDateTime.now());
         AIP preUpdateAIP = updated.build();
-        AIP updatedAip = aipService.updateAip(aip.getId().toString(), preUpdateAIP);
+        AIP updatedAip = aipService.updateAip(aip.getId().toString(), preUpdateAIP, "Test update AIP").get();
         Assert.assertEquals("new history size should be oldhistorysize + 2", oldHistorySize + 2,
                             updatedAip.getHistory().size());
     }
@@ -700,6 +795,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
     private void clearDb() {
         jobInfoRepo.deleteAll();
         dataFileDao.deleteAll();
+        aipUpdateRepo.deleteAll();
         aipDao.deleteAll();
         prioritizedDataStorageRepository.deleteAll();
         pluginRepo.deleteAll();

@@ -104,6 +104,7 @@ import fr.cnes.regards.modules.storage.dao.AIPSessionSpecifications;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IAIPEntityRepository;
 import fr.cnes.regards.modules.storage.dao.IAIPSessionRepository;
+import fr.cnes.regards.modules.storage.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
@@ -119,6 +120,7 @@ import fr.cnes.regards.modules.storage.domain.RejectedAip;
 import fr.cnes.regards.modules.storage.domain.RejectedSip;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
+import fr.cnes.regards.modules.storage.domain.database.AIPUpdateRequest;
 import fr.cnes.regards.modules.storage.domain.database.CachedFile;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.database.DataStorageType;
@@ -283,6 +285,9 @@ public class AIPService implements IAIPService {
 
     @Autowired
     private IAIPEntityRepository aipEntityRepository;
+
+    @Autowired
+    private IAIPUpdateRequestRepository aipUpdateRequestRepo;
 
     /**
      * The spring application name ~= microservice type
@@ -983,22 +988,52 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public AIP updateAip(String ipId, AIP updated)
-            throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException {
-        return updateAip(ipId, updated, "AIP metadata has been updated.");
+    public int handleUpdateRequests() throws ModuleException {
+        int nbAipHandled = 0;
+        Pageable page = new PageRequest(0, 100);
+        Page<AIPUpdateRequest> updatePage;
+        do {
+            // Retrieve all update requests.
+            updatePage = aipUpdateRequestRepo.findAll(page);
+            for (AIPUpdateRequest request : updatePage) {
+                // Retrieve the associated AIP to update
+                Optional<AIPEntity> oAIP = aipEntityRepository.findOneWithLockByAipId(request.getAipId());
+                if (oAIP.isPresent()) {
+                    if (oAIP.get().getState() == AIPState.STORED) {
+                        // If associated AIP is in STORED state, run the update request
+                        Optional<AIP> oAipUpdated = updateAip(request.getAipId(), request.getAip(),
+                                                              request.getUpdateMessage());
+                        // If request is well handled, delete the update request.
+                        oAipUpdated.ifPresent(aip -> aipUpdateRequestRepo.delete(request));
+                    } else {
+                        LOGGER.debug("AIP {} update request is delayed cause the AIP is still in a storing process",
+                                     oAIP.get().getProviderId());
+                    }
+                } else {
+                    // AIP doesn't exists anymore, delete the update request.
+                    aipUpdateRequestRepo.delete(request);
+                }
+            }
+            page = updatePage.nextPageable();
+        } while (updatePage.hasNext());
+
+        return nbAipHandled;
     }
 
     @Override
-    public AIP updateAip(String ipId, AIP newAip, String updateMessage)
+    public Optional<AIP> updateAip(String ipId, AIP newAip, String updateMessage)
             throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException {
-        Optional<AIP> oAipToUpdate = aipDao.findOneByAipId(ipId);
+        Optional<AIP> oAipToUpdate = aipDao.findOneWithLockByAipId(ipId);
         // first lets check for issues
         if (!oAipToUpdate.isPresent()) {
             throw new EntityNotFoundException(ipId, AIP.class);
         }
         AIP aipToUpdate = oAipToUpdate.get();
         if ((aipToUpdate.getState() != AIPState.STORED)) {
-            throw new EntityOperationForbiddenException(ipId, AIP.class, "update while aip metadata are being stored!");
+            LOGGER.info("AIP to update {}, is already handled by a storage process. The requested udpdate is delayed.",
+                        aipToUpdate.getProviderId());
+            addNewAIPUpdateRequest(newAip, updateMessage);
+            return Optional.empty();
         }
         if (newAip.getId() == null) {
             throw new EntityNotFoundException("give updated AIP has no id!");
@@ -1093,7 +1128,25 @@ public class AIPService implements IAIPService {
         updatedAip.setState(AIPState.VALID);
         LOGGER.debug(String.format("[METADATA UPDATE] Update of aip %s metadata done", ipId));
         LOGGER.trace(String.format("[METADATA UPDATE] Updated aip : %s", gson.toJson(updatedAip)));
-        return save(updatedAip, false);
+        return Optional.ofNullable(save(updatedAip, false));
+    }
+
+    /**
+     * Add a new update request pending for the given AIP.
+     * @param aipToUpdate
+     * @param updateMessage
+     */
+    private void addNewAIPUpdateRequest(AIP aipToUpdate, String updateMessage) {
+        Optional<AIPUpdateRequest> oUpdateRequest = aipUpdateRequestRepo
+                .findOneWithLockByAipId(aipToUpdate.getId().toString());
+        if (oUpdateRequest.isPresent()) {
+            AIPUpdateRequest updateRequest = oUpdateRequest.get();
+            updateRequest.setAip(aipToUpdate);
+            updateRequest.setUpdateMessage(updateMessage);
+            aipUpdateRequestRepo.save(updateRequest);
+        } else {
+            aipUpdateRequestRepo.save(new AIPUpdateRequest(aipToUpdate, updateMessage));
+        }
     }
 
     @Override

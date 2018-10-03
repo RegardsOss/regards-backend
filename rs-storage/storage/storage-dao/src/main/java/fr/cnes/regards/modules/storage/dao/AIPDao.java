@@ -56,7 +56,6 @@ public class AIPDao implements IAIPDao {
 
     @Override
     public void updateAIPStateAndRetry(AIP aip) {
-        Optional<Long> id = repo.findIdByAipId(aip.getId().toString());
         repo.updateAIPStateAndRetry(aip.getState().toString(), aip.isRetry(), aip.getId().toString());
     }
 

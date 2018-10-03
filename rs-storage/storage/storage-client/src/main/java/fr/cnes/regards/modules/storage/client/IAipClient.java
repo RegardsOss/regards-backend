@@ -18,10 +18,11 @@
  */
 package fr.cnes.regards.modules.storage.client;
 
-import javax.validation.Valid;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
+
+import javax.validation.Valid;
 
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -193,5 +194,5 @@ public interface IAipClient {
      */
     @RequestMapping(value = ID_PATH, method = RequestMethod.PUT,
             consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
-    ResponseEntity<AIP> updateAip(@PathVariable(name = "ip_id") String ipId, @RequestBody @Valid AIP updated);
+    ResponseEntity<Void> updateAip(@PathVariable(name = "ip_id") String ipId, @RequestBody @Valid AIP updated);
 }
