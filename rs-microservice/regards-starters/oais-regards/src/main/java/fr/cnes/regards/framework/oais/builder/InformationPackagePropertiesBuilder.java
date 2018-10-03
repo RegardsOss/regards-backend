@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
-import javax.annotation.Nullable;
 import java.net.URL;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
@@ -26,10 +25,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
 
 import com.google.common.collect.Maps;
+
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.InformationPackageProperties;
@@ -93,6 +95,7 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
     public InformationPackagePropertiesBuilder(InformationPackageProperties properties) {
         this.ip = properties;
         this.cis = properties.getContentInformations();
+        this.contentInformationBuilder = new ContentInformationBuilder();
         this.pdiBuilder = new PDIBuilder(properties.getPdi());
         this.descriptiveInformation = properties.getDescriptiveInformation();
         this.miscInformation = properties.getMiscInformation();
@@ -122,7 +125,7 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
      */
     public void addContentInformation() {
         ContentInformation newCi = contentInformationBuilder.build();
-        if(!cis.contains(newCi)) {
+        if (!cis.contains(newCi)) {
             cis.add(newCi);
         }
         contentInformationBuilder = new ContentInformationBuilder();
