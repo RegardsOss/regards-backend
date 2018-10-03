@@ -68,6 +68,7 @@ public class AIPQueryGenerator {
             request.append("WHERE ");
             Joiner.on(" AND ").appendTo(request, predicates);
         }
+        // Do not handle pagination here. See CustomizedAIPEntityRepository for pagination
         return request.toString();
     }
 
