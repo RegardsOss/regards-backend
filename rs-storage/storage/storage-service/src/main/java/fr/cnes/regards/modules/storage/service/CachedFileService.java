@@ -352,15 +352,16 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         // Try to retrieve queued files if possible
         toRetrieve.addAll(queuedData);
         LOGGER.trace("Async call...");
-        self.scheduleRestorationAsync(cacheExpirationDate, toRetrieve);
+        self.scheduleRestorationAsync(cacheExpirationDate, toRetrieve, runtimeTenantResolver.getTenant());
         LOGGER.trace("Async called!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         return new CoupleAvailableError(alreadyAvailableData, new HashSet<>());
     }
 
     @Async
     @Override
-    public void scheduleRestorationAsync(OffsetDateTime cacheExpirationDate, Set<StorageDataFile> toRetrieve) {
-
+    public void scheduleRestorationAsync(OffsetDateTime cacheExpirationDate, Set<StorageDataFile> toRetrieve,
+            String tenant) {
+        runtimeTenantResolver.forceTenant(tenant);
         long startDispatching = System.currentTimeMillis();
         // Dispatch each Datafile by storage plugin.
         Multimap<Long, StorageDataFile> toRetrieveByStorage = HashMultimap.create();
@@ -379,6 +380,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         for(StorageDataFile error: errors) {
             handleRestorationFailure(error);
         }
+        runtimeTenantResolver.clearTenant();
     }
 
     private Long computeDataStorageToUseToRetrieve(Set<PrioritizedDataStorage> dataStorages) {

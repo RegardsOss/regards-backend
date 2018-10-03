@@ -23,8 +23,6 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.Set;
 
-import org.springframework.scheduling.annotation.Async;
-
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.modules.storage.domain.CoupleAvailableError;
 import fr.cnes.regards.modules.storage.domain.database.CachedFile;
@@ -50,8 +48,9 @@ public interface ICachedFileService {
      * Asynchronous job scheduling. Allows us to speed up process & keep same logic
      * @param cacheExpirationDate
      * @param toRetrieve
+     * @param tenant
      */
-    void scheduleRestorationAsync(OffsetDateTime cacheExpirationDate, Set<StorageDataFile> toRetrieve);
+    void scheduleRestorationAsync(OffsetDateTime cacheExpirationDate, Set<StorageDataFile> toRetrieve, String tenant);
 
     /**
      * Handle a successful restoration of a file from a data storage
