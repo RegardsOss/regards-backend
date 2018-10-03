@@ -403,6 +403,10 @@ public class ProductService implements IProductService {
         // Find all products with available SIPs ready for submission
         // Reset pagination
         pageable = new PageRequest(0, defaultPageSize);
+        Multimap<String, String> sessionsByChain = ArrayListMultimap.create();
+        // Register products per ingest chain and session for reporting
+        Map<String, Map<String, List<Product>>> productsPerIngestChain = new HashMap<>();
+
         do {
             products = productRepository.findWithLockBySipStateOrderByIdAsc(ProductSIPState.GENERATED, pageable);
             if (products.hasNext()) {
@@ -411,10 +415,7 @@ public class ProductService implements IProductService {
             }
 
             if (products.hasContent()) {
-                // Register products per ingest chain and session for reporting
-                Map<String, Map<String, List<Product>>> productsPerIngestChain = new HashMap<>();
 
-                Multimap<String, String> sessionsByChain = ArrayListMultimap.create();
                 for (Product product : products) {
                     // Check if chain and session not already scheduled
                     if (!scheduledSessionsByChain.containsEntry(product.getProcessingChain().getIngestChain(),
@@ -427,34 +428,30 @@ public class ProductService implements IProductService {
 
                         // Register product
                         registerProduct(productsPerIngestChain, product);
-
-                        // Update SIP state
-                        product.setSipState(ProductSIPState.SUBMISSION_SCHEDULED);
-                        save(product);
-                    }
-                }
-
-                // Schedule submission jobs
-                for (String ingestChain : sessionsByChain.keySet()) {
-                    for (String session : sessionsByChain.get(ingestChain)) {
-                        // Schedule job
-                        Set<JobParameter> jobParameters = Sets.newHashSet();
-                        jobParameters.add(new JobParameter(SIPSubmissionJob.INGEST_CHAIN_PARAMETER, ingestChain));
-                        jobParameters.add(new JobParameter(SIPSubmissionJob.SESSION_PARAMETER, session));
-
-                        JobInfo jobInfo = new JobInfo(true);
-                        jobInfo.setPriority(AcquisitionJobPriority.SIP_SUBMISSION_JOB_PRIORITY.getPriority());
-                        jobInfo.setParameters(jobParameters);
-                        jobInfo.setClassName(SIPSubmissionJob.class.getName());
-                        jobInfo.setOwner(authResolver.getUser());
-                        jobInfoService.createAsQueued(jobInfo);
-
-                        // Link report to all related products
-                        linkSubmissionJobInfo(productsPerIngestChain, jobInfo, ingestChain, session);
                     }
                 }
             }
         } while (products.hasNext());
+
+        // Schedule submission jobs
+        for (String ingestChain : sessionsByChain.keySet()) {
+            for (String session : sessionsByChain.get(ingestChain)) {
+                // Schedule job
+                Set<JobParameter> jobParameters = Sets.newHashSet();
+                jobParameters.add(new JobParameter(SIPSubmissionJob.INGEST_CHAIN_PARAMETER, ingestChain));
+                jobParameters.add(new JobParameter(SIPSubmissionJob.SESSION_PARAMETER, session));
+
+                JobInfo jobInfo = new JobInfo(true);
+                jobInfo.setPriority(AcquisitionJobPriority.SIP_SUBMISSION_JOB_PRIORITY.getPriority());
+                jobInfo.setParameters(jobParameters);
+                jobInfo.setClassName(SIPSubmissionJob.class.getName());
+                jobInfo.setOwner(authResolver.getUser());
+                jobInfoService.createAsQueued(jobInfo);
+
+                // Link report to all related products
+                linkSubmissionJobInfo(productsPerIngestChain, jobInfo, ingestChain, session);
+            }
+        }
     }
 
     /**
@@ -501,7 +498,8 @@ public class ProductService implements IProductService {
                         jobInfoService.unlock(product.getLastSIPSubmissionJobInfo());
                     }
                     product.setLastSIPSubmissionJobInfo(jobInfo);
-                    save(product);
+                    product.setSipState(ProductSIPState.SUBMISSION_SCHEDULED);
+                    saveAndFlush(product);
                 }
             }
         }
