@@ -52,6 +52,7 @@ public class AIPQueryGenerator {
             request.append("WHERE ");
             Joiner.on(" AND ").appendTo(request, predicates);
         }
+        request.append(" ORDER BY ?#{#pageable}");
         return request.toString();
     }
 
