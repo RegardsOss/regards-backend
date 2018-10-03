@@ -41,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -199,6 +200,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     private INotificationClient notificationClient;
 
     @Autowired
+    @Lazy
     private ICachedFileService self;
 
     @Value("${spring.application.name}")
