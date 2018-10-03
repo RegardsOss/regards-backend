@@ -53,9 +53,8 @@ public class CustomizedAIPEntityRepository implements ICustomizedAIPEntityReposi
     @Override
     public Page<AIPEntity> findAll(String sqlQuery, Pageable pageable) {
         Long numberResults = countNumberOfResults(sqlQuery);
-        // Add here the pagination here as the count query doesn't need it
-        String sqlWithPaginationQuery = sqlQuery.concat(" ORDER BY ?#{#pageable}");
-        Query q = entityManager.createNativeQuery(sqlWithPaginationQuery, AIPEntity.class);
+        Query q = entityManager.createNativeQuery(sqlQuery, AIPEntity.class);
+        // Handle the pagination here
         q.setFirstResult(pageable.getOffset());
         q.setMaxResults(pageable.getPageSize());
         @SuppressWarnings("unchecked")
