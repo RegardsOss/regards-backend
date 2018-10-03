@@ -59,6 +59,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -358,10 +359,17 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     }
 
     @Async
+    @MultitenantTransactional(propagation = Propagation.NOT_SUPPORTED)
     @Override
     public void scheduleRestorationAsync(OffsetDateTime cacheExpirationDate, Set<StorageDataFile> toRetrieve,
             String tenant) {
         runtimeTenantResolver.forceTenant(tenant);
+        self.doScheduleRestorationAsync(cacheExpirationDate, toRetrieve);
+        runtimeTenantResolver.clearTenant();
+    }
+
+    @Override
+    public void doScheduleRestorationAsync(OffsetDateTime cacheExpirationDate, Set<StorageDataFile> toRetrieve) {
         long startDispatching = System.currentTimeMillis();
         // Dispatch each Datafile by storage plugin.
         Multimap<Long, StorageDataFile> toRetrieveByStorage = HashMultimap.create();
@@ -380,7 +388,6 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         for(StorageDataFile error: errors) {
             handleRestorationFailure(error);
         }
-        runtimeTenantResolver.clearTenant();
     }
 
     private Long computeDataStorageToUseToRetrieve(Set<PrioritizedDataStorage> dataStorages) {
