@@ -105,8 +105,10 @@ public interface IPluginService {
      * @throws ModuleException thrown if we cannot find any PluginConfiguration corresponding to pId
      */
     @Deprecated
-    <T> T getPlugin(PluginConfiguration pluginConfiguration, final PluginParameter... dynamicPluginParameters)
-            throws ModuleException;
+    default <T> T getPlugin(PluginConfiguration pluginConfiguration, final PluginParameter... dynamicPluginParameters)
+            throws ModuleException {
+        return getPlugin(pluginConfiguration.getId(), dynamicPluginParameters);
+    }
 
     /**
      * Get the first plugin instance of a plugin type. The pReturnInterfaceType attribute indicates the PluginInterface

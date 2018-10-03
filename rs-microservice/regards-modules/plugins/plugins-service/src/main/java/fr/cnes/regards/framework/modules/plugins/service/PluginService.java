@@ -427,12 +427,6 @@ public class PluginService implements IPluginService {
         return (configuration != null) ? getPlugin(configuration.getId(), dynamicPluginParameters) : null;
     }
 
-    @Override
-    public <T> T getPlugin(final PluginConfiguration pPluginConfiguration,
-            final PluginParameter... dynamicPluginParameters) throws ModuleException {
-        return getPlugin(pPluginConfiguration.getId(), dynamicPluginParameters);
-    }
-
     /**
      * We consider only plugin without dynamic parameters so we can profit from the cache system.
      * @return whether a plugin conf, without dynamic parameters is instanciable or not
