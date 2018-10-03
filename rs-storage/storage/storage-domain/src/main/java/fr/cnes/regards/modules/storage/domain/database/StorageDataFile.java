@@ -237,7 +237,7 @@ public class StorageDataFile {
         Set<StorageDataFile> dataFiles = Sets.newHashSet();
         for (ContentInformation ci : aip.getProperties().getContentInformations()) {
             OAISDataObject file = ci.getDataObject();
-            if (!file.isReference()) {
+            if ((file != null) && !file.isReference()) {
                 // Only non reference data object is managed by storage
                 MimeType mimeType = ci.getRepresentationInformation().getSyntax().getMimeType();
                 dataFiles.add(new StorageDataFile(file, mimeType, aipEntity, aipSession));
