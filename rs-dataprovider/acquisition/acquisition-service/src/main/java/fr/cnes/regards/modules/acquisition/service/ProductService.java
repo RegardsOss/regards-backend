@@ -407,31 +407,32 @@ public class ProductService implements IProductService {
         // Register products per ingest chain and session for reporting
         Map<String, Map<String, List<Product>>> productsPerIngestChain = new HashMap<>();
 
-        do {
-            products = productRepository.findWithLockBySipStateOrderByIdAsc(ProductSIPState.GENERATED, pageable);
-            if (products.hasNext()) {
-                // Prepare for new search
-                pageable = products.nextPageable();
-            }
+        // Just managed first page
+        //        do {
+        products = productRepository.findWithLockBySipStateOrderByIdAsc(ProductSIPState.GENERATED, pageable);
+        //            if (products.hasNext()) {
+        //                // Prepare for new search
+        //                pageable = products.nextPageable();
+        //            }
 
-            if (products.hasContent()) {
+        if (products.hasContent()) {
 
-                for (Product product : products) {
-                    // Check if chain and session not already scheduled
-                    if (!scheduledSessionsByChain.containsEntry(product.getProcessingChain().getIngestChain(),
-                                                                product.getSession())) {
-                        // Register chains and sessions for scheduling
-                        if (!sessionsByChain.containsEntry(product.getProcessingChain().getIngestChain(),
-                                                           product.getSession())) {
-                            sessionsByChain.put(product.getProcessingChain().getIngestChain(), product.getSession());
-                        }
-
-                        // Register product
-                        registerProduct(productsPerIngestChain, product);
+            for (Product product : products) {
+                // Check if chain and session not already scheduled
+                if (!scheduledSessionsByChain.containsEntry(product.getProcessingChain().getIngestChain(),
+                                                            product.getSession())) {
+                    // Register chains and sessions for scheduling
+                    if (!sessionsByChain.containsEntry(product.getProcessingChain().getIngestChain(),
+                                                       product.getSession())) {
+                        sessionsByChain.put(product.getProcessingChain().getIngestChain(), product.getSession());
                     }
+
+                    // Register product
+                    registerProduct(productsPerIngestChain, product);
                 }
             }
-        } while (products.hasNext());
+        }
+        //        } while (products.hasNext());
 
         // Schedule submission jobs
         for (String ingestChain : sessionsByChain.keySet()) {
