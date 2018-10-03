@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.persistence.EntityManager;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,6 +98,9 @@ public class ProductService implements IProductService {
     @Autowired
     private IAcquisitionFileRepository acqFileRepository;
 
+    @Autowired
+    private EntityManager em;
+
     @Value("${regards.acquisition.sip.bulk.request.limit:1000}")
     private Integer bulkRequestLimit;
 
@@ -106,6 +111,14 @@ public class ProductService implements IProductService {
     public Product save(Product product) {
         product.setLastUpdate(OffsetDateTime.now());
         return productRepository.save(product);
+    }
+
+    @Override
+    public Product saveAndFlush(Product product) {
+        save(product);
+        em.flush();
+        em.clear();
+        return product;
     }
 
     @Override
@@ -287,6 +300,8 @@ public class ProductService implements IProductService {
 
             // Fulfill product with new valid acquired files
             fulfillProduct(validFilesByProductName.get(productName), currentProduct, processingChain);
+            em.flush();
+            em.clear();
 
             // Store for scheduling
             if (currentProduct.getSipState() == ProductSIPState.NOT_SCHEDULED
@@ -596,6 +611,14 @@ public class ProductService implements IProductService {
     }
 
     @Override
+    public long countSIPGenerationJobInfoByProcessingChainAndSipStateIn(AcquisitionProcessingChain processingChain,
+            ISipState productSipState) {
+        return productRepository
+                .countDistinctLastSIPGenerationJobInfoByProcessingChainAndSipState(processingChain,
+                                                                                   productSipState.toString());
+    }
+
+    @Override
     public long countByChain(AcquisitionProcessingChain chain) {
         return productRepository.countByProcessingChain(chain);
     }
@@ -611,39 +634,17 @@ public class ProductService implements IProductService {
     @Override
     public void stopProductJobs(AcquisitionProcessingChain processingChain) throws ModuleException {
 
-        // Handle SIP generation jobs
-        Page<Product> products;
-        Pageable pageable = new PageRequest(0, defaultPageSize);
-        do {
-            products = productRepository.findWithLockByProcessingChainAndSipStateOrderByIdAsc(processingChain,
-                                                                                              ProductSIPState.SCHEDULED,
-                                                                                              pageable);
-            if (products.hasNext()) {
-                pageable = products.nextPageable();
-            }
-            for (Product product : products) {
-                jobInfoService.stopJob(product.getLastSIPGenerationJobInfo().getId());
-            }
-        } while (products.hasNext());
+        // Stop SIP generation jobs
+        Set<JobInfo> jobInfos = productRepository
+                .findDistinctLastSIPGenerationJobInfoByProcessingChainAndSipStateIn(processingChain,
+                                                                                    ProductSIPState.SCHEDULED);
+        jobInfos.forEach(j -> jobInfoService.stopJob(j.getId()));
 
-        // Handle SIP submission jobs
-        pageable = new PageRequest(0, defaultPageSize);
-        do {
-            products = productRepository
-                    .findWithLockByProcessingChainAndSipStateOrderByIdAsc(processingChain,
-                                                                          ProductSIPState.SUBMISSION_SCHEDULED,
-                                                                          pageable);
-            if (products.hasNext()) {
-                pageable = products.nextPageable();
-            }
-            Set<JobInfo> submissionJobInfos = new HashSet<>();
-            for (Product product : products) {
-                submissionJobInfos.add(product.getLastSIPSubmissionJobInfo());
-            }
-            for (JobInfo jobInfo : submissionJobInfos) {
-                jobInfoService.stopJob(jobInfo.getId());
-            }
-        } while (products.hasNext());
+        // Stop submission jobs
+        jobInfos = productRepository
+                .findDistinctLastSIPSubmissionJobInfoByProcessingChainAndSipStateIn(processingChain,
+                                                                                    ProductSIPState.SUBMISSION_SCHEDULED);
+        jobInfos.forEach(j -> jobInfoService.stopJob(j.getId()));
     }
 
     @Override
@@ -662,7 +663,6 @@ public class ProductService implements IProductService {
                 if (!product.getLastSIPGenerationJobInfo().getStatus().getStatus().isFinished()) {
                     return false;
                 } else {
-                    jobInfoService.unlock(product.getLastSIPGenerationJobInfo());
                     // Clean product state
                     product.setSipState(ProductSIPState.SCHEDULED_INTERRUPTED);
                     save(product);
@@ -698,9 +698,8 @@ public class ProductService implements IProductService {
     public boolean restartInterruptedJobsByPage(AcquisitionProcessingChain processingChain) {
 
         Page<Product> products = productRepository
-                .findWithLockByProcessingChainAndSipStateOrderByIdAsc(processingChain,
-                                                                      ProductSIPState.SCHEDULED_INTERRUPTED,
-                                                                      new PageRequest(0, defaultPageSize));
+                .findByProcessingChainAndSipStateOrderByIdAsc(processingChain, ProductSIPState.SCHEDULED_INTERRUPTED,
+                                                              new PageRequest(0, defaultPageSize));
         // Schedule SIP generation
         if (products.hasContent()) {
             LOGGER.debug("Restarting SIP generation for {} product(s)", products.getContent().size());

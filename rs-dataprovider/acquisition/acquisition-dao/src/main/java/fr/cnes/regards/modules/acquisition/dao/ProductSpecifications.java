@@ -47,8 +47,8 @@ public class ProductSpecifications {
 
     /**
      * Filter on the given attributes (sessionId, owner, ingestDate and state) and return result ordered by descending ingestDate
-     * @param state {@link ProductState}
-     * @param sipState {@link SIPState}
+     * @param states {@link ProductState}
+     * @param sipStates {@link SIPState}
      * @param productName {@link String}
      * @param session {@link String}
      * @param processingChainId {@likn Long} id of {@link AcquisitionProcessingChain}
@@ -62,12 +62,12 @@ public class ProductSpecifications {
             if (productName != null) {
                 predicates.add(cb.like(root.get("productName"), LIKE_CHAR + productName + LIKE_CHAR));
             }
-            if ((noSession != null) && Boolean.TRUE.equals(noSession)) {
+            if (noSession != null && Boolean.TRUE.equals(noSession)) {
                 predicates.add(cb.isNull(root.get("session")));
             } else if (session != null) {
                 predicates.add(cb.like(root.get("session"), LIKE_CHAR + session + LIKE_CHAR));
             }
-            if ((states != null) && !states.isEmpty()) {
+            if (states != null && !states.isEmpty()) {
                 Set<Predicate> statePredicates = Sets.newHashSet();
                 for (ProductState state : states) {
                     statePredicates.add(cb.equal(root.get("state"), state));
@@ -82,7 +82,7 @@ public class ProductSpecifications {
             if (from != null) {
                 predicates.add(cb.greaterThanOrEqualTo(root.get("lastUpdate"), from));
             }
-            if ((sipStates != null) && !sipStates.isEmpty()) {
+            if (sipStates != null && !sipStates.isEmpty()) {
                 Set<Predicate> sipStatesPredicates = Sets.newHashSet();
                 for (ISipState state : sipStates) {
                     sipStatesPredicates.add(cb.equal(root.get("sipState"), state));

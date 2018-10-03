@@ -48,6 +48,8 @@ public interface IProductService {
 
     Product save(Product product);
 
+    Product saveAndFlush(Product product);
+
     /**
      * @return all {@link Product}
      */
@@ -112,6 +114,14 @@ public interface IProductService {
      */
     long countByProcessingChainAndSipStateIn(AcquisitionProcessingChain processingChain,
             List<ISipState> productSipStates);
+
+    /**
+     * Count number of generation job that is actually running
+     * @param processingChain {@link AcquisitionProcessingChain}
+     * @param productSipState {@link ISipState}s
+     */
+    long countSIPGenerationJobInfoByProcessingChainAndSipStateIn(AcquisitionProcessingChain processingChain,
+            ISipState productSipState);
 
     /**
      * Link acquired files to theirs products creating or updating them.<br/>

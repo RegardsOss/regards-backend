@@ -30,8 +30,10 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
@@ -102,6 +104,9 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
     Page<Product> findWithLockByProcessingChainAndSipStateOrderByIdAsc(AcquisitionProcessingChain processingChain,
             ProductSIPState sipState, Pageable pageable);
 
+    Page<Product> findByProcessingChainAndSipStateOrderByIdAsc(AcquisitionProcessingChain processingChain,
+            ProductSIPState sipState, Pageable pageable);
+
     /**
      * Find {@link Product} by state
      * @param sipState {@link ISipState}
@@ -125,6 +130,24 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
      */
     long countByProcessingChainAndSipStateIn(AcquisitionProcessingChain processingChain,
             List<ISipState> productSipStates);
+
+    /**
+     * Count number of generation job that is actually running
+     * @param processingChain {@link AcquisitionProcessingChain}
+     * @param productSipState {@link ISipState}s as string
+     */
+    @Query(value = "select count(distinct p.sip_gen_job_info_id) from  {h-schema}t_acquisition_product p where p.processing_chain_id=?1 and p.sip_state=?2",
+            nativeQuery = true)
+    long countDistinctLastSIPGenerationJobInfoByProcessingChainAndSipState(AcquisitionProcessingChain processingChain,
+            String productSipState);
+
+    @Query(value = "select distinct p.lastSIPGenerationJobInfo from  Product p where p.processingChain=?1 and p.sipState=?2")
+    Set<JobInfo> findDistinctLastSIPGenerationJobInfoByProcessingChainAndSipStateIn(
+            AcquisitionProcessingChain processingChain, ISipState productSipState);
+
+    @Query(value = "select distinct p.lastSIPSubmissionJobInfo from  Product p where p.processingChain=?1 and p.sipState=?2")
+    Set<JobInfo> findDistinctLastSIPSubmissionJobInfoByProcessingChainAndSipStateIn(
+            AcquisitionProcessingChain processingChain, ISipState productSipState);
 
     /**
      * Count number of {@link Product} associated to the given {@link AcquisitionProcessingChain}

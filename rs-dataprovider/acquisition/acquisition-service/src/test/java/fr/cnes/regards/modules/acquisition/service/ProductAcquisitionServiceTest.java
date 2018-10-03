@@ -221,6 +221,5 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
     //        LOGGER.info("Scan action took {} milliseconds", System.currentTimeMillis() - startTime);
     //
     //        processingService.manageRegisteredFiles(processingChain);
-    //
     //    }
 }

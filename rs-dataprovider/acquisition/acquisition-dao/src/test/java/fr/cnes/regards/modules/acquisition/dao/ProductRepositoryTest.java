@@ -55,7 +55,7 @@ public class ProductRepositoryTest extends AbstractDaoTest {
 
     @Test
     public void test() {
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         List<Product> products = productRepository.findAll();
         Assert.assertNotNull(products);
@@ -71,7 +71,7 @@ public class ProductRepositoryTest extends AbstractDaoTest {
 
     @Test
     public void jobReportTest() {
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         AcquisitionProcessingChain chain = processingChainRepository.findCompleteById(1L);
         Assert.assertNotNull(chain);
