@@ -298,54 +298,77 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
             return new CoupleAvailableError(new HashSet<>(), new HashSet<>());
         }
         LOGGER.debug("CachedFileService : run restoration process for {} files.", dataFilesToRestore.size());
+        long startChecksumExtraction = System.currentTimeMillis();
         // Get files already in cache
         Set<String> dataFilesToRestoreChecksums = dataFilesToRestore.stream().map(df -> df.getChecksum())
                 .collect(Collectors.toSet());
+        long endChecksumExtraction = System.currentTimeMillis();
+        LOGGER.trace("Checksum extraction from {} dataFiles to restore took {} ms", dataFilesToRestore.size(), endChecksumExtraction - startChecksumExtraction);
         LOGGER.trace("Looking for {} checksums to restore from cache.", dataFilesToRestoreChecksums.size());
+        long startFindCachedFileByChecksum = System.currentTimeMillis();
         List<CachedFile> cachedFiles = cachedFileRepository
                 .findAllByChecksumInOrderByLastRequestDateAsc(dataFilesToRestoreChecksums);
-        Set<StorageDataFile> alreadyCachedData = dataFileDao
-                .findAllByChecksumIn(cachedFiles.stream().map(cf -> cf.getChecksum()).collect(Collectors.toSet()));
-        LOGGER.trace("Only {} checksums are already handled by cache.", alreadyCachedData.size());
+        long endFindCachedFileByChecksum = System.currentTimeMillis();
+        LOGGER.trace("Finding {} cached file out of {} checksums from the DB took {} ms", cachedFiles.size(), dataFilesToRestore.size(), endFindCachedFileByChecksum - startFindCachedFileByChecksum);
         // Update expiration to the new cacheExpirationDate if above the last one.
+        long startExpirationDataUpdate = System.currentTimeMillis();
+        long nbUpdate = 0;
         for (CachedFile cachedFile : cachedFiles) {
             if (cachedFile.getExpiration().compareTo(cacheExpirationDate) > 0) {
                 cachedFile.setExpiration(cacheExpirationDate);
                 cachedFileRepository.save(cachedFile);
+                nbUpdate++;
             }
         }
+        long endExpirationDataUpdate = System.currentTimeMillis();
+        LOGGER.trace("Update Expiration date of {} cached file out of {} took {} ms", nbUpdate, cachedFiles.size(), endExpirationDataUpdate - startExpirationDataUpdate);
 
+        long startFindAlreadyAvailable = System.currentTimeMillis();
         // Get cached files available
         Set<String> availableCachedFileChecksums = cachedFiles.stream()
                 .filter(cf -> CachedFileState.AVAILABLE.equals(cf.getState())).map(cf -> cf.getChecksum())
                 .collect(Collectors.toSet());
-        Set<StorageDataFile> alreadyAvailableData = alreadyCachedData.stream()
+        Set<StorageDataFile> alreadyAvailableData = dataFilesToRestore.stream()
                 .filter(df -> availableCachedFileChecksums.contains(df.getChecksum())).collect(Collectors.toSet());
-        LOGGER.trace("Only {} checksums are already available from the cache.", alreadyAvailableData.size());
+        long endFindAlreadyAvailable = System.currentTimeMillis();
+        LOGGER.trace("{} StorageDataFiles are already available from the cache.", alreadyAvailableData.size());
+        LOGGER.trace("Finding those already available StorageDataFile took {} ms", endFindAlreadyAvailable - startFindAlreadyAvailable);
+        long startFindAlreadyQueued = System.currentTimeMillis();
         // Get cached files queued
         Set<String> queuedCachedFileChecksums = cachedFiles.stream()
                 .filter(cf -> CachedFileState.QUEUED.equals(cf.getState())).map(cf -> cf.getChecksum())
                 .collect(Collectors.toSet());
-        Set<StorageDataFile> queuedData = alreadyCachedData.stream()
+        Set<StorageDataFile> queuedData = dataFilesToRestore.stream()
                 .filter(df -> queuedCachedFileChecksums.contains(df.getChecksum())).collect(Collectors.toSet());
-        LOGGER.trace("{} checksums are already queued.", queuedData.size());
+        long endFindAlreadyQueued = System.currentTimeMillis();
+        LOGGER.trace("{} StorageDataFile are already queued.", queuedData.size());
+        LOGGER.trace("Finding those already queued StorageDataFile took {} ms", endFindAlreadyQueued - startFindAlreadyQueued);
 
+        long startPreparingFilesToRetrieve = System.currentTimeMillis();
         // Create the list of data files not handle by cache and needed to be restored
         Set<StorageDataFile> toRetrieve = Sets.newHashSet(dataFilesToRestore);
         // Remove all files already availables in cache.
-        toRetrieve.removeAll(alreadyCachedData);
+        toRetrieve.removeAll(alreadyAvailableData);
         // Try to retrieve queued files if possible
         toRetrieve.addAll(queuedData);
+        long endPreparingFilesToRetrieve = System.currentTimeMillis();
+        LOGGER.trace("Preparing which files are really to retrieve took {} ms", endPreparingFilesToRetrieve - startPreparingFilesToRetrieve);
 
+        long startDispatching = System.currentTimeMillis();
         // Dispatch each Datafile by storage plugin.
         Multimap<Long, StorageDataFile> toRetrieveByStorage = HashMultimap.create();
         for (StorageDataFile df : toRetrieve) {
             toRetrieveByStorage.put(computeDataStorageToUseToRetrieve(df.getPrioritizedDataStorages()), df);
         }
+        long endDispatching = System.currentTimeMillis();
+        LOGGER.trace("Dispatching {} StorageDataFile into {} DataStorages took {}ms", toRetrieve.size(), toRetrieveByStorage.keySet().size(), endDispatching - startDispatching);
+        long startScheduling = System.currentTimeMillis();
         Set<StorageDataFile> errors = Sets.newHashSet();
         for (Long storageConfId : toRetrieveByStorage.keySet()) {
             scheduleDataFileRestoration(storageConfId, toRetrieveByStorage.get(storageConfId), cacheExpirationDate);
         }
+        long endScheduling = System.currentTimeMillis();
+        LOGGER.trace("Scheduling jobs took {} ms", endScheduling - startScheduling);
         return new CoupleAvailableError(alreadyAvailableData, errors);
     }
 
