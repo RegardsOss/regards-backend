@@ -45,6 +45,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -100,11 +101,6 @@ import fr.cnes.regards.modules.storage.service.job.RestorationJob;
  * <li>Cache is full and no outdated files are in cache, then the older {@link CachedFile}s are deleted.</li>
  * </ul>
  *
- * This service run two scheduled and periodicly executed methods :
- * <ul>
- * <li>Cache purge : {@link #cleanCache()}</li>
- * <li>Handle queued file requests : {@link #hanldeQueuedFiles()}</li>
- * </ul>
  *
  * @author Sylvain VISSIERE-GUERINET
  * @author Sébastien Binda
@@ -201,6 +197,9 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
 
     @Autowired
     private INotificationClient notificationClient;
+
+    @Autowired
+    private ICachedFileService self;
 
     @Value("${spring.application.name}")
     private String springApplicationName;
@@ -344,15 +343,21 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         LOGGER.trace("{} StorageDataFile are already queued.", queuedData.size());
         LOGGER.trace("Finding those already queued StorageDataFile took {} ms", endFindAlreadyQueued - startFindAlreadyQueued);
 
-        long startPreparingFilesToRetrieve = System.currentTimeMillis();
         // Create the list of data files not handle by cache and needed to be restored
         Set<StorageDataFile> toRetrieve = Sets.newHashSet(dataFilesToRestore);
         // Remove all files already availables in cache.
         toRetrieve.removeAll(alreadyAvailableData);
         // Try to retrieve queued files if possible
         toRetrieve.addAll(queuedData);
-        long endPreparingFilesToRetrieve = System.currentTimeMillis();
-        LOGGER.trace("Preparing which files are really to retrieve took {} ms", endPreparingFilesToRetrieve - startPreparingFilesToRetrieve);
+        LOGGER.trace("Async call...");
+        self.scheduleRestorationAsync(cacheExpirationDate, toRetrieve);
+        LOGGER.trace("Async called!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        return new CoupleAvailableError(alreadyAvailableData, new HashSet<>());
+    }
+
+    @Async
+    @Override
+    public void scheduleRestorationAsync(OffsetDateTime cacheExpirationDate, Set<StorageDataFile> toRetrieve) {
 
         long startDispatching = System.currentTimeMillis();
         // Dispatch each Datafile by storage plugin.
@@ -365,11 +370,13 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         long startScheduling = System.currentTimeMillis();
         Set<StorageDataFile> errors = Sets.newHashSet();
         for (Long storageConfId : toRetrieveByStorage.keySet()) {
-            scheduleDataFileRestoration(storageConfId, toRetrieveByStorage.get(storageConfId), cacheExpirationDate);
+            errors = scheduleDataFileRestoration(storageConfId, toRetrieveByStorage.get(storageConfId), cacheExpirationDate);
         }
         long endScheduling = System.currentTimeMillis();
         LOGGER.trace("Scheduling jobs took {} ms", endScheduling - startScheduling);
-        return new CoupleAvailableError(alreadyAvailableData, errors);
+        for(StorageDataFile error: errors) {
+            handleRestorationFailure(error);
+        }
     }
 
     private Long computeDataStorageToUseToRetrieve(Set<PrioritizedDataStorage> dataStorages) {
@@ -411,7 +418,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
             cachedFileRepository.delete(cf);
             LOGGER.error("Error during cache file restoration {}", cf.getChecksum());
         } else {
-            LOGGER.error("Restauration fails but the file with checksum {} is not associated to any cached file is database.",
+            LOGGER.error("Restoration failed but the file with checksum {} is not associated to any cached file is database.",
                          data.getChecksum());
         }
         publisher.publish(new DataFileEvent(DataFileEventState.ERROR, data.getChecksum()));
