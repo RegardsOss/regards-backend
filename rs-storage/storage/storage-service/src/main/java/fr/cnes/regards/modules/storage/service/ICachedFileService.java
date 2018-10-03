@@ -45,6 +45,22 @@ public interface ICachedFileService {
     CoupleAvailableError restore(Set<StorageDataFile> nearlineFiles, OffsetDateTime cacheExpirationDate);
 
     /**
+     * Asynchronous job scheduling. Allows us to speed up process & keep same logic.
+     * Method used to set the tenant for the transaction manager for {@link #doScheduleRestorationAsync(OffsetDateTime, Set)} call
+     * @param cacheExpirationDate
+     * @param toRetrieve
+     * @param tenant
+     */
+    void scheduleRestorationAsync(OffsetDateTime cacheExpirationDate, Set<StorageDataFile> toRetrieve, String tenant);
+
+    /**
+     * Actually do job scheduling
+     * @param cacheExpirationDate
+     * @param toRetrieve
+     */
+    void doScheduleRestorationAsync(OffsetDateTime cacheExpirationDate, Set<StorageDataFile> toRetrieve);
+
+    /**
      * Handle a successful restoration of a file from a data storage
      * @param data
      * @param restorationPath

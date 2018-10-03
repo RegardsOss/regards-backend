@@ -49,7 +49,6 @@ import fr.cnes.regards.modules.storage.domain.ready.StorageReadySpecifications;
 /**
  * Configuration manager for storage module.
  * {@link PrioritizedDataStorage} are exported as simple plugin configuration so priority will be lost.
- *
  * @author Marc Sordi
  * @author Sylvain Vissiere-Guerinet
  */
@@ -91,7 +90,7 @@ public class StorageConfigurationManager extends AbstractModuleManager<StorageRe
                                 prioritizedDataStorageService.create(plgConf);
                             } catch (ModuleException e) {
                                 importErrors.add(String.format("Skipping import of Data Storage %s: %s",
-                                                               plgConf.getLabel(), e.getMessage()));
+                                        plgConf.getLabel(), e.getMessage()));
                                 logger.error(e.getMessage(), e);
                             }
                         } else {
@@ -100,7 +99,7 @@ public class StorageConfigurationManager extends AbstractModuleManager<StorageRe
                             } catch (ModuleException e) {
                                 // This should not occurs, but we never know
                                 importErrors.add(String.format("Skipping import of PluginConfiguration %s: %s",
-                                                               plgConf.getLabel(), e.getMessage()));
+                                        plgConf.getLabel(), e.getMessage()));
                                 logger.error(e.getMessage(), e);
                             }
                         }

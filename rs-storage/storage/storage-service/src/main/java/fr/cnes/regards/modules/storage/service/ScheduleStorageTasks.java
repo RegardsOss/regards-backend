@@ -40,7 +40,17 @@ import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
 /**
  * Enable storage task schedulers.
- *
+ * This component run multiple scheduled and periodically executed methods :
+ * <ul>
+ * <li>Cache purge: {@link #cleanCache()}</li>
+ * <li>Handle queued file: {@link #restoreToCache()}</li>
+ * <li>AIP data deletion: {@link #deleteData()}</li>
+ * <li>AIP metadata file deletion: {@link #deleteMetadata()}</li>
+ * <li>Data storage monitoring: {@link #monitorDataStorages()}</li>
+ * <li>AIP data storage: {@link #store()}</li>
+ * <li>AIP metadata storage: {@link #storeMetadata()}</li>
+ * <li>AIP metadata updates: {@link #updateAlreadyStoredMetadata()}</li>
+ * </ul>
  * @author Marc Sordi
  * @author Sylvain Vissiere-Guerinet
  *
