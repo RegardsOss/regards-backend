@@ -507,29 +507,46 @@ public class CatalogSearchService implements ICatalogSearchService {
             Aggregation aggregation = qa.getValue().getAggregation();
             if ((aggregation != null) && aggregation.getType().equals(StatsAggregationBuilder.NAME)) {
                 ParsedStats stats = (ParsedStats) aggregation;
+                Double min = stats.getMin();
+                String minAsString = stats.getMinAsString();
+                Integer minAsInt = min.intValue();
+                Long minAsLong = min.longValue();
+                Double max = stats.getMax();
+                String maxAsString = stats.getMaxAsString();
+                Integer maxAsInt = max.intValue();
+                Long maxAsLong = max.longValue();
+                if ((Double.NEGATIVE_INFINITY == stats.getMin()) || (Double.POSITIVE_INFINITY == stats.getMin())) {
+                    min = null;
+                    minAsString = null;
+                    minAsInt = null;
+                    minAsLong = null;
+                }
+                if ((Double.POSITIVE_INFINITY == stats.getMax()) || (Double.NEGATIVE_INFINITY == stats.getMax())) {
+                    max = null;
+                    maxAsString = null;
+                    maxAsInt = null;
+                    maxAsLong = null;
+                }
                 switch (attribute.getType()) {
                     case DATE_ARRAY:
                     case DATE_INTERVAL:
                     case DATE_ISO8601:
-                        bounds.add(new PropertyBound<String>(attribute.getJsonPath(), stats.getMinAsString(),
-                                stats.getMaxAsString()));
+                        bounds.add(new PropertyBound<String>(attribute.getJsonPath(), minAsString, maxAsString));
                         break;
                     case DOUBLE:
                     case DOUBLE_ARRAY:
                     case DOUBLE_INTERVAL:
-                        bounds.add(new PropertyBound<Double>(attribute.getJsonPath(), stats.getMin(), stats.getMax()));
+                        bounds.add(new PropertyBound<Double>(attribute.getJsonPath(), min, max));
                         break;
                     case INTEGER:
                     case INTEGER_ARRAY:
                     case INTEGER_INTERVAL:
-                        bounds.add(new PropertyBound<Integer>(attribute.getJsonPath(),
-                                (new Double(stats.getMin())).intValue(), (new Double(stats.getMax())).intValue()));
+                        bounds.add(new PropertyBound<Integer>(attribute.getJsonPath(), minAsInt, maxAsInt));
                         break;
                     case LONG:
                     case LONG_ARRAY:
                     case LONG_INTERVAL:
-                        bounds.add(new PropertyBound<Long>(attribute.getJsonPath(),
-                                (new Double(stats.getMin())).longValue(), (new Double(stats.getMax())).longValue()));
+                        bounds.add(new PropertyBound<Long>(attribute.getJsonPath(), minAsLong, maxAsLong));
                         break;
                     case STRING:
                     case STRING_ARRAY:
