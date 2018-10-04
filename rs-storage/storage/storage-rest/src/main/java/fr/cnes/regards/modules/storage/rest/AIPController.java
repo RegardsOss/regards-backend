@@ -242,10 +242,10 @@ public class AIPController implements IResourceController<AIP> {
     @ResourceAccess(description = "send a page of aips")
     public ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(
             @RequestParam(name = "state", required = false) AIPState state,
-            @RequestParam(name = "from", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
-            @RequestParam(name = "to", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to,
+            @RequestParam(name = "from",
+                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
+            @RequestParam(name = "to",
+                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to,
             @RequestParam(name = "tags", required = false) List<String> tags,
             @RequestParam(name = "providerId", required = false) String providerId,
             @RequestParam(name = "session", required = false) String session,
@@ -288,11 +288,8 @@ public class AIPController implements IResourceController<AIP> {
             }
         }
         // small hack to be used thanks to GSON which does not know how to deserialize Page or PageImpl
-        PagedResources<AipDataFiles> aipDataFiles = new PagedResources<>(content,
-                                                                         new PagedResources.PageMetadata(page.getSize(),
-                                                                                                         page.getNumber(),
-                                                                                                         page.getTotalElements(),
-                                                                                                         page.getTotalPages()));
+        PagedResources<AipDataFiles> aipDataFiles = new PagedResources<>(content, new PagedResources.PageMetadata(
+                page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages()));
         return new ResponseEntity<>(aipDataFiles, HttpStatus.OK);
     }
 
@@ -524,10 +521,11 @@ public class AIPController implements IResourceController<AIP> {
             consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
     @ResourceAccess(description = "allow to update a given aip metadata")
     @ResponseBody
-    public ResponseEntity<AIP> updateAip(@PathVariable(name = AIP_ID_PATH_PARAM) String ipId,
+    public ResponseEntity<Void> updateAip(@PathVariable(name = AIP_ID_PATH_PARAM) String ipId,
             @RequestBody @Valid AIP updated)
             throws EntityInconsistentIdentifierException, EntityOperationForbiddenException, EntityNotFoundException {
-        return new ResponseEntity<>(aipService.updateAip(ipId, updated), HttpStatus.OK);
+        aipService.updateAip(ipId, updated, null);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
@@ -543,9 +541,10 @@ public class AIPController implements IResourceController<AIP> {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
             StringJoiner sj = new StringJoiner(", ",
-                                               "This aip could not be deleted because at least one of his files has not be handle by the storage process: ",
-                                               ".");
-            notSuppressible.stream().map(StorageDataFile::getAipEntity).forEach(aipEntity -> sj.add(aipEntity.getAipId()));
+                    "This aip could not be deleted because at least one of his files has not be handle by the storage process: ",
+                    ".");
+            notSuppressible.stream().map(StorageDataFile::getAipEntity)
+                    .forEach(aipEntity -> sj.add(aipEntity.getAipId()));
             return new ResponseEntity<>(sj.toString(), HttpStatus.CONFLICT);
         }
     }
@@ -630,9 +629,9 @@ public class AIPController implements IResourceController<AIP> {
             throws MalformedURLException {
         // Lets reconstruct the public url of rs-storage
         // now lets add it the gateway prefix and the microservice name and the endpoint path to it
-        String sb = projectHost + "/" + gatewayPrefix + "/" + microserviceName + AIP_PATH + DOWNLOAD_AIP_FILE
-                .replaceAll("\\{" + AIP_ID_PATH_PARAM + "\\}", owningAip.getId().toString())
-                .replaceAll("\\{checksum\\}", dataFile.getChecksum());
+        String sb = projectHost + "/" + gatewayPrefix + "/" + microserviceName + AIP_PATH
+                + DOWNLOAD_AIP_FILE.replaceAll("\\{" + AIP_ID_PATH_PARAM + "\\}", owningAip.getId().toString())
+                        .replaceAll("\\{checksum\\}", dataFile.getChecksum());
         URL downloadUrl = new URL(sb);
         dataFile.setUrl(downloadUrl);
     }

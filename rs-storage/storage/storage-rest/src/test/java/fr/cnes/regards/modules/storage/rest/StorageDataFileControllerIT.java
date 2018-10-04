@@ -17,6 +17,7 @@ import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
@@ -46,7 +47,7 @@ public class StorageDataFileControllerIT extends AbstractAIPControllerIT {
         file.setRegardsDataType(DataType.RAWDATA);
         file.setAlgorithm("toto");
         MimeType mimetype = new MimeType("png");
-        StorageDataFile ds = new StorageDataFile(file, mimetype, aipWaiting1, aipSession);
+        StorageDataFile ds = new StorageDataFile(file, mimetype, new AIPEntity(aipWaiting1, aipSession), aipSession);
         ds.setUrls(new HashSet<>());
         dao.save(ds);
 

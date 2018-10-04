@@ -64,6 +64,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.DispatchErrors;
@@ -140,10 +141,12 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
         aipSession.setLastActivationDate(OffsetDateTime.now());
 
         dataFile1 = new StorageDataFile(Sets.newHashSet(new URL("file", "", "fichier1.json")), "checksum", "MD5",
-                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aip, aipSession, "fichier1", null);
+                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, new AIPEntity(aip, aipSession), aipSession,
+                "fichier1", null);
         dataFiles.add(dataFile1);
         dataFile2 = new StorageDataFile(Sets.newHashSet(new URL("file", "", "fichier2.json")), "checksum2", "MD5",
-                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aip, aipSession, "fichier2", null);
+                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, new AIPEntity(aip, aipSession), aipSession,
+                "fichier2", null);
         dataFiles.add(dataFile2);
     }
 

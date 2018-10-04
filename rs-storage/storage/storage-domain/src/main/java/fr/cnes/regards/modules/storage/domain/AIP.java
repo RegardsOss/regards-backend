@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.domain;
 
-import java.util.Objects;
 import java.util.Optional;
 
 import org.hibernate.validator.constraints.NotBlank;
@@ -136,7 +135,7 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
         }
         return super.equals(o);

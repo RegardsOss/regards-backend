@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -208,34 +209,14 @@ public interface IAIPService {
      * new aip with a different version and use storeAndCreate method.
      * @param ipId information package identifier of the aip
      * @param updated object containing changes
-     * @return aip stored into the system after changes have been propagated
-     * @throws EntityNotFoundException if no aip with ipId as identifier can be found
-     * @throws EntityInconsistentIdentifierException if ipId and updated ipId are different
-     * @throws EntityOperationForbiddenException if aip in the system is not in the right state
-     */
-    AIP updateAip(String ipId, AIP updated)
-            throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException;
-
-    /**
-     * Update PDI and descriptive information of an aip according to updated. To add/remove ContentInformation,
-     * storeAndCreate a
-     * new aip with a different version and use storeAndCreate method.
-     * @param ipId information package identifier of the aip
-     * @param updated object containing changes
      * @param updateMessage the message saved inside the AIP
      * @return aip stored into the system after changes have been propagated
      * @throws EntityNotFoundException if no aip with ipId as identifier can be found
      * @throws EntityInconsistentIdentifierException if ipId and updated ipId are different
      * @throws EntityOperationForbiddenException if aip in the system is not in the right state
      */
-    AIP updateAip(String ipId, AIP updated, String updateMessage)
+    Optional<AIP> updateAip(String ipId, AIP updated, String updateMessage)
             throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException;
-
-    /**
-     * Updates all AIP metadta to update.
-     * @return number of AIP update scheduled.
-     */
-    int updateAipMetadata();
 
     /**
      * Remove an aip from the system. Its file are deleted if and only if no other aip point to them.
@@ -255,7 +236,7 @@ public interface IAIPService {
      * Schedule deletion of datafiles marked for deletion
      * @return number of scheduled aip to delete
      */
-    int doDelete();
+    Long doDelete();
 
     /**
      * Remove {@link AIP}s associated the given sip, through its ip id
@@ -371,18 +352,6 @@ public interface IAIPService {
     void scheduleStorageMetadataUpdate(Set<UpdatableMetadataFile> metadataToUpdate);
 
     /**
-     * Prepare the aip metadata of already stored aip that has been updated
-     * @return the new and old aip metadata associated data file
-     */
-    Set<UpdatableMetadataFile> prepareUpdatedAIP();
-
-    /**
-     * Prepare the aip metadata that are not yet stored
-     * @return data files to store
-     */
-    Set<StorageDataFile> prepareNotFullyStored();
-
-    /**
      * Handle physical deletion of AIPs for each entity in state DELETED and associated to no other
      * StorageDataFile. This state is reached when all locations of all DataObject are deleted for an AIP metadata.
      * @return number of elements deleted or scheduled for deletion
@@ -401,4 +370,10 @@ public interface IAIPService {
      * @throws ModuleException
      */
     Page<AIP> storePage(Pageable page) throws ModuleException;
+
+    /**
+     * Run pending update requests.
+     * @return number of aip update scheduled.
+     */
+    int handleUpdateRequests() throws ModuleException;
 }

@@ -47,6 +47,7 @@ import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IAIPSessionRepository;
+import fr.cnes.regards.modules.storage.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.dao.IPrioritizedDataStorageRepository;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -98,6 +99,9 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
     protected IAIPDao aipDao;
 
     @Autowired
+    protected IAIPUpdateRequestRepository aipUpdateRepo;
+
+    @Autowired
     protected IAIPSessionRepository aipSessionRepo;
 
     @Autowired
@@ -145,6 +149,7 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         subscriber.purgeQueue(DataStorageEvent.class, DataStorageEventHandler.class);
         jobInfoRepo.deleteAll();
+        aipUpdateRepo.deleteAll();
         dataFileDao.deleteAll();
         aipDao.deleteAll();
         prioritizedDataStorageRepository.deleteAll();

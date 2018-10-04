@@ -92,6 +92,7 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.CachedFile;
 import fr.cnes.regards.modules.storage.domain.database.CachedFileState;
@@ -856,7 +857,8 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         // Simulate cache files to force cache limit size reached before restoring new files.
         // First create StorageDataFile
         StorageDataFile df = new StorageDataFile(Sets.newHashSet(new URL("file://test/" + fileName)), checksum, "MD5",
-                DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"), aip, aipSession, fileName, null);
+                DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession),
+                aipSession, fileName, null);
         df.addDataStorageUsed(nearlineDataStorageConf);
         dataFileDao.save(df);
         // Then create cached file associated
@@ -886,19 +888,19 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         Set<StorageDataFile> datafiles = Sets.newHashSet();
         URL url = new URL(Paths.get(baseStorageLocation.toString(), "file1.test").toString());
         StorageDataFile df = new StorageDataFile(Sets.newHashSet(url), "1", "MD5", DataType.RAWDATA, fileSize,
-                MimeType.valueOf("application/text"), aip, aipSession, "file1.test", null);
+                MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), aipSession, "file1.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(onlineNoRetrieveDataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file2.test").toString());
         df = new StorageDataFile(Sets.newHashSet(url), "2", "MD5", DataType.RAWDATA, fileSize,
-                MimeType.valueOf("application/text"), aip, aipSession, "file2.test", null);
+                MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), aipSession, "file2.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(onlineNoRetrieveDataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file3.test").toString());
         df = new StorageDataFile(Sets.newHashSet(url), "3", "MD5", DataType.RAWDATA, fileSize,
-                MimeType.valueOf("application/text"), aip, aipSession, "file3.test", null);
+                MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), aipSession, "file3.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(onlineNoRetrieveDataStorageConf);
         datafiles.add(df);
@@ -920,21 +922,22 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         URL url = new URL(Paths.get(baseStorageLocation.toString(), "file1.test").toString());
         URL urlNearline = new URL("file://PLOP/Node/file1.test");
         StorageDataFile df = new StorageDataFile(Sets.newHashSet(url, urlNearline), "1", "MD5", DataType.RAWDATA,
-                fileSize, MimeType.valueOf("application/text"), aip, aipSession, "file1.test", null);
+                fileSize, MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), aipSession,
+                "file1.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(nearlineDataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file2.test").toString());
         urlNearline = new URL("file://PLOP/Node/file2.test");
         df = new StorageDataFile(Sets.newHashSet(url, urlNearline), "2", "MD5", DataType.RAWDATA, fileSize,
-                MimeType.valueOf("application/text"), aip, aipSession, "file2.test", null);
+                MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), aipSession, "file2.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(nearlineDataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file3.test").toString());
         urlNearline = new URL("file://PLOP/Node/file3.test");
         df = new StorageDataFile(Sets.newHashSet(url, urlNearline), "3", "MD5", DataType.RAWDATA, fileSize,
-                MimeType.valueOf("application/text"), aip, aipSession, "file3.test", null);
+                MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), aipSession, "file3.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(nearlineDataStorageConf);
         datafiles.add(df);
@@ -958,8 +961,8 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
             String fileName = String.format("file%d.txt", i + 1);
             URL url = Paths.get("src/test/resources/income/" + fileName).toUri().toURL();
             StorageDataFile df = new StorageDataFile(Sets.newHashSet(url), String.format("%s%d", checksumPrefix, i + 1),
-                    "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"), aip, aipSession, fileName,
-                    null);
+                    "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"),
+                    new AIPEntity(aip, aipSession), aipSession, fileName, null);
             df.addDataStorageUsed(nearlineDataStorageConf);
             df.addDataStorageUsed(nearlineNoRetrieveDataStorageConf);
             datafiles.add(df);

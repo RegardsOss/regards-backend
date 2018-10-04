@@ -127,12 +127,12 @@ public class DataFileDao implements IDataFileDao {
     }
 
     @Override
-    public Optional<StorageDataFile> findByAipAndType(AIP aip, DataType dataType) {
+    public Set<StorageDataFile> findByAipAndType(AIP aip, DataType dataType) {
         Optional<AIPEntity> aipDatabase = getAipDataBase(aip);
         if (aipDatabase.isPresent()) {
             return repository.findByAipEntityAndDataType(aipDatabase.get(), dataType);
         } else {
-            return Optional.empty();
+            return Sets.newHashSet();
         }
     }
 

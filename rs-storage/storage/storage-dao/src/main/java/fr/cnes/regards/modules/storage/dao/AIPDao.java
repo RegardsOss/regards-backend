@@ -56,7 +56,6 @@ public class AIPDao implements IAIPDao {
 
     @Override
     public void updateAIPStateAndRetry(AIP aip) {
-        Optional<Long> id = repo.findIdByAipId(aip.getId().toString());
         repo.updateAIPStateAndRetry(aip.getState().toString(), aip.isRetry(), aip.getId().toString());
     }
 
@@ -105,6 +104,16 @@ public class AIPDao implements IAIPDao {
     @Override
     public Optional<AIP> findOneByAipId(String aipId) {
         Optional<AIPEntity> aipDatabase = repo.findOneByAipId(aipId);
+        if (aipDatabase.isPresent()) {
+            return Optional.of(buildAipFromAIPEntity(aipDatabase.get()));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    @Override
+    public Optional<AIP> findOneWithLockByAipId(String aipId) {
+        Optional<AIPEntity> aipDatabase = repo.findOneWithLockByAipId(aipId);
         if (aipDatabase.isPresent()) {
             return Optional.of(buildAipFromAIPEntity(aipDatabase.get()));
         } else {

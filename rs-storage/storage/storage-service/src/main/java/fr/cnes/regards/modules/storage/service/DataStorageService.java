@@ -312,6 +312,8 @@ public class DataStorageService implements IDataStorageService {
                     // Maybe the file can be deleted later. So do nothing and just notify administrator.
                     String message = String.format("Error deleting file (id: %s, checksum: %s).", event.getDataFileId(),
                                                    event.getChecksum());
+                    data.get().setState(DataFileState.TO_BE_DELETED);
+                    dataFileDao.save(data.get());
                     LOGGER.error(message);
                     notifyAdmins("File deletion error", message, NotificationType.INFO);
                     break;
@@ -462,6 +464,16 @@ public class DataStorageService implements IDataStorageService {
                 } catch (IOException e) {
                     LOGGER.error("Error during workspace cleaning", e);
                 }
+                // If  older AIP DataFiles are stored, schedule their deletion by updating their state to TO_BE_DELETED
+                dataFileDao.findByAipAndType(associatedAIP, DataType.AIP).forEach(df -> {
+                    if (!df.getId().equals(storedDataFile.getId())) {
+                        LOGGER.debug("[STORE FILE SUCCESS] Schedule old AIP metadata file {} to be deleted for AIP {}",
+                                     df.getName(), associatedAIP.getProviderId());
+                        df.setState(DataFileState.TO_BE_DELETED);
+                        dataFileDao.save(df);
+                    }
+                });
+
                 associatedAIP.setState(AIPState.STORED);
                 associatedAIP.addEvent(EventType.STORAGE.name(), METADATA_STORED_SUCCESSFULLY);
                 aipService.save(associatedAIP, false);
@@ -516,7 +528,7 @@ public class DataStorageService implements IDataStorageService {
         Set<PluginConfiguration> activeDataStorageConfs = dataStorageConfigurations.stream().filter(pc -> pc.isActive())
                 .collect(Collectors.toSet());
         List<Map<String, Object>> diagnostic = new ArrayList<>(activeDataStorageConfs.size());
-        for(PluginConfiguration dataStorageConf: activeDataStorageConfs) {
+        for (PluginConfiguration dataStorageConf : activeDataStorageConfs) {
             try {
                 IDataStorage<?> activeDataStorage = pluginService.getPlugin(dataStorageConf.getId());
                 Map<String, Object> diagInfo = activeDataStorage.getDiagnosticInfo();
