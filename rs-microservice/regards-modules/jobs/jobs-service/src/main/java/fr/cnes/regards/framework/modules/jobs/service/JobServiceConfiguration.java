@@ -32,9 +32,6 @@ public class JobServiceConfiguration implements AsyncConfigurer {
             LOGGER.error("*****************************************************");
             LOGGER.error("Exception message - " + throwable.getMessage(), throwable);
             LOGGER.error("Method name - " + method.getName());
-            for (Object param : params) {
-                LOGGER.error("Parameter value - " + param);
-            }
             LOGGER.error("*****************************************************");
         };
     }
