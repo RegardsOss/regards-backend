@@ -383,8 +383,7 @@ public class ProductService implements IProductService {
         Page<Product> products;
         Pageable pageable = new PageRequest(0, defaultPageSize);
         do {
-            products = productRepository.findWithLockBySipStateOrderByIdAsc(ProductSIPState.SUBMISSION_SCHEDULED,
-                                                                            pageable);
+            products = productRepository.findBySipStateOrderByIdAsc(ProductSIPState.SUBMISSION_SCHEDULED, pageable);
             if (products.hasNext()) {
                 // Prepare for new search
                 pageable = products.nextPageable();

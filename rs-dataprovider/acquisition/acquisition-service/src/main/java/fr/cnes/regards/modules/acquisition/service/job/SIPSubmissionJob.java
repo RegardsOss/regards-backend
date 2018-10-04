@@ -99,8 +99,10 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
 
         if (products.getNumberOfElements() > 0) {
 
+            long startTime = System.currentTimeMillis();
             logger.info("Ingest chain {} - session {} : processing {} products of {}", ingestChain, session,
                         products.getNumberOfElements(), products.getTotalElements());
+
             // Create SIP collection
             SIPCollectionBuilder sipCollectionBuilder = new SIPCollectionBuilder(ingestChain, session.orElse(null));
             products.getContent().forEach(p -> sipCollectionBuilder.add(p.getSip()));
@@ -126,6 +128,10 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
                 // Disable system call if necessary after client request(s)
                 FeignSecurityManager.reset();
             }
+
+            logger.info("Ingest chain {} - session {} : {} products of {} processed in {} milliseconds", ingestChain,
+                        session, products.getNumberOfElements(), products.getTotalElements(),
+                        System.currentTimeMillis() - startTime);
         }
 
         // Continue if remaining page

@@ -112,7 +112,7 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
      * @param sipState {@link ISipState}
      * @return a set of products with the above properties
      */
-    Page<Product> findBySipState(ISipState sipState, Pageable pageable);
+    Page<Product> findBySipStateOrderByIdAsc(ISipState sipState, Pageable pageable);
 
     /**
      * Count number of products associated to the given {@link AcquisitionProcessingChain} and in the given state
