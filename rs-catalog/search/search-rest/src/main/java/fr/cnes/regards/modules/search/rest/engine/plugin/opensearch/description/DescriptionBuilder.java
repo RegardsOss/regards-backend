@@ -46,7 +46,6 @@ import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.modules.dam.client.models.IModelAttrAssocClient;
-import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.dam.domain.models.ModelAttrAssoc;
 import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
@@ -351,7 +350,6 @@ public class DescriptionBuilder {
         // For each attribute retrieve the QueryableAttribute informations
         List<QueryableAttribute> queryableAttributes = Lists.newArrayList();
         for (ModelAttrAssoc maa : getModelAttributes(context)) {
-            maa.getAttribute().buildJsonPath(StaticProperties.FEATURE_PROPERTIES);
             Optional<ParameterConfiguration> conf = parameterConfs.stream()
                     .filter(pc -> pc.getAttributeModelJsonPath().equals(maa.getAttribute().getJsonPath())).findFirst();
             QueryableAttribute queryableAtt = createEmptyQueryableAttribute(maa.getAttribute(), conf);
@@ -405,10 +403,7 @@ public class DescriptionBuilder {
             Optional<ParameterConfiguration> conf) {
 
         // Build full real path for the attribute in index.
-        String name = att.getJsonPath();
-        if (att.isDynamic()) {
-            name = StaticProperties.FEATURE_NS + name;
-        }
+        String name = att.getFullJsonPath();
 
         // Set aggregation stats conf if present
         if (conf.isPresent()) {
@@ -452,13 +447,13 @@ public class DescriptionBuilder {
             // result has the following format: "fullAttrName:value", except for arrays. Arrays are represented thanks
             // to multiple values: attr:val1 OR attr:val2 ...
             StringBuilder result = new StringBuilder();
-            result.append(attr.getJsonPath()).append(":");
+            result.append(attr.getFullJsonPath()).append(":");
             switch (attr.getType()) {
                 case BOOLEAN:
                     result.append("{boolean}");
                     break;
                 case DATE_ARRAY:
-                    result.append("{ISO-8601 date} OR ").append(attr.getJsonPath()).append(":")
+                    result.append("{ISO-8601 date} OR ").append(attr.getFullJsonPath()).append(":")
                             .append("{ISO-8601 date}");
                     break;
                 case DATE_INTERVAL:

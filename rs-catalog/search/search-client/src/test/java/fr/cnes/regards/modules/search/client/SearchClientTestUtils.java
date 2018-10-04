@@ -32,7 +32,6 @@ import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
-import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
 import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModelBuilder;
 import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeType;
@@ -94,10 +93,8 @@ public class SearchClientTestUtils {
      * A dummy list of facets
      */
     public static final List<String> FACETS = Lists
-            .newArrayList(INTEGER_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.FEATURE_PROPERTIES),
-                          STRING_ATTRIBUTE_NAME,
-                          DATE_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.FEATURE_PROPERTIES),
-                          EXTRA_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.FEATURE_PROPERTIES));
+            .newArrayList(INTEGER_ATTRIBUTE_MODEL.getJsonPath(), STRING_ATTRIBUTE_NAME,
+                          DATE_ATTRIBUTE_MODEL.getJsonPath(), EXTRA_ATTRIBUTE_MODEL.getJsonPath());
 
     /**
      * The dummy list of facets as array

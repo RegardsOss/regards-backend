@@ -28,7 +28,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.modules.dam.domain.entities.criterion.IFeatureCriterion;
 import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
 import fr.cnes.regards.modules.opensearch.service.cache.attributemodel.IAttributeFinder;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
@@ -61,7 +60,7 @@ public class PageableConverter implements IPageableConverter {
             while (orders.hasNext()) {
                 Order order = orders.next();
                 AttributeModel attModel = finder.findByName(order.getProperty());
-                convertedOrders.add(new Order(order.getDirection(), IFeatureCriterion.buildQueryablePath(attModel)));
+                convertedOrders.add(new Order(order.getDirection(), attModel.getFullJsonPath()));
             }
             return new PageRequest(pageable.getPageNumber(), pageable.getPageSize(), new Sort(convertedOrders));
         }

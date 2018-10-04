@@ -417,8 +417,7 @@ public class CatalogSearchService implements ICatalogSearchService {
             if (!Strings.isNullOrEmpty(partialText)) {
                 criterion = ICriterion.and(criterion, IFeatureCriterion.contains(attModel, partialText));
             }
-            return searchService.searchUniqueTopValues(searchKey, criterion,
-                                                       IFeatureCriterion.buildQueryablePath(attModel), maxCount);
+            return searchService.searchUniqueTopValues(searchKey, criterion, attModel.getFullJsonPath(), maxCount);
         } catch (AccessRightFilterException e) {
             LOGGER.debug("Falling back to empty list of values", e);
             return Collections.emptyList();

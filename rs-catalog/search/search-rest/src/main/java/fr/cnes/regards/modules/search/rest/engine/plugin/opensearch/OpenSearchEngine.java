@@ -287,12 +287,6 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
                         && ((queryParam.getValue().size() != 1)
                                 || !Strings.isNullOrEmpty(queryParam.getValue().get(0)))) {
                     AttributeModel attributeModel = finder.findByName(queryParam.getKey());
-                    if (attributeModel.isDynamic()) {
-                        attributeModel.buildJsonPath(StaticProperties.FEATURE_PROPERTIES);
-                    } else {
-                        // Standard static attributes. Not a real attribute. So jsonPath = name;
-                        attributeModel.setJsonPath(attributeModel.getName());
-                    }
                     // Search configuration if any
                     ParameterConfiguration conf = paramConfigurations.stream()
                             .filter(p -> p.getAttributeModelJsonPath().equals(attributeModel.getJsonPath())).findFirst()

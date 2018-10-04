@@ -25,7 +25,6 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableMap;
 
-import fr.cnes.regards.modules.dam.domain.entities.criterion.IFeatureCriterion;
 import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
 import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeType;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
@@ -82,7 +81,7 @@ public class FacetConverter implements IFacetConverter {
 
         for (String propertyName : propertyNames) {
             AttributeModel attModel = finder.findByName(propertyName);
-            String queryablePath = IFeatureCriterion.buildQueryablePath(attModel);
+            String queryablePath = attModel.getFullJsonPath();
             facetMapBuilder.put(queryablePath, MAP.get(attModel.getType()));
             reverseFacetNames.put(queryablePath, propertyName);
         }
