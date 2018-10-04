@@ -524,7 +524,7 @@ public class AIPController implements IResourceController<AIP> {
     public ResponseEntity<Void> updateAip(@PathVariable(name = AIP_ID_PATH_PARAM) String ipId,
             @RequestBody @Valid AIP updated)
             throws EntityInconsistentIdentifierException, EntityOperationForbiddenException, EntityNotFoundException {
-        aipService.updateAip(ipId, updated, null);
+        aipService.updateAip(ipId, updated, "Update AIP");
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
