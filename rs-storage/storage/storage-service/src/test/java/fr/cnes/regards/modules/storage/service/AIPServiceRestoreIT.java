@@ -657,6 +657,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
 
         // Simulate a new file request to force cache purge on next call cause of queued files to restore.
         cachedFileService.restore(nearlineFiles, OffsetDateTime.now().plusDays(10));
+        Thread.sleep(1000);
         // There should be only one file in QUEUD cause all other files are already in cach
         Assert.assertEquals("There should be only one QUEUED file to restore in cache", 1L,
                             cachedFileRepository.countByState(CachedFileState.QUEUED).longValue());
@@ -731,6 +732,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         request = new AvailabilityRequest(OffsetDateTime.now().plusDays(15), "fileNotInCache3", "fileNotInCache4",
                 "fileNotInCache5");
         aipService.loadFiles(request);
+        Thread.sleep(1000);
         Page<CachedFile> queuedFiles = cachedFileRepository.findAllByState(CachedFileState.QUEUED,
                                                                            new PageRequest(0, 100));
         Assert.assertEquals(String.format("After loadfiles process there should 5 files in QUEUED mode not %s",
