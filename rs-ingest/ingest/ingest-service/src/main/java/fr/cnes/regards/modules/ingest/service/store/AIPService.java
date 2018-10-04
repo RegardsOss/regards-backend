@@ -316,7 +316,6 @@ public class AIPService implements IAIPService {
                 break;
             case PENDING:
             case STORING_METADATA:
-            case UPDATED:
             case VALID:
             default:
                 break;
