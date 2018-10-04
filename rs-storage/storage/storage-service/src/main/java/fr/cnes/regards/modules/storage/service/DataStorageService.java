@@ -63,7 +63,7 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.PluginStorageInfo;
 @RegardsTransactional
 public class DataStorageService implements IDataStorageService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DataStorageInfo.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataStorageService.class);
 
     /**
      * Metadata stored successfully message
@@ -379,7 +379,7 @@ public class DataStorageService implements IDataStorageService {
         }
 
         // If url to remove is null (so all the location are deleted) or if there is no longer any location for the datafile,
-        // we can remove it from db.
+        // we can remove it from db and form AIP.
         if ((urlToRemove == null) || dataFileDeleted.getUrls().isEmpty()) {
             LOGGER.info("Datafile to delete does not contains any location url. Deletion of the dataFile {}",
                         dataFileDeleted.getName());
@@ -387,6 +387,12 @@ public class DataStorageService implements IDataStorageService {
             String message = String.format(DATAFILE_DELETED_SUCCESSFULLY, dataFileDeleted.getName());
             associatedAIP.addEvent(EventType.DELETION.name(), message);
             LOGGER.info(message);
+            // Remove content information from aip
+            Set<ContentInformation> ciToRemove = associatedAIP.getProperties().getContentInformations().stream()
+                    .filter(ci -> dataFileDeleted.getChecksum().equals(ci.getDataObject().getChecksum()))
+                    .collect(Collectors.toSet());
+            ciToRemove.forEach(ci -> associatedAIP.getProperties().getContentInformations().remove(ci));
+            aipService.save(associatedAIP, false);
         }
 
         // If associated AIP is not linked to any dataFile anymore, delete aip.
