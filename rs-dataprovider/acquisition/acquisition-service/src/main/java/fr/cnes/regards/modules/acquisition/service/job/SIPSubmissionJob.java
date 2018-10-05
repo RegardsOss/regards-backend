@@ -187,6 +187,9 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
                     Product product = productMap.get(dto.getId());
                     product.setSipState(dto.getState());
                     product.setIpId(dto.getSipId()); // May be null
+                    if (dto.getSipId() == null) {
+                        logger.debug("Null IP ID for product \"{}\"", product.getProductName());
+                    }
                     if (dto.getRejectionCauses() != null && !dto.getRejectionCauses().isEmpty()) {
                         StringBuffer error = new StringBuffer();
                         for (String cause : dto.getRejectionCauses()) {
@@ -198,10 +201,14 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
                         }
                         product.setError(error.toString());
                     }
-                    logger.debug("Saving product \"{}\" \"{}\" with IP ID \"{}\" and SIP state \"{}\"",
-                                 product.getProductName(), product.getSip().getId(), product.getIpId(),
-                                 product.getSipState());
-                    productService.save(product);
+                    try {
+                        logger.debug("Saving product \"{}\" \"{}\" with IP ID \"{}\" and SIP state \"{}\"",
+                                     product.getProductName(), product.getSip().getId(), product.getIpId(),
+                                     product.getSipState());
+                        productService.save(product);
+                    } catch (Exception e) {
+                        logger.error("Problem considering INGEST response", e);
+                    }
                 }
                 break;
             default:
