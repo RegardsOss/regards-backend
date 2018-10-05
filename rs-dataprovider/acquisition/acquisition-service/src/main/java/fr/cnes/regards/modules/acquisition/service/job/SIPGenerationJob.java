@@ -109,7 +109,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
                 // Update product
                 product.setSip(sip);
                 product.setSipState(ProductSIPState.GENERATED);
-                productService.saveAndFlush(product);
+                productService.save(product);
             }
 
             logger.debug("[{}] : {} SIP(s) generated in {} milliseconds", processingChain.getLabel(), products.size(),

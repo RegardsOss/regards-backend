@@ -48,8 +48,6 @@ public interface IProductService {
 
     Product save(Product product);
 
-    Product saveAndFlush(Product product);
-
     /**
      * @return all {@link Product}
      */

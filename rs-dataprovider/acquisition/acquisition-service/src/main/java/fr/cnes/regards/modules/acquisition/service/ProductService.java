@@ -30,8 +30,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.persistence.EntityManager;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,9 +96,6 @@ public class ProductService implements IProductService {
     @Autowired
     private IAcquisitionFileRepository acqFileRepository;
 
-    @Autowired
-    private EntityManager em;
-
     @Value("${regards.acquisition.sip.bulk.request.limit:100}")
     private Integer bulkRequestLimit;
 
@@ -111,14 +106,6 @@ public class ProductService implements IProductService {
     public Product save(Product product) {
         product.setLastUpdate(OffsetDateTime.now());
         return productRepository.save(product);
-    }
-
-    @Override
-    public Product saveAndFlush(Product product) {
-        save(product);
-        em.flush();
-        em.clear();
-        return product;
     }
 
     @Override
@@ -300,8 +287,6 @@ public class ProductService implements IProductService {
 
             // Fulfill product with new valid acquired files
             fulfillProduct(validFilesByProductName.get(productName), currentProduct, processingChain);
-            em.flush();
-            em.clear();
 
             // Store for scheduling
             if (currentProduct.getSipState() == ProductSIPState.NOT_SCHEDULED
@@ -499,7 +484,7 @@ public class ProductService implements IProductService {
                     }
                     product.setLastSIPSubmissionJobInfo(jobInfo);
                     product.setSipState(ProductSIPState.SUBMISSION_SCHEDULED);
-                    saveAndFlush(product);
+                    save(product);
                 }
             }
         }
@@ -593,7 +578,8 @@ public class ProductService implements IProductService {
             product.setSipState(event.getState());
             save(product);
         } else {
-            LOGGER.debug("SIP with IP ID \"{}\" is not managed by data provider", event.getSipId());
+            LOGGER.debug("SIP with IP ID \"{}\" and provider ID \"{}\" is not managed by data provider",
+                         event.getSipId(), event.getProviderId());
         }
     }
 
