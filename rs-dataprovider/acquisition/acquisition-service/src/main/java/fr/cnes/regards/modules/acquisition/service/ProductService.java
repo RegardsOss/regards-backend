@@ -49,6 +49,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
@@ -431,10 +432,12 @@ public class ProductService implements IProductService {
                 jobInfo.setParameters(jobParameters);
                 jobInfo.setClassName(SIPSubmissionJob.class.getName());
                 jobInfo.setOwner(authResolver.getUser());
-                jobInfoService.createAsQueued(jobInfo);
+                jobInfoService.createAsPending(jobInfo);
 
                 // Link report to all related products
                 linkSubmissionJobInfo(productsPerIngestChain, jobInfo, ingestChain, session);
+                jobInfo.updateStatus(JobStatus.QUEUED);
+                jobInfoService.save(jobInfo);
             }
         }
     }
