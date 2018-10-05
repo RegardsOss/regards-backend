@@ -198,6 +198,9 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
                         }
                         product.setError(error.toString());
                     }
+                    logger.debug("Saving product \"{}\" \"{}\" with IP ID \"{}\" and SIP state \"{}\"",
+                                 product.getProductName(), product.getSip().getId(), product.getIpId(),
+                                 product.getSipState());
                     productService.save(product);
                 }
                 break;
