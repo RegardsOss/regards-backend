@@ -30,6 +30,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -57,9 +58,6 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
 
     @EntityGraph("graph.acquisition.file.complete")
     Set<Product> findCompleteByProductNameIn(Collection<String> productNames);
-
-    @EntityGraph("graph.acquisition.file.complete")
-    Product findCompleteByIpId(String ipId);
 
     Page<Product> findByProcessingChainOrderByIdAsc(AcquisitionProcessingChain processingChain, Pageable pageable);
 
@@ -155,4 +153,8 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
      * @return number of {@link Product}
      */
     long countByProcessingChain(AcquisitionProcessingChain chain);
+
+    @Modifying
+    @Query(value = "UPDATE Product p set p.sipState = ?2 where p.sipState = ?1")
+    void updateSipStates(ISipState fromStatus, ISipState toStatus);
 }

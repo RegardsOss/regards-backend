@@ -215,4 +215,11 @@ public interface IProductService {
      */
     boolean restartInterruptedJobsByPage(AcquisitionProcessingChain processingChain);
 
+    /**
+     * Change sip states
+     * @param fromStatus
+     * @param toStatus
+     */
+    void updateSipStates(ISipState fromStatus, ISipState toStatus);
+
 }

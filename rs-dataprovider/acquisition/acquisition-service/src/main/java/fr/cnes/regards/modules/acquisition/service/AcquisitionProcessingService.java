@@ -94,7 +94,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
      */
     private static final int ENTITY_CREATION_BEFORE_COMMIT = 1000;
 
-    @Value("${regards.acquisition.pagination.default.page.size:1000}")
+    @Value("${regards.acquisition.pagination.default.page.size:100}")
     private Integer defaultPageSize;
 
     @Autowired

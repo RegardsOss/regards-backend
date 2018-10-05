@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,10 +40,12 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.ingest.client.IIngestClient;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
 import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
  * This job manages SIP submission (i.e. INGEST bulk request) for a specified session and chain.
@@ -150,46 +151,18 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
     private void handleResponse(HttpStatus status, Collection<SIPDto> response, List<Product> products) {
         switch (status) {
             case CREATED:
+                productService.updateSipStates(ProductSIPState.SUBMISSION_SCHEDULED, SIPState.CREATED);
+                break;
             case PARTIAL_CONTENT:
             case UNPROCESSABLE_ENTITY:
                 // Convert product list to map
                 Map<String, Product> productMap = products.stream()
                         .collect(Collectors.toMap(p -> p.getSip().getId(), p -> p));
 
-                if (logger.isDebugEnabled()) {
-                    logger.debug("{} products sent", productMap.size());
-                    logger.debug("{} responses received", response.size());
-
-                    Set<String> sentProductNames = new java.util.HashSet<>();
-                    products.forEach(p -> sentProductNames.add(p.getSip().getId()));
-                    logger.debug("{} distinct products sent", sentProductNames.size());
-
-                    Set<String> receivedProductNames = new java.util.HashSet<>();
-                    response.forEach(dto -> receivedProductNames.add(dto.getId()));
-                    logger.debug("{} distinct products received", receivedProductNames.size());
-
-                    // Check is set matches
-                    for (String sentProductName : sentProductNames) {
-                        if (!receivedProductNames.contains(sentProductName)) {
-                            logger.debug("{} not received but sent");
-                        }
-                    }
-
-                    for (String recievedProductName : receivedProductNames) {
-                        if (!sentProductNames.contains(recievedProductName)) {
-                            logger.debug("{} not sent but received");
-                        }
-                    }
-                }
-
                 // Process all SIP to update all products!
                 for (SIPDto dto : response) {
                     Product product = productMap.get(dto.getId());
                     product.setSipState(dto.getState());
-                    product.setIpId(dto.getSipId()); // May be null
-                    if (dto.getSipId() == null) {
-                        logger.debug("Null IP ID for product \"{}\"", product.getProductName());
-                    }
                     if (dto.getRejectionCauses() != null && !dto.getRejectionCauses().isEmpty()) {
                         StringBuffer error = new StringBuffer();
                         for (String cause : dto.getRejectionCauses()) {
@@ -201,14 +174,10 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
                         }
                         product.setError(error.toString());
                     }
-                    try {
-                        logger.debug("Saving product \"{}\" \"{}\" with IP ID \"{}\" and SIP state \"{}\"",
-                                     product.getProductName(), product.getSip().getId(), product.getIpId(),
-                                     product.getSipState());
-                        productService.save(product);
-                    } catch (Exception e) {
-                        logger.error("Problem considering INGEST response", e);
-                    }
+                    logger.debug("Saving product \"{}\" \"{}\" with IP ID \"{}\" and SIP state \"{}\"",
+                                 product.getProductName(), product.getSip().getId(), product.getIpId(),
+                                 product.getSipState());
+                    productService.save(product);
                 }
                 break;
             default:

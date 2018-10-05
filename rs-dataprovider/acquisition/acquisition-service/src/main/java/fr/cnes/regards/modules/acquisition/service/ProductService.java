@@ -97,10 +97,10 @@ public class ProductService implements IProductService {
     @Autowired
     private IAcquisitionFileRepository acqFileRepository;
 
-    @Value("${regards.acquisition.sip.bulk.request.limit:1000}")
+    @Value("${regards.acquisition.sip.bulk.request.limit:100}")
     private Integer bulkRequestLimit;
 
-    @Value("${regards.acquisition.pagination.default.page.size:1000}")
+    @Value("${regards.acquisition.pagination.default.page.size:100}")
     private Integer defaultPageSize;
 
     @Override
@@ -171,7 +171,7 @@ public class ProductService implements IProductService {
                               new JobParameter(SIPGenerationJob.PRODUCT_NAMES, productNames));
         jobInfo.setClassName(SIPGenerationJob.class.getName());
         jobInfo.setOwner(authResolver.getUser());
-        jobInfo = jobInfoService.createAsQueued(jobInfo);
+        jobInfo = jobInfoService.createAsPending(jobInfo);
 
         // Release lock
         for (Product product : products) {
@@ -184,6 +184,9 @@ public class ProductService implements IProductService {
             product.setLastSIPGenerationJobInfo(jobInfo);
             save(product);
         }
+
+        jobInfo.updateStatus(JobStatus.QUEUED);
+        jobInfoService.save(jobInfo);
 
         return jobInfo;
     }
@@ -487,6 +490,9 @@ public class ProductService implements IProductService {
                     }
                     product.setLastSIPSubmissionJobInfo(jobInfo);
                     product.setSipState(ProductSIPState.SUBMISSION_SCHEDULED);
+                    LOGGER.debug("Saving product \"{}\" \"{}\" with IP ID \"{}\" and SIP state \"{}\"",
+                                 product.getProductName(), product.getSip().getId(), product.getIpId(),
+                                 product.getSipState());
                     save(product);
                 }
             }
@@ -560,7 +566,7 @@ public class ProductService implements IProductService {
 
     @Override
     public void handleSIPEvent(SIPEvent event) {
-        Product product = productRepository.findCompleteByIpId(event.getSipId());
+        Product product = productRepository.findCompleteByProductName(event.getProviderId());
         if (product != null) {
             // Do post processing if SIP properly stored
             if (SIPState.STORED.equals(event.getState())) {
@@ -577,8 +583,8 @@ public class ProductService implements IProductService {
                 }
                 product.setLastPostProductionJobInfo(jobInfo);
             }
-
             product.setSipState(event.getState());
+            product.setIpId(event.getSipId());
             save(product);
         } else {
             LOGGER.debug("SIP with IP ID \"{}\" and provider ID \"{}\" is not managed by data provider",
@@ -693,5 +699,10 @@ public class ProductService implements IProductService {
             scheduleProductSIPGenerations(new HashSet<>(products.getContent()), processingChain);
         }
         return products.hasNext();
+    }
+
+    @Override
+    public void updateSipStates(ISipState fromStatus, ISipState toStatus) {
+        productRepository.updateSipStates(fromStatus, toStatus);
     }
 }
