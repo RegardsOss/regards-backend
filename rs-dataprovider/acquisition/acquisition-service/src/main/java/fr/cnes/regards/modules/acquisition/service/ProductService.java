@@ -569,7 +569,8 @@ public class ProductService implements IProductService {
         Product product = productRepository.findCompleteByProductName(event.getProviderId());
         if (product != null) {
             // Do post processing if SIP properly stored
-            if (SIPState.STORED.equals(event.getState())) {
+            if (SIPState.STORED.equals(event.getState())
+                    && product.getProcessingChain().getPostProcessSipPluginConf().isPresent()) {
                 JobInfo jobInfo = new JobInfo(true);
                 jobInfo.setPriority(AcquisitionJobPriority.POST_ACQUISITION_JOB_PRIORITY.getPriority());
                 jobInfo.setParameters(new JobParameter(PostAcquisitionJob.EVENT_PARAMETER, event));
@@ -587,8 +588,8 @@ public class ProductService implements IProductService {
             product.setIpId(event.getSipId());
             save(product);
         } else {
-            LOGGER.debug("SIP with IP ID \"{}\" and provider ID \"{}\" is not managed by data provider",
-                         event.getSipId(), event.getProviderId());
+            LOGGER.warn("SIP with IP ID \"{}\" and provider ID \"{}\" is not managed by data provider",
+                        event.getSipId(), event.getProviderId());
         }
     }
 

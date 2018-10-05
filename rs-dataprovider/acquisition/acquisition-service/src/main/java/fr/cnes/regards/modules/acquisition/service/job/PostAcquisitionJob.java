@@ -65,18 +65,14 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        logger.info("Start POST acquisition SIP job for the product <{}>", sipEvent.getSipId());
+        logger.info("Start POST acquisition SIP job for the product <{}>", sipEvent.getProviderId());
 
         try {
             // Load product
-            Optional<Product> oProduct = productService.searchProduct(sipEvent.getSipId());
+            Optional<Product> oProduct = productService.searchProduct(sipEvent.getProviderId());
 
             if (oProduct.isPresent()) {
                 Product product = oProduct.get();
-
-                // Update product (store ingest state)
-                product.setSipState(sipEvent.getState());
-                productService.save(product);
 
                 // Retrieve acquisition chain
                 AcquisitionProcessingChain acqProcessingChain = product.getProcessingChain();
