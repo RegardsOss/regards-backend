@@ -401,7 +401,7 @@ public class ProductService implements IProductService {
 
         // Find all products with available SIPs ready for submission
         // Reset pagination
-        pageable = new PageRequest(0, defaultPageSize);
+        pageable = new PageRequest(0, 10);
         Multimap<String, String> sessionsByChain = ArrayListMultimap.create();
         // Register products per ingest chain and session for reporting
         Map<String, Map<String, List<Product>>> productsPerIngestChain = new HashMap<>();
