@@ -101,10 +101,10 @@ public class ProductService implements IProductService {
     @Autowired
     private EntityManager em;
 
-    @Value("${regards.acquisition.sip.bulk.request.limit:1000}")
+    @Value("${regards.acquisition.sip.bulk.request.limit:100}")
     private Integer bulkRequestLimit;
 
-    @Value("${regards.acquisition.pagination.default.page.size:1000}")
+    @Value("${regards.acquisition.pagination.default.page.size:100}")
     private Integer defaultPageSize;
 
     @Override
@@ -401,7 +401,7 @@ public class ProductService implements IProductService {
 
         // Find all products with available SIPs ready for submission
         // Reset pagination
-        pageable = new PageRequest(0, 10);
+        pageable = new PageRequest(0, bulkRequestLimit);
         Multimap<String, String> sessionsByChain = ArrayListMultimap.create();
         // Register products per ingest chain and session for reporting
         Map<String, Map<String, List<Product>>> productsPerIngestChain = new HashMap<>();
