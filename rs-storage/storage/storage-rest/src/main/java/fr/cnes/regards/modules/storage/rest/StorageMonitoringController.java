@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.storage.rest;
 
-import javax.tools.Diagnostic;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
