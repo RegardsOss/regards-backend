@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -154,6 +155,33 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
                 // Convert product list to map
                 Map<String, Product> productMap = products.stream()
                         .collect(Collectors.toMap(p -> p.getSip().getId(), p -> p));
+
+                if (logger.isDebugEnabled()) {
+                    logger.debug("{} products sent", productMap.size());
+                    logger.debug("{} responses received", response.size());
+
+                    Set<String> sentProductNames = new java.util.HashSet<>();
+                    products.forEach(p -> sentProductNames.add(p.getSip().getId()));
+                    logger.debug("{} distinct products sent", sentProductNames.size());
+
+                    Set<String> receivedProductNames = new java.util.HashSet<>();
+                    response.forEach(dto -> receivedProductNames.add(dto.getId()));
+                    logger.debug("{} distinct products received", receivedProductNames.size());
+
+                    // Check is set matches
+                    for (String sentProductName : sentProductNames) {
+                        if (!receivedProductNames.contains(sentProductName)) {
+                            logger.debug("{} not received but sent");
+                        }
+                    }
+
+                    for (String recievedProductName : receivedProductNames) {
+                        if (!sentProductNames.contains(recievedProductName)) {
+                            logger.debug("{} not sent but received");
+                        }
+                    }
+                }
+
                 // Process all SIP to update all products!
                 for (SIPDto dto : response) {
                     Product product = productMap.get(dto.getId());
@@ -170,7 +198,7 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
                         }
                         product.setError(error.toString());
                     }
-                    productService.saveAndFlush(product);
+                    productService.save(product);
                 }
                 break;
             default:
