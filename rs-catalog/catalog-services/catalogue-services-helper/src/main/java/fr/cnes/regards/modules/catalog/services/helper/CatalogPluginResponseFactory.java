@@ -79,7 +79,6 @@ public class CatalogPluginResponseFactory {
             StreamingResponseBody responseContent, String fileName, MediaType mimeType) {
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.CONTENT_DISPOSITION, getContentDisposition(fileName));
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, getContentDisposition(fileName));
         if (mimeType == null) {
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
@@ -87,7 +86,6 @@ public class CatalogPluginResponseFactory {
             headers.setContentType(mimeType);
             response.setContentType(mimeType.toString());
         }
-        response.setHeader(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, HttpHeaders.CONTENT_DISPOSITION);
         List<String> exposedHeaders = new ArrayList<>();
         exposedHeaders.add(HttpHeaders.CONTENT_DISPOSITION);
         headers.setAccessControlExposeHeaders(exposedHeaders);
@@ -126,30 +124,23 @@ public class CatalogPluginResponseFactory {
     public static ResponseEntity<StreamingResponseBody> createSuccessResponseFromFile(HttpServletResponse response,
             CatalogPluginResponseType type, File file) {
         HttpHeaders headers = new HttpHeaders();
-        response.setHeader(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, HttpHeaders.CONTENT_DISPOSITION);
         List<String> exposedHeaders = new ArrayList<>();
         exposedHeaders.add(HttpHeaders.CONTENT_DISPOSITION);
         headers.setAccessControlExposeHeaders(exposedHeaders);
         switch (type) {
             case FILE_IMG_PNG:
                 headers.setContentType(MediaType.IMAGE_PNG);
-                response.setContentType(MediaType.IMAGE_PNG_VALUE);
                 headers.set(HttpHeaders.CONTENT_DISPOSITION, getContentDisposition(file.getName()));
-                response.setHeader(HttpHeaders.CONTENT_DISPOSITION, getContentDisposition(file.getName()));
                 break;
             case JSON:
             case XML:
             case FILE_DOWNLOAD:
                 headers.set(HttpHeaders.CONTENT_DISPOSITION, getContentDisposition(file.getName()));
-                response.setHeader(HttpHeaders.CONTENT_DISPOSITION, getContentDisposition(file.getName()));
                 headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-                response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
                 break;
             case FILE_IMG_JPG:
                 headers.setContentType(MediaType.IMAGE_JPEG);
-                response.setContentType(MediaType.IMAGE_JPEG_VALUE);
                 headers.set(HttpHeaders.CONTENT_DISPOSITION, getContentDisposition(file.getName()));
-                response.setHeader(HttpHeaders.CONTENT_DISPOSITION, getContentDisposition(file.getName()));
                 break;
             default:
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -167,30 +158,23 @@ public class CatalogPluginResponseFactory {
     public static ResponseEntity<StreamingResponseBody> createSuccessResponseFromInputStream(
             HttpServletResponse response, CatalogPluginResponseType type, InputStream is, String fileName) {
         HttpHeaders headers = new HttpHeaders();
-        response.setHeader(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, HttpHeaders.CONTENT_DISPOSITION);
         List<String> exposedHeaders = new ArrayList<>();
         exposedHeaders.add(HttpHeaders.CONTENT_DISPOSITION);
         headers.setAccessControlExposeHeaders(exposedHeaders);
         switch (type) {
             case FILE_IMG_PNG:
                 headers.setContentType(MediaType.IMAGE_PNG);
-                response.setContentType(MediaType.IMAGE_PNG_VALUE);
                 headers.set(HttpHeaders.CONTENT_DISPOSITION, getContentDisposition(fileName));
-                response.setHeader(HttpHeaders.CONTENT_DISPOSITION, getContentDisposition(fileName));
                 break;
             case JSON:
             case XML:
             case FILE_DOWNLOAD:
                 headers.set(HttpHeaders.CONTENT_DISPOSITION, getContentDisposition(fileName));
-                response.setHeader(HttpHeaders.CONTENT_DISPOSITION, getContentDisposition(fileName));
                 headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-                response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
                 break;
             case FILE_IMG_JPG:
                 headers.setContentType(MediaType.IMAGE_JPEG);
-                response.setContentType(MediaType.IMAGE_JPEG_VALUE);
                 headers.set(HttpHeaders.CONTENT_DISPOSITION, getContentDisposition(fileName));
-                response.setHeader(HttpHeaders.CONTENT_DISPOSITION, getContentDisposition(fileName));
                 break;
             default:
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -208,14 +192,12 @@ public class CatalogPluginResponseFactory {
             Object responseContent) {
         HttpHeaders headers = new HttpHeaders();
         XmlMapper xmlMapper = new XmlMapper();
-        response.setHeader(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, HttpHeaders.CONTENT_DISPOSITION);
         List<String> exposedHeaders = new ArrayList<>();
         exposedHeaders.add(HttpHeaders.CONTENT_DISPOSITION);
         headers.setAccessControlExposeHeaders(exposedHeaders);
         try {
             String xml = xmlMapper.writeValueAsString(responseContent);
             headers.set(HttpHeaders.CONTENT_DISPOSITION, getContentDisposition("result.xml"));
-            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, getContentDisposition("result.xml"));
             headers.setContentType(MediaType.APPLICATION_XML);
             response.setContentType(MediaType.APPLICATION_XML_VALUE);
             return new ResponseEntity<>(toStreamingResponseBody(xml), headers, HttpStatus.OK);
@@ -236,10 +218,8 @@ public class CatalogPluginResponseFactory {
         GsonBuilder builder = new GsonBuilder();
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.CONTENT_DISPOSITION, getContentDisposition("result.json"));
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, getContentDisposition("result.json"));
         headers.setContentType(MediaType.APPLICATION_JSON);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.setHeader(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, HttpHeaders.CONTENT_DISPOSITION);
         List<String> exposedHeaders = new ArrayList<>();
         exposedHeaders.add(HttpHeaders.CONTENT_DISPOSITION);
         headers.setAccessControlExposeHeaders(exposedHeaders);
