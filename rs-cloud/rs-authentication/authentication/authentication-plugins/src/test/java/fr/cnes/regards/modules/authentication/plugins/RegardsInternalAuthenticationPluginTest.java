@@ -19,9 +19,8 @@
 package fr.cnes.regards.modules.authentication.plugins;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -29,6 +28,8 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
@@ -66,7 +67,7 @@ public class RegardsInternalAuthenticationPluginTest {
         /*
          * Set all parameters
          */
-        final List<PluginParameter> parameters = new ArrayList<>();
+        final Set<PluginParameter> parameters = Sets.newHashSet();
         try {
             // instantiate plugin
             plugin = PluginUtils.getPlugin(parameters, RegardsInternalAuthenticationPlugin.class, new HashMap<>());

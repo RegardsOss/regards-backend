@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.authentication.plugins;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Set;
 
 import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSCredential;
@@ -109,7 +109,7 @@ public class KerberosServiceProviderPluginTest {
         /*
          * Set all parameters
          */
-        final List<PluginParameter> parameters = PluginParametersFactory.build()
+        final Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(KerberosSPParameters.PRINCIPAL_PARAMETER, applicationPrincipal)
                 .addParameter(KerberosSPParameters.REALM_PARAMETER, "REGARDS.CLOUD-ESPACE.SI.C-S.FR")
                 .addParameter(KerberosSPParameters.LDAP_ADRESS_PARAMETER, "REGARDS-AD.CLOUD-ESPACE.SI.C-S.FR")

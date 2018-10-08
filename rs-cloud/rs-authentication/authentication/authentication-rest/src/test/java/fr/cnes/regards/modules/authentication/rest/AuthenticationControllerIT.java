@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.authentication.rest;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -111,7 +112,7 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
         metadata.getInterfaceNames().add(IAuthenticationPlugin.class.getName());
         metadata.setVersion(DEFAULT_PLUGIN_VERSION);
         final PluginConfiguration conf = new PluginConfiguration(metadata, DEFAULT_PLUGIN_LABEL, 0);
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_HOST, "test")
                 .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_PORT, "8080")
                 .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_CN, "ou=people,ou=commun")
@@ -189,7 +190,7 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
         metadata.setPluginClassName(LdapAuthenticationPlugin.class.getName());
         metadata.setVersion(DEFAULT_PLUGIN_VERSION);
         PluginConfiguration conf = new PluginConfiguration(metadata, "Plugin2", 0);
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_HOST, "test")
                 .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_PORT, "8080")
                 .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_CN, "ou=people,ou=commun")
