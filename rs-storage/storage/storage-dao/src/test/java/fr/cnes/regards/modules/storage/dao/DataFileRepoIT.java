@@ -103,7 +103,6 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
         dataStorage1.setPriorityOrder(0);
         dataStorage1.setVersion("1.0");
         dataStorage1.setInterfaceNames(Sets.newHashSet());
-        dataStorage1.setParameters(Lists.newArrayList());
         dataStorage1 = pluginRepo.save(dataStorage1);
         PrioritizedDataStorage pds1 = new PrioritizedDataStorage(dataStorage1, 0L, DataStorageType.ONLINE);
         pds1 = prioritizedDataStorageRepository.save(pds1);
@@ -113,7 +112,6 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
         dataStorage2.setPriorityOrder(0);
         dataStorage2.setVersion("1.0");
         dataStorage2.setInterfaceNames(Sets.newHashSet());
-        dataStorage2.setParameters(Lists.newArrayList());
         dataStorage2 = pluginRepo.save(dataStorage2);
         PrioritizedDataStorage pds2 = new PrioritizedDataStorage(dataStorage2, 1L, DataStorageType.ONLINE);
         pds2 = prioritizedDataStorageRepository.save(pds2);
@@ -123,7 +121,6 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
         dataStorage3.setPriorityOrder(0);
         dataStorage3.setVersion("1.0");
         dataStorage3.setInterfaceNames(Sets.newHashSet());
-        dataStorage3.setParameters(Lists.newArrayList());
         dataStorage3 = pluginRepo.save(dataStorage3);
         PrioritizedDataStorage pds3 = new PrioritizedDataStorage(dataStorage3, 2L, DataStorageType.ONLINE);
         pds3 = prioritizedDataStorageRepository.save(pds3);

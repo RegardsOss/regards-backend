@@ -27,7 +27,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -160,7 +159,7 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
 
         URL baseStorageLocation = new URL("file", "", System.getProperty("user.dir") + "/target/LocalDataStorageIT");
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000L).getParameters();
         PluginMetaData localDataStorageMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
@@ -175,7 +174,7 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
         // before getting the alloc strat plg params, lets make some mapping
         Set<PropertyDataStorageMapping> mappings = Sets.newHashSet();
         mappings.add(new PropertyDataStorageMapping(PROPERTY_VALUE, mappedDataStorageConfId));
-        List<PluginParameter> propertyMappingAllocStratParam = PluginParametersFactory.build()
+        Set<PluginParameter> propertyMappingAllocStratParam = PluginParametersFactory.build()
                 .addParameter(PropertyMappingAllocationStrategy.PROPERTY_PATH, JSON_PATH)
                 .addParameter(PropertyMappingAllocationStrategy.PROPERTY_VALUE_DATA_STORAGE_MAPPING, mappings)
                 .addParameter(PropertyMappingAllocationStrategy.QUICKLOOK_DATA_STORAGE_CONFIGURATION_ID,

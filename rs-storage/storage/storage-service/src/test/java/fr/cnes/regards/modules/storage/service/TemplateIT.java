@@ -26,7 +26,6 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -136,7 +135,7 @@ public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
         Map<String, Object> dataMap = new HashMap<>();
         PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
         URL baseStorageLocation = new URL("file", "", Paths.get("target/TemplateIT/Local2").toFile().getAbsolutePath());
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000L)
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION, false).getParameters();

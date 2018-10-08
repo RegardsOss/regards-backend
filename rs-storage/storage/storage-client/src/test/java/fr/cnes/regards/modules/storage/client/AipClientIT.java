@@ -211,7 +211,7 @@ public class AipClientIT extends AbstractRegardsWebIT {
         // third, lets storeAndCreate a plugin configuration of IDataStorage with the highest priority
         PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
 
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 90000000000000L).getParameters();
         PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, "dsLabel", parameters, 0);

@@ -229,7 +229,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
         baseStorage1Location = new URL("file", "", Paths.get("target/AIPServiceIT/Local1").toFile().getAbsolutePath());
         Files.createDirectories(Paths.get(baseStorage1Location.toURI()));
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000L)
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorage1Location.toString())
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION, true).getParameters();
@@ -254,7 +254,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
         // forth, lets create a plugin configuration for IAllocationStrategy
         PluginMetaData allocationMeta = PluginUtils.createPluginMetaData(DefaultMultipleAllocationStrategy.class);
-        List<PluginParameter> allocationParameter = PluginParametersFactory.build()
+        Set<PluginParameter> allocationParameter = PluginParametersFactory.build()
                 .addParameter(DefaultMultipleAllocationStrategy.DATA_STORAGE_IDS_PARAMETER_NAME, dataStorageIds)
                 .getParameters();
         PluginConfiguration allocationConfiguration = new PluginConfiguration(allocationMeta, ALLOCATION_CONF_LABEL,

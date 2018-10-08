@@ -28,7 +28,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Set;
 
 import org.junit.After;
@@ -150,7 +149,7 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
         // ... dataStorage ...
         baseStorageLocation = new URL("file", "", System.getProperty("user.dir") + "/target/StoreJobIT");
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
-        List<PluginParameter> pluginParameters = PluginParametersFactory.build()
+        Set<PluginParameter> pluginParameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000L).getParameters();
         // new plugin conf for LocalDataStorage storage into target/LocalDataStorageIT

@@ -28,10 +28,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -88,6 +88,7 @@ import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.ICachedFileRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.dao.IPrioritizedDataStorageRepository;
+import fr.cnes.regards.modules.storage.dao.IStorageDataFileRepository;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
@@ -174,6 +175,9 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
     @Autowired
     private IPrioritizedDataStorageRepository prioritizedDataStorageRepository;
 
+    @Autowired
+    private IStorageDataFileRepository repositori;
+
     @Value("${regards.storage.cache.size.limit.ko.per.tenant}")
     private Long cacheSizeLimitKo;
 
@@ -241,7 +245,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         catalogSecuDelegConf = pluginService.savePluginConfiguration(catalogSecuDelegConf);
 
         PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 10000000)
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
                               gson.toJson(baseStorageLocation))
@@ -265,7 +269,8 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
                               gson.toJson(baseStorageLocation))
                 .getParameters();
         PluginMetaData nearlineMeta = PluginUtils.createPluginMetaData(SimpleNearLineStoragePlugin.class);
-        parameters = PluginParametersFactory.build().getParameters();
+        // parameters = PluginParametersFactory.build().getParameters();
+        LOG.info("parameters {}", parameters.size());
         PluginConfiguration nearlineDSConf = new PluginConfiguration(nearlineMeta, "nearlineConfLabel", parameters, 0);
         nearlineDSConf.setIsActive(true);
 
@@ -329,6 +334,29 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         Assert.assertTrue("No file should be in error after AIPService::loadFiles. Cause : All files exists !.",
                           response.getErrors().isEmpty());
         LOG.info("End test loadOnlineNNearlineFilesTest ...");
+    }
+
+    @Test
+    public void testSeb() throws MalformedURLException {
+        fillNearlineDataFileDb(50L, 3, "dataFile");
+
+        Set<String> checksums = nearlineFiles.stream().map(f -> f.getChecksum()).collect(Collectors.toSet());
+
+        Page<Long> ids = repositori.findIdPageByChecksumIn(checksums, new PageRequest(0, 500));
+
+        LOG.info("Number of ids={}", ids.getContent().size());
+        Set<StorageDataFile> result = repositori.findAllDistinctByIdIn(ids.getContent());
+
+        LOG.info("result size {}", result.size());
+
+        result.forEach(p -> {
+            p.getPrioritizedDataStorages().forEach(ps -> {
+                LOG.info("Parameters {} - {}", ps.getDataStorageConfiguration().getId(),
+                         ps.getDataStorageConfiguration().getParameters().size());
+            });
+        });
+
+        Assert.assertEquals("There should be only 3 storage data files found", 3, result.size());
     }
 
     /**
