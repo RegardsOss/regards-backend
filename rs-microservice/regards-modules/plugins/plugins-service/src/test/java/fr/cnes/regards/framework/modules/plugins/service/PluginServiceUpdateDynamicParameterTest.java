@@ -109,7 +109,6 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
                 }
             }
 
-            aPluginConfiguration.setParameters(parameters);
             updatedConf = pluginServiceMocked.updatePluginConfiguration(aPluginConfiguration);
 
             Assert.assertEquals(aPluginConfiguration.getParameters().stream().filter(p -> p.isDynamic()).count(),
@@ -119,7 +118,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
             aPluginConfiguration.logParams();
 
         } catch (ModuleException e) {
-            Assert.fail();
+            Assert.fail(e.getMessage());
         }
     }
 
@@ -158,7 +157,6 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
                 }
             }
 
-            aPluginConfiguration.setParameters(parameters);
             updatedConf = pluginServiceMocked.updatePluginConfiguration(aPluginConfiguration);
 
             Assert.assertEquals(aPluginConfiguration.getParameters().stream().filter(p -> p.isDynamic()).count(),
