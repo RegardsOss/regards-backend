@@ -112,8 +112,7 @@ public final class CommonFileUtils {
         Iterator<ImageReader> iter = ImageIO.getImageReadersBySuffix(suffix);
         while (iter.hasNext()) {
             ImageReader reader = iter.next();
-            try {
-                ImageInputStream stream = new FileImageInputStream(imgFile);
+            try ( ImageInputStream stream = new FileImageInputStream(imgFile) ) {
                 reader.setInput(stream);
                 int width = reader.getWidth(reader.getMinIndex());
                 int height = reader.getHeight(reader.getMinIndex());
