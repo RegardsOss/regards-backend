@@ -29,6 +29,7 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -108,7 +109,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
     @Before
     public void init() throws ModuleException {
         LOG.info("--------------------> Initialization <-------------------------------------");
-        List<PluginParameter> parameters = PluginParametersFactory.build().addDynamicParameter("para", "never used")
+        Set<PluginParameter> parameters = PluginParametersFactory.build().addDynamicParameter("para", "never used")
                 .getParameters();
         final PluginMetaData metaData = new PluginMetaData();
         metaData.setPluginId("tata");

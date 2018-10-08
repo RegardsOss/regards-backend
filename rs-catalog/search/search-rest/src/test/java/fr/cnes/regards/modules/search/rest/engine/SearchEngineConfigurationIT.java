@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.search.rest.engine;
 
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.hamcrest.Matchers;
@@ -77,7 +77,7 @@ public class SearchEngineConfigurationIT extends AbstractEngineIT {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
 
-        List<PluginParameter> parameters = PluginParametersFactory.build().getParameters();
+        Set<PluginParameter> parameters = PluginParametersFactory.build().getParameters();
         PluginConfiguration pluginConf = PluginUtils.getPluginConfiguration(parameters, LegacySearchEngine.class);
 
         SearchEngineConfiguration conf = new SearchEngineConfiguration();

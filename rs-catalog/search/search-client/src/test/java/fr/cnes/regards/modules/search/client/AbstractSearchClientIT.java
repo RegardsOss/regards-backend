@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.search.client;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
+import java.util.Set;
 
 import org.assertj.core.util.Lists;
 import org.elasticsearch.index.IndexNotFoundException;
@@ -164,7 +165,7 @@ public abstract class AbstractSearchClientIT<T> extends AbstractRegardsWebIT {
         engineConfiguration.setImage("http://plop/image.png");
         engineConfiguration.setEntityLastUpdateDatePropertyPath("TimePeriod.startDate");
 
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(OpenSearchEngine.TIME_EXTENSION_PARAMETER, geoTime)
                 .addParameter(OpenSearchEngine.REGARDS_EXTENSION_PARAMETER, regardsExt)
                 .addParameter(OpenSearchEngine.MEDIA_EXTENSION_PARAMETER, mediaExt)
