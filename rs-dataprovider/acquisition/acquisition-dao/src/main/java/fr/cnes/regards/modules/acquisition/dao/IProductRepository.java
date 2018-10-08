@@ -155,6 +155,6 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
     long countByProcessingChain(AcquisitionProcessingChain chain);
 
     @Modifying
-    @Query(value = "UPDATE Product p set p.sipState = ?2 where p.sipState = ?1")
-    void updateSipStates(ISipState fromStatus, ISipState toStatus);
+    @Query(value = "UPDATE Product p set p.sipState = ?2 where p.processingChain = ?3 and p.sipState = ?1")
+    void updateSipStates(ISipState fromStatus, ISipState toStatus, AcquisitionProcessingChain processingChain);
 }

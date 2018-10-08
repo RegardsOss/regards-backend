@@ -158,11 +158,6 @@ public interface IProductService {
     void handleSIPGenerationError(JobInfo jobInfo);
 
     /**
-     * Retry product SIP submission for resetting product SIP state to {@link ProductSIPState#GENERATED}
-     */
-    void retryProductSIPSubmission();
-
-    /**
      * Handle a SIP event
      * @param event {@link SIPEvent}
      */
@@ -216,10 +211,13 @@ public interface IProductService {
     boolean restartInterruptedJobsByPage(AcquisitionProcessingChain processingChain);
 
     /**
-     * Change sip states
-     * @param fromStatus
-     * @param toStatus
+     * Retry SIP generation jobs for products in {@link ProductSIPState#GENERATION_ERROR}
      */
-    void updateSipStates(ISipState fromStatus, ISipState toStatus);
+    boolean retrySIPGenerationByPage(AcquisitionProcessingChain processingChain);
+
+    /**
+     * Change sip states by acquisition chain
+     */
+    void updateSipStates(AcquisitionProcessingChain processingChain, ISipState fromStatus, ISipState toStatus);
 
 }

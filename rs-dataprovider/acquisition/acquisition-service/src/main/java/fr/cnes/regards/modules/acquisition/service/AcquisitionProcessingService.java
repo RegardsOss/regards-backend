@@ -701,6 +701,20 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         }
     }
 
+    @MultitenantTransactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public void retrySIPGeneration(AcquisitionProcessingChain processingChain) {
+        while (!Thread.interrupted() && productService.retrySIPGenerationByPage(processingChain)) {
+            // Works as long as there is at least one page left
+        }
+    }
+
+    @Override
+    public void retrySIPSubmission(AcquisitionProcessingChain processingChain) {
+        // Scheduler for SIP submission will handle automatically products in GENERATED states
+        productService.updateSipStates(processingChain, ProductSIPState.SUBMISSION_ERROR, ProductSIPState.GENERATED);
+    }
+
     @Override
     public Page<AcquisitionProcessingChainMonitor> buildAcquisitionProcessingChainSummaries(String label,
             Boolean running, AcquisitionProcessingChainMode mode, Pageable pageable) throws ModuleException {

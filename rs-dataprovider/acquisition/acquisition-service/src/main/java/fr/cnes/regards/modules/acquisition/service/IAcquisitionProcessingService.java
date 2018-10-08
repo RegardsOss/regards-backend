@@ -172,6 +172,16 @@ public interface IAcquisitionProcessingService {
     void restartInterruptedJobs(AcquisitionProcessingChain processingChain) throws ModuleException;
 
     /**
+     * Retry SIP generation for products in {@link ProductSIPState#GENERATION_ERROR}
+     */
+    void retrySIPGeneration(AcquisitionProcessingChain processingChain);
+
+    /**
+     * Retry SIP submission for products in {@link ProductSIPState#SUBMISSION_ERROR}
+     */
+    void retrySIPSubmission(AcquisitionProcessingChain processingChain);
+
+    /**
      * Build summaries list of {@link AcquisitionProcessingChain}s.
      * Each summary allow to monitor chain progress.
      * @param label {@link String} optional search parameter on {@link AcquisitionProcessingChain}s label

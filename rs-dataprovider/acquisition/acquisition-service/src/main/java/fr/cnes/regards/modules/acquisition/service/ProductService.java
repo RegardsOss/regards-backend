@@ -395,13 +395,8 @@ public class ProductService implements IProductService {
         // Register products per ingest chain and session for reporting
         Map<String, Map<String, List<Product>>> productsPerIngestChain = new HashMap<>();
 
-        // Just managed first page
-        //        do {
+        // Just managed first page at a time
         products = productRepository.findWithLockBySipStateOrderByIdAsc(ProductSIPState.GENERATED, pageable);
-        //            if (products.hasNext()) {
-        //                // Prepare for new search
-        //                pageable = products.nextPageable();
-        //            }
 
         if (products.hasContent()) {
 
@@ -420,7 +415,6 @@ public class ProductService implements IProductService {
                 }
             }
         }
-        //        } while (products.hasNext());
 
         // Schedule submission jobs
         for (String ingestChain : sessionsByChain.keySet()) {
@@ -549,19 +543,6 @@ public class ProductService implements IProductService {
                 LOGGER.error("Error handling SIP generation error", e);
             }
         }
-    }
-
-    @Override
-    public void retryProductSIPSubmission() {
-        Page<Product> products;
-        do {
-            products = productRepository.findWithLockBySipStateOrderByIdAsc(ProductSIPState.SUBMISSION_ERROR,
-                                                                            new PageRequest(0, defaultPageSize));
-            for (Product product : products) {
-                product.setSipState(ProductSIPState.GENERATED);
-                save(product);
-            }
-        } while (products.hasNext());
     }
 
     @Override
@@ -696,14 +677,28 @@ public class ProductService implements IProductService {
                                                               new PageRequest(0, defaultPageSize));
         // Schedule SIP generation
         if (products.hasContent()) {
-            LOGGER.debug("Restarting SIP generation for {} product(s)", products.getContent().size());
+            LOGGER.debug("Restarting interrupted SIP generation for {} product(s)", products.getContent().size());
             scheduleProductSIPGenerations(new HashSet<>(products.getContent()), processingChain);
         }
         return products.hasNext();
     }
 
     @Override
-    public void updateSipStates(ISipState fromStatus, ISipState toStatus) {
-        productRepository.updateSipStates(fromStatus, toStatus);
+    public boolean retrySIPGenerationByPage(AcquisitionProcessingChain processingChain) {
+
+        Page<Product> products = productRepository
+                .findByProcessingChainAndSipStateOrderByIdAsc(processingChain, ProductSIPState.GENERATION_ERROR,
+                                                              new PageRequest(0, defaultPageSize));
+        // Schedule SIP generation
+        if (products.hasContent()) {
+            LOGGER.debug("Retrying SIP generation for {} product(s)", products.getContent().size());
+            scheduleProductSIPGenerations(new HashSet<>(products.getContent()), processingChain);
+        }
+        return products.hasNext();
+    }
+
+    @Override
+    public void updateSipStates(AcquisitionProcessingChain processingChain, ISipState fromStatus, ISipState toStatus) {
+        productRepository.updateSipStates(fromStatus, toStatus, processingChain);
     }
 }

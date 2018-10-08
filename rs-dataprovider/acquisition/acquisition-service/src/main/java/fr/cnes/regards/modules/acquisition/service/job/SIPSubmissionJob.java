@@ -40,12 +40,10 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.modules.acquisition.domain.Product;
-import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.ingest.client.IIngestClient;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
 import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
  * This job manages SIP submission (i.e. INGEST bulk request) for a specified session and chain.
@@ -151,8 +149,6 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
     private void handleResponse(HttpStatus status, Collection<SIPDto> response, List<Product> products) {
         switch (status) {
             case CREATED:
-                productService.updateSipStates(ProductSIPState.SUBMISSION_SCHEDULED, SIPState.CREATED);
-                break;
             case PARTIAL_CONTENT:
             case UNPROCESSABLE_ENTITY:
                 // Convert product list to map
