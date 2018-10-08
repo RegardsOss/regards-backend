@@ -137,7 +137,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "parent_conf_id", foreignKey = @ForeignKey(name = "fk_plg_conf_param_id"))
-    private Set<PluginParameter> parameters = Sets.newHashSet();
+    private final Set<PluginParameter> parameters = Sets.newHashSet();
 
     /**
      * Icon of the plugin. It must be an URL to a svg file.
@@ -337,7 +337,8 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     }
 
     public final void setParameters(Set<PluginParameter> pParameters) {
-        parameters = pParameters;
+        parameters.clear();
+        parameters.addAll(pParameters);
     }
 
     public Boolean isActive() {
