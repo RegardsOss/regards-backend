@@ -395,7 +395,7 @@ public class ProductService implements IProductService {
         // Register products per ingest chain and session for reporting
         Map<String, Map<String, List<Product>>> productsPerIngestChain = new HashMap<>();
 
-        // Just managed first page at a time
+        // Just managed one page at a time
         products = productRepository.findWithLockBySipStateOrderByIdAsc(ProductSIPState.GENERATED, pageable);
 
         if (products.hasContent()) {

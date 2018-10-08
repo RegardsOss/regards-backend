@@ -87,7 +87,7 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
             processingService.restartInterruptedJobs(processingChain);
 
             // Nominal process
-            // First step : scan and register files
+            // First step : scan and register files (Not interruptible at the moment)
             processingService.scanAndRegisterFiles(processingChain);
             // Second step : validate in progress files, build and schedule SIP generation for completed or finished products
             processingService.manageRegisteredFiles(processingChain);

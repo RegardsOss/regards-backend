@@ -103,6 +103,9 @@ public class SIPGenerationJob extends AbstractJob<Void> {
 
             // Launch generation plugin
             for (Product product : products) {
+                if (Thread.interrupted()) {
+                    break;
+                }
                 logger.trace("Generating SIP for product {}", product.getProductName());
                 SIP sip = generateSipPlugin.generate(product);
 

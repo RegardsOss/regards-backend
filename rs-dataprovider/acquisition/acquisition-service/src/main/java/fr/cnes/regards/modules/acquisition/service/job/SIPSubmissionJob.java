@@ -93,6 +93,10 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
      */
     private void runByPage() {
 
+        if (Thread.interrupted()) {
+            return;
+        }
+
         // Retrieve all products to submit by ingest chain, session page
         // Page size is limited by the property "bulkRequestLimit"
         Page<Product> products = productService.findProductsToSubmit(ingestChain, session);
