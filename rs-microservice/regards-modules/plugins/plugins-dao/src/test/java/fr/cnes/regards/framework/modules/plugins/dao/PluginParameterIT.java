@@ -73,9 +73,9 @@ public class PluginParameterIT extends PluginDaoUtility {
      */
     @Test
     public void updatePluginParameter() {
-        paramRepository.save(INTERFACEPARAMETERS.get(0));
-        final PluginParameter paramJpa = paramRepository.save(LIST_PARAMETERS.get(0));
-        Assert.assertEquals(paramJpa.getName(), LIST_PARAMETERS.get(0).getName());
+        paramRepository.save(INTERFACEPARAMETERS.stream().findFirst().get());
+        final PluginParameter paramJpa = paramRepository.save(LIST_PARAMETERS.stream().findFirst().get());
+        Assert.assertEquals(paramJpa.getName(), LIST_PARAMETERS.stream().findFirst().get().getName());
 
         paramRepository.findAll().forEach(p -> LOGGER.info(p.getName()));
 
@@ -102,7 +102,7 @@ public class PluginParameterIT extends PluginDaoUtility {
         Assert.assertEquals(LIST_PARAMETERS.size(), paramRepository.count());
 
         // Delete a plugin parameter
-        paramRepository.delete(LIST_PARAMETERS.get(0));
+        paramRepository.delete(LIST_PARAMETERS.stream().findFirst().get());
         Assert.assertEquals(LIST_PARAMETERS.size() - 1, paramRepository.count());
     }
 
@@ -117,7 +117,7 @@ public class PluginParameterIT extends PluginDaoUtility {
         Assert.assertEquals(1, paramRepository.count());
 
         // second plugin parameter with dynamic values
-        final PluginParameter paramWithDynValues = paramRepository.save(LIST_PARAMETERS.get(0));
+        final PluginParameter paramWithDynValues = paramRepository.save(LIST_PARAMETERS.stream().findFirst().get());
         Assert.assertNotNull(paramWithDynValues.getId());
         Assert.assertEquals(2, paramRepository.count());
 
@@ -142,7 +142,9 @@ public class PluginParameterIT extends PluginDaoUtility {
         Assert.assertEquals(1, paramRepository.count());
 
         // second plugin parameter with dynamic values
-        final PluginParameter paramWithDynValues = paramRepository.save(LIST_PARAMETERS.get(0));
+        PluginParameter dynParam = LIST_PARAMETERS.stream().filter(p -> p.getName().equals("param-dyn21")).findFirst()
+                .get();
+        final PluginParameter paramWithDynValues = paramRepository.save(dynParam);
         Assert.assertNotNull(paramWithDynValues.getId());
         Assert.assertEquals(2, paramRepository.count());
 

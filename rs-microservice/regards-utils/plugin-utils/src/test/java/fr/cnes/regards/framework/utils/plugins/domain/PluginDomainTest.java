@@ -3,6 +3,7 @@ package fr.cnes.regards.framework.utils.plugins.domain;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,9 +34,9 @@ public class PluginDomainTest extends PluginDomainUtility {
         Assert.assertNotNull(pluginConfiguration.getPluginClassName());
 
         // Get an existing parameter value
-        final String value = pluginConfiguration
-                .getParameterValue(pluginConfiguration.getParameters().get(0).getName());
-        Assert.assertNotNull(value);
+        Assert.assertNotEquals(0, pluginConfiguration.getParameters().size());
+        Assert.assertNotNull(pluginConfiguration.getParameters().stream().findFirst().get());
+        Assert.assertNotNull(pluginConfiguration.getParameters().stream().findFirst().get().getName());
 
         // Get an unknown parameter value
         final String unknowValue = pluginConfiguration.getParameterValue("unknon");
@@ -81,10 +82,10 @@ public class PluginDomainTest extends PluginDomainUtility {
     public void pluginConfigurationParameters() {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
         final String parameterName = "paramWithPluginConf1";
-        final List<PluginParameter> parameters = PluginParametersFactory.build()
+        final Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addPluginConfiguration(parameterName, aPluginConfiguration).addParameter("paramIdentifier1", BLUE)
                 .getParameters();
-        parameters.get(0).setId(AN_ID);
+        parameters.stream().findFirst().get().setId(AN_ID);
 
         final PluginConfiguration pluginConfigurationParameter = new PluginConfiguration();
         pluginConfigurationParameter.setParameters(parameters);
@@ -96,18 +97,18 @@ public class PluginDomainTest extends PluginDomainUtility {
         Assert.assertEquals(plgConf.isActive(), aPluginConfiguration.isActive());
         Assert.assertEquals(plgConf.getLabel(), aPluginConfiguration.getLabel());
         Assert.assertEquals(plgConf.getVersion(), aPluginConfiguration.getVersion());
-        Assert.assertEquals(plgConf.getParameters().get(0).getId(),
-                            aPluginConfiguration.getParameters().get(0).getId());
+        Assert.assertEquals(plgConf.getParameters().stream().findFirst().get().getId(),
+                            aPluginConfiguration.getParameters().stream().findFirst().get().getId());
     }
 
     @Test
     public void pluginParametersFactory() {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
         final int n = aPluginConfiguration.getParameters().size();
-        final List<PluginParameter> parameters = PluginParametersFactory.build(aPluginConfiguration.getParameters())
+        final Set<PluginParameter> parameters = PluginParametersFactory.build(aPluginConfiguration.getParameters())
                 .addPluginConfiguration("paramWithPluginConf1", aPluginConfiguration)
-                .addParameter("paramIdentifier1", BLUE).removeParameter(aPluginConfiguration.getParameters().get(0))
-                .getParameters();
+                .addParameter("paramIdentifier1", BLUE)
+                .removeParameter(aPluginConfiguration.getParameters().stream().findFirst().get()).getParameters();
         Assert.assertEquals(n + 1, parameters.size());
     }
 
@@ -115,10 +116,10 @@ public class PluginDomainTest extends PluginDomainUtility {
     public void pluginConfigurationGetUnknowParameterName() {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
         final String parameterName = "paramWithPluginConf2";
-        final List<PluginParameter> parameters = PluginParametersFactory.build()
+        final Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addPluginConfiguration(parameterName, aPluginConfiguration).addParameter("paramIdentifier2", BLUE)
                 .getParameters();
-        parameters.get(0).setId(AN_ID);
+        parameters.stream().findFirst().get().setId(AN_ID);
 
         final PluginConfiguration pluginConfigurationParameter = new PluginConfiguration();
         pluginConfigurationParameter.setParameters(parameters);
@@ -149,30 +150,13 @@ public class PluginDomainTest extends PluginDomainUtility {
         plgMetaData.setAuthor(anAuthor);
         final String aDescription = USERROLE + BLUE + RED;
         plgMetaData.setDescription(aDescription);
-        final List<PluginParameterType> parameters = Arrays.asList(PluginParameterType.create(RED,
-                                                                                              "red",
-                                                                                              null,
-                                                                                              String.class,
-                                                                                              ParamType.PRIMITIVE,
-                                                                                              false,
-                                                                                              false,
-                                                                                              false),
-                                                                   PluginParameterType.create(BLUE,
-                                                                                              "blue",
-                                                                                              null,
-                                                                                              String.class,
-                                                                                              ParamType.PRIMITIVE,
-                                                                                              false,
-                                                                                              false,
-                                                                                              false),
-                                                                   PluginParameterType.create(GREEN,
-                                                                                              "green",
-                                                                                              null,
-                                                                                              String.class,
-                                                                                              ParamType.PLUGIN,
-                                                                                              false,
-                                                                                              false,
-                                                                                              false));
+        final List<PluginParameterType> parameters = Arrays
+                .asList(PluginParameterType.create(RED, "red", null, String.class, ParamType.PRIMITIVE, false, false,
+                                                   false),
+                        PluginParameterType.create(BLUE, "blue", null, String.class, ParamType.PRIMITIVE, false, false,
+                                                   false),
+                        PluginParameterType.create(GREEN, "green", null, String.class, ParamType.PLUGIN, false, false,
+                                                   false));
 
         plgMetaData.setParameters(parameters);
 

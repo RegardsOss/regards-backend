@@ -24,7 +24,7 @@ import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -69,10 +69,8 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
         BlowfishEncryptionService blowfishEncryptionService = new BlowfishEncryptionService();
         blowfishEncryptionService
                 .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "12345678"));
-        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked,
-                                                Mockito.mock(IPublisher.class),
-                                                runtimeTenantResolver,
-                                                blowfishEncryptionService);
+        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, Mockito.mock(IPublisher.class),
+                runtimeTenantResolver, blowfishEncryptionService);
         PluginUtils.setup();
     }
 
@@ -98,7 +96,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
                                 updatedConf.getParameters().stream().filter(p -> !p.isDynamic()).count());
 
             aPluginConfiguration.logParams();
-            final List<PluginParameter> parameters = aPluginConfiguration.getParameters();
+            final Set<PluginParameter> parameters = aPluginConfiguration.getParameters();
             for (final PluginParameter p : updatedConf.getParameters()) {
                 if (p.isDynamic()) {
                     if (!p.getDynamicsValuesAsString().isEmpty()) {
@@ -147,20 +145,14 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
                                 updatedConf.getParameters().stream().filter(p -> !p.isDynamic()).count());
 
             aPluginConfiguration.logParams();
-            final List<PluginParameter> parameters = aPluginConfiguration.getParameters();
+            final Set<PluginParameter> parameters = aPluginConfiguration.getParameters();
             for (final PluginParameter p : updatedConf.getParameters()) {
                 if (!p.isDynamic()) {
                     parameters.remove(p);
                     // Update
-                    PluginParametersFactory.updateParameter(p,
-                                                            "one",
-                                                            true,
-                                                            Arrays.asList("one",
-                                                                          "two",
-                                                                          "three",
-                                                                          "four",
-                                                                          "five",
-                                                                          "six"));
+                    PluginParametersFactory
+                            .updateParameter(p, "one", true,
+                                             Arrays.asList("one", "two", "three", "four", "five", "six"));
                     parameters.add(p);
                     break;
                 }

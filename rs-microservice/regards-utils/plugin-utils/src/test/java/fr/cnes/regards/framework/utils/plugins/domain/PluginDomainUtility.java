@@ -20,8 +20,10 @@ package fr.cnes.regards.framework.utils.plugins.domain;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
@@ -112,7 +114,7 @@ public class PluginDomainUtility {
     /**
      * A {@link PluginParameter}
      */
-    protected static final List<PluginParameter> DYNAMICPARAMETERS = PluginParametersFactory.build()
+    protected static final Set<PluginParameter> DYNAMICPARAMETERS = PluginParametersFactory.build()
             .addParameter("param11", "value11").addDynamicParameter("coeff", "0")
             .addParameter(PARAM_IS_ACTIVE, Boolean.TRUE.toString()).addDynamicParameter("suffix", RED, DYNAMICVALUES)
             .getParameters();
@@ -120,7 +122,7 @@ public class PluginDomainUtility {
     /**
      * A list of {@link PluginParameter}
      */
-    protected static final List<PluginParameter> INTERFACEPARAMETERS = PluginParametersFactory.build()
+    protected static final Set<PluginParameter> INTERFACEPARAMETERS = PluginParametersFactory.build()
             .addParameter("param31", "value31").addParameter("param32", "value32").addParameter("param33", "value33")
             .addParameter("param34", "value34").addParameter("param35", "value35").addDynamicParameter("Koeff", "3")
             .addParameter(PARAM_IS_ACTIVE, Boolean.TRUE.toString()).addParameter("suffixe", "Toulouse").getParameters();
