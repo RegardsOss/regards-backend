@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -67,7 +68,7 @@ public class DefaultAipTaggingTest {
     @Test
     public void addOnlyTags() throws TagAIPException {
 
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(DefaultAIPTagging.FIELD_NAME_TAGS, TAGS).getParameters();
 
         DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class, null);
@@ -78,7 +79,7 @@ public class DefaultAipTaggingTest {
     @Test
     public void addOnlyLinks() throws TagAIPException {
 
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(DefaultAIPTagging.FIELD_NAME_LINKS, LINKS).getParameters();
 
         DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class, null);
@@ -88,7 +89,7 @@ public class DefaultAipTaggingTest {
 
     @Test
     public void addTagsAndLinks() throws TagAIPException {
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(DefaultAIPTagging.FIELD_NAME_TAGS, TAGS)
                 .addParameter(DefaultAIPTagging.FIELD_NAME_LINKS, LINKS).getParameters();
 
@@ -99,7 +100,7 @@ public class DefaultAipTaggingTest {
 
     @Test(expected = PluginUtilsRuntimeException.class)
     public void addNothing() throws TagAIPException {
-        List<PluginParameter> parameters = PluginParametersFactory.build().getParameters();
+        Set<PluginParameter> parameters = PluginParametersFactory.build().getParameters();
 
         PluginUtils.setup(MODULE_PACKAGE);
         DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class, null);
