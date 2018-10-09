@@ -97,10 +97,10 @@ public class ProductService implements IProductService {
     @Autowired
     private IAcquisitionFileRepository acqFileRepository;
 
-    @Value("${regards.acquisition.sip.bulk.request.limit:1000}")
+    @Value("${regards.acquisition.sip.bulk.request.limit:100}")
     private Integer bulkRequestLimit;
 
-    @Value("${regards.acquisition.pagination.default.page.size:1000}")
+    @Value("${regards.acquisition.pagination.default.page.size:100}")
     private Integer defaultPageSize;
 
     @Override
