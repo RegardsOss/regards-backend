@@ -105,6 +105,8 @@ public class ProductService implements IProductService {
 
     @Override
     public Product save(Product product) {
+        LOGGER.debug("Saving product \"{}\" with IP ID \"{}\" and SIP state \"{}\"", product.getProductName(),
+                     product.getIpId(), product.getSipState());
         product.setLastUpdate(OffsetDateTime.now());
         return productRepository.save(product);
     }
@@ -484,9 +486,6 @@ public class ProductService implements IProductService {
                     }
                     product.setLastSIPSubmissionJobInfo(jobInfo);
                     product.setSipState(ProductSIPState.SUBMISSION_SCHEDULED);
-                    LOGGER.debug("Saving product \"{}\" \"{}\" with IP ID \"{}\" and SIP state \"{}\"",
-                                 product.getProductName(), product.getSip().getId(), product.getIpId(),
-                                 product.getSipState());
                     save(product);
                 }
             }
@@ -645,26 +644,30 @@ public class ProductService implements IProductService {
             }
         } while (products.hasNext());
 
+        // Submission cannot be stop as schedule is going on ...
         // Handle SIP submission jobs
-        pageable = new PageRequest(0, defaultPageSize);
-        do {
-            products = productRepository
-                    .findWithLockByProcessingChainAndSipStateOrderByIdAsc(processingChain,
-                                                                          ProductSIPState.SUBMISSION_SCHEDULED,
-                                                                          pageable);
-            if (products.hasNext()) {
-                pageable = products.nextPageable();
-            }
-            for (Product product : products) {
-                if (!product.getLastSIPSubmissionJobInfo().getStatus().getStatus().isFinished()) {
-                    return false;
-                } else {
-                    // Clean product state
-                    product.setSipState(ProductSIPState.GENERATED);
-                    save(product);
-                }
-            }
-        } while (products.hasNext());
+        //        pageable = new PageRequest(0, defaultPageSize);
+        //        do {
+        //            products = productRepository
+        //                    .findWithLockByProcessingChainAndSipStateOrderByIdAsc(processingChain,
+        //                                                                          ProductSIPState.SUBMISSION_SCHEDULED,
+        //                                                                          pageable);
+        //            if (products.hasNext()) {
+        //                pageable = products.nextPageable();
+        //            }
+        //            for (Product product : products) {
+        //                if (!product.getLastSIPSubmissionJobInfo().getStatus().getStatus().isFinished()) {
+        //                    return false;
+        //                } else {
+        //                    // Clean product state
+        //                    product.setSipState(ProductSIPState.GENERATED);
+        //                    LOGGER.debug("Saving product \"{}\" \"{}\" with IP ID \"{}\" and SIP state \"{}\"",
+        //                                 product.getProductName(), product.getSip().getId(), product.getIpId(),
+        //                                 product.getSipState());
+        //                    save(product);
+        //                }
+        //            }
+        //        } while (products.hasNext());
 
         return true;
     }
