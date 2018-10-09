@@ -149,7 +149,7 @@ public class DataFileDao implements IDataFileDao {
 
     @Override
     public Optional<StorageDataFile> findLockedOneById(Long dataFileId) {
-        return repository.findLockedOneById(dataFileId);
+        return repository.findOneWithoutRelById(dataFileId);
     }
 
     @Override
