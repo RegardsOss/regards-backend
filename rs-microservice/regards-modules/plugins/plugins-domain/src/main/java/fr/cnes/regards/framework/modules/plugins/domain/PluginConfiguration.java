@@ -338,7 +338,9 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     public final void setParameters(Set<PluginParameter> pParameters) {
         parameters.clear();
-        parameters.addAll(pParameters);
+        if ((pParameters != null) && !pParameters.isEmpty()) {
+            parameters.addAll(pParameters);
+        }
     }
 
     public Boolean isActive() {
