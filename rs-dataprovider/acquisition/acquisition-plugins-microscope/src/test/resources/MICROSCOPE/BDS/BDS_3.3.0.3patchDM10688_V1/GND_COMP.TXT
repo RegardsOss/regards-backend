@@ -1,0 +1,2021 @@
+#BEGIN_OF_FILE
+#Copyright BDMS 2006
+#GND_COMP.TXT#	3.3	0	3	19/10/16
+#Myriade - Microscope	MYRIADE		V3.3.0.3	Extracteur_CC V2.8.1
+1	AUTTCMODAD1	3GND	GC	Authorization to send TC in AD mode (normal - S1)	L	LOK			
+2	(AND (= NOBITSYNC1 0) (= CLOSE1 0) (= WAIT1 0) (= FOPSTATE1 1) (= CRVALUE1 VS1) (= VS1 NNR1))	
+1	AUTTCMODAD2	3GND	GC	Authorization to send TC in AD mode (normal - S1)	L	LOK			
+2	(AND (= NOBITSYNC2 0) (= CLOSE2 0) (= WAIT2 0) (= FOPSTATE2 1) (= CRVALUE2 VS2) (= VS2 NNR2))	
+1	AUTTCMODBD1	3GND	GC	Authorization to send TC in BD mode (expedited - S6)	L	LOK			
+2	(= NOBITSYNC1 0)	
+1	AUTTCMODBD2	3GND	GC	Authorization to send TC in BD mode (expedited - S6)	L	LOK			
+2	(= NOBITSYNC2 0)	
+1	ISVCIDSPD1	3COP	GC	Significance condition of COPSUSPEND parameters for VC Id 1	L	LSIGNIF			
+2	(NTH (= APID 2011) (NTH (= VCIDRTFDU 0) (+ ISVCIDSPD1) (+ 0)) (NTH (= VCIDSPD 0) (+ ISVCIDSPD1) (+ 1)))	
+1	ISVCIDSPD2	3COP	GC	Significance condition of COPSUSPEND parameters for VC Id 2	L	LSIGNIF			
+2	(NTH (= APID 2011) (NTH (= VCIDRTFDU 1) (+ ISVCIDSPD2) (+ 0)) (NTH (= VCIDSPD 1) (+ ISVCIDSPD2) (+ 1)))	
+1	NCONFIRMDIR	3GND	GC	Number of packet CONFIRMDIR received	P				
+2	(MOD (FIRST (+ NCONFIRMDIR 1) 1) 1000)	
+1	NCONFIRMFDU	3GND	GC	Number of packet CONFIRMFDU received	P				
+2	(MOD (FIRST (+ NCONFIRMFDU 1) 1) 1000)	
+1	NCOPALERT	3GND	GC	Number of packet COPALERT received	P				
+2	(MOD (FIRST (+ NCOPALERT 1) 1) 1000)	
+1	NCOPSUSPEND	3GND	GC	Number of packet COPSUSPEND received	P				
+2	(MOD (FIRST (+ NCOPSUSPEND 1) 1) 1000)	
+1	NFOP1STATE	3GND	GC	Number of packet FOP-1STATE received	P				
+2	(MOD (FIRST (+ NFOP1STATE 1) 1) 1000)	
+1	NG1STATE	SCCC	GC	Number of packet G1STATE received	P				
+2	(MOD (FIRST (+ NG1STATE 1) 1) 1000)	
+1	NRESPDIRECT	3GND	GC	Number of packet RESPDIRECT received	P				
+2	(MOD (FIRST (+ NRESPDIRECT 1) 1) 1000)	
+1	NRESPFDU	3GND	GC	Number of packet RESPFDU received	P				
+2	(MOD (FIRST (+ NRESPFDU 1) 1) 1000)	
+1	NRQIDRM	SCCC	GC	Number of packet RQIDRM received	P				
+2	(MOD (FIRST (+ NRQIDRM 1) 1) 1000)	
+1	NTTCETSTATE	SCCC	GC	Number of packet TTCETSTATE received	P				
+2	(MOD (FIRST (+ NTTCETSTATE 1) 1) 1000)	
+1	SDCOPQUEUE	3COP	GC	Sending condition of TERMINATED COP1 RC	L	LAUTHORIZED			
+2	(NTH (= SENDQUEUE 0) (+ 0) (+ 1))	
+1	SENDQUEUE	3COP	GC	Number of TC in COP1S send queue	P				
+2	(NTH (= OPERVCID 0) (+ (- VS2 NNR2)) (+ (- VS1 NNR1)))	
+1	STDIR	3COP	GC	Validity condition of confirm response to directive	L	LRCCOP1			
+2	(AND (= DIRCONF 0) (= DIRRESP 0))	
+1	STFDU	3COP	GC	Validity condition of response to request to transfer FDU	L	LRCCOP1			
+2	(NTH (OR (AND (= OPERVCID 0) (= ISVCIDSPD1 1)) (AND (= OPERVCID 1) (= ISVCIDSPD2 1))) (NTH (AND (= VCIDRTFDU OPERVCID) (= FDURESP 0)) (NTH (AND (= VCIDRTFDU OPERVCID) (= FDURESP 1)) (+ STFDU) (+ 0)) (+ 1)) (+ 2))	
+1	STSTOP	3COP	GC	Validity condition of response to directive	L	LRCCOP1			
+2	(AND (= DIIDR 32810) (= DIRRESP 0))	
+1	SYNCCLCW	SCCC	GC	For CLCW Synchronisation test	P				
+2	(+ 1)	
+1	NCLCW	3GND	GC	Number of packet CLCW received	P				
+2	(MOD (FIRST (+ NCLCW 1) 1) 1000)	
+1	XTMTMPRWX	1GEN	GC	Surveillance TMTMPRWX : roue X ON/OFF	P				N
+2	 (= SWA5 SWA20 1)	
+1	XTRPELCSST	1GEN	GC	Status ON/OFF du SST et validité pour surveillance	P				N
+2	 (NTH TRPELCSSTV SSST 2)	
+1	QTRPELCSST	1HTR	GC	Surveillance TRPELCSST	P				N
+2	 (+ TRPELCSST )	
+1	IBAT	2GEN	GC	courant de baterie	P		A		N
+2	 (- IBATC IBATD )	
+1	IBNR	2GEN	GC	Somme IPF1 IPF2 ICU1 ICU2	P		A		N
+2	 (+ IPF1 IPF2 ICU1 ICU2 )	
+1	PBNR	2GEN	GC	Puissance BNR	P		W		N
+2	 (* VBNR (+ IPF1 IPF2 ICU1 ICU2 ))	
+1	PCBAT	2GEN	GC	Flag Protection Batterie	P		NA		N
+2	 (+ (* (AND (> VBAT 15) (<= VBAT 22.5)) 1) (* (> VBAT 22.5) 2))	
+1	QEBATF	2GEN	GC	Surveillance EBATF	P				N
+2	 (+ EBATF)	
+1	QIBATD	2GEN	GC	surveillance IBATD	P		A		N
+2	 (+ IBATD )	
+1	VBAT	2GEN	GC	Tension batterie	P		V		N
+2	 (- VBATTM (* 0.02 IGS ))	
+1	XDOD	2GEN	GC	Profondeur de décharge	P		%		N
+2	 (+ (* (< XDODINI 0) 0) (* (OR (= XDODINI 100) (> XDODINI 100)) 100) (* (OR (= XDODINI 0) (< 0 XDODINI) (< XDODINI 100)) XDODINI ))	
+1	XDODINI	2GEN	GC	Profondeur de décharge - valeur intermédiaire	P				N
+2	 (NTH (< EBATF 31) XDODINI2 XDODINI1 )	
+1	XDODINI1	2GEN	GC	Profondeur de décharge - cas EBATF < 31	P				N
+2	 (+ XBBS0 (* XBBS1 EBATF) (* XBBS2 EBATF EBATF) (* XBBS3 EBATF EBATF EBATF))	
+1	XDODINI2	2GEN	GC	Profondeur de décharge - cas EBATF = 31	P				N
+2	 (+ XBBS4 (* XBBS5 EBATF) (* XBBS6 EBATF EBATF) (* XBBS7 EBATF EBATF EBATF))	
+1	XEDIFM	2GEN	GC	parametre surveillé : Ecart de tension BNR calculée	P				N
+2	 (+ EDIFM )	
+1	XNUITJOUR	2GEN	GC	Mode NUIT ou JOUR au sens alimentation (éclairement GS)	P				N
+2	 (+ XTNJTMP )	
+1	XPBAT	2GEN	GC	puissance batterie	P		W		N
+2	 (* VBNR (- IBATC IBATD ))	
+1	XPBATC	2GEN	GC	puissance de charge batterie	P		W		N
+2	 (* VBNR IBATC )	
+1	XPBATD	2GEN	GC	puissance de décharge batterie	P		W		N
+2	 (* VBNR IBATD )	
+1	XPBOOST	2GEN	GC	puissance en sortie du regulateur GS	P		W		N
+2	 (NTH (> VGS VBNR) (- XPGS (+ KPB2 (* KPB3 IGS) (* KPB4 IGS IGS)) ) (* XPGS KPB1))	
+1	XPBR	2GEN	GC	puissance BR	P		W		N
+2	 (* KETATDCDC (- XPDCDC (+ XPCDU0 (* XPCDU1 (- VBNR XPCDU2)))))	
+1	XPCU1	2GEN	GC	puissance BNR CU1	P		W		N
+2	 (* VBNR ICU1 )	
+1	XPCU2	2GEN	GC	puissance BNR CU2	P		W		N
+2	 (* VBNR ICU2 )	
+1	XPDCDC	2GEN	GC	puissance en entree du convertisseur DCDC du PCDU	P		W		N
+2	 (- XPDCDC1 PBNR )	
+1	XPDCDC1	2GEN	GC	Calcul de XPDCDC	P		W		N
+2	 (- XPBOOST XPBAT )	
+1	XPGS	2GEN	GC	puissance GS	P		W		N
+2	 (* VGS IGS )	
+1	XPPF1	2GEN	GC	puissance BNR PF1	P		W		N
+2	 (* VBNR IPF1 )	
+1	XPPF2	2GEN	GC	puissance BNR PF2	P		W		N
+2	 (* VBNR IPF2 )	
+1	XPSL	2GEN	GC	puissance SL	P		W		N
+2	 (+ XPDCDC PBNR )	
+1	XSEBATF	2GEN	GC	Surveillances EBATF activee/Inhibee	P				N
+2	 (+ USEBATF)	
+1	XSIBATD	2GEN	GC	Surveillance IBATD activée/Inhibée	P				N
+2	 (+ USIBATD )	
+1	XTESTREF	2GEN	GC	parametre surveillé : Tension de référence acquise par le PCDU	P				N
+2	 (+ TESTREF )	
+1	XTNJ	2GEN	GC	delta nuit jour	P				N
+2	 (- XTNJTMP (FIRST XNUITJOUR 0))	
+1	XTNJTMP	2GEN	GC	Calcul du parametre nuit jour	P				N
+2	 (+ (* (> IGS XIGSJOUR ) 1 ) (* (< IGS XIGSNUIT ) 0 ) (* (AND (> IGS XIGSNUIT ) (< IGS XIGSJOUR )) (FIRST XTNJTMP 0)) )	
+1	XUVLIMB	2GEN	GC	Affichage de la Tension limite BNR de référence	P		V		N
+2	 (+ UVLIMB )	
+1	XVAUXCAL	2GEN	GC	parametre surveillé : Tension limite de référence calculée	P				N
+2	 (+ VAUXCAL )	
+1	XVGSREF	2GEN	GC	parametre surveillé :Tension GS filtrée calculée par le LVC	P				N
+2	 (+ VGSREF )	
+1	XXECARVGS	2GEN	GC	Affichage deEcart de tension entre BNR et GS pour génération VGSREF	P		V		N
+2	 (+ XECARVGS )	
+1	CALRCSTABO	2OMB	GC	Computed processing status of the RC by the BOMB	L	LRCSTATUS			N
+2	 (+ RCSTATUSBO )	
+1	XDTCREJCRC	3GEN	GC	Delta sur le paramètre TCREJCRCSTA (TC rejetées par le récepteur GNSS) 	P				N
+2	 (FIRST (- TCREJCRCSTA XTCREJCRCST) 0)	
+1	XDTCREJINV	3GEN	GC	Delta sur le paramètre TCREJINVSTA (TC rejetées par le récepteur GNSS)	P				N
+2	 (FIRST (- TCREJINVSTA XTCREJINVST) 0)	
+1	XGPSTS	3GPS	GC	Date GPST du PVT (en secondes depuis l'origine GPS)	P		s		N
+2	 (+ (* WEEKNB 604800) SECONDINWK)	
+1	XGPSUTCS	3GPS	GC	Date UTC du PVT (en secondes depuis l'origine GPS)	P		s		N
+2	 (- (+ XGPSTS 19) XLEAPS)	
+1	XLEAPS	3GPS	GC	Nombre de secondes UTC intercalaires (= TAI - UTC) à la date XGPSTS	P		s		N
+2	 (+ 35 (> XGPSTS 1119744000) (> XGPSTS 1167264000))	
+1	VOUTBTCU	3LVC	GC	Tension Vout du BTCU IDEAS	P				N
+2	 (+ M0 (* M1 2) (* M2 4) (* M3 8) (* M4 16) (* M5 32) (* M6 64) (* M7 128) (* M8 256) (* M9 512))	
+1	XACCANGX	3LVC	GC	Accélération angulaire axe X	P		urad/s2		N
+2	 (* ACCANGX 1000000)	
+1	XACCANGY	3LVC	GC	Accélération angulaire axe Y	P		urad/s2		N
+2	 (* ACCANGY 1000000)	
+1	XACCANGZ	3LVC	GC	Accélération angulaire axe Z	P		urad/s2		N
+2	 (* ACCANGZ 1000000)	
+1	XACCLINX	3LVC	GC	Accélération linéaire axe X	P		um/s2		N
+2	 (* ACCLINX 1000000)	
+1	XACCLINY	3LVC	GC	Accélération linéaire axe Y	P		um/s2		N
+2	 (* ACCLINY 1000000)	
+1	XACCLINZ	3LVC	GC	Accélération linéaire axe Z	P		um/s2		N
+2	 (* ACCLINZ 1000000)	
+1	XBACCESTX	3LVC	GC	Biais d'accélération angulaire estimé	P		urad/s2		N
+2	 (* BACCESTX 1000000)	
+1	XBACCESTY	3LVC	GC	Biais d'accélération angulaire estimé	P		urad/s2		N
+2	 (* BACCESTY 1000000)	
+1	XBACCESTZ	3LVC	GC	Biais d'accélération angulaire estimé	P		urad/s2		N
+2	 (* BACCESTZ 1000000)	
+1	XDOMGESTX	3LVC	GC	Erreur de vitesse estimée	P		urad/s		N
+2	 (* DOMGESTX 1000000)	
+1	XDOMGESTY	3LVC	GC	Erreur de vitesse estimée	P		urad/s		N
+2	 (* DOMGESTY 1000000)	
+1	XDOMGESTZ	3LVC	GC	Erreur de vitesse estimée	P		urad/s		N
+2	 (* DOMGESTZ 1000000)	
+1	XFREPCOND1	3LVC	GC	Entrée de la fonction "Conditionnement des commandes CGPS" moteur CP1	P		uN		N
+2	 (* FREPCOND1 1000000)	
+1	XFREPCOND2	3LVC	GC	Entrée de la fonction "Conditionnement des commandes CGPS" moteur CP2	P		uN		N
+2	 (* FREPCOND2 1000000)	
+1	XFREPCOND3	3LVC	GC	Entrée de la fonction "Conditionnement des commandes CGPS" moteur CP3	P		uN		N
+2	 (* FREPCOND3 1000000)	
+1	XFREPCOND4	3LVC	GC	Entrée de la fonction "Conditionnement des commandes CGPS" moteur CP4	P		uN		N
+2	 (* FREPCOND4 1000000)	
+1	XFREPCOND5	3LVC	GC	Entrée de la fonction "Conditionnement des commandes CGPS" moteur CP5	P		uN		N
+2	 (* FREPCOND5 1000000)	
+1	XFREPCOND6	3LVC	GC	Entrée de la fonction "Conditionnement des commandes CGPS" moteur CP6	P		uN		N
+2	 (* FREPCOND6 1000000)	
+1	XFREPCOND7	3LVC	GC	Entrée de la fonction "Conditionnement des commandes CGPS" moteur CP7	P		uN		N
+2	 (* FREPCOND7 1000000)	
+1	XFREPCOND8	3LVC	GC	Entrée de la fonction "Conditionnement des commandes CGPS" moteur CP8	P		uN		N
+2	 (* FREPCOND8 1000000)	
+1	XINNOVX	3LVC	GC	Innovation du filtre ACCSST axe Xsat	P		urad		N
+2	 (* INNOVX 1000000)	
+1	XINNOVY	3LVC	GC	Innovation du filtre ACCSST axe Xsat	P		urad		N
+2	 (* INNOVY 1000000)	
+1	XINNOVZ	3LVC	GC	Innovation du filtre ACCSST axe Xsat	P		urad		N
+2	 (* INNOVZ 1000000)	
+1	XMSBPOINTX	3LVC	GC	Dérivée du champ magnétique estimé en µT/s	P		µT/s		N
+2	 (* MSBPOINTX 1.0E6)	
+1	XMSBPOINTY	3LVC	GC	Dérivée du champ magnétique estimé en µT/s	P		µT/s		N
+2	 (* MSBPOINTY 1.0E6)	
+1	XMSBPOINTZ	3LVC	GC	Dérivée du champ magnétique estimé en µT/s	P		µT/s		N
+2	 (* MSBPOINTZ 1.0E6)	
+1	XTCOMANGX	3LVC	GC	Torseur commandé angulaire Xsat	P		uN.m		N
+2	 (* TCOMANGX 1000000)	
+1	XTCOMANGY	3LVC	GC	Torseur commandé angulaire Ysat	P		uN.m		N
+2	 (* TCOMANGY 1000000)	
+1	XTCOMANGZ	3LVC	GC	Torseur commandé angulaire Zsat	P		uN.m		N
+2	 (* TCOMANGZ 1000000)	
+1	XTCOMLINX	3LVC	GC	Torseur commandé linéaire Xsat	P		uN		N
+2	 (* TCOMLINX 1000000)	
+1	XTCOMLINY	3LVC	GC	Torseur commandé linéaire Ysat	P		uN		N
+2	 (* TCOMLINY 1000000)	
+1	XTCOMLINZ	3LVC	GC	Torseur commandé linéaire Zsat	P		uN		N
+2	 (* TCOMLINZ 1000000)	
+1	XTETAESTX	3LVC	GC	Dépointage estimé axe X	P		urad		N
+2	 (* TETAESTX 1000000)	
+1	XTETAESTY	3LVC	GC	Dépointage estimé axe Y	P		urad		N
+2	 (* TETAESTY 1000000)	
+1	XTETAESTZ	3LVC	GC	Dépointage estimé axe Z	P		urad		N
+2	 (* TETAESTZ 1000000)	
+1	XTETASSTFLX	3LVC	GC	Dépointage SST filtré, sortie de FiltrePB_SST_MCA	P		urad		N
+2	 (* TETASSTFILX 1000000)	
+1	XTETASSTFLY	3LVC	GC	Dépointage SST filtré, sortie de FiltrePB_SST_MCA	P		urad		N
+2	 (* TETASSTFILY 1000000)	
+1	XTETASSTFLZ	3LVC	GC	Dépointage SST filtré, sortie de FiltrePB_SST_MCA	P		urad		N
+2	 (* TETASSTFILZ 1000000)	
+1	XTETASSTSLX	3LVC	GC	Dépointage mesuré par le SST seul	P		urad		N
+2	 (* TETASSTSELX 1000000)	
+1	XTETASSTSLY	3LVC	GC	Dépointage mesuré par le SST seul	P		urad		N
+2	 (* TETASSTSELY 1000000)	
+1	XTETASSTSLZ	3LVC	GC	Dépointage mesuré par le SST seul	P		urad		N
+2	 (* TETASSTSELZ 1000000)	
+1	ZMSWAILEID1	3LVC	GC	µswitch : Si télémesure < 512, microswitch fermé = aile gerbée. Si télémesure 	L	LZMSWAILEID			N
+2	 (NTH (< (/ MSWAILEIDE1 2) 512) (NTH (> (/ MSWAILEIDE1 2) 3584) 0 1) 2)	
+1	ZMSWAILEID2	3LVC	GC	µswitch : Si télémesure < 512, microswitch fermé = aile gerbée. Si télémesure 	L	LZMSWAILEID			N
+2	 (NTH (< (/ MSWAILEIDE2 2) 512) (NTH (> (/ MSWAILEIDE2 2) 3584) 0 1) 2)	
+1	ZPRESSURE	3LVC	GC	Pression	P		mbar		N
+2	 (- (* (/ (- (* (/ (/ PRESSURE 8) VOUTBTCU) 2.5) 0.493) ZSENSIBPT) 1000) 10)	
+1	ZSENSIBPT	3LVC	GC	Sensibilité Pressure Transducer	P				N
+2	 (* 0.3993 ZVOUTBTCU)	
+1	ZTRPAILEID1	3LVC	GC	Température	P		°C		N
+2	 (/ (- (/ 2000 (- (/ 4096 (/ TRPAILEIDE1 2)) 1)) 1995.7) 7.8755)	
+1	ZTRPAILEID2	3LVC	GC	Température	P		°C		N
+2	 (/ (- (/ 2000 (- (/ 4096 (/ TRPAILEIDE2 2)) 1)) 1995.7) 7.8755)	
+1	ZVOUTBTCU	3LVC	GC	Tension ADR780	P		V		N
+2	 (* 1024 (/ 2.5 VOUTBTCU))	
+1	QDSOLESTX	4GEN	GC	surveillance DSOLESTX en MAS	P				N
+2	 (+ DSOLESTX )	
+1	XCOLATDEG	4GEN	GC	Colatitude géocentrique du satellite en repère inertiel J2000 (deg)	P		deg		N
+2	 (FIRST (NTH (< 0.08 COLAT 3.1) XCOLATDEG (* COLAT (/ 180.0 3.141593))) 8.9)	
+1	XDEPOINTGS	4GEN	GC	angle théorique entre la normale du GS et la direction soleil estimée	P		deg		N
+2	 (ACOS DSOLESTX)	
+1	XDEPOINTSOL	4GEN	GC	Dépointage soleil : angle entre axe Xsat et direction soleil	P		deg		N
+2	 (ACOS DSOLESTX)	
+1	XDIRBMESX	4GEN	GC	direction X du champ magnétique mesuré	P				N
+2	 (/ XMAGTESLAX XNORMEMAGT )	
+1	XDIRBMESY	4GEN	GC	direction Y du champ magnétique mesuré	P				N
+2	 (/ XMAGTESLAY XNORMEMAGT )	
+1	XDIRBMESZ	4GEN	GC	direction Z du champ magnétique mesuré	P				N
+2	 (/ XMAGTESLAZ XNORMEMAGT )	
+1	XDUREEMNO	4GEN	GC	parametre temp pour cond. MNO converge	P				N
+2	 (* (+ (- (+ (* PFDAY 86400) (* PFHOUR 3600) (* PFMINUTE 60.0) PFSECOND) XDATE ) (FIRST XDUREEMNO 0) ) (= MODESCAO 3 ))	
+1	XECLIPSE	4GEN	GC	Etat éclipse pour la surveillance de DSOLESTX ( 0 : éclipse, 1 : hors éclipse)	P				N
+2	 (NTH (AND (< XSOMISASXM PSASEUILS ) (< XSOMISASXP PSASEUILS) (< XSOMISASZP PSASEUILS)) 1 0)	
+1	XLACET	4GEN	GC	lacet	P		deg		N
+2	 (* 2 (ASIN (* XQCONSL2 (/ XQCONSL1 (ABS XQCONSL1)))))	
+1	XLATDEG	4GEN	GC	latitude géocentrique du satellite en repère inertiel J2000 (deg)	P		deg		N
+2	 (- 90 XCOLATDEG)	
+1	XLONGDEG	4GEN	GC	Longitude géocentrique du satellite (deg)	P		deg		N
+2	 (* (NTH (> LONG 3.1415926) LONG (- LONG 6.2831853)) (/ 180.0 3.1415926))	
+1	XMGTTETAB	4GEN	GC	angle entre la direction de consigne et la direction du champ mesuré	P		deg		N
+2	 (ACOS (+ (* MGB0CONSX XDIRBMESX ) (* MGB0CONSY XDIRBMESY ) (* MGB0CONSZ XDIRBMESZ) ) )	
+1	XMGTWESTX	4GEN	GC	estimation de la vitesse sat. (axe X)autour de la direct. du champ mesuré	P		deg/s		N
+2	 ( / (* (- (* MGDBMESY XDIRBMESZ ) (* MGDBMESZ XDIRBMESY )) 180.0) 3.141597)	
+1	XMGTWESTY	4GEN	GC	estimation de la vitesse sat. (axe Y)autour de la direct. du champ mesuré	P		deg/s		N
+2	 ( / (* (- (* MGDBMESZ XDIRBMESX ) (* MGDBMESX XDIRBMESZ )) 180.0) 3.141597)	
+1	XMGTWESTZ	4GEN	GC	estimation de la vitesse sat. (axe Z)autour de la direct. du champ mesuré	P		deg/s		N
+2	 ( / (* (- (* MGDBMESX XDIRBMESY ) (* MGDBMESY XDIRBMESX )) 180.0) 3.141597)	
+1	XMSHSATNORM	4GEN	GC	norme du moment cinétique	P		Nms		N
+2	 (SQRT (+ (* MSHSATX MSHSATX ) (* MSHSATY MSHSATY ) (* MSHSATZ MSHSATZ )))	
+1	XQCONSL1	4GEN	GC	quaternion de consigne en repère « orbital local base » :XQOLBC*QCONS	P				N
+2	 (- (- (- (* XQOLBC1 QCONS1) (* XQOLBC2 QCONS2)) (* XQOLBC3 QCONS3)) (* XQOLBC4 QCONS4))	
+1	XQCONSL2	4GEN	GC	quaternion de consigne en repère « orbital local base » :XQOLBC*QCONS	P				N
+2	 (- (+ (* XQOLBC1 QCONS2) (* XQOLBC2 QCONS1) (* XQOLBC3 QCONS4)) (* XQOLBC4 QCONS3))	
+1	XQCONSL3	4GEN	GC	quaternion de consigne en repère « orbital local base » :XQOLBC*QCONS	P				N
+2	 (- (+ (* XQOLBC1 QCONS3) (* XQOLBC3 QCONS1) (* XQOLBC4 QCONS2)) (* XQOLBC2 QCONS4))	
+1	XQCONSL4	4GEN	GC	quaternion de consigne en repère « orbital local base » :XQOLBC*QCONS	P				N
+2	 (- (+ (* XQOLBC1 QCONS4) (* XQOLBC4 QCONS1) (* XQOLBC2 QCONS3)) (* XQOLBC3 QCONS2))	
+1	XQOLBC1	4GEN	GC	quaternion de consigne en repère « orbital local base » :conjugué de QOL*QBASE	P				N
+2	 (+ (* QOL1 (COS 45)) (* QOL3 (SIN 45)))	
+1	XQOLBC2	4GEN	GC	quaternion de consigne en repère « orbital local base » :conjugué de QOL*QBASE	P				N
+2	 (* -1 (+ (* QOL4 (SIN 45)) (* QOL2 (COS 45))))	
+1	XQOLBC3	4GEN	GC	quaternion de consigne en repère « orbital local base » :conjugué de QOL*QBASE	P				N
+2	 (- (* QOL1 (SIN 45)) (* QOL3 (COS 45)))	
+1	XQOLBC4	4GEN	GC	quaternion de consigne en repère « orbital local base » :conjugué de QOL*QBASE	P				N
+2	 (- (* QOL2 (SIN 45)) (* QOL4 (COS 45)))	
+1	XROULIS	4GEN	GC	roulis	P		deg		N
+2	 (* 2 (ASIN (* XQCONSL4 (/ XQCONSL1 (ABS XQCONSL1)))))	
+1	XSIGMASP3	4GEN	GC	Cond.de la surveillance XTAUACTMTB: MAS + Phase 3	P				N
+2	 (* (= MODESCAO 1) (= PHASEMAS 2) )	
+1	XSIGMASP3C	4GEN	GC	Cond.de la surveillance DSOLESTX: MAS + Phase 3 + 6000 sec et hors eclipse	P				N
+2	 (* (= MODESCAO 1) (= (FIRST PHASEMAS -1) 2) (> MSDURPHA3 6000) XECLIPSE )	
+1	XSIGMGTCHE	4GEN	GC	Cond.de la surveillance DSOLESTX: MGT convergé et hors eclipse	P				N
+2	 (* PHASEMGT ECLIPSEEST (= MODESCAO 2))	
+1	XSIGMMNO	4GEN	GC	Cond.surveillance MNO convergé	P				N
+2	 (= MODESCAO 3 )	
+1	XTANGAGE	4GEN	GC	tangage	P		deg		N
+2	 (* 2 (ASIN (* XQCONSL3 (/ XQCONSL1 (ABS XQCONSL1)))))	
+1	XTAUCOND	4GEN	GC	Cond.de la surveillance XTAUACTMTB: ( MAS + Phase 1 ), (MAS + Phase 3), (MGT, 	P				N
+2	 (+ (* (= MODESCAO 1) (= (FIRST PHASEMAS -1) 0) 10) (* (= MODESCAO 1) (= (FIRST PHASEMAS -1) 2) 20) (* (= MODESCAO 2) (= (FIRST PHASEMGT -1) 1) 30) (* (= MODESCAO 3) 40))	
+1	XWCONSXDEG	4GEN	GC	Vitesse angulaire de consigne Axe X (deg/s)	P		deg/s		N
+2	 (* MGWCONSX (/ 180.0 3.141597))	
+1	XWCONSYDEG	4GEN	GC	Vitesse angulaire de consigne Axe Y (deg/s)	P		deg/s		N
+2	 (* MGWCONSY (/ 180.0 3.141597))	
+1	XWCONSZDEG	4GEN	GC	Vitesse angulaire de consigne Axe Z (deg/sec)	P		deg/s		N
+2	 (* MGWCONSZ (/ 180.0 3.141597))	
+1	XWDIFF	4GEN	GC	Ecart de vitesse sur l'axe commun en Deg/sec	P		deg/s		N
+2	 (* WDIFF (/ 180.0 3.141597))	
+1	XWMAGXDEG	4GEN	GC	Vitesse angulaire satellite déduite des mesures magnétiques	P		deg/s		N
+2	 (* WMAGX (/ 180.0 3.141597))	
+1	XWMAGYDEG	4GEN	GC	Vitesse angulaire satellite déduite des mesures magnétiques	P		deg/s		N
+2	 (* WMAGY (/ 180.0 3.141597))	
+1	XWMAGZDEG	4GEN	GC	Vitesse angulaire satellite déduite des mesures magnétiques	P		deg/s		N
+2	 (* WMAGZ (/ 180.0 3.141597))	
+1	XWMIXXDEG	4GEN	GC	Vitesse angulaire satellite mixée magnétique /solaire en Deg/sec	P		deg/s		N
+2	 (* WMIXX (/ 180.0 3.141597))	
+1	XWMIXYDEG	4GEN	GC	Vitesse angulaire satellite mixée magnétique /solaire en Deg/sec	P		deg/s		N
+2	 (* WMIXY (/ 180.0 3.141597))	
+1	XWMIXZDEG	4GEN	GC	Vitesse angulaire satellite mixée magnétique /solaire en Deg/sec	P		deg/s		N
+2	 (* WMIXZ (/ 180.0 3.141597))	
+1	XWOLXDEG	4GEN	GC	vitesse de rotation instantané définissant l'orbital local Axe X (deg/sec)	P		deg/s		N
+2	 (* WOLX (/ 180.0 3.141597))	
+1	XWOLYDEG	4GEN	GC	vitesse de rotation instantané définissant l'orbital local Axe Y (deg/sec)	P		deg/s		N
+2	 (* WOLY (/ 180.0 3.141597))	
+1	XWOLZDEG	4GEN	GC	vitesse de rotation instantané définissant l'orbital local Axe Z (deg/sec)	P		deg/s		N
+2	 (* WOLZ (/ 180.0 3.141597))	
+1	XWSOLXDEG	4GEN	GC	Vitesse angulaire satellite déduite des mesurs solaires	P		deg/s		N
+2	 (* WSOLX (/ 180.0 3.141597))	
+1	XWSOLYDEG	4GEN	GC	Vitesse angulaire satellite déduite des mesurs solaires	P		deg/s		N
+2	 (* WSOLY (/ 180.0 3.141597))	
+1	XWSOLZDEG	4GEN	GC	Vitesse angulaire satellite déduite des mesurs solaires	P		deg/s		N
+2	 (* WSOLZ (/ 180.0 3.141597))	
+1	XPSAGE	4ICU	GC	consommation TSAGE	P		W		N
+2	 (- (- XPCU1 (* 10.43 (+ SHEATCHU1N SHEATCHU1S SHEATCHU2N SHEATCHU2S))) (* 20.26 (+ SHICUME1N SHICUME2N SHICUME1S)))	
+1	XSTATICUON	4ICU	GC	Pour savoir quel ICU est ON ou pas : 0 si tout OFF, 1 si seulement ICU1, 2 si 	P				N
+2	 (NTH (OR SREFN SREFR) (NTH (OR SEPN SEPR) 0 2) (NTH (OR SREFN SREFR) 1 3))	
+1	ZADREMET1	4ICU	GC	NACK ICU-REF : adresse émetteur	L	LADREMET			N
+2	 (+ ADRESS1)	
+1	ZADREMET2	4ICU	GC	NACK ICU-EP : adresse émetteur	L	LADREMET			N
+2	 (+ ADRESS2)	
+1	ZDRSTWDG1	4ICU	GC	Evolution du compteur de reset watchdog ICU1	P				N
+2	 (FIRST (- NBRESETWDG1 ZNBRSTWDG1) 0)	
+1	ZDRSTWDG2	4ICU	GC	Non renseigné	P				N
+2	 (FIRST (- NBRESETWDG2 ZNBRSTWDG2) 0)	
+1	ZDSEGMTPM1	4ICU	GC	Evolution des secteurs défectueux zone PM ICU1	P				N
+2	 (FIRST (- SEGMTPM1 ZSEGMTPM1) 0)	
+1	ZDSEGMTPM2	4ICU	GC	Evolution des secteurs défectueux zone PM ICU2	P				N
+2	 (FIRST (- SEGMTPM2 ZSEGMTPM2) 0)	
+1	ZDSEGTDM11	4ICU	GC	Evolution des secteurs défecteux Data Memory (DM) ICU-REF (64 permiers bits)	P				N
+2	 (FIRST (- SEGMTDM11 ZSEGMTDM11) 0)	
+1	ZDSEGTDM12	4ICU	GC	Evolution des secteurs défecteux Data Memory (DM) ICU-REF (64 derniers bits)	P				N
+2	 (FIRST (- SEGMTDM12 ZSEGMTDM12) 0)	
+1	ZDSEGTDM21	4ICU	GC	Evolution des secteurs défecteux Data Memory (DM) ICU-EP (64 permiers bits)	P				N
+2	 (FIRST (- SEGMTDM21 ZSEGMTDM21) 0)	
+1	ZDSEGTDM22	4ICU	GC	Non renseigné	P				N
+2	 (FIRST (- SEGMTDM22 ZSEGMTDM22) 0)	
+1	ZIDREQ1	4ICU	GC	NACK ICU-REF : ID requete	L	LIDREQ			N
+2	 (AND REQUETE1 32767)	
+1	ZIDREQ2	4ICU	GC	NACK ICU-EP : ID requete	L	LIDREQ			N
+2	 (AND REQUETE2 32767)	
+1	ZNBRSTWDG1	4ICU	GC	Nombre de reset Watchdog ICU-REF	P				N
+2	 (+ NBRESETWDG1)	
+1	ZNBRSTWDG2	4ICU	GC	Nombre de reset Watchdog ICU-EP	P				N
+2	 (+ NBRESETWDG2)	
+1	ZSEGMTDM11	4ICU	GC	Calculé : Segments défecteux Data Memory (DM) ICU-REF (64 permiers bits)	P				N
+2	 (+ SEGMTDM11)	
+1	ZSEGMTDM12	4ICU	GC	Calculé : Segments défecteux Data Memory (DM) ICU-REF (64 derniers bits)	P				N
+2	 (+ SEGMTDM12)	
+1	ZSEGMTDM21	4ICU	GC	Non renseigné	P				N
+2	 (+ SEGMTDM21)	
+1	ZSEGMTDM22	4ICU	GC	Non renseigné	P				N
+2	 (+ SEGMTDM22)	
+1	ZSEGMTPM1	4ICU	GC	Calculé : Segments défecteux Program Memory (PM) ICU-REF	P				N
+2	 (+ SEGMTPM1)	
+1	ZSEGMTPM2	4ICU	GC	Non renseigné	P				N
+2	 (+ SEGMTPM2)	
+1	ZXEXTEP1	4ICU	GC	X EP ext ICU REF (valeur physique)	P		m/s2		N
+2	 (/ (* 1.90e-7 (NTH MODEASW1 41.4322 4.9983 41.4322 4.9983) XEXTEPICU1) 5)	
+1	ZXEXTEP2	4ICU	GC	X EP ext ICU EP (valeur physique)	P		m/s2		N
+2	 (/ (* 2.15e-7 (NTH MODEASW2 41.4376 4.999 41.4376 4.999) XEXTEPICU2) 5)	
+1	ZXINTEP1	4ICU	GC	X EP int ICU REF (valeur physique)	P		m/s2		N
+2	 (/ (* 1.83e-7 (NTH MODEASW1 41.3982 4.9973 41.3982 4.9973) XINTEPICU1) 5)	
+1	ZXINTEP2	4ICU	GC	X EP int ICU EP (valeur physique)	P		m/s2		N
+2	 (/ (* 1.83e-7 (NTH MODEASW2 41.4404 4.9997 41.4404 4.9997) XINTEPICU2) 5)	
+1	ZZPHIEXT1	4ICU	GC	Position PHI ext ICU REF valeurs physiques	P		urad		N
+2	 (/ (APPLY PX2EXT1INV X2EXTICU1) (/ (* 1.04e-2 (NTH (DIV (MOD CNTROLFEEU1 16) 8) 1.0347 5.0152)) 5))	
+1	ZZPHIEXT2	4ICU	GC	Position PHI ext ICU EP valeurs physiques	P		urad		N
+2	 (/ (APPLY PX2EXT2INV X2EXTICU2) (/ (* 1.05e-2 (NTH (DIV (MOD CNTROLFEEU2 16) 8) 1.0348 5.0188)) 5))	
+1	ZZPHIINT1	4ICU	GC	Position PHI int ICU REF valeurs physiques	P		urad		N
+2	 (/ (APPLY PX2INT1INV X2INTICU1) (/ (* 1.42e-3 (NTH (DIV (MOD CNTROLFEEU1 8) 4) 1.0354 5.0282)) 5))	
+1	ZZPHIINT2	4ICU	GC	Position PHI int ICU EP valeurs physiques	P		urad		N
+2	 (/ (APPLY PX2INT2INV X2INTICU2) (/ (* 1.4e-3 (NTH (DIV (MOD CNTROLFEEU2 8) 4) 1.0352 5.0288)) 5))	
+1	ZZPSIEXT1	4ICU	GC	Position PSI ext ICU REF valeurs physiques	P		urad		N
+2	 (/ (* 0.5 (- (APPLY PY1EXT1INV Y1EXTICU1) (APPLY PY2EXT1INV Y2EXTICU1))) (/ (* -5.26e-3 (NTH (DIV (MOD CNTROLFEEU1 16) 8) 1.0347 5.0152)) 5))	
+1	ZZPSIEXT2	4ICU	GC	Position PSI ext ICU EP valeurs physiques	P		urad		N
+2	 (/ (* 0.5 (- (APPLY PY1EXT2INV Y1EXTICU2) (APPLY PY2EXT2INV Y2EXTICU2))) (/ (* -5.21e-3 (NTH (DIV (MOD CNTROLFEEU2 16) 8) 1.0348 5.0188)) 5))	
+1	ZZPSIINT1	4ICU	GC	Position PSI int ICU REF valeurs physiques	P		urad		N
+2	 (/ (* 0.5 (- (APPLY PY1INT1INV Y1INTICU1) (APPLY PY2INT1INV Y2INTICU1))) (/ (* -2.15e-3 (NTH (DIV (MOD CNTROLFEEU1 8) 4) 1.0354 5.0282)) 5))	
+1	ZZPSIINT2	4ICU	GC	Position PSI int ICU EP valeurs physiques	P		urad		N
+2	 (/ (* 0.5 (- (APPLY PY1INT2INV Y1INTICU2) (APPLY PY2INT2INV Y2INTICU2))) (/ (* -2.02e-3 (NTH (DIV (MOD CNTROLFEEU2 8) 4) 1.0352 5.0288)) 5))	
+1	ZZTETAEXT1	4ICU	GC	Position TETA ext ICU REF valeurs physiques	P		urad		N
+2	 (/ (* 0.5 (- (APPLY PZ1EXT1INV Z1EXTICU1) (APPLY PZ2EXT1INV Z2EXTICU1))) (/ (* 5.44e-3 (NTH (DIV (MOD CNTROLFEEU1 16) 8) 1.0347 5.0152)) 5))	
+1	ZZTETAEXT2	4ICU	GC	Position TETA ext ICU EP valeurs physiques	P		urad		N
+2	 (/ (* 0.5 (- (APPLY PZ1EXT2INV Z1EXTICU2) (APPLY PZ2EXT2INV Z2EXTICU2))) (/ (* 5.24e-3 (NTH (DIV (MOD CNTROLFEEU2 16) 8) 1.0348 5.0188)) 5))	
+1	ZZTETAINT1	4ICU	GC	Position TETA int ICU REF valeurs physiques	P		urad		N
+2	 (/ (* 0.5 (- (APPLY PZ1INT1INV Z1INTICU1) (APPLY PZ2INT1INV Z2INTICU1))) (/ (* 2.19e-3 (NTH (DIV (MOD CNTROLFEEU1 8) 4) 1.0354 5.0282)) 5))	
+1	ZZTETAINT2	4ICU	GC	Position TETA int ICU EP valeurs physiques	P		urad		N
+2	 (/ (* 0.5 (- (APPLY PZ1INT2INV Z1INTICU2) (APPLY PZ2INT2INV Z2INTICU2))) (/ (* 2.05e-3 (NTH (DIV (MOD CNTROLFEEU2 8) 4) 1.0352 5.0288)) 5))	
+1	ZZXEXT1	4ICU	GC	Position X ext ICU REF valeurs physiques	P		um		N
+2	 (/ (APPLY PX1EXT1INV X1EXTICU1) (/ (* 0.262 (NTH (DIV (MOD CNTROLFEEU1 16) 8) 1.0347 5.0152)) 5))	
+1	ZZXEXT2	4ICU	GC	Position X ext ICU EP valeurs physiques	P		um		N
+2	 (/ (APPLY PX1EXT2INV X1EXTICU2) (/ (* 0.254 (NTH (DIV (MOD CNTROLFEEU2 16) 8) 1.0348 5.0188)) 5))	
+1	ZZXINT1	4ICU	GC	Position X int ICU REF valeurs physiques	P		um		N
+2	 (/ (APPLY PX1INT1INV X1INTICU1) (/ (* 0.303 (NTH (DIV (MOD CNTROLFEEU1 8) 4) 1.0354 5.0282)) 5))	
+1	ZZXINT2	4ICU	GC	Position X int ICU EP valeurs physiques	P		um		N
+2	 (/ (APPLY PX1INT2INV X1INTICU2) (/ (* 0.298 (NTH (DIV (MOD CNTROLFEEU2 8) 4) 1.0352 5.0288)) 5))	
+1	ZZYEXT1	4ICU	GC	Position Y ext ICU REF valeurs physiques	P		um		N
+2	 (/ (* 0.5 (+ (APPLY PY1EXT1INV Y1EXTICU1) (APPLY PY2EXT1INV Y2EXTICU1))) (/ (* 0.31 (NTH (DIV (MOD CNTROLFEEU1 16) 8) 1.0347 5.0152)) 5))	
+1	ZZYEXT2	4ICU	GC	Position Y ext ICU EP valeurs physiques	P		um		N
+2	 (/ (* 0.5 (+ (APPLY PY1EXT2INV Y1EXTICU2) (APPLY PY2EXT2INV Y2EXTICU2))) (/ (* 0.307 (NTH (DIV (MOD CNTROLFEEU2 16) 8) 1.0348 5.0188)) 5))	
+1	ZZYINT1	4ICU	GC	Position Y int ICU REF valeurs physiques	P		um		N
+2	 (/ (* 0.5 (+ (APPLY PY1INT1INV Y1INTICU1) (APPLY PY2INT1INV Y2INTICU1))) (/ (* 0.239 (NTH (DIV (MOD CNTROLFEEU1 8) 4) 1.0354 5.0282)) 5))	
+1	ZZYINT2	4ICU	GC	Position Y int ICU EP valeurs physiques	P		um		N
+2	 (/ (* 0.5 (+ (APPLY PY1INT2INV Y1INTICU2) (APPLY PY2INT2INV Y2INTICU2))) (/ (* 0.225 (NTH (DIV (MOD CNTROLFEEU2 8) 4) 1.0352 5.0288)) 5))	
+1	ZZZEXT1	4ICU	GC	Position Z ext ICU REF valeurs physiques	P		um		N
+2	 (/ (* 0.5 (+ (APPLY PZ1EXT1INV Z1EXTICU1) (APPLY PZ2EXT1INV Z2EXTICU1))) (/ (* 0.32 (NTH (DIV (MOD CNTROLFEEU1 16) 8) 1.0347 5.0152)) 5))	
+1	ZZZEXT2	4ICU	GC	Position Z ext ICU EP valeurs physiques	P		um		N
+2	 (/ (* 0.5 (+ (APPLY PZ1EXT2INV Z1EXTICU2) (APPLY PZ2EXT2INV Z2EXTICU2))) (/ (* 0.308 (NTH (DIV (MOD CNTROLFEEU2 16) 8) 1.0348 5.0188)) 5))	
+1	ZZZINT1	4ICU	GC	Position Z int ICU REF valeurs physiques	P		um		N
+2	 (/ (* 0.5 (+ (APPLY PZ1INT1INV Z1INTICU1) (APPLY PZ2INT1INV Z2INTICU1))) (/ (* 0.243 (NTH (DIV (MOD CNTROLFEEU1 8) 4) 1.0354 5.0282)) 5))	
+1	ZZZINT2	4ICU	GC	Position Z int ICU EP valeurs physiques	P		um		N
+2	 (/ (* 0.5 (+ (APPLY PZ1INT2INV Z1INTICU2) (APPLY PZ2INT2INV Z2INTICU2))) (/ (* 0.228 (NTH (DIV (MOD CNTROLFEEU2 8) 4) 1.0352 5.0288)) 5))	
+1	XMAGTESLAX	4MAG	GC	mesure MAG en µTesla (axe X)	P		uT		N
+2	 (* (+ (* PMAG2SAT11 (- OUTMAGX PBIAISMAG1)) (* PMAG2SAT12 (- OUTMAGY PBIAISMAG2)) (* PMAG2SAT13 (- OUTMAGZ PBIAISMAG3))) 1000000)	
+1	XMAGTESLAY	4MAG	GC	mesure MAG en µTesla (axe Y)	P		uT		N
+2	 (* (+ (* PMAG2SAT21 (- OUTMAGX PBIAISMAG1)) (* PMAG2SAT22 (- OUTMAGY PBIAISMAG2)) (* PMAG2SAT23 (- OUTMAGZ PBIAISMAG3))) 1000000)	
+1	XMAGTESLAZ	4MAG	GC	mesure MAG en µTesla (axe Z)	P		uT		N
+2	 (* (+ (* PMAG2SAT31 (- OUTMAGX PBIAISMAG1)) (* PMAG2SAT32 (- OUTMAGY PBIAISMAG2)) (* PMAG2SAT33 (- OUTMAGZ PBIAISMAG3))) 1000000)	
+1	XNORMEMAGT	4MAG	GC	norme du champ magnétique mesuré en µ Tesla	P		uT		N
+2	 (SQRT(+ (* XMAGTESLAX XMAGTESLAX ) (* XMAGTESLAY XMAGTESLAY ) (* XMAGTESLAZ XMAGTESLAZ )))	
+1	XSOMVALMAG	4MAG	GC	nombre de mesures MAG non valides	P				N
+2	 (+ VALID14 VALID15 VALID16 )	
+1	XDATE	4MTB	GC	date en sec d'arrivée d un paquet MASRTE2 pour calcul des XTAUACTMTB	P		s		N
+2	 (+ (* PFDAY 86400) (* PFHOUR 3600) (* PFMINUTE 60.0) PFSECOND)	
+1	XDCMDMTBX	4MTB	GC	temps d'activation commandé effectif des MTBs (au niveau de la cmde PCDU)	P		ms		N
+2	 (/ CPCDUMTBX 64.0)	
+1	XDCMDMTBY	4MTB	GC	temps d'activation commandé effectif des MTBs (au niveau de la cmde PCDU)	P		ms		N
+2	 (/ CPCDUMTBY 64.0)	
+1	XDCMDMTBZ	4MTB	GC	temps d'activation commandé effectif des MTBs (au niveau de la cmde PCDU)	P		ms		N
+2	 (/ CPCDUMTBZ 64.0)	
+1	XMTBSOMTONX	4MTB	GC	sauvegarde de la valeur n-1	P				N
+2	 (+ MTBSOMTONX)	
+1	XMTBSOMTONY	4MTB	GC	sauvegarde de la valeur n-1	P				N
+2	 (+ MTBSOMTONY)	
+1	XMTBSOMTONZ	4MTB	GC	sauvegarde de la valeur n-1	P				N
+2	 (+ MTBSOMTONZ)	
+1	XTAUACTMTBX	4MTB	GC	pourcentage d'activation des MTBs entre 2 paquets successifs aux dates t2 et t	P				N
+2	 (FIRST (MAX (* 100.0 (/ (- MTBSOMTONX XMTBSOMTONX)(- (+ (* PFDAY 86400) (* PFHOUR 3600) (* PFMINUTE 60.0) PFSECOND) XDATE ))) 0.0) 0.0)	
+1	XTAUACTMTBY	4MTB	GC	pourcentage d'activation des MTBs entre 2 paquets successifs aux dates t2 et t	P				N
+2	 (FIRST (MAX (* 100.0 (/ (- MTBSOMTONY XMTBSOMTONY)(- (+ (* PFDAY 86400) (* PFHOUR 3600) (* PFMINUTE 60.0) PFSECOND) XDATE ))) 0.0) 0.0)	
+1	XTAUACTMTBZ	4MTB	GC	pourcentage d'activation des MTBs entre 2 paquets successifs aux dates t2 et t	P				N
+2	 (FIRST (MAX (* 100.0 (/ (- MTBSOMTONZ XMTBSOMTONZ)(- (+ (* PFDAY 86400) (* PFHOUR 3600) (* PFMINUTE 60.0) PFSECOND) XDATE ))) 0.0) 0.0)	
+1	XHRWX	4RWA	GC	moment cinétique de la roue X	P		Nms		N
+2	 (/ (* TMWRWX 2.0 3.141597 PINERTRWX ) 60.0 )	
+1	XHRWXERR	4RWA	GC	écart de moment cinétique roue par rapport à la consigne de phase 3	P		Nms		N
+2	 (- (* PMATRWX1 XHRWX ) XMASCONSH12 )	
+1	XSOMISASXM	4SAS	GC	Somme des courants SASXM en proportion de IMAX	P		V		N
+2	 (+ (* PFESASXM1(/ OUTSAS9 PIMAXSASXM1)) (* PFESASXM2 (/ OUTSAS10 PIMAXSASXM2)) (* PFESASXM3 (/ OUTSAS11 PIMAXSASXM3)) (* PFESASXM4 (/ OUTSAS12 PIMAXSASXM4)) )	
+1	XSOMISASXP	4SAS	GC	Somme des courants SASXP en proportion de IMAX	P		V		N
+2	 (+ (* PFESASXP1 (/ OUTSAS1 PIMAXSASXP1)) (* PFESASXP2 (/ OUTSAS2 PIMAXSASXP2)) (* PFESASXP3 (/ OUTSAS3 PIMAXSASXP3)) (* PFESASXP4 (/ OUTSAS4 PIMAXSASXP4)) )	
+1	XSOMISASZP	4SAS	GC	Somme des courants SASZP en proportion de IMAX	P		V		N
+2	 (+ (* PFESASZP1 (/ OUTSAS5 PIMAXSASZP1)) (* PFESASZP2 (/ OUTSAS6 PIMAXSASZP2)) (* PFESASZP3 (/ OUTSAS7 PIMAXSASZP3)) (* PFESASZP4 (/ OUTSAS8 PIMAXSASZP4)) )	
+1	XSOMVALSAS	4SAS	GC	nombre de mesures SAS non valides	P				N
+2	 (+ VALID01 VALID02 VALID03 VALID04 VALID05 VALID06 VALID07 VALID08 VALID09 VALID10 VALID11 VALID12 )	
+1	XCALCERR	4SST	GC	Dépointage en MGT: Condition du calcul de l erreur	P				N
+2	 (AND (= ATTVALID1 1) (< (ABS (- XQDATE XTCONSSEC )) XDELTAT ))	
+1	XDELTAQERR1	4SST	GC	Dépointage en MGT: calcul intermédiaire	P				N
+2	 (NTH (= XCALCERR 1.0) 0.0 (*(/ 360.0 3.141597) (/ XQERREUR1 (ABS XQERREUR1 ))))	
+1	XDELTAT	4SST	GC	Dépointage en MGT : paramètre	P				N
+2	 (+ 10.0)	
+1	XDELTATETAX	4SST	GC	Dépointage en MGTpar rapport à la consigne	P				N
+2	 (* XQERREUR2 XDELTAQERR1 )	
+1	XDELTATETAY	4SST	GC	Dépointage en MGTpar rapport à la consigne	P				N
+2	 (* XQERREUR3 XDELTAQERR1 )	
+1	XDELTATETAZ	4SST	GC	Dépointage en MGTpar rapport à la consigne	P				N
+2	 (* XQERREUR4 XDELTAQERR1 )	
+1	XQDATE	4SST	GC	Dépointage en MGT: Date du quaternion de mesure stellaire	P				N
+2	 (+ (* REFTHH 3600.0) (* REFTMN 60.0) REFTSS (* SST1ECOULE XLSBTIMESST ))	
+1	XQERREUR1	4SST	GC	Dépointage en MGT: écart entre le quaternion de consigne et le quaternion d'at	P				N
+2	 (NTH XCALCERR 0.0 (+ (* QCONS1 XQSAT1) (* QCONS2 XQSAT2) (* QCONS3 XQSAT3) (* QCONS4 XQSAT4)))	
+1	XQERREUR2	4SST	GC	Dépointage en MGT: écart entre le quaternion de consigne et le quaternion d'at	P				N
+2	 (NTH XCALCERR 0.0 (+ (- (- (* QCONS1 XQSAT2) (* QCONS2 XQSAT1)) (* QCONS3 XQSAT4)) (* QCONS4 XQSAT3)))	
+1	XQERREUR3	4SST	GC	Dépointage en MGT: écart entre le quaternion de consigne et le quaternion d'at	P				N
+2	 (NTH XCALCERR 0.0 (+ (- (- (* QCONS1 XQSAT3) (* QCONS3 XQSAT1)) (* QCONS4 XQSAT2)) (* QCONS2 XQSAT4)))	
+1	XQERREUR4	4SST	GC	Dépointage en MGT: écart entre le quaternion de consigne et le quaternion d'at	P				N
+2	 (NTH XCALCERR 0.0 (+ (- (- (* QCONS1 XQSAT4) (* QCONS4 XQSAT1)) (* QCONS2 XQSAT3)) (* QCONS3 XQSAT2)))	
+1	XQSAT1	4SST	GC	Dépointage en MGT: Quaternion de mesure stellaire 1	P				N
+2	  (- (- (* QSST1MES4 PQSST1SAT1 ) (* QSST1MES1 PQSST1SAT2)) (+ (* QSST1MES2 PQSST1SAT3) (* QSST1MES3 PQSST1SAT4)))	
+1	XQSAT2	4SST	GC	Dépointage en MGT: Quaternion de mesure stellaire 2	P				N
+2	  (+ (+ (* QSST1MES4 PQSST1SAT2) (* QSST1MES1 PQSST1SAT1)) (- (* QSST1MES2 PQSST1SAT4) (* QSST1MES3 PQSST1SAT3)))	
+1	XQSAT3	4SST	GC	Dépointage en MGT: Quaternion de mesure stellaire 3	P				N
+2	  (+ (+ (* QSST1MES4 PQSST1SAT3) (* QSST1MES2 PQSST1SAT1)) (- (* QSST1MES3 PQSST1SAT2) (* QSST1MES1 PQSST1SAT4)))	
+1	XQSAT4	4SST	GC	Dépointage en MGT: Quaternion de mesure stellaire 4	P				N
+2	  (+ (+ (* QSST1MES4 PQSST1SAT4) (* QSST1MES3 PQSST1SAT1)) (- (* QSST1MES1 PQSST1SAT3) (* QSST1MES2 PQSST1SAT2)))	
+1	XTCONSSEC	4SST	GC	Dépointage en MGT:Conversion en secondes de l'heure du paquet MGTGUID	P		s		N
+2	 (+ (* PFHOUR 3600.0) (* PFMINUTE 60.0) PFSECOND)	
+1	PUISRFRX1	5GEN	GC	Puissance RF en entrée RX1	P		dBm		N
+2	 (- (+ ( / (* 2 RSSIVALUE1 ) 5) (* 0.07 TEMPRX1 ) ) 141.2)	
+1	PUISRFRX2	5GEN	GC	Puissance RF en entrée RX2	P		dBm		N
+2	 (- (+ ( / (* 2 RSSIVALUE2 ) 5) (* 0.07 TEMPRX2 ) ) 141.2)	
+1	RX1R12BIT0	5GEN	GC	RX1 Reg12 QPSK demodulator acquisition mode	L	LQPSKMOD	NA		N
+2	 (/ (AND (+ (* PMRX1TM121 16) PMRX1TM122 ) 1) 1)	
+1	RX1R12BIT1	5GEN	GC	RX1 Reg12 Operating mode	L	LOPERMOD	NA		N
+2	 (/ (AND (+ (* PMRX1TM121 16) PMRX1TM122 ) 2) 2)	
+1	RX1R12BIT2	5GEN	GC	RX1 Reg12 Sleep or active command in force mode	L	LSLEEPAC	NA		N
+2	 (/ (AND (+ (* PMRX1TM121 16) PMRX1TM122 ) 4) 4)	
+1	RX1R12BIT3	5GEN	GC	RX1 Reg12 Fequency mixer	L	LMIXEMOD	NA		N
+2	 (/ (AND (+ (* PMRX1TM121 16) PMRX1TM122 ) 8) 8)	
+1	RX1R12BIT4	5GEN	GC	RX1 Reg12 Not used	L		NA		N
+2	 (/ (AND (+ (* PMRX1TM121 16) PMRX1TM122 ) 16) 16)	
+1	RX1R12BIT5	5GEN	GC	RX1 Reg12 RSSI threshold computed with temperature or constant	L	LRSSIMOD	NA		N
+2	 (/ (AND (+ (* PMRX1TM121 16) PMRX1TM122 ) 32) 32)	
+1	RX1R12BIT6	5GEN	GC	RX1 Reg12 Fequency successive approximation algorithm convergence area	L	LALGOCONV	NA		N
+2	 (/ (AND (+ (* PMRX1TM121 16) PMRX1TM122 ) 64) 64)	
+1	RX1R12BIT7	5GEN	GC	RX1 Reg12 OCXO state	L	LOCXOSTAT	NA		N
+2	 (/ (AND (+ (* PMRX1TM121 16) PMRX1TM122 ) 128) 128)	
+1	RX1R13BIT0	5GEN	GC	RX1 Reg13 QPSK demodulator acquisition mode	L	LQPSKMOD	NA		N
+2	 (/ (AND (+ (* PMRX1TM131 16) PMRX1TM132 ) 1) 1)	
+1	RX1R13BIT1	5GEN	GC	RX1 Reg13 Operating mode	L	LREPOMOD	NA		N
+2	 (/ (AND (+ (* PMRX1TM131 16) PMRX1TM132 ) 2) 2)	
+1	RX1R13BIT2	5GEN	GC	RX1 Reg13 Operating state	L	LOPESTAT	NA		N
+2	 (/ (AND (+ (* PMRX1TM131 16) PMRX1TM132 ) 4) 4)	
+1	RX1R13BIT3	5GEN	GC	RX1 Reg13 receiver state	L	LRXSTAT	NA		N
+2	 (/ (AND (+ (* PMRX1TM131 16) PMRX1TM132 ) 8) 8)	
+1	RX1R13BIT4	5GEN	GC	RX1 Reg13 PLL1 state	L	LNLLOCKED	NA		N
+2	 (/ (AND (+ (* PMRX1TM131 16) PMRX1TM132 ) 16) 16)	
+1	RX1R13BIT5	5GEN	GC	RX1 Reg13 PLL2 state	L	LNLLOCKED	NA		N
+2	 (/ (AND (+ (* PMRX1TM131 16) PMRX1TM132 ) 32) 32)	
+1	RX1R13BIT6	5GEN	GC	RX1 Reg13 QPSK demodulator state	L	LNLLOCKED	NA		N
+2	 (/ (AND (+ (* PMRX1TM131 16) PMRX1TM132 ) 64) 64)	
+1	RX1R13BIT7	5GEN	GC	RX1 Reg13 Viterbi decoder state	L	LNLLOCKED	NA		N
+2	 (/ (AND (+ (* PMRX1TM131 16) PMRX1TM132 ) 128) 128)	
+1	RX2R12BIT0	5GEN	GC	RX2 Reg12 QPSK demodulator acquisition mode	L	LQPSKMOD	NA		N
+2	 (/ (AND (+ (* PMRX2TM121 16) PMRX2TM122 ) 1) 1)	
+1	RX2R12BIT1	5GEN	GC	RX2 Reg12 Operating mode	L	LOPERMOD	NA		N
+2	 (/ (AND (+ (* PMRX2TM121 16) PMRX2TM122 ) 2) 2)	
+1	RX2R12BIT2	5GEN	GC	RX2 Reg12 Sleep or active command in force mode	L	LSLEEPAC	NA		N
+2	 (/ (AND (+ (* PMRX2TM121 16) PMRX2TM122 ) 4) 4)	
+1	RX2R12BIT3	5GEN	GC	RX2 Reg12 Fequency mixer	L	LMIXEMOD	NA		N
+2	 (/ (AND (+ (* PMRX2TM121 16) PMRX2TM122 ) 8) 8)	
+1	RX2R12BIT4	5GEN	GC	RX2 Reg12 Not used	L		NA		N
+2	 (/ (AND (+ (* PMRX2TM121 16) PMRX2TM122 ) 16) 16)	
+1	RX2R12BIT5	5GEN	GC	RX2 Reg12 RSSI threshold computed with temperature or constant	L	LRSSIMOD	NA		N
+2	 (/ (AND (+ (* PMRX2TM121 16) PMRX2TM122 ) 32) 32)	
+1	RX2R12BIT6	5GEN	GC	RX2 Reg12 Fequency successive approximation algorithm convergence area	L	LALGOCONV	NA		N
+2	 (/ (AND (+ (* PMRX2TM121 16) PMRX2TM122 ) 64) 64)	
+1	RX2R12BIT7	5GEN	GC	RX2 Reg12 OCXO state	L	LOCXOSTAT	NA		N
+2	 (/ (AND (+ (* PMRX2TM121 16) PMRX2TM122 ) 128) 128)	
+1	RX2R13BIT0	5GEN	GC	RX2 Reg13 QPSK demodulator acquisition mode	L	LQPSKMOD	NA		N
+2	 (/ (AND (+ (* PMRX2TM131 16) PMRX2TM132 ) 1) 1)	
+1	RX2R13BIT1	5GEN	GC	RX2 Reg13 Operating mode	L	LREPOMOD	NA		N
+2	 (/ (AND (+ (* PMRX2TM131 16) PMRX2TM132 ) 2) 2)	
+1	RX2R13BIT2	5GEN	GC	RX2 Reg13 Operating state	L	LOPESTAT	NA		N
+2	 (/ (AND (+ (* PMRX2TM131 16) PMRX2TM132 ) 4) 4)	
+1	RX2R13BIT3	5GEN	GC	RX2 Reg13 receiver state	L	LRXSTAT	NA		N
+2	 (/ (AND (+ (* PMRX2TM131 16) PMRX2TM132 ) 8) 8)	
+1	RX2R13BIT4	5GEN	GC	RX2 Reg13 PLL1 state	L	LNLLOCKED	NA		N
+2	 (/ (AND (+ (* PMRX2TM131 16) PMRX2TM132 ) 16) 16)	
+1	RX2R13BIT5	5GEN	GC	RX2 Reg13 PLL2 state	L	LNLLOCKED	NA		N
+2	 (/ (AND (+ (* PMRX2TM131 16) PMRX2TM132 ) 32) 32)	
+1	RX2R13BIT6	5GEN	GC	RX2 Reg13 QPSK demodulator state	L	LNLLOCKED	NA		N
+2	 (/ (AND (+ (* PMRX2TM131 16) PMRX2TM132 ) 64) 64)	
+1	RX2R13BIT7	5GEN	GC	RX2 Reg13 Viterbi decoder state	L	LNLLOCKED	NA		N
+2	 (/ (AND (+ (* PMRX2TM131 16) PMRX2TM132 ) 128) 128)	
+1	TX1R12BIT0	5GEN	GC	TX1 Reg12 PLL state	L	LPLLSTAT	NA		N
+2	 (/ (AND (+ (* PMTX1TM121 16) PMTX1TM122 ) 1) 1)	
+1	TX1R12BIT1	5GEN	GC	TX1 Reg12 RF output power	L	LRFPOWER	NA		N
+2	 (/ (AND (+ (* PMTX1TM121 16) PMTX1TM122 ) 2) 2)	
+1	TX1R12BIT2	5GEN	GC	TX1 Reg12 OCXO state	L	LOCXOSTAT	NA		N
+2	 (/ (AND (+ (* PMTX1TM121 16) PMTX1TM122 ) 4) 4)	
+1	TX1R12BIT3	5GEN	GC	TX1 Reg12 device state bit0 LSB	L		NA		N
+2	 (/ (AND (+ (* PMTX1TM121 16) PMTX1TM122 ) 8) 8)	
+1	TX1R12BIT35	5GEN	GC	TX1 Reg12 device state	L	LDEVSTAT	NA		N
+2	 (/ (AND (+ (* PMTX1TM121 16) PMTX1TM122 ) 56) 8)	
+1	TX1R12BIT4	5GEN	GC	TX1 Reg12 device state bit1	L		NA		N
+2	 (/ (AND (+ (* PMTX1TM121 16) PMTX1TM122 ) 16) 16)	
+1	TX1R12BIT5	5GEN	GC	TX1 Reg12 device state bit2 MSB	L		NA		N
+2	 (/ (AND (+ (* PMTX1TM121 16) PMTX1TM122 ) 32) 32)	
+1	TX1R12BIT6	5GEN	GC	TX1 Reg12 operating state	L	LOPESTAT	NA		N
+2	 (/ (AND (+ (* PMTX1TM121 16) PMTX1TM122 ) 64) 64)	
+1	TX1R12BIT7	5GEN	GC	TX1 Reg12 Not used	L		NA		N
+2	 (/ (AND (+ (* PMTX1TM121 16) PMTX1TM122 ) 128) 128)	
+1	TX2R12BIT0	5GEN	GC	TX2 Reg12 PLL state	L	LPLLSTAT	NA		N
+2	 (/ (AND (+ (* PMTX2TM121 16) PMTX2TM122 ) 1) 1)	
+1	TX2R12BIT1	5GEN	GC	TX2 Reg12 RF output power	L	LRFPOWER	NA		N
+2	 (/ (AND (+ (* PMTX2TM121 16) PMTX2TM122 ) 2) 2)	
+1	TX2R12BIT2	5GEN	GC	TX2 Reg12 OCXO state	L	LOCXOSTAT	NA		N
+2	 (/ (AND (+ (* PMTX2TM121 16) PMTX2TM122 ) 4) 4)	
+1	TX2R12BIT3	5GEN	GC	TX2 Reg12 device state bit0 LSB	L		NA		N
+2	 (/ (AND (+ (* PMTX2TM121 16) PMTX2TM122 ) 8) 8)	
+1	TX2R12BIT35	5GEN	GC	TX2 Reg12 device state	L	LDEVSTAT	NA		N
+2	 (/ (AND (+ (* PMTX2TM121 16) PMTX2TM122 ) 56) 8)	
+1	TX2R12BIT4	5GEN	GC	TX2 Reg12 device state bit1	L		NA		N
+2	 (/ (AND (+ (* PMTX2TM121 16) PMTX2TM122 ) 16) 16)	
+1	TX2R12BIT5	5GEN	GC	TX2 Reg12 device state bit2 MSB	L		NA		N
+2	 (/ (AND (+ (* PMTX2TM121 16) PMTX2TM122 ) 32) 32)	
+1	TX2R12BIT6	5GEN	GC	TX2 Reg12 operating state	L	LOPESTAT	NA		N
+2	 (/ (AND (+ (* PMTX2TM121 16) PMTX2TM122 ) 64) 64)	
+1	TX2R12BIT7	5GEN	GC	TX2 Reg12 Not used	L		NA		N
+2	 (/ (AND (+ (* PMTX2TM121 16) PMTX2TM122 ) 128) 128)	
+1	ZMFS1MEASM	6THR	GC	Mesure MFS MT1 ECM ZM corrigée de l'offset TON_PWM	P		V		N
+2	 (+ MFS1MEASM (* 1.75 (/ TONPWMMAINM 255)))	
+1	ZMFS1MEASP	6THR	GC	Mesure MFS MT1 ECM ZP corrigée de l'offset TON_PWM	P		V		N
+2	 (+ MFS1MEASP (* 1.75 (/ TONPWMMAINP 255)))	
+1	ZMFS2MEASM	6THR	GC	Mesure MFS MT2 ECM ZM corrigée de l'offset TON_PWM	P		V		N
+2	 (+ MFS2MEASM (* 1.75 (/ TONPWMMAINM 255)))	
+1	ZMFS2MEASP	6THR	GC	Mesure MFS MT2 ECM ZP corrigée de l'offset TON_PWM	P		V		N
+2	 (+ MFS2MEASP (* 1.75 (/ TONPWMMAINP 255)))	
+1	ZMFS3MEASM	6THR	GC	Mesure MFS MT3 ECM ZM corrigée de l'offset TON_PWM	P		V		N
+2	 (+ MFS3MEASM (* 1.75 (/ TONPWMMAINM 255)))	
+1	ZMFS3MEASP	6THR	GC	Mesure MFS MT3 ECM ZP corrigée de l'offset TON_PWM	P		V		N
+2	 (+ MFS3MEASP (* 1.75 (/ TONPWMMAINP 255)))	
+1	ZMFS4MEASM	6THR	GC	Mesure MFS MT4 ECM ZM corrigée de l'offset TON_PWM	P		V		N
+2	 (+ MFS4MEASM (* 1.75 (/ TONPWMMAINM 255)))	
+1	ZMFS4MEASP	6THR	GC	Mesure MFS MT4 ECM ZP corrigée de l'offset TON_PWM	P		V		N
+2	 (+ MFS4MEASP (* 1.75 (/ TONPWMMAINP 255)))	
+1	ZMFS5MEASM	6THR	GC	Mesure MFS MT5 ECM ZM corrigée de l'offset TON_PWM	P		V		N
+2	 (+ MFS5MEASM (* 1.75 (/ TONPWMREDM 255)))	
+1	ZMFS5MEASP	6THR	GC	Mesure MFS MT5 ECM ZP corrigée de l'offset TON_PWM	P		V		N
+2	 (+ MFS5MEASP (* 1.75 (/ TONPWMREDP 255)))	
+1	ZMFS6MEASM	6THR	GC	Mesure MFS MT6 ECM ZM corrigée de l'offset TON_PWM	P		V		N
+2	 (+ MFS6MEASM (* 1.75 (/ TONPWMREDM 255)))	
+1	ZMFS6MEASP	6THR	GC	Mesure MFS MT6 ECM ZP corrigée de l'offset TON_PWM	P		V		N
+2	 (+ MFS6MEASP (* 1.75 (/ TONPWMREDP 255)))	
+1	ZMFS7MEASM	6THR	GC	Mesure MFS MT7 ECM ZM corrigée de l'offset TON_PWM	P		V		N
+2	 (+ MFS7MEASM (* 1.75 (/ TONPWMREDM 255)))	
+1	ZMFS7MEASP	6THR	GC	Mesure MFS MT7 ECM ZP corrigée de l'offset TON_PWM	P		V		N
+2	 (+ MFS7MEASP (* 1.75 (/ TONPWMREDP 255)))	
+1	ZMFS8MEASM	6THR	GC	Mesure MFS MT8 ECM ZM corrigée de l'offset TON_PWM	P		V		N
+2	 (+ MFS8MEASM (* 1.75 (/ TONPWMREDM 255)))	
+1	ZMFS8MEASP	6THR	GC	Mesure MFS MT8 ECM ZP corrigée de l'offset TON_PWM	P		V		N
+2	 (+ MFS8MEASP (* 1.75 (/ TONPWMREDP 255)))	
+1	CALRCSTATUS	8ETS	GC	Computed processing status of the RC by the TTCET	L	LRCSTATUS			N
+2	 (+ RCSTATUS )	
+1	DECROCHSBGC	8ETS	GC	Activate polar change based on NOBITSYNC1	P				N
+2	 (AND (= NOBITSYNC1 1)(= AUTCHGPOL 1))	
+1	DELTAAGC	8ETS	GC	Difference between left and right hand circular polarization	P		dBm	SIGSTATION	N
+2	 (- LHCPAGC RHCPAGC )	
+1	ELEVATION	8ETS	GC	Autre nom pour le SITE: utilisé par la GCP AUTO	P		deg		N
+2	 (+ SITE)	
+1	SIGSTATION	8ETS	GC	Siginficant condition for fly-by status	L	LSIGNIF			N
+2	 (<> ETID 66)	
+1	SURVLINK	8ETS	GC	Link state	L	LNOTOK			N
+2	 (OR (AND (> ELEVATION 10) (= NOBITSYNC1 1)) (= FRWSTM 0) (= FRWSRM 0))	
+1	SURVLINKPOL	8ETS	GC	Link state with polarity	L	LNOTOK			N
+2	 (OR (AND (> ELEVATION 5) (= TCPOLMATCH 1)) (= FRWSTM 0) (= FRWSRM 0))	
+1	SURVLINKTM	8ETS	GC	Link state	L	LNOTOK			N
+2	 (OR (= FRWSTM 0) (= FRWSRM 0))	
+1	TCPOLMATCH	8ETS	GC	Status TM polarisation matching TM/TC polar	L	LNOTOK			N
+2	 (OR (AND (= SWSTATUS 0)(= TMPOLSTATUS 2)) (AND (= SWSTATUS 1) (= TMPOLSTATUS 0)))	
+1	TMPOLSTATUS	8ETS	GC	Status TM polarisation	L	LTMPOLAR			N
+2	 (+(AND (< DELTAAGC 10) (>= DELTAAGC -10)) (* (< DELTAAGC -10) 2))	
+1	TMRECEIVED	8ETS	GC	TM receiving	L	LOK			N
+2	 (AND (= RSDECOSTA 1) (= FRAMESYNC 1))	
+1	BFREQEST	8GEN	GC	Biais de fréquence OCXO estimé (en ppm)	P		ppm		N
+2	 (* (- (/ (MOD (- HBRECEPP1 HBRECEP) 1048576) (- TRECEPTP1 TRECEPT)) 1) 1E6)	
+1	CPTRINT	8GEN	GC	our calcul de KRINTBAD : Compteur des valeurs > 0.1 de RINTTMP.	P				N
+2	 (FIRST (NTH (= PFDAY 1) (NTH (> RINTTMP 0.1) CPTRINT (+ CPTRINT 1)) 0) 0)	
+1	GPSTUCFWNB	8GEN	GC	Date UTC du PVT (au format GPS) : fraction de seconde	P		s		N
+2	 (/ SECFRACTION 1000000000)	
+1	IO1N30VPIC	8GEN	GC	Tension d'alimentation du PIC IO1N30	P		V		N
+2	 (NTH (= IO1N30VREF 0) (/ 15 IO1N30VREF) 0)	
+1	IO1N34VPIC	8GEN	GC	Tension d'alimentation du PIC IO1N34	P		V		N
+2	 (NTH (= IO1N34VREF 0) (/ 15 IO1N34VREF) 0)	
+1	IO2N40VPIC	8GEN	GC	Tension d'alimentation du PIC IO2N40	P		V		N
+2	 (NTH (= IO2N40VREF 0) (/ 15 IO2N40VREF) 0)	
+1	IO2N44VPIC	8GEN	GC	Tension d'alimentation du PIC IO2N44	P		V		N
+2	 (NTH (= IO2N44VREF 0) (/ 15 IO2N44VREF) 0)	
+1	KRINTBAD	8GEN	GC	calcul résistance interne batterie en moyenne mensuelle : archivage de KRINTBA	P		Ohm		N
+2	 (FIRST (NTH (<> (DELTA PFMONTH) 0) KRINTBAD KRINTBADM) 0)	
+1	KRINTBADM	8GEN	GC	Pour calcul de KRINTBAD : calcul de la moyenne continue des valeurs > 0.1 de R	P		Ohm		N
+2	 (FIRST (FIRST (/ SOMRINT CPTRINT) KRINTBADM) 0)	
+1	NBMAILALARM	8GEN	GC	moyenne itérative de NBMAILNOUV pour surveiller le vidage des maillons (A VALI	P		NA		N
+2	 (FIRST (/ (+ (* NBMAILALARM 180) NBMAILNOUV) 181) 15000)	
+1	NOACKFDR	8GEN	GC	Default value for RC ACKTMFDIR parameters (Nothing to Ack)	L	LACKTM			N
+2	 (+ 1)	
+1	NUMBITTM	8GEN	GC	Résultat de la décommutation du numéro de bit dans la trame TM capturé dans le	P				N
+2	 (DIV REGDISTTRAM 1024)	
+1	NUMTM	8GEN	GC	Résultat de la décommutation du numéro de trame TM capturé dans le registre Re	P				N
+2	 (AND (DIV REGDISTTRAM 2) 255)	
+1	PRESRES	8GEN	GC	Pression de réservoir	P		NA		N
+2	 ( - 0 1)	
+1	QTMTMPRWX	8GEN	GC	Surveillance TMTMPRWX	P				N
+2	 (+ TMTMPRWX )	
+1	REGMUS	8GEN	GC	Résultat de la décommutationdu nombre de micro secondes écoulées dans le bit T	P		microsec		N
+2	 (DIV REGDISTBIT 64)	
+1	REGTENTHMUS	8GEN	GC	Résultat de la décommutationdu nombre de dixièmes de micro secondes écoulés da	P		100ns		N
+2	 (AND (DIV REGDISTBIT 2) 15)	
+1	RGDATEFRAC	8GEN	GC	Résultat de la décommutation du contenu du registre RegDateTCD du FPGA TMTC bo	P		s		N
+2	 (/ (AND (DIV REGDATETCD 2) 1023) 1000)	
+1	RGDATEINT	8GEN	GC	Résultat de la décommutation du contenu du registre RegDateTCD du FPGA TMTC bo	P		s		N
+2	 (DIV REGDATETCD 4096)	
+1	RINTTMP	8GEN	GC	Calcul de la résistance interne de la batterie	P		Ohm		N
+2	 (FIRST (NTH (AND (> (ABS (DELTA IBATD)) DIBATDRIMIN) (> IBATD IBATDRIMIN) (> (- IBATD (DELTA IBATD)) IBATDRIMIN)) 0 RINTTMP1) 0)	
+1	RINTTMP1	8GEN	GC	Calcul intermédiaire résistance interne batterie	P		Ohm		N
+2	 (FIRST (ABS (/ (DELTA VBNR) (DELTA IBATD))) 0)	
+1	SIGTMDTLM75	8GEN	GC	Condition de significativité de la température LM75 du FPGZ TMTC acquise par l	L				N
+2	 (= (AND TMDVLM75 1 ) 0 )	
+1	SOMRINT	8GEN	GC	Pour calcul de KRINTBAD : somme de valeurs > 0.1 de RINTTMP 	P		Ohm		N
+2	 (FIRST (NTH (= PFDAY 1) (NTH (> RINTTMP 0.1) SOMRINT (+ SOMRINT RINTTMP)) 0) 0)	
+1	TFREQEST	8GEN	GC	Date UTC d estimation de BFREQEST (en jours depuis le 31/12/1899 = date Excel)	P		j Excel		N
+2	 (+ (/ (/ (+ TRECEPTP1 TRECEPT) 2) 86400) 36727)	
+1	TMDTLM75	8GEN	GC	Température LM75 du FPGA TMTC acquise par le PIC TMD	P		°C	SIGTMDTLM75	N
+2	 (/ (- (MOD (+ (DIV TMDVLM75 128) 256) 512) 256) 2)	
+1	XACTIONI2C	8GEN	GC	code des anomalies I2C	L	LACTIONI2C			N
+2	 (+ YACTIONI2C (* 1000 YIDBUSI2C))	
+1	XCOMPTEDAD	8GEN	GC	COMPTEDAD: sauvegarde du point précédent	P				N
+2	 (+ COMPTEDAD)	
+1	XCPTINVPOS	8GEN	GC	Nombre de zones d'invalidité des positions fournies par le récepteur GNSS sur 	P				N
+2	 (FIRST (NTH (<> (- PFDAY XSNAVIDAY) 0) XCPTINVPOS XJCPTINVPOS) 0)	
+1	XCPTINVTIM	8GEN	GC	Nombre de zones d'invalidité du temps fournies par le récepteur GNSS sur le jo	P				N
+2	 (FIRST (NTH (<> (- PFDAY XSNAVIDAY) 0) XCPTINVTIM XJCPTINVTIM) 0)	
+1	XCUMULEDAC	8GEN	GC	CUMULEDAC: sauvegarde du point précédent	P				N
+2	 (+ CUMULEDAC)	
+1	XDATOBSTM	8GEN	GC	Date paquet précédent OBSERVTM	P		jours		N
+2	 (+ (CJDAY))	
+1	XDCOMPTEDAD	8GEN	GC	Incrément de COMPTEDAD	P				N
+2	 (FIRST (- COMPTEDAD XCOMPTEDAD) 0)	
+1	XDCUMULEDAC	8GEN	GC	Incrément de CUMULEDAC	P				N
+2	 (FIRST (- CUMULEDAC XCUMULEDAC) 0)	
+1	XDEBJOUR	8GEN	GC	Indicateur de début de journée	P				N
+2	 (FIRST (= (- PFDAY XMNOATTDAY) 0) 1)	
+1	XDEBTMLV	8GEN	GC	Debit TM genere par le LVC	P		kb/s		N
+2	 (FIRST (* (/ (DELTA CPTTRAMEVOK) (* 86400 (- (CJDAY) XDATOBSTM))) 10.232) 0)	
+1	XDELAIFILE1	8GEN	GC	Déclenchement en alarme (1) si date bord PF courante - date première TC File >	P				N
+2	 (NTH (OR (= DATEPTC1AA 0) (<> (- PFMONTH DATEPTC1MM) 0)) (> (+ (* (- PFDAY DATEPTC1JJ) 86400) (* (- PFHOUR DATEPTC1HH) 3600) (* (- PFMINUTE DATEPTC1MN) 60.0) (- PFSECOND DATEPTC1SS)) 300) 0)	
+1	XDELAIFILE2	8GEN	GC	Déclenchement en alarme (1) si date bord PF courante - date première TC File >	P				N
+2	 (NTH (OR (= DATEPTC2AA 0) (<> (- PFMONTH DATEPTC2MM) 0)) (> (+ (* (- PFDAY DATEPTC2JJ) 86400) (* (- PFHOUR DATEPTC2HH) 3600) (* (- PFMINUTE DATEPTC2MN) 60.0) (- PFSECOND DATEPTC2SS)) 300) 0)	
+1	XDELAIFILE3	8GEN	GC	Déclenchement en alarme (1) si date bord PF courante - date première TC File >	P				N
+2	 (NTH (OR (= DATEPTC3AA 0) (<> (- PFMONTH DATEPTC3MM) 0)) (> (+ (* (- PFDAY DATEPTC3JJ) 86400) (* (- PFHOUR DATEPTC3HH) 3600) (* (- PFMINUTE DATEPTC3MN) 60.0) (- PFSECOND DATEPTC3SS)) 300) 0)	
+1	XDELAIFILE4	8GEN	GC	Déclenchement en alarme (1) si date bord PF courante - date première TC File >	P				N
+2	 (NTH (OR (= DATEPTC4AA 0) (<> (- PFMONTH DATEPTC4MM) 0)) (> (+ (* (- PFDAY DATEPTC4JJ) 86400) (* (- PFHOUR DATEPTC4HH) 3600) (* (- PFMINUTE DATEPTC4MN) 60.0) (- PFSECOND DATEPTC4SS)) 300) 0)	
+1	XDELAIFILE5	8GEN	GC	Déclenchement en alarme (1) si date bord PF courante - date première TC File >	P				N
+2	 (NTH (OR (= DATEPTC5AA 0) (<> (- PFMONTH DATEPTC5MM) 0)) (> (+ (* (- PFDAY DATEPTC5JJ) 86400) (* (- PFHOUR DATEPTC5HH) 3600) (* (- PFMINUTE DATEPTC5MN) 60.0) (- PFSECOND DATEPTC5SS)) 300) 0)	
+1	XDELAIFILE6	8GEN	GC	Déclenchement en alarme (1) si date bord PF courante - date première TC File >	P				N
+2	 (NTH (OR (= DATEPTC6AA 0) (<> (- PFMONTH DATEPTC6MM) 0)) (> (+ (* (- PFDAY DATEPTC6JJ) 86400) (* (- PFHOUR DATEPTC6HH) 3600) (* (- PFMINUTE DATEPTC6MN) 60.0) (- PFSECOND DATEPTC6SS)) 300) 0)	
+1	XDELAIFILE7	8GEN	GC	En alarme (1) si date bord PF courante - date première TC File > 300 sec sauf 	P				N
+2	 (NTH (OR (= DATEPTC7AA 0) (<> (- PFMONTH DATEPTC7MM) 0)) (> (+ (* (- PFDAY DATEPTC7JJ) 86400) (* (- PFHOUR DATEPTC7HH) 3600) (* (- PFMINUTE DATEPTC7MN) 60.0) (- PFSECOND DATEPTC7SS)) (+ (* 1141 (= ZPTCFILE7 30005)) 300)) 0)	
+1	XDELAIFILE8	8GEN	GC	Déclenchement en alarme (1) si date bord PF courante - date première TC File >	P				N
+2	 (NTH (OR (= DATEPTC8AA 0) (<> (- PFMONTH DATEPTC8MM) 0)) (> (+ (* (- PFDAY DATEPTC8JJ) 86400) (* (- PFHOUR DATEPTC8HH) 3600) (* (- PFMINUTE DATEPTC8MN) 60.0) (- PFSECOND DATEPTC8SS)) 300) 0)	
+1	XDELAIFILE9	8GEN	GC	Déclenchement en alarme (1) si date bord PF courante - date première TC File >	P				N
+2	 (NTH (OR (= DATEPTC9AA 0) (<> (- PFMONTH DATEPTC9MM) 0)) (> (+ (* (- PFDAY DATEPTC9JJ) 86400) (* (- PFHOUR DATEPTC9HH) 3600) (* (- PFMINUTE DATEPTC9MN) 60.0) (- PFSECOND DATEPTC9SS)) 300) 0)	
+1	XDHPT1MEASM	8GEN	GC	Evolution de la pression partie haute pression capteur 1 sur 24 heures	P		bar/°C		N
+2	 (FIRST (NTH (<> (- PFDAY XMEDRAT2DAY) 0) XDHPT1MEASM (- XSUMPTHPT1M XHPT1SAUVM)) 0)	
+1	XDHPT1MEASP	8GEN	GC	Evolution de la pression partie haute pression capteur 1 sur 24 heures	P		bar/°C		N
+2	 (FIRST (NTH (<> (- PFDAY XMEDRAT1DAY) 0) XDHPT1MEASP (- XSUMPTHPT1P XHPT1SAUVP)) 0)	
+1	XDHPT2MEASM	8GEN	GC	Evolution de la pression partie haute pression capteur 2 sur 24 heures	P		bar/°C		N
+2	 (FIRST (NTH (<> (- PFDAY XMEDRAT2DAY) 0) XDHPT2MEASM (- XSUMPTHPT2M XHPT2SAUVM)) 0)	
+1	XDHPT2MEASP	8GEN	GC	Evolution de la pression partie haute pression capteur 2 sur 24 heures	P		bar/°C		N
+2	 (FIRST (NTH (<> (- PFDAY XMEDRAT1DAY) 0) XDHPT2MEASP (- XSUMPTHPT2P XHPT2SAUVP)) 0)	
+1	XDISPOAGC	8GEN	GC	Taux de verrouillage du circuit de contrôle automatique de gain du récepteur G	P		%		N
+2	 (FIRST (NTH (<> (- PFDAY XSRECEIVDAY) 0) XDISPOAGC (* 100 (/ XJDURAGCLCK XJDURSRECEI))) 100)	
+1	XDISPOPOS	8GEN	GC	disponibilite des mesures de positions fournies par le récepteur GNSS sur le j	P		%		N
+2	 (FIRST (NTH (<> (- PFDAY XSNAVIDAY) 0) XDISPOPOS (* 100 (/ XJDURVALPOS XJDURSNAVI))) 100)	
+1	XDISPOTIME	8GEN	GC	disponibilite des mesures de temps fournies par le récepteur GNSS sur le jour 	P		%		N
+2	 (FIRST (NTH (<> (- PFDAY XSNAVIDAY) 0) XDISPOTIME (* 100 (/ XJDURVALTIM XJDURSNAVI))) 100)	
+1	XDISPOVIT	8GEN	GC	disponibilite des mesures de positions fournies par le récepteur GNSS sur le j	P		%		N
+2	 (FIRST (NTH (<> (- PFDAY XSNAVIDAY) 0) XDISPOVIT (* 100 (/ XJDURVALVIT XJDURSNAVI))) 100)	
+1	XDONCVN	8GEN	GC	Surveillance du changement d'etat de SIGSALIMRPR	P				N
+2	 (FIRST (= (- SIGSALIMRPR XONCVN) 0 ) 1)	
+1	XDONREPN	8GEN	GC	Surveillance du changement d'etat de ONREPN	P				N
+2	 (FIRST (= (- ONREPN XONREPN) 0 ) 1)	
+1	XDONTMDN	8GEN	GC	Surveillance du changement d'etat de ONTMDN	P				N
+2	 (FIRST (= (- ONTMDN XONTMDN) 0 ) 1)	
+1	XERRORIMG	8GEN	GC	Un ou plusieurs paquets ERRORIMGOP (497) ont été émis. La baissée d'alarme se 	P				N
+2	 (NTH (= APID 497) 0 1)	
+1	XERTAILIMG	8GEN	GC	Un ou plusieurs paquets ERTAILIMGOP (495) ont été émis. La baissée d'alarme se	P				N
+2	 (NTH (= APID 495) 0 1)	
+1	XHPT1SAUVM	8GEN	GC	Sauvegarde d'un point par jour du rapports pression sur temperature pour les r	P		bar/°C		N
+2	 (FIRST (NTH (<> (- PFDAY XMEDRAT2DAY) 0) XHPT1SAUVM XSUMPTHPT1M) XSUMPTHPT1M)	
+1	XHPT1SAUVP	8GEN	GC	Sauvegarde d'un point par jour du rapports pression sur temperature pour les r	P		bar/°C		N
+2	 (FIRST (NTH (<> (- PFDAY XMEDRAT1DAY) 0) XHPT1SAUVP XSUMPTHPT1P) XSUMPTHPT1P)	
+1	XHPT2SAUVM	8GEN	GC	Sauvegarde d'un point par jour du rapports pression sur temperature pour les r	P		bar/°C		N
+2	 (FIRST (NTH (<> (- PFDAY XMEDRAT2DAY) 0) XHPT2SAUVM XSUMPTHPT2M) XSUMPTHPT2M)	
+1	XHPT2SAUVP	8GEN	GC	Sauvegarde d'un point par jour du rapports pression sur temperature pour les r	P		bar/°C		N
+2	 (FIRST (NTH (<> (- PFDAY XMEDRAT1DAY) 0) XHPT2SAUVP XSUMPTHPT2P) XSUMPTHPT2P)	
+1	XINTPVALNB	8GEN	GC	Nombre de canaux de mesure de phase intégrée valide associé à la date du précé	P				N
+2	 (FIRST (+ XS1INTPVLNB (NTH (< (ABS (- (CJDAT XS2INTPVLNB) (CJDAT XS1INTPVLNB))) 0.000001) 0 XS2INTPVLNB) (NTH (< (ABS (- (CJDAT XS3INTPVLNB) (CJDAT XS1INTPVLNB))) 0.000001) 0 XS3INTPVLNB)) 0)	
+1	XJCPTINVPOS	8GEN	GC	Compteur journalier des zones de mesures invalides pour la position fournie pa	P				N
+2	 (FIRST (NTH (<> (- PFDAY XSNAVIDAY) 0)  (NTH (AND (<> VALGPSPOS 3) (= XVALGPSPOS 3)) XJCPTINVPOS (+ XJCPTINVPOS 1)) 0) 0)	
+1	XJCPTINVTIM	8GEN	GC	Compteur journalier des zones de mesures invalides pour le temps fourni par le	P				N
+2	 (FIRST (NTH (<> (- PFDAY XSNAVIDAY) 0)  (NTH (AND (<> VALGPSTIME 3) (= XVALGPSTIM 3)) XJCPTINVTIM (+ XJCPTINVTIM 1)) 0) 0)	
+1	XJDURAGCLCK	8GEN	GC	Durée cumulée de mesures Automatic Gain Control Lock Status à l'état locked de	P		s		N
+2	 (FIRST (NTH (<> (- PFDAY XSRECEIVDAY) 0)  (NTH (= AGCLOCKST 1) XJDURAGCLCK (+ XJDURAGCLCK (MIN 21 (* 86400 (- (CJDAY) XSRECEIVDAT))))) 0) 0)	
+1	XJDURINVPOS	8GEN	GC	Durée cumulée de mesures de positions invalides fournies par le récepteur GNSS	P		s		N
+2	 (FIRST (NTH (<> VALGPSPOS 3) 0 (+ XJDURINVPOS (MIN 21 (* 86400 (- (CJDAY) XSNAVIDAT))))) 0) 	
+1	XJDURINVTIM	8GEN	GC	Durée cumulée de mesures de temps invalides fournies par le récepteur GNSS dep	P		s		N
+2	 (FIRST (NTH (<> VALGPSTIME 3) 0 (+ XJDURINVTIM (MIN 21 (* 86400 (- (CJDAY) XSNAVIDAT))))) 0) 	
+1	XJDURSNAVI	8GEN	GC	Durée cumulée de réception du paquet SNAVIGPS depuis le début de la journée	P		s		N
+2	 (FIRST (NTH (<> (- PFDAY XSNAVIDAY) 0)  (+ XJDURSNAVI (MIN 21 (* 86400 (- (CJDAY) XSNAVIDAT)))) 0) 0)	
+1	XJDURSRECEI	8GEN	GC	Durée cumulée de réception du paquet SRECEIVST depuis le début de la journée	P		s		N
+2	 (FIRST (NTH (<> (- PFDAY XSRECEIVDAY) 0)  (+ XJDURSRECEI (MIN 21 (* 86400 (- (CJDAY) XSRECEIVDAT)))) 0) 0)	
+1	XJDURVALPOS	8GEN	GC	Durée cumulée de mesures de positions valides fournies par le récepteur GNSS d	P		s		N
+2	 (FIRST (NTH (<> (- PFDAY XSNAVIDAY) 0)  (NTH (= VALGPSPOS 3) XJDURVALPOS (+ XJDURVALPOS (MIN 21 (* 86400 (- (CJDAY) XSNAVIDAT))))) 0) 0)	
+1	XJDURVALTIM	8GEN	GC	Durée cumulée de mesures de temps valides fournies par le récepteur GNSS depui	P		s		N
+2	 (FIRST (NTH (<> (- PFDAY XSNAVIDAY) 0)  (NTH (= VALGPSTIME 3) XJDURVALTIM (+ XJDURVALTIM (MIN 21 (* 86400 (- (CJDAY) XSNAVIDAT))))) 0) 0)	
+1	XJDURVALVIT	8GEN	GC	Durée cumulée de mesures de vitesse valides fournies par le récepteur GNSS dep	P		s		N
+2	 (FIRST (NTH (<> (- PFDAY XSNAVIDAY) 0)  (NTH (= VALGPSVELOC 3) XJDURVALVIT (+ XJDURVALVIT (MIN 21 (* 86400 (- (CJDAY) XSNAVIDAT))))) 0) 0)	
+1	XJEDAC	8GEN	GC	Compteur journalier des EDAC plateforme	P				N
+2	 (FIRST (NTH (= XNBTMOBC 1) (+ XJEDAC XDCUMULEDAC) 0) 0)	
+1	XJMAXINVPOS	8GEN	GC	Durée max de mesures de positions invalides fournies par le récepteur GNSS sur	P		s		N
+2	 (FIRST (MAX XJDURINVPOS XJMAXINVPOS) 0) 	
+1	XJMAXINVTIM	8GEN	GC	Durée max de mesures de temps invalides fournies par le récepteur GNSS sur la 	P		s		N
+2	 (FIRST (MAX XJDURINVTIM XJMAXINVTIM) 0) 	
+1	XJSST1CFMES	8GEN	GC	Compteur journalier d'indices de confiance SST compris entre 2 seuils	L				N
+2	 (FIRST (NTH XDEBJOUR 0 (+ XJSST1CFMES (AND (= SST1VALMES 1) (< 7 SST1CONFMES 25)))) 0)	
+1	XJSST1RETAR	8GEN	GC	Nombre de quaternions en retard sur le jour	P				N
+2	 (FIRST (NTH XDEBJOUR 0 (+ XJSST1RETAR (AND (= SST1VALMES 0) (<> NUMSTAR1 0) (<> SST1CONFMES 255)))) 0)	
+1	XJSST2CFMES	8GEN	GC	Compteur journalier d'indices de confiance SST compris entre 2 seuils	P				N
+2	 (FIRST (NTH XDEBJOUR 0 (+ XJSST2CFMES (AND (= SST2VALMES 1) (< 7 SST2CONFMES 25)))) 0)	
+1	XJSST2RETAR	8GEN	GC	Nombre de quaternions en retard sur le jour	P				N
+2	 (FIRST (NTH XDEBJOUR 0 (+ XJSST2RETAR (AND (= SST2VALMES 0) (<> NUMSTAR2 0) (<> SST2CONFMES 255)))) 0)	
+1	XLASTDTCSTM	8GEN	GC	statut LASTDTCSTAP avec inversion des statuts COMPLETED et REJECTED pour perme	L	LLASTTCSTA2			N
+2	 (NTH LASTDTCSTAM 0 1 3 2)	
+1	XLASTDTCSTP	8GEN	GC	statut LASTDTCSTAP avec inversion des statuts COMPLETED et REJECTED pour perme	L	LLASTTCSTA2			N
+2	 (NTH LASTDTCSTAP 0 1 3 2)	
+1	XLASTEVENTM	8GEN	GC	pour surveillance: on exclue les evenements banaux underflow (29) et watchdogt	L	LANOCODE			N
+2	 (FIRST (NTH (OR (= LASTEVENTM 29) (= LASTEVENTM 31)) LASTEVENTM 0) 0)	
+1	XLASTEVENTP	8GEN	GC	pour surveillance: on exclue les evenements banaux underflow (29) et watchdogt	L	LANOCODE			N
+2	 (FIRST (NTH (OR (= LASTEVENTP 29) (= LASTEVENTP 31)) LASTEVENTP 0) 0)	
+1	XLASTTCSTM	8GEN	GC	statut LASTTCSTATM avec inversion des statuts COMPLETED et REJECTED pour perme	L	LLASTTCSTA2			N
+2	 (NTH LASTTCSTATM 0 1 3 2)	
+1	XLASTTCSTP	8GEN	GC	statut LASTTCSTATP avec inversion des statuts COMPLETED et REJECTED pour perme	L	LLASTTCSTA2			N
+2	 (NTH LASTTCSTATP 0 1 3 2)	
+1	XLOCKCHANNB	8GEN	GC	Nombre de canaux valides en poursuite (Tracking 20ms Frame locked)	P				N
+2	 (+ (= STATCHANNL0 8) (= STATCHANNL1 8) (= STATCHANNL2 8) (= STATCHANNL3 8) (= STATCHANNL4 8) (= STATCHANNL5 8) (= STATCHANNL6 8) (= STATCHANNL7 8) (= STATCHANNL8 8))	
+1	XMAXINVPOS	8GEN	GC	Durée max des zones d'invalidité de la position sur le jour précédent	P		s		N
+2	 (FIRST (NTH (<> (- PFDAY XSNAVIDAY) 0) XMAXINVPOS XJMAXINVPOS) 0)	
+1	XMAXINVTIM	8GEN	GC	Durée max des zones d'invalidité du temps sur le jour précédent	P		s		N
+2	 (FIRST (NTH (<> (- PFDAY XSNAVIDAY) 0) XMAXINVTIM XJMAXINVTIM) 0)	
+1	XMEDRAT1DAY	8GEN	GC	Sauvegarde de PFDAY attaché au paquet MEDIUMRATE1	P		quant		N
+2	 (+ PFDAY)	
+1	XMEDRAT2DAY	8GEN	GC	Sauvegarde de PFDAY attaché au paquet MEDIUMRATE2	P		quant		N
+2	 (+ PFDAY)	
+1	XMGTCONV	8GEN	GC	Conditionneur "MGT convergé" pour des surveillances SCAA	P				N
+2	 (AND (= MODESCAO 2) (= PHASEMGT 1))	
+1	XMNOATTDAY	8GEN	GC	Sauvegarde de PFDAY attaché au paquet MNOATTSAT	P		quant		N
+2	 (+ PFDAY)	
+1	XMNORTE2DAY	8GEN	GC	Sauvegarde de PFDAY attaché au paquet MNORTE2	P		quant		N
+2	 (+ PFDAY)	
+1	XMODESAT	8GEN	GC	Mode satellite	L	LMODESAT			N
+2	 (+ MODESAT )	
+1	XMODESV1	8GEN	GC	Surveillance MODESAT (Indicateur de passage en survie)	P				N
+2	 (OR (= MODESAT 6) (= MODESAT 36) (= MODESAT 46) (= MODESAT 56) (= MODESAT 76) )	
+1	XMOYFREP1	8GEN	GC	moyenne par moteur de la valeur de SUMFREP sur 24 heures	P		µN		N
+2	 (MAX (FIRST (NTH (<> (- PFDAY XMNORTE2DAY) 0) XMOYFREP1 (* 1.0E6 (/ (- SUMFREP1 XSUMFREP1) (* 86400 (- (CJDAY) XSUMFREPDAT))))) 0) 0)	
+1	XMOYFREP2	8GEN	GC	moyenne par moteur de la valeur de SUMFREP sur 24 heures	P		µN		N
+2	 (MAX (FIRST (NTH (<> (- PFDAY XMNORTE2DAY) 0) XMOYFREP2 (* 1.0E6 (/ (- SUMFREP2 XSUMFREP2) (* 86400 (- (CJDAY) XSUMFREPDAT))))) 0) 0)	
+1	XMOYFREP3	8GEN	GC	moyenne par moteur de la valeur de SUMFREP sur 24 heures	P		µN		N
+2	 (MAX (FIRST (NTH (<> (- PFDAY XMNORTE2DAY) 0) XMOYFREP3 (* 1.0E6 (/ (- SUMFREP3 XSUMFREP3) (* 86400 (- (CJDAY) XSUMFREPDAT))))) 0) 0)	
+1	XMOYFREP4	8GEN	GC	moyenne par moteur de la valeur de SUMFREP sur 24 heures	L		µN		N
+2	 (MAX (FIRST (NTH (<> (- PFDAY XMNORTE2DAY) 0) XMOYFREP4 (* 1.0E6 (/ (- SUMFREP4 XSUMFREP4) (* 86400 (- (CJDAY) XSUMFREPDAT))))) 0) 0)	
+1	XMOYFREP5	8GEN	GC	moyenne par moteur de la valeur de SUMFREP sur 24 heures	P		µN		N
+2	 (MAX (FIRST (NTH (<> (- PFDAY XMNORTE2DAY) 0) XMOYFREP5 (* 1.0E6 (/ (- SUMFREP5 XSUMFREP5) (* 86400 (- (CJDAY) XSUMFREPDAT))))) 0) 0)	
+1	XMOYFREP6	8GEN	GC	moyenne par moteur de la valeur de SUMFREP sur 24 heures	P		µN		N
+2	 (MAX (FIRST (NTH (<> (- PFDAY XMNORTE2DAY) 0) XMOYFREP6 (* 1.0E6 (/ (- SUMFREP6 XSUMFREP6) (* 86400 (- (CJDAY) XSUMFREPDAT))))) 0) 0)	
+1	XMOYFREP7	8GEN	GC	moyenne par moteur de la valeur de SUMFREP sur 24 heures	P		µN		N
+2	 (MAX (FIRST (NTH (<> (- PFDAY XMNORTE2DAY) 0) XMOYFREP7 (* 1.0E6 (/ (- SUMFREP7 XSUMFREP7) (* 86400 (- (CJDAY) XSUMFREPDAT))))) 0) 0)	
+1	XMOYFREP8	8GEN	GC	moyenne par moteur de la valeur de SUMFREP sur 24 heures	P		µN		N
+2	 (MAX (FIRST (NTH (<> (- PFDAY XMNORTE2DAY) 0) XMOYFREP8 (* 1.0E6 (/ (- SUMFREP8 XSUMFREP8) (* 86400 (- (CJDAY) XSUMFREPDAT))))) 0) 0)	
+1	XMOYFREPGEN	8GEN	GC	moyenne des moyennes par moteur de la valeur de SUMFREP sur 24 heures	P		µN		N
+2	 (/ (+ XMOYFREP1 XMOYFREP2 XMOYFREP3 XMOYFREP4 XMOYFREP5 XMOYFREP6 XMOYFREP7 XMOYFREP8) 8)	
+1	XMOYFREPZM	8GEN	GC	moyenne des moyennes par moteur du panneau ZM de la valeur de SUMFREP sur 24 h	P		µN		N
+2	 (/ (+ XMOYFREP5 XMOYFREP6 XMOYFREP7 XMOYFREP8) 4)	
+1	XMOYFREPZP	8GEN	GC	moyenne des moyennes par moteur du panneau ZP de la valeur de SUMFREP sur 24 h	P		µN		N
+2	 (/ (+ XMOYFREP1 XMOYFREP2 XMOYFREP3 XMOYFREP4) 4)	
+1	XNORBCX	8GEN	GC	Direction de la normale à l'orbite axe X (exprimé en repère de consigne)	P				N
+2	  (- 0 (* 2 (+ (* XQCO2 XQCO3) (* XQCO4 XQCO1))))	
+1	XNORBCY	8GEN	GC	Direction de la normale à l'orbite axe Y (exprimé en repère de consigne)	P				N
+2	 (- 0 (+ (* XQCO1 XQCO1) (* -1 XQCO2 XQCO2) (* XQCO3 XQCO3) (* -1 XQCO4 XQCO4)))	
+1	XNORBCZ	8GEN	GC	Direction de la normale à l'orbite axe Z (exprimé en repère de consigne)	P				N
+2	 (- 0 (* 2 (- (* XQCO3 XQCO4) (* XQCO1 XQCO2))))	
+1	XOBCROUTDAY	8GEN	GC	Sauvegarde de PFDAY attaché au paquet TMOBCROUT	P		quant		N
+2	 (+ PFDAY)	
+1	XOMGESTX	8GEN	GC	Vitesse angulaire absolue estimée du satellite	P		µrad/s		N
+2	 (* OMGESTX 1.0E6)	
+1	XOMGESTY	8GEN	GC	Vitesse angulaire absolue estimée du satellite	P		µrad/s		N
+2	 (* OMGESTY 1.0E6)	
+1	XOMGESTZ	8GEN	GC	Vitesse angulaire absolue estimée du satellite	P		µrad/s		N
+2	 (* OMGESTZ 1.0E6)	
+1	XONCVN	8GEN	GC	SIGSALIMRPR: sauvegarde du point précédent	P				N
+2	 (+ SIGSALIMRPR)	
+1	XONREPN	8GEN	GC	ONREPN: sauvegarde du point précédent	P				N
+2	 (+ ONREPN)	
+1	XONTMDN	8GEN	GC	ONTMDN: sauvegarde du point précédent	P				N
+2	 (+ ONTMDN)	
+1	XPBHPTZM	8GEN	GC	Flag d'erreur si la baisse de la pression est supérieure à 3 bar en 24 heures 	P				N
+2	 (OR (< XDHPT1MEASM -3)  (< XDHPT2MEASM -3) )	
+1	XPBHPTZP	8GEN	GC	Flag d'erreur si la baisse de la pression est supérieure à 3 bar en 24 heures 	P				N
+2	 (OR (< XDHPT1MEASP -3)  (< XDHPT2MEASP -3) )	
+1	XPMASTAZM	8GEN	GC	Vaut 0xdeadbeef lorsque PMASTATUSi vaut 0Xdeadbeef et vaut 0 sinon	P				N
+2	 (* PMASTATUSM (= PMASTATUSM 3735928559))	
+1	XPMASTAZP	8GEN	GC	Vaut 0xdeadbeef lorsque PMASTATUSi vaut 0Xdeadbeef et vaut 0 sinon	P				N
+2	 (* PMASTATUSP (= PMASTATUSP 3735928559))	
+1	XPRVALNB	8GEN	GC	Nombre de canaux de mesure de pseudo-range valide associé à la date du précéde	P				N
+2	 (FIRST (+ XS1PRVALNB (NTH (< (ABS (- (CJDAT XS2PRVALNB) (CJDAT XS1PRVALNB))) 0.000001) 0 XS2PRVALNB) (NTH (< (ABS (- (CJDAT XS3PRVALNB) (CJDAT XS1PRVALNB))) 0.000001) 0 XS3PRVALNB)) 0)	
+1	XPSODEG	8GEN	GC	Position Sur Orbite	P		deg		N
+2	 (MOD (* PSO 57.2957795130823) 360)	
+1	XQCO1	8GEN	GC	Composante 1 Qcons/ol	P				N
+2	 ( + (* QOL1 QCONS1) (* QOL2 QCONS2) (* QOL3 QCONS3) (* QOL4 QCONS4))	
+1	XQCO2	8GEN	GC	Composante 2 Qcons/ol	P				N
+2	 ( + (* QOL1 QCONS2) (* -1 QOL2 QCONS1) (* -1 QOL3 QCONS4) (* QOL4 QCONS3))	
+1	XQCO3	8GEN	GC	Composante 3 Qcons/ol	P				N
+2	 ( + (* QOL1 QCONS3) (* -1 QOL3 QCONS1) (* -1 QOL4 QCONS2) (* QOL2 QCONS4))	
+1	XQCO4	8GEN	GC	Composante 4 Qcons/ol	P				N
+2	 ( + (* QOL1 QCONS4) (* -1 QOL4 QCONS1) (* -1 QOL2 QCONS3) (* QOL3 QCONS2))	
+1	XREPLIFMB	8GEN	GC	Indicateur de repli MNOF sur FDIR équipement ou de reset en MNOG/MNOF/MCAN (At	L	LREPLIFMB			N
+2	 (FIRST (AND (= FLAGACTFL6 0) (OR (= MODESAT 4) (= MODESAT 3))) 0)	
+1	XS1INTPHAS1	8GEN	GC	Channel 1: Integrated phase counter	P				N
+2	 (/ (AND S1VALMEASU1 28) 4)	
+1	XS1INTPHAS2	8GEN	GC	Channel 2: Integrated phase counter	P				N
+2	 (/ (AND S1VALMEASU2 28) 4)	
+1	XS1INTPHAS3	8GEN	GC	Channel 3: Integrated phase counter	P				N
+2	 (/ (AND S1VALMEASU3 28) 4)	
+1	XS1INTPVAL1	8GEN	GC	Channel 1: Integrated phase Validity	L	LVALSIMEAS			N
+2	 (/ (AND S1VALMEASU1 96) 32)	
+1	XS1INTPVAL2	8GEN	GC	Channel 2: Integrated phase Validity	L	LVALSIMEAS			N
+2	 (/ (AND S1VALMEASU2 96) 32)	
+1	XS1INTPVAL3	8GEN	GC	Channel 3: Integrated phase Validity	L	LVALSIMEAS			N
+2	 (/ (AND S1VALMEASU3 96) 32)	
+1	XS1INTPVLNB	8GEN	GC	Nombre de canaux de mesure de phase intégrée valide pour S1RAW	P				N
+2	 (+ (= XS1INTPVAL1 3) (= XS1INTPVAL2 3) (= XS1INTPVAL3 3))	
+1	XS1PRVAL1	8GEN	GC	Channel 1: PR Validity	L	LVALSIMEAS			N
+2	 (AND S1VALMEASU1 3)	
+1	XS1PRVAL2	8GEN	GC	Channel 2: PR Validity	L	LVALSIMEAS			N
+2	 (AND S1VALMEASU2 3)	
+1	XS1PRVAL3	8GEN	GC	Channel 3: PR Validity	L	LVALSIMEAS			N
+2	 (AND S1VALMEASU3 3)	
+1	XS1PRVALNB	8GEN	GC	Nombre de canaux de mesure de pseudo-range valide pour S1RAW	P				N
+2	 (+ (= XS1PRVAL1 3) (= XS1PRVAL2 3) (= XS1PRVAL3 3))	
+1	XS2INTPHAS1	8GEN	GC	Channel 4: Integrated phase counter	P				N
+2	 (/ (AND S2VALMEASU1 28) 4)	
+1	XS2INTPHAS2	8GEN	GC	Channel 5: Integrated phase counter	P				N
+2	 (/ (AND S2VALMEASU2 28) 4)	
+1	XS2INTPHAS3	8GEN	GC	Channel 6: Integrated phase counter	P				N
+2	 (/ (AND S2VALMEASU3 28) 4)	
+1	XS2INTPVAL1	8GEN	GC	Channel 4: Integrated phase Validity	L	LVALSIMEAS			N
+2	 (/ (AND S2VALMEASU1 96) 32)	
+1	XS2INTPVAL2	8GEN	GC	Channel 5: Integrated phase Validity	L	LVALSIMEAS			N
+2	 (/ (AND S2VALMEASU2 96) 32)	
+1	XS2INTPVAL3	8GEN	GC	Channel 6: Integrated phase Validity	L	LVALSIMEAS			N
+2	 (/ (AND S2VALMEASU3 96) 32)	
+1	XS2INTPVLNB	8GEN	GC	Nombre de canaux de mesure de phase intégrée valide pour S2RAW	P				N
+2	 (+ (= XS2INTPVAL1 3) (= XS2INTPVAL2 3) (= XS2INTPVAL3 3))	
+1	XS2PRVAL1	8GEN	GC	Channel 4: PR Validity	L	LVALSIMEAS			N
+2	 (AND S2VALMEASU1 3)	
+1	XS2PRVAL2	8GEN	GC	Channel 5: PR Validity	L	LVALSIMEAS			N
+2	 (AND S2VALMEASU2 3)	
+1	XS2PRVAL3	8GEN	GC	Channel 6: PR Validity	L	LVALSIMEAS			N
+2	 (AND S2VALMEASU3 3)	
+1	XS2PRVALNB	8GEN	GC	Nombre de canaux de mesure de pseudo-range valide pour S2RAW	P				N
+2	 (+ (= XS2PRVAL1 3) (= XS2PRVAL2 3) (= XS2PRVAL3 3))	
+1	XS3INTPHAS1	8GEN	GC	Channel 7: Integrated phase counter	P				N
+2	 (/ (AND S3VALMEASU1 28) 4)	
+1	XS3INTPHAS2	8GEN	GC	Channel 8: Integrated phase counter	P				N
+2	 (/ (AND S3VALMEASU2 28) 4)	
+1	XS3INTPHAS3	8GEN	GC	Channel 9: Integrated phase counter	P				N
+2	 (/ (AND S3VALMEASU3 28) 4)	
+1	XS3INTPVAL1	8GEN	GC	Channel 7: Integrated phase Validity	L	LVALSIMEAS			N
+2	 (/ (AND S3VALMEASU1 96) 32)	
+1	XS3INTPVAL2	8GEN	GC	Channel 8: Integrated phase Validity	L	LVALSIMEAS			N
+2	 (/ (AND S3VALMEASU2 96) 32)	
+1	XS3INTPVAL3	8GEN	GC	Channel 9: Integrated phase Validity	L	LVALSIMEAS			N
+2	 (/ (AND S3VALMEASU3 96) 32)	
+1	XS3INTPVLNB	8GEN	GC	Nombre de canaux de mesure de phase intégrée valide pour S3RAW	P				N
+2	 (+ (= XS3INTPVAL1 3) (= XS3INTPVAL2 3) (= XS3INTPVAL3 3))	
+1	XS3PRVAL1	8GEN	GC	Channel 7: PR Validity	L	LVALSIMEAS			N
+2	 (AND S3VALMEASU1 3)	
+1	XS3PRVAL2	8GEN	GC	Channel 8: PR Validity	L	LVALSIMEAS			N
+2	 (AND S3VALMEASU2 3)	
+1	XS3PRVAL3	8GEN	GC	Channel 9: PR Validity	L	LVALSIMEAS			N
+2	 (AND S3VALMEASU3 3)	
+1	XS3PRVALNB	8GEN	GC	Nombre de canaux de mesure de pseudo-range valide pour S3RAW	P				N
+2	 (+ (= XS3PRVAL1 3) (= XS3PRVAL2 3) (= XS3PRVAL3 3))	
+1	XSNAVIDAY	8GEN	GC	Sauvegarde de PFDAY attaché au paquet SNAVIGPS	P		quant		N
+2	 (+ PFDAY)	
+1	XSRECEIVDAY	8GEN	GC	Sauvegarde de PFDAY attaché au paquet SRECEIVST précédent	P		quant		N
+2	 (+ PFDAY)	
+1	XSUMFREP1	8GEN	GC	sauvegarde de la valeur de SUMFREPi du jour précédent	P		Ns		N
+2	 (FIRST (NTH (<> (- PFDAY XMNORTE2DAY) 0) XSUMFREP1 SUMFREP1) SUMFREP1)	
+1	XSUMFREP2	8GEN	GC	sauvegarde de la valeur de SUMFREPi du jour précédent	P		Ns		N
+2	 (FIRST (NTH (<> (- PFDAY XMNORTE2DAY) 0) XSUMFREP2 SUMFREP2) SUMFREP2)	
+1	XSUMFREP3	8GEN	GC	sauvegarde de la valeur de SUMFREPi du jour précédent	P		Ns		N
+2	 (FIRST (NTH (<> (- PFDAY XMNORTE2DAY) 0) XSUMFREP3 SUMFREP3) SUMFREP3)	
+1	XSUMFREP4	8GEN	GC	sauvegarde de la valeur de SUMFREPi du jour précédent	P		Ns		N
+2	 (FIRST (NTH (<> (- PFDAY XMNORTE2DAY) 0) XSUMFREP4 SUMFREP4) SUMFREP4)	
+1	XSUMFREP5	8GEN	GC	sauvegarde de la valeur de SUMFREPi du jour précédent	P		Ns		N
+2	 (FIRST (NTH (<> (- PFDAY XMNORTE2DAY) 0) XSUMFREP5 SUMFREP5) SUMFREP5)	
+1	XSUMFREP6	8GEN	GC	sauvegarde de la valeur de SUMFREPi du jour précédent	P		Ns		N
+2	 (FIRST (NTH (<> (- PFDAY XMNORTE2DAY) 0) XSUMFREP6 SUMFREP6) SUMFREP6)	
+1	XSUMFREP7	8GEN	GC	sauvegarde de la valeur de SUMFREPi du jour précédent	P		Ns		N
+2	 (FIRST (NTH (<> (- PFDAY XMNORTE2DAY) 0) XSUMFREP7 SUMFREP7) SUMFREP7)	
+1	XSUMFREP8	8GEN	GC	sauvegarde de la valeur de SUMFREPi du jour précédent	P		Ns		N
+2	 (FIRST (NTH (<> (- PFDAY XMNORTE2DAY) 0) XSUMFREP8 SUMFREP8) SUMFREP8)	
+1	XSUMFREPDAT	8GEN	GC	sauvegarde de la date associé aux valeurs de SUMFREPi du jour précédent	P		jours		N
+2	 (FIRST (NTH (<> (- PFDAY XMNORTE2DAY) 0) XSUMFREPDAT (CJDAY)) (CJDAY))	
+1	XSUMPTHPT1M	8GEN	GC	Somme des rapports pression sur temperature pour les reservoirs haute pression	P		bar/°C		N
+2	 (+ (/ HPT1MEASM TH01TANK1M) (/ HPT1MEASM TH02TANK2M) (/ HPT1MEASM TH03TANK3M))	
+1	XSUMPTHPT1P	8GEN	GC	Somme des rapports pression sur temperature pour les reservoirs haute pression	P		bar/°C		N
+2	 (+ (/ HPT1MEASP TH01TANK1P) (/ HPT1MEASP TH02TANK2P) (/ HPT1MEASP TH03TANK3P))	
+1	XSUMPTHPT2M	8GEN	GC	Somme des rapports pression sur temperature pour les reservoirs haute pression	P		bar/°C		N
+2	 (+ (/ HPT2MEASM TH01TANK1M) (/ HPT2MEASM TH02TANK2M) (/ HPT2MEASM TH03TANK3M))	
+1	XSUMPTHPT2P	8GEN	GC	Somme des rapports pression sur temperature pour les reservoirs haute pression	P		bar/°C		N
+2	 (+ (/ HPT2MEASP TH01TANK1P) (/ HPT2MEASP TH02TANK2P) (/ HPT2MEASP TH03TANK3P))	
+1	XTERRCX	8GEN	GC	Direction centre terre axe X (exprimé en repère de consigne)	P				N
+2	 (* 2 (- (* XQCO2 XQCO4) (* XQCO1 XQCO3)))	
+1	XTERRCY	8GEN	GC	Direction centre terre axe Y (exprimé en repère de consigne)	P				N
+2	 (* 2 (+ (* XQCO3 XQCO4) (* XQCO1 XQCO2)))	
+1	XTERRCZ	8GEN	GC	Direction centre terre axe Z (exprimé en repère de consigne)	P				N
+2	 (+ (* XQCO1 XQCO1) (* -1 XQCO2 XQCO2) (* -1 XQCO3 XQCO3) (* XQCO4 XQCO4))	
+1	XTSAGEON	8GEN	GC	Pour conditionner les surveillances TSAGE	P				N
+2	 (OR (= SREFN 1) (= SREFR 1) (= SEPN 1) (= SEPR 1) )	
+1	XVALGPS	8GEN	GC	Validite complete GNSS: validite temps ET Position ET Vitesse	P				N
+2	 (AND (= VALGPSTIME 3) (= VALGPSPOS 3) (= VALGPSVELOC 3))	
+1	XVALGPSPOS	8GEN	GC	Validité de la position GPS: sauvegarde du point précédent	P				N
+2	 (+ VALGPSPOS)	
+1	XVALGPSTIM	8GEN	GC	Validité du temps GPS: sauvegarde du point précédent	P				N
+2	 (+ VALGPSTIME)	
+1	YBFREQEST	8GEN	GC	Biais de fréquence OCXO estimé (en ppm)	P		ppm		N
+2	 (* (- (/ (MOD (- YHBRECEPP1 YHBRECEP) 1048576) (- YTRECEPTP1 YTRECEPT)) 1) 1E6)	
+1	YNUMBITTM	8GEN	GC	Résultat de la décommutation du numéro de bit dans la trame TM capturé dans le	P				N
+2	 (DIV YREGDISTRAM 1024)	
+1	YNUMTM	8GEN	GC	Résultat de la décommutation du numéro de trame TM capturé dans le registre Re	P				N
+2	 (AND (DIV YREGDISTRAM 2) 255)	
+1	YREGMUS	8GEN	GC	Résultat de la décommutationdu nombre de micro secondes écoulées dans le bit T	P		microsec		N
+2	 (DIV YREGDISTBIT 64)	
+1	YREGTENTHUS	8GEN	GC	Résultat de la décommutationdu nombre de dixièmes de micro secondes écoulés da	P		100ns		N
+2	 (AND (DIV YREGDISTBIT 2) 15)	
+1	YRGDATEFRAC	8GEN	GC	Résultat de la décommutation du contenu du registre RegDateTCD du FPGA TMTC bo	P		s		N
+2	 (/ (AND (DIV YREGDATETCD 2) 1023) 1000)	
+1	YRGDATEINT	8GEN	GC	Résultat de la décommutation du contenu du registre RegDateTCD du FPGA TMTC bo	P		s		N
+2	 (DIV YREGDATETCD 4096)	
+1	YTFREQEST	8GEN	GC	Date UTC d estimation de YBFREQEST (en jours depuis le 31/12/1899 = date Excel	P		j Excel		N
+2	 (+ (/ (/ (+ YTRECEPTP1 YTRECEPT) 2) 86400) 36727)	
+1	ZANOCU	8GEN	GC	Compteur global niveau CU	P				N
+2	 (+ ZANOCU1 ZANOCU2)	
+1	ZANOCU1	8GEN	GC	Compteur intermédiaire niveau CU numéro 1 (ce compteur est composé de calculés	P				N
+2	 (+ 0)	
+1	ZANOCU2	8GEN	GC	Compteur intermédiaire niveau CU numéro 2 (ce compteur est composé de calculés	P				N
+2	 (+ 0)	
+1	ZANOPF	8GEN	GC	Compteur global niveau PF	P				N
+2	 (+ ZANOPF1 ZANOPF2)	
+1	ZANOPF1	8GEN	GC	Compteur intermédiaire niveau PF numéro 1 (ce compteur est composé de calculés	P				N
+2	 (+ (FIRST ZEFLSH 0)(FIRST ZEDRAM 0)(FIRST ZEWDG 0)(FIRST ZEI2C 0)(FIRST ZETIME 0)(FIRST ZEIFCU 0)(FIRST ZEGNSS 0)(FIRST ZEECM 0)(FIRST ZEIFTC 0)(FIRST ZETTC 0)(FIRST ZETC 0)(FIRST ZETM 0)(FIRST ZEAQCM 0)(FIRST ZEMOD 0))	
+1	ZANOPF2	8GEN	GC	Compteur intermédiaire niveau PF numéro 2 (ce compteur est composé de calculés	P				N
+2	 (+ (FIRST ZMESSAGELV 0)(FIRST ZESCAO 0)(FIRST ZEALIM 0)(FIRST ZETHER 0))	
+1	ZDERTCI	8GEN	GC	Dernière TCI recue	L	LAPIDTC			N
+2	 ( + APIDTCI (* 10000 IDENTTCI))	
+1	ZDTCFILE1	8GEN	GC	Mnémo dernière TC File 1	L	LAPIDTC			N
+2	 (+ APIDDTC1 (* 10000 IDENDTC1 ))	
+1	ZDTCFILE2	8GEN	GC	Mnémo dernière TC File 2	L	LAPIDTC			N
+2	 (+ APIDDTC2 (* 10000 IDENDTC2 ))	
+1	ZDTCFILE3	8GEN	GC	Mnémo dernière TC File 3	L	LAPIDTC			N
+2	 (+ APIDDTC3 (* 10000 IDENDTC3 ))	
+1	ZDTCFILE4	8GEN	GC	Mnémo dernière TC File 4	L	LAPIDTC			N
+2	 (+ APIDDTC4 (* 10000 IDENDTC4 ))	
+1	ZDTCFILE5	8GEN	GC	Mnémo dernière TC File 5	L	LAPIDTC			N
+2	 (+ APIDDTC5 (* 10000 IDENDTC5 ))	
+1	ZDTCFILE6	8GEN	GC	Mnémo dernière TC File 6	L	LAPIDTC			N
+2	 (+ APIDDTC6 (* 10000 IDENDTC6 ))	
+1	ZDTCFILE7	8GEN	GC	Mnémo dernière TC File 7	L	LAPIDTC			N
+2	 (+ APIDDTC7 (* 10000 IDENDTC7 ))	
+1	ZDTCFILE8	8GEN	GC	Mnémo dernière TC File 8	L	LAPIDTC			N
+2	 (+ APIDDTC8 (* 10000 IDENDTC8 ))	
+1	ZDTCFILE9	8GEN	GC	Mnémo dernière TC File 9	L	LAPIDTC			N
+2	 (+ APIDDTC9 (* 10000 IDENDTC9 ))	
+1	ZPTCFILE1	8GEN	GC	Mnémo première TC File 1	L	LAPIDTC			N
+2	 (+ APIDPTC1 (* 10000 IDENPTC1 ))	
+1	ZPTCFILE2	8GEN	GC	Mnémo première TC File 2	L	LAPIDTC			N
+2	 (+ APIDPTC2 (* 10000 IDENPTC2 ))	
+1	ZPTCFILE3	8GEN	GC	Mnémo première TC File 3	L	LAPIDTC			N
+2	 (+ APIDPTC3 (* 10000 IDENPTC3 ))	
+1	ZPTCFILE4	8GEN	GC	Mnémo première TC File 4	L	LAPIDTC			N
+2	 (+ APIDPTC4 (* 10000 IDENPTC4 ))	
+1	ZPTCFILE5	8GEN	GC	Mnémo première TC File 5	L	LAPIDTC			N
+2	 (+ APIDPTC5 (* 10000 IDENPTC5 ))	
+1	ZPTCFILE6	8GEN	GC	Mnémo première TC File 6	L	LAPIDTC			N
+2	 (+ APIDPTC6 (* 10000 IDENPTC6 ))	
+1	ZPTCFILE7	8GEN	GC	Mnémo première TC File 7	L	LAPIDTC			N
+2	 (+ APIDPTC7 (* 10000 IDENPTC7 ))	
+1	ZPTCFILE8	8GEN	GC	Mnémo première TC File 8	L	LAPIDTC			N
+2	 (+ APIDPTC8 (* 10000 IDENPTC8 ))	
+1	ZPTCFILE9	8GEN	GC	Mnémo première TC File 9	L	LAPIDTC			N
+2	 (+ APIDPTC9 (* 10000 IDENPTC9 ))	
+1	GPSTUCSWNB	8GPS	GC	Date UTC du PVT (au format GPS) : seconde	P		s		N
+2	 (INT (- XGPSUTCS (* GPSTUCWNB 604800)))	
+1	GPSTUCWNB	8GPS	GC	Date UTC du PVT (au format GPS) : semaine	P		s		N
+2	 (INT (/ XGPSUTCS 604800))	
+1	XALTGNSS	8GPS	GC	Altitude géocentrique calculée par le récepteur GNSS	P		m		N
+2	  (SQRT (+ (* SNAVIPOSX SNAVIPOSX) (* SNAVIPOSY SNAVIPOSY) (* SNAVIPOSZ SNAVIPOSZ) ) )	
+1	XANOPVTPOS	8GPS	GC	Incohérence de la position fournie par le récepteur GNSS vs l'estimation SCAA	P				N
+2	 (AND (= VALGPSPOS 3) (OR (> XALTGNSS (* ALT 1.05)) (< XALTGNSS (* ALT 0.95))))	
+1	XANOPVTVIT	8GPS	GC	Incohérence de la vitesse fournie par le récepteur GNSS vs l'estimation SCAA	P				N
+2	 (AND (= VALGPSVELOC 3) (OR (> XVITGNSS (* XVITSCAA 1.05)) (< XVITGNSS (*  XVITSCAA 0.95))))	
+1	XDANOPVTPOS	8GPS	GC	Durée cumulée de l'incohérence en position en nombre de secondes	P		s		N
+2	  (FIRST (NTH (= XANOPVTPOS 0) (+ XDANOPVTPOS (* 86400 (- (CJDAY) XSNAVIDAT))) XDANOPVTPOS) 0)	
+1	XDANOPVTTIM	8GPS	GC	Durée cumulée de l'incohérence de la datation en nombre de secondes	P		s		N
+2	  (FIRST (NTH (< 14 XDOBTGNSSS 18) (+ XDANOPVTTIM (* 86400 (- (CJDAY) XTMCORTPDAT))) XDANOPVTTIM) 0)	
+1	XDANOPVTVIT	8GPS	GC	Durée cumulée de l'incohérence en vitesse en nombre de secondes	P		s		N
+2	  (FIRST (NTH (= XANOPVTVIT 0) (+ XDANOPVTVIT (* 86400 (- (CJDAY) XSNAVIDAT))) XDANOPVTVIT) 0)	
+1	XDNAVSECIWK	8GPS	GC	Ecart entre 2 paquets SNAVIGPS successifs du nombre de secondes dans la semain	P		s		N
+2	 (FIRST (- SNAVISECIWK XSNAVISEIWK) 0)	
+1	XDOBTGNSSI	8GPS	GC	Différence entre date UTC de l'OBC et date GPST du Rx GNSS	P		s		N
+2	 (- (+ (/ OBT1HZ 1000) (* (NTH (= GNSSTIMBASE 1) 333 7501) 86400)) (+ (* WEEKNBPTD 604800) SECWEEKPTD (/ SECFRACTPTD 1000000000)))	
+1	XDOBTGNSSS	8GPS	GC	Estimation de la différence entre UTC et GPST	P		s		N
+2	 (NTH (>= XDOBTGNSSI 0) (- 0 (INT (ABS (- XDOBTGNSSI 0.5)))) (INT (+ XDOBTGNSSI 0.5)))	
+1	XDRECSECIWK	8GPS	GC	En HKTMR, pour surveiller l'écart entre 2 paquets SRECEIVST successifs du nomb	P		s		N
+2	 (FIRST (- SRECSECIWK XSRECSECIWK) 0)	
+1	XDSCHSECIWK	8GPS	GC	Ecart entre 2 paquets SCHANST successifs du nombre de secondes dans la semaine	P		s		N
+2	 (FIRST (- SCHASECINWK XSCHASEINWK) 0)	
+1	XDSRWSECIWK	8GPS	GC	Ecart entre 2 paquets S1RAWD successifs du nombre de secondes dans la semaine	P		s		N
+2	 (FIRST (- S1RASECINWK XS1RASEINWK) 0)	
+1	XDSTISECIWK	8GPS	GC	Ecart entre 2 paquets TMCORTPS successifs du nombre de secondes dans la semain	P		s		N
+2	 (FIRST (- STIMELOCSIW XSTIMLOCSIW) 0)	
+1	XDURINVPOS	8GPS	GC	Durée successive d'invalidité pour les positions fournies par le récepteur GNS	P		s		N
+2	 (FIRST (NTH (= VALGPSPOS 3) (+ XDURINVPOS  (MIN (* 86400 (- (CJDAY) XSNAVIDAT)) 21)) 0) 0) 	
+1	XDURINVTIME	8GPS	GC	Durée successive d'invalidité pour le temps fourni par le récepteur GNSS	P		s		N
+2	 (FIRST (NTH (= VALGPSTIME 3) (+ XDURINVTIME  (MIN (* 86400 (- (CJDAY) XSNAVIDAT)) 21)) 0) 0) 	
+1	XDURINVVEL	8GPS	GC	Durée successive d'invalidité pour les vitesses fournies par le récepteur GNSS	P		s		N
+2	 (FIRST (NTH (= VALGPSVELOC 3) (+ XDURINVVEL  (MIN (* 86400 (- (CJDAY) XSNAVIDAT)) 21)) 0) 0) 	
+1	XERROBTGNSS	8GPS	GC	Erreur de la date UTC de l'OBC (OBT)	P		s		N
+2	 (- XDOBTGNSSI XDOBTGNSSS)	
+1	XHWSRVST	8GPS	GC	Surveillance HWRSRVSTATUS: pour surveiller si différent de 0 ou 1024	L	LHWSRVST			N
+2	 (NTH (= HWSRVSTATUS 0) (NTH (= HWSRVSTATUS 1024) 2 1) 0)	
+1	XS1RASEINWK	8GPS	GC	S1RASECINWK: sauvegarde du point précédent	P				N
+2	 (+ S1RASECINWK)	
+1	XSCHASEINWK	8GPS	GC	SCHASECINWK: sauvegarde du point précédent	P				N
+2	 (+ SCHASECINWK)	
+1	XSNAVIDAT	8GPS	GC	sauvegarde de la date du paquet précédent	P		jours		N
+2	 (+ (CJDAY))	
+1	XSNAVIGPSVX	8GPS	GC	GPS Velocity in WGS84 ECEF X avec condition de significativité activée (contou	P		m/s	XVALGPS	N
+2	 (+ SNAVIGPSVX)	
+1	XSNAVIGPSVY	8GPS	GC	GPS Velocity in WGS84 ECEF Y avec condition de significativité activée (contou	P		m/s	XVALGPS	N
+2	 (+ SNAVIGPSVY)	
+1	XSNAVIGPSVZ	8GPS	GC	GPS Velocity in WGS84 ECEF Z avec condition de significativité activée (contou	P		m/s	XVALGPS	N
+2	 (+ SNAVIGPSVZ)	
+1	XSNAVION	8GPS	GC	Réception paquet SNAVIGPS nom ou debug pour surveillance validité PVT	P				N
+2	 (+ ETATSNAVI (* 2 ETATSNAVID))	
+1	XSNAVIPOSX	8GPS	GC	GPS Position in WGS84 ECEF X avec condition de significativité activée (contou	P		m	XVALGPS	N
+2	 (+ SNAVIPOSX)	
+1	XSNAVIPOSY	8GPS	GC	GPS Position in WGS84 ECEF Y avec condition de significativité activée (contou	P		m	XVALGPS	N
+2	 (+ SNAVIPOSY)	
+1	XSNAVIPOSZ	8GPS	GC	GPS Position in WGS84 ECEF Z avec condition de significativité activée (contou	P		m	XVALGPS	N
+2	 (+ SNAVIPOSZ)	
+1	XSNAVISEIWK	8GPS	GC	SNAVISECIWK: sauvegarde du point précédent	P				N
+2	 (+ SNAVISECIWK)	
+1	XSRECEIVDAT	8GPS	GC	sauvegarde de la date du paquet précédent	P		jours		N
+2	 (+ (CJDAY))	
+1	XSRECSECIWK	8GPS	GC	SRECSECIWK: sauvegarde du point précédent	P				N
+2	 (+ SRECSECIWK)	
+1	XSTIMLOCSIW	8GPS	GC	STIMELOCSIW: sauvegarde du point précédent	P				N
+2	 (+ STIMELOCSIW)	
+1	XSYNCHARCPU	8GPS	GC	SYNTCHARCPU: sauvegarde du point précédent	P				N
+2	 (+ SYNTCHARCPU)	
+1	XTCREJCRCST	8GPS	GC	TCREJCRCSTA: sauvegarde du point précédent	P				N
+2	 (+ TCREJCRCSTA)	
+1	XTCREJINVST	8GPS	GC	TCREJINVSTA: sauvegarde du point précédent	P				N
+2	 (+ TCREJINVSTA)	
+1	XTMCORTPDAT	8GPS	GC	sauvegarde de la date du paquet précédent	P		jours		N
+2	 (+ (CJDAY))	
+1	XVITGNSS	8GPS	GC	Norme de la vitesse du satellite calculée par le récepteur GNSS	P		m/s		N
+2	  (SQRT (+ (* SNAVIGPSVX SNAVIGPSVX) (* SNAVIGPSVY SNAVIGPSVY) (* SNAVIGPSVZ SNAVIGPSVZ) ) )	
+1	XVITSCAA	8GPS	GC	Norme de la vitesse du satellite calculée par le SCAA	P		m/s		N
+2	  (SQRT (/ XMUTERRE ALT) )	
+1	XI2CMSG	8I2C	GC	Message EI2C	L	LSSTI2C			N
+2	 (NTH (= (DIV YMESI2C2 65536) 65409) 0 1)	
+1	XCHARCPU	8OBC	GC	charge CPU instantanée en % d'occupation	P				N
+2	 (FIRST (NTH (AND (< 0 XDATETMOBCD 8000) (> XDATETMOBCD (* 0.12 XSYNTCHARD) ) ) XCHARCPU (* 100 (/  (- XDATETMOBCD (* 0.12 XSYNTCHARD ) ) XDATETMOBCD))) 0)	
+1	XCHARCPUM	8OBC	GC	charge CPU en % d'occupation moyenne sur 24 h	P				N
+2	 (FIRST (NTH (= XNBTMOBC 1) XCHARCPUM (* 100 (/  (- XCUMDTMOBC (* 0.12 XCUMSYNCHR )) XCUMDTMOBC)) ) 0)	
+1	XCUMDTMOBC	8OBC	GC	Accumulateur des écarts de date de la TMOBCROUT sur une journée	P				N
+2	 (FIRST (NTH (= XNBTMOBC 2) (NTH (AND (< 0 XDATETMOBCD 8000) (> XDATETMOBCD (* 0.12 XSYNTCHARD) ) ) XCUMDTMOBC (+ XCUMDTMOBC XDATETMOBCD)) XDATETMOBCD ) 0)	
+1	XCUMSYNCHR	8OBC	GC	Accumulateur des écarts du compteur CHARCPU sur une journée	P				N
+2	 (FIRST (NTH (= XNBTMOBC 2) (NTH (AND (< 0 XDATETMOBCD 8000) (> XDATETMOBCD (* 0.12 XSYNTCHARD) ) ) XCUMSYNCHR (+ XCUMSYNCHR XSYNTCHARD) ) XSYNTCHARD) 0)	
+1	XDATETMOBC	8OBC	GC	date en secondes écoulées dans la journée d'arrivée du  paquet TMOBCROUT pour 	P				N
+2	 (+ (* PFHOUR 3600) (* PFMINUTE 60.0) PFSECOND)	
+1	XDATETMOBC1	8OBC	GC	Variable intermédiaire pour le calcul de XDATATMOBCD	P				N
+2	 (FIRST (- (+ (* PFHOUR 3600) (* PFMINUTE 60.0) PFSECOND) XDATETMOBC ) 0)	
+1	XDATETMOBCD	8OBC	GC	Ecart en secondes d'arrivée de 2 paquets TMOBCROUT pour calcul des XCHARCPU	P				N
+2	 (NTH (< XDATETMOBC1 0) XDATETMOBC1 (+ XDATETMOBC1 86400) )	
+1	XNBTMOBC	8OBC	GC	Nombre de paquets TMOBCROUT reçus dans la journée	P				N
+2	 (FIRST(NTH (= (- PFDAY XOBCROUTDAY) 0) 1 (+ XNBTMOBC 1)) 1)	
+1	XSYNTCHARD	8OBC	GC	Delta de l'observable SYNTCHARCPU utilisé pour le calcul de la charge CPU	P				N
+2	 (FIRST (MOD (- SYNTCHARCPU XSYNCHARCPU)  65536) 0)	
+1	XSST1TYPMSG	8SST	GC	Type du message SST	L	LSSTTMSG			N
+2	 (NTH XI2CMSG 0 (INT (+ (* 256 (AND YMESI2C4 255)) (/ YMESI2C3 16777216))))	
+1	XSST2TYPEVT	8SST	GC	Type d'evenement du message SST	L	LSSTEVTTYPE			N
+2	 (NTH (= XSST1TYPMSG 518) 0 (INT (AND YMESI2C5 255)))	
+1	XSST3EVTMSG	8SST	GC	Evenement du message SST	L	LSSTEVT			N
+2	 (NTH (= XSST1TYPMSG 513) (NTH (= XSST1TYPMSG 518) 0 (INT (+ (* 256 (AND YMESI2C5 255)) (/ YMESI2C4 16777216)))) (INT (/ YMESI2C4 16777216)))	
+1	XSST4EVTP1	8SST	GC	Premier parametre des evenements SST de type failure report	P				N
+2	 (INT (+ (/ YMESI2C5 256) (AND YMESI2C6 4278190080)))	
+1	XSST5EVTP2	8SST	GC	Second parametre des evenements SST de type failure report	P				N
+2	 (INT (+ (/ YMESI2C6 256) (AND YMESI2C7 4278190080)))	
+1	ZACCTM1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZACCTM1 1) 1) 100)	
+1	ZACCTM2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZACCTM2 1) 1) 100)	
+1	ZACKACTABPF	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZACKACTABPF 1) 1) 100)	
+1	ZACKACTPLPF	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZACKACTPLPF 1) 1) 100)	
+1	ZACKCPTABPF	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZACKCPTABPF 1) 1) 100)	
+1	ZACKMEMSST	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZACKMEMSST 1) 1) 100)	
+1	ZACKRALEPH	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZACKRALEPH 1) 1) 100)	
+1	ZACKRATT	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZACKRATT 1) 1) 100)	
+1	ZACKRC	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZACKRC 1) 1) 100)	
+1	ZACKRCACQ	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZACKRCACQ 1) 1) 100)	
+1	ZACKRCANT	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZACKRCANT 1) 1) 100)	
+1	ZACKRCBOMB	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZACKRCBOMB 1) 1) 100)	
+1	ZACKRCCHAN	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZACKRCCHAN 1) 1) 100)	
+1	ZACKRCCS	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZACKRCCS 1) 1) 100)	
+1	ZACKRCEM	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZACKRCEM 1) 1) 100)	
+1	ZACKRCEXTIE	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZACKRCEXTIE 1) 1) 100)	
+1	ZACKRCOEXOB	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZACKRCOEXOB 1) 1) 100)	
+1	ZACKRCTR	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZACKRCTR 1) 1) 100)	
+1	ZACKRDAT	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZACKRDAT 1) 1) 100)	
+1	ZACKRNAV	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZACKRNAV 1) 1) 100)	
+1	ZACKTRSFPF	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZACKTRSFPF 1) 1) 100)	
+1	ZACKVIDERTM	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZACKVIDERTM 1) 1) 100)	
+1	ZACKWMODE	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZACKWMODE 1) 1) 100)	
+1	ZAUTOTS1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZAUTOTS1 1) 1) 100)	
+1	ZAUTOTS2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZAUTOTS2 1) 1) 100)	
+1	ZBOMB	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZBOMB 1) 1) 100)	
+1	ZBOOTREPOR1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZBOOTREPOR1 1) 1) 100)	
+1	ZBOOTREPOR2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZBOOTREPOR2 1) 1) 100)	
+1	ZBUFFERLVC	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZBUFFERLVC 1) 1) 100)	
+1	ZCALIBRATE1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZCALIBRATE1 1) 1) 100)	
+1	ZCALIBRATE2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZCALIBRATE2 1) 1) 100)	
+1	ZCOMBLINACC	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZCOMBLINACC 1) 1) 100)	
+1	ZCOMCONT	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZCOMCONT 1) 1) 100)	
+1	ZCONTROLTUC	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZCONTROLTUC 1) 1) 100)	
+1	ZDATABEGPF	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZDATABEGPF 1) 1) 100)	
+1	ZDATAENDPF	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZDATAENDPF 1) 1) 100)	
+1	ZDATAPRTPF	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZDATAPRTPF 1) 1) 100)	
+1	ZDATEIMGOP	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZDATEIMGOP 1) 1) 100)	
+1	ZDIRLVC	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZDIRLVC 1) 1) 100)	
+1	ZDUMDM1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZDUMDM1 1) 1) 100)	
+1	ZDUMDM2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZDUMDM2 1) 1) 100)	
+1	ZDUMPARAT1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZDUMPARAT1 1) 1) 100)	
+1	ZDUMPARAT2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZDUMPARAT2 1) 1) 100)	
+1	ZDUMPARBO1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZDUMPARBO1 1) 1) 100)	
+1	ZDUMPARBO2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZDUMPARBO2 1) 1) 100)	
+1	ZDUMPARCU1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZDUMPARCU1 1) 1) 100)	
+1	ZDUMPARCU2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZDUMPARCU2 1) 1) 100)	
+1	ZDUMPARTO1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZDUMPARTO1 1) 1) 100)	
+1	ZDUMPARTO2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZDUMPARTO2 1) 1) 100)	
+1	ZDUMPASW1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZDUMPASW1 1) 1) 100)	
+1	ZDUMPASW2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZDUMPASW2 1) 1) 100)	
+1	ZDUMPDRAMPF	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZDUMPDRAMPF 1) 1) 100)	
+1	ZDUMPE2P1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZDUMPE2P1 1) 1) 100)	
+1	ZDUMPE2P2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZDUMPE2P2 1) 1) 100)	
+1	ZDUMPM1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZDUMPM1 1) 1) 100)	
+1	ZDUMPM2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZDUMPM2 1) 1) 100)	
+1	ZEALIMYY	8GEN	GC	Date du paquet EALIM	P				N
+2	(FIRST ANOYEAR 0)	
+1	ZEALIMMM	8GEN	GC	Date du paquet EALIM	P				N
+2	(FIRST ANOMONTH 0)	
+1	ZEALIMDD	8GEN	GC	Date du paquet EALIM	P				N
+2	(FIRST ANODAY 0)	
+1	ZEALIMHH	8GEN	GC	Date du paquet EALIM	P				N
+2	(FIRST ANOHOUR 0)	
+1	ZEALIMMN	8GEN	GC	Date du paquet EALIM	P				N
+2	(FIRST ANOMINUTE 0)	
+1	ZEALIMSS	8GEN	GC	Date du paquet EALIM	P				N
+2	(FIRST ANOSECOND 0)	
+1	ZEALIM	8GEN	GC	Compteur Paquet EALIM	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEALIM 0) (FIRST ZEALIM 0))) (* (< APID 2015) (MOD (FIRST (+  ZEALIM 1) 1) 100)))	
+1	ZALIMLCL1	8GEN	GC	Compteur Sous Paquet EALIMLCL1	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEALIM 0) (FIRST ZALIMLCL1 0))) (* (< APID 2015) (+ (* (= ALIMIDANOM $1) (MOD (FIRST (+  ZALIMLCL1 1) 1) 100)) (* (<> ALIMIDANOM $1) (FIRST ZALIMLCL1 0)))))	
+1	ZALIMLCL2	8GEN	GC	Compteur Sous Paquet EALIMLCL2	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEALIM 0) (FIRST ZALIMLCL2 0))) (* (< APID 2015) (+ (* (= ALIMIDANOM $2) (MOD (FIRST (+  ZALIMLCL2 1) 1) 100)) (* (<> ALIMIDANOM $2) (FIRST ZALIMLCL2 0)))))	
+1	ZALIMPERMRX	8GEN	GC	Compteur Sous Paquet EALIMPERMRX	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEALIM 0) (FIRST ZALIMPERMRX 0))) (* (< APID 2015) (+ (* (= ALIMIDANOM $9) (MOD (FIRST (+  ZALIMPERMRX 1) 1) 100)) (* (<> ALIMIDANOM $9) (FIRST ZALIMPERMRX 0)))))	
+1	ZALIMS520RX	8GEN	GC	Compteur Sous Paquet EALIMS520RX	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEALIM 0) (FIRST ZALIMS520RX 0))) (* (< APID 2015) (+ (* (= ALIMIDANOM $5) (MOD (FIRST (+  ZALIMS520RX 1) 1) 100)) (* (<> ALIMIDANOM $5) (FIRST ZALIMS520RX 0)))))	
+1	ZALIMUVD1	8GEN	GC	Compteur Sous Paquet EALIMUVD1	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEALIM 0) (FIRST ZALIMUVD1 0))) (* (< APID 2015) (+ (* (= ALIMIDANOM $3) (MOD (FIRST (+  ZALIMUVD1 1) 1) 100)) (* (<> ALIMIDANOM $3) (FIRST ZALIMUVD1 0)))))	
+1	ZALIMUVD2	8GEN	GC	Compteur Sous Paquet EALIMUVD2	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEALIM 0) (FIRST ZALIMUVD2 0))) (* (< APID 2015) (+ (* (= ALIMIDANOM $4) (MOD (FIRST (+  ZALIMUVD2 1) 1) 100)) (* (<> ALIMIDANOM $4) (FIRST ZALIMUVD2 0)))))	
+1	ZEAQCMYY	8GEN	GC	Date du paquet EAQCM	P				N
+2	(FIRST ANOYEAR 0)	
+1	ZEAQCMMM	8GEN	GC	Date du paquet EAQCM	P				N
+2	(FIRST ANOMONTH 0)	
+1	ZEAQCMDD	8GEN	GC	Date du paquet EAQCM	P				N
+2	(FIRST ANODAY 0)	
+1	ZEAQCMHH	8GEN	GC	Date du paquet EAQCM	P				N
+2	(FIRST ANOHOUR 0)	
+1	ZEAQCMMN	8GEN	GC	Date du paquet EAQCM	P				N
+2	(FIRST ANOMINUTE 0)	
+1	ZEAQCMSS	8GEN	GC	Date du paquet EAQCM	P				N
+2	(FIRST ANOSECOND 0)	
+1	ZEAQCM	8GEN	GC	Compteur Paquet EAQCM	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEAQCM 0) (FIRST ZEAQCM 0))) (* (< APID 2015) (MOD (FIRST (+  ZEAQCM 1) 1) 100)))	
+1	ZAQCMFDIR1	8GEN	GC	Compteur Sous Paquet EAQCMFDIR1	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEAQCM 0) (FIRST ZAQCMFDIR1 0))) (* (< APID 2015) (+ (* (= AQCMIDANOM $1) (MOD (FIRST (+  ZAQCMFDIR1 1) 1) 100)) (* (<> AQCMIDANOM $1) (FIRST ZAQCMFDIR1 0)))))	
+1	ZAQCMFDIR2	8GEN	GC	Compteur Sous Paquet EAQCMFDIR2	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEAQCM 0) (FIRST ZAQCMFDIR2 0))) (* (< APID 2015) (+ (* (= AQCMIDANOM $2) (MOD (FIRST (+  ZAQCMFDIR2 1) 1) 100)) (* (<> AQCMIDANOM $2) (FIRST ZAQCMFDIR2 0)))))	
+1	ZEDRAMYY	8GEN	GC	Date du paquet EDRAM	P				N
+2	(FIRST ANOYEAR 0)	
+1	ZEDRAMMM	8GEN	GC	Date du paquet EDRAM	P				N
+2	(FIRST ANOMONTH 0)	
+1	ZEDRAMDD	8GEN	GC	Date du paquet EDRAM	P				N
+2	(FIRST ANODAY 0)	
+1	ZEDRAMHH	8GEN	GC	Date du paquet EDRAM	P				N
+2	(FIRST ANOHOUR 0)	
+1	ZEDRAMMN	8GEN	GC	Date du paquet EDRAM	P				N
+2	(FIRST ANOMINUTE 0)	
+1	ZEDRAMSS	8GEN	GC	Date du paquet EDRAM	P				N
+2	(FIRST ANOSECOND 0)	
+1	ZEDRAM	8GEN	GC	Compteur Paquet EDRAM	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEDRAM 0) (FIRST ZEDRAM 0))) (* (< APID 2015) (MOD (FIRST (+  ZEDRAM 1) 1) 100)))	
+1	ZDRAMBOFF	8GEN	GC	Compteur Sous Paquet EDRAMBOFF	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEDRAM 0) (FIRST ZDRAMBOFF 0))) (* (< APID 2015) (+ (* (= DRAMIDANOM $1) (MOD (FIRST (+  ZDRAMBOFF 1) 1) 100)) (* (<> DRAMIDANOM $1) (FIRST ZDRAMBOFF 0)))))	
+1	ZDRAMOFFON	8GEN	GC	Compteur Sous Paquet EDRAMOFFON	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEDRAM 0) (FIRST ZDRAMOFFON 0))) (* (< APID 2015) (+ (* (= DRAMIDANOM $2) (MOD (FIRST (+  ZDRAMOFFON 1) 1) 100)) (* (<> DRAMIDANOM $2) (FIRST ZDRAMOFFON 0)))))	
+1	ZEECMYY	8GEN	GC	Date du paquet EECM	P				N
+2	(FIRST ANOYEAR 0)	
+1	ZEECMMM	8GEN	GC	Date du paquet EECM	P				N
+2	(FIRST ANOMONTH 0)	
+1	ZEECMDD	8GEN	GC	Date du paquet EECM	P				N
+2	(FIRST ANODAY 0)	
+1	ZEECMHH	8GEN	GC	Date du paquet EECM	P				N
+2	(FIRST ANOHOUR 0)	
+1	ZEECMMN	8GEN	GC	Date du paquet EECM	P				N
+2	(FIRST ANOMINUTE 0)	
+1	ZEECMSS	8GEN	GC	Date du paquet EECM	P				N
+2	(FIRST ANOSECOND 0)	
+1	ZEECM	8GEN	GC	Compteur Paquet EECM	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEECM 0) (FIRST ZEECM 0))) (* (< APID 2015) (MOD (FIRST (+  ZEECM 1) 1) 100)))	
+1	ZECMDIAL1	8GEN	GC	Compteur Sous Paquet EECMDIAL1	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEECM 0) (FIRST ZECMDIAL1 0))) (* (< APID 2015) (+ (* (= EECMIDANOM $3) (MOD (FIRST (+  ZECMDIAL1 1) 1) 100)) (* (<> EECMIDANOM $3) (FIRST ZECMDIAL1 0)))))	
+1	ZECMDIAL2	8GEN	GC	Compteur Sous Paquet EECMDIAL2	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEECM 0) (FIRST ZECMDIAL2 0))) (* (< APID 2015) (+ (* (= EECMIDANOM $4) (MOD (FIRST (+  ZECMDIAL2 1) 1) 100)) (* (<> EECMIDANOM $4) (FIRST ZECMDIAL2 0)))))	
+1	ZECMT1SAT1	8GEN	GC	Compteur Sous Paquet EECMT1SAT1	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEECM 0) (FIRST ZECMT1SAT1 0))) (* (< APID 2015) (+ (* (= EECMIDANOM $7) (MOD (FIRST (+  ZECMT1SAT1 1) 1) 100)) (* (<> EECMIDANOM $7) (FIRST ZECMT1SAT1 0)))))	
+1	ZECMT1SAT2	8GEN	GC	Compteur Sous Paquet EECMT1SAT2	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEECM 0) (FIRST ZECMT1SAT2 0))) (* (< APID 2015) (+ (* (= EECMIDANOM $8) (MOD (FIRST (+  ZECMT1SAT2 1) 1) 100)) (* (<> EECMIDANOM $8) (FIRST ZECMT1SAT2 0)))))	
+1	ZECMT2SAT1	8GEN	GC	Compteur Sous Paquet EECMT2SAT1	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEECM 0) (FIRST ZECMT2SAT1 0))) (* (< APID 2015) (+ (* (= EECMIDANOM $5) (MOD (FIRST (+  ZECMT2SAT1 1) 1) 100)) (* (<> EECMIDANOM $5) (FIRST ZECMT2SAT1 0)))))	
+1	ZECMT2SAT2	8GEN	GC	Compteur Sous Paquet EECMT2SAT2	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEECM 0) (FIRST ZECMT2SAT2 0))) (* (< APID 2015) (+ (* (= EECMIDANOM $6) (MOD (FIRST (+  ZECMT2SAT2 1) 1) 100)) (* (<> EECMIDANOM $6) (FIRST ZECMT2SAT2 0)))))	
+1	ZEFLSHYY	8GEN	GC	Date du paquet EFLSH	P				N
+2	(FIRST ANOYEAR 0)	
+1	ZEFLSHMM	8GEN	GC	Date du paquet EFLSH	P				N
+2	(FIRST ANOMONTH 0)	
+1	ZEFLSHDD	8GEN	GC	Date du paquet EFLSH	P				N
+2	(FIRST ANODAY 0)	
+1	ZEFLSHHH	8GEN	GC	Date du paquet EFLSH	P				N
+2	(FIRST ANOHOUR 0)	
+1	ZEFLSHMN	8GEN	GC	Date du paquet EFLSH	P				N
+2	(FIRST ANOMINUTE 0)	
+1	ZEFLSHSS	8GEN	GC	Date du paquet EFLSH	P				N
+2	(FIRST ANOSECOND 0)	
+1	ZEFLSH	8GEN	GC	Compteur Paquet EFLSH	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEFLSH 0) (FIRST ZEFLSH 0))) (* (< APID 2015) (MOD (FIRST (+  ZEFLSH 1) 1) 100)))	
+1	ZFLSHON	8GEN	GC	Compteur Sous Paquet EFLSHON	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEFLSH 0) (FIRST ZFLSHON 0))) (* (< APID 2015) (+ (* (= FLSHIDANOM $1) (MOD (FIRST (+  ZFLSHON 1) 1) 100)) (* (<> FLSHIDANOM $1) (FIRST ZFLSHON 0)))))	
+1	ZEGNSSYY	8GEN	GC	Date du paquet EGNSS	P				N
+2	(FIRST ANOYEAR 0)	
+1	ZEGNSSMM	8GEN	GC	Date du paquet EGNSS	P				N
+2	(FIRST ANOMONTH 0)	
+1	ZEGNSSDD	8GEN	GC	Date du paquet EGNSS	P				N
+2	(FIRST ANODAY 0)	
+1	ZEGNSSHH	8GEN	GC	Date du paquet EGNSS	P				N
+2	(FIRST ANOHOUR 0)	
+1	ZEGNSSMN	8GEN	GC	Date du paquet EGNSS	P				N
+2	(FIRST ANOMINUTE 0)	
+1	ZEGNSSSS	8GEN	GC	Date du paquet EGNSS	P				N
+2	(FIRST ANOSECOND 0)	
+1	ZEGNSS	8GEN	GC	Compteur Paquet EGNSS	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEGNSS 0) (FIRST ZEGNSS 0))) (* (< APID 2015) (MOD (FIRST (+  ZEGNSS 1) 1) 100)))	
+1	ZGNSSDIAL	8GEN	GC	Compteur Sous Paquet EGNSSDIAL	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEGNSS 0) (FIRST ZGNSSDIAL 0))) (* (< APID 2015) (+ (* (= GNSSIDANOM $1) (MOD (FIRST (+  ZGNSSDIAL 1) 1) 100)) (* (<> GNSSIDANOM $1) (FIRST ZGNSSDIAL 0)))))	
+1	ZGNSSVAL	8GEN	GC	Compteur Sous Paquet EGNSSVAL	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEGNSS 0) (FIRST ZGNSSVAL 0))) (* (< APID 2015) (+ (* (= GNSSIDANOM $2) (MOD (FIRST (+  ZGNSSVAL 1) 1) 100)) (* (<> GNSSIDANOM $2) (FIRST ZGNSSVAL 0)))))	
+1	ZEI2CYY	8GEN	GC	Date du paquet EI2C	P				N
+2	(FIRST ANOYEAR 0)	
+1	ZEI2CMM	8GEN	GC	Date du paquet EI2C	P				N
+2	(FIRST ANOMONTH 0)	
+1	ZEI2CDD	8GEN	GC	Date du paquet EI2C	P				N
+2	(FIRST ANODAY 0)	
+1	ZEI2CHH	8GEN	GC	Date du paquet EI2C	P				N
+2	(FIRST ANOHOUR 0)	
+1	ZEI2CMN	8GEN	GC	Date du paquet EI2C	P				N
+2	(FIRST ANOMINUTE 0)	
+1	ZEI2CSS	8GEN	GC	Date du paquet EI2C	P				N
+2	(FIRST ANOSECOND 0)	
+1	ZEI2C	8GEN	GC	Compteur Paquet EI2C	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEI2C 0) (FIRST ZEI2C 0))) (* (< APID 2015) (MOD (FIRST (+  ZEI2C 1) 1) 100)))	
+1	ZI2CTAILLE	8GEN	GC	Compteur Sous Paquet EI2CTAILLE	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEI2C 0) (FIRST ZI2CTAILLE 0))) (* (< APID 2015) (+ (* (= I2CIDANOPF $2) (MOD (FIRST (+  ZI2CTAILLE 1) 1) 100)) (* (<> I2CIDANOPF $2) (FIRST ZI2CTAILLE 0)))))	
+1	ZI2CTRANS	8GEN	GC	Compteur Sous Paquet EI2CTRANS	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEI2C 0) (FIRST ZI2CTRANS 0))) (* (< APID 2015) (+ (* (= I2CIDANOPF $1) (MOD (FIRST (+  ZI2CTRANS 1) 1) 100)) (* (<> I2CIDANOPF $1) (FIRST ZI2CTRANS 0)))))	
+1	ZEIFCUYY	8GEN	GC	Date du paquet EIFCU	P				N
+2	(FIRST ANOYEAR 0)	
+1	ZEIFCUMM	8GEN	GC	Date du paquet EIFCU	P				N
+2	(FIRST ANOMONTH 0)	
+1	ZEIFCUDD	8GEN	GC	Date du paquet EIFCU	P				N
+2	(FIRST ANODAY 0)	
+1	ZEIFCUHH	8GEN	GC	Date du paquet EIFCU	P				N
+2	(FIRST ANOHOUR 0)	
+1	ZEIFCUMN	8GEN	GC	Date du paquet EIFCU	P				N
+2	(FIRST ANOMINUTE 0)	
+1	ZEIFCUSS	8GEN	GC	Date du paquet EIFCU	P				N
+2	(FIRST ANOSECOND 0)	
+1	ZEIFCU	8GEN	GC	Compteur Paquet EIFCU	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEIFCU 0) (FIRST ZEIFCU 0))) (* (< APID 2015) (MOD (FIRST (+  ZEIFCU 1) 1) 100)))	
+1	ZIFCUBADAD1	8GEN	GC	Compteur Sous Paquet EIFCUBADAD1	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEIFCU 0) (FIRST ZIFCUBADAD1 0))) (* (< APID 2015) (+ (* (= EIFCUIDANOM $2) (MOD (FIRST (+  ZIFCUBADAD1 1) 1) 100)) (* (<> EIFCUIDANOM $2) (FIRST ZIFCUBADAD1 0)))))	
+1	ZIFCUBADAD2	8GEN	GC	Compteur Sous Paquet EIFCUBADAD2	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEIFCU 0) (FIRST ZIFCUBADAD2 0))) (* (< APID 2015) (+ (* (= EIFCUIDANOM $6) (MOD (FIRST (+  ZIFCUBADAD2 1) 1) 100)) (* (<> EIFCUIDANOM $6) (FIRST ZIFCUBADAD2 0)))))	
+1	ZIFCUBADRQ1	8GEN	GC	Compteur Sous Paquet EIFCUBADRQ1	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEIFCU 0) (FIRST ZIFCUBADRQ1 0))) (* (< APID 2015) (+ (* (= EIFCUIDANOM $3) (MOD (FIRST (+  ZIFCUBADRQ1 1) 1) 100)) (* (<> EIFCUIDANOM $3) (FIRST ZIFCUBADRQ1 0)))))	
+1	ZIFCUBADRQ2	8GEN	GC	Compteur Sous Paquet EIFCUBADRQ2	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEIFCU 0) (FIRST ZIFCUBADRQ2 0))) (* (< APID 2015) (+ (* (= EIFCUIDANOM $7) (MOD (FIRST (+  ZIFCUBADRQ2 1) 1) 100)) (* (<> EIFCUIDANOM $7) (FIRST ZIFCUBADRQ2 0)))))	
+1	ZIFCUBADTM1	8GEN	GC	Compteur Sous Paquet EIFCUBADTM1	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEIFCU 0) (FIRST ZIFCUBADTM1 0))) (* (< APID 2015) (+ (* (= EIFCUIDANOM $1) (MOD (FIRST (+  ZIFCUBADTM1 1) 1) 100)) (* (<> EIFCUIDANOM $1) (FIRST ZIFCUBADTM1 0)))))	
+1	ZIFCUBADTM2	8GEN	GC	Compteur Sous Paquet EIFCUBADTM2	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEIFCU 0) (FIRST ZIFCUBADTM2 0))) (* (< APID 2015) (+ (* (= EIFCUIDANOM $5) (MOD (FIRST (+  ZIFCUBADTM2 1) 1) 100)) (* (<> EIFCUIDANOM $5) (FIRST ZIFCUBADTM2 0)))))	
+1	ZIFCUNACK1	8GEN	GC	Compteur Sous Paquet EIFCUNACK1	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEIFCU 0) (FIRST ZIFCUNACK1 0))) (* (< APID 2015) (+ (* (= EIFCUIDANOM $4) (MOD (FIRST (+  ZIFCUNACK1 1) 1) 100)) (* (<> EIFCUIDANOM $4) (FIRST ZIFCUNACK1 0)))))	
+1	ZIFCUNACK2	8GEN	GC	Compteur Sous Paquet EIFCUNACK2	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEIFCU 0) (FIRST ZIFCUNACK2 0))) (* (< APID 2015) (+ (* (= EIFCUIDANOM $8) (MOD (FIRST (+  ZIFCUNACK2 1) 1) 100)) (* (<> EIFCUIDANOM $8) (FIRST ZIFCUNACK2 0)))))	
+1	ZIFCUNORP1	8GEN	GC	Compteur Sous Paquet EIFCUNORP1	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEIFCU 0) (FIRST ZIFCUNORP1 0))) (* (< APID 2015) (+ (* (= EIFCUIDANOM $9) (MOD (FIRST (+  ZIFCUNORP1 1) 1) 100)) (* (<> EIFCUIDANOM $9) (FIRST ZIFCUNORP1 0)))))	
+1	ZIFCUNORP2	8GEN	GC	Compteur Sous Paquet EIFCUNORP2	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEIFCU 0) (FIRST ZIFCUNORP2 0))) (* (< APID 2015) (+ (* (= EIFCUIDANOM $A) (MOD (FIRST (+  ZIFCUNORP2 1) 1) 100)) (* (<> EIFCUIDANOM $A) (FIRST ZIFCUNORP2 0)))))	
+1	ZEIFTCYY	8GEN	GC	Date du paquet EIFTC	P				N
+2	(FIRST ANOYEAR 0)	
+1	ZEIFTCMM	8GEN	GC	Date du paquet EIFTC	P				N
+2	(FIRST ANOMONTH 0)	
+1	ZEIFTCDD	8GEN	GC	Date du paquet EIFTC	P				N
+2	(FIRST ANODAY 0)	
+1	ZEIFTCHH	8GEN	GC	Date du paquet EIFTC	P				N
+2	(FIRST ANOHOUR 0)	
+1	ZEIFTCMN	8GEN	GC	Date du paquet EIFTC	P				N
+2	(FIRST ANOMINUTE 0)	
+1	ZEIFTCSS	8GEN	GC	Date du paquet EIFTC	P				N
+2	(FIRST ANOSECOND 0)	
+1	ZEIFTC	8GEN	GC	Compteur Paquet EIFTC	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEIFTC 0) (FIRST ZEIFTC 0))) (* (< APID 2015) (MOD (FIRST (+  ZEIFTC 1) 1) 100)))	
+1	ZIFTCCRCFPG	8GEN	GC	Compteur Sous Paquet EIFTCCRCFPG	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEIFTC 0) (FIRST ZIFTCCRCFPG 0))) (* (< APID 2015) (+ (* (= IFTCIDANOM $2) (MOD (FIRST (+  ZIFTCCRCFPG 1) 1) 100)) (* (<> IFTCIDANOM $2) (FIRST ZIFTCCRCFPG 0)))))	
+1	ZIFTCCRCLV	8GEN	GC	Compteur Sous Paquet EIFTCCRCLV	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEIFTC 0) (FIRST ZIFTCCRCLV 0))) (* (< APID 2015) (+ (* (= IFTCIDANOM $3) (MOD (FIRST (+  ZIFTCCRCLV 1) 1) 100)) (* (<> IFTCIDANOM $3) (FIRST ZIFTCCRCLV 0)))))	
+1	ZIFTCFARMCO	8GEN	GC	Compteur Sous Paquet EIFTCFARMCO	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEIFTC 0) (FIRST ZIFTCFARMCO 0))) (* (< APID 2015) (+ (* (= IFTCIDANOM $4) (MOD (FIRST (+  ZIFTCFARMCO 1) 1) 100)) (* (<> IFTCIDANOM $4) (FIRST ZIFTCFARMCO 0)))))	
+1	ZIFTCFARMLK	8GEN	GC	Compteur Sous Paquet EIFTCFARMLK	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEIFTC 0) (FIRST ZIFTCFARMLK 0))) (* (< APID 2015) (+ (* (= IFTCIDANOM $5) (MOD (FIRST (+  ZIFTCFARMLK 1) 1) 100)) (* (<> IFTCIDANOM $5) (FIRST ZIFTCFARMLK 0)))))	
+1	ZIFTCMAPID	8GEN	GC	Compteur Sous Paquet EIFTCMAPID	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEIFTC 0) (FIRST ZIFTCMAPID 0))) (* (< APID 2015) (+ (* (= IFTCIDANOM $6) (MOD (FIRST (+  ZIFTCMAPID 1) 1) 100)) (* (<> IFTCIDANOM $6) (FIRST ZIFTCMAPID 0)))))	
+1	ZIFTCPAQU	8GEN	GC	Compteur Sous Paquet EIFTCPAQU	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEIFTC 0) (FIRST ZIFTCPAQU 0))) (* (< APID 2015) (+ (* (= IFTCIDANOM $9) (MOD (FIRST (+  ZIFTCPAQU 1) 1) 100)) (* (<> IFTCIDANOM $9) (FIRST ZIFTCPAQU 0)))))	
+1	ZIFTCTRAME	8GEN	GC	Compteur Sous Paquet EIFTCTRAME	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEIFTC 0) (FIRST ZIFTCTRAME 0))) (* (< APID 2015) (+ (* (= IFTCIDANOM $7) (MOD (FIRST (+  ZIFTCTRAME 1) 1) 100)) (* (<> IFTCIDANOM $7) (FIRST ZIFTCTRAME 0)))))	
+1	ZEMODYY	8GEN	GC	Date du paquet EMOD	P				N
+2	(FIRST ANOYEAR 0)	
+1	ZEMODMM	8GEN	GC	Date du paquet EMOD	P				N
+2	(FIRST ANOMONTH 0)	
+1	ZEMODDD	8GEN	GC	Date du paquet EMOD	P				N
+2	(FIRST ANODAY 0)	
+1	ZEMODHH	8GEN	GC	Date du paquet EMOD	P				N
+2	(FIRST ANOHOUR 0)	
+1	ZEMODMN	8GEN	GC	Date du paquet EMOD	P				N
+2	(FIRST ANOMINUTE 0)	
+1	ZEMODSS	8GEN	GC	Date du paquet EMOD	P				N
+2	(FIRST ANOSECOND 0)	
+1	ZEMOD	8GEN	GC	Compteur Paquet EMOD	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEMOD 0) (FIRST ZEMOD 0))) (* (< APID 2015) (MOD (FIRST (+  ZEMOD 1) 1) 100)))	
+1	ZMODCRCFRAM	8GEN	GC	Compteur Sous Paquet EMODCRCFRAM	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEMOD 0) (FIRST ZMODCRCFRAM 0))) (* (< APID 2015) (+ (* (= MODIDANOM $3) (MOD (FIRST (+  ZMODCRCFRAM 1) 1) 100)) (* (<> MODIDANOM $3) (FIRST ZMODCRCFRAM 0)))))	
+1	ZMODCRCTIED	8GEN	GC	Compteur Sous Paquet EMODCRCTIED	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEMOD 0) (FIRST ZMODCRCTIED 0))) (* (< APID 2015) (+ (* (= MODIDANOM $1) (MOD (FIRST (+  ZMODCRCTIED 1) 1) 100)) (* (<> MODIDANOM $1) (FIRST ZMODCRCTIED 0)))))	
+1	ZMODCTXVRAI	8GEN	GC	Compteur Sous Paquet EMODCTXVRAI	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEMOD 0) (FIRST ZMODCTXVRAI 0))) (* (< APID 2015) (+ (* (= MODIDANOM $2) (MOD (FIRST (+  ZMODCTXVRAI 1) 1) 100)) (* (<> MODIDANOM $2) (FIRST ZMODCTXVRAI 0)))))	
+1	ZENDIMGOP	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZENDIMGOP 1) 1) 100)	
+1	ZERRORIMGOP	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZERRORIMGOP 1) 1) 100)	
+1	ZERTAILIMGP	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZERTAILIMGP 1) 1) 100)	
+1	ZESCAOYY	8GEN	GC	Date du paquet ESCAO	P				N
+2	(FIRST ANOYEAR 0)	
+1	ZESCAOMM	8GEN	GC	Date du paquet ESCAO	P				N
+2	(FIRST ANOMONTH 0)	
+1	ZESCAODD	8GEN	GC	Date du paquet ESCAO	P				N
+2	(FIRST ANODAY 0)	
+1	ZESCAOHH	8GEN	GC	Date du paquet ESCAO	P				N
+2	(FIRST ANOHOUR 0)	
+1	ZESCAOMN	8GEN	GC	Date du paquet ESCAO	P				N
+2	(FIRST ANOMINUTE 0)	
+1	ZESCAOSS	8GEN	GC	Date du paquet ESCAO	P				N
+2	(FIRST ANOSECOND 0)	
+1	ZESCAO	8GEN	GC	Compteur Paquet ESCAO	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AESCAO 0) (FIRST ZESCAO 0))) (* (< APID 2015) (MOD (FIRST (+  ZESCAO 1) 1) 100)))	
+1	ZSCAOBLICU1	8GEN	GC	Compteur Sous Paquet ESCAOBLICU1	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AESCAO 0) (FIRST ZSCAOBLICU1 0))) (* (< APID 2015) (+ (* (= SCAOIDANOM $A) (MOD (FIRST (+  ZSCAOBLICU1 1) 1) 100)) (* (<> SCAOIDANOM $A) (FIRST ZSCAOBLICU1 0)))))	
+1	ZSCAOBLICU2	8GEN	GC	Compteur Sous Paquet ESCAOBLICU2	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AESCAO 0) (FIRST ZSCAOBLICU2 0))) (* (< APID 2015) (+ (* (= SCAOIDANOM $B) (MOD (FIRST (+  ZSCAOBLICU2 1) 1) 100)) (* (<> SCAOIDANOM $B) (FIRST ZSCAOBLICU2 0)))))	
+1	ZSCAODERVDI	8GEN	GC	Compteur Sous Paquet ESCAODERVDI	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AESCAO 0) (FIRST ZSCAODERVDI 0))) (* (< APID 2015) (+ (* (= SCAOIDANOM $4) (MOD (FIRST (+  ZSCAODERVDI 1) 1) 100)) (* (<> SCAOIDANOM $4) (FIRST ZSCAODERVDI 0)))))	
+1	ZSCAODIASST	8GEN	GC	Compteur Sous Paquet ESCAODIASST	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AESCAO 0) (FIRST ZSCAODIASST 0))) (* (< APID 2015) (+ (* (= SCAOIDANOM $6) (MOD (FIRST (+  ZSCAODIASST 1) 1) 100)) (* (<> SCAOIDANOM $6) (FIRST ZSCAODIASST 0)))))	
+1	ZSCAOECAMAG	8GEN	GC	Compteur Sous Paquet ESCAOECAMAG	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AESCAO 0) (FIRST ZSCAOECAMAG 0))) (* (< APID 2015) (+ (* (= SCAOIDANOM $1) (MOD (FIRST (+  ZSCAOECAMAG 1) 1) 100)) (* (<> SCAOIDANOM $1) (FIRST ZSCAOECAMAG 0)))))	
+1	ZSCAOECAQUT	8GEN	GC	Compteur Sous Paquet ESCAOECAQUT	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AESCAO 0) (FIRST ZSCAOECAQUT 0))) (* (< APID 2015) (+ (* (= SCAOIDANOM $3) (MOD (FIRST (+  ZSCAOECAQUT 1) 1) 100)) (* (<> SCAOIDANOM $3) (FIRST ZSCAOECAQUT 0)))))	
+1	ZSCAOHBTSAG	8GEN	GC	Compteur Sous Paquet ESCAOHBTSAG	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AESCAO 0) (FIRST ZSCAOHBTSAG 0))) (* (< APID 2015) (+ (* (= SCAOIDANOM $10) (MOD (FIRST (+  ZSCAOHBTSAG 1) 1) 100)) (* (<> SCAOIDANOM $10) (FIRST ZSCAOHBTSAG 0)))))	
+1	ZSCAOITSAGE	8GEN	GC	Compteur Sous Paquet ESCAOITSAGE	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AESCAO 0) (FIRST ZSCAOITSAGE 0))) (* (< APID 2015) (+ (* (= SCAOIDANOM $5) (MOD (FIRST (+  ZSCAOITSAGE 1) 1) 100)) (* (<> SCAOIDANOM $5) (FIRST ZSCAOITSAGE 0)))))	
+1	ZSCAOMCFRW	8GEN	GC	Compteur Sous Paquet ESCAOMCFRW	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AESCAO 0) (FIRST ZSCAOMCFRW 0))) (* (< APID 2015) (+ (* (= SCAOIDANOM $11) (MOD (FIRST (+  ZSCAOMCFRW 1) 1) 100)) (* (<> SCAOIDANOM $11) (FIRST ZSCAOMCFRW 0)))))	
+1	ZSCAOMODERW	8GEN	GC	Compteur Sous Paquet ESCAOMODERW	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AESCAO 0) (FIRST ZSCAOMODERW 0))) (* (< APID 2015) (+ (* (= SCAOIDANOM $E) (MOD (FIRST (+  ZSCAOMODERW 1) 1) 100)) (* (<> SCAOIDANOM $E) (FIRST ZSCAOMODERW 0)))))	
+1	ZSCAOMPSSAT	8GEN	GC	Compteur Sous Paquet ESCAOMPSSAT	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AESCAO 0) (FIRST ZSCAOMPSSAT 0))) (* (< APID 2015) (+ (* (= SCAOIDANOM $2) (MOD (FIRST (+  ZSCAOMPSSAT 1) 1) 100)) (* (<> SCAOIDANOM $2) (FIRST ZSCAOMPSSAT 0)))))	
+1	ZSCAOPANMAG	8GEN	GC	Compteur Sous Paquet ESCAOPANMAG	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AESCAO 0) (FIRST ZSCAOPANMAG 0))) (* (< APID 2015) (+ (* (= SCAOIDANOM $8) (MOD (FIRST (+  ZSCAOPANMAG 1) 1) 100)) (* (<> SCAOIDANOM $8) (FIRST ZSCAOPANMAG 0)))))	
+1	ZSCAOTEMSST	8GEN	GC	Compteur Sous Paquet ESCAOTEMSST	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AESCAO 0) (FIRST ZSCAOTEMSST 0))) (* (< APID 2015) (+ (* (= SCAOIDANOM $D) (MOD (FIRST (+  ZSCAOTEMSST 1) 1) 100)) (* (<> SCAOIDANOM $D) (FIRST ZSCAOTEMSST 0)))))	
+1	ZSCAOVALQUT	8GEN	GC	Compteur Sous Paquet ESCAOVALQUT	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AESCAO 0) (FIRST ZSCAOVALQUT 0))) (* (< APID 2015) (+ (* (= SCAOIDANOM $7) (MOD (FIRST (+  ZSCAOVALQUT 1) 1) 100)) (* (<> SCAOIDANOM $7) (FIRST ZSCAOVALQUT 0)))))	
+1	ZSCAOVDSAG1	8GEN	GC	Compteur Sous Paquet ESCAOVDSAG1	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AESCAO 0) (FIRST ZSCAOVDSAG1 0))) (* (< APID 2015) (+ (* (= SCAOIDANOM $12) (MOD (FIRST (+  ZSCAOVDSAG1 1) 1) 100)) (* (<> SCAOIDANOM $12) (FIRST ZSCAOVDSAG1 0)))))	
+1	ZSCAOVDSAG2	8GEN	GC	Compteur Sous Paquet ESCAOVDSAG2	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AESCAO 0) (FIRST ZSCAOVDSAG2 0))) (* (< APID 2015) (+ (* (= SCAOIDANOM $13) (MOD (FIRST (+  ZSCAOVDSAG2 1) 1) 100)) (* (<> SCAOIDANOM $13) (FIRST ZSCAOVDSAG2 0)))))	
+1	ZSCAOVITRAM	8GEN	GC	Compteur Sous Paquet ESCAOVITRAM	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AESCAO 0) (FIRST ZSCAOVITRAM 0))) (* (< APID 2015) (+ (* (= SCAOIDANOM $C) (MOD (FIRST (+  ZSCAOVITRAM 1) 1) 100)) (* (<> SCAOIDANOM $C) (FIRST ZSCAOVITRAM 0)))))	
+1	ZSCAOVITREA	8GEN	GC	Compteur Sous Paquet ESCAOVITREA	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AESCAO 0) (FIRST ZSCAOVITREA 0))) (* (< APID 2015) (+ (* (= SCAOIDANOM $9) (MOD (FIRST (+  ZSCAOVITREA 1) 1) 100)) (* (<> SCAOIDANOM $9) (FIRST ZSCAOVITREA 0)))))	
+1	ZETATBAT	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZETATBAT 1) 1) 100)	
+1	ZETATRXTX	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZETATRXTX 1) 1) 100)	
+1	ZETCYY	8GEN	GC	Date du paquet ETC	P				N
+2	(FIRST ANOYEAR 0)	
+1	ZETCMM	8GEN	GC	Date du paquet ETC	P				N
+2	(FIRST ANOMONTH 0)	
+1	ZETCDD	8GEN	GC	Date du paquet ETC	P				N
+2	(FIRST ANODAY 0)	
+1	ZETCHH	8GEN	GC	Date du paquet ETC	P				N
+2	(FIRST ANOHOUR 0)	
+1	ZETCMN	8GEN	GC	Date du paquet ETC	P				N
+2	(FIRST ANOMINUTE 0)	
+1	ZETCSS	8GEN	GC	Date du paquet ETC	P				N
+2	(FIRST ANOSECOND 0)	
+1	ZETC	8GEN	GC	Compteur Paquet ETC	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZETC 0))) (* (< APID 2015) (MOD (FIRST (+  ZETC 1) 1) 100)))	
+1	ZTCARGTC	8GEN	GC	Compteur Sous Paquet ETCARGTC	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZTCARGTC 0))) (* (< APID 2015) (+ (* (= TCIDANOM $10) (MOD (FIRST (+  ZTCARGTC 1) 1) 100)) (* (<> TCIDANOM $10) (FIRST ZTCARGTC 0)))))	
+1	ZTCBLACTPDT	8GEN	GC	Compteur Sous Paquet ETCBLACTPDT	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZTCBLACTPDT 0))) (* (< APID 2015) (+ (* (= TCIDANOM $3) (MOD (FIRST (+  ZTCBLACTPDT 1) 1) 100)) (* (<> TCIDANOM $3) (FIRST ZTCBLACTPDT 0)))))	
+1	ZTCCOMPDT	8GEN	GC	Compteur Sous Paquet ETCCOMPDT	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZTCCOMPDT 0))) (* (< APID 2015) (+ (* (= TCIDANOM $15) (MOD (FIRST (+  ZTCCOMPDT 1) 1) 100)) (* (<> TCIDANOM $15) (FIRST ZTCCOMPDT 0)))))	
+1	ZTCCRCTAB	8GEN	GC	Compteur Sous Paquet ETCCRCTAB	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZTCCRCTAB 0))) (* (< APID 2015) (+ (* (= TCIDANOM $F) (MOD (FIRST (+  ZTCCRCTAB 1) 1) 100)) (* (<> TCIDANOM $F) (FIRST ZTCCRCTAB 0)))))	
+1	ZTCDATENOK	8GEN	GC	Compteur Sous Paquet ETCDATENOK	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZTCDATENOK 0))) (* (< APID 2015) (+ (* (= TCIDANOM $5) (MOD (FIRST (+  ZTCDATENOK 1) 1) 100)) (* (<> TCIDANOM $5) (FIRST ZTCDATENOK 0)))))	
+1	ZTCDEBPDT	8GEN	GC	Compteur Sous Paquet ETCDEBPDT	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZTCDEBPDT 0))) (* (< APID 2015) (+ (* (= TCIDANOM $B) (MOD (FIRST (+  ZTCDEBPDT 1) 1) 100)) (* (<> TCIDANOM $B) (FIRST ZTCDEBPDT 0)))))	
+1	ZTCDEBTAB	8GEN	GC	Compteur Sous Paquet ETCDEBTAB	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZTCDEBTAB 0))) (* (< APID 2015) (+ (* (= TCIDANOM $D) (MOD (FIRST (+  ZTCDEBTAB 1) 1) 100)) (* (<> TCIDANOM $D) (FIRST ZTCDEBTAB 0)))))	
+1	ZTCEXECTC	8GEN	GC	Compteur Sous Paquet ETCEXECTC	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZTCEXECTC 0))) (* (< APID 2015) (+ (* (= TCIDANOM $11) (MOD (FIRST (+  ZTCEXECTC 1) 1) 100)) (* (<> TCIDANOM $11) (FIRST ZTCEXECTC 0)))))	
+1	ZTCFICH	8GEN	GC	Compteur Sous Paquet ETCFICH	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZTCFICH 0))) (* (< APID 2015) (+ (* (= TCIDANOM $18) (MOD (FIRST (+  ZTCFICH 1) 1) 100)) (* (<> TCIDANOM $18) (FIRST ZTCFICH 0)))))	
+1	ZTCFINPDT	8GEN	GC	Compteur Sous Paquet ETCFINPDT	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZTCFINPDT 0))) (* (< APID 2015) (+ (* (= TCIDANOM $8) (MOD (FIRST (+  ZTCFINPDT 1) 1) 100)) (* (<> TCIDANOM $8) (FIRST ZTCFINPDT 0)))))	
+1	ZTCHORSPDT	8GEN	GC	Compteur Sous Paquet ETCHORSPDT	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZTCHORSPDT 0))) (* (< APID 2015) (+ (* (= TCIDANOM $6) (MOD (FIRST (+  ZTCHORSPDT 1) 1) 100)) (* (<> TCIDANOM $6) (FIRST ZTCHORSPDT 0)))))	
+1	ZTCHORSTAB	8GEN	GC	Compteur Sous Paquet ETCHORSTAB	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZTCHORSTAB 0))) (* (< APID 2015) (+ (* (= TCIDANOM $E) (MOD (FIRST (+  ZTCHORSTAB 1) 1) 100)) (* (<> TCIDANOM $E) (FIRST ZTCHORSTAB 0)))))	
+1	ZTCIDPDT	8GEN	GC	Compteur Sous Paquet ETCIDPDT	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZTCIDPDT 0))) (* (< APID 2015) (+ (* (= TCIDANOM $7) (MOD (FIRST (+  ZTCIDPDT 1) 1) 100)) (* (<> TCIDANOM $7) (FIRST ZTCIDPDT 0)))))	
+1	ZTCIDTAB	8GEN	GC	Compteur Sous Paquet ETCIDTAB	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZTCIDTAB 0))) (* (< APID 2015) (+ (* (= TCIDANOM $C) (MOD (FIRST (+  ZTCIDTAB 1) 1) 100)) (* (<> TCIDANOM $C) (FIRST ZTCIDTAB 0)))))	
+1	ZTCIDTC	8GEN	GC	Compteur Sous Paquet ETCIDTC	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZTCIDTC 0))) (* (< APID 2015) (+ (* (= TCIDANOM $13) (MOD (FIRST (+  ZTCIDTC 1) 1) 100)) (* (<> TCIDANOM $13) (FIRST ZTCIDTC 0)))))	
+1	ZTCINCPDT	8GEN	GC	Compteur Sous Paquet ETCINCPDT	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZTCINCPDT 0))) (* (< APID 2015) (+ (* (= TCIDANOM $14) (MOD (FIRST (+  ZTCINCPDT 1) 1) 100)) (* (<> TCIDANOM $14) (FIRST ZTCINCPDT 0)))))	
+1	ZTCINCTAB	8GEN	GC	Compteur Sous Paquet ETCINCTAB	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZTCINCTAB 0))) (* (< APID 2015) (+ (* (= TCIDANOM $16) (MOD (FIRST (+  ZTCINCTAB 1) 1) 100)) (* (<> TCIDANOM $16) (FIRST ZTCINCTAB 0)))))	
+1	ZTCINVPDT	8GEN	GC	Compteur Sous Paquet ETCINVPDT	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZTCINVPDT 0))) (* (< APID 2015) (+ (* (= TCIDANOM $1A) (MOD (FIRST (+  ZTCINVPDT 1) 1) 100)) (* (<> TCIDANOM $1A) (FIRST ZTCINVPDT 0)))))	
+1	ZTCINVTAB	8GEN	GC	Compteur Sous Paquet ETCINVTAB	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZTCINVTAB 0))) (* (< APID 2015) (+ (* (= TCIDANOM $19) (MOD (FIRST (+  ZTCINVTAB 1) 1) 100)) (* (<> TCIDANOM $19) (FIRST ZTCINVTAB 0)))))	
+1	ZTCMODEINOK	8GEN	GC	Compteur Sous Paquet ETCMODEINOK	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZTCMODEINOK 0))) (* (< APID 2015) (+ (* (= TCIDANOM $1) (MOD (FIRST (+  ZTCMODEINOK 1) 1) 100)) (* (<> TCIDANOM $1) (FIRST ZTCMODEINOK 0)))))	
+1	ZTCMODETNOK	8GEN	GC	Compteur Sous Paquet ETCMODETNOK	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZTCMODETNOK 0))) (* (< APID 2015) (+ (* (= TCIDANOM $2) (MOD (FIRST (+  ZTCMODETNOK 1) 1) 100)) (* (<> TCIDANOM $2) (FIRST ZTCMODETNOK 0)))))	
+1	ZTCNBTCPDT	8GEN	GC	Compteur Sous Paquet ETCNBTCPDT	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZTCNBTCPDT 0))) (* (< APID 2015) (+ (* (= TCIDANOM $A) (MOD (FIRST (+  ZTCNBTCPDT 1) 1) 100)) (* (<> TCIDANOM $A) (FIRST ZTCNBTCPDT 0)))))	
+1	ZTCNCACTPDT	8GEN	GC	Compteur Sous Paquet ETCNCACTPDT	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZTCNCACTPDT 0))) (* (< APID 2015) (+ (* (= TCIDANOM $9) (MOD (FIRST (+  ZTCNCACTPDT 1) 1) 100)) (* (<> TCIDANOM $9) (FIRST ZTCNCACTPDT 0)))))	
+1	ZTCRETARDEX	8GEN	GC	Compteur Sous Paquet ETCRETARDEX	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZTCRETARDEX 0))) (* (< APID 2015) (+ (* (= TCIDANOM $12) (MOD (FIRST (+  ZTCRETARDEX 1) 1) 100)) (* (<> TCIDANOM $12) (FIRST ZTCRETARDEX 0)))))	
+1	ZTCTAILTAB	8GEN	GC	Compteur Sous Paquet ETCTAILTAB	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZTCTAILTAB 0))) (* (< APID 2015) (+ (* (= TCIDANOM $17) (MOD (FIRST (+  ZTCTAILTAB 1) 1) 100)) (* (<> TCIDANOM $17) (FIRST ZTCTAILTAB 0)))))	
+1	ZTCVOACTPDT	8GEN	GC	Compteur Sous Paquet ETCVOACTPDT	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETC 0) (FIRST ZTCVOACTPDT 0))) (* (< APID 2015) (+ (* (= TCIDANOM $4) (MOD (FIRST (+  ZTCVOACTPDT 1) 1) 100)) (* (<> TCIDANOM $4) (FIRST ZTCVOACTPDT 0)))))	
+1	ZETHERYY	8GEN	GC	Date du paquet ETHER	P				N
+2	(FIRST ANOYEAR 0)	
+1	ZETHERMM	8GEN	GC	Date du paquet ETHER	P				N
+2	(FIRST ANOMONTH 0)	
+1	ZETHERDD	8GEN	GC	Date du paquet ETHER	P				N
+2	(FIRST ANODAY 0)	
+1	ZETHERHH	8GEN	GC	Date du paquet ETHER	P				N
+2	(FIRST ANOHOUR 0)	
+1	ZETHERMN	8GEN	GC	Date du paquet ETHER	P				N
+2	(FIRST ANOMINUTE 0)	
+1	ZETHERSS	8GEN	GC	Date du paquet ETHER	P				N
+2	(FIRST ANOSECOND 0)	
+1	ZETHER	8GEN	GC	Compteur Paquet ETHER	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETHER 0) (FIRST ZETHER 0))) (* (< APID 2015) (MOD (FIRST (+  ZETHER 1) 1) 100)))	
+1	ZTHERBAT1	8GEN	GC	Compteur Sous Paquet ETHERBAT1	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETHER 0) (FIRST ZTHERBAT1 0))) (* (< APID 2015) (+ (* (= THERIDANOM $1) (MOD (FIRST (+  ZTHERBAT1 1) 1) 100)) (* (<> THERIDANOM $1) (FIRST ZTHERBAT1 0)))))	
+1	ZTHERBAT2	8GEN	GC	Compteur Sous Paquet ETHERBAT2	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETHER 0) (FIRST ZTHERBAT2 0))) (* (< APID 2015) (+ (* (= THERIDANOM $2) (MOD (FIRST (+  ZTHERBAT2 1) 1) 100)) (* (<> THERIDANOM $2) (FIRST ZTHERBAT2 0)))))	
+1	ZTHERECMZM1	8GEN	GC	Compteur Sous Paquet ETHERECMZM1	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETHER 0) (FIRST ZTHERECMZM1 0))) (* (< APID 2015) (+ (* (= THERIDANOM $B) (MOD (FIRST (+  ZTHERECMZM1 1) 1) 100)) (* (<> THERIDANOM $B) (FIRST ZTHERECMZM1 0)))))	
+1	ZTHERECMZM2	8GEN	GC	Compteur Sous Paquet ETHERECMZM2	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETHER 0) (FIRST ZTHERECMZM2 0))) (* (< APID 2015) (+ (* (= THERIDANOM $C) (MOD (FIRST (+  ZTHERECMZM2 1) 1) 100)) (* (<> THERIDANOM $C) (FIRST ZTHERECMZM2 0)))))	
+1	ZTHERECMZP1	8GEN	GC	Compteur Sous Paquet ETHERECMZP1	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETHER 0) (FIRST ZTHERECMZP1 0))) (* (< APID 2015) (+ (* (= THERIDANOM $9) (MOD (FIRST (+  ZTHERECMZP1 1) 1) 100)) (* (<> THERIDANOM $9) (FIRST ZTHERECMZP1 0)))))	
+1	ZTHERECMZP2	8GEN	GC	Compteur Sous Paquet ETHERECMZP2	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETHER 0) (FIRST ZTHERECMZP2 0))) (* (< APID 2015) (+ (* (= THERIDANOM $A) (MOD (FIRST (+  ZTHERECMZP2 1) 1) 100)) (* (<> THERIDANOM $A) (FIRST ZTHERECMZP2 0)))))	
+1	ZTHERFEEUEP	8GEN	GC	Compteur Sous Paquet ETHERFEEUEP	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETHER 0) (FIRST ZTHERFEEUEP 0))) (* (< APID 2015) (+ (* (= THERIDANOM $F) (MOD (FIRST (+  ZTHERFEEUEP 1) 1) 100)) (* (<> THERIDANOM $F) (FIRST ZTHERFEEUEP 0)))))	
+1	ZTHERFEEURF	8GEN	GC	Compteur Sous Paquet ETHERFEEURF	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETHER 0) (FIRST ZTHERFEEURF 0))) (* (< APID 2015) (+ (* (= THERIDANOM $10) (MOD (FIRST (+  ZTHERFEEURF 1) 1) 100)) (* (<> THERIDANOM $10) (FIRST ZTHERFEEURF 0)))))	
+1	ZTHERICUME1	8GEN	GC	Compteur Sous Paquet ETHERICUME1	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETHER 0) (FIRST ZTHERICUME1 0))) (* (< APID 2015) (+ (* (= THERIDANOM $D) (MOD (FIRST (+  ZTHERICUME1 1) 1) 100)) (* (<> THERIDANOM $D) (FIRST ZTHERICUME1 0)))))	
+1	ZTHERICUME2	8GEN	GC	Compteur Sous Paquet ETHERICUME2	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETHER 0) (FIRST ZTHERICUME2 0))) (* (< APID 2015) (+ (* (= THERIDANOM $E) (MOD (FIRST (+  ZTHERICUME2 1) 1) 100)) (* (<> THERIDANOM $E) (FIRST ZTHERICUME2 0)))))	
+1	ZTHERMTOFZM	8GEN	GC	Compteur Sous Paquet ETHERMTOFZM	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETHER 0) (FIRST ZTHERMTOFZM 0))) (* (< APID 2015) (+ (* (= THERIDANOM $11) (MOD (FIRST (+  ZTHERMTOFZM 1) 1) 100)) (* (<> THERIDANOM $11) (FIRST ZTHERMTOFZM 0)))))	
+1	ZTHERMTOFZP	8GEN	GC	Compteur Sous Paquet ETHERMTOFZP	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETHER 0) (FIRST ZTHERMTOFZP 0))) (* (< APID 2015) (+ (* (= THERIDANOM $12) (MOD (FIRST (+  ZTHERMTOFZP 1) 1) 100)) (* (<> THERIDANOM $12) (FIRST ZTHERMTOFZP 0)))))	
+1	ZTHERMTONZM	8GEN	GC	Compteur Sous Paquet ETHERMTONZM	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETHER 0) (FIRST ZTHERMTONZM 0))) (* (< APID 2015) (+ (* (= THERIDANOM $13) (MOD (FIRST (+  ZTHERMTONZM 1) 1) 100)) (* (<> THERIDANOM $13) (FIRST ZTHERMTONZM 0)))))	
+1	ZTHERMTONZP	8GEN	GC	Compteur Sous Paquet ETHERMTONZP	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETHER 0) (FIRST ZTHERMTONZP 0))) (* (< APID 2015) (+ (* (= THERIDANOM $14) (MOD (FIRST (+  ZTHERMTONZP 1) 1) 100)) (* (<> THERIDANOM $14) (FIRST ZTHERMTONZP 0)))))	
+1	ZTHERPDU	8GEN	GC	Compteur Sous Paquet ETHERPDU	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETHER 0) (FIRST ZTHERPDU 0))) (* (< APID 2015) (+ (* (= THERIDANOM $3) (MOD (FIRST (+  ZTHERPDU 1) 1) 100)) (* (<> THERIDANOM $3) (FIRST ZTHERPDU 0)))))	
+1	ZTHERROUE	8GEN	GC	Compteur Sous Paquet ETHERROUE	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETHER 0) (FIRST ZTHERROUE 0))) (* (< APID 2015) (+ (* (= THERIDANOM $4) (MOD (FIRST (+  ZTHERROUE 1) 1) 100)) (* (<> THERIDANOM $4) (FIRST ZTHERROUE 0)))))	
+1	ZTHERSSTYM1	8GEN	GC	Compteur Sous Paquet ETHERSSTYM1	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETHER 0) (FIRST ZTHERSSTYM1 0))) (* (< APID 2015) (+ (* (= THERIDANOM $7) (MOD (FIRST (+  ZTHERSSTYM1 1) 1) 100)) (* (<> THERIDANOM $7) (FIRST ZTHERSSTYM1 0)))))	
+1	ZTHERSSTYM2	8GEN	GC	Compteur Sous Paquet ETHERSSTYM2	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETHER 0) (FIRST ZTHERSSTYM2 0))) (* (< APID 2015) (+ (* (= THERIDANOM $8) (MOD (FIRST (+  ZTHERSSTYM2 1) 1) 100)) (* (<> THERIDANOM $8) (FIRST ZTHERSSTYM2 0)))))	
+1	ZTHERSSTYP1	8GEN	GC	Compteur Sous Paquet ETHERSSTYP1	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETHER 0) (FIRST ZTHERSSTYP1 0))) (* (< APID 2015) (+ (* (= THERIDANOM $5) (MOD (FIRST (+  ZTHERSSTYP1 1) 1) 100)) (* (<> THERIDANOM $5) (FIRST ZTHERSSTYP1 0)))))	
+1	ZTHERSSTYP2	8GEN	GC	Compteur Sous Paquet ETHERSSTYP2	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETHER 0) (FIRST ZTHERSSTYP2 0))) (* (< APID 2015) (+ (* (= THERIDANOM $6) (MOD (FIRST (+  ZTHERSSTYP2 1) 1) 100)) (* (<> THERIDANOM $6) (FIRST ZTHERSSTYP2 0)))))	
+1	ZTHERSURVB1	8GEN	GC	Compteur Sous Paquet ETHERSURVB1	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETHER 0) (FIRST ZTHERSURVB1 0))) (* (< APID 2015) (+ (* (= THERIDANOM $15) (MOD (FIRST (+  ZTHERSURVB1 1) 1) 100)) (* (<> THERIDANOM $15) (FIRST ZTHERSURVB1 0)))))	
+1	ZTHERSURVB2	8GEN	GC	Compteur Sous Paquet ETHERSURVB2	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETHER 0) (FIRST ZTHERSURVB2 0))) (* (< APID 2015) (+ (* (= THERIDANOM $16) (MOD (FIRST (+  ZTHERSURVB2 1) 1) 100)) (* (<> THERIDANOM $16) (FIRST ZTHERSURVB2 0)))))	
+1	ZETIMEYY	8GEN	GC	Date du paquet ETIME	P				N
+2	(FIRST ANOYEAR 0)	
+1	ZETIMEMM	8GEN	GC	Date du paquet ETIME	P				N
+2	(FIRST ANOMONTH 0)	
+1	ZETIMEDD	8GEN	GC	Date du paquet ETIME	P				N
+2	(FIRST ANODAY 0)	
+1	ZETIMEHH	8GEN	GC	Date du paquet ETIME	P				N
+2	(FIRST ANOHOUR 0)	
+1	ZETIMEMN	8GEN	GC	Date du paquet ETIME	P				N
+2	(FIRST ANOMINUTE 0)	
+1	ZETIMESS	8GEN	GC	Date du paquet ETIME	P				N
+2	(FIRST ANOSECOND 0)	
+1	ZETIME	8GEN	GC	Compteur Paquet ETIME	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETIME 0) (FIRST ZETIME 0))) (* (< APID 2015) (MOD (FIRST (+  ZETIME 1) 1) 100)))	
+1	ZTIMEINICAL	8GEN	GC	Compteur Sous Paquet ETIMEINICAL	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETIME 0) (FIRST ZTIMEINICAL 0))) (* (< APID 2015) (+ (* (= TIMEIDANOM $4) (MOD (FIRST (+  ZTIMEINICAL 1) 1) 100)) (* (<> TIMEIDANOM $4) (FIRST ZTIMEINICAL 0)))))	
+1	ZTIMEINICDT	8GEN	GC	Compteur Sous Paquet ETIMEINICDT	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETIME 0) (FIRST ZTIMEINICDT 0))) (* (< APID 2015) (+ (* (= TIMEIDANOM $2) (MOD (FIRST (+  ZTIMEINICDT 1) 1) 100)) (* (<> TIMEIDANOM $2) (FIRST ZTIMEINICDT 0)))))	
+1	ZTIMERECAL	8GEN	GC	Compteur Sous Paquet ETIMERECAL	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETIME 0) (FIRST ZTIMERECAL 0))) (* (< APID 2015) (+ (* (= TIMEIDANOM $1) (MOD (FIRST (+  ZTIMERECAL 1) 1) 100)) (* (<> TIMEIDANOM $1) (FIRST ZTIMERECAL 0)))))	
+1	ZTIMEVALCDT	8GEN	GC	Compteur Sous Paquet ETIMEVALCDT	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETIME 0) (FIRST ZTIMEVALCDT 0))) (* (< APID 2015) (+ (* (= TIMEIDANOM $3) (MOD (FIRST (+  ZTIMEVALCDT 1) 1) 100)) (* (<> TIMEIDANOM $3) (FIRST ZTIMEVALCDT 0)))))	
+1	ZETMYY	8GEN	GC	Date du paquet ETM	P				N
+2	(FIRST ANOYEAR 0)	
+1	ZETMMM	8GEN	GC	Date du paquet ETM	P				N
+2	(FIRST ANOMONTH 0)	
+1	ZETMDD	8GEN	GC	Date du paquet ETM	P				N
+2	(FIRST ANODAY 0)	
+1	ZETMHH	8GEN	GC	Date du paquet ETM	P				N
+2	(FIRST ANOHOUR 0)	
+1	ZETMMN	8GEN	GC	Date du paquet ETM	P				N
+2	(FIRST ANOMINUTE 0)	
+1	ZETMSS	8GEN	GC	Date du paquet ETM	P				N
+2	(FIRST ANOSECOND 0)	
+1	ZETM	8GEN	GC	Compteur Paquet ETM	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETM 0) (FIRST ZETM 0))) (* (< APID 2015) (MOD (FIRST (+  ZETM 1) 1) 100)))	
+1	ZTMERRPTM	8GEN	GC	Compteur Sous Paquet ETMERRPTM	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETM 0) (FIRST ZTMERRPTM 0))) (* (< APID 2015) (+ (* (= TMIDANOM $2) (MOD (FIRST (+  ZTMERRPTM 1) 1) 100)) (* (<> TMIDANOM $2) (FIRST ZTMERRPTM 0)))))	
+1	ZTMINVDIAG	8GEN	GC	Compteur Sous Paquet ETMINVDIAG	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETM 0) (FIRST ZTMINVDIAG 0))) (* (< APID 2015) (+ (* (= TMIDANOM $1) (MOD (FIRST (+  ZTMINVDIAG 1) 1) 100)) (* (<> TMIDANOM $1) (FIRST ZTMINVDIAG 0)))))	
+1	ZETTCYY	8GEN	GC	Date du paquet ETTC	P				N
+2	(FIRST ANOYEAR 0)	
+1	ZETTCMM	8GEN	GC	Date du paquet ETTC	P				N
+2	(FIRST ANOMONTH 0)	
+1	ZETTCDD	8GEN	GC	Date du paquet ETTC	P				N
+2	(FIRST ANODAY 0)	
+1	ZETTCHH	8GEN	GC	Date du paquet ETTC	P				N
+2	(FIRST ANOHOUR 0)	
+1	ZETTCMN	8GEN	GC	Date du paquet ETTC	P				N
+2	(FIRST ANOMINUTE 0)	
+1	ZETTCSS	8GEN	GC	Date du paquet ETTC	P				N
+2	(FIRST ANOSECOND 0)	
+1	ZETTC	8GEN	GC	Compteur Paquet ETTC	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETTC 0) (FIRST ZETTC 0))) (* (< APID 2015) (MOD (FIRST (+  ZETTC 1) 1) 100)))	
+1	ZTTCRXBREAK	8GEN	GC	Compteur Sous Paquet ETTCRXBREAK	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETTC 0) (FIRST ZTTCRXBREAK 0))) (* (< APID 2015) (+ (* (= TTCIDANOM $1) (MOD (FIRST (+  ZTTCRXBREAK 1) 1) 100)) (* (<> TTCIDANOM $1) (FIRST ZTTCRXBREAK 0)))))	
+1	ZTTCRXLEC	8GEN	GC	Compteur Sous Paquet ETTCRXLEC	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETTC 0) (FIRST ZTTCRXLEC 0))) (* (< APID 2015) (+ (* (= TTCIDANOM $2) (MOD (FIRST (+  ZTTCRXLEC 1) 1) 100)) (* (<> TTCIDANOM $2) (FIRST ZTTCRXLEC 0)))))	
+1	ZTTCTXLEC	8GEN	GC	Compteur Sous Paquet ETTCTXLEC	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AETTC 0) (FIRST ZTTCTXLEC 0))) (* (< APID 2015) (+ (* (= TTCIDANOM $3) (MOD (FIRST (+  ZTTCTXLEC 1) 1) 100)) (* (<> TTCIDANOM $3) (FIRST ZTTCTXLEC 0)))))	
+1	ZEWDGYY	8GEN	GC	Date du paquet EWDG	P				N
+2	(FIRST ANOYEAR 0)	
+1	ZEWDGMM	8GEN	GC	Date du paquet EWDG	P				N
+2	(FIRST ANOMONTH 0)	
+1	ZEWDGDD	8GEN	GC	Date du paquet EWDG	P				N
+2	(FIRST ANODAY 0)	
+1	ZEWDGHH	8GEN	GC	Date du paquet EWDG	P				N
+2	(FIRST ANOHOUR 0)	
+1	ZEWDGMN	8GEN	GC	Date du paquet EWDG	P				N
+2	(FIRST ANOMINUTE 0)	
+1	ZEWDGSS	8GEN	GC	Date du paquet EWDG	P				N
+2	(FIRST ANOSECOND 0)	
+1	ZEWDG	8GEN	GC	Compteur Paquet EWDG	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEWDG 0) (FIRST ZEWDG 0))) (* (< APID 2015) (MOD (FIRST (+  ZEWDG 1) 1) 100)))	
+1	ZWDGSURVTSK	8GEN	GC	Compteur Sous Paquet EWDGSURVTSK	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AEWDG 0) (FIRST ZWDGSURVTSK 0))) (* (< APID 2015) (+ (* (= WDGIDANOM $1) (MOD (FIRST (+  ZWDGSURVTSK 1) 1) 100)) (* (<> WDGIDANOM $1) (FIRST ZWDGSURVTSK 0)))))	
+1	ZFINAUTTSTF	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZFINAUTTSTF 1) 1) 100)	
+1	ZFINRECONFF	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZFINRECONFF 1) 1) 100)	
+1	ZGESTROUEX	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZGESTROUEX 1) 1) 100)	
+1	ZHELLOCCPF	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZHELLOCCPF 1) 1) 100)	
+1	ZHIGHRATE1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZHIGHRATE1 1) 1) 100)	
+1	ZHIGHRATE2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZHIGHRATE2 1) 1) 100)	
+1	ZHIGHRATNO1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZHIGHRATNO1 1) 1) 100)	
+1	ZHIGHRATNO2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZHIGHRATNO2 1) 1) 100)	
+1	ZHKRX	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZHKRX 1) 1) 100)	
+1	ZHKTMD	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZHKTMD 1) 1) 100)	
+1	ZHKTX1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZHKTX1 1) 1) 100)	
+1	ZHKTX2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZHKTX2 1) 1) 100)	
+1	ZIDEASHK	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZIDEASHK 1) 1) 100)	
+1	ZLOWRATE1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZLOWRATE1 1) 1) 100)	
+1	ZLOWRATE2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZLOWRATE2 1) 1) 100)	
+1	ZLSTATUS	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZLSTATUS 1) 1) 100)	
+1	ZMASAIT	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZMASAIT 1) 1) 100)	
+1	ZMASEXP	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZMASEXP 1) 1) 100)	
+1	ZMASRTE1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZMASRTE1 1) 1) 100)	
+1	ZMASRTE2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZMASRTE2 1) 1) 100)	
+1	ZMEDIUMRAT1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZMEDIUMRAT1 1) 1) 100)	
+1	ZMEDIUMRAT2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZMEDIUMRAT2 1) 1) 100)	
+1	ZMEMCHKSUM1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZMEMCHKSUM1 1) 1) 100)	
+1	ZMEMCHKSUM2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZMEMCHKSUM2 1) 1) 100)	
+1	ZMEMDOWNLD1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZMEMDOWNLD1 1) 1) 100)	
+1	ZMEMDOWNLD2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZMEMDOWNLD2 1) 1) 100)	
+1	ZMESSAGEVYY	8GEN	GC	Date du paquet MESSAGELV	P				N
+2	(FIRST ANOYEAR 0)	
+1	ZMESSAGEVMM	8GEN	GC	Date du paquet MESSAGELV	P				N
+2	(FIRST ANOMONTH 0)	
+1	ZMESSAGEVDD	8GEN	GC	Date du paquet MESSAGELV	P				N
+2	(FIRST ANODAY 0)	
+1	ZMESSAGEVHH	8GEN	GC	Date du paquet MESSAGELV	P				N
+2	(FIRST ANOHOUR 0)	
+1	ZMESSAGEVMN	8GEN	GC	Date du paquet MESSAGELV	P				N
+2	(FIRST ANOMINUTE 0)	
+1	ZMESSAGEVSS	8GEN	GC	Date du paquet MESSAGELV	P				N
+2	(FIRST ANOSECOND 0)	
+1	ZMESSAGELV	8GEN	GC	Compteur Paquet MESSAGELV	P				N
+2	(+ (* (= APID 2015 ) (* (FIRST AMESSAGELV 0) (FIRST ZMESSAGELV 0))) (* (< APID 2015) (MOD (FIRST (+  ZMESSAGELV 1) 1) 100)))	
+1	ZMGTAIT	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZMGTAIT 1) 1) 100)	
+1	ZMGTEXP	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZMGTEXP 1) 1) 100)	
+1	ZMGTGUID	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZMGTGUID 1) 1) 100)	
+1	ZMGTRTE1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZMGTRTE1 1) 1) 100)	
+1	ZMNOATTSAT	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZMNOATTSAT 1) 1) 100)	
+1	ZMNOGUID	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZMNOGUID 1) 1) 100)	
+1	ZMNORTE1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZMNORTE1 1) 1) 100)	
+1	ZMNORTE2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZMNORTE2 1) 1) 100)	
+1	ZOBSERVTM	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZOBSERVTM 1) 1) 100)	
+1	ZOUTMAG	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZOUTMAG 1) 1) 100)	
+1	ZOUTSASXM	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZOUTSASXM 1) 1) 100)	
+1	ZOUTSASXP	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZOUTSASXP 1) 1) 100)	
+1	ZOUTSASZP	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZOUTSASZP 1) 1) 100)	
+1	ZPATTITUDE	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZPATTITUDE 1) 1) 100)	
+1	ZPDTPF	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZPDTPF 1) 1) 100)	
+1	ZPIMAGE	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZPIMAGE 1) 1) 100)	
+1	ZPIMGOP	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZPIMGOP 1) 1) 100)	
+1	ZPLANSURVP1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZPLANSURVP1 1) 1) 100)	
+1	ZPLANSURVP2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZPLANSURVP2 1) 1) 100)	
+1	ZPMEMDUMP	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZPMEMDUMP 1) 1) 100)	
+1	ZPMODE	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZPMODE 1) 1) 100)	
+1	ZPMODESAT	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZPMODESAT 1) 1) 100)	
+1	ZPRETSAGE	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZPRETSAGE 1) 1) 100)	
+1	ZPSTATREPOT	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZPSTATREPOT 1) 1) 100)	
+1	ZRECEPTCD	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZRECEPTCD 1) 1) 100)	
+1	ZREGULBAT	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZREGULBAT 1) 1) 100)	
+1	ZREPORTPAR0	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZREPORTPAR0 1) 1) 100)	
+1	ZREPORTPAR1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZREPORTPAR1 1) 1) 100)	
+1	ZREPORTPAR2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZREPORTPAR2 1) 1) 100)	
+1	ZREPORTPAR3	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZREPORTPAR3 1) 1) 100)	
+1	ZREPORTPAR4	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZREPORTPAR4 1) 1) 100)	
+1	ZREPORTPAR5	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZREPORTPAR5 1) 1) 100)	
+1	ZREPORTPAR6	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZREPORTPAR6 1) 1) 100)	
+1	ZREPORTPAR7	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZREPORTPAR7 1) 1) 100)	
+1	ZREPORTPAR8	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZREPORTPAR8 1) 1) 100)	
+1	ZREPORTPAR0	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZREPORTPAR0 1) 1) 100)	
+1	ZREPORTPAR1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZREPORTPAR1 1) 1) 100)	
+1	ZREPORTPAR2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZREPORTPAR2 1) 1) 100)	
+1	ZREPORTPAR3	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZREPORTPAR3 1) 1) 100)	
+1	ZREPORTPAR4	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZREPORTPAR4 1) 1) 100)	
+1	ZREPORTPAR5	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZREPORTPAR5 1) 1) 100)	
+1	ZREPORTPAR6	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZREPORTPAR6 1) 1) 100)	
+1	ZREPORTPAR7	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZREPORTPAR7 1) 1) 100)	
+1	ZREPORTPAR8	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZREPORTPAR8 1) 1) 100)	
+1	ZRWXLONG	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZRWXLONG 1) 1) 100)	
+1	ZS1COSDIR	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZS1COSDIR 1) 1) 100)	
+1	ZS1RAWD	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZS1RAWD 1) 1) 100)	
+1	ZS2COSDIR	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZS2COSDIR 1) 1) 100)	
+1	ZS2RAWD	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZS2RAWD 1) 1) 100)	
+1	ZS3RAWD	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZS3RAWD 1) 1) 100)	
+1	ZSALEPH	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZSALEPH 1) 1) 100)	
+1	ZSBOOTST	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZSBOOTST 1) 1) 100)	
+1	ZSCHANST	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZSCHANST 1) 1) 100)	
+1	ZSDUMP	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZSDUMP 1) 1) 100)	
+1	ZSIGNICU1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZSIGNICU1 1) 1) 100)	
+1	ZSIGNICU2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZSIGNICU2 1) 1) 100)	
+1	ZSNAVIGPS	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZSNAVIGPS 1) 1) 100)	
+1	ZSNAVOEGPS	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZSNAVOEGPS 1) 1) 100)	
+1	ZSORBPAR	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZSORBPAR 1) 1) 100)	
+1	ZSRECEIVST	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZSRECEIVST 1) 1) 100)	
+1	ZSSTDATATIN	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZSSTDATATIN 1) 1) 100)	
+1	ZSTARTLVC	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZSTARTLVC 1) 1) 100)	
+1	ZSTSPYRO	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZSTSPYRO 1) 1) 100)	
+1	ZTEMPERATUE	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZTEMPERATUE 1) 1) 100)	
+1	ZTMACKICU1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZTMACKICU1 1) 1) 100)	
+1	ZTMACKICU2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZTMACKICU2 1) 1) 100)	
+1	ZTMALIM	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZTMALIM 1) 1) 100)	
+1	ZTMCORTPS	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZTMCORTPS 1) 1) 100)	
+1	ZTMHK1	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZTMHK1 1) 1) 100)	
+1	ZTMHK2	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZTMHK2 1) 1) 100)	
+1	ZTMHKSST	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZTMHKSST 1) 1) 100)	
+1	ZTMOBC	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZTMOBC 1) 1) 100)	
+1	ZTMOBCROUT	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZTMOBCROUT 1) 1) 100)	
+1	ZTMPARTUC	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZTMPARTUC 1) 1) 100)	
+1	ZTMRECALTUC	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZTMRECALTUC 1) 1) 100)	
+1	ZTTCETRM	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZTTCETRM 1) 1) 100)	
+1	ZUNITSURVPF	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZUNITSURVPF 1) 1) 100)	
+1	ZVERSIONLVC	8GEN	GC	Compteur Brut	P				N
+2	(MOD (FIRST (+ ZVERSIONLVC 1) 1) 100)	
+#END_OF_FILE

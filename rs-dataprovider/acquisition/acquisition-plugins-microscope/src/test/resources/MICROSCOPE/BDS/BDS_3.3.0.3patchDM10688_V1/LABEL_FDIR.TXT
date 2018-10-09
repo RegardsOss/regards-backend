@@ -1,0 +1,123 @@
+#BEGIN_OF_FILE
+#Copyright BDMS 2006
+#LABEL_FDIR.TXT#	3.3	0	3	19/10/16
+#Myriade - Microscope	MYRIADE		V3.3.0.3	Extracteur_CC V2.8.1
+1	EALIMLCL1	Anomalie sur 1ere verification lors de la procedure securisee de commutation LCL indiquant la BNR et l action ON ou OFF concernees
+1	EALIMLCL2	Anomalie sur 2eme verification lors de la procedure securisee de commutation LCL indiquant la BNR et l action ON ou OFF concernees
+1	EALIMPERMRX	Etat OFF permanent du 5V et/ou 20V de la roue X
+1	EALIMS520RX	Etat ON du 5V ou 20V de la roue X non conforme
+1	EALIMUVD1	Charge batterie inferieure au seuil1 [delestage CU]
+1	EALIMUVD2	Charge batterie inferieure au seuil2 [MSV1]
+1	EAQCMFDIR1	Declenchement FDIR PIC 1er niveau
+1	EAQCMFDIR2	Declenchement FDIR PIC 2eme niveau
+1	EDRAMBOFF	Une banque DRAM est OFF au demarrage du LVC 
+1	EDRAMOFFON	Le LVC a redemarre sur mise OFF de la DRAM suite au declenchement de la surveillance du compteur de cumul des erreurs EDAC.
+1	EECMDIAL1	Erreur de dialogue et/ou mesures figees ECm ZP
+1	EECMDIAL2	Erreur de dialogue et/ou mesures figees ECM ZM
+1	EECMT1SAT1	Saturation debit type 1 ECM ZP
+1	EECMT1SAT2	Saturation debit type 1 ECM ZM
+1	EECMT2SAT1	Saturation debit type 2 ECM ZP
+1	EECMT2SAT2	Saturation debit type 2 ECM ZM
+1	EFLSHON	Flash EPROM restee ON plus de 30 min indiquant le ndeg de la Flash concernee
+1	EGNSSDIAL	Anomalie dialogue recepteur GNNS
+1	EGNSSVAL	Anomalie validite des mesures recepteur GNSS
+1	EI2CTAILLE	Taille acquisition recue differente de la taille attendue
+1	EI2CTRANS	Anomalie lors d une transaction I2C
+1	EIFCUBADAD1	Adresse emetteur non conforme dans l en tete TM fournie par l ICU-REF
+1	EIFCUBADAD2	Adresse emetteur non conforme dans l en tete TM fournie par l ICU-EP
+1	EIFCUBADRQ1	Champ requete de l en-tete TM fournie par l ICU-REF non conforme
+1	EIFCUBADRQ2	Champ requete de l en-tete TM fournie par l ICU-EP non conforme
+1	EIFCUBADTM1	Champ taille de l en-tete TM fournie par l ICU-REF non conforme
+1	EIFCUBADTM2	Champ taille de l en-tete TM fournie par l ICU-EP non conforme
+1	EIFCUNACK1	Non acquittement de la derniere commande ICU-REF [NACK envoye par l ICU]
+1	EIFCUNACK2	Non acquittement de la derniere commande ICU-EP [NACK envoye par l ICU]
+1	EIFCUNORP1	Pas de reponse recue a la derniere commande envoyee a l ICU REF
+1	EIFCUNORP2	Pas de reponse recue a la derniere commande envoyee a l ICU EP
+1	EIFTCCRCFPG	Trame TC recue incorrecte du FPGA avec Pb CRC fourni par le FPGA
+1	EIFTCCRCLV	Trame TC recue incorrecte du FPGA avec Pb CRC recalcule par le LVC
+1	EIFTCFARMCO	Trame TC recue incorrecte du FPGA avec Pb FARM compteur de trame
+1	EIFTCFARMLK	Trame TC rejetee car FARM lock-out
+1	EIFTCMAPID	MAP ID inconnu
+1	EIFTCPAQU	Erreur sur le Header de trame TC CCSDS :1- incoherence longueur de paquet, 2- valeur non prevue pour version number + type indicator,3- valeur non prevue pour sequence flag + original sequence counter,4- autre erreur
+1	EIFTCTRAME	Erreur sur le header de trame TC CCSDS [autre que : valeur du compteur de trame non attendue]
+1	EMODCRCFRAM	1 ou les 2 CRC lus dans une ou les 2 FRAM est errone : 1=FRAM1, 2=FRAM2, 3=FRAM1 . 2
+1	EMODCRCTIED	Partie du contexte tiede DRAM controlee non integre au demarrage
+1	EMODCTXVRAI	Invraisemblance sur contexte FRAM aperiodique [conduisant a utilisation des valeurs par defaut]
+1	ESCAOBLICU1	Anomalie blocage ICU1 en MCA
+1	ESCAOBLICU2	Anomalie blocage ICU2 en MCA
+1	ESCAODERVDI	Anomalie sur la derivee du champ magnetique [Bpoint] en MGT
+1	ESCAODIASST	Anomalie de dialogue avec le SST [ecart de date trop important]: 1=NOK / 0=OK
+1	ESCAOECAMAG	Anomalie sur ecart entre champ magnetique de consigne et champ magnetique mesure en MGT
+1	ESCAOECAQUT	Anomalie sur ecart entre le quaternion d attitude de consigne et celui du satellite mesure en MSP/MCA
+1	ESCAOHBTSAG	Anomalie hybridation TSAGE en MCA
+1	ESCAOITSAGE	Anomalie validite TSAGE en MCA
+1	ESCAOMCFRW	Mode roue incorrest a l issue de la procedure de mise en configuration operationnelle
+1	ESCAOMODERW	Anomalie sur le mode RW en MAS/MGT2
+1	ESCAOMPSSAT	Anomalie saturation MPS en MSP/MCA
+1	ESCAOPANMAG	Anomalie sur champ magnetique terrestre mesure en MAS
+1	ESCAOTEMSST	Anomalie sur 1 des 4 temperatures du SST [CCD1, CCD2, CPU, SMPS]
+1	ESCAOVALQUT	Anomalie sur disponibilite mesures SST en MSP/MCA
+1	ESCAOVDSAG1	Anomalie perte d asservissement ICU1 en MCA
+1	ESCAOVDSAG2	Anomalie perte d asservissement ICU2 en MCA
+1	ESCAOVITRAM	Anomalie vitesse roue X apres les rampes Spin up/down
+1	ESCAOVITREA	Anomalie RWX en MAS entre le moment cinetique commande et le moment cinetique mesure
+1	ETCARGTC	Erreur sur les arguments de la TC :1- taille totale de la TC insuffisant [arguments non trouves], 2- taille totale de la TC trop grande [plus de donnees que necessaire], 3- valeur argument invalide [hors fourchette].
+1	ETCBLACTPDT	Erreur sur TC d activation PdT : file bloquee , PdT supprime suite a cette erreur
+1	ETCCOMPDT	Taille du PdT en cours de reception incompatible avec taille du buffer de reception 
+1	ETCCRCTAB	CRC table/fichier recu NOK , indiquant le CRC attendu, le CRC calcule et la table concernee
+1	ETCDATENOK	Date TC time-tagged detectee invalide a reception [dans le futur mais trop proche de la date courante, ou deja passee] indiquant l ID et l APID de la TC, le PdT concerne et les heures TUC_bord et TUC_sol
+1	ETCDEBPDT	Reception d une TC deb. PdT en cours de reception d une unite de PdT [le buffer de reception du PdT d id. donne par la TC deb. PdT est re-initialise suite a cette erreur]
+1	ETCDEBTAB	Reception d une TC debut transfert en cours de reception d une table/fichier
+1	ETCEXECTC	Erreur en cours d execution d une TC
+1	ETCFICH	Erreur de gestion des fichiers bord, indiquant la memoire concernee Flash1, 2, 3, DRAM], l Id du fichier le code erreur et le code de la fonction concernee
+1	ETCFINPDT	Id. PdT dans TC fin PdT, incoherent avec id. dans TC deb. PdT [le buffer de reception du PdT d id. donne par la TC fin PdT est re-initialise suite a cette erreur]
+1	ETCHORSPDT	TC time-tagged ou TC fin de PdT recue en dehors d un PdT
+1	ETCHORSTAB	TC troncon table/fichier recue en dehors transfert
+1	ETCIDPDT	ID file PdT inexistant dans une TC debut PdT, fin PdT ou activer PdT, ou TC debut PdT avec nombre de TC annonce a zero
+1	ETCIDTAB	Identite table/fichier inconnue, ou non chargee en RAM
+1	ETCIDTC	APID/ID inconnu
+1	ETCINCPDT	Reception d une TC activer PdT alors qu il n existe pas de PdT complet en attente d activation
+1	ETCINCTAB	Reception d une TC activer Table alors qu il n existe pas de Table en attente d activation
+1	ETCINVPDT	Contenu d un PdT [file bord] trouve errone [pointeur hors file] lors de son utilisation par le LVC [la file est alors videe et bloquee]
+1	ETCINVTAB	Contenu d une table/fichier fonctionnellement invalide, venant du sol [exemple : unite de surveillance], ou d une Flash au demarrage du LVC [erreur de lecture]
+1	ETCMODEINOK	TC immediate non executable dans le mode en cours
+1	ETCMODETNOK	TC time-tagged arrivee a echeance et inconnue ou non executable dans le mode en cours
+1	ETCNBTCPDT	Sur TC fin PdT nombre de TCs recu different du nombre de TCs attendu donne dans TC deb PdT[l unite de PdT chargee est supprime suite a cette erreur]
+1	ETCNCACTPDT	TC activer PdT alors qu une unite de PdT est en cours de chargement [pour le meme PdT ou pour un autre]
+1	ETCRETARDEX	Execution d une TC time-tagged avec un retard superieur au seuil prevu, indiquant l ID/APID de la TC, le TUC_sol et le TUC effectif d execution TC
+1	ETCTAILTAB	Taille Table/Fichier recu incompatible avec taille Table/Fichier telle que connue a bord par le LVC
+1	ETCVOACTPDT	Erreur sur TC d activation PdT indiquant le PdT concerne, le volume disponible et le volume requis par le PdT : espace libre insuffisant , PdT supprime suite a cette erreur
+1	ETHERBAT1	Declenchement surveillance temperature 1 batterie
+1	ETHERBAT2	Declenchement surveillance temperature 2 batterie
+1	ETHERECMZM1	Declenchement surveillance temperature TRP ECM -Z [capteur 1]
+1	ETHERECMZM2	Declenchement surveillance temperature TRP ECM -Z [capteur 2]
+1	ETHERECMZP1	Declenchement surveillance temperature TRP ECM +Z [capteur 1]
+1	ETHERECMZP2	Declenchement surveillance temperature TRP ECM +Z [capteur 2]
+1	ETHERFEEUEP	Declenchement surveillance temperature TRP FEEU EP
+1	ETHERFEEURF	Declenchement surveillance temperature TRP FEEU REF
+1	ETHERICUME1	Declenchement surveillance temperature TRP ICUME [capteur 1]
+1	ETHERICUME2	Declenchement surveillance temperature TRP ICUME [capteur 2]
+1	ETHERMTOFZM	Declenchement surveillance temperature MT ZM OFF
+1	ETHERMTOFZP	Declenchement surveillance temperature MT ZP OFF
+1	ETHERMTONZM	Declenchement surveillance temperature MT ZM ON
+1	ETHERMTONZP	Declenchement surveillance temperature MT ZP ON
+1	ETHERPDU	Declenchement surveillance temperature panneau ZPF par PCDU
+1	ETHERROUE	Declenchement surveillance temperature panneau -Y PF [IF roue -Y]
+1	ETHERSSTYM1	Declenchement surveillance temperature TRP tete optique SST -Y/+Z capteur 1
+1	ETHERSSTYM2	Declenchement surveillance temperature TRP tete optique SST +Y/-Z capteur 2
+1	ETHERSSTYP1	Declenchement surveillance temperature TRP tete optique SST +Y/-Z capteur 1
+1	ETHERSSTYP2	Declenchement surveillance temperature TRP tete optique SST +Y/-Z capteur 2
+1	ETHERSURVB1	Declenchement surveillance temperature batterie [capteur 1] pour passage en survie
+1	ETHERSURVB2	Declenchement surveillance temperature batterie [capteur 2] pour passage en survie
+1	ETIMEINICAL	Execution d une TC RECALTUC sans execution prealable d une TC CALPARTUC
+1	ETIMEINICDT	Le calcul des coefficients de l equation de compensation de la derive de l OCXO n est pas possible car au moins un indicateur de validite de Treception et HBreception est « non valide ». 
+1	ETIMERECAL	Controle de plausibilite NOK de la valeur absolue du parametre ECARTTUC lors de l execution de la TC CALPARTUC
+1	ETIMEVALCDT	Controle de plausibilite NOK lors du calcul des coefficients de l equation de compensation de la derive de l OCXO. 
+1	ETMERRPTM	Erreur pointeur espace TM OBC
+1	ETMINVDIAG	Demande invalide de TM diagnostic : aucun des 2 lots de TM diagnostic n est complet
+1	ETTCRXBREAK	Detection signal « break » sur liaison serie Rx indiquant ndeg Rx
+1	ETTCRXLEC	Echec lecture registre Rx [suivi par basculement PIC TMD] indiquant ndeg Rx
+1	ETTCTXLEC	Echec lecture registre Tx [suivi par basculement PIC TMD] indiquant ndeg Tx
+1	EWDGSURVTSK	Erreur pb detecte sur tache surveillee [surveillance faite par la tache qui rafraichit le WatchDog Global]
+#END_OF_FILE
+

@@ -1,0 +1,144 @@
+#BEGIN_OF_FILE
+#Copyright BDMS 2006
+#BOMB_RC.TXT#	3.3	0	3	19/10/16
+#Myriade - Microscope	MYRIADE		V3.3.0.3	Extracteur_CC V2.8.1
+1	ACQALIMBAT	2OMB	RC	Acquittement pour le module de protection de l ailimentation batterie	2036	66			5
+2	APLIIDVAL	32	APLLID qui prend differente valeur suivant RC[64h] RM[65h] ou ACKRC[66h]	64h	Y
+2	ETIDVAL	16	ET-ID Toujours a 42h pour toutes les baies	42h	Y
+2	TYPECOMM	8	Permet d identifier qu il s agit d une commande de STOR	1h	Y
+2	CHPCOMPOVAL	8	Valeur champ composant destinataire	Eh	Y
+3	ACQALIMBAT	8	Acquittement pour le module de protection de l ailimentation batterie			ID	ST	LINACACQ		Y	
+5	CALRCSTABO	(CALRCSTABO = 'PROCESSED' AND RCNUMBERBO = 1 AND RCDESTIBO = 14)
+1	ACQALIMSAT	2OMB	RC	Acquittement pour le module de protection de l alimentation satellite	2036	66			5
+2	APLIIDVAL	32	APLLID qui prend differente valeur suivant RC[64h] RM[65h] ou ACKRC[66h]	64h	Y
+2	ETIDVAL	16	ET-ID Toujours a 42h pour toutes les baies	42h	Y
+2	TYPECOMM	8	Permet d identifier qu il s agit d une commande de STOR	1h	Y
+2	CHPCOMPOVAL	8	Valeur champ composant destinataire	Dh	Y
+3	ACQALIMSAT	8	Acquittement pour le module de protection de l alimentation satellite			ID	ST	LINACACQ		Y	
+5	CALRCSTABO	(CALRCSTABO = 'PROCESSED' AND RCNUMBERBO = 1 AND RCDESTIBO = 13)
+1	CDEBITMAG	2OMB	RC	Commande d activation du BIT magnetometre	2036	66			5
+2	APLIIDVAL	32	APLLID qui prend differente valeur suivant RC[64h] RM[65h] ou ACKRC[66h]	64h	Y
+2	ETIDVAL	16	ET-ID Toujours a 42h pour toutes les baies	42h	Y
+2	TYPECOMM	8	Permet d identifier qu il s agit d une commande de STOR	1h	Y
+2	CHPCOMPOVAL	8	Valeur champ composant destinataire	Bh	Y
+3	CDEBITMAG	8	Commande d activation du BIT magnetometre			ID	ST	LINACACTI		Y	
+5	CALRCSTABO	(CALRCSTABO = 'PROCESSED' AND RCNUMBERBO = 1 AND RCDESTIBO = 11)
+1	CDEBUZZER	2OMB	RC	Commande du buzzer	2036	66			5
+2	APLIIDVAL	32	APLLID qui prend differente valeur suivant RC[64h] RM[65h] ou ACKRC[66h]	64h	Y
+2	ETIDVAL	16	ET-ID Toujours a 42h pour toutes les baies	42h	Y
+2	TYPECOMM	8	Permet d identifier qu il s agit d une commande de STOR	1h	Y
+2	CHPCOMPOVAL	8	Valeur champ composant destinataire	Fh	Y
+3	CDEBUZZER	8	Commande du buzzer			ID	ST	LINACACTI		Y	
+5	CALRCSTABO	(CALRCSTABO = 'PROCESSED' AND RCNUMBERBO = 1 AND RCDESTIBO = 15)
+1	CDEOLBAT	2OMB	RC	Relais ON-LINE pour l alimentation batterie	2036	66			5
+2	APLIIDVAL	32	APLLID qui prend differente valeur suivant RC[64h] RM[65h] ou ACKRC[66h]	64h	Y
+2	ETIDVAL	16	ET-ID Toujours a 42h pour toutes les baies	42h	Y
+2	TYPECOMM	8	Permet d identifier qu il s agit d une commande de STOR	1h	Y
+2	CHPCOMPOVAL	8	Valeur champ composant destinataire	2h	Y
+3	CDEOLBAT	8	Relais ON-LINE pour l alimentation batterie			ID	ST	LOUVFERM		Y	
+5	CALRCSTABO	(CALRCSTABO = 'PROCESSED' AND RCNUMBERBO = 1 AND RCDESTIBO = 2)
+1	CDEOLSAT	2OMB	RC	Relais ON-LINE pour l alimentation satellite	2036	66			5
+2	APLIIDVAL	32	APLLID qui prend differente valeur suivant RC[64h] RM[65h] ou ACKRC[66h]	64h	Y
+2	ETIDVAL	16	ET-ID Toujours a 42h pour toutes les baies	42h	Y
+2	TYPECOMM	8	Permet d identifier qu il s agit d une commande de STOR	1h	Y
+2	CHPCOMPOVAL	8	Valeur champ composant destinataire	1h	Y
+3	CDEOLSAT	8	Relais ON-LINE pour l alimentation satellite			ID	ST	LOUVFERM		Y	
+5	CALRCSTABO	(CALRCSTABO = 'PROCESSED' AND RCNUMBERBO = 1 AND RCDESTIBO = 1)
+1	CDEPYROMB1	2OMB	RC	Strap Pyro de la prise OMB1	2036	66			5
+2	APLIIDVAL	32	APLLID qui prend differente valeur suivant RC[64h] RM[65h] ou ACKRC[66h]	64h	Y
+2	ETIDVAL	16	ET-ID Toujours a 42h pour toutes les baies	42h	Y
+2	TYPECOMM	8	Permet d identifier qu il s agit d une commande de STOR	1h	Y
+2	CHPCOMPOVAL	8	Valeur champ composant destinataire	9h	Y
+3	CDEPYROMB1	8	Strap Pyro de la prise OMB1			ID	ST	LVOLSOL		Y	
+5	CALRCSTABO	(CALRCSTABO = 'PROCESSED' AND RCNUMBERBO = 1 AND RCDESTIBO = 9)
+1	CDEPYRTAIT	2OMB	RC	Strap Pyro de la prise TEST AIT	2036	66			5
+2	APLIIDVAL	32	APLLID qui prend differente valeur suivant RC[64h] RM[65h] ou ACKRC[66h]	64h	Y
+2	ETIDVAL	16	ET-ID Toujours a 42h pour toutes les baies	42h	Y
+2	TYPECOMM	8	Permet d identifier qu il s agit d une commande de STOR	1h	Y
+2	CHPCOMPOVAL	8	Valeur champ composant destinataire	8h	Y
+3	CDEPYRTAIT	8	Strap Pyro de la prise TEST AIT			ID	ST	LVOLSOL		Y	
+5	CALRCSTABO	(CALRCSTABO = 'PROCESSED' AND RCNUMBERBO = 1 AND RCDESTIBO = 8)
+1	CDERELPCDU	2OMB	RC	Commande des relais generaux PCDU	2036	66			5
+2	APLIIDVAL	32	APLLID qui prend differente valeur suivant RC[64h] RM[65h] ou ACKRC[66h]	64h	Y
+2	ETIDVAL	16	ET-ID Toujours a 42h pour toutes les baies	42h	Y
+2	TYPECOMM	8	Permet d identifier qu il s agit d une commande de STOR	1h	Y
+2	CHPCOMPOVAL	8	Valeur champ composant destinataire	Ch	Y
+3	CDERELPCDU	8	Commande des relais generaux PCDU			ID	ST	LOUVFERM		Y	
+5	CALRCSTABO	(CALRCSTABO = 'PROCESSED' AND RCNUMBERBO = 1 AND RCDESTIBO = 12)
+1	CDERESOMB1	2OMB	RC	Strap Reset de la prise OMB1	2036	66			5
+2	APLIIDVAL	32	APLLID qui prend differente valeur suivant RC[64h] RM[65h] ou ACKRC[66h]	64h	Y
+2	ETIDVAL	16	ET-ID Toujours a 42h pour toutes les baies	42h	Y
+2	TYPECOMM	8	Permet d identifier qu il s agit d une commande de STOR	1h	Y
+2	CHPCOMPOVAL	8	Valeur champ composant destinataire	7h	Y
+3	CDERESOMB1	8	Strap Reset de la prise OMB1			ID	ST	LVOLSOL		Y	
+5	CALRCSTABO	(CALRCSTABO = 'PROCESSED' AND RCNUMBERBO = 1 AND RCDESTIBO = 7)
+1	CDERESTAIT	2OMB	RC	Strap Reset de la prise TEST AIT	2036	66			5
+2	APLIIDVAL	32	APLLID qui prend differente valeur suivant RC[64h] RM[65h] ou ACKRC[66h]	64h	Y
+2	ETIDVAL	16	ET-ID Toujours a 42h pour toutes les baies	42h	Y
+2	TYPECOMM	8	Permet d identifier qu il s agit d une commande de STOR	1h	Y
+2	CHPCOMPOVAL	8	Valeur champ composant destinataire	6h	Y
+3	CDERESTAIT	8	Strap Reset de la prise TEST AIT			ID	ST	LVOLSOL		Y	
+5	CALRCSTABO	(CALRCSTABO = 'PROCESSED' AND RCNUMBERBO = 1 AND RCDESTIBO = 6)
+1	CDESIMUL	2OMB	RC	Commande simultanee des strap Start et Reset	2036	66			5
+2	APLIIDVAL	32	APLLID qui prend differente valeur suivant RC[64h] RM[65h] ou ACKRC[66h]	64h	Y
+2	ETIDVAL	16	ET-ID Toujours a 42h pour toutes les baies	42h	Y
+2	TYPECOMM	8	Permet d identifier qu il s agit d une commande de STOR	1h	Y
+2	CHPCOMPOVAL	8	Valeur champ composant destinataire	Ah	Y
+3	CDESIMUL	8	Commande simultanee des strap Start et Reset			ID	ST	LVOLSOL		Y	
+5	CALRCSTABO	(CALRCSTABO = 'PROCESSED' AND RCNUMBERBO = 1 AND RCDESTIBO = 10)
+1	CDESTAOMB1	2OMB	RC	Strap Start de la prise OMB1	2036	66			5
+2	APLIIDVAL	32	APLLID qui prend differente valeur suivant RC[64h] RM[65h] ou ACKRC[66h]	64h	Y
+2	ETIDVAL	16	ET-ID Toujours a 42h pour toutes les baies	42h	Y
+2	TYPECOMM	8	Permet d identifier qu il s agit d une commande de STOR	1h	Y
+2	CHPCOMPOVAL	8	Valeur champ composant destinataire	4h	Y
+3	CDESTAOMB1	8	Strap Start de la prise OMB1			ID	ST	LVOLSOL		Y	
+5	CALRCSTABO	(CALRCSTABO = 'PROCESSED' AND RCNUMBERBO = 1 AND RCDESTIBO = 4)
+1	CDESTAOMB2	2OMB	RC	Strap Start de la prise OMB2	2036	66			5
+2	APLIIDVAL	32	APLLID qui prend differente valeur suivant RC[64h] RM[65h] ou ACKRC[66h]	64h	Y
+2	ETIDVAL	16	ET-ID Toujours a 42h pour toutes les baies	42h	Y
+2	TYPECOMM	8	Permet d identifier qu il s agit d une commande de STOR	1h	Y
+2	CHPCOMPOVAL	8	Valeur champ composant destinataire	5h	Y
+3	CDESTAOMB2	8	Strap Start de la prise OMB2			ID	ST	LVOLSOL		Y	
+5	CALRCSTABO	(CALRCSTABO = 'PROCESSED' AND RCNUMBERBO = 1 AND RCDESTIBO = 5)
+1	CDESTATAIT	2OMB	RC	Strap Start de la prise TEST AIT	2036	66			5
+2	APLIIDVAL	32	APLLID qui prend differente valeur suivant RC[64h] RM[65h] ou ACKRC[66h]	64h	Y
+2	ETIDVAL	16	ET-ID Toujours a 42h pour toutes les baies	42h	Y
+2	TYPECOMM	8	Permet d identifier qu il s agit d une commande de STOR	1h	Y
+2	CHPCOMPOVAL	8	Valeur champ composant destinataire	3h	Y
+3	CDESTATAIT	8	Strap Start de la prise TEST AIT			ID	ST	LVOLSOL		Y	
+5	CALRCSTABO	(CALRCSTABO = 'PROCESSED' AND RCNUMBERBO = 1 AND RCDESTIBO = 3)
+1	CONSALIMBA	2OMB	RC	Alim batterie TENSION	2037	66			6
+2	APLIIDVAL	32	APLLID qui prend differente valeur suivant RC[64h] RM[65h] ou ACKRC[66h]	64h	Y
+2	ETIDVAL	16	ET-ID Toujours a 42h pour toutes les baies	42h	Y
+2	TYPECOMM	8	Permet d identifier qu il s agit d une commande de STOR	2h	Y
+2	CHPCOMPOVAL	8	Valeur champ composant destinataire	2h	Y
+3	CONSALIMBAU	32	Alim batterie TENSION			LF	NU	PID		Y	
+3	CONSALIMBAI	32	Alim batterie COURANT			LF	NU	PID		Y	
+5	CALRCSTABO	(CALRCSTABO = 'PROCESSED' AND RCNUMBERBO = 2 AND RCDESTIBO = 2)
+1	CONSALIMSA	2OMB	RC	Alimentation satellite TENSION	2037	66			6
+2	APLIIDVAL	32	APLLID qui prend differente valeur suivant RC[64h] RM[65h] ou ACKRC[66h]	64h	Y
+2	ETIDVAL	16	ET-ID Toujours a 42h pour toutes les baies	42h	Y
+2	TYPECOMM	8	Permet d identifier qu il s agit d une commande de STOR	2h	Y
+2	CHPCOMPOVAL	8	Valeur champ composant destinataire	1h	Y
+3	CONSALIMSAU	32	Alimentation satellite TENSION			LF	NU	PID		Y	
+3	CONSALIMSAI	32	Alim satellite COURANT			LF	NU	PID		Y	
+5	CALRCSTABO	(CALRCSTABO = 'PROCESSED' AND RCNUMBERBO = 2 AND RCDESTIBO = 1)
+1	STARALIMBA	2OMB	RC	Alimentation charge batterie	2038	66			7
+2	APLIIDVAL	32	APLLID qui prend differente valeur suivant RC[64h] RM[65h] ou ACKRC[66h]	64h	Y
+2	ETIDVAL	16	ET-ID Toujours a 42h pour toutes les baies	42h	Y
+2	TYPECOMM	8	Permet d identifier qu il s agit d une commande de STOR	3h	Y
+2	CHPCOMPOVAL	8	Valeur champ composant destinataire	2h	Y
+3	STARALIMBAX	8	Alimentation charge batterie status			ID	ST	LALIMBAT		Y	
+3	STARALIMBAU	32	Alimentation chage batterie Tension			LF	NU	PID		Y	
+3	STARALIMBAI	32	Alimlentation charge batterie courant			LF	NU	PID		Y	
+5	CALRCSTABO	(CALRCSTABO = 'PROCESSED' AND RCNUMBERBO = 3 AND RCDESTIBO = 2)
+1	STARALIMSA	2OMB	RC	Alimentation Satellite	2038	66			7
+2	APLIIDVAL	32	APLLID qui prend differente valeur suivant RC[64h] RM[65h] ou ACKRC[66h]	64h	Y
+2	ETIDVAL	16	ET-ID Toujours a 42h pour toutes les baies	42h	Y
+2	TYPECOMM	8	Permet d identifier qu il s agit d une commande de STOR	3h	Y
+2	CHPCOMPOVAL	8	Valeur champ composant destinataire	1h	Y
+3	STARALIMSAX	8	Alimentation satellite Status			ID	ST	LALIMSAT		Y	
+3	STARALIMSAU	32	Alimentation satellite Tension			LF	NU	PID		Y	
+3	STARALIMSAI	32	Alimentation satellite Courant			LF	NU	PID		Y	
+5	CALRCSTABO	(CALRCSTABO = 'PROCESSED' AND RCNUMBERBO = 3 AND RCDESTIBO = 1)
+#END_OF_FILE

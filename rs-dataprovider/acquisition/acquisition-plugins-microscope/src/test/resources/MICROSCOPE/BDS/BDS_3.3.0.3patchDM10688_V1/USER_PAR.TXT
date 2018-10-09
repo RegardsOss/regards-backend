@@ -1,0 +1,994 @@
+#BEGIN_OF_FILE
+#Copyright BDMS 2006
+#USER_PAR.TXT#	3.3	0	3	19/10/16
+#Myriade - Microscope	MYRIADE		V3.3.0.3	Extracteur_CC V2.8.1
+1	ASMTTX	0.0368	Pente due a la stabilite moyen terme de l oscillateur bord sur une seconde
+1	AUTOG1MODE	0	Mode fonctionnement G1 0: mode manuel(IHM G1) 1: automatique (pilotage par Agenda)
+1	AUTREPF1EXE	20480	Taille du buffer d execution de la file bord AUTREPF1
+1	AUTREPF2EXE	20480	Taille du buffer d execution de la file bord AUTREPF2
+1	BEGINFLYBY	0	Begin flyby indicator 
+1	BIMES	4	Biais du a l erreur intrinseque de mesure a la reception
+1	BISLTTX	2208	Biais du a la stabilite long terme de l oscillateur bord
+1	CALTMP1	0	Variable de travail 1
+1	CALTMP2	0	Variable de travail 2
+1	CALTMP3	0	Variable de travail 3
+1	CALTMP4	0	Variable de travail 4
+1	CALTMP5	0	Variable de travail 5
+1	CONSOTYP	3.0	Consommation plateforme typique en mode mission [MCAN avec drag-free ON]
+1	CPTNOP	0	NOP Comptor
+1	DEBTM	0	Parametre active par AGENDA en debut de reception TM theorique
+1	DEBTC	0	Parametre active par AGENDA en debut d emission TC theorique
+1	AUTCHGPOL	0	Parametre active par AGENDA autorisant le changement de polarite
+1	DIBATDRIMIN	0.8	Variation de courant de decharge minimum [calcul de KRINTBAD]
+1	ENDFLYBY	0	End flyby indicator
+1	EXCITATT11	0	Parametres excitation sinusoïdale attitude [X, Y, Z, Amplitude-rad, Frequence-
+1	EXCITATT12	0	Parametres excitation sinusoïdale attitude [X, Y, Z, Amplitude-rad, Frequence-
+1	EXCITATT13	0	Parametres excitation sinusoïdale attitude [X, Y, Z, Amplitude-rad, Frequence-
+1	EXCITATT14	0	Parametres excitation sinusoïdale attitude [X, Y, Z, Amplitude-rad, Frequence-
+1	EXCITATT15	0	Parametres excitation sinusoïdale attitude [X, Y, Z, Amplitude-rad, Frequence-
+1	EXCITATT21	1	Parametres excitation sinusoïdale attitude [X, Y, Z, Amplitude-rad, Frequence-
+1	EXCITATT22	0	Parametres excitation sinusoïdale attitude [X, Y, Z, Amplitude-rad, Frequence-
+1	EXCITATT23	0	Parametres excitation sinusoïdale attitude [X, Y, Z, Amplitude-rad, Frequence-
+1	EXCITATT24	0.05	Parametres excitation sinusoïdale attitude [X, Y, Z, Amplitude-rad, Frequence-
+1	EXCITATT25	0.0013	Parametres excitation sinusoïdale attitude [X, Y, Z, Amplitude-rad, Frequence-
+1	EXCITATT31	0	Parametres excitation sinusoïdale attitude [X, Y, Z, Amplitude-rad, Frequence-
+1	EXCITATT32	1	Parametres excitation sinusoïdale attitude [X, Y, Z, Amplitude-rad, Frequence-
+1	EXCITATT33	0	Parametres excitation sinusoïdale attitude [X, Y, Z, Amplitude-rad, Frequence-
+1	EXCITATT34	0.05	Parametres excitation sinusoïdale attitude [X, Y, Z, Amplitude-rad, Frequence-
+1	EXCITATT35	0.0013	Parametres excitation sinusoïdale attitude [X, Y, Z, Amplitude-rad, Frequence-
+1	EXCITATT41	0	Parametres excitation sinusoïdale attitude [X, Y, Z, Amplitude-rad, Frequence-
+1	EXCITATT42	0	Parametres excitation sinusoïdale attitude [X, Y, Z, Amplitude-rad, Frequence-
+1	EXCITATT43	1	Parametres excitation sinusoïdale attitude [X, Y, Z, Amplitude-rad, Frequence-
+1	EXCITATT44	0.05	Parametres excitation sinusoïdale attitude [X, Y, Z, Amplitude-rad, Frequence-
+1	EXCITATT45	0.0013	Parametres excitation sinusoïdale attitude [X, Y, Z, Amplitude-rad, Frequence-
+1	EXECMODE	0	Execution mode 0: automatique 1: guide
+1	FORB	1.6828431E-4	Frequence orbitale au sens mission du terme.
+1	FSYSICU1	20000136	Ce parametre doit etre etalonne au nombre de periodes de l horloge 20MHz de l IC
+1	FSYSICU2	20000136	Ce parametre doit etre etalonne au nombre de periodes de l horloge 20MHz de l IC
+1	IBATDRIMIN	1.0	Courant de decharge minimum [calcul de KRINTBAD]
+1	INITBANG1	1	COMINITBANG si AUTO-SCI et VSPIN++ et diff PONDERATION
+1	INITBANG10	0	COMINITBANG si AUTO-LUNE-FM et AUTO-LUNE-EC
+1	INITBANG11	1	COMINITBANG si MANUEL
+1	INITBANG2	0	COMINITBANG si AUTO-SCI et VSPIN++ et non diff PONDERATION
+1	INITBANG3	1	COMINITBANG si AUTO-SCI et VSPIN-- et diff PONDERATION
+1	INITBANG4	0	COMINITBANG si AUTO-SCI et VSPIN-- et non diff PONDERATION
+1	INITBANG5	1	COMINITBANG si AUTO-SCI et diff PHASEINERT et diff PONDERATION
+1	INITBANG6	0	COMINITBANG si AUTO-SCI et diff PHASEINERT et non diff PONDERATION
+1	INITBANG7	1	COMINITBANG si AUTO-SCI et diff PONDERATION
+1	INITBANG8	0	COMINITBANG si AUTO-SCI et non diff PONDERATION
+1	INITBANG9	1	COMINITBANG si AUTO-LUNE-FD
+1	KETATDCDC	0.75	rendement DCDC du PCDU
+1	KPB1	0.96	coefficient 1 pertes BOOST
+1	KPB2	0.0	coefficient 2 pertes BOOST
+1	KPB3	0.7	coefficient 2 pertes BOOST
+1	KPB4	0.04	coefficient 2 pertes BOOST
+1	MCAQIS0EP1	0.99999994	Quaternion de micro-rotation de Ris0 a Rep [Rsat] 
+1	MCAQIS0EP2	8.3E-5	Quaternion de micro-rotation de Ris0 a Rep [Rsat] 
+1	MCAQIS0EP3	-2.7475E-4	Quaternion de micro-rotation de Ris0 a Rep [Rsat] 
+1	MCAQIS0EP4	-1.92E-4	Quaternion de micro-rotation de Ris0 a Rep [Rsat] 
+1	MCAQIS0REF1	0.99999994	Quaternion de micro-rotation de Ris0 a Rref  [Rsat]
+1	MCAQIS0REF2	8.3E-5	Quaternion de micro-rotation de Ris0 a Rref  [Rsat]
+1	MCAQIS0REF3	-2.7475E-4	Quaternion de micro-rotation de Ris0 a Rref  [Rsat]
+1	MCAQIS0REF4	-1.92E-4	Quaternion de micro-rotation de Ris0 a Rref  [Rsat]
+1	MODCPTPB11	0.0	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB12	46.81	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB13	30.35	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB14	20.41	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB15	10.52	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB16	0.48	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB21	0.4	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB22	-0.071	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB23	-0.091	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB24	-0.099	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB25	-0.104	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB26	-0.104	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB31	0.45	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB32	-0.021	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB33	-0.041	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB34	-0.049	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB35	-0.054	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB36	-0.055	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB41	0.5	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB42	0.029	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB43	0.009	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB44	0.001	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB45	-0.004	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB46	-0.005	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB51	0.75	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB52	0.278	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB53	0.259	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB54	0.251	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB55	0.246	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB56	0.245	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB61	1.0	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB62	0.527	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB63	0.509	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB64	0.501	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB65	0.496	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB66	0.494	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB71	1.25	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB72	0.776	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB73	0.759	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB74	0.751	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB75	0.746	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB76	0.744	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB81	1.5	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB82	1.025	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB83	1.009	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB84	1.001	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB85	0.996	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB86	0.993	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB91	1.75	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB92	1.273	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB93	1.258	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB94	1.251	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB95	1.246	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB96	1.243	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB101	2.0	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB102	1.522	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB103	1.508	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB104	1.501	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB105	1.496	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB106	1.492	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB111	2.25	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB112	1.771	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB113	1.758	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB114	1.751	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB115	1.746	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB116	1.742	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB121	2.5	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB122	2.019	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB123	2.007	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB124	2.001	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB125	1.996	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB126	1.991	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB131	2.75	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB132	2.268	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB133	2.257	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB134	2.251	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB135	2.245	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB136	2.241	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB141	3.0	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB142	2.516	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB143	2.506	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB144	2.501	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB145	2.495	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB146	2.49	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB151	3.25	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB152	2.764	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB153	2.756	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB154	2.751	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB155	2.745	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB156	2.74	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB161	3.5	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB162	3.013	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB163	3.006	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB164	3.001	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB165	2.995	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB166	2.99	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB171	3.75	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB172	3.261	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB173	3.255	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB174	3.251	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB175	3.246	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB176	3.24	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB181	4.0	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB182	3.51	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB183	3.505	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB184	3.501	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB185	3.496	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB186	3.49	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB191	4.25	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB192	3.758	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB193	3.755	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB194	3.751	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB195	3.746	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB196	3.74	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB201	4.5	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB202	4.007	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB203	4.005	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB204	4.002	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB205	3.997	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB206	3.99	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB211	4.75	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB212	4.256	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB213	4.255	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB214	4.252	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB215	4.247	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB216	4.24	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB221	5.0	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB222	4.504	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB223	4.505	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB224	4.503	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB225	4.498	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB226	4.491	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB231	5.25	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB232	4.753	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB233	4.755	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB234	4.754	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB235	4.749	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB236	4.742	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB241	5.5	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB242	5.002	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB243	5.006	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB244	5.005	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB245	5.0	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB246	4.993	Modelisation capteur BP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB11	0.0	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB12	46.89	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB13	30.4	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB14	20.4	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB15	10.44	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB16	0.4	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB21	0.4	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB22	-0.087	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB23	-0.098	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB24	-0.101	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB25	-0.1	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB26	-0.097	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB31	0.45	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB32	-0.038	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB33	-0.048	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB34	-0.051	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB35	-0.05	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB36	-0.047	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB41	0.5	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB42	0.012	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB43	0.002	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB44	-0.001	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB45	0.0	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB46	0.003	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB51	0.75	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB52	0.261	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB53	0.252	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB54	0.249	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB55	0.25	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB56	0.252	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB61	1.0	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB62	0.509	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB63	0.501	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB64	0.499	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB65	0.499	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB66	0.501	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB71	1.25	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB72	0.758	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB73	0.751	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB74	0.749	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB75	0.749	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB76	0.75	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB81	1.5	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB82	1.006	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB83	1.0	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB84	0.998	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB85	0.999	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB86	1.0	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB91	1.75	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB92	1.254	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB93	1.249	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB94	1.248	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB95	1.248	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB96	1.249	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB101	2.0	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB102	1.502	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB103	1.499	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB104	1.498	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB105	1.498	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB106	1.498	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB111	2.25	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB112	1.75	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB113	1.748	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB114	1.747	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB115	1.747	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB116	1.747	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB121	2.5	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB122	1.999	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB123	1.997	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB124	1.997	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB125	1.997	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB126	1.997	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB131	2.75	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB132	2.247	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB133	2.246	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB134	2.246	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB135	2.246	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB136	2.246	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB141	3.0	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB142	2.495	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB143	2.495	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB144	2.496	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB145	2.496	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB146	2.495	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB151	3.25	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB152	2.743	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB153	2.745	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB154	2.746	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB155	2.746	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB156	2.745	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB161	3.5	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB162	2.991	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB163	2.994	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB164	2.995	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB165	2.996	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB166	2.994	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB171	3.75	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB172	3.238	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB173	3.243	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB174	3.245	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB175	3.245	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB176	3.244	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB181	4.0	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB182	3.486	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB183	3.493	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB184	3.495	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB185	3.495	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB186	3.494	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB191	4.25	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB192	3.735	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB193	3.742	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB194	3.745	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB195	3.745	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB196	3.743	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB201	4.5	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB202	3.983	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB203	3.992	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB204	3.995	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB205	3.996	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB206	3.993	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB211	4.75	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB212	4.231	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB213	4.241	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB214	4.245	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB215	4.246	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB216	4.244	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB221	5.0	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB222	4.479	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB223	4.491	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB224	4.495	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB225	4.496	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB226	4.494	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB231	5.25	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB232	4.728	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB233	4.741	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB234	4.746	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB235	4.747	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB236	4.745	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB241	5.5	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB242	4.976	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB243	4.991	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB244	4.996	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB245	4.998	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPB246	4.995	Modelisation capteur BP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH11	0.0	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH12	46.45	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH13	29.86	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH14	19.86	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH15	10.03	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH16	0.07	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH21	0.4	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH22	-7.7	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH23	-7.476	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH24	-7.391	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH25	-7.499	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH26	-7.567	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH31	0.45	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH32	-3.931	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH33	-3.69	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH34	-3.608	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH35	-3.714	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH36	-3.792	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH41	0.5	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH42	-0.16	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH43	0.098	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH44	0.178	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH45	0.072	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH46	-0.015	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH51	0.75	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH52	18.717	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH53	19.055	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH54	19.131	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH55	19.03	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH56	18.901	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH61	1.0	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH62	37.63	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH63	38.044	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH64	38.125	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH65	38.027	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH66	37.862	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH71	1.25	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH72	56.575	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH73	57.061	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH74	57.157	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH75	57.059	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH76	56.864	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH81	1.5	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH82	75.549	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH83	76.106	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH84	76.221	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH85	76.123	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH86	75.9	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH91	1.75	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH92	94.548	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH93	95.177	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH94	95.314	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH95	95.215	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH96	94.968	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH101	2.0	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH102	113.569	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH103	114.271	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH104	114.433	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH105	114.333	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH106	114.064	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH111	2.25	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH112	132.611	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH113	133.388	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH114	133.576	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH115	133.474	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH116	133.183	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH121	2.5	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH122	151.67	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH123	152.525	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH124	152.738	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH125	152.637	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH126	152.324	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH131	2.75	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH132	170.745	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH133	171.681	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH134	171.919	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH135	171.818	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH136	171.483	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH141	3.0	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH142	189.834	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH143	190.855	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH144	191.116	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH145	191.017	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH146	190.66	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH151	3.25	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH152	208.937	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH153	210.045	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH154	210.329	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH155	210.232	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH156	209.851	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH161	3.5	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH162	228.052	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH163	229.25	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH164	229.555	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH165	229.462	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH166	229.058	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH171	3.75	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH172	247.18	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH173	248.47	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH174	248.795	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH175	248.707	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH176	248.278	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH181	4.0	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH182	266.319	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH183	267.703	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH184	268.048	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH185	267.966	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH186	267.512	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH191	4.25	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH192	285.471	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH193	286.948	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH194	287.315	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH195	287.24	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH196	286.761	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH201	4.5	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH202	304.635	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH203	306.204	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH204	306.595	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH205	306.528	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH206	306.026	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH211	4.75	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH212	323.814	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH213	325.47	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH214	325.89	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH215	325.832	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH216	325.307	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH221	5.0	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH222	343.007	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH223	344.746	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH224	345.201	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH225	345.153	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH226	344.607	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH231	5.25	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH232	362.218	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH233	364.031	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH234	364.53	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH235	364.492	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH236	363.929	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH241	5.5	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH242	381.447	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH243	383.325	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH244	383.878	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH245	383.85	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH246	383.275	Modelisation capteur HP CGPS1, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH11	0.0	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH12	46.68	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH13	30.13	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH14	20.13	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH15	10.19	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH16	0.27	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH21	0.4	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH22	-7.097	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH23	-7.224	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH24	-7.672	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH25	-7.78	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH26	-8.241	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH31	0.45	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH32	-3.307	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH33	-3.43	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH34	-3.863	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH35	-3.993	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH36	-4.464	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH41	0.5	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH42	0.485	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH43	0.366	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH44	-0.053	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH45	-0.204	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH46	-0.685	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH51	0.75	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH52	19.456	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH53	19.36	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH54	19.004	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH55	18.762	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH56	18.234	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH61	1.0	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH62	38.45	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH63	38.381	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH64	38.075	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH65	37.763	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH66	37.193	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH71	1.25	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH72	57.463	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH73	57.426	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH74	57.16	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH75	56.796	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH76	56.187	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH81	1.5	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH82	76.493	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH83	76.494	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH84	76.259	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH85	75.857	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH86	75.211	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH91	1.75	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH92	95.541	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH93	95.582	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH94	95.371	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH95	94.944	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH96	94.261	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH101	2.0	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH102	114.603	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH103	114.689	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH104	114.498	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH105	114.052	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH106	133.334	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH111	2.25	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH112	133.68	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH113	133.813	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH114	133.638	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH115	133.18	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH116	132.426	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH121	2.5	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH122	152.77	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH123	152.954	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH124	152.791	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH125	152.326	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH126	151.536	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH131	2.75	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH132	171.873	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH133	172.11	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH134	171.959	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH135	171.487	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH136	170.661	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH141	3.0	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH142	190.987	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH143	191.281	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH144	191.139	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH145	190.663	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH146	189.799	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH151	3.25	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH152	210.113	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH153	210.663	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH154	210.334	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH155	209.853	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH156	208.949	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH161	3.5	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH162	229.25	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH163	229.663	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH164	229.542	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH165	229.056	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH166	228.112	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH171	3.75	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH172	248.398	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH173	248.873	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH174	248.765	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH175	248.271	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH176	247.286	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH181	4.0	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH182	267.558	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH183	268.097	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH184	268.001	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH185	267.499	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH186	266.472	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH191	4.25	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH192	286.731	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH193	287.334	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH194	287.252	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH195	286.741	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH196	285.671	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH201	4.5	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH202	305.915	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH203	306.583	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH204	306.517	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH205	305.996	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH206	304.885	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH211	4.75	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH212	325.114	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH213	325.847	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH214	325.797	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH215	325.266	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH216	324.115	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH221	5.0	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH222	344.326	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH223	345.124	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH224	345.092	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH225	344.552	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH226	343.364	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH231	5.25	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH232	363.554	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH233	364.417	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH234	364.402	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH235	363.857	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH236	362.635	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH241	5.5	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH242	382.799	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH243	383.725	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH244	383.727	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH245	383.182	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODCPTPH246	381.93	Modelisation capteur HP CGPS2, 1ere ligne Temperatures en degC, 1ere colonne Ten
+1	MODEOPEREXE	6144	Taille du buffer d execution de la file bord MODEOPER
+1	NBNOP	0	NOP number in TC group
+1	NUMSTATION	0	Numero station pour ouverture session TC (0: BVSS, 1: TTCET1, 2: TTCET2,...)
+1	OPCHECK	0	Priori-Posteriori control
+1	OPERVCID	1	Channel Identifier Value selected from TMTCS MMI
+1	OPERVCIDOLD	1	Current channel Identifier Value
+1	OPKx	20	Initial COP1 FOP_Sliding_Window_Width
+1	OPT1INITIAL	10	Initial COP1 Timer_Initial_Value
+1	OPTIME	0	Time
+1	OPTRANSLIM	3	Initial COP1 Transmission_Limit
+1	OPTT	1	Initial COP1 TimeoutType
+1	OPVS	0	Initial COP1 V(S)
+1	PASSAGESEXE	20000	Taille du buffer d execution de la file bord PASSAGES
+1	PBIAISMAG1	1.009277E-02	Biais de mesures du magnetometre
+1	PBIAISMAG2	6.598012E-02	Biais de mesures du magnetometre
+1	PBIAISMAG3	-1.8360990E-01	Biais de mesures du magnetometre
+1	PERTIONO	0.3	Pertes ionospheriques en dB
+1	PERTROPO	0.4	Pertes tropospheriques en dB
+1	PFESASXM1	0.01	Facteur d echelle SAS XM dans l ordre ZP YP ZM YM
+1	PFESASXM2	0.01	Facteur d echelle SAS XM dans l ordre ZP YP ZM YM
+1	PFESASXM3	0.01	Facteur d echelle SAS XM dans l ordre ZP YP ZM YM
+1	PFESASXM4	0.01	Facteur d echelle SAS XM dans l ordre ZP YP ZM YM
+1	PFESASXP1	0.01	Facteur d echelle SAS XP dans l ordre ZP, YM, ZM, YP
+1	PFESASXP2	0.01	Facteur d echelle SAS XP dans l ordre ZP, YM, ZM, YP
+1	PFESASXP3	0.01	Facteur d echelle SAS XP dans l ordre ZP, YM, ZM, YP
+1	PFESASXP4	0.01	Facteur d echelle SAS XP dans l ordre ZP, YM, ZM, YP
+1	PFESASZP1	0.01	Facteur d echelle SAS ZP dans l ordre XP, YP, XM, YM
+1	PFESASZP2	0.01	Facteur d echelle SAS ZP dans l ordre XP, YP, XM, YM
+1	PFESASZP3	0.01	Facteur d echelle SAS ZP dans l ordre XP, YP, XM, YM
+1	PFESASZP4	0.01	Facteur d echelle SAS ZP dans l ordre XP, YP, XM, YM
+1	PFREQTM	2208.0	Frequence du signal TM emise par le satellite en MHz .mega2unite.
+1	PHASEINERT1	0.0	Phases autorisees pour le pointage inertiel [autour Xsat] en MNOF et MCAN
+1	PHASEINERT2	90.0	Phases autorisees pour le pointage inertiel [autour Xsat] en MNOF et MCAN
+1	PHASESCAA	118	Retard du 4Hz ICU par rapport au 1Hz OBC
+1	PIMAXSASXM1	0.01263	courant mesure par une cellule SAS XM face au soleil
+1	PIMAXSASXM2	0.01263	courant mesure par une cellule SAS XM face au soleil
+1	PIMAXSASXM3	0.01263	courant mesure par une cellule SAS XM face au soleil
+1	PIMAXSASXM4	0.01263	courant mesure par une cellule SAS XM face au soleil
+1	PIMAXSASXP1	0.01263	courant mesure par une cellule SAS XP face au soleil
+1	PIMAXSASXP2	0.01263	courant mesure par une cellule SAS XP face au soleil
+1	PIMAXSASXP3	0.01263	courant mesure par une cellule SAS XP face au soleil
+1	PIMAXSASXP4	0.01263	courant mesure par une cellule SAS XP face au soleil
+1	PIMAXSASZP1	0.01263	courant mesure par une cellule SAS ZP face au soleil
+1	PIMAXSASZP2	0.01263	courant mesure par une cellule SAS ZP face au soleil
+1	PIMAXSASZP3	0.01263	courant mesure par une cellule SAS ZP face au soleil
+1	PIMAXSASZP4	0.01263	courant mesure par une cellule SAS ZP face au soleil
+1	PINERTRWX	4.51E-4	Inertie du rotor de la roue X [URD] / Moment d inertie selon l axe de rotation d
+1	PMAG2SAT11	-4.909903E-07	Matrice de passage MAG a satellite utilisee par le LVC decrite en lignes. Ses 
+1	PMAG2SAT12	2.949135E-07	Matrice de passage MAG a satellite utilisee par le LVC decrite en lignes. Ses 
+1	PMAG2SAT13	9.847473E-06	Matrice de passage MAG a satellite utilisee par le LVC decrite en lignes. Ses 
+1	PMAG2SAT21	-3.275716E-07	Matrice de passage MAG a satellite utilisee par le LVC decrite en lignes. Ses 
+1	PMAG2SAT22	-1.012655E-05	Matrice de passage MAG a satellite utilisee par le LVC decrite en lignes. Ses 
+1	PMAG2SAT23	-3.401003E-07	Matrice de passage MAG a satellite utilisee par le LVC decrite en lignes. Ses 
+1	PMAG2SAT31	1.013936E-05	Matrice de passage MAG a satellite utilisee par le LVC decrite en lignes. Ses 
+1	PMAG2SAT32	3.197956E-07	Matrice de passage MAG a satellite utilisee par le LVC decrite en lignes. Ses 
+1	PMAG2SAT33	-2.934969E-07	Matrice de passage MAG a satellite utilisee par le LVC decrite en lignes. Ses 
+1	PMATRWX1	1.0	Matrice de mesure de la roue X [orientation de l axe Zroue en repere sat] .ide
+1	PMATRWX2	0.0	Matrice de mesure de la roue X [orientation de l axe Zroue en repere sat] .ide
+1	PMATRWX3	0.0	Matrice de mesure de la roue X [orientation de l axe Zroue en repere sat] .ide
+1	POINGUIDEXE	30000	Taille du buffer d execution de la file bord POINGUID
+1	PQSST1SAT1	-0.00479795	Quaternion de passage du repere SST1 au repere SAT
+1	PQSST1SAT2	0.71051519	Quaternion de passage du repere SST1 au repere SAT
+1	PQSST1SAT3	0.00265880	Quaternion de passage du repere SST1 au repere SAT
+1	PQSST1SAT4	-0.70366048	Quaternion de passage du repere SST1 au repere SAT
+1	PRECQOL	0.05	Precision angulaire associee au QOL
+1	PROGGNSSEXE	20480	Taille du buffer d execution de la file bord PROGGNSS
+1	PROGMISSEXE	55000	Taille du buffer d execution de la file bord PROGMISS
+1	PROGSAGEEXE	20480	Taille du buffer d execution de la file bord PROGSAGE
+1	PSASEUILS	0.75	seuil sur la somme des courants SAS [en % de Imax]
+1	PSOMGTMSPMA	120	Valeur maximale de la fenetre PSO autorisee pour transition MGT vers MSP
+1	PSOMGTMSPMI	50	Valeur minimale de la fenetre PSO autorisee pour transition MGT vers MSP
+1	PSOMGTMSPNO	60	Valeur nominale de la fenetre PSO autorisee pour transition MGT vers MSP
+1	PTAELTMST01	1.0	Taux d ellipticite en reception [TM] de la station ST01
+1	PTAELTMST02	1.0	Taux d ellipticite en reception [TM] de la station ST02
+1	PTAELTMST03	1.0	Taux d ellipticite en reception [TM] de la station ST03
+1	PTAELTMST04	1.0	Taux d ellipticite en reception [TM] de la station ST04
+1	PTAELTMST05	1.0	Taux d ellipticite en reception [TM] de la station ST05
+1	PTAELTMST06	1.0	Taux d ellipticite en reception [TM] de la station ST06
+1	PTAELTMST07	1.0	Taux d ellipticite en reception [TM] de la station ST07
+1	PTAELTMST08	1.0	Taux d ellipticite en reception [TM] de la station ST08
+1	PTAELTMST09	1.0	Taux d ellipticite en reception [TM] de la station ST09
+1	PTAELTMST10	1.0	Taux d ellipticite en reception [TM] de la station ST10
+1	PULSAORBMOY	0.0010574	pulsation orbitale moyenne
+1	SEUCHGPOL	10.0	seuil en dBm entre les 2 recepteurs sols declanchant un changement de polarite en automatique (si AUTCHGPOL est a 1)
+1	SIGMAASMT	7	Stabilites court terme et moyen terme de l oscillateur bord modelisees comme un 
+1	SIGMAJITTER	2	Ecart-type du bruit blanc gaussien cree sur la dispersion des mesures.
+1	TCONVSCAA1	0	Duree convergence SCAA pour transition AUTO-SCI ou AUTO-LUNE-FD vers MCA3
+1	TCONVSCAA10	3000	Duree convergence SCAA pour transition AUTO-SCI ou AUTO-LUNE-FD vers MCAcE
+1	TCONVSCAA11	0	Duree convergence SCAA pour transition AUTO-FM ou AUTO-LUNE-EC
+1	TCONVSCAA2	0	Duree convergence SCAA pour transition AUTO-SCI ou AUTO-LUNE-FD vers MCA6
+1	TCONVSCAA3	3000	Duree convergence SCAA pour transition AUTO-SCI ou AUTO-LUNE-FD vers MCAi
+1	TCONVSCAA4	6000	Duree convergence SCAA pour transition AUTO-SCI ou AUTO-LUNE-FD vers MCAs1
+1	TCONVSCAA5	6000	Duree convergence SCAA pour transition AUTO-SCI ou AUTO-LUNE-FD vers MCAs2
+1	TCONVSCAA6	3000	Duree convergence SCAA pour transition AUTO-SCI ou AUTO-LUNE-FD vers MCAcA
+1	TCONVSCAA7	3000	Duree convergence SCAA pour transition AUTO-SCI ou AUTO-LUNE-FD vers MCAcB
+1	TCONVSCAA8	3000	Duree convergence SCAA pour transition AUTO-SCI ou AUTO-LUNE-FD vers MCAcC
+1	TCONVSCAA9	3000	Duree convergence SCAA pour transition AUTO-SCI ou AUTO-LUNE-FD vers MCAcD
+1	TELCHRGTEXE	300000	Taille du buffer d execution de la file bord TELCHRGT
+1	TETA1	51.0	seuil de temperature min pour acquisition PGS
+1	TETA2	52.0	seuil de temperature max pour acquisition PGS
+1	TONPWMMAINM	99	ECM ZM: MFS compensation main [MT1 to MT4]
+1	TONPWMMAINP	99	ECM ZP: MFS compensation main [MT1 to MT4]
+1	TONPWMREDM	99	ECM ZM: MFS compensation redundant [MT5 to MT8]
+1	TONPWMREDP	99	ECM ZP: MFS compensation redundant [MT5 to MT8]
+1	TRALLGUID1	9300	Duree ralliement AUTO-SCI si diff. vitesse spin inertiel [VSPIN]
+1	TRALLGUID2	3610	Duree ralliement AUTO-SCI si diff. phase inertiel [PHASEINERT]
+1	TRALLGUID3	1010	Duree ralliement AUTO-SCI si amplitude EXCITATT <>0 avant ou apres
+1	TRALLGUID4	0	Duree ralliement AUTO-SCI par defaut
+1	TRALLGUID5	0	Duree ralliement AUTO-LUNE-FD
+1	TRALLGUID6	0	Duree ralliement AUTO-LUNE-FM et AUTO-LUNE-EC
+1	TRANSTYP	2.0	Duree typique d une transition entre sessions scientifiques
+1	TRECSCAA1	4	Duree min reconfiguration SCAA et T-SAGE si AUTO-SCI ou AUTO-LUNE-FD
+1	TRECSCAA2	0	Duree min reconfiguration SCAA et T-SAGE si AUTO-FM ou AUTO-LUNE-EC
+1	TSTABTHER1	3000	Duree convergence therm et Bang AUTO-SCI si VSPIN++ et diff PONDERATION
+1	TSTABTHER10	0	Duree convergence therm et Bang AUTO-LUNE-FM et AUTO-LUNE-EC
+1	TSTABTHER2	3000	Duree convergence therm et Bang AUTO-SCI si VSPIN++ et non diff PONDERATION
+1	TSTABTHER3	3000	Duree convergence therm et Bang AUTO-SCI si VSPIN-- et diff PONDERATION
+1	TSTABTHER4	3000	Duree convergence therm et Bang AUTO-SCI si VSPIN-- et non diff PONDERATION
+1	TSTABTHER5	3000	Duree convergence therm et Bang AUTO-SCI si diff PHASEINERT et diff PONDERATION
+1	TSTABTHER6	3000	Duree convergence therm et Bang AUTO-SCI si diff PHASEINERT et non diff PONDERAT
+1	TSTABTHER7	3000	Duree convergence therm et Bang AUTO-SCI si diff PONDERATION
+1	TSTABTHER8	3000	Duree convergence therm et Bang AUTO-SCI si non diff PONDERATION
+1	TSTABTHER9	3000	Duree convergence therm et Bang AUTO-LUNE-FD
+1	UNUSED	1	W TCS Unused parameter
+1	TMPDDTC1AA	-1	Variable de travail Annee de la derniere TC envoyee de la file 1 
+1	TMPDDTC1MM	-1	Variable de travail Mois de la derniere TC envoyee de la file 1 
+1	TMPDDTC1JJ	-1	Variable de travail Jour de la derniere TC envoyee de la file 1 
+1	TMPDDTC1HH	-1	Variable de travail Heure de la derniere TC envoyee de la file 1 
+1	TMPDDTC1MN	-1	Variable de travail Minute de la derniere TC envoyee de la file 1 
+1	TMPDDTC1SS	-1	Variable de travail Seconde de la derniere TC envoyee de la file 1 
+1	TMPDDTC2AA	-1	Variable de travail Annee de la derniere TC envoyee de la file 2
+1	TMPDDTC2MM	-1	Variable de travail Mois de la derniere TC envoyee de la file 2
+1	TMPDDTC2JJ	-1	Variable de travail Jour de la derniere TC envoyee de la file 2 
+1	TMPDDTC2HH	-1	Variable de travail Heure de la derniere TC envoyee de la file 2 
+1	TMPDDTC2MN	-1	Variable de travail Minute de la derniere TC envoyee de la file 2 
+1	TMPDDTC2SS	-1	Variable de travail Seconde de la derniere TC envoyee de la file 2 
+1	TMPDDTC3AA	-1	Variable de travail Annee de la derniere TC envoyee de la file 3
+1	TMPDDTC3MM	-1	Variable de travail Mois de la derniere TC envoyee de la file 3
+1	TMPDDTC3JJ	-1	Variable de travail Jour de la derniere TC envoyee de la file 3 
+1	TMPDDTC3HH	-1	Variable de travail Heure de la derniere TC envoyee de la file 3 
+1	TMPDDTC3MN	-1	Variable de travail Minute de la derniere TC envoyee de la file 3 
+1	TMPDDTC3SS	-1	Variable de travail Seconde de la derniere TC envoyee de la file 3 
+1	TMPDDTC4AA	-1	Variable de travail Annee de la derniere TC envoyee de la file 4
+1	TMPDDTC4MM	-1	Variable de travail Mois de la derniere TC envoyee de la file 4
+1	TMPDDTC4JJ	-1	Variable de travail Jour de la derniere TC envoyee de la file 4 
+1	TMPDDTC4HH	-1	Variable de travail Heure de la derniere TC envoyee de la file 4 
+1	TMPDDTC4MN	-1	Variable de travail Minute de la derniere TC envoyee de la file 4 
+1	TMPDDTC4SS	-1	Variable de travail Seconde de la derniere TC envoyee de la file 4 
+1	TMPDDTC5AA	-1	Variable de travail Annee de la derniere TC envoyee de la file 5 
+1	TMPDDTC5MM	-1	Variable de travail Mois de la derniere TC envoyee de la file 5
+1	TMPDDTC5JJ	-1	Variable de travail Jour de la derniere TC envoyee de la file 5 
+1	TMPDDTC5HH	-1	Variable de travail Heure de la derniere TC envoyee de la file 5 
+1	TMPDDTC5MN	-1	Variable de travail Minute de la derniere TC envoyee de la file 5 
+1	TMPDDTC5SS	-1	Variable de travail Seconde de la derniere TC envoyee de la file 5 
+1	TMPDDTC6AA	-1	Variable de travail Annee de la derniere TC envoyee de la file 6 
+1	TMPDDTC6MM	-1	Variable de travail Mois de la derniere TC envoyee de la file 6
+1	TMPDDTC6JJ	-1	Variable de travail Jour de la derniere TC envoyee de la file 6 
+1	TMPDDTC6HH	-1	Variable de travail Heure de la derniere TC envoyee de la file 6 
+1	TMPDDTC6MN	-1	Variable de travail Minute de la derniere TC envoyee de la file 6 
+1	TMPDDTC6SS	-1	Variable de travail Seconde de la derniere TC envoyee de la file 6 
+1	TMPDDTC7AA	-1	Variable de travail Annee de la derniere TC envoyee de la file 7 
+1	TMPDDTC7MM	-1	Variable de travail Mois de la derniere TC envoyee de la file 7
+1	TMPDDTC7JJ	-1	Variable de travail Jour de la derniere TC envoyee de la file 7 
+1	TMPDDTC7HH	-1	Variable de travail Heure de la derniere TC envoyee de la file 7 
+1	TMPDDTC7MN	-1	Variable de travail Minute de la derniere TC envoyee de la file 7 
+1	TMPDDTC7SS	-1	Variable de travail Seconde de la derniere TC envoyee de la file 7
+1	TMPDDTC8AA	-1	Variable de travail Annee de la derniere TC envoyee de la file 8
+1	TMPDDTC8MM	-1	Variable de travail Mois de la derniere TC envoyee de la file 8
+1	TMPDDTC8JJ	-1	Variable de travail Jour de la derniere TC envoyee de la file 8 
+1	TMPDDTC8HH	-1	Variable de travail Heure de la derniere TC envoyee de la file 8 
+1	TMPDDTC8MN	-1	Variable de travail Minute de la derniere TC envoyee de la file 8 
+1	TMPDDTC8SS	-1	Variable de travail Seconde de la derniere TC envoyee de la file 8 
+1	TMPDDTC9AA	-1	Variable de travail Annee de la derniere TC envoyee de la file 9
+1	TMPDDTC9MM	-1	Variable de travail Mois de la derniere TC envoyee de la file 9
+1	TMPDDTC9JJ	-1	Variable de travail Jour de la derniere TC envoyee de la file 9 
+1	TMPDDTC9HH	-1	Variable de travail Heure de la derniere TC envoyee de la file 9 
+1	TMPDDTC9MN	-1	Variable de travail Minute de la derniere TC envoyee de la file 9 
+1	TMPDDTC9SS	-1	Variable de travail Seconde de la derniere TC envoyee de la file 9 
+1	TMPDDTC10AA	-1	Variable de travail Annee de la derniere TC envoyee de la file 10 
+1	TMPDDTC10MM	-1	Variable de travail Mois de la derniere TC envoyee de la file 10 
+1	TMPDDTC10JJ	-1	Variable de travail Jour de la derniere TC envoyee de la file 10 
+1	TMPDDTC10HH	-1	Variable de travail Heure de la derniere TC envoyee de la file 10 
+1	TMPDDTC10MN	-1	Variable de travail Minute de la derniere TC envoyee de la file 10 
+1	TMPDDTC10SS	-1	Variable de travail Seconde de la derniere TC envoyee de la file 10
+1	STOPPDT	0	1	pour arreter telechargement plan de travail 
+1	ISEXPEDITED	0	1 si COP1 en mode expedited
+1	UPADDRESS	0.0	Donnee 1 de la TCs de patch
+1	UPFREQ	0.0	Frequence acq ou cmd TC niveau 2
+1	UPHELLO	0.0	Donnee de la TC HELLOLVPF
+1	UPINITDIR	0.0	Initial direction
+1	UPLWBOUND	-45000	User parameter for lower bound of the frequency doppler
+1	UPMTBDAT1	0.0	Donnee 1 de la TC2 cmd MTB
+1	UPMTBDAT10	0.0	Donnee 10 de la TC2 cmd MTB
+1	UPMTBDAT11	0.0	Donnee 11 de la TC2 cmd MTB
+1	UPMTBDAT12	0.0	Donnee 12 de la TC2 cmd MTB
+1	UPMTBDAT13	0.0	Donnee 13 de la TC2 cmd MTB
+1	UPMTBDAT14	0.0	Donnee 14 de la TC2 cmd MTB
+1	UPMTBDAT15	0.0	Donnee 15 de la TC2 cmd MTB
+1	UPMTBDAT16	0.0	Donnee 16 de la TC2 cmd MTB
+1	UPMTBDAT17	0.0	Donnee 17 de la TC2 cmd MTB
+1	UPMTBDAT18	0.0	Donnee 18 de la TC2 cmd MTB
+1	UPMTBDAT19	0.0	Donnee 19 de la TC2 cmd MTB
+1	UPMTBDAT2	0.0	Donnee 2 de la TC2 cmd MTB
+1	UPMTBDAT20	0.0	Donnee 20 de la TC2 cmd MTB
+1	UPMTBDAT21	0.0	Donnee 21 de la TC2 cmd MTB
+1	UPMTBDAT22	0.0	Donnee 22 de la TC2 cmd MTB
+1	UPMTBDAT23	0.0	Donnee 23 de la TC2 cmd MTB
+1	UPMTBDAT24	0.0	Donnee 24 de la TC2 cmd MTB
+1	UPMTBDAT3	0.0	Donnee 3 de la TC2 cmd MTB
+1	UPMTBDAT4	0.0	Donnee 4 de la TC2 cmd MTB
+1	UPMTBDAT5	0.0	Donnee 5 de la TC2 cmd MTB
+1	UPMTBDAT6	0.0	Donnee 6 de la TC2 cmd MTB
+1	UPMTBDAT7	0.0	Donnee 7 de la TC2 cmd MTB
+1	UPMTBDAT8	0.0	Donnee 8 de la TC2 cmd MTB
+1	UPMTBDAT9	0.0	Donnee 9 de la TC2 cmd MTB
+1	UPNBEXEC	0.0	Nombre d executions cycliques des profils TC2
+1	UPNBMOTS	0.0	Donnee 2 de la TC DUMPDRAMPF
+1	UPNBPROFIL	0.0	Nombre de profils de la TC2
+1	UPPAMVALU64	0.0	Specified value to flash RAM
+1	UPPAMVALUE1	0.0	Specified value to flash RAM
+1	UPPAMVALUE2	0.0	Specified value to flash RAM
+1	UPPAMVALUE4	0.0	Specified value to flash RAM
+1	UPPAMVALUE8	0.0	Specified value to flash RAM
+1	UPPARAMSIZE	0.0	Size of variable ParameterValue
+1	UPPARAOFFSE	0.0	Index into parameter space
+1	UPPITCHRATE	0.0	Pitch rate around initial attitude
+1	UPROLLRATE	0.0	Roll rate around initial attitude
+1	UPRWSPD1	0.0	Donnee 1 de la TC2 cmd speed RW
+1	UPRWSPD10	0.0	Donnee 10 de la TC2 cmd speed RW
+1	UPRWSPD11	0.0	Donnee 11 de la TC2 cmd speed RW
+1	UPRWSPD12	0.0	Donnee 12 de la TC2 cmd speed RW
+1	UPRWSPD13	0.0	Donnee 13 de la TC2 cmd speed RW
+1	UPRWSPD14	0.0	Donnee 14 de la TC2 cmd speed RW
+1	UPRWSPD15	0.0	Donnee 15 de la TC2 cmd speed RW
+1	UPRWSPD16	0.0	Donnee 16 de la TC2 cmd speed RW
+1	UPRWSPD17	0.0	Donnee 17 de la TC2 cmd speed RW
+1	UPRWSPD18	0.0	Donnee 18 de la TC2 cmd speed RW
+1	UPRWSPD19	0.0	Donnee 19 de la TC2 cmd speed RW
+1	UPRWSPD2	0.0	Donnee 2 de la TC2 cmd speed RW
+1	UPRWSPD20	0.0	Donnee 20 de la TC2 cmd speed RW
+1	UPRWSPD21	0.0	Donnee 21 de la TC2 cmd speed RW
+1	UPRWSPD22	0.0	Donnee 22 de la TC2 cmd speed RW
+1	UPRWSPD23	0.0	Donnee 23 de la TC2 cmd speed RW
+1	UPRWSPD24	0.0	Donnee 24 de la TC2 cmd speed RW
+1	UPRWSPD3	0.0	Donnee 3 de la TC2 cmd speed RW
+1	UPRWSPD4	0.0	Donnee 4 de la TC2 cmd speed RW
+1	UPRWSPD5	0.0	Donnee 5 de la TC2 cmd speed RW
+1	UPRWSPD6	0.0	Donnee 6 de la TC2 cmd speed RW
+1	UPRWSPD7	0.0	Donnee 7 de la TC2 cmd speed RW
+1	UPRWSPD8	0.0	Donnee 8 de la TC2 cmd speed RW
+1	UPRWSPD9	0.0	Donnee 9 de la TC2 cmd speed RW
+1	UPRWTRQ1	0.0	Donnee 1 de la TC2 cmd torque RW
+1	UPRWTRQ10	0.0	Donnee 10 de la TC2 cmd torque RW
+1	UPRWTRQ11	0.0	Donnee 11 de la TC2 cmd torque RW
+1	UPRWTRQ12	0.0	Donnee 12 de la TC2 cmd torque RW
+1	UPRWTRQ13	0.0	Donnee 13 de la TC2 cmd torque RW
+1	UPRWTRQ14	0.0	Donnee 14 de la TC2 cmd torque RW
+1	UPRWTRQ15	0.0	Donnee 15 de la TC2 cmd torque RW
+1	UPRWTRQ16	0.0	Donnee 16 de la TC2 cmd torque RW
+1	UPRWTRQ17	0.0	Donnee 17 de la TC2 cmd torque RW
+1	UPRWTRQ18	0.0	Donnee 18 de la TC2 cmd torque RW
+1	UPRWTRQ19	0.0	Donnee 19 de la TC2 cmd torque RW
+1	UPRWTRQ2	0.0	Donnee 2 de la TC2 cmd torque RW
+1	UPRWTRQ20	0.0	Donnee 20 de la TC2 cmd torque RW
+1	UPRWTRQ21	0.0	Donnee 21 de la TC2 cmd torque RW
+1	UPRWTRQ22	0.0	Donnee 22 de la TC2 cmd torque RW
+1	UPRWTRQ23	0.0	Donnee 23 de la TC2 cmd torque RW
+1	UPRWTRQ24	0.0	Donnee 24 de la TC2 cmd torque RW
+1	UPRWTRQ3	0.0	Donnee 3 de la TC2 cmd torque RW
+1	UPRWTRQ4	0.0	Donnee 4 de la TC2 cmd torque RW
+1	UPRWTRQ5	0.0	Donnee 5 de la TC2 cmd torque RW
+1	UPRWTRQ6	0.0	Donnee 6 de la TC2 cmd torque RW
+1	UPRWTRQ7	0.0	Donnee 7 de la TC2 cmd torque RW
+1	UPRWTRQ8	0.0	Donnee 8 de la TC2 cmd torque RW
+1	UPRWTRQ9	0.0	Donnee 9 de la TC2 cmd torque RW
+1	UPSEEDDEC	0.0	Declination of initial attitude
+1	UPSEEDRA	0.0	Right ascension of initial attitude
+1	UPSEEDROT	0.0	Rotation of initial attitude
+1	UPSSTDAY	0.0	UTC day for SST
+1	UPSSTMONTH	0.0	UTC month for SST
+1	UPSSTYEAR	0.0	UTC year for SST
+1	UPUPBOUND	45000	User parameter for Upper bound of the frequency doppler
+1	UPYAWRATE	0.0	Yaw rate around initial attitude
+1	USEBATF	0.0	Surveillance EBATF activee/Inhibee
+1	USEUILGS1	10.0	seuil min de reference tension pour acquisition PGS
+1	USEUILGS2	28.0	seuil max de reference tension pour acquisition PGS
+1	USIBATD	0.0	Surveillance IBATD activee/Inhibee
+1	UVLIMB	33.5	Tension limite BNR de reference
+1	UVLIMS	33.5	Tension limite Sol BNR
+1	VITESSELUM	2.99792458E8	Vitesse de la lumiere m/s
+1	VSPIN1	0.0	Frequences de spin autorisees [autour Xsat] en MNOF et MCAN
+1	VSPIN2	-17.5	Frequences de spin autorisees [autour Xsat] en MNOF et MCAN
+1	VSPIN3	-4.5	Frequences de spin autorisees [autour Xsat] en MNOF et MCAN
+1	WAUXPCDU	6.5	puissance auxiliaire PCDU
+1	XBBS0	3969.6	Coefficient de calcul de DOD
+1	XBBS1	-429.04	Coefficient de calcul de DOD
+1	XBBS2	15.863	Coefficient de calcul de DOD
+1	XBBS3	-0.1969	Coefficient de calcul de DOD
+1	XBBS4	-30104.0	Coefficient de calcul de DOD
+1	XBBS5	2935.5	Coefficient de calcul de DOD
+1	XBBS6	-94.529	Coefficient de calcul de DOD
+1	XBBS7	1.0068	Coefficient de calcul de DOD
+1	XCALAGEGS	180.0	Angle de calage GS : angle entre l axe Y GS et l axe Y sat .deg2rad.
+1	XCDGVOLDDV1	0.388	Position du CDG du satellite GS deploye BOL nominale [GS deployes, IDEAS gerbe
+1	XCDGVOLDDV2	0.0	Position du CDG du satellite GS deploye BOL nominale [GS deployes, IDEAS gerbe
+1	XCDGVOLDDV3	0.0	Position du CDG du satellite GS deploye BOL nominale [GS deployes, IDEAS gerbe
+1	XDIRANTM1	0.0	Vecteur unitaire de direction de l antenne TM bord exprime dans le repere sate
+1	XDIRANTM2	0.0	Vecteur unitaire de direction de l antenne TM bord exprime dans le repere sate
+1	XDIRANTM3	1.0	Vecteur unitaire de direction de l antenne TM bord exprime dans le repere sate
+1	XDT1MGT	15	Delai avant activation MGT SCAO
+1	XDT1MNOX	60	Delai de mise en conf lignes electriques sur transition MCAN->MNOF
+1	XECARVGS	0.0	Ecart de tension entre BNR et GS pour generation VGSREF
+1	XIGSJOUR	0.3	seuil de detection mode jour GS
+1	XIGSNUIT	0.1	seuil de detection mode nuit GS
+1	XJOUR1	0.0	Seuil min temporel duree phase eclairee
+1	XJOUR2	6000.0	Seuil max temporel duree phase eclairee
+1	XLSBQUATSST	4.656612875E-10	Lsb du quaternion pour passer en reel .inverse.
+1	XLSBTIMESST	1.0	Lsb pour transformation du temps en sec
+1	XMASCONSH11	0.12	Vecteur moment cinetique de consigne des roues : [:,1] en fin de phase 2/ [:,2
+1	XMASCONSH12	0.12	Vecteur moment cinetique de consigne des roues : [:,1] en fin de phase 2/ [:,2
+1	XMASCONSH21	0.0	Vecteur moment cinetique de consigne des roues : [:,1] en fin de phase 2/ [:,2
+1	XMASCONSH22	0.0	Vecteur moment cinetique de consigne des roues : [:,1] en fin de phase 2/ [:,2
+1	XMASCONSH31	0.0	Vecteur moment cinetique de consigne des roues : [:,1] en fin de phase 2/ [:,2
+1	XMASCONSH32	0.0	Vecteur moment cinetique de consigne des roues : [:,1] en fin de phase 2/ [:,2
+1	XMASSATINIT	301.4	Masse satellite initiale
+1	XMGTHCONS1	0.12	Moment cinetique de consigne des roues en tangage en l absence de TC roue [axe
+1	XMGTHCONS2	0.0	Moment cinetique de consigne des roues en tangage en l absence de TC roue [axe
+1	XMGTHCONS3	0.0	Moment cinetique de consigne des roues en tangage en l absence de TC roue [axe
+1	XMTBDELAT	3.0	amplitude des creneaux d activation des MTB
+1	XMUTERRE	3.98600442E14	Constante de la gravitation * Masse Terre
+1	XNNJ	3.0	filtrage de detection mode jour/nuit
+1	XPCDU0	5.6	Coefficient0 de calcul puissance auxiliaire PCDU
+1	XPCDU1	0.073	Coefficient0 de calcul puissance auxiliaire PCDU
+1	XPCDU2	22.0	Coefficient0 de calcul puissance auxiliaire PCDU
+1	XPOSCDMDDV1	0.3804	Position du centre de masse du corps central nu au point G1 en axes satellite,
+1	XPOSCDMDDV2	0.0	Position du centre de masse du corps central nu au point G1 en axes satellite,
+1	XPOSCDMDDV3	0.0	Position du centre de masse du corps central nu au point G1 en axes satellite,
+1	XSURFACEGS	0.858	Surface GS
+1	XSURFACEX	1.1	Surface face X satellite CU deployee , hors GS
+1	XSURFACEY	1.52	Surface face Y satellite CU deployee , hors GS
+1	XSURFACEZ	1.12	Surface face Z satellite CU deployee , hors GS
+1	XTEMP1MGT	10	Delai apres activation MGT SCAO
+1	XTEMP2MNOX	10	Delai avant transition mode MNOF
+1	XTMNOG2MNOF	6000.0	Delai apres transition MNOG vers MNOF
+1	XTMNOMRATE	625000.0	Valeur du debit de TM haut .identite.
+#END_OF_FILE
