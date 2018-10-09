@@ -244,6 +244,9 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
             Assert.fail();
         }
 
+        // Waiting for stop chain thread to really stop!
+        Thread.sleep(2_000);
+
         // Restart chain verifying all re-run properly
         updateProcessingChain(processingChain.getId());
         ingestClientMock.setWaitingMillis(0); // Speed up submission
