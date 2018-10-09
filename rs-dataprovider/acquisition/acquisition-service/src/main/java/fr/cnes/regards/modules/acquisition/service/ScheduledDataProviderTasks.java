@@ -62,9 +62,9 @@ public class ScheduledDataProviderTasks {
         return new ConcurrentTaskScheduler();
     }
 
-    @Scheduled(fixedRateString = "${regards.acquisition.process.new.sip.ingest.delay:60000}", initialDelay = 10000)
+    @Scheduled(fixedDelayString = "${regards.acquisition.process.new.sip.ingest.delay:60000}", initialDelay = 10000)
     public void processSipSubmission() {
-        LOGGER.debug("Process new SIP bulk request to ingest");
+        LOGGER.trace("Process new SIP bulk request to ingest");
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
@@ -72,13 +72,12 @@ public class ScheduledDataProviderTasks {
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
-
         }
     }
 
-    @Scheduled(fixedRateString = "${regards.acquisition.process.run.chains.delay:60000}", initialDelay = 10000)
+    @Scheduled(fixedDelayString = "${regards.acquisition.process.run.chains.delay:60000}", initialDelay = 10000)
     public void processAcquisitionChains() {
-        LOGGER.debug("Process run active chains");
+        LOGGER.trace("Process run active chains");
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);

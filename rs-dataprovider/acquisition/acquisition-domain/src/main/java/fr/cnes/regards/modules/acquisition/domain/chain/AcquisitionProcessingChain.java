@@ -53,6 +53,7 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ISipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
@@ -175,6 +176,20 @@ public class AcquisitionProcessingChain {
     @OneToOne
     @JoinColumn(name = "acq_job_info_id", foreignKey = @ForeignKey(name = "fk_acq_job_info_id"))
     private JobInfo lastProductAcquisitionJobInfo;
+
+    /**
+     * When starting processing chain, system tries to re-launch SIP generation for product in {@link ProductSIPState#GENERATION_ERROR}
+     */
+    @NotNull(message = "Generation retry status is required")
+    @Column(name = "generation_retry_enabled")
+    private boolean generationRetryEnabled = false;
+
+    /**
+     * When starting processing chain, system tries to re-launch SIP submission for product in {@link ProductSIPState#SUBMISSION_ERROR}
+     */
+    @NotNull(message = "Submission retry status is required")
+    @Column(name = "submission_retry_enabled")
+    private boolean submissionRetryEnabled = true;
 
     public String getLabel() {
         return label;
@@ -301,5 +316,33 @@ public class AcquisitionProcessingChain {
 
     public void setLastProductAcquisitionJobInfo(JobInfo lastProductAcquisitionJobInfo) {
         this.lastProductAcquisitionJobInfo = lastProductAcquisitionJobInfo;
+    }
+
+    /**
+     * @return the generationRetryEnabled
+     */
+    public boolean isGenerationRetryEnabled() {
+        return generationRetryEnabled;
+    }
+
+    /**
+     * @param generationRetryEnabled the generationRetryEnabled to set
+     */
+    public void setGenerationRetryEnabled(boolean generationRetryEnabled) {
+        this.generationRetryEnabled = generationRetryEnabled;
+    }
+
+    /**
+     * @return the submissionRetryEnabled
+     */
+    public boolean isSubmissionRetryEnabled() {
+        return submissionRetryEnabled;
+    }
+
+    /**
+     * @param submissionRetryEnabled the submissionRetryEnabled to set
+     */
+    public void setSubmissionRetryEnabled(boolean submissionRetryEnabled) {
+        this.submissionRetryEnabled = submissionRetryEnabled;
     }
 }

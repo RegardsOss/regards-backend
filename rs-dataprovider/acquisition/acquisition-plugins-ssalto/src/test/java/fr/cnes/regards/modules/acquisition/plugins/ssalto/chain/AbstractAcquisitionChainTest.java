@@ -122,7 +122,7 @@ public abstract class AbstractAcquisitionChainTest extends AbstractMultitenantSe
         loops = 10;
         do {
             Thread.sleep(1_000);
-            productGenerated = productRepository.findBySipState(ProductSIPState.GENERATED, new PageRequest(0, 1))
+            productGenerated = productRepository.findBySipStateOrderByIdAsc(ProductSIPState.GENERATED, new PageRequest(0, 1))
                     .getTotalElements();
             loops--;
         } while (productGenerated != expectedProducts && loops != 0);
@@ -136,7 +136,7 @@ public abstract class AbstractAcquisitionChainTest extends AbstractMultitenantSe
         loops = 10;
         do {
             Thread.sleep(1_000);
-            productSubmitted = productRepository.findBySipState(SIPState.VALID, new PageRequest(0, 1))
+            productSubmitted = productRepository.findBySipStateOrderByIdAsc(SIPState.VALID, new PageRequest(0, 1))
                     .getTotalElements();
             loops--;
         } while (productSubmitted != expectedProducts && loops != 0);

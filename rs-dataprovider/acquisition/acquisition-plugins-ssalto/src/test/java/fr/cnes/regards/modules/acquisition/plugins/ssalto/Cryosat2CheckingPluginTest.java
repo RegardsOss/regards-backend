@@ -22,7 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -48,7 +48,7 @@ public class Cryosat2CheckingPluginTest {
     @Test
     public void testProductPlugin() throws ModuleException {
         // Plugin parameters
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(DefaultProductPlugin.FIELD_REMOVE_EXT, Boolean.TRUE)
                 .addParameter(DefaultProductPlugin.FIELD_EXTS, Arrays.asList(".HDR", ".DBL")).getParameters();
 

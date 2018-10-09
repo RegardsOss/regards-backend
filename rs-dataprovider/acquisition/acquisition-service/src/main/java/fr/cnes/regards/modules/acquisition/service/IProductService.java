@@ -48,8 +48,6 @@ public interface IProductService {
 
     Product save(Product product);
 
-    Product saveAndFlush(Product product);
-
     /**
      * @return all {@link Product}
      */
@@ -160,11 +158,6 @@ public interface IProductService {
     void handleSIPGenerationError(JobInfo jobInfo);
 
     /**
-     * Retry product SIP submission for resetting product SIP state to {@link ProductSIPState#GENERATED}
-     */
-    void retryProductSIPSubmission();
-
-    /**
      * Handle a SIP event
      * @param event {@link SIPEvent}
      */
@@ -216,5 +209,15 @@ public interface IProductService {
      * Restart SIP generation jobs for interrupted product processes
      */
     boolean restartInterruptedJobsByPage(AcquisitionProcessingChain processingChain);
+
+    /**
+     * Retry SIP generation jobs for products in {@link ProductSIPState#GENERATION_ERROR}
+     */
+    boolean retrySIPGenerationByPage(AcquisitionProcessingChain processingChain);
+
+    /**
+     * Change sip states by acquisition chain
+     */
+    void updateSipStates(AcquisitionProcessingChain processingChain, ISipState fromStatus, ISipState toStatus);
 
 }

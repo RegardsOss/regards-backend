@@ -19,14 +19,14 @@
 package fr.cnes.regards.modules.acquisition.plugins.ssalto.chain;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Set;
 
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -72,7 +72,7 @@ public class Jason2IgdrProcessingChainTest extends AbstractAcquisitionChainTest 
 
         // TODO invalid folder "/var/regards/data/invalid"
 
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(RegexDiskScanning.FIELD_DIRS,
                               Arrays.asList("src/test/resources/income/data" + "/JASON2/IGDR"))
                 .addParameter(RegexDiskScanning.FIELD_REGEX,
@@ -88,14 +88,14 @@ public class Jason2IgdrProcessingChainTest extends AbstractAcquisitionChainTest 
         processingChain.addFileInfo(fileInfo);
 
         // Validation
-        PluginConfiguration validationPlugin = PluginUtils.getPluginConfiguration(Lists.newArrayList(),
+        PluginConfiguration validationPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
                                                                                   DefaultFileValidation.class);
         validationPlugin.setIsActive(true);
         validationPlugin.setLabel("Validation plugin");
         processingChain.setValidationPluginConf(validationPlugin);
 
         // Product
-        List<PluginParameter> productParameters = PluginParametersFactory.build()
+        Set<PluginParameter> productParameters = PluginParametersFactory.build()
                 .addParameter(DefaultProductPlugin.FIELD_REMOVE_EXT, Boolean.TRUE).getParameters();
         PluginConfiguration productPlugin = PluginUtils.getPluginConfiguration(productParameters,
                                                                                DefaultProductPlugin.class);

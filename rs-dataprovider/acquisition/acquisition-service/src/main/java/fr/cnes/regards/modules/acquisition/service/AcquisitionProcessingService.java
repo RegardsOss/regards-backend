@@ -33,8 +33,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.persistence.EntityManager;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,7 +94,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
      */
     private static final int ENTITY_CREATION_BEFORE_COMMIT = 1000;
 
-    @Value("${regards.acquisition.pagination.default.page.size:1000}")
+    @Value("${regards.acquisition.pagination.default.page.size:100}")
     private Integer defaultPageSize;
 
     @Autowired
@@ -131,9 +129,6 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @Autowired
     private IAcquisitionProcessingService self;
-
-    @Autowired
-    private EntityManager entityManager;
 
     /**
      * Compute file checksum
@@ -704,6 +699,20 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         }
     }
 
+    @MultitenantTransactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public void retrySIPGeneration(AcquisitionProcessingChain processingChain) {
+        while (!Thread.interrupted() && productService.retrySIPGenerationByPage(processingChain)) {
+            // Works as long as there is at least one page left
+        }
+    }
+
+    @Override
+    public void retrySIPSubmission(AcquisitionProcessingChain processingChain) {
+        // Scheduler for SIP submission will handle automatically products in GENERATED states
+        productService.updateSipStates(processingChain, ProductSIPState.SUBMISSION_ERROR, ProductSIPState.GENERATED);
+    }
+
     @Override
     public Page<AcquisitionProcessingChainMonitor> buildAcquisitionProcessingChainSummaries(String label,
             Boolean running, AcquisitionProcessingChainMode mode, Pageable pageable) throws ModuleException {
@@ -732,8 +741,6 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             acqFile.setState(AcquisitionFileState.ERROR);
         }
         acqFileRepository.save(page);
-        entityManager.flush();
-        entityManager.clear();
         return page.hasNext();
     }
 

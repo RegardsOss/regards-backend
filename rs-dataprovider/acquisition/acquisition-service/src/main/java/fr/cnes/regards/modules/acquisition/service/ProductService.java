@@ -30,8 +30,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.persistence.EntityManager;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +49,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
@@ -98,27 +97,16 @@ public class ProductService implements IProductService {
     @Autowired
     private IAcquisitionFileRepository acqFileRepository;
 
-    @Autowired
-    private EntityManager em;
-
-    @Value("${regards.acquisition.sip.bulk.request.limit:1000}")
+    @Value("${regards.acquisition.sip.bulk.request.limit:100}")
     private Integer bulkRequestLimit;
 
-    @Value("${regards.acquisition.pagination.default.page.size:1000}")
+    @Value("${regards.acquisition.pagination.default.page.size:100}")
     private Integer defaultPageSize;
 
     @Override
     public Product save(Product product) {
         product.setLastUpdate(OffsetDateTime.now());
         return productRepository.save(product);
-    }
-
-    @Override
-    public Product saveAndFlush(Product product) {
-        save(product);
-        em.flush();
-        em.clear();
-        return product;
     }
 
     @Override
@@ -183,7 +171,7 @@ public class ProductService implements IProductService {
                               new JobParameter(SIPGenerationJob.PRODUCT_NAMES, productNames));
         jobInfo.setClassName(SIPGenerationJob.class.getName());
         jobInfo.setOwner(authResolver.getUser());
-        jobInfo = jobInfoService.createAsQueued(jobInfo);
+        jobInfo = jobInfoService.createAsPending(jobInfo);
 
         // Release lock
         for (Product product : products) {
@@ -196,6 +184,9 @@ public class ProductService implements IProductService {
             product.setLastSIPGenerationJobInfo(jobInfo);
             save(product);
         }
+
+        jobInfo.updateStatus(JobStatus.QUEUED);
+        jobInfoService.save(jobInfo);
 
         return jobInfo;
     }
@@ -300,8 +291,6 @@ public class ProductService implements IProductService {
 
             // Fulfill product with new valid acquired files
             fulfillProduct(validFilesByProductName.get(productName), currentProduct, processingChain);
-            em.flush();
-            em.clear();
 
             // Store for scheduling
             if (currentProduct.getSipState() == ProductSIPState.NOT_SCHEDULED
@@ -383,8 +372,7 @@ public class ProductService implements IProductService {
         Page<Product> products;
         Pageable pageable = new PageRequest(0, defaultPageSize);
         do {
-            products = productRepository.findWithLockBySipStateOrderByIdAsc(ProductSIPState.SUBMISSION_SCHEDULED,
-                                                                            pageable);
+            products = productRepository.findBySipStateOrderByIdAsc(ProductSIPState.SUBMISSION_SCHEDULED, pageable);
             if (products.hasNext()) {
                 // Prepare for new search
                 pageable = products.nextPageable();
@@ -402,18 +390,13 @@ public class ProductService implements IProductService {
 
         // Find all products with available SIPs ready for submission
         // Reset pagination
-        pageable = new PageRequest(0, defaultPageSize);
+        pageable = new PageRequest(0, bulkRequestLimit);
         Multimap<String, String> sessionsByChain = ArrayListMultimap.create();
         // Register products per ingest chain and session for reporting
         Map<String, Map<String, List<Product>>> productsPerIngestChain = new HashMap<>();
 
-        // Just managed first page
-        //        do {
+        // Just managed one page at a time
         products = productRepository.findWithLockBySipStateOrderByIdAsc(ProductSIPState.GENERATED, pageable);
-        //            if (products.hasNext()) {
-        //                // Prepare for new search
-        //                pageable = products.nextPageable();
-        //            }
 
         if (products.hasContent()) {
 
@@ -432,7 +415,6 @@ public class ProductService implements IProductService {
                 }
             }
         }
-        //        } while (products.hasNext());
 
         // Schedule submission jobs
         for (String ingestChain : sessionsByChain.keySet()) {
@@ -447,10 +429,12 @@ public class ProductService implements IProductService {
                 jobInfo.setParameters(jobParameters);
                 jobInfo.setClassName(SIPSubmissionJob.class.getName());
                 jobInfo.setOwner(authResolver.getUser());
-                jobInfoService.createAsQueued(jobInfo);
+                jobInfoService.createAsPending(jobInfo);
 
                 // Link report to all related products
                 linkSubmissionJobInfo(productsPerIngestChain, jobInfo, ingestChain, session);
+                jobInfo.updateStatus(JobStatus.QUEUED);
+                jobInfoService.save(jobInfo);
             }
         }
     }
@@ -500,7 +484,10 @@ public class ProductService implements IProductService {
                     }
                     product.setLastSIPSubmissionJobInfo(jobInfo);
                     product.setSipState(ProductSIPState.SUBMISSION_SCHEDULED);
-                    saveAndFlush(product);
+                    LOGGER.debug("Saving product \"{}\" \"{}\" with IP ID \"{}\" and SIP state \"{}\"",
+                                 product.getProductName(), product.getSip().getId(), product.getIpId(),
+                                 product.getSipState());
+                    save(product);
                 }
             }
         }
@@ -559,24 +546,12 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public void retryProductSIPSubmission() {
-        Page<Product> products;
-        do {
-            products = productRepository.findWithLockBySipStateOrderByIdAsc(ProductSIPState.SUBMISSION_ERROR,
-                                                                            new PageRequest(0, defaultPageSize));
-            for (Product product : products) {
-                product.setSipState(ProductSIPState.GENERATED);
-                save(product);
-            }
-        } while (products.hasNext());
-    }
-
-    @Override
     public void handleSIPEvent(SIPEvent event) {
-        Product product = productRepository.findCompleteByIpId(event.getSipId());
+        Product product = productRepository.findCompleteByProductName(event.getProviderId());
         if (product != null) {
             // Do post processing if SIP properly stored
-            if (SIPState.STORED.equals(event.getState())) {
+            if (SIPState.STORED.equals(event.getState())
+                    && product.getProcessingChain().getPostProcessSipPluginConf().isPresent()) {
                 JobInfo jobInfo = new JobInfo(true);
                 jobInfo.setPriority(AcquisitionJobPriority.POST_ACQUISITION_JOB_PRIORITY.getPriority());
                 jobInfo.setParameters(new JobParameter(PostAcquisitionJob.EVENT_PARAMETER, event));
@@ -590,11 +565,12 @@ public class ProductService implements IProductService {
                 }
                 product.setLastPostProductionJobInfo(jobInfo);
             }
-
             product.setSipState(event.getState());
+            product.setIpId(event.getSipId());
             save(product);
         } else {
-            LOGGER.debug("SIP with IP ID \"{}\" is not managed by data provider", event.getSipId());
+            LOGGER.warn("SIP with IP ID \"{}\" and provider ID \"{}\" is not managed by data provider",
+                        event.getSipId(), event.getProviderId());
         }
     }
 
@@ -701,9 +677,28 @@ public class ProductService implements IProductService {
                                                               new PageRequest(0, defaultPageSize));
         // Schedule SIP generation
         if (products.hasContent()) {
-            LOGGER.debug("Restarting SIP generation for {} product(s)", products.getContent().size());
+            LOGGER.debug("Restarting interrupted SIP generation for {} product(s)", products.getContent().size());
             scheduleProductSIPGenerations(new HashSet<>(products.getContent()), processingChain);
         }
         return products.hasNext();
+    }
+
+    @Override
+    public boolean retrySIPGenerationByPage(AcquisitionProcessingChain processingChain) {
+
+        Page<Product> products = productRepository
+                .findByProcessingChainAndSipStateOrderByIdAsc(processingChain, ProductSIPState.GENERATION_ERROR,
+                                                              new PageRequest(0, defaultPageSize));
+        // Schedule SIP generation
+        if (products.hasContent()) {
+            LOGGER.debug("Retrying SIP generation for {} product(s)", products.getContent().size());
+            scheduleProductSIPGenerations(new HashSet<>(products.getContent()), processingChain);
+        }
+        return products.hasNext();
+    }
+
+    @Override
+    public void updateSipStates(AcquisitionProcessingChain processingChain, ISipState fromStatus, ISipState toStatus) {
+        productRepository.updateSipStates(fromStatus, toStatus, processingChain);
     }
 }

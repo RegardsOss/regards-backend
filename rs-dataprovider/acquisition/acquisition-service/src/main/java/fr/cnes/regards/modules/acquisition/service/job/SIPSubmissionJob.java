@@ -93,14 +93,20 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
      */
     private void runByPage() {
 
+        if (Thread.interrupted()) {
+            return;
+        }
+
         // Retrieve all products to submit by ingest chain, session page
         // Page size is limited by the property "bulkRequestLimit"
         Page<Product> products = productService.findProductsToSubmit(ingestChain, session);
 
         if (products.getNumberOfElements() > 0) {
 
+            long startTime = System.currentTimeMillis();
             logger.info("Ingest chain {} - session {} : processing {} products of {}", ingestChain, session,
                         products.getNumberOfElements(), products.getTotalElements());
+
             // Create SIP collection
             SIPCollectionBuilder sipCollectionBuilder = new SIPCollectionBuilder(ingestChain, session.orElse(null));
             products.getContent().forEach(p -> sipCollectionBuilder.add(p.getSip()));
@@ -126,6 +132,10 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
                 // Disable system call if necessary after client request(s)
                 FeignSecurityManager.reset();
             }
+
+            logger.info("Ingest chain {} - session {} : {} products of {} processed in {} milliseconds", ingestChain,
+                        session, products.getNumberOfElements(), products.getTotalElements(),
+                        System.currentTimeMillis() - startTime);
         }
 
         // Continue if remaining page
@@ -148,11 +158,11 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
                 // Convert product list to map
                 Map<String, Product> productMap = products.stream()
                         .collect(Collectors.toMap(p -> p.getSip().getId(), p -> p));
+
                 // Process all SIP to update all products!
                 for (SIPDto dto : response) {
                     Product product = productMap.get(dto.getId());
                     product.setSipState(dto.getState());
-                    product.setIpId(dto.getSipId()); // May be null
                     if (dto.getRejectionCauses() != null && !dto.getRejectionCauses().isEmpty()) {
                         StringBuffer error = new StringBuffer();
                         for (String cause : dto.getRejectionCauses()) {
@@ -164,7 +174,10 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
                         }
                         product.setError(error.toString());
                     }
-                    productService.saveAndFlush(product);
+                    logger.debug("Saving product \"{}\" \"{}\" with IP ID \"{}\" and SIP state \"{}\"",
+                                 product.getProductName(), product.getSip().getId(), product.getIpId(),
+                                 product.getSipState());
+                    productService.save(product);
                 }
                 break;
             default:

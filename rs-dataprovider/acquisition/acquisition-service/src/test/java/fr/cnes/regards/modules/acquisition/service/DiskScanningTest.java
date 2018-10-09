@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -56,7 +57,7 @@ public class DiskScanningTest {
     public void testDirectoryScanningWithoutGlobber() throws ModuleException {
 
         // Plugin parameters
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(GlobDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString())).getParameters();
 
         // Instantiate plugin
@@ -73,7 +74,7 @@ public class DiskScanningTest {
     public void testDirectoryScanningWithGlobber() throws ModuleException {
 
         // Plugin parameters
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(GlobDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString()))
                 .addParameter(GlobDiskScanning.FIELD_GLOB, "*_0[12].md").getParameters();
 
@@ -91,7 +92,7 @@ public class DiskScanningTest {
     public void testDirectoryScanningWithoutRegex() throws ModuleException {
 
         // Plugin parameters
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(RegexDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString())).getParameters();
 
         // Instantiate plugin
@@ -108,7 +109,7 @@ public class DiskScanningTest {
     public void testDirectoryScanningWithRegex() throws ModuleException {
 
         // Plugin parameters
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(RegexDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString()))
                 .addParameter(RegexDiskScanning.FIELD_REGEX, ".*_0[12]\\.md").getParameters();
 
