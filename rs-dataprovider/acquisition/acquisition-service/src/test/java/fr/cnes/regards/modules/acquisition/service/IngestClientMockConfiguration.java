@@ -34,7 +34,7 @@ public class IngestClientMockConfiguration {
 
     @Bean
     public IIngestClient ingestClient() {
-        return Mockito.mock(IIngestClient.class);
+        return new IngestClientMock();
     }
 
     @Bean

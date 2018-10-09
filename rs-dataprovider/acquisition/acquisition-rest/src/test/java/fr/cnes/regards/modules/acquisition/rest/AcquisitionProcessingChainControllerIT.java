@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.StringJoiner;
 
 import org.junit.Assert;
@@ -226,7 +227,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         Assert.assertNotNull("Chain must exist", loadedChain);
 
         // Update scan plugin
-        List<PluginParameter> params = PluginParametersFactory.build()
+        Set<PluginParameter> params = PluginParametersFactory.build()
                 .addParameter(GlobDiskScanning.FIELD_DIRS, new ArrayList<>()).getParameters();
         PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(params, GlobDiskScanning.class);
         scanPlugin.setIsActive(true);
@@ -277,7 +278,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         Assert.assertNotNull("Chain must exist", loadedChain);
 
         // Update scan plugin
-        List<PluginParameter> params = PluginParametersFactory.build()
+        Set<PluginParameter> params = PluginParametersFactory.build()
                 .addParameter(GlobDiskScanning.FIELD_DIRS, new ArrayList<>()).getParameters();
         PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(params, GlobDiskScanning.class);
         scanPlugin.setIsActive(true);

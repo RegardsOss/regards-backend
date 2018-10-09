@@ -75,12 +75,22 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
     public void run() {
 
         try {
-            // First step : scan and register files
-            processingService.scanAndRegisterFiles(processingChain);
-            // Second step : validate in progress files
-            processingService.manageRegisteredFiles(processingChain);
-            // Third step : restart interrupted jobs
+            // Trying to restart products that fail during SIP generation
+            if (processingChain.isGenerationRetryEnabled()) {
+                processingService.retrySIPGeneration(processingChain);
+            }
+            // Trying to restart products that fail during SIP submission
+            if (processingChain.isSubmissionRetryEnabled()) {
+                processingService.retrySIPSubmission(processingChain);
+            }
+            // Restart interrupted jobs
             processingService.restartInterruptedJobs(processingChain);
+
+            // Nominal process
+            // First step : scan and register files (Not interruptible at the moment)
+            processingService.scanAndRegisterFiles(processingChain);
+            // Second step : validate in progress files, build and schedule SIP generation for completed or finished products
+            processingService.manageRegisteredFiles(processingChain);
         } catch (ModuleException e) {
             logger.error("Business error", e);
             throw new JobRuntimeException(e);

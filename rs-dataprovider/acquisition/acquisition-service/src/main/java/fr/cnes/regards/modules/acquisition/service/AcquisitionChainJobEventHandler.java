@@ -91,9 +91,7 @@ public class AcquisitionChainJobEventHandler implements ApplicationListener<Appl
             runtimeTenantResolver.forceTenant(tenant);
             JobEvent jobEvent = wrapper.getContent();
             LOGGER.debug("Job event received with state \"{}\", tenant \"{}\" and job info id \"{}\"",
-                         jobEvent.getJobEventType(),
-                         tenant,
-                         jobEvent.getJobId());
+                         jobEvent.getJobEventType(), tenant, jobEvent.getJobId());
             try {
                 switch (jobEvent.getJobEventType()) {
                     case FAILED:
@@ -107,11 +105,8 @@ public class AcquisitionChainJobEventHandler implements ApplicationListener<Appl
                 StringWriter sw = new StringWriter();
                 e.printStackTrace(new PrintWriter(sw));
                 FeignSecurityManager.asSystem();
-                notificationClient.notifyRoles(sw.toString(),
-                                               "Error occurs during job event handling",
-                                               "rs-dataprovider",
-                                               NotificationType.ERROR,
-                                               DefaultRole.ADMIN);
+                notificationClient.notifyRoles(sw.toString(), "Error occurs during job event handling",
+                                               "rs-dataprovider", NotificationType.ERROR, DefaultRole.ADMIN);
             } finally {
                 FeignSecurityManager.reset();
                 runtimeTenantResolver.clearTenant();
@@ -121,14 +116,16 @@ public class AcquisitionChainJobEventHandler implements ApplicationListener<Appl
         private void handleJobFailure(JobEvent jobEvent) {
             // Load job info
             JobInfo jobInfo = jobInfoService.retrieveJob(jobEvent.getJobId());
-            // First lets check which job failed. Then lets responsible service handle errors.
-            String jobClassName = jobInfo.getClassName();
-            if (SIPSubmissionJob.class.getName().equals(jobClassName)) {
-                productService.handleSIPSubmissiontError(jobInfo);
-            } else if (SIPGenerationJob.class.getName().equals(jobClassName)) {
-                productService.handleSIPGenerationError(jobInfo);
-            } else if (ProductAcquisitionJob.class.getName().equals(jobClassName)) {
-                acquisitionProcessingService.handleProductAcquisitionError(jobInfo);
+            if (jobInfo != null) {
+                // First lets check which job failed. Then lets responsible service handle errors.
+                String jobClassName = jobInfo.getClassName();
+                if (SIPSubmissionJob.class.getName().equals(jobClassName)) {
+                    productService.handleSIPSubmissiontError(jobInfo);
+                } else if (SIPGenerationJob.class.getName().equals(jobClassName)) {
+                    productService.handleSIPGenerationError(jobInfo);
+                } else if (ProductAcquisitionJob.class.getName().equals(jobClassName)) {
+                    acquisitionProcessingService.handleProductAcquisitionError(jobInfo);
+                }
             }
         }
     }

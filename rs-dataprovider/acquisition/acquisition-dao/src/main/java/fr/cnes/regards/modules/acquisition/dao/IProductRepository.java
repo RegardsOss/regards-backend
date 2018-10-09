@@ -30,6 +30,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -57,9 +58,6 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
 
     @EntityGraph("graph.acquisition.file.complete")
     Set<Product> findCompleteByProductNameIn(Collection<String> productNames);
-
-    @EntityGraph("graph.acquisition.file.complete")
-    Product findCompleteByIpId(String ipId);
 
     Page<Product> findByProcessingChainOrderByIdAsc(AcquisitionProcessingChain processingChain, Pageable pageable);
 
@@ -112,7 +110,7 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
      * @param sipState {@link ISipState}
      * @return a set of products with the above properties
      */
-    Page<Product> findBySipState(ISipState sipState, Pageable pageable);
+    Page<Product> findBySipStateOrderByIdAsc(ISipState sipState, Pageable pageable);
 
     /**
      * Count number of products associated to the given {@link AcquisitionProcessingChain} and in the given state
@@ -155,4 +153,8 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
      * @return number of {@link Product}
      */
     long countByProcessingChain(AcquisitionProcessingChain chain);
+
+    @Modifying
+    @Query(value = "UPDATE Product p set p.sipState = ?2 where p.processingChain = ?3 and p.sipState = ?1")
+    void updateSipStates(ISipState fromStatus, ISipState toStatus, AcquisitionProcessingChain processingChain);
 }

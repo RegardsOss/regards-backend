@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.acquisition.service.plugins;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -63,7 +64,7 @@ public class FixedStorageSIPGenerationIT extends AbstractMultitenantServiceTest 
         mapping.put("plugin2", "dir2");
         mapping.put("plugin3", "dir3");
         mapping.put("plugin4", "");
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(FixedStorageSIPGeneration.PLUGINID_STORAGEDIR_MAP, mapping).getParameters();
         PluginConfiguration pluginConf = pluginService
                 .savePluginConfiguration(new PluginConfiguration(plugin, "sipGenerationPlugin", parameters));

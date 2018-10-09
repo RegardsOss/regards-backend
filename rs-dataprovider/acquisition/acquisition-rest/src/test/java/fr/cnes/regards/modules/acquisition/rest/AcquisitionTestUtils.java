@@ -19,11 +19,10 @@
 package fr.cnes.regards.modules.acquisition.rest;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
+import org.assertj.core.util.Sets;
 import org.springframework.http.MediaType;
-
-import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
@@ -62,7 +61,7 @@ public class AcquisitionTestUtils {
         fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         fileInfo.setDataType(DataType.RAWDATA);
 
-        List<PluginParameter> param = PluginParametersFactory.build()
+        Set<PluginParameter> param = PluginParametersFactory.build()
                 .addParameter(GlobDiskScanning.FIELD_DIRS, new ArrayList<>()).getParameters();
         PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(param, GlobDiskScanning.class);
         scanPlugin.setIsActive(true);
@@ -72,21 +71,21 @@ public class AcquisitionTestUtils {
         processingChain.addFileInfo(fileInfo);
 
         // Validation
-        PluginConfiguration validationPlugin = PluginUtils.getPluginConfiguration(Lists.newArrayList(),
+        PluginConfiguration validationPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
                                                                                   DefaultFileValidation.class);
         validationPlugin.setIsActive(true);
         validationPlugin.setLabel(labelPrefix + " : " + "Validation plugin");
         processingChain.setValidationPluginConf(validationPlugin);
 
         // Product
-        PluginConfiguration productPlugin = PluginUtils.getPluginConfiguration(Lists.newArrayList(),
+        PluginConfiguration productPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
                                                                                DefaultProductPlugin.class);
         productPlugin.setIsActive(true);
         productPlugin.setLabel(labelPrefix + " : " + "Product plugin");
         processingChain.setProductPluginConf(productPlugin);
 
         // SIP generation
-        PluginConfiguration sipGenPlugin = PluginUtils.getPluginConfiguration(Lists.newArrayList(),
+        PluginConfiguration sipGenPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
                                                                               DefaultSIPGeneration.class);
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel(labelPrefix + " : " + "SIP generation plugin");
