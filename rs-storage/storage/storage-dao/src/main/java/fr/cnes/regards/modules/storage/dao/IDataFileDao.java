@@ -79,7 +79,7 @@ public interface IDataFileDao {
      * @param dataType
      * @return the data file wrapped into an optional to avoid nulls
      */
-    Optional<StorageDataFile> findByAipAndType(AIP aip, DataType dataType);
+    Set<StorageDataFile> findByAipAndType(AIP aip, DataType dataType);
 
     /**
      * Remove all data files from the database

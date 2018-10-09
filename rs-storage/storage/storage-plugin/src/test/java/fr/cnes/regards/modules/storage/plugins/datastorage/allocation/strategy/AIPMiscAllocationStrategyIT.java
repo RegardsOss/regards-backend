@@ -28,9 +28,9 @@ import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -64,12 +64,10 @@ import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.DispatchErrors;
-import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
-import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
-import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.AIPMiscAllocationStrategyPlugin;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.PluginConfigurationIdentifiersWrapper;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
@@ -113,7 +111,7 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
             throws ModuleException, IOException, URISyntaxException {
         URL baseStorageLocation = new URL("file", "", System.getProperty("user.dir") + "/target/LocalDataStorageIT");
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000L).getParameters();
         PluginMetaData localDataStorageMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
@@ -125,7 +123,7 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
             throws ModuleException {
         // lets get a allocation
         PluginMetaData allocation = PluginUtils.createPluginMetaData(AIPMiscAllocationStrategyPlugin.class);
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(AIPMiscAllocationStrategyPlugin.MAP_PLUGINID_PLUGINCONFID_PARAMETER, mapping)
                 .getParameters();
         return pluginService.savePluginConfiguration(new PluginConfiguration(allocation, label, parameters));
@@ -140,10 +138,12 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
         aipSession.setLastActivationDate(OffsetDateTime.now());
 
         dataFile1 = new StorageDataFile(Sets.newHashSet(new URL("file", "", "fichier1.json")), "checksum", "MD5",
-                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aip, aipSession, "fichier1", null);
+                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, new AIPEntity(aip, aipSession), aipSession,
+                "fichier1", null);
         dataFiles.add(dataFile1);
         dataFile2 = new StorageDataFile(Sets.newHashSet(new URL("file", "", "fichier2.json")), "checksum2", "MD5",
-                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aip, aipSession, "fichier2", null);
+                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, new AIPEntity(aip, aipSession), aipSession,
+                "fichier2", null);
         dataFiles.add(dataFile2);
     }
 
@@ -172,12 +172,6 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
     }
 
     protected void initPlugins() throws ModuleException, MalformedURLException {
-        pluginService.addPluginPackage(IAllocationStrategy.class.getPackage().getName());
-        pluginService.addPluginPackage(AIPMiscAllocationStrategyPlugin.class.getPackage().getName());
-        pluginService.addPluginPackage(IDataStorage.class.getPackage().getName());
-        pluginService.addPluginPackage(INearlineDataStorage.class.getPackage().getName());
-        pluginService.addPluginPackage(NearlineDataStorageTestPlugin.class.getPackage().getName());
-        pluginService.addPluginPackage(LocalDataStorage.class.getPackage().getName());
     }
 
     /**

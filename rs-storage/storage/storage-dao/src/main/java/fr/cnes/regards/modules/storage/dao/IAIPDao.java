@@ -108,6 +108,13 @@ public interface IAIPDao {
     Optional<AIP> findOneByAipId(String aipId);
 
     /**
+     * Retrieve a single aip according to its ip id
+     * @param aipId
+     * @return an optional wrapping the aip to avoid nulls
+     */
+    Optional<AIP> findOneWithLockByAipId(String aipId);
+
+    /**
      * Delete all aips from the database
      */
     void deleteAll();

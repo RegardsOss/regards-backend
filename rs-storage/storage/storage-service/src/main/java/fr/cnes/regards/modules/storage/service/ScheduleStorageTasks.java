@@ -124,25 +124,6 @@ public class ScheduleStorageTasks {
         }
     }
 
-    /*
-     * Non javadoc, but explanatory: due to settings only interfaces are proxyfied by spring, so we need to use a self
-     * reference on the interface to profit from transaction management from spring. This is a self reference because
-     * AIPService is annotated @Service with default component scope which is "spring' SINGLETON
-     */
-    @Scheduled(fixedDelayString = "${regards.storage.update.aip.metadata.delay:120000}") // 2 minutes
-    public void updateAlreadyStoredMetadata() {
-        // Then lets get AIP that should be stored again after an update
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
-            runtimeTenantResolver.forceTenant(tenant);
-            long startTime = System.currentTimeMillis();
-            int nbScheduled = aipService.updateAipMetadata();
-            aipService.removeDeletedAIPMetadatas();
-            LOGGER.trace("AIP metadata update scheduled in {}ms for {} aips", System.currentTimeMillis() - startTime,
-                         nbScheduled);
-            runtimeTenantResolver.clearTenant();
-        }
-    }
-
     /**
      * Periodicaly delete AIPs metadata in status DELETED. Delete physical file and reference in database.
      */
@@ -166,7 +147,7 @@ public class ScheduleStorageTasks {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
             long startTime = System.currentTimeMillis();
-            int nbScheduled = aipService.doDelete();
+            Long nbScheduled = aipService.doDelete();
             LOGGER.trace("AIP data delete scheduled in {}ms for {} aips", System.currentTimeMillis() - startTime,
                          nbScheduled);
             runtimeTenantResolver.clearTenant();
@@ -212,6 +193,19 @@ public class ScheduleStorageTasks {
             long startTime = System.currentTimeMillis();
             dataStorageService.monitorDataStorages();
             LOGGER.trace("Data storages monitoring done in {}ms", System.currentTimeMillis() - startTime);
+            runtimeTenantResolver.clearTenant();
+        }
+    }
+
+    @Scheduled(fixedRateString = "${regards.storage.check.data.storage.disk.usage.rate:30000}",
+            initialDelay = 60 * 1000)
+    public void handleUpdateRequests() throws ModuleException {
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            long startTime = System.currentTimeMillis();
+            int nbRequestsHandled = aipService.handleUpdateRequests();
+            LOGGER.trace("Handle pending update requests done in {}ms for {} aips.",
+                         System.currentTimeMillis() - startTime, nbRequestsHandled);
             runtimeTenantResolver.clearTenant();
         }
     }

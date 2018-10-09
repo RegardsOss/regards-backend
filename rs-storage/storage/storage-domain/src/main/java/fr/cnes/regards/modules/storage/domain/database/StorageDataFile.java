@@ -31,7 +31,6 @@ import org.springframework.util.MimeType;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.jpa.converter.SetStringCsvConverter;
 import fr.cnes.regards.framework.jpa.converter.SetURLCsvConverter;
@@ -189,9 +188,9 @@ public class StorageDataFile {
      * @param mimeType
      * @param aip
      */
-    public StorageDataFile(OAISDataObject file, MimeType mimeType, AIP aip, AIPSession aipSession) {
+    public StorageDataFile(OAISDataObject file, MimeType mimeType, AIPEntity aipEntity, AIPSession aipSession) {
         this(file.getUrls(), file.getChecksum(), file.getAlgorithm(), file.getRegardsDataType(), file.getFileSize(),
-             mimeType, aip, aipSession, null, null);
+             mimeType, aipEntity, aipSession, null, null);
         String name = file.getFilename();
         if (Strings.isNullOrEmpty(name)) {
             String[] pathParts = file.getUrls().iterator().next().getPath().split("/");
@@ -212,14 +211,14 @@ public class StorageDataFile {
      * @param name
      */
     public StorageDataFile(Set<URL> urls, String checksum, String algorithm, DataType type, Long fileSize,
-            MimeType mimeType, AIP aip, AIPSession aipSession, String name, String storageDirectory) {
+            MimeType mimeType, AIPEntity aipEntity, AIPSession aipSession, String name, String storageDirectory) {
         this.urls = urls;
         this.checksum = checksum;
         this.algorithm = algorithm;
         this.dataType = type;
         this.fileSize = fileSize;
         this.mimeType = mimeType;
-        this.aipEntity = new AIPEntity(aip, aipSession);
+        this.aipEntity = aipEntity;
         this.name = name;
         this.storageDirectory = storageDirectory;
     }
@@ -230,13 +229,18 @@ public class StorageDataFile {
      * @return extracted data files
      */
     public static Set<StorageDataFile> extractDataFiles(AIP aip, AIPSession aipSession) {
+        return extractDataFilesForExistingAIP(aip, new AIPEntity(aip, aipSession), aipSession);
+    }
+
+    public static Set<StorageDataFile> extractDataFilesForExistingAIP(AIP aip, AIPEntity aipEntity,
+            AIPSession aipSession) {
         Set<StorageDataFile> dataFiles = Sets.newHashSet();
         for (ContentInformation ci : aip.getProperties().getContentInformations()) {
             OAISDataObject file = ci.getDataObject();
-            if (!file.isReference()) {
+            if ((file != null) && !file.isReference()) {
                 // Only non reference data object is managed by storage
                 MimeType mimeType = ci.getRepresentationInformation().getSyntax().getMimeType();
-                dataFiles.add(new StorageDataFile(file, mimeType, aip, aipSession));
+                dataFiles.add(new StorageDataFile(file, mimeType, aipEntity, aipSession));
             }
         }
         return dataFiles;

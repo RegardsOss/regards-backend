@@ -63,7 +63,7 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.PluginStorageInfo;
 @RegardsTransactional
 public class DataStorageService implements IDataStorageService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DataStorageInfo.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataStorageService.class);
 
     /**
      * Metadata stored successfully message
@@ -312,6 +312,8 @@ public class DataStorageService implements IDataStorageService {
                     // Maybe the file can be deleted later. So do nothing and just notify administrator.
                     String message = String.format("Error deleting file (id: %s, checksum: %s).", event.getDataFileId(),
                                                    event.getChecksum());
+                    data.get().setState(DataFileState.TO_BE_DELETED);
+                    dataFileDao.save(data.get());
                     LOGGER.error(message);
                     notifyAdmins("File deletion error", message, NotificationType.INFO);
                     break;
@@ -377,7 +379,7 @@ public class DataStorageService implements IDataStorageService {
         }
 
         // If url to remove is null (so all the location are deleted) or if there is no longer any location for the datafile,
-        // we can remove it from db.
+        // we can remove it from db and form AIP.
         if ((urlToRemove == null) || dataFileDeleted.getUrls().isEmpty()) {
             LOGGER.info("Datafile to delete does not contains any location url. Deletion of the dataFile {}",
                         dataFileDeleted.getName());
@@ -385,6 +387,12 @@ public class DataStorageService implements IDataStorageService {
             String message = String.format(DATAFILE_DELETED_SUCCESSFULLY, dataFileDeleted.getName());
             associatedAIP.addEvent(EventType.DELETION.name(), message);
             LOGGER.info(message);
+            // Remove content information from aip
+            Set<ContentInformation> ciToRemove = associatedAIP.getProperties().getContentInformations().stream()
+                    .filter(ci -> dataFileDeleted.getChecksum().equals(ci.getDataObject().getChecksum()))
+                    .collect(Collectors.toSet());
+            ciToRemove.forEach(ci -> associatedAIP.getProperties().getContentInformations().remove(ci));
+            aipService.save(associatedAIP, false);
         }
 
         // If associated AIP is not linked to any dataFile anymore, delete aip.
@@ -462,6 +470,16 @@ public class DataStorageService implements IDataStorageService {
                 } catch (IOException e) {
                     LOGGER.error("Error during workspace cleaning", e);
                 }
+                // If  older AIP DataFiles are stored, schedule their deletion by updating their state to TO_BE_DELETED
+                dataFileDao.findByAipAndType(associatedAIP, DataType.AIP).forEach(df -> {
+                    if (!df.getId().equals(storedDataFile.getId())) {
+                        LOGGER.debug("[STORE FILE SUCCESS] Schedule old AIP metadata file {} to be deleted for AIP {}",
+                                     df.getName(), associatedAIP.getProviderId());
+                        df.setState(DataFileState.TO_BE_DELETED);
+                        dataFileDao.save(df);
+                    }
+                });
+
                 associatedAIP.setState(AIPState.STORED);
                 associatedAIP.addEvent(EventType.STORAGE.name(), METADATA_STORED_SUCCESSFULLY);
                 aipService.save(associatedAIP, false);
@@ -516,7 +534,7 @@ public class DataStorageService implements IDataStorageService {
         Set<PluginConfiguration> activeDataStorageConfs = dataStorageConfigurations.stream().filter(pc -> pc.isActive())
                 .collect(Collectors.toSet());
         List<Map<String, Object>> diagnostic = new ArrayList<>(activeDataStorageConfs.size());
-        for(PluginConfiguration dataStorageConf: activeDataStorageConfs) {
+        for (PluginConfiguration dataStorageConf : activeDataStorageConfs) {
             try {
                 IDataStorage<?> activeDataStorage = pluginService.getPlugin(dataStorageConf.getId());
                 Map<String, Object> diagInfo = activeDataStorage.getDiagnosticInfo();

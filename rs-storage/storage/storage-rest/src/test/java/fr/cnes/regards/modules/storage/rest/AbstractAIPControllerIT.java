@@ -12,11 +12,16 @@ import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import org.apache.commons.compress.utils.Lists;
 import org.junit.After;
 import org.junit.Before;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +34,9 @@ import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -47,6 +55,7 @@ import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IAIPSessionRepository;
+import fr.cnes.regards.modules.storage.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.dao.IPrioritizedDataStorageRepository;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -64,6 +73,8 @@ import fr.cnes.regards.modules.storage.service.IPrioritizedDataStorageService;
 @TestPropertySource(locations = "classpath:test.properties")
 @ActiveProfiles("testAmqp")
 public abstract class AbstractAIPControllerIT extends AbstractRegardsTransactionalIT {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractAIPControllerIT.class);
 
     private static final String ALLOCATION_CONF_LABEL = "AIPControllerIT_ALLOCATION";
 
@@ -95,7 +106,13 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
     protected IDataFileDao dataFileDao;
 
     @Autowired
+    protected IJobInfoService jobInfoService;
+
+    @Autowired
     protected IAIPDao aipDao;
+
+    @Autowired
+    protected IAIPUpdateRequestRepository aipUpdateRepo;
 
     @Autowired
     protected IAIPSessionRepository aipSessionRepo;
@@ -125,7 +142,7 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
         PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
         baseStorageLocation = new URL("file", "", Paths.get("target/AIPControllerIT").toFile().getAbsolutePath());
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000000L)
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
                 .getParameters();
@@ -143,9 +160,13 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
     @After
     public void cleanUp() throws URISyntaxException, IOException, InterruptedException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
+        LOG.info("Waiting for current jobs finished ....");
+        waitForJobsFinished(10, true);
+        LOG.info("All current jobs finished !");
         subscriber.purgeQueue(DataStorageEvent.class, DataStorageEventHandler.class);
         jobInfoRepo.deleteAll();
         dataFileDao.deleteAll();
+        aipUpdateRepo.deleteAll();
         aipDao.deleteAll();
         prioritizedDataStorageRepository.deleteAll();
         pluginRepo.deleteAll();
@@ -190,6 +211,34 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
                                                                  OffsetDateTime.now());
         aipBuilder.addTags(tags);
         return aipBuilder.build();
+    }
+
+    private void waitForJobsFinished(int nbMaxSeconds, boolean forceStop) throws InterruptedException {
+        List<JobInfo> jobs = Lists.newArrayList();
+        Set<JobInfo> unfinishedJobs;
+        int cpt = 0;
+        do {
+            jobs = jobInfoService.retrieveJobs();
+            unfinishedJobs = jobs.stream()
+                    .filter(f -> !f.getStatus().getStatus().equals(JobStatus.SUCCEEDED)
+                            && !f.getStatus().getStatus().equals(JobStatus.FAILED)
+                            && !f.getStatus().getStatus().equals(JobStatus.ABORTED))
+                    .collect(Collectors.toSet());
+            LOG.info("TEST CLEAN] Waiting for {} Unfinished jobs", unfinishedJobs.size());
+            if (forceStop) {
+                unfinishedJobs.forEach(j -> {
+                    LOG.info("[TEST CLEAN] Trying to stop running job {}-{} [{}]", j.getClassName(), j.getId(),
+                             j.getStatus());
+                    jobInfoService.stopJob(j.getId());
+                });
+            }
+            if (unfinishedJobs.size() > 0) {
+                Thread.sleep(1000);
+            }
+            cpt++;
+
+        } while ((cpt < nbMaxSeconds) && (unfinishedJobs.size() > 0));
+
     }
 
     @Configuration

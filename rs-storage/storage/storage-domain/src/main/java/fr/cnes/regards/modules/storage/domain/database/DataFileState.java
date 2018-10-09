@@ -15,7 +15,17 @@ public enum DataFileState {
     /**
      * Error during storage process
      */
-    ERROR, TO_BE_DELETED;
+    ERROR,
+
+    /**
+     * Data file is waiting to be handle for deletion
+     */
+    TO_BE_DELETED,
+
+    /**
+     * Data file deletion is scheduled
+     */
+    DELETION_PENDING;
 
     @Override
     public String toString() {

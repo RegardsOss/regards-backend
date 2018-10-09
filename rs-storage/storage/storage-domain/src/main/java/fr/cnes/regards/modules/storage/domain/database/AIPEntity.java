@@ -50,7 +50,7 @@ public class AIPEntity {
     /**
      * Max urn size
      */
-    private static final int MAX_URN_SIZE = 128;
+    public static final int MAX_URN_SIZE = 128;
 
     /**
      * The id

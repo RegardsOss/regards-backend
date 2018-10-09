@@ -72,7 +72,7 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
      * @return the data file wrapped into an optional to avoid nulls
      */
     @EntityGraph(value = "graph.datafile.full")
-    Optional<StorageDataFile> findByAipEntityAndDataType(AIPEntity aipEntity, DataType dataType);
+    Set<StorageDataFile> findByAipEntityAndDataType(AIPEntity aipEntity, DataType dataType);
 
     /**
      * Retrieve a data file by its id
@@ -138,5 +138,5 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
     long countByAipEntity(AIPEntity aipEntity);
 
     @EntityGraph(value = "graph.datafile.full")
-    List<StorageDataFile> findAllByIdIn(List<Long> content);
+    Set<StorageDataFile> findAllDistinctByIdIn(List<Long> content);
 }

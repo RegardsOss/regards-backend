@@ -27,7 +27,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -60,6 +59,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.DispatchErrors;
@@ -117,18 +117,20 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
         AIPBuilder builder = new AIPBuilder(aipWithProperty);
         builder.getPDIBuilder().addAdditionalProvenanceInformation("property", PROPERTY_VALUE);
         propertyDataFile = new StorageDataFile(Sets.newHashSet(new URL("file", "", "truc.json")), "checksum", "MD5",
-                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aipWithProperty, aipSession, "truc", null);
+                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, new AIPEntity(aipWithProperty, aipSession),
+                aipSession, "truc", null);
         dataFiles.add(propertyDataFile);
         AIP aipWithoutProperty = getAIP();
         otherDataFile = new StorageDataFile(Sets.newHashSet(new URL("file", "", "local.json")), "checksum2", "MD5",
-                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aipWithoutProperty, aipSession, "local", null);
+                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, new AIPEntity(aipWithoutProperty, aipSession),
+                aipSession, "local", null);
         dataFiles.add(otherDataFile);
         AIP aipWithPropertyWrongVal = getAIP();
         builder = new AIPBuilder(aipWithPropertyWrongVal);
         builder.getPDIBuilder().addAdditionalProvenanceInformation("property", PROPERTY_VALUE + 3);
         propertyWrongValDataFile = new StorageDataFile(Sets.newHashSet(new URL("file", "", "truc.json")), "checksum3",
-                "MD5", DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aipWithPropertyWrongVal, aipSession, "truc",
-                null);
+                "MD5", DataType.OTHER, 666L, MediaType.APPLICATION_JSON,
+                new AIPEntity(aipWithPropertyWrongVal, aipSession), aipSession, "truc", null);
         dataFiles.add(propertyWrongValDataFile);
     }
 
@@ -157,7 +159,7 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
 
         URL baseStorageLocation = new URL("file", "", System.getProperty("user.dir") + "/target/LocalDataStorageIT");
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000L).getParameters();
         PluginMetaData localDataStorageMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
@@ -172,7 +174,7 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
         // before getting the alloc strat plg params, lets make some mapping
         Set<PropertyDataStorageMapping> mappings = Sets.newHashSet();
         mappings.add(new PropertyDataStorageMapping(PROPERTY_VALUE, mappedDataStorageConfId));
-        List<PluginParameter> propertyMappingAllocStratParam = PluginParametersFactory.build()
+        Set<PluginParameter> propertyMappingAllocStratParam = PluginParametersFactory.build()
                 .addParameter(PropertyMappingAllocationStrategy.PROPERTY_PATH, JSON_PATH)
                 .addParameter(PropertyMappingAllocationStrategy.PROPERTY_VALUE_DATA_STORAGE_MAPPING, mappings)
                 .addParameter(PropertyMappingAllocationStrategy.QUICKLOOK_DATA_STORAGE_CONFIGURATION_ID,
