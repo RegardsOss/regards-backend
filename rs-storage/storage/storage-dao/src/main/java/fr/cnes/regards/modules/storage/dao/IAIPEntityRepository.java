@@ -56,7 +56,7 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      * Find a page of aips which state is the provided one
      * @return a page of aips which state is the provided one
      */
-    @Lock(LockModeType.PESSIMISTIC_READ)
+//    @Lock(LockModeType.PESSIMISTIC_READ)
     Page<AIPEntity> findAllWithLockByState(AIPState state, Pageable pageable);
 
     /**
