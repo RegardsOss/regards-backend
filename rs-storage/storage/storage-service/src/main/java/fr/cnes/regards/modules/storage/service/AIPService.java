@@ -149,7 +149,6 @@ import fr.cnes.regards.modules.storage.service.job.DeleteDataFilesJob;
 import fr.cnes.regards.modules.storage.service.job.StoreDataFilesJob;
 import fr.cnes.regards.modules.storage.service.job.StoreMetadataFilesJob;
 import fr.cnes.regards.modules.storage.service.job.UpdateAIPsTagJob;
-import fr.cnes.regards.modules.storage.service.job.UpdateDataFilesJob;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 
@@ -1373,78 +1372,6 @@ public class AIPService implements IAIPService {
             throw new IOException(e);
         }
         return metadataAipFile;
-    }
-
-    @Override
-    public void scheduleStorageMetadataUpdate(Set<UpdatableMetadataFile> metadataToUpdate) {
-        try {
-            // we need to listen to those jobs event for two things: cleaning the workspace and update AIP state
-            doScheduleStorageMetadataUpdate(metadataToUpdate);
-            // to avoid making jobs for the same metadata all the time, lets change the metadataToStore AIP state to
-            // STORING_METADATA
-            Set<AIP> aips = metadataToUpdate.stream().map(oldNew -> oldNew.getNewOne().getAip())
-                    .collect(Collectors.toSet());
-            for (AIP aip : aips) {
-                LOGGER.debug("[UPDATING AIP METADATA] AIP {} is in STORING_METADATA state", aip.getId().toString());
-                aip.setState(AIPState.STORING_METADATA);
-                save(aip, true);
-            }
-        } catch (ModuleException e) {
-            LOGGER.error(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Schedule new {@link UpdateDataFilesJob}s to storeAndCreate given updated {@link StorageDataFile}.
-     *
-     * To do so, this method dispatch all {@link StorageDataFile} of new AIP metadata files to storeAndCreate
-     * by {@link PluginConfiguration} of storage plugin used to storeAndCreate associated {@link StorageDataFile}
-     * of old AIP metadata.<br/>
-     * Then, a new job si scheduled for each {@link IWorkingSubset} returned by
-     * the associated {@link PluginConfiguration}s.<br/>
-     * @param metadataToUpdate List of {@link StorageDataFile} of new AIP metadata files mapped to old ones.
-     * @return {@link Set}<{@link UUID}> List of all Jobs id scheduled.
-     */
-    private Set<UUID> doScheduleStorageMetadataUpdate(Set<UpdatableMetadataFile> metadataToUpdate)
-            throws ModuleException {
-        Set<UUID> jobIds = Sets.newHashSet();
-        // This is an update so we don't use the allocation strategy and we directly use the PluginConf used to
-        // store the file.
-        // Lets construct the Multimap<PluginConf, StorageDataFile> allowing us to then create the IWorkingSubSets
-        Multimap<Long, StorageDataFile> toPrepareMap = HashMultimap.create();
-        for (UpdatableMetadataFile oldNew : metadataToUpdate) {
-            Set<PrioritizedDataStorage> oldDataStorages = oldNew.getOldOne().getPrioritizedDataStorages();
-            oldNew.getNewOne().setNotYetStoredBy(((Number) oldDataStorages.size()).longValue());
-            for (PrioritizedDataStorage oldDataStorage : oldDataStorages) {
-                toPrepareMap.put(oldDataStorage.getId(), oldNew.getNewOne());
-            }
-            dataFileDao.save(oldNew.getNewOne());
-        }
-        // now lets work with workingSubsets
-        for (Long dataStorageConfId : toPrepareMap.keySet()) {
-            Set<IWorkingSubset> workingSubsets = getWorkingSubsets(toPrepareMap.get(dataStorageConfId),
-                                                                   dataStorageConfId,
-                                                                   DataStorageAccessModeEnum.STORE_MODE);
-            for (IWorkingSubset workingSubset : workingSubsets) {
-                // for each workingSubset lets get the corresponding old metadata to remove
-                Set<StorageDataFile> oldOneCorrespondingToWorkingSubset = metadataToUpdate.stream()
-                        .filter(oldNew -> workingSubset.getDataFiles().contains(oldNew.getNewOne()))
-                        .map(oldNew -> oldNew.getOldOne()).collect(Collectors.toSet());
-                Set<JobParameter> parameters = Sets.newHashSet();
-                parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConfId));
-                parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
-                parameters.add(new JobParameter(UpdateDataFilesJob.OLD_DATA_FILES_PARAMETER_NAME,
-                        oldOneCorrespondingToWorkingSubset
-                                .toArray(new StorageDataFile[oldOneCorrespondingToWorkingSubset.size()])));
-                jobIds.add(jobInfoService.createAsQueued(new JobInfo(false, 0, parameters, authResolver.getUser(),
-                        UpdateDataFilesJob.class.getName())).getId());
-            }
-        }
-        // now that files are given to the jobs, lets remove the source url so once stored we only have the good urls
-        Collection<StorageDataFile> storageDataFiles = toPrepareMap.values();
-        storageDataFiles.forEach(file -> file.setUrls(new HashSet<>()));
-        dataFileDao.save(storageDataFiles);
-        return jobIds;
     }
 
     @Override

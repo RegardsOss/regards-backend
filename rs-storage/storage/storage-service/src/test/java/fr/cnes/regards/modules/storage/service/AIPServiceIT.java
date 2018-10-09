@@ -483,7 +483,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         }
 
         AIP updatedAip = aipDao.findOneByAipId(aip.getId().toString()).get();
-        Assert.assertEquals("AIP should be in storing metadata state", AIPState.STORED, updatedAip.getState());
+        Assert.assertEquals("AIP should be in STORED state", AIPState.STORED, updatedAip.getState());
 
         Assert.assertTrue("Updated AIP should contains new tag", updatedAip.getTags().contains(newTag));
         Set<Event> updateEvents = updatedAip.getHistory().stream()

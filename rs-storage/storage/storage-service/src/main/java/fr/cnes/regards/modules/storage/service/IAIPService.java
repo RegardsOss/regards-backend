@@ -52,7 +52,6 @@ import fr.cnes.regards.modules.storage.domain.job.AddAIPTagsFilters;
 import fr.cnes.regards.modules.storage.domain.job.RemoveAIPTagsFilters;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
-import fr.cnes.regards.modules.storage.service.job.UpdateDataFilesJob;
 
 /**
  * Service Interface to handle {@link AIP} entities.
@@ -344,12 +343,6 @@ public interface IAIPService {
      * @param metadataToStore List of {@link StorageDataFile} of new AIP metadata files mapped to old ones.
      */
     void scheduleStorageMetadata(Set<StorageDataFile> metadataToStore);
-
-    /**
-     * Schedule the storage of metadata update
-     * @param metadataToUpdate
-     */
-    void scheduleStorageMetadataUpdate(Set<UpdatableMetadataFile> metadataToUpdate);
 
     /**
      * Handle physical deletion of AIPs for each entity in state DELETED and associated to no other
