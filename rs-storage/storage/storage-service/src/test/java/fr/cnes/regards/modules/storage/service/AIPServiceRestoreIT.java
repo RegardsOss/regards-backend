@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -44,9 +45,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
@@ -106,6 +109,11 @@ import fr.cnes.regards.modules.storage.service.plugins.SimpleNearLineStoragePlug
 
 /**
  * Class to test all AIP service restore functions.
+ *
+ * In case of randomly test failure because of Thread.sleep, try to implement a {@link AsyncConfigurer}
+ * and override {@link SimpleAsyncTaskExecutor#submitListenable(Callable)} to publish spring events to be listened to in tests.
+ *
+ * @author Sylvain Vissiere-Guerinet
  * @author Sébastien Binda
  */
 @ContextConfiguration(classes = AIPServiceRestoreIT.Config.class)

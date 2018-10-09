@@ -377,7 +377,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
             toRetrieveByStorage.put(computeDataStorageToUseToRetrieve(df.getPrioritizedDataStorages()), df);
         }
         long endDispatching = System.currentTimeMillis();
-        LOGGER.trace("Dispatching {} StorageDataFile into {} DataStorages took {}ms", toRetrieve.size(), toRetrieveByStorage.keySet().size(), endDispatching - startDispatching);
+        LOGGER.trace("Dispatching {} StorageDataFile into {} DataStorages took {} ms", toRetrieve.size(), toRetrieveByStorage.keySet().size(), endDispatching - startDispatching);
         long startScheduling = System.currentTimeMillis();
         Set<StorageDataFile> errors = Sets.newHashSet();
         for (Long storageConfId : toRetrieveByStorage.keySet()) {
