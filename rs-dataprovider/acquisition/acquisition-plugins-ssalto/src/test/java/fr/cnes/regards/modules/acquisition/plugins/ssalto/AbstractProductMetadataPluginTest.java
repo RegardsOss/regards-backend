@@ -30,10 +30,12 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.UUID;
 
@@ -559,7 +561,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
      *
      * @throws ModuleException if an error occurs
      */
-    protected PluginConfiguration getPluginConfiguration(String pluginId, Optional<List<PluginParameter>> parameters)
+    protected PluginConfiguration getPluginConfiguration(String pluginId, Optional<Set<PluginParameter>> parameters)
             throws ModuleException {
 
         // Get the PluginMetadata
@@ -576,7 +578,7 @@ public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsI
                         + ")");
         pluginConfiguration.setPluginId(pluginId);
         if (parameters.isPresent()) {
-            pluginConfiguration.setParameters(parameters.get());
+            pluginConfiguration.setParameters(new HashSet<>(parameters.get()));
         }
 
         return pluginService.savePluginConfiguration(pluginConfiguration);

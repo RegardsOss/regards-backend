@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -49,7 +49,7 @@ public class Jason2CheckingPluginTest {
         PluginUtils.setup();
 
         // Plugin parameters
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(DefaultProductPlugin.FIELD_LENGTH, 128).getParameters();
 
         // Instantiate plugin

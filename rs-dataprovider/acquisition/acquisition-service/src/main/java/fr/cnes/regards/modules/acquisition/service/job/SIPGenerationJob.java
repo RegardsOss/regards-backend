@@ -92,9 +92,11 @@ public class SIPGenerationJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        logger.debug("[{}] : starting SIP generation job of {} product(s) <{}>", processingChain.getLabel(),
+        logger.debug("[{}] : starting SIP generation job of {} product(s)", processingChain.getLabel(),
                      products.size());
         long startTime = System.currentTimeMillis();
+        int generatedCount = 0; // Effectively count generated products in case of interruption
+        String debugInterruption = "";
 
         try {
             // Get an instance of the plugin
@@ -104,6 +106,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
             // Launch generation plugin
             for (Product product : products) {
                 if (Thread.interrupted()) {
+                    debugInterruption = "before thread interruption";
                     break;
                 }
                 logger.trace("Generating SIP for product {}", product.getProductName());
@@ -113,10 +116,11 @@ public class SIPGenerationJob extends AbstractJob<Void> {
                 product.setSip(sip);
                 product.setSipState(ProductSIPState.GENERATED);
                 productService.save(product);
+                generatedCount++;
             }
 
-            logger.debug("[{}] : {} SIP(s) generated in {} milliseconds", processingChain.getLabel(), products.size(),
-                         System.currentTimeMillis() - startTime);
+            logger.debug("[{}] : {} SIP(s) generated in {} milliseconds {}", processingChain.getLabel(), generatedCount,
+                         System.currentTimeMillis() - startTime, debugInterruption);
         } catch (ModuleException e) {
             logger.error(e.getMessage(), e);
             throw new JobRuntimeException(e.getMessage());

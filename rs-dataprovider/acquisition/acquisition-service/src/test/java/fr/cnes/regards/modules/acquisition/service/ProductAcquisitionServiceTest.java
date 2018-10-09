@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.acquisition.service;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -34,7 +34,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -103,7 +103,7 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
         fileInfo.setDataType(DataType.RAWDATA);
 
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(GlobDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString())).getParameters();
 
         PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(parameters, GlobDiskScanning.class);
@@ -114,21 +114,21 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         processingChain.addFileInfo(fileInfo);
 
         // Validation
-        PluginConfiguration validationPlugin = PluginUtils.getPluginConfiguration(Lists.newArrayList(),
+        PluginConfiguration validationPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
                                                                                   DefaultFileValidation.class);
         validationPlugin.setIsActive(true);
         validationPlugin.setLabel("Validation plugin");
         processingChain.setValidationPluginConf(validationPlugin);
 
         // Product
-        PluginConfiguration productPlugin = PluginUtils.getPluginConfiguration(Lists.newArrayList(),
+        PluginConfiguration productPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
                                                                                DefaultProductPlugin.class);
         productPlugin.setIsActive(true);
         productPlugin.setLabel("Product plugin");
         processingChain.setProductPluginConf(productPlugin);
 
         // SIP generation
-        PluginConfiguration sipGenPlugin = PluginUtils.getPluginConfiguration(Lists.newArrayList(),
+        PluginConfiguration sipGenPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
                                                                               DefaultSIPGeneration.class);
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("SIP generation plugin");
@@ -221,5 +221,7 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
     //        LOGGER.info("Scan action took {} milliseconds", System.currentTimeMillis() - startTime);
     //
     //        processingService.manageRegisteredFiles(processingChain);
+    //
+    //        LOGGER.info("Manage action took {} milliseconds", System.currentTimeMillis() - startTime);
     //    }
 }
