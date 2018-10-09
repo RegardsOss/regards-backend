@@ -108,7 +108,7 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      * Retrieve an aip by its ip id
      * @return requested aip
      */
-    @Lock(LockModeType.PESSIMISTIC_READ)
+//    @Lock(LockModeType.PESSIMISTIC_READ)
     Optional<AIPEntity> findOneWithLockByAipId(String aipId);
 
     /**
