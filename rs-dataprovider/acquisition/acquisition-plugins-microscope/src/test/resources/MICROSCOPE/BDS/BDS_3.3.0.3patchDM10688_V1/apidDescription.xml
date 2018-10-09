@@ -1,0 +1,1927 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<apidDescription xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="apidDescription.xsd">
+	<PROVIDER>CNES_Automatic_Generation</PROVIDER>
+	<BDS_VERSION>3.3.0.3</BDS_VERSION>
+	<CREATION_TIME>27/10/2016 16:33:15.181450</CREATION_TIME>
+	<APID_description>
+		<APID>
+			<APID_number>1</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>HKTMD</mnemo>
+			<description>Description du paquet TM HKTM-D</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>2</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>HELLOCCPF</mnemo>
+			<description>Réponse LV PF</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>3</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>CONTROLTUC</mnemo>
+			<description>TM généré lors de l'éxécution de la TC CONTROLTUC et incluant :CTRLTUC octet indiquant si contrôle TUC est autorisé ou inhibé à bord</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>4</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>PMODESAT</mnemo>
+			<description>Paquet TM fournissant : Le mode satellite courant, Le mode SCAO courant ,l indicateur d'un reset OBC, l état de la communication avec les 2 ICU, les 2 ECM et le GNSS</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>5</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>COMCONT</mnemo>
+			<description>Informations de Commande-Contrôle</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>6</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>DUMPDRAMPF</mnemo>
+			<description>Paquet TM contenant l'adresse de début de dump (sur 32 bits) et la donnée en DRAM dumpée (de longueur entre 2 et 1004 octets)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>8</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>DATABEGPF</mnemo>
+			<description>Début de transfert de données Bord-&gt;Sol venant de LV PF Paquet TM indiquant le nom de la donnée dumpée et la mémoire source</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>10</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>STARTLVC</mnemo>
+			<description>Paquet TM généré au démarrage du LVC, pouvant indiquer la cause du redémarrage</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>11</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>VERSIONLVC</mnemo>
+			<description>Paquet TM Identification des versions LV PF indiquant la version du LVC actif en DRAM + le numéro de la Flash EPROM à partir de laquelle le LVC actif a été chargé + le numéro de la Flash EPROM déclarée secours en FRAM</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>12</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>DATAPRTPF</mnemo>
+			<description>Paquet TM contenant les tronçons (en octets) de données dumpées</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>16</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>DATAENDPF</mnemo>
+			<description>Fin de transfert de données Bord-&gt;Sol venant de LV PF. Paquet TM indiquant la fin de transfert du bord vers le sol et contenant le CRC du transfert.</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>18</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>ACKTRSFPF</mnemo>
+			<description>Fin de transfert de donnée transféré Sol-&gt;Bord venant de LV PF Paquet TM contenant le résultat de la vérification du CRC par le LVC du fichier chargé.</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>19</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>ACKACTABPF</mnemo>
+			<description>Fin de copie de donnée en DRAM LV PF Paquet TM indiquant le nom de la donnée copiée</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>20</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>ACKCPTABPF</mnemo>
+			<description>Fin de copie de donnée en Flash PROM ou FRAM ( LV PF) Paquet TM indiquant le nom de la donnée chargée et le numéro de la mémoire destinataire.</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>22</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>FINAUTTSTPF</mnemo>
+			<description>Fin autotest sur les mémoires flash (LV PF)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>23</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>FINRECONFPF</mnemo>
+			<description>Fin de reconfiguration des mémoires flash (LV PF)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>24</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>DIRLVC</mnemo>
+			<description>Liste des fichiers d'une flash ou DRAM</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>25</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>PLANSURVPF1</mnemo>
+			<description>TM contenant les 75 premières unités de surveillance et de pilotage (classées par ordre alphabétique).  Pour chaque unité on retrouve : nom, état autorisé/inhibé et état activé/désactivé.</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>26</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>UNITSURVPF</mnemo>
+			<description>TM avec le nom de l'unité de surveillance dumpée + le nbre de cellules dans cette unité + par cellule: le nom, le type de surveillance, le type de loi, l état autorisé/inhibé, le filtrage de la surveillance, les seuils bas/haut de surveillance</description>
+			<selecteurs>
+				<selecteur>
+					<valeur>1</valeur>
+					<mnemo>UNITSURPF1</mnemo>
+					<description>Dump d'une unité PF avec une seule surveillance</description>
+				</selecteur>
+				<selecteur>
+					<valeur>2</valeur>
+					<mnemo>UNITSURPF2</mnemo>
+					<description>Dump d'une unité PF avec 2 surveillances</description>
+				</selecteur>
+				<selecteur>
+					<valeur>3</valeur>
+					<mnemo>UNITSURPF3</mnemo>
+					<description>Dump d'une unité PF avec 3 surveillances</description>
+				</selecteur>
+				<selecteur>
+					<valeur>4</valeur>
+					<mnemo>UNITSURPF4</mnemo>
+					<description>Dump d'une unité PF avec 4 surveillances</description>
+				</selecteur>
+				<selecteur>
+					<valeur>5</valeur>
+					<mnemo>UNITSURPF5</mnemo>
+					<description>Dump d'une unité PF avec 5 surveillances</description>
+				</selecteur>
+				<selecteur>
+					<valeur>6</valeur>
+					<mnemo>UNITSURPF6</mnemo>
+					<description>Dump d'une unité PF avec 6 surveillances</description>
+				</selecteur>
+				<selecteur>
+					<valeur>7</valeur>
+					<mnemo>UNITSURPF7</mnemo>
+					<description>Dump d'une unité PF avec 7 surveillances</description>
+				</selecteur>
+			</selecteurs>
+		</APID>
+		<APID>
+			<APID_number>27</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>TMPARTUC</mnemo>
+			<description>Paquet d'acquittement généré lors de l'exécution de la TC CALPARTUC (Remplace le paquet TM MAJTUC)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>28</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>PLANSURVPF2</mnemo>
+			<description>TM contenant les 47 dernières unités de surveillance et de pilotage (classées par ordre alphabétique).  Pour chaque unité on retrouve : nom, état autorisé/inhibé et état activé/désactivé.</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>29</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>TMRECALTUC</mnemo>
+			<description>Paquet d'acquittement généré lors de l'exécution de la TC RECALTUC</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>30</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>ETATRXTX</mnemo>
+			<description>Observation RX et TX ( TX sélectionné et compteurs TC reçues RX1, RX2)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>40</APID_number>
+			<sourceNat>3GENTM</sourceNat>
+			<mnemo>BUFFERLVC</mnemo>
+			<description>Paquet TM regroupant les paramètres du type LGVARTMGNSx et LGTMSENDSST. Cette TM n 'est pas exploitée au sol (paramètres bord internes LVC qui doivent être rattachés à une TM). Il n'existe pas de TC permettant de la générer</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>50</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>TMOBC</mnemo>
+			<description>Paquet contient les informations d'états du FPGA CPU , est généré dans tous les modes satellite,non émis en nominal.</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>51</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>TMOBCROUT</mnemo>
+			<description>Paquet contient les informations d'états du FPGA TM/TC , est généré dans tous les modes satellite,est émis vers le sol en nominal.il est destiné au suivi de routine des état et de la configuration interne de l'OBC.</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>55</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>RECEPTCD</mnemo>
+			<description>Paquet asynchrone généré lors de la réception d'une TCD</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>60</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>OBSERVTM</mnemo>
+			<description>Observabilité de la TM</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>61</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>MESSAGELV</mnemo>
+			<description>TM pour le debug du LVC</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>70</APID_number>
+			<sourceNat>1HTRTM</sourceNat>
+			<mnemo>TEMPERATURE</mnemo>
+			<description>Températures PF et CU</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>80</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>ETATBAT</mnemo>
+			<description>Paquet correspondant à l'état de charge de la batterie</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>82</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>REGULBAT</mnemo>
+			<description>Paquet correspondant à la fonction de régulation batterie par filtrage actif OBC de la tension GS</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>83</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>TMALIM</mnemo>
+			<description>Paquet regroupant toutes les mesures courants, tensions, températures, status du PCDU</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>85</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>PDTPF</mnemo>
+			<description>Paquet TM Etat des plans de travail (Files bord) .</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>86</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>ACKACTPLPF</mnemo>
+			<description>Acquittement d'activation d'un plan de travail</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>87</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>ACKVIDERTM</mnemo>
+			<description>Acquittement d une vidage TM (TC VIDERTM)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>90</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>MASAIT</mnemo>
+			<description>TM fonctionnelle SCAO: Mode MAS données pour AIT</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>91</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>MASEXP</mnemo>
+			<description>TM fonctionnelle SCAO : Mode MAS TM expertise</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>92</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>MASRTE1</mnemo>
+			<description>TM fonctionnelle SCAO : Mode MAS Routine 1</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>93</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>MASRTE2</mnemo>
+			<description>TM fonctionnelle SCAO : Mode MAS Routine 2</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>99</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>MGTAIT</mnemo>
+			<description>TM fonctionnelle SCAO: Mode MGT données pour AIT</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>100</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>MGTEXP</mnemo>
+			<description>TM fonctionnelle SCAO : Mode MGT TM expertise</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>101</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>MGTGUID</mnemo>
+			<description>TM fonctionnelle SCAO : Mode MGT TM guidage</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>102</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>MGTRTE1</mnemo>
+			<description>TM fonctionnelle SCAO : Mode MGTRoutine 1</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>103</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>MNOATTSAT</mnemo>
+			<description>TM fonctionnelle SCAA : Mesures SST datées</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>104</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>SSTDATATION</mnemo>
+			<description>TM fonctionnelle SCAA : datation UTC des mesures SST</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>105</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>PRETSAGE</mnemo>
+			<description>TM fonctionnelle SCAA : Prétraitements des mesures TSAGE</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>106</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>GESTROUEX</mnemo>
+			<description>TM fonctionnelle SCAA : gestion de la roue X</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>107</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>MNOGUID</mnemo>
+			<description>TM fonctionnelle SCAO : Mode MNO TM guidage</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>108</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>MNORTE1</mnemo>
+			<description>TM fonctionnelle SCAA : attitude estimée</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>109</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>MNORTE2</mnemo>
+			<description>TM fonctionnelle SCAA : propulsion</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>110</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>COMBLINACC</mnemo>
+			<description>TM fonctionnelle SCAA : combinaison des mesures T-SAGE</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>150</APID_number>
+			<sourceNat>3LVCTM</sourceNat>
+			<mnemo>IDEASHK</mnemo>
+			<description>TM HK IDEAS</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>200</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>LOWRATE2</mnemo>
+			<description>LowRate ECM ZM : TM basse fréquence</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>201</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>MEDIUMRATE2</mnemo>
+			<description>MediumRate ECM ZM : TM fréquence moyenne</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>202</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>HIGHRATE2</mnemo>
+			<description>HighRate ECM ZM : TM haute fréquence étendue</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>203</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>CALIBRATE2</mnemo>
+			<description>CalibrationReport : requested by the OBC at the end of the Worst case motor calibration time ECM ZM</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>204</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>BOOTREPORT2</mnemo>
+			<description>BootReport ECM ZM : TM utilisée uniquement en BOOT MODE - rapporte toutes les informations concernant le démarrage de l ECM 30 secondes après le boot</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>205</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>MEMDOWNLD2</mnemo>
+			<description>MemoryDonwload ECM ZM : réponse de la TC MemoryDonwload</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>206</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>MEMCHKSUM2</mnemo>
+			<description>MemoryChecksum ECM ZM : TM réponse de la TC GetMemoryChecksumReport</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>207</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>REPORTPARM1</mnemo>
+			<description>ParameterReport ECM ZM (table KEGAINSCHED)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>208</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>REPORTPARM2</mnemo>
+			<description>ParameterReport ECM ZM (table GAIN HYSTER)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>209</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>REPORTPARM3</mnemo>
+			<description>ParameterReport ECM ZM (table PID CONST)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>210</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>LOWRATE1</mnemo>
+			<description>LowRate ECM ZP : TM basse fréquence</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>211</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>MEDIUMRATE1</mnemo>
+			<description>MediumRate ECM ZP : TM fréquence moyenne</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>212</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>HIGHRATE1</mnemo>
+			<description>HighRate ECM ZP : TM haute fréquence étendue</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>213</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>CALIBRATE1</mnemo>
+			<description>CalibrationReport : requested by the OBC at the end of the Worst case motor calibration time ECM ZP</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>214</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>BOOTREPORT1</mnemo>
+			<description>BootReport ECM ZP : TM utilisée uniquement en BOOT MODE - rapporte toutes les informations concernant le démarrage de l ECM 30 secondes après le boot</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>215</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>MEMDOWNLD1</mnemo>
+			<description>MemoryDonwload ECM ZP : réponse de la TC MemoryDonwload</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>216</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>MEMCHKSUM1</mnemo>
+			<description>MemoryChecksum ECM ZP : TM réponse de la TC GetMemoryChecksumReport</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>217</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>REPORTPARP1</mnemo>
+			<description>ParameterReport ECM ZP (table KEGAINSCHED)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>218</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>REPORTPARP2</mnemo>
+			<description>ParameterReport ECM ZP  (table GAIN HYSTER)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>219</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>REPORTPARP3</mnemo>
+			<description>ParameterReport ECM ZP (table PID CONST)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>220</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>REPORTPARM0</mnemo>
+			<description>ParameterReport ECM ZM (table SYST CONFIG)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>223</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>HIGHRATNOM2</mnemo>
+			<description>HighRate ECM ZM : TM haute fréquence nominale</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>224</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>REPORTPARM4</mnemo>
+			<description>ParameterReport ECM ZM (table TEMPKFORCE)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>225</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>REPORTPARM5</mnemo>
+			<description>ParameterReport ECM ZM (table SET PT CONV)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>226</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>REPORTPARM7</mnemo>
+			<description>ParameterReport ECM ZM (table RAMBLACLIST)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>227</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>REPORTPARM6</mnemo>
+			<description>ParameterReport ECM ZM (table FDIR)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>228</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>REPORTPARM8</mnemo>
+			<description>ParameterReport ECM ZM  (table DAC 1)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>230</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>REPORTPARP0</mnemo>
+			<description>ParameterReport ECM ZP (table SYST CONFIG)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>233</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>HIGHRATNOM1</mnemo>
+			<description>HighRate ECM ZP : TM haute fréquence nominale</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>234</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>REPORTPARP4</mnemo>
+			<description>ParameterReport ECM ZP (table TEMPKFORCE)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>235</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>REPORTPARP5</mnemo>
+			<description>ParameterReport ECM ZP (table SET PT CONV)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>236</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>REPORTPARP7</mnemo>
+			<description>ParameterReport ECM ZP (table RAMBLACLIST)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>237</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>REPORTPARP6</mnemo>
+			<description>ParameterReport ECM ZP (table FDIR)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>238</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>REPORTPARP8</mnemo>
+			<description>ParameterReport ECM ZP (table DAC 1)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>400</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>DUMPASW1</mnemo>
+			<description>DumpASW_TM : Dump par pages de 512 octets du code ASW ICU-REF</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>401</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>DUMPASW2</mnemo>
+			<description>DumpASW_TM : Dump par pages de 512 octets du code ASW ICU-EP</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>402</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>DUMPARBO1</mnemo>
+			<description>DumpParam_TM : Dump par bloc des paramètres des lois de commande par défaut stockés en EEPROM ICU-REF</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>403</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>DUMPARBO2</mnemo>
+			<description>DumpParam_TM : Dump par bloc des paramètres des lois de commande par défaut stockés en EEPROM ICU-EP</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>404</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>DUMPARTO1</mnemo>
+			<description>DumpTableParam_TM : Dump complet de tous les paramètres stockés en EEPROM ICU-REF</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>405</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>DUMPARTO2</mnemo>
+			<description>DumpTableParam_TM : Dump complet de tous les paramètres stockés en EEPROM ICU-EP</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>406</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>DUMPARAT1</mnemo>
+			<description>DumpBlocParam_TM : Dump d un bloc de paramètres de la table d attente ICU-REF</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>407</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>DUMPARAT2</mnemo>
+			<description>DumpBlocParam_TM : Dump d un bloc de paramètres de la table d attente ICU-EP</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>408</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>DUMPARCU1</mnemo>
+			<description>DumpBlocParamCourant_TM : Dump d un bloc de paramètres de la table courante ICU-REF</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>409</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>DUMPARCU2</mnemo>
+			<description>DumpBlocParamCourant_TM : Dump d un bloc de paramètres de la table courante ICU-EP</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>410</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>ACCTM1</mnemo>
+			<description>ACC_4Hz : TM Science à 4 Hz ICU-REF</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>411</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>ACCTM2</mnemo>
+			<description>ACC_4Hz : TM Science à 4 Hz ICU-EP</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>412</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>TMHK1</mnemo>
+			<description>TM_HK :TM HouseKeeping à 1 Hz ICU-REF</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>413</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>TMHK2</mnemo>
+			<description>TM_HK :TM HouseKeeping à 1 Hz ICU-EP</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>414</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>AUTOTS1</mnemo>
+			<description>TMAutotest: TM Autotest ICU-REF</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>415</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>AUTOTS2</mnemo>
+			<description>TMAutotest: TM Autotest ICU-EP</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>416</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>SIGNICU1</mnemo>
+			<description>TMSignature : Signature ASW ICU-REF</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>417</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>SIGNICU2</mnemo>
+			<description>TMSignature : Signature ASW ICU-EP</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>418</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>DUMPE2P1</mnemo>
+			<description>DumpEEPROM_TM : Dump d'une zone EEPROM de 40 octets ICU-REF</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>419</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>DUMPE2P2</mnemo>
+			<description>DumpEEPROM_TM : Dump d'une zone EEPROM de 40 octets ICU-EP</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>420</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>DUMPM1</mnemo>
+			<description>DumpSRAM_PM_TM : Dump d'une zone de 60 octets de la RAM PM ICU-REF</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>421</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>DUMPM2</mnemo>
+			<description>DumpSRAM_PM_TM : Dump d'une zone de 60 octets de la RAM PM ICU-EP</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>422</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>DUMDM1</mnemo>
+			<description>DumpSRAM_DM_TM : Dump d'une zone de 40 octets de la RAM DM ICU-REF</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>423</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>DUMDM2</mnemo>
+			<description>DumpSRAM_DM_TM : Dump d'une zone de 40 octets de la RAM DM ICU-EP</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>430</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>TMACKICU1</mnemo>
+			<description>TM d acquittement à une commande de l ICU-REF.</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>431</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>TMACKICU2</mnemo>
+			<description>TM d acquittement à une commande de l ICU-EP</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>495</APID_number>
+			<sourceNat>4SSTTM</sourceNat>
+			<mnemo>ERTAILIMGOP</mnemo>
+			<description>Erreur I2C taille réponse SST lors d une descente d image avec le service IMGOP</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>496</APID_number>
+			<sourceNat>4SSTTM</sourceNat>
+			<mnemo>DATEIMGOP</mnemo>
+			<description>Date d'émission de la dernière TC StoreImage</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>497</APID_number>
+			<sourceNat>4SSTTM</sourceNat>
+			<mnemo>ERRORIMGOP</mnemo>
+			<description>Erreur lors de la reception d'une image SST</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>498</APID_number>
+			<sourceNat>4SSTTM</sourceNat>
+			<mnemo>ENDIMGOP</mnemo>
+			<description>Fin de réception d'une image SST</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>499</APID_number>
+			<sourceNat>4SSTTM</sourceNat>
+			<mnemo>PIMGOP</mnemo>
+			<description>Sorties brutes PIC SST (Image)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>500</APID_number>
+			<sourceNat>4SSTTM</sourceNat>
+			<mnemo>PATTITUDE</mnemo>
+			<description>Sorties brutes PIC SST (Attitude)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>504</APID_number>
+			<sourceNat>4SSTTM</sourceNat>
+			<mnemo>TMHKSST</mnemo>
+			<description>Sorties brutes PIC SST (Housekeeping)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>505</APID_number>
+			<sourceNat>4SSTTM</sourceNat>
+			<mnemo>PIMAGE</mnemo>
+			<description>Sorties brutes PIC SST (Image)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>506</APID_number>
+			<sourceNat>4SSTTM</sourceNat>
+			<mnemo>PMEMDUMP</mnemo>
+			<description>Sorties brutes PIC SST (AscMemoryDumpTM réponse à AscSendMemoryTC)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>507</APID_number>
+			<sourceNat>4SSTTM</sourceNat>
+			<mnemo>PMODE</mnemo>
+			<description>Sorties brutes PIC SST (Mode)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>509</APID_number>
+			<sourceNat>4SSTTM</sourceNat>
+			<mnemo>PSTATREPORT</mnemo>
+			<description>Sorties brutes PIC SST (Status Report)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>510</APID_number>
+			<sourceNat>4SSTTM</sourceNat>
+			<mnemo>ACKMEMSST</mnemo>
+			<description>Fin d'exécution de la TC PATCHLVSST ou de la TC DUMPLVSST de patch ou dump de la mémoire SST</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>561</APID_number>
+			<sourceNat>4SASTM</sourceNat>
+			<mnemo>OUTSASXP</mnemo>
+			<description>Sorties brutes PIC SAS XP (4 x 16 bits)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>562</APID_number>
+			<sourceNat>4SASTM</sourceNat>
+			<mnemo>OUTSASZP</mnemo>
+			<description>Sorties brutes PIC SAS ZP (4 x 16 bits)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>563</APID_number>
+			<sourceNat>4SASTM</sourceNat>
+			<mnemo>OUTSASXM</mnemo>
+			<description>Sorties brutes PIC SAS XM (4 x 16 bits)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>570</APID_number>
+			<sourceNat>4MAGTM</sourceNat>
+			<mnemo>OUTMAG</mnemo>
+			<description>Sorties brutes PIC MAG (3 x 16 bits)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>611</APID_number>
+			<sourceNat>4RWATM</sourceNat>
+			<mnemo>RWXLONG</mnemo>
+			<description>Sorties brutes PIC RW X (38 octets)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>700</APID_number>
+			<sourceNat>5RX1TM</sourceNat>
+			<mnemo>HKRX</mnemo>
+			<description>Housekeeping RX1 et RX2</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>711</APID_number>
+			<sourceNat>5TX1TM</sourceNat>
+			<mnemo>HKTX1</mnemo>
+			<description>Housekeeping TX1</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>712</APID_number>
+			<sourceNat>5TX2TM</sourceNat>
+			<mnemo>HKTX2</mnemo>
+			<description>Housekeeping TX2</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>810</APID_number>
+			<sourceNat>2PCDTM</sourceNat>
+			<mnemo>STSPYRO</mnemo>
+			<description>Paquet de 6 octets généré en réponse à TC de mise à feu pyro (ONPYRO)</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>900</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>SNAVIGPS</mnemo>
+			<description>Provides from GPS system the position and velocity in the ECEF coordinates via a snapshot resolution.</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>901</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>SRECEIVST</mnemo>
+			<description>Provides the status of the GNSS receiver</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>902</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>TMCORTPS</mnemo>
+			<description>Provides the datation of the signals (PPS and PTD) in GPS or Galileo time.</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>903</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>S1RAWD</mnemo>
+			<description>Provides the raw measurements of 3 GNSS channels</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>904</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>S2RAWD</mnemo>
+			<description>Provides the raw measurements of 3 GNSS channels</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>905</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>S3RAWD</mnemo>
+			<description>Provides the raw measurements of 3 GNSS channels</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>907</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>SCHANST</mnemo>
+			<description>Provides channels status</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>908</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>SBOOTST</mnemo>
+			<description>Provides the status of the receiver in the boot mode</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>909</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>ACKWMODE</mnemo>
+			<description>Acknowledgement of WMODE TC</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>910</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>SDUMP</mnemo>
+			<description>Transmits the dump of a memory area in response to a GDUMP TC.</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>911</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>LSTATUS</mnemo>
+			<description>Provides the progress status of the equipment during software upload.</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>912</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>SALEPH</mnemo>
+			<description>Provides an almanac or ephemeris relative to the GPS or Galileo system in response to a GALEPH TC</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>913</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>SNAVOEGPS</mnemo>
+			<description>Provides from the GPS system the position and velocit in the ECEF coordinates</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>914</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>SORBPAR</mnemo>
+			<description>Transmits the orbital parameters of the orbital extrapolator</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>916</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>S1COSDIR</mnemo>
+			<description>Used to provide the direction cosines of the tracked satellites</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>917</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>S2COSDIR</mnemo>
+			<description>Used to provide the direction cosines of the tracked satellites</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>921</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>ACKRALEPH</mnemo>
+			<description>Acknowledgement of RALEPH TC</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>922</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>ACKRATT</mnemo>
+			<description>Acknowledgement of RATT TC</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>923</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>ACKRCACQ</mnemo>
+			<description>Acknowledgement of RCACQ TC</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>924</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>ACKRCANT</mnemo>
+			<description>Acknowledgement of RCANT TC</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>925</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>ACKRCCHAN</mnemo>
+			<description>Acknowledgement of RCCHAN TC</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>926</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>ACKRCCS</mnemo>
+			<description>Acknowledgement of RCCS TC</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>927</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>ACKRCEM</mnemo>
+			<description>Acknowledgement of RCEM TC</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>928</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>ACKRCTR</mnemo>
+			<description>Acknowledgement of RCTR TC</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>929</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>ACKRDAT</mnemo>
+			<description>Acknowledgement of RCDAT TC</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>930</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>ACKRNAV</mnemo>
+			<description>Acknowledgement of RNAV TC</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>931</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>ACKRCOEXORB</mnemo>
+			<description>Acquittement de la TC RCOEXORBIT</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>932</APID_number>
+			<sourceNat>3GPSTM</sourceNat>
+			<mnemo>ACKRCEXTIME</mnemo>
+			<description>Acquittement de la TC RCOEXTIME</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>1455</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>EFLSH</mnemo>
+			<description>Anomalie Gestion bord : Gestion de la mémoire Flash EPROM</description>
+			<selecteurs>
+				<selecteur>
+					<valeur>1</valeur>
+					<mnemo>EFLSHON</mnemo>
+					<description>Flash EPROM restée ON plus de 30 min indiquant le n° de la Flash concernée</description>
+				</selecteur>
+			</selecteurs>
+		</APID>
+		<APID>
+			<APID_number>1457</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>EDRAM</mnemo>
+			<description>Anomalie Fonction DRAM</description>
+			<selecteurs>
+				<selecteur>
+					<valeur>1</valeur>
+					<mnemo>EDRAMBOFF</mnemo>
+					<description>Une banque DRAM est OFF au démarrage du LVC</description>
+				</selecteur>
+				<selecteur>
+					<valeur>2</valeur>
+					<mnemo>EDRAMOFFON</mnemo>
+					<description>Le LVC a redémarré sur mise OFF de la DRAM suite au déclenchement de la surveillance du compteur de cumul des erreurs EDAC.</description>
+				</selecteur>
+			</selecteurs>
+		</APID>
+		<APID>
+			<APID_number>1461</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>EWDG</mnemo>
+			<description>Anomalie Gestion des watchdogs</description>
+			<selecteurs>
+				<selecteur>
+					<valeur>1</valeur>
+					<mnemo>EWDGSURVTSK</mnemo>
+					<description>Erreur pb détecté sur tâche surveillée (surveillance faite par la tâche qui rafraîchit le WatchDog Global)</description>
+				</selecteur>
+			</selecteurs>
+		</APID>
+		<APID>
+			<APID_number>1462</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>EI2C</mnemo>
+			<description>Anomalie lors d'une transaction I2C</description>
+			<selecteurs>
+				<selecteur>
+					<valeur>1</valeur>
+					<mnemo>EI2CTRANS</mnemo>
+					<description>Anomalie lors d'une transaction I2C</description>
+				</selecteur>
+				<selecteur>
+					<valeur>2</valeur>
+					<mnemo>EI2CTAILLE</mnemo>
+					<description>Taille acquisition reçue différente de la taille attendue</description>
+				</selecteur>
+			</selecteurs>
+		</APID>
+		<APID>
+			<APID_number>1464</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>ETIME</mnemo>
+			<description>Anomalie Gestion bord : gestion du temps</description>
+			<selecteurs>
+				<selecteur>
+					<valeur>1</valeur>
+					<mnemo>ETIMERECAL</mnemo>
+					<description>Contrôle de plausibilité NOK de la valeur absolue du paramètre ECARTTUC lors de l exécution de la TC CALPARTUC</description>
+				</selecteur>
+				<selecteur>
+					<valeur>2</valeur>
+					<mnemo>ETIMEINICDT</mnemo>
+					<description>Le calcul des coefficients de l équation de compensation de la dérive de l OCXO n est pas possible car au moins un indicateur de validité de Treception et HBreception est « non valide ».</description>
+				</selecteur>
+				<selecteur>
+					<valeur>3</valeur>
+					<mnemo>ETIMEVALCDT</mnemo>
+					<description>Contrôle de plausibilité NOK lors du calcul des coefficients de l équation de compensation de la dérive de l OCXO.</description>
+				</selecteur>
+				<selecteur>
+					<valeur>4</valeur>
+					<mnemo>ETIMEINICAL</mnemo>
+					<description>Exécution d une TC RECALTUC sans exécution préalable d une TC CALPARTUC</description>
+				</selecteur>
+			</selecteurs>
+		</APID>
+		<APID>
+			<APID_number>1470</APID_number>
+			<sourceNat>4ICUTM</sourceNat>
+			<mnemo>EIFCU</mnemo>
+			<description>TM anomalie d'interface avec TSAGE</description>
+			<selecteurs>
+				<selecteur>
+					<valeur>1</valeur>
+					<mnemo>EIFCUBADTM1</mnemo>
+					<description>Champ taille de l'en-tete TM fournie par l'ICU-REF non conforme</description>
+				</selecteur>
+				<selecteur>
+					<valeur>2</valeur>
+					<mnemo>EIFCUBADAD1</mnemo>
+					<description>Adresse émetteur non conforme dans l'en tete TM fournie par l'ICU-REF</description>
+				</selecteur>
+				<selecteur>
+					<valeur>3</valeur>
+					<mnemo>EIFCUBADRQ1</mnemo>
+					<description>Champ requete de l'en-tete TM fournie par l'ICU-REF non conforme</description>
+				</selecteur>
+				<selecteur>
+					<valeur>4</valeur>
+					<mnemo>EIFCUNACK1</mnemo>
+					<description>Non acquittement de la dernière commande ICU-REF (NACK envoyé par l'ICU)</description>
+				</selecteur>
+				<selecteur>
+					<valeur>5</valeur>
+					<mnemo>EIFCUBADTM2</mnemo>
+					<description>Champ taille de l'en-tete TM fournie par l'ICU-EP non conforme</description>
+				</selecteur>
+				<selecteur>
+					<valeur>6</valeur>
+					<mnemo>EIFCUBADAD2</mnemo>
+					<description>Adresse émetteur non conforme dans l'en tete TM fournie par l'ICU-EP</description>
+				</selecteur>
+				<selecteur>
+					<valeur>7</valeur>
+					<mnemo>EIFCUBADRQ2</mnemo>
+					<description>Champ requete de l en-tete TM fournie par l ICU-EP non conforme</description>
+				</selecteur>
+				<selecteur>
+					<valeur>8</valeur>
+					<mnemo>EIFCUNACK2</mnemo>
+					<description>Non acquittement de la dernière commande ICU-EP (NACK envoyé par l'ICU)</description>
+				</selecteur>
+				<selecteur>
+					<valeur>9</valeur>
+					<mnemo>EIFCUNORP1</mnemo>
+					<description>Pas de réponse reçue à la dernière commande envoyée à l'ICU REF</description>
+				</selecteur>
+				<selecteur>
+					<valeur>10</valeur>
+					<mnemo>EIFCUNORP2</mnemo>
+					<description>Pas de réponse reçue à la dernière commande envoyée à l'ICU EP</description>
+				</selecteur>
+			</selecteurs>
+		</APID>
+		<APID>
+			<APID_number>1472</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>EGNSS</mnemo>
+			<description>Non réception TM suite à envoi d'une TC vers le récepteur GNSS</description>
+			<selecteurs>
+				<selecteur>
+					<valeur>1</valeur>
+					<mnemo>EGNSSDIAL</mnemo>
+					<description>Anomalie dialogue récepteur GNNS</description>
+				</selecteur>
+				<selecteur>
+					<valeur>2</valeur>
+					<mnemo>EGNSSVAL</mnemo>
+					<description>Anomalie validité des mesures récepteur GNSS</description>
+				</selecteur>
+			</selecteurs>
+		</APID>
+		<APID>
+			<APID_number>1473</APID_number>
+			<sourceNat>3THRTM</sourceNat>
+			<mnemo>EECM</mnemo>
+			<description>Anomalie communication ECM</description>
+			<selecteurs>
+				<selecteur>
+					<valeur>3</valeur>
+					<mnemo>EECMDIAL1</mnemo>
+					<description>Erreur de dialogue et/ou mesures figées ECm ZP</description>
+				</selecteur>
+				<selecteur>
+					<valeur>4</valeur>
+					<mnemo>EECMDIAL2</mnemo>
+					<description>Erreur de dialogue et/ou mesures figées ECM ZM</description>
+				</selecteur>
+				<selecteur>
+					<valeur>5</valeur>
+					<mnemo>EECMT2SAT1</mnemo>
+					<description>Saturation débit type 2 ECM ZP</description>
+				</selecteur>
+				<selecteur>
+					<valeur>6</valeur>
+					<mnemo>EECMT2SAT2</mnemo>
+					<description>Saturation débit type 2 ECM ZM</description>
+				</selecteur>
+				<selecteur>
+					<valeur>7</valeur>
+					<mnemo>EECMT1SAT1</mnemo>
+					<description>Saturation débit type 1 ECM ZP</description>
+				</selecteur>
+				<selecteur>
+					<valeur>8</valeur>
+					<mnemo>EECMT1SAT2</mnemo>
+					<description>Saturation débit type 1 ECM ZM</description>
+				</selecteur>
+			</selecteurs>
+		</APID>
+		<APID>
+			<APID_number>1480</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>EIFTC</mnemo>
+			<description>Anomalie Gestion bord : Interface TC</description>
+			<selecteurs>
+				<selecteur>
+					<valeur>2</valeur>
+					<mnemo>EIFTCCRCFPG</mnemo>
+					<description>Trame TC reçue incorrecte du FPGA avec Pb CRC fourni par le FPGA</description>
+				</selecteur>
+				<selecteur>
+					<valeur>3</valeur>
+					<mnemo>EIFTCCRCLV</mnemo>
+					<description>Trame TC reçue incorrecte du FPGA avec Pb CRC recalculé par le LVC</description>
+				</selecteur>
+				<selecteur>
+					<valeur>4</valeur>
+					<mnemo>EIFTCFARMCO</mnemo>
+					<description>Trame TC reçue incorrecte du FPGA avec Pb FARM compteur de trame</description>
+				</selecteur>
+				<selecteur>
+					<valeur>5</valeur>
+					<mnemo>EIFTCFARMLK</mnemo>
+					<description>Trame TC rejetée car FARM lock-out</description>
+				</selecteur>
+				<selecteur>
+					<valeur>6</valeur>
+					<mnemo>EIFTCMAPID</mnemo>
+					<description>MAP ID inconnu</description>
+				</selecteur>
+				<selecteur>
+					<valeur>7</valeur>
+					<mnemo>EIFTCTRAME</mnemo>
+					<description>Erreur sur le header de trame TC CCSDS (autre que : valeur du compteur de trame non attendue)</description>
+				</selecteur>
+				<selecteur>
+					<valeur>9</valeur>
+					<mnemo>EIFTCPAQU</mnemo>
+					<description>Erreur sur le Header de trame TC CCSDS :1- incohérence longueur de paquet, 2- valeur non prévue pour version number + type indicator,3- valeur non prévue pour sequence flag + original sequence counter,4- autre erreur</description>
+				</selecteur>
+			</selecteurs>
+		</APID>
+		<APID>
+			<APID_number>1482</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>ETTC</mnemo>
+			<description>Anomalie Gestion bord : Chaine TTC</description>
+			<selecteurs>
+				<selecteur>
+					<valeur>1</valeur>
+					<mnemo>ETTCRXBREAK</mnemo>
+					<description>Détection signal « break » sur liaison série Rx indiquant n° Rx</description>
+				</selecteur>
+				<selecteur>
+					<valeur>2</valeur>
+					<mnemo>ETTCRXLEC</mnemo>
+					<description>Echec lecture registre Rx (suivi par basculement PIC TMD) indiquant n° Rx</description>
+				</selecteur>
+				<selecteur>
+					<valeur>3</valeur>
+					<mnemo>ETTCTXLEC</mnemo>
+					<description>Echec lecture registre Tx (suivi par basculement PIC TMD) indiquant n° Tx</description>
+				</selecteur>
+			</selecteurs>
+		</APID>
+		<APID>
+			<APID_number>1485</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>ETC</mnemo>
+			<description>Anomalie Fonction TC</description>
+			<selecteurs>
+				<selecteur>
+					<valeur>1</valeur>
+					<mnemo>ETCMODEINOK</mnemo>
+					<description>TC immédiate non exécutable dans le mode en cours</description>
+				</selecteur>
+				<selecteur>
+					<valeur>2</valeur>
+					<mnemo>ETCMODETNOK</mnemo>
+					<description>TC time-tagged arrivée à échéance et inconnue ou non exécutable dans le mode en cours</description>
+				</selecteur>
+				<selecteur>
+					<valeur>3</valeur>
+					<mnemo>ETCBLACTPDT</mnemo>
+					<description>Erreur sur TC d'activation PdT : file bloquée , PdT supprimé suite à cette erreur</description>
+				</selecteur>
+				<selecteur>
+					<valeur>4</valeur>
+					<mnemo>ETCVOACTPDT</mnemo>
+					<description>Erreur sur TC d'activation PdT indiquant le PdT concerné, le volume disponible et le volume requis par le PdT : espace libre insuffisant , PdT supprimé suite à cette erreur</description>
+				</selecteur>
+				<selecteur>
+					<valeur>5</valeur>
+					<mnemo>ETCDATENOK</mnemo>
+					<description>Date TC time-tagged détectée invalide à réception (dans le futur mais trop proche de la date courante, ou déjà passée) indiquant l'ID et l'APID de la TC, le PdT concerné et les heures TUC_bord et TUC_sol</description>
+				</selecteur>
+				<selecteur>
+					<valeur>6</valeur>
+					<mnemo>ETCHORSPDT</mnemo>
+					<description>TC time-tagged ou TC fin de PdT reçue en dehors d'un PdT</description>
+				</selecteur>
+				<selecteur>
+					<valeur>7</valeur>
+					<mnemo>ETCIDPDT</mnemo>
+					<description>ID file PdT inexistant dans une TC début PdT, fin PdT ou activer PdT, ou TC début PdT avec nombre de TC annoncé à zéro</description>
+				</selecteur>
+				<selecteur>
+					<valeur>8</valeur>
+					<mnemo>ETCFINPDT</mnemo>
+					<description>Id. PdT dans TC fin PdT, incohérent avec id. dans TC deb. PdT (le buffer de réception du PdT d'id. donné par la TC fin PdT est ré-initialisé suite à cette erreur)</description>
+				</selecteur>
+				<selecteur>
+					<valeur>9</valeur>
+					<mnemo>ETCNCACTPDT</mnemo>
+					<description>TC activer PdT alors qu'une unité de PdT est en cours de chargement (pour le même PdT ou pour un autre)</description>
+				</selecteur>
+				<selecteur>
+					<valeur>10</valeur>
+					<mnemo>ETCNBTCPDT</mnemo>
+					<description>Sur TC fin PdT nombre de TCs reçu différent du nombre de TCs attendu donné dans TC deb PdT(l'unité de PdT chargée est supprimé suite à cette erreur)</description>
+				</selecteur>
+				<selecteur>
+					<valeur>11</valeur>
+					<mnemo>ETCDEBPDT</mnemo>
+					<description>Réception d'une TC deb. PdT en cours de réception d'une unité de PdT (le buffer de réception du PdT d'id. donné par la TC deb. PdT est ré-initialisé suite à cette erreur)</description>
+				</selecteur>
+				<selecteur>
+					<valeur>12</valeur>
+					<mnemo>ETCIDTAB</mnemo>
+					<description>Identité table/fichier inconnue, ou non chargée en RAM</description>
+				</selecteur>
+				<selecteur>
+					<valeur>13</valeur>
+					<mnemo>ETCDEBTAB</mnemo>
+					<description>Réception d'une TC début transfert en cours de réception d'une table/fichier</description>
+				</selecteur>
+				<selecteur>
+					<valeur>14</valeur>
+					<mnemo>ETCHORSTAB</mnemo>
+					<description>TC tronçon table/fichier reçue en dehors transfert</description>
+				</selecteur>
+				<selecteur>
+					<valeur>15</valeur>
+					<mnemo>ETCCRCTAB</mnemo>
+					<description>CRC table/fichier reçu NOK , indiquant le CRC attendu, le CRC calculé et la table concernée</description>
+				</selecteur>
+				<selecteur>
+					<valeur>16</valeur>
+					<mnemo>ETCARGTC</mnemo>
+					<description>Erreur sur les arguments de la TC :1- taille totale de la TC insuffisant (arguments non trouvés), 2- taille totale de la TC trop grande (plus de données que nécessaire), 3- valeur argument invalide (hors fourchette).</description>
+				</selecteur>
+				<selecteur>
+					<valeur>17</valeur>
+					<mnemo>ETCEXECTC</mnemo>
+					<description>Erreur en cours d'exécution d'une TC</description>
+				</selecteur>
+				<selecteur>
+					<valeur>18</valeur>
+					<mnemo>ETCRETARDEX</mnemo>
+					<description>Exécution d'une TC time-tagged avec un retard supérieur au seuil prévu, indiquant l'ID/APID de la TC, le TUC_sol et le TUC effectif d'exécution TC</description>
+				</selecteur>
+				<selecteur>
+					<valeur>19</valeur>
+					<mnemo>ETCIDTC</mnemo>
+					<description>APID/ID inconnu</description>
+				</selecteur>
+				<selecteur>
+					<valeur>20</valeur>
+					<mnemo>ETCINCPDT</mnemo>
+					<description>Réception d'une TC activer PdT alors qu'il n'existe pas de PdT complet en attente d'activation</description>
+				</selecteur>
+				<selecteur>
+					<valeur>21</valeur>
+					<mnemo>ETCCOMPDT</mnemo>
+					<description>Taille du PdT en cours de réception incompatible avec taille du buffer de réception</description>
+				</selecteur>
+				<selecteur>
+					<valeur>22</valeur>
+					<mnemo>ETCINCTAB</mnemo>
+					<description>Réception d'une TC activer Table alors qu'il n'existe pas de Table en attente d'activation</description>
+				</selecteur>
+				<selecteur>
+					<valeur>23</valeur>
+					<mnemo>ETCTAILTAB</mnemo>
+					<description>Taille Table/Fichier reçu incompatible avec taille Table/Fichier telle que connue à bord par le LVC</description>
+				</selecteur>
+				<selecteur>
+					<valeur>24</valeur>
+					<mnemo>ETCFICH</mnemo>
+					<description>Erreur de gestion des fichiers bord, indiquant la mémoire concernée Flash1, 2, 3, DRAM), l'Id du fichier le code erreur et le code de la fonction concernée</description>
+				</selecteur>
+				<selecteur>
+					<valeur>25</valeur>
+					<mnemo>ETCINVTAB</mnemo>
+					<description>Contenu d'une table/fichier fonctionnellement invalide, venant du sol (exemple : unité de surveillance), ou d'une Flash au démarrage du LVC (erreur de lecture)</description>
+				</selecteur>
+				<selecteur>
+					<valeur>26</valeur>
+					<mnemo>ETCINVPDT</mnemo>
+					<description>Contenu d'un PdT (file bord) trouvé erroné (pointeur hors file) lors de son utilisation par le LVC (la file est alors vidée et bloquée)</description>
+				</selecteur>
+			</selecteurs>
+		</APID>
+		<APID>
+			<APID_number>1490</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>ETM</mnemo>
+			<description>Anomalie Fonction TM</description>
+			<selecteurs>
+				<selecteur>
+					<valeur>1</valeur>
+					<mnemo>ETMINVDIAG</mnemo>
+					<description>Demande invalide de TM diagnostic : aucun des 2 lots de TM diagnostic n'est complet</description>
+				</selecteur>
+				<selecteur>
+					<valeur>2</valeur>
+					<mnemo>ETMERRPTM</mnemo>
+					<description>Erreur pointeur espace TM OBC</description>
+				</selecteur>
+			</selecteurs>
+		</APID>
+		<APID>
+			<APID_number>1495</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>EAQCM</mnemo>
+			<description>Anomalie Acquisitions Commandes sur bus I2C</description>
+			<selecteurs>
+				<selecteur>
+					<valeur>1</valeur>
+					<mnemo>EAQCMFDIR1</mnemo>
+					<description>Déclenchement FDIR PIC 1er niveau</description>
+				</selecteur>
+				<selecteur>
+					<valeur>2</valeur>
+					<mnemo>EAQCMFDIR2</mnemo>
+					<description>Déclenchement FDIR PIC 2ème niveau</description>
+				</selecteur>
+			</selecteurs>
+		</APID>
+		<APID>
+			<APID_number>1500</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>EMOD</mnemo>
+			<description>Anomalie Fonction Gestion des modes satellite</description>
+			<selecteurs>
+				<selecteur>
+					<valeur>1</valeur>
+					<mnemo>EMODCRCTIED</mnemo>
+					<description>Partie du contexte tiède DRAM contrôlée non intègre au démarrage</description>
+				</selecteur>
+				<selecteur>
+					<valeur>2</valeur>
+					<mnemo>EMODCTXVRAI</mnemo>
+					<description>Invraisemblance sur contexte FRAM apériodique (conduisant à utilisation des valeurs par défaut)</description>
+				</selecteur>
+				<selecteur>
+					<valeur>3</valeur>
+					<mnemo>EMODCRCFRAM</mnemo>
+					<description>1 ou les 2 CRC lus dans une ou les 2 FRAM est erroné : 1=FRAM1, 2=FRAM2, 3=FRAM1 &amp; 2</description>
+				</selecteur>
+			</selecteurs>
+		</APID>
+		<APID>
+			<APID_number>1510</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>ESCAO</mnemo>
+			<description>Anomalies Fonction SCAO</description>
+			<selecteurs>
+				<selecteur>
+					<valeur>1</valeur>
+					<mnemo>ESCAOECAMAG</mnemo>
+					<description>Anomalie sur écart entre champ magnétique de consigne et champ magnétique mesuré en MGT</description>
+				</selecteur>
+				<selecteur>
+					<valeur>2</valeur>
+					<mnemo>ESCAOMPSSAT</mnemo>
+					<description>Anomalie saturation MPS en MSP/MCA</description>
+				</selecteur>
+				<selecteur>
+					<valeur>3</valeur>
+					<mnemo>ESCAOECAQUT</mnemo>
+					<description>Anomalie sur écart entre le quaternion d'attitude de consigne et celui du satellite mesuré en MSP/MCA</description>
+				</selecteur>
+				<selecteur>
+					<valeur>4</valeur>
+					<mnemo>ESCAODERVDI</mnemo>
+					<description>Anomalie sur la dérivée du champ magnétique (Bpoint) en MGT</description>
+				</selecteur>
+				<selecteur>
+					<valeur>5</valeur>
+					<mnemo>ESCAOITSAGE</mnemo>
+					<description>Anomalie validité TSAGE en MCA</description>
+				</selecteur>
+				<selecteur>
+					<valeur>6</valeur>
+					<mnemo>ESCAODIASST</mnemo>
+					<description>Anomalie de dialogue avec le SST (écart de date trop important): 1=NOK / 0=OK</description>
+				</selecteur>
+				<selecteur>
+					<valeur>7</valeur>
+					<mnemo>ESCAOVALQUT</mnemo>
+					<description>Anomalie sur disponibilité mesures SST en MSP/MCA</description>
+				</selecteur>
+				<selecteur>
+					<valeur>8</valeur>
+					<mnemo>ESCAOPANMAG</mnemo>
+					<description>Anomalie sur champ magnétique terrestre mesuré en MAS</description>
+				</selecteur>
+				<selecteur>
+					<valeur>9</valeur>
+					<mnemo>ESCAOVITREA</mnemo>
+					<description>Anomalie RWX en MAS entre le moment cinétique commandé et le moment cinétique mesuré</description>
+				</selecteur>
+				<selecteur>
+					<valeur>10</valeur>
+					<mnemo>ESCAOBLICU1</mnemo>
+					<description>Anomalie blocage ICU1 en MCA</description>
+				</selecteur>
+				<selecteur>
+					<valeur>11</valeur>
+					<mnemo>ESCAOBLICU2</mnemo>
+					<description>Anomalie blocage ICU2 en MCA</description>
+				</selecteur>
+				<selecteur>
+					<valeur>12</valeur>
+					<mnemo>ESCAOVITRAM</mnemo>
+					<description>Anomalie vitesse roue X après les rampes Spin up/down</description>
+				</selecteur>
+				<selecteur>
+					<valeur>13</valeur>
+					<mnemo>ESCAOTEMSST</mnemo>
+					<description>Anomalie sur 1 des 4 températures du SST (CCD1, CCD2, CPU, SMPS)</description>
+				</selecteur>
+				<selecteur>
+					<valeur>14</valeur>
+					<mnemo>ESCAOMODERW</mnemo>
+					<description>Anomalie sur le mode RW en MAS/MGT2</description>
+				</selecteur>
+				<selecteur>
+					<valeur>16</valeur>
+					<mnemo>ESCAOHBTSAG</mnemo>
+					<description>Anomalie hybridation TSAGE en MCA</description>
+				</selecteur>
+				<selecteur>
+					<valeur>17</valeur>
+					<mnemo>ESCAOMCFRW</mnemo>
+					<description>Mode roue incorrest à l'issue de la procédure de mise en configuration opérationnelle</description>
+				</selecteur>
+				<selecteur>
+					<valeur>18</valeur>
+					<mnemo>ESCAOVDSAG1</mnemo>
+					<description>Anomalie perte d'asservissement ICU1 en MCA</description>
+				</selecteur>
+				<selecteur>
+					<valeur>19</valeur>
+					<mnemo>ESCAOVDSAG2</mnemo>
+					<description>Anomalie perte d'asservissement ICU2 en MCA</description>
+				</selecteur>
+			</selecteurs>
+		</APID>
+		<APID>
+			<APID_number>1520</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>EALIM</mnemo>
+			<description>Anomalie Fonction Alimentation</description>
+			<selecteurs>
+				<selecteur>
+					<valeur>1</valeur>
+					<mnemo>EALIMLCL1</mnemo>
+					<description>Anomalie sur 1ère vérification lors de la procédure sécurisée de commutation LCL indiquant la BNR et l'action ON ou OFF concernées</description>
+				</selecteur>
+				<selecteur>
+					<valeur>2</valeur>
+					<mnemo>EALIMLCL2</mnemo>
+					<description>Anomalie sur 2ème vérification lors de la procédure sécurisée de commutation LCL indiquant la BNR et l'action ON ou OFF concernées</description>
+				</selecteur>
+				<selecteur>
+					<valeur>3</valeur>
+					<mnemo>EALIMUVD1</mnemo>
+					<description>Charge batterie inférieure au seuil1 (délestage CU)</description>
+				</selecteur>
+				<selecteur>
+					<valeur>4</valeur>
+					<mnemo>EALIMUVD2</mnemo>
+					<description>Charge batterie inférieure au seuil2 (MSV1)</description>
+				</selecteur>
+				<selecteur>
+					<valeur>5</valeur>
+					<mnemo>EALIMS520RX</mnemo>
+					<description>Etat ON du 5V ou 20V de la roue X non conforme</description>
+				</selecteur>
+				<selecteur>
+					<valeur>9</valeur>
+					<mnemo>EALIMPERMRX</mnemo>
+					<description>Etat OFF permanent du 5V et/ou 20V de la roue X</description>
+				</selecteur>
+			</selecteurs>
+		</APID>
+		<APID>
+			<APID_number>1525</APID_number>
+			<sourceNat>8GENTM</sourceNat>
+			<mnemo>ETHER</mnemo>
+			<description>Anomalie Fonction Contrôle Thermique</description>
+			<selecteurs>
+				<selecteur>
+					<valeur>1</valeur>
+					<mnemo>ETHERBAT1</mnemo>
+					<description>Déclenchement surveillance température 1 batterie</description>
+				</selecteur>
+				<selecteur>
+					<valeur>2</valeur>
+					<mnemo>ETHERBAT2</mnemo>
+					<description>Déclenchement surveillance température 2 batterie</description>
+				</selecteur>
+				<selecteur>
+					<valeur>3</valeur>
+					<mnemo>ETHERPDU</mnemo>
+					<description>Déclenchement surveillance température panneau ZPF par PCDU</description>
+				</selecteur>
+				<selecteur>
+					<valeur>4</valeur>
+					<mnemo>ETHERROUE</mnemo>
+					<description>Déclenchement surveillance temperature panneau -Y PF (IF roue -Y)</description>
+				</selecteur>
+				<selecteur>
+					<valeur>5</valeur>
+					<mnemo>ETHERSSTYP1</mnemo>
+					<description>Déclenchement surveillance temperature TRP tete optique SST +Y/-Z capteur 1</description>
+				</selecteur>
+				<selecteur>
+					<valeur>6</valeur>
+					<mnemo>ETHERSSTYP2</mnemo>
+					<description>Déclenchement surveillance temperature TRP tete optique SST +Y/-Z capteur 2</description>
+				</selecteur>
+				<selecteur>
+					<valeur>7</valeur>
+					<mnemo>ETHERSSTYM1</mnemo>
+					<description>Déclenchement surveillance temperature TRP tete optique SST -Y/+Z capteur 1</description>
+				</selecteur>
+				<selecteur>
+					<valeur>8</valeur>
+					<mnemo>ETHERSSTYM2</mnemo>
+					<description>Déclenchement surveillance temperature TRP tete optique SST +Y/-Z capteur 2</description>
+				</selecteur>
+				<selecteur>
+					<valeur>9</valeur>
+					<mnemo>ETHERECMZP1</mnemo>
+					<description>Déclenchement surveillance temperature TRP ECM +Z (capteur 1)</description>
+				</selecteur>
+				<selecteur>
+					<valeur>10</valeur>
+					<mnemo>ETHERECMZP2</mnemo>
+					<description>Déclenchement surveillance temperature TRP ECM +Z (capteur 2)</description>
+				</selecteur>
+				<selecteur>
+					<valeur>11</valeur>
+					<mnemo>ETHERECMZM1</mnemo>
+					<description>Déclenchement surveillance temperature TRP ECM -Z (capteur 1)</description>
+				</selecteur>
+				<selecteur>
+					<valeur>12</valeur>
+					<mnemo>ETHERECMZM2</mnemo>
+					<description>Déclenchement surveillance temperature TRP ECM -Z (capteur 2)</description>
+				</selecteur>
+				<selecteur>
+					<valeur>13</valeur>
+					<mnemo>ETHERICUME1</mnemo>
+					<description>Déclenchement surveillance temperature TRP ICUME (capteur 1)</description>
+				</selecteur>
+				<selecteur>
+					<valeur>14</valeur>
+					<mnemo>ETHERICUME2</mnemo>
+					<description>Déclenchement surveillance temperature TRP ICUME (capteur 2)</description>
+				</selecteur>
+				<selecteur>
+					<valeur>15</valeur>
+					<mnemo>ETHERFEEUEP</mnemo>
+					<description>Déclenchement surveillance temperature TRP FEEU EP</description>
+				</selecteur>
+				<selecteur>
+					<valeur>16</valeur>
+					<mnemo>ETHERFEEURF</mnemo>
+					<description>Déclenchement surveillance temperature TRP FEEU REF</description>
+				</selecteur>
+				<selecteur>
+					<valeur>17</valeur>
+					<mnemo>ETHERMTOFZM</mnemo>
+					<description>Déclenchement surveillance temperature MT ZM OFF</description>
+				</selecteur>
+				<selecteur>
+					<valeur>18</valeur>
+					<mnemo>ETHERMTOFZP</mnemo>
+					<description>Déclenchement surveillance temperature MT ZP OFF</description>
+				</selecteur>
+				<selecteur>
+					<valeur>19</valeur>
+					<mnemo>ETHERMTONZM</mnemo>
+					<description>Déclenchement surveillance temperature MT ZM ON</description>
+				</selecteur>
+				<selecteur>
+					<valeur>20</valeur>
+					<mnemo>ETHERMTONZP</mnemo>
+					<description>Déclenchement surveillance temperature MT ZP ON</description>
+				</selecteur>
+				<selecteur>
+					<valeur>21</valeur>
+					<mnemo>ETHERSURVB1</mnemo>
+					<description>Déclenchement surveillance température batterie (capteur 1) pour passage en survie</description>
+				</selecteur>
+				<selecteur>
+					<valeur>22</valeur>
+					<mnemo>ETHERSURVB2</mnemo>
+					<description>Déclenchement surveillance température batterie (capteur 2) pour passage en survie</description>
+				</selecteur>
+			</selecteurs>
+		</APID>
+		<APID>
+			<APID_number>2000</APID_number>
+			<sourceNat>8STARM</sourceNat>
+			<mnemo>ACKRC</mnemo>
+			<description>Paquet acquittement RC TTCET</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>2002</APID_number>
+			<sourceNat>8ETSRM</sourceNat>
+			<mnemo>TTCETRM</mnemo>
+			<description>RM TTCET</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>2039</APID_number>
+			<sourceNat>2OMBRM</sourceNat>
+			<mnemo>ACKRCBOMB</mnemo>
+			<description>Ack RC inspire de jason pour la baie omb</description>
+			<selecteurs/>
+		</APID>
+		<APID>
+			<APID_number>2040</APID_number>
+			<sourceNat>2OMBRM</sourceNat>
+			<mnemo>BOMB</mnemo>
+			<description>RM pour la BOMB</description>
+			<selecteurs/>
+		</APID>
+	</APID_description>
+</apidDescription>

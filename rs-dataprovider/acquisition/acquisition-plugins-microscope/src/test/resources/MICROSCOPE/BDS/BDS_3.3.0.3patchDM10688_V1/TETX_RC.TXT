@@ -1,0 +1,5 @@
+#BEGIN_OF_FILE
+#Copyright BDMS 2006
+#TETX_RC.TXT#	3.3	0	3	19/10/16
+#Myriade - Microscope	MYRIADE		V3.3.0.3	Extracteur_CC V2.8.1
+#END_OF_FILE

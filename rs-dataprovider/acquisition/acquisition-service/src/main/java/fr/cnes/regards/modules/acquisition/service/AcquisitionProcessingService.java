@@ -671,10 +671,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             }
         }
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Validation of {} file(s) finished with {} valid and {} invalid.", page.getNumberOfElements(),
-                         validFiles.size(), page.getNumberOfElements() - validFiles.size());
-        }
+        LOGGER.debug("Validation of {} file(s) finished with {} valid and {} invalid.", page.getNumberOfElements(),
+                     validFiles.size(), page.getNumberOfElements() - validFiles.size());
 
         // Build and schedule products
         Set<Product> products = productService.linkAcquisitionFilesToProducts(processingChain, validFiles);

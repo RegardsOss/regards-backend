@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<donnees xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <donnee dummyid="204942" xsi:type="fr.cnes.sag.ui.model.specifique.CCCBDS"
+            importPath="BDS/2016/10/BDS_3.3.0.3patchDM10688_V1">
+        <id>204942</id>
+        <idExterne>BDS_3.3.0.3patchDM10688</idExterne>
+        <motsCles/>
+        <commentaire/>
+        <dateCreation>27/10/2016 16:31:02.303</dateCreation>
+        <dateDernierAcces>23/05/2018 07:37:41.337</dateDernierAcces>
+        <estValide>true</estValide>
+        <estEnLigne>true</estEnLigne>
+        <importLien>false</importLien>
+        <version>1</version>
+        <estDerniereVersion>true</estDerniereVersion>
+        <estVerrouillee>false</estVerrouillee>
+        <purgePartielle>false</purgePartielle>
+        <dateArchivage/>
+        <datePurgePrevue>21/08/2018 07:37:41.337</datePurgePrevue>
+        <datePurgeEffective/>
+        <proprietaire>donnyc</proprietaire>
+        <cheminDansCatalogue>BDS/2016/10/BDS_3.3.0.3patchDM10688_V1</cheminDansCatalogue>
+        <nomFichierDonnee/>
+        <typeDonnee>CCCBDS</typeDonnee>
+        <md5Check>6ae353a110a8f761bab90bf2432f73a7</md5Check>
+        <svnDirName>V3.3.0.3patchDM10688/</svnDirName>
+        <versionCECT>3.3.0.3patchDM10688</versionCECT>
+        <lastBds>true</lastBds>
+        <deliveryStatus>NOT_DELIVERED</deliveryStatus>
+    </donnee>
+</donnees>

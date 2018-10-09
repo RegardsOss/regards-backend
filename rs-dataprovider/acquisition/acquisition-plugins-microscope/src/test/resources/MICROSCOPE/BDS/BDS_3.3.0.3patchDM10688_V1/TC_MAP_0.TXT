@@ -1,0 +1,56 @@
+#BEGIN_OF_FILE
+#Copyright BDMS 2006
+#TC_MAP_0.TXT#	3.3	0	3	19/10/16
+#Myriade - Microscope	MYRIADE		V3.3.0.3	Extracteur_CC V2.8.1
+1	BASCOCXO	8GEN	TC	Basculer d OCXO [visibilite de l OCXO utilise dans la TMD] [code TCD  47]	0	OK			0	N
+2	16	4700h
+6	Le PIC de reprise bascule d OCXO, le Ndeg d OCXO utilise est dans la TMD,le compteur heure bord est legerement perturbe.
+1	BASCREP	8GEN	TC	Basculer de PIC de reprise [code TCD  57]	0	OK			0	N
+2	16	5700h
+6	Basculement du PIC de reprise [transparent au LV]
+1	BASCTMD	8GEN	TC	Basculer de PIC de TMD [code TCD  67]	0	OK			0	N
+2	16	6700h
+6	Basculement de PIC TMD [sans effet sur le LV]
+1	CONFPGA1	8GEN	TC	Reconfiguration du FPGA [code TCD  B7]	0	OK			0	N
+2	16	B700h
+6	Le PIC de reprise reconfigure le FPGA avec , Rythme bas = 25kbits, Mode TM en module, avec scrambling, avec reed-solomon
+1	CONFPGA2	8GEN	TC	Reconfiguration du FPGA [code TCD  C7]	0	OK			0	N
+2	16	C700h
+6	Le PIC de reprise reconfigure le FPGA avec , Rythme bas = 25kbits, Mode TM en module, sans scrambling, sans reed-solomon
+1	CONFPGA3	8GEN	TC	Reconfiguration du FPGA [code TCD  D7]	0	OK			0	N
+2	16	D700h
+6	Le PIC de reprise reconfigure le FPGA avec , Rythme bas = 25kbits, Mode TM en porteuse pure
+1	EXECSCR1	8GEN	TC	Le PIC REP execute le script Ndeg1 [code TCD  77], il definit une procedure specif	0	OK			0	Y
+2	16	7700h
+6	Le PIC de reprise execute le script Ndeg1 charge dans le PIC, Par securite, ce script devra etre charge dans le firmware du PIC valide au plus tard en fin d integration satellite
+1	EXECSCR2	8GEN	TC	Le PIC REP execute le script Ndeg2 [code TCD  87], il definit une procedure specif	0	OK			0	N
+2	16	8700h
+6	Le PIC de reprise execute le script Ndeg2 charge dans le PIC, Par securite, ce script devra etre charge dans le firmware du PIC valide au plus tard en fin d integration satellite
+1	HELLOOBC	8GEN	TC	Pour obtenir une reponse de l OBC [code TCD  E7]	0	OK			0	N
+2	16	E700h
+6	Le PIC REP mettra a disposition dans la HKTM-D, un octet incremente,dans la mesure « TMPICREP » de la HKTM-D .Sur DEMETER cette TCD met OFF les emetteurs.[Anomalie repertoriee].
+1	OFFEMET12	8GEN	TC	Mise a OFF des 2 emetteurs [code TCD  F7]	0	OK			0	N
+2	16	F700h
+6	Le PIC REP met a OFF les 2 emetteurs
+1	OFFONCPU	8GEN	TC	OFF/ON CPU [T805 et DRAM]. perte de donnees DRAM [code TCD  27]	0	OK			0	N
+2	16	2700h
+6	Le PIC REP fait un reset FDP, reset FPGA et OFF/ON du T805 et des DRAM [perte des donnees DRAM]. Reprise a froid du LV [survie].
+1	OFFONCV2	8GEN	TC	OFF/ON CPU general avec basculement alimentation [code TCD  37]	0	OK			0	N
+2	16	3700h
+6	Le PIC REP fait OFF/ON general et bascule de CV, les DRAM sont perdues ainsi que le compteur bord [remis a 0]. Reprise a froid du LV [survie]
+1	OFFONT805	8GEN	TC	Reset T805 avec coupure T805 et boot sut flash Ndeg1 sans vote [code TCD  17]	0	OK			0	N
+2	16	1700h
+6	Le PIC REP fait un reset FDP, un reset FPGA et un OFF/ON du T805 sans couper le DRAM [pas de perte de donnees DRAM] et boot depuis la flash ndeg 1 en desactivant le vote.Reprise a tiede du LV en desactivant le WD Global durant 150sec.
+1	ONEMET1	8GEN	TC	Mise a ON de l emetteur 1 [code TCD  97]	0	OK			0	N
+2	16	9700h
+6	Le PIC REP met a OFF l emetteur 2, a ON l emetteur 1, L emetteur est configure suivant la configuration chargee dans le FPGA [cf TCD CONFPGAx]
+1	ONEMET2	8GEN	TC	Mise a ON de l emetteur 2 [code TCD  A7]	0	OK			0	N
+2	16	A700h
+6	Le PIC REP met a OFF l emetteur 1, a ON l emetteur 2 , L emetteur est configure suivant la configuration chargee dans le FPGA [cf TCD CONFPGAx]
+1	RESETT805	8GEN	TC	Reset du T805 sans coupure d alimentation [code TCD  07]	0	OK			0	N
+2	16	700h
+6	Le PIC de reprise fait un reset du T805, du FDP et du FPGA [reprise a tiede du LV]
+1	TOPTC	8GEN	TC	TCD generee par la TTCET pour mise a l heure du bord [code TCD  03]	0	OK			0	N
+2	16	300h
+6	L OBC latche la valeur du compteur heure bord pour mise a disposition du LVC
+#END_OF_FILE

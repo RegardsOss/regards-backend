@@ -1,0 +1,2297 @@
+#BEGIN_OF_FILE
+#Copyright BDMS 2006
+#TC_MAP_1.TXT#	3.3	0	3	19/10/16
+#Myriade - Microscope	MYRIADE		V3.3.0.3	Extracteur_CC V2.8.1
+1	ARMPP	2PCD	TC	Pyro and Propu general arming	1920	OK			0	0	N
+3	0	2	0
+1	CMDMTB	2PCD	TC	TC2 envoi de profils aux MTB	1850	OK			0	0	N
+3	0	1	29
+5	TC2FREQ	8	Frequence acq ou cmd TC niveau 2			LD	NU	PID		Y	UPFREQ
+4	TC2APID1	16	APID paquet TM brute acquit TC2	0h	Y
+4	TC2APID2	16	APID paquet TM processee acquit TC2	0h	Y
+5	TC2NBEXEC	8	Nombre d executions cycliques des profils TC2			LD	NU	PID		Y	UPNBEXEC
+5	TC2NBPROFIL	8	Nombre de profils de la TC2			LD	NU	PID		Y	UPNBPROFIL
+5	TC2MTBDAT1	8	Donnee 1 de la TC2 cmd MTB			ID	NU	PID		Y	UPMTBDAT1
+5	TC2MTBDAT2	8	Donnee 2 de la TC2 cmd MTB			ID	NU	PID		Y	UPMTBDAT2
+5	TC2MTBDAT3	8	Donnee 3 de la TC2 cmd MTB			ID	NU	PID		Y	UPMTBDAT3
+5	TC2MTBDAT4	8	Donnee 4 de la TC2 cmd MTB			ID	NU	PID		Y	UPMTBDAT4
+5	TC2MTBDAT5	8	Donnee 5 de la TC2 cmd MTB			ID	NU	PID		Y	UPMTBDAT5
+5	TC2MTBDAT6	8	Donnee 6 de la TC2 cmd MTB			ID	NU	PID		Y	UPMTBDAT6
+5	TC2MTBDAT7	8	Donnee 7 de la TC2 cmd MTB			ID	NU	PID		Y	UPMTBDAT7
+5	TC2MTBDAT8	8	Donnee 8 de la TC2 cmd MTB			ID	NU	PID		Y	UPMTBDAT8
+5	TC2MTBDAT9	8	Donnee 9 de la TC2 cmd MTB			ID	NU	PID		Y	UPMTBDAT9
+5	TC2MTBDAT10	8	Donnee 10 de la TC2 cmd MTB			ID	NU	PID		Y	UPMTBDAT10
+5	TC2MTBDAT11	8	Donnee 11 de la TC2 cmd MTB			ID	NU	PID		Y	UPMTBDAT11
+5	TC2MTBDAT12	8	Donnee 12 de la TC2 cmd MTB			ID	NU	PID		Y	UPMTBDAT12
+5	TC2MTBDAT13	8	Donnee 13 de la TC2 cmd MTB			ID	NU	PID		Y	UPMTBDAT13
+5	TC2MTBDAT14	8	Donnee 14 de la TC2 cmd MTB			ID	NU	PID		Y	UPMTBDAT14
+5	TC2MTBDAT15	8	Donnee 15 de la TC2 cmd MTB			ID	NU	PID		Y	UPMTBDAT15
+5	TC2MTBDAT16	8	Donnee 16 de la TC2 cmd MTB			ID	NU	PID		Y	UPMTBDAT16
+5	TC2MTBDAT17	8	Donnee 17 de la TC2 cmd MTB			ID	NU	PID		Y	UPMTBDAT17
+5	TC2MTBDAT18	8	Donnee 18 de la TC2 cmd MTB			ID	NU	PID		Y	UPMTBDAT18
+5	TC2MTBDAT19	8	Donnee 19 de la TC2 cmd MTB			ID	NU	PID		Y	UPMTBDAT19
+5	TC2MTBDAT20	8	Donnee 20 de la TC2 cmd MTB			ID	NU	PID		Y	UPMTBDAT20
+5	TC2MTBDAT21	8	Donnee 21 de la TC2 cmd MTB			ID	NU	PID		Y	UPMTBDAT21
+5	TC2MTBDAT22	8	Donnee 22 de la TC2 cmd MTB			ID	NU	PID		Y	UPMTBDAT22
+5	TC2MTBDAT23	8	Donnee 23 de la TC2 cmd MTB			ID	NU	PID		Y	UPMTBDAT23
+5	TC2MTBDAT24	8	Donnee 24 de la TC2 cmd MTB			ID	NU	PID		Y	UPMTBDAT24
+1	DISARMPP	2PCD	TC	Pyro and Propu general disarming	1920	OK			0	0	N
+3	0	3	0
+1	OFFMAG	2PCD	TC	To switch OFF magnetometer line and pressure transducer.	1920	OK			0	0	N
+3	0	12	0
+1	ONMAG	2PCD	TC	To switch ON magnetometer line and pressure transducer.	1920	OK			0	0	N
+3	0	11	0
+1	RESETPCDU	2PCD	TC	TC de reset PCDU	1920	OK			0	0	N
+3	0	20	0
+1	GALEPH	3GPS	TC	Used to request almanac or ephemeris from GPS or Galileo GNSS system	1106	NOK			1	0	N
+2	912
+3	0	1	7
+4	FUNCTIONID	16	function ID TC 	0611h	Y
+4	PARAMLENGTH	8	Paramter length	6h	Y
+4	GALEPHNU1	8	Octet reserve	0h	Y
+4	VALIDITY	8	Validity	FFh	Y
+4	GALEPHNU2	16	Octet reserve	0h	Y
+5	GALDATATYPE	8	Type of Data			LD	ST	LGALEPHDATA		Y	
+5	GALGNSSPRN	8	GNSS PRN			LD	NU	PID		Y	
+1	GDUMP	3GPS	TC	Request of DUMP	1026	NOK			1	0	N
+2	910
+3	0	1	8
+4	FUNCTIONID	16	function ID TC 	1A10h	Y
+4	PARAMLENGTH	8	Paramter length	9h	Y
+4	GDUMPNU1	8	Octet reserve	0h	Y
+4	VALIDITY	8	Validity	FFh	Y
+5	MEMORYTYPE	8	Memory type			LD	ST	LMEMTYPE		Y	
+4	GDUMPNU2	8	Octet reserve	0h	Y
+5	GDUMSTARTAD	32	Starting address of DUMP			LD	NU	PID		Y	
+5	GDUMPNBBLOC	8	Number of 16 bytes blocks to dump			LD	NU	PID		Y	
+1	GTMREQUEST	3GPS	TC	Request TM by its identification code	1018	NOK			0	0	N
+3	0	1	6
+4	FUNCTIONID	16	function ID TC 	1810h	Y
+4	PARAMLENGTH	8	Paramter length	6h	Y
+4	GTMRQNU1	8	Octet reserve	0h	Y
+4	VALIDITY	8	Validity	FFh	Y
+4	GTMRQNU2	16	Octet reserve	0h	Y
+5	GTMFUNCIDTM	16	Function ID of the TM			LD	NU	PID		Y	
+1	LINIT	3GPS	TC	Used to initialize the software-upload procedure	1204	NOK			1	0	N
+2	911
+3	0	1	10
+4	FUNCTIONID	16	function ID TC 	0412h	Y
+4	PARAMLENGTH	8	Paramter length	40h	Y
+4	LINITNU1	8	Octet reserve	0h	Y
+4	VALIDITY	8	Validity	FFh	Y
+4	LINITNU2	16	Octet reserve	0h	Y
+5	LINITDESTAD	32	Address of destination			LD	NU	PID		Y	
+4	LINITNU3	32	Octet reserve	0h	Y
+5	LINITLGAREA	32	Length of the area			LD	NU	PID		Y	
+4	LINITNU4	352	Octet reserve	0h	Y
+5	LINITCRC	32	CRC			LD	NU	PID		Y	
+1	LREPROM	3GPS	TC	Used to transfer packets of data from RAM to non-volatile memory of the equipmen	1202	NOK			1	0	N
+2	911
+3	0	1	12
+4	FUNCTIONID	16	function ID TC 	0212h	Y
+4	PARAMLENGTH	8	Paramter length	40h	Y
+4	LREPROMNU1	8	Octet reserve	0h	Y
+4	VALIDITY	8	Validity	FFh	Y
+5	LREPROMID	8	ID 			LD	ST	LLREPROMID		Y	
+4	LREPROMNU2	8	Octet reserve	0h	Y
+5	LREPROSRCAD	32	Address of source			LD	NU	PID		Y	
+5	LREPRDESTAD	32	Address of destination			LD	NU	PID		Y	
+5	LREPRLGAREA	32	Length of the area			LD	NU	PID		Y	
+5	LREPCRCUPLD	32	CRC of uploaded software			LD	NU	PID		Y	
+4	LREPROMNU3	320	Octet reserve	0h	Y
+5	LREPROMCRC	32	CRC			LD	NU	PID		Y	
+6	Used to transfer packets of data from RAM to non-volatile memory of the equipment.
+1	LRPACK	3GPS	TC	Used to transfer packets of data in the RAM memory during the software-upload of	1200	NOK			1	0	N
+2	911
+3	0	1	8
+4	FUNCTIONID	16	function ID TC 	0012h	Y
+4	PARAMLENGTH	8	Paramter length	40h	Y
+4	LRPACKNU1	8	Octet reserve	0h	Y
+4	VALIDITY	8	Validity	FFh	Y
+4	LRPACKNU2	16	Octet reserve	0h	Y
+5	LRPADR52BYT	32	Destination address of the 52 bytes			LD	NU	PID		Y	
+5	LRPACK52BYT	416	Packet of 52 bytes			ID	NU	PID		Y	
+5	LRPACKCRC	32	CRC			LD	NU	PID		Y	
+6	Used to transfer packets of data in the RAM memory during the software-upload of the equipment.
+1	RALEPH	3GPS	TC	Used to transmit the almanac or ephemeris of a satellite [GPS or Galileo] to thr	1016	NOK			1	0	N
+2	921
+3	0	1	31
+4	FUNCTIONID	16	function ID TC 	1610h	Y
+4	PARAMLENGTH	8	Paramter length	44h	Y
+4	RALEPHNU1	8	Octet reserve	0h	Y
+4	VALIDITY	8	Validity	FFh	Y
+5	RALSIGSRCID	8	ID of signal source			LD	NU	PID		Y	
+5	RALHEALSTAT	8	Health status and type			LD	NU	PID		Y	
+5	RALEPHIODE	16	IODE [GPS]Ephemeris			LD	NU	PID		Y	
+5	RALEPURAGPS	8	URA [GPS] and satellite present			LD	NU	PID		Y	
+4	RALEPHNU2	8	Octet reserve	0h	Y
+5	WEEKNUMBER	16	Week number : module 4096 [12 bits] for Galileo, modulo 1024 [10 bits] for GPS			LD	NU	PID		Y	
+5	RALEPTOCEPH	16	Toc if Ephemeris, reserved if Almanach			LD	NU	PID		Y	
+5	RALEPTOETOA	16	Toe if Ephemeris, Toa if Almanach			LD	NU	PID		Y	
+5	RALEPHM0	32	M0 : mean anomaly at reference time			L2	NU	PID		Y	
+5	RALEPHECC	32	e: eccentricity			L2	NU	PID		Y	
+5	RALEPHSEMIA	32	GPS/Galileo ephemeris - GPS almanac : square root of semi major axis. Galileo al			LD	NU	PID		Y	
+5	RALEPOMEGA0	32	Omega0 : Longitude of ascendant node of orbit plane at weekly epoch			L2	NU	PID		Y	
+5	RALEPHI0	32	I0 : inclination angle			L2	NU	PID		Y	
+5	RALEPHW	32	w : argument of perigee			L2	NU	PID		Y	
+5	RALOMEGADOT	32	Omega dot : rate of rigth ascension			L2	NU	PID		Y	
+5	RALEPHAF0	32	Af0			L2	NU	PID		Y	
+5	RALEPHAF1	32	Af1			L2	NU	PID		Y	
+5	RALEPHAF2	8	Af2			L2	NU	PID		Y	
+4	RALEPHNU3	8	Octet reserve	0h	Y
+5	RALEPHIDOT	16	IDOT : rate of inclination angle			L2	NU	PID		Y	
+5	RALEPDELTAN	16	Delta n : mean motion difference from computed value			L2	NU	PID		Y	
+5	RALEPHCUC	16	Cuc			L2	NU	PID		Y	
+5	RALEPHCUS	16	Cus			L2	NU	PID		Y	
+5	RALEPHCIC	16	Cic			L2	NU	PID		Y	
+5	RALEPHCIS	16	Cis			L2	NU	PID		Y	
+5	RALEPHCRC	16	Crc			L2	NU	PID		Y	
+5	RALEPHCRS	16	Crs			L2	NU	PID		Y	
+6	Used to transmit the almanac or ephemeris of a satellite (GPS or Galileo) to thr equipement receiver
+1	RATT	3GPS	TC	Provides the attitude of the spacecraft to tje equipment	1014	NOK			1	0	N
+2	922
+3	0	1	10
+4	FUNCTIONID	16	function ID TC 	1410h	Y
+4	PARAMLENGTH	8	Paramter length	Dh	Y
+4	RATTNU1	8	Octet reserve	0h	Y
+4	VALIDITY	8	Validity	FFh	Y
+5	RATTREFRAME	16	Reference frame			LD	ST	LREFRAME		Y	
+5	RATTVALATT	8	Validity of attitude aiding data			LD	ST	LAVALIDATT		Y	
+5	RATTQ1	16	q1 defined by q0			L2	NU	PID		Y	
+5	RATTQ2	16	q2 defined by q0			L2	NU	PID		Y	
+5	RATTQ3	16	q3 defined by q0			L2	NU	PID		Y	
+5	RATTATTFOM	16	Attitude Figure of Merit			L2	NU	PID		Y	
+1	RCACQ	3GPS	TC	Used to provide acquisition parameters to the equipment	1308	NOK			1	0	N
+2	923
+3	0	1	18
+4	FUNCTIONID	16	function ID TC 	0813h	Y
+4	PARAMLENGTH	8	Paramter length	1Ch	Y
+4	RCACQNU1	8	Octet reserve	0h	Y
+4	VALIDITY	8	Validity	FFh	Y
+4	RCACQNU2	16	Octets reserves	0h	Y
+5	VALIDIFIELD	16	Validity of field			LD	NU	PID		Y	
+4	RCACQNU3	16	Octets reserves	0h	Y
+5	RCAQLOWERBD	32	Lower bound			L2	NU	PID		Y	
+5	RCAQUPPERBD	32	Upper Bound			L2	NU	PID		Y	
+5	RCACQOPMODE	8	Operational mode for acquisition : for both continuous mode			LD	ST	LOPMODEACQ		Y	
+4	RCACQNU4	8	Octet reserve	0h	Y
+5	RCAQTHRESHD	16	Acquisition threshold			LD	NU	PID		Y	
+5	RCACCOHTIME	8	Coherent integration time			LD	NU	PID		Y	
+4	RCACQNU5	8	Octet reserve	0h	Y
+5	RCAQNBINCOH	16	Number of non coherent integration			LD	NU	PID		Y	
+4	RCACQNU6	16	Octets reserves	0h	Y
+5	RCACQCOAACQ	8	Subfrequency parameter for coarse acquisition			LD	NU	PID		Y	
+5	RCACQFINACQ	8	Subfrequency parameter for fine acquisition			LD	NU	PID		Y	
+1	RCANT	3GPS	TC	Used to provide the configuration of the GPS reception antenna	1102	NOK			1	0	N
+2	924
+3	0	1	39
+4	FUNCTIONID	16	function ID TC 	0211h	Y
+4	PARAMLENGTH	8	Paramter length	44h	Y
+4	RCANTNU1	8	Octet reserve	0h	Y
+4	VALIDITY	8	Validity	FFh	Y
+4	RCANTNU2	16	Octets reserves	0h	Y
+5	VALIDIFIELD	16	Validity of field			LD	NU	PID		Y	
+5	RCANANTENID	8	Antenna ID			LD	NU	PID		Y	
+5	RCANANTENUS	8	Antenna Use			LD	ST	LANTENNAUSE		Y	
+5	MASKINGANGL	16	Antenna Masking Angle			L2	NU	PID		Y	
+5	RCANANTORI	8	Antenna by default orientation			LD	ST	LANTORIENT		Y	
+4	RCANTNU3	8	Octet reserve	0h	Y
+5	RCANTPOSX	16	Position of the centre of phase of the antenna in the body frame : X			L2	NU	PID		Y	
+5	RCANTPOSY	16	Position of the centre of phase of the antenna in the body frame : Y			L2	NU	PID		Y	
+5	RCANTPOSZ	16	Position of the centre of phase of the antenna in the body frame : Z			L2	NU	PID		Y	
+4	RCANTNU4	16	Octets reserves	0h	Y
+5	RCANTCOSX	16	Direction cosines of the boresight of the antenna in the body frame : cos along 			L2	NU	PID		Y	
+5	RCANTCOSY	16	Direction cosines of the boresight of the antenna in the body frame : cos along 			L2	NU	PID		Y	
+5	RCANTCOSZ	16	Direction cosines of the boresight of the antenna in the body frame : cos along 			L2	NU	PID		Y	
+5	PATTERN00	16	Radiation pattern of the antenna : A [Theta = 0deg]			LD	NU	PID		Y	
+5	PATTERN04	16	Radiation pattern of the antenna : A [Theta = 4.5deg]			LD	NU	PID		Y	
+5	PATTERN09	16	Radiation pattern of the antenna : A [Theta = 9deg]			LD	NU	PID		Y	
+5	PATTERN13	16	Radiation pattern of the antenna : A [Theta = 13.5deg]			LD	NU	PID		Y	
+5	PATTERN18	16	Radiation pattern of the antenna : A [Theta = 18deg]			LD	NU	PID		Y	
+5	PATTERN22	16	Radiation pattern of the antenna : A [Theta = 22.5deg]			LD	NU	PID		Y	
+5	PATTERN27	16	Radiation pattern of the antenna : A [Theta = 27deg]			LD	NU	PID		Y	
+5	PATTERN31	16	Radiation pattern of the antenna : A [Theta = 31.5deg]			LD	NU	PID		Y	
+5	PATTERN36	16	Radiation pattern of the antenna : A [Theta = 36deg]			LD	NU	PID		Y	
+5	PATTERN40	16	Radiation pattern of the antenna : A [Theta = 40.5deg]			LD	NU	PID		Y	
+5	PATTERN45	16	Radiation pattern of the antenna : A [Theta = 45deg]			LD	NU	PID		Y	
+5	PATTERN49	16	Radiation pattern of the antenna : A [Theta = 49.5deg]			LD	NU	PID		Y	
+5	PATTERN54	16	Radiation pattern of the antenna : A [Theta = 54deg]			LD	NU	PID		Y	
+5	PATTERN58	16	Radiation pattern of the antenna : A [Theta = 58.5deg]			LD	NU	PID		Y	
+5	PATTERN63	16	Radiation pattern of the antenna : A [Theta = 63deg]			LD	NU	PID		Y	
+5	PATTERN67	16	Radiation pattern of the antenna : A [Theta = 67.5deg]			LD	NU	PID		Y	
+5	PATTERN72	16	Radiation pattern of the antenna : A [Theta = 72deg]			LD	NU	PID		Y	
+5	PATTERN76	16	Radiation pattern of the antenna : A [Theta = 76.5deg]			LD	NU	PID		Y	
+5	PATTERN81	16	Radiation pattern of the antenna : A [Theta = 81deg]			LD	NU	PID		Y	
+5	PATTERN85	16	Radiation pattern of the antenna : A [Theta = 85.5deg]			LD	NU	PID		Y	
+5	PATTERN90	16	Radiation pattern of the antenna : A [Theta = 90deg]			LD	NU	PID		Y	
+1	RCCHAN	3GPS	TC	Used to configure each GNSS channel [GPS or Galileo]	1100	NOK			1	0	N
+2	925
+3	0	1	13
+4	FUNCTIONID	16	function ID TC 	0011h	Y
+4	PARAMLENGTH	8	Paramter length	Bh	Y
+4	RCCHANNU1	8	Octet reserve	0h	Y
+4	VALIDITY	8	Validity	FFh	Y
+5	GNSCHANNEL0	8	GNSS Channel Configuration : Channel 0			LD	ST	LGNSSCHANNL		Y	
+5	GNSCHANNEL1	8	GNSS Channel Configuration : Channel 1			LD	ST	LGNSSCHANNL		Y	
+5	GNSCHANNEL2	8	GNSS Channel Configuration : Channel 2			LD	ST	LGNSSCHANNL		Y	
+5	GNSCHANNEL3	8	GNSS Channel Configuration : Channel 3			LD	ST	LGNSSCHANNL		Y	
+5	GNSCHANNEL4	8	GNSS Channel Configuration : Channel 4			LD	ST	LGNSSCHANNL		Y	
+5	GNSCHANNEL5	8	GNSS Channel Configuration : Channel 5			LD	ST	LGNSSCHANNL		Y	
+5	GNSCHANNEL6	8	GNSSS Channel Configuration : Channel 6			LD	ST	LGNSSCHANNL		Y	
+5	GNSCHANNEL7	8	GNSS Channel Configuration : Channel 7			LD	ST	LGNSSCHANNL		Y	
+5	GNSCHANNEL8	8	GNSS Channel Configuration : Channel 8			LD	ST	LGNSSCHANNL		Y	
+1	RCCS	3GPS	TC	Used to provide te cold-start-strategy [corresponding to the mode OA  Acquisitio	1306	NOK			1	0	N
+2	926
+3	0	1	6
+4	FUNCTIONID	16	function ID TC 	0613h	Y
+4	PARAMLENGTH	8	Paramter length	Ah	Y
+4	RCCSNU1	8	Octet reserve	0h	Y
+4	VALIDITY	8	Validity	FFh	Y
+5	RCCSLWBOUND	32	Doppler range for cold start : Lower Bound			L2	NU	PID		Y	
+5	RCCSUPBOUND	32	Doppler range for cold start : Upper Bound			L2	NU	PID		Y	
+6	Used to provide te cold-start-strategy (corresponding to the mode OA  Acquisition Lost in Space) to the equipment
+1	RCEM	3GPS	TC	Used to provide parameters relative to GPS or Galileo emission antenna and param	1304	NOK			1	0	N
+2	927
+3	0	1	33
+4	FUNCTIONID	16	function ID TC 	0413h	Y
+4	PARAMLENGTH	8	Paramter length	3Ah	Y
+4	RCEMNU1	8	Octet reserve	0h	Y
+4	VALIDITY	8	Validity	FFh	Y
+5	VALIDIFIELD	16	Validity of field			LD	NU	PID		Y	
+5	RCEMSATTYPE	8	Satellite type			LD	ST	LSATTYPE		Y	
+4	RCEMNU2	8	Octet reserve	0h	Y
+5	MASKINGANGL	16	Antenna Masking Angle			L2	NU	PID		Y	
+5	RADMASKSPHE	16	Radius of the masking sphere			L2	NU	PID		Y	
+5	ERIPEMISAT	16	Parameters for budget link : ERIP of emmision satellite 			L2	NU	PID		Y	
+5	LOSRECEPAMP	16	Parameters for budget link : Loss in cable between reception antenna and preampl			L2	NU	PID		Y	
+4	RCEMNU3	16	Octets reserves	0h	Y
+5	PATTERN00	16	Radiation pattern of the antenna : A [Theta = 0deg]			LD	NU	PID		Y	
+5	PATTERN04	16	Radiation pattern of the antenna : A [Theta = 4.5deg]			LD	NU	PID		Y	
+5	PATTERN09	16	Radiation pattern of the antenna : A [Theta = 9deg]			LD	NU	PID		Y	
+5	PATTERN13	16	Radiation pattern of the antenna : A [Theta = 13.5deg]			LD	NU	PID		Y	
+5	PATTERN18	16	Radiation pattern of the antenna : A [Theta = 18deg]			LD	NU	PID		Y	
+5	PATTERN22	16	Radiation pattern of the antenna : A [Theta = 22.5deg]			LD	NU	PID		Y	
+5	PATTERN27	16	Radiation pattern of the antenna : A [Theta = 27deg]			LD	NU	PID		Y	
+5	PATTERN31	16	Radiation pattern of the antenna : A [Theta = 31.5deg]			LD	NU	PID		Y	
+5	PATTERN36	16	Radiation pattern of the antenna : A [Theta = 36deg]			LD	NU	PID		Y	
+5	PATTERN40	16	Radiation pattern of the antenna : A [Theta = 40.5deg]			LD	NU	PID		Y	
+5	PATTERN45	16	Radiation pattern of the antenna : A [Theta = 45deg]			LD	NU	PID		Y	
+5	PATTERN49	16	Radiation pattern of the antenna : A [Theta = 49.5deg]			LD	NU	PID		Y	
+5	PATTERN54	16	Radiation pattern of the antenna : A [Theta = 54deg]			LD	NU	PID		Y	
+5	PATTERN58	16	Radiation pattern of the antenna : A [Theta = 58.5deg]			LD	NU	PID		Y	
+5	PATTERN63	16	Radiation pattern of the antenna : A [Theta = 63deg]			LD	NU	PID		Y	
+5	PATTERN67	16	Radiation pattern of the antenna : A [Theta = 67.5deg]			LD	NU	PID		Y	
+5	PATTERN72	16	Radiation pattern of the antenna : A [Theta = 72deg]			LD	NU	PID		Y	
+5	PATTERN76	16	Radiation pattern of the antenna : A [Theta = 76.5deg]			LD	NU	PID		Y	
+5	PATTERN81	16	Radiation pattern of the antenna : A [Theta = 81deg]			LD	NU	PID		Y	
+5	PATTERN85	16	Radiation pattern of the antenna : A [Theta = 85.5deg]			LD	NU	PID		Y	
+5	PATTERN90	16	Radiation pattern of the antenna : A [Theta = 90deg]			LD	NU	PID		Y	
+6	Used to provide parameters relative to GPS or Galileo emission antenna and parameters useful for budget link
+1	RCFLAG	3GPS	TC	Used to reset the fault status of the GNSS equipment	1012	NOK			1	0	N
+2	901
+3	0	1	5
+4	FUNCTIONID	16	function ID TC 	1210h	Y
+4	PARAMLENGTH	8	Paramter length	4h	Y
+4	RCFLAGNU1	8	Octet reserve	0h	Y
+4	VALIDITY	8	Validity	FFh	Y
+5	RCFLAGCMDWD	16	Command Word			LD	NU	PID		Y	
+1	RCLDMEM	3GPS	TC	Used to load bytes directly in the SDRAM memory	1302	NOK			1	0	N
+2	910
+3	0	1	7
+4	FUNCTIONID	16	function ID TC 	0213h	Y
+4	PARAMLENGTH	8	Paramter length	3Fh	Y
+4	RCLDMEMNU1	8	Octet reserve	0h	Y
+4	VALIDITY	8	Validity	FFh	Y
+5	RCLDLOADADD	32	Loading Address			LD	NU	PID		Y	
+5	RCLDMEMLGTH	8	Length			LD	NU	PID		Y	
+5	RCLDMBYTELD	448	Bytes to load			ID	NU	PID		Y	
+1	RCOEXORBIT	3GPS	TC	Used to provide parameters to the orbital extrapolator for the time extrapolatio	1010	NOK			1	0	N
+2	931
+3	0	1	13
+4	FUNCTIONID	16	function ID TC 	1010h	Y
+4	PARAMLENGTH	8	Paramter length	24h	Y
+5	RCOEXORBNU1	8	Octet reserve			LD	NU	PID		Y	
+4	VALIDITY	8	Validity	FFh	Y
+5	GPSTWEEKNB	16	GPS Time of the data : Week number			LD	NU	PID		Y	
+5	SECONINWEEK	32	GPS Time of the data : Second in the week			LD	NU	PID		Y	
+5	SECONDFRACT	32	GPS Time of the data : Second fraction			LD	NU	PID		Y	
+5	POSECEFX	32	Position in WGS84 ECEF : X			L2	NU	PID		Y	
+5	POSECEFY	32	Position in WGS84 ECEF : Y			L2	NU	PID		Y	
+5	POSECEFZ	32	Position in WGS84 ECEF : Z			L2	NU	PID		Y	
+5	VELOCITYX	32	Velocity in WGS84 ECEF : X			L2	NU	PID		Y	
+5	VELOCITYY	32	Velocity in WGS84 ECEF : Y			L2	NU	PID		Y	
+5	VELOCITYZ	32	Velocity in WGS84 ECEF : Z			L2	NU	PID		Y	
+6	Used to provide parameters to the orbital extrapolator for the time extrapolation
+1	RCOEXTIME	3GPS	TC	Used to provide parameters to the orbital extrapolator for the time extrapolatio	1025	NOK			1	0	N
+2	932
+3	0	1	8
+4	FUNCTIONID	16	function ID TC 	0E10h	Y
+4	PARAMLENGTH	8	Paramter length	10h	Y
+5	RCOEXTIMNU1	8	Octet reserve			LD	NU	PID		Y	
+4	VALIDITY	8	Validity	FFh	Y
+5	GPSTWEEKNB	16	GPS Time of the data : Week number			LD	NU	PID		Y	
+5	SECONINWEEK	32	GPS Time of the data : Second in the week			LD	NU	PID		Y	
+5	SECONDFRACT	32	GPS Time of the data : Second fraction			LD	NU	PID		Y	
+5	CLOCKDRIFT	32	Local clock drift			L2	NU	PID		Y	
+6	Used to provide parameters to the orbital extrapolator for the time extrapolation
+1	RCRM	3GPS	TC	configures the raw measurements delivered by the equipment when this latter is i	1020	NOK			3	0	N
+2	903
+2	904
+2	905
+3	0	1	5
+4	FUNCTIONID	16	function ID TC 	0A10h	Y
+4	PARAMLENGTH	8	Paramter length	3h	Y
+4	RCRMNU1	8	Octet reserve	0h	Y
+4	VALIDITY	8	Validity	FFh	Y
+5	CHOIRWMEAS	8	Choice of the raw measurements			LD	ST	LCHOICEMEAS		Y	
+6	configures the raw measurements delivered by the equipment when this latter is in continuous mode. This choice is both for GPS and Galileo channels
+1	RCTR	3GPS	TC	Used to modify the tracking parameters of the GNSS equipment	1300	NOK			1	0	N
+2	928
+3	0	1	11
+4	FUNCTIONID	16	function ID TC 	0013h	Y
+4	PARAMLENGTH	8	Paramter length	1Dh	Y
+4	RCTRNU1	8	Octet reserve	0h	Y
+4	VALIDITY	8	Validity	FFh	Y
+5	VALIDIFIELD	16	Validity of field			LD	NU	PID		Y	
+5	RCTRBWDLL	32	Tracking parameters : Bwdll			L2	NU	PID		Y	
+4	RCTRNU2	64	Tracking parameters : Reserved	0h	Y
+5	RCTRBWFLL	32	Tracking parameters : Bwfll			L2	NU	PID		Y	
+5	RCTRBWPLL	32	Tracking parameters : Bwpll			L2	NU	PID		Y	
+4	RCTRNU3	32	Tracking parameters : Reserved	0h	Y
+5	RCTCHIPSPAC	8	Chip spacing			LD	ST	LCHIPSPACIN		Y	
+1	RDAT	3GPS	TC	Used to configurate the signal datation either with internal clock or the GNSS t	1008	NOK			1	0	N
+2	929
+3	0	1	6
+4	FUNCTIONID	16	function ID TC 	0810h	Y
+4	PARAMLENGTH	8	Paramter length	4h	Y
+4	RCDATNU1	8	Octet reserve	0h	Y
+4	VALIDITY	8	Validity	FFh	Y
+5	CHOICETIMEB	8	Choice of the GNSS timebase			LD	ST	LCHOITIMEB		Y	
+5	ENSLAVMTPPS	8	Enslavement of the PPS			LD	ST	LENSLAVMPPS		Y	
+6	Used to configurate the signal datation either with internal clock or the GNSS timebase (GPS or Galileo timing)
+1	RNAV	3GPS	TC	Used to provide navigation aiding data to the equipment	1006	NOK			1	0	N
+2	930
+3	0	1	22
+4	FUNCTIONID	16	function ID TC 	0610h	Y
+4	PARAMLENGTH	8	Paramter length	3Eh	Y
+4	RNAVNU1	8	Octet reserve	0h	Y
+4	VALIDITY	8	Validity	FFh	Y
+5	GPSTWEEKNB	16	GPS Time of the data : Week number			LD	NU	PID		Y	
+5	SECONINWEEK	32	GPS Time of the data : Second in the week			LD	NU	PID		Y	
+5	SECONDFRACT	32	GPS Time of the data : Second fraction			LD	NU	PID		Y	
+5	POSECEFX	32	Position in WGS84 ECEF : X			L2	NU	PID		Y	
+5	POSECEFY	32	Position in WGS84 ECEF : Y			L2	NU	PID		Y	
+5	POSECEFZ	32	Position in WGS84 ECEF : Z			L2	NU	PID		Y	
+5	VELOCITYX	32	Velocity in WGS84 ECEF : X			L2	NU	PID		Y	
+5	VELOCITYY	32	Velocity in WGS84 ECEF : Y			L2	NU	PID		Y	
+5	VELOCITYZ	32	Velocity in WGS84 ECEF : Z			L2	NU	PID		Y	
+5	CLOCKDRIFT	32	Local clock drift			L2	NU	PID		Y	
+5	RNAVPOSFOM	32	Figure of merit : Position FOM			LD	NU	PID		Y	
+5	RNAVVELOFOM	32	Figure of merit : Velocity FOM			LD	NU	PID		Y	
+5	CLODRIFTFOM	32	Figure of merit : Local clock drift FOM			LD	NU	PID		Y	
+5	TIMEFOM	32	Figure of merit : Time FOM			LD	NU	PID		Y	
+5	RNAVWNOG	8	GPS Galileo Time Offset : WNOG Week Number of FFTO reference			LD	NU	PID		Y	
+5	RNAVTOG	8	GPS Galileo Time Offset : tOG : reference time for GGTO data			LD	NU	PID		Y	
+5	RNAVAOG	16	GPS Galileo Time Offset : AOG			L2	NU	PID		Y	
+5	RNAVA1G	16	GPS Galileo Time Offset : A1G			L2	NU	PID		Y	
+1	RTIME	3GPS	TC	Provides the current GPS time and the local clock drift to the equipment	1004	NOK			1	0	N
+2	902
+3	0	1	11
+4	FUNCTIONID	16	function ID TC 	0410h	Y
+4	PARAMLENGTH	8	Paramter length	1Ah	Y
+4	RTIMENU1	8	Octet reserve	0h	Y
+4	VALIDITY	8	Validity	FFh	Y
+5	VALIDIFIELD	16	Validity of field			LD	NU	PID		Y	
+5	GPSTWEEKNB	16	GPS Time of the data : Week number			LD	NU	PID		Y	
+5	SECONINWEEK	32	GPS Time of the data : Second in the week			LD	NU	PID		Y	
+5	SECONDFRACT	32	GPS Time of the data : Second fraction			LD	NU	PID		Y	
+5	TIMEFOM	32	Figure of merit : Time FOM			LD	NU	PID		Y	
+5	CLOCKDRIFT	32	Local clock drift			L2	NU	PID		Y	
+5	CLODRIFTFOM	32	Figure of merit : Local clock drift FOM			LD	NU	PID		Y	
+1	WMODE	3GPS	TC	Selectionof the functional mode of te receiver	1000	NOK			1	0	N
+2	909
+3	0	1	15
+4	FUNCTIONID	16	function ID TC 	0010h	Y
+4	PARAMLENGTH	8	Paramter length	14h	Y
+4	WMODENU1	8	Octet reserve	0h	Y
+4	VALIDITY	8	Validity	FFh	Y
+5	WMCURMODE	8	Current mode			LD	ST	LWMODE		Y	
+5	WMARRIVMODE	8	Arrival mode			LD	ST	LWMODE		Y	
+5	WMRQCHANGE	8	Request for change			LD	ST	LRQCHANGE		Y	
+4	WMODENU2	16	Octet reserve	0h	Y
+5	LOWERBOUND	32	Lower bound of the frequency doppler			L2	NU	PID		Y	UPLWBOUND
+5	UPPERBOUND	32	Upper bound of the frequency doppler			L2	NU	PID		Y	UPUPBOUND
+4	OPMODEACQ	8	Opertaionnal mode for acquisition	0h	Y
+4	CONFIGATT	8	Configuration for attitude	0h	Y
+4	ENSLAVMTPPS	8	Enslavement of the PPS	1h	Y
+4	SELECTSRAWD	8	Selection of SRAWD TM	1h	Y
+4	SELECTTMMOD	8	Selection of the TM mode	0h	Y
+1	ACQNAVI	3LVC	TC	Demarrage des acquisitions cycliques a 0,1Hz TM GNSS SNAVIGPS	50	NOK			0	0	N
+3	0	1	0
+1	ACQNAVID	3LVC	TC	TC2 Demarrage des acquisitions cycliques en mode debug a 0.5Hz TM GNSS SNAVIGPS	1862	NOK			0	0	N
+3	0	1	0
+1	ACQRAW	3LVC	TC	Demarrage des acquisitions cycliques a 0,1Hz TM GNSS SiRAW 	50	NOK			0	0	N
+3	0	2	0
+1	ACQRAWD	3LVC	TC	TC2 Demarrage des acquisitions cycliques en mode debug a 0.5Hz TM GNSS SiRAW	1862	NOK			0	0	N
+3	0	2	0
+1	ACQRECEIV	3LVC	TC	Demarrage des acquisitions cycliques a 0,1Hz TM GNSS SRECEIVST	50	NOK			0	0	N
+3	0	3	0
+1	ACQRECEIVD	3LVC	TC	TC2 Demarrage des acquisitions cycliques en mode debug a 0.5Hz TM GNSS SRECEIVST	1862	NOK			0	0	N
+3	0	3	0
+1	ACQSCHAND	3LVC	TC	Demarrage acquisitions cycliques en mode debug a 0.5Hz TM GNSS SCHANST	1862	NOK			0	0	N
+3	0	4	0
+1	ACQSTIME	3LVC	TC	Demarrage acquisitions cycliques a 1Hz TM GNSS STIME	50	NOK			0	0	N
+3	0	4	0
+1	ACQTMACC1	3LVC	TC	Demarrage des acquisitions cycliques a 4Hz TM accelerations ICUREF	42	NOK			0	0	N
+3	0	1	0
+1	ACQTMACC2	3LVC	TC	Demarrage des acquisitions cycliques a 4Hz TM accelerations ICUEP	43	NOK			0	0	N
+3	0	1	0
+1	ACQTMHK1	3LVC	TC	Demarrage des acquisitions cycliques a 1Hz TM HK ICUREF	42	NOK			0	0	N
+3	0	3	0
+1	ACQTMHK2	3LVC	TC	Demarrage des acquisitions cycliques a 1Hz TM HK ICUEP	43	NOK			0	0	N
+3	0	3	0
+1	AUTINHECME1	3LVC	TC	Autorisation/inhibition de l acquisition de la TM 4HZ  etendue ECM ZP.	1870	NOK			0	0	N
+3	0	2	1
+5	FLAGCTRL	8	Flag indiquant si le controle est autorise ou inhibe			LD	ST	LFLAGCTRL		Y	
+1	AUTINHECME2	3LVC	TC	Autorisation/inhibition de l acquisition de la TM 4HZ  etendue ECM ZM.	1871	NOK			0	0	N
+3	0	2	1
+5	FLAGCTRL	8	Flag indiquant si le controle est autorise ou inhibe			LD	ST	LFLAGCTRL		Y	
+1	AUTINHECML1	3LVC	TC	Autorisation/inhibition de l acquisition de la TM LowRate ECM ZP.	1870	NOK			0	0	N
+3	0	3	1
+5	FLAGCTRL	8	Flag indiquant si le controle est autorise ou inhibe			LD	ST	LFLAGCTRL		Y	
+1	AUTINHECML2	3LVC	TC	Autorisation/inhibition de l acquisition de la TM LowRate ECM ZM.	1871	NOK			0	0	N
+3	0	3	1
+5	FLAGCTRL	8	Flag indiquant si le controle est autorise ou inhibe			LD	ST	LFLAGCTRL		Y	
+1	AUTINHECMM1	3LVC	TC	Autorisation/inhibition de l acquisition de la TM   MediumRate ECM ZP.	1870	NOK			0	0	N
+3	0	4	1
+5	FLAGCTRL	8	Flag indiquant si le controle est autorise ou inhibe			LD	ST	LFLAGCTRL		Y	
+1	AUTINHECMM2	3LVC	TC	Autorisation/inhibition de l acquisition de la TM MediumRate ECM ZM.	1871	NOK			0	0	N
+3	0	4	1
+5	FLAGCTRL	8	Flag indiquant si le controle est autorise ou inhibe			LD	ST	LFLAGCTRL		Y	
+1	AUTINHECMN1	3LVC	TC	Autorisation/inhibition de l acquisition de la TM 4HZ  nominale ECM ZP.	1870	NOK			0	0	N
+3	0	1	1
+5	FLAGCTRL	8	Flag indiquant si le controle est autorise ou inhibe			LD	ST	LFLAGCTRL		Y	
+1	AUTINHECMN2	3LVC	TC	Autorisation/inhibition de l acquisition de la TM 4HZ  nominale ECM ZM	1871	NOK			0	0	N
+3	0	1	1
+5	FLAGCTRL	8	Flag indiquant si le controle est autorise ou inhibe			LD	ST	LFLAGCTRL		Y	
+1	AUTINHFREZ1	3LVC	TC	Activation/Inhibition du service LVC d envoi des TCs FREEZE a l ECM ZP 	47	NOK			0	0	N
+3	0	1	1
+5	FLAGCTRL	8	Flag indiquant si le controle est autorise ou inhibe			LD	ST	LFLAGCTRL		Y	
+1	AUTINHFREZ2	3LVC	TC	Activation/Inhibition du service LVC d envoi des TCs FREEZE a l ECM ZM 	47	NOK			0	0	N
+3	0	2	1
+5	FLAGCTRL	8	Flag indiquant si le controle est autorise ou inhibe			LD	ST	LFLAGCTRL		Y	
+1	DUMP1027HZ1	3LVC	TC	Demarre le dump des data et dates 1027Hz enregistrees en RAM ICU REF	26	NOK			0	0	N
+3	0	1	2
+5	ADRESSDUMP	32	Adresse de debut de dump a 1027Hz			LD	NU	PID		Y	
+5	NBTCDUMP	16	Nombre de TC RQDUMPDM pour dump 1027Hz			LD	NU	PID		Y	
+1	DUMP1027HZ2	3LVC	TC	Demarre le dump des data et dates 1027Hz enregistrees en RAM ICU EP	27	NOK			0	0	N
+3	0	1	2
+5	ADRESSDUMP	32	Adresse de debut de dump a 1027Hz			LD	NU	PID		Y	
+5	NBTCDUMP	16	Nombre de TC RQDUMPDM pour dump 1027Hz			LD	NU	PID		Y	
+1	IDEASOFF	3LVC	TC	Desactivation de toutes les LCL du BTCU/IDEAS	45	NOK			0	0	N
+3	0	5	0
+1	IDEASON0	3LVC	TC	Activation de la LCL 0 du BTCU [HDMR_IDEAS1]	45	NOK			0	0	N
+3	0	1	0
+1	IDEASON1	3LVC	TC	Activation de la LCL 1 du BTCU [HDMR_IDEAS2]	45	NOK			0	0	N
+3	0	2	0
+1	IDEASON2	3LVC	TC	Activation de la LCL 2 du BTCU [Vanne V2]	45	NOK			0	0	N
+3	0	3	0
+1	IDEASON3	3LVC	TC	Activation de la LCL 3 du BTCU [Vanne V3]	45	NOK			0	0	N
+3	0	4	0
+1	IDEASSTARHK	3LVC	TC	Demarrage des acquisitions cycliques a 1Hz TM HK IDEAS	45	NOK			0	0	N
+3	0	11	0
+1	IDEASSTOPHK	3LVC	TC	Arret des acquisitions cycliques a 1Hz TM HK IDEAS	45	NOK			0	0	N
+3	0	12	0
+1	INHPOUSSE1	3LVC	TC	Inhibition du service LVC d envoi des commandes de poussees a 4Hz sur ECM ZP	46	NOK			0	0	N
+3	0	1	1
+5	TIMEOUT	8	Duree d inhibition du service LVC d envoi des commandes de poussees			LD	NU	PID	s	Y	
+1	INHPOUSSE2	3LVC	TC	Inhibition du service LVC d envoi des commandes de poussees a 4Hz sur ECM ZM	46	NOK			0	0	N
+3	0	2	1
+5	TIMEOUT	8	Duree d inhibition du service LVC d envoi des commandes de poussees			LD	NU	PID	s	Y	
+1	REQIDEASHK	3LVC	TC	Demande TM HK IDEAS	45	NOK			0	0	N
+3	0	10	0
+1	RESETGNSS	3LVC	TC	Le LVC effectue un reset du Rx GNSS	50	NOK			0	0	N
+3	0	9	0
+1	RESETICU1	3LVC	TC	Le LVC effectue un reset de l ICU1	44	NOK			0	0	N
+3	0	1	0
+1	RESETICU2	3LVC	TC	Le LVC effectue un reset de l ICU2	44	NOK			0	0	N
+3	0	2	0
+1	STOPNAVI	3LVC	TC	Arret des acquisitions cycliques a 0,1Hz TM GNSS SNAVIGPS	50	NOK			0	0	N
+3	0	5	0
+1	STOPNAVID	3LVC	TC	TC2 Arret des acquisitions cycliques en mode debug a 0.5Hz TM GNSS SNAVIGPS	1862	NOK			0	0	N
+3	0	5	0
+1	STOPRAW	3LVC	TC	Arret des acquisitions cycliques a 0,1Hz TM GNSS SiRAW 	50	NOK			0	0	N
+3	0	6	0
+1	STOPRAWD	3LVC	TC	TC2 : Arret des acquisitions cycliques en mode debug a 0.5Hz TM GNSS SiRAW	1862	NOK			0	0	N
+3	0	6	0
+1	STOPRECEIV	3LVC	TC	Arret des acquisitions cycliques a 0,1Hz TM GNSS SRECEIVST	50	NOK			0	0	N
+3	0	7	0
+1	STOPRECEIVD	3LVC	TC	TC2 : Arret des acquisitions cycliques en mode debug a 0.5Hz TM GNSS SRECEIVST	1862	NOK			0	0	N
+3	0	7	0
+1	STOPSCHAND	3LVC	TC	TC2 Arret acquisitions cycliques en mode debug a 0.5Hz TM GNSS SCHANST	1862	NOK			0	0	N
+3	0	8	0
+1	STOPSTIME	3LVC	TC	Arret acquisitions cycliques a 1Hz TM GNSS STIME	50	NOK			0	0	N
+3	0	8	0
+1	STOPTMACC1	3LVC	TC	Arret des acquisitions cycliques a 4Hz TM accelerations ICUREF	42	NOK			0	0	N
+3	0	2	0
+1	STOPTMACC2	3LVC	TC	Arret des acquisitions cycliques a 4Hz TM accelerations ICUEP	43	NOK			0	0	N
+3	0	2	0
+1	STOPTMHK1	3LVC	TC	Arret des acquisitions cycliques a 1Hz TM HK ICUREF	42	NOK			0	0	N
+3	0	4	0
+1	STOPTMHK2	3LVC	TC	Arret des acquisitions cycliques a 1Hz TM HK ICUEP	43	NOK			0	0	N
+3	0	4	0
+1	STARTIMGOP	3SST	TC	Demarre le service d acquisition des images du SST en operation	21	NOK			0	0	N
+3	0	1	4
+5	COMPRESSION	8	Type d image a acquerir			LD	ST	LCOMPMETHOD		Y	
+5	CAMERAID	8	Camera ID			LD	ST	LCAMERAID		Y	
+5	NBLOOP	32	Nombre d images a redsecendre			LD	NU	PID		Y	
+5	DELAIS	8	Nombre de 1/4 de secondes ecoulees entre le gel de l image et le debut de sa rec			LD	NU	PID		Y	
+1	STOPIMGOP	3SST	TC	Arrete le service d acquisition des images du SST en operation	21	NOK			0	0	N
+3	0	2	0
+1	ZAPIMGOP	3SST	TC	Arrete le service d acquisition des images du SST ne operations immediatement	21	NOK			0	0	N
+3	0	3	0
+1	CLEARFDIR1	3THR	TC	ClearFDIRFields : Remise a zero des champs FDIR report, FDIR Par, et FDIR counte	70	NOK			0	0	N
+3	0	2	1
+4	ECMTCID	8	TC ID pour l ECM	3h	Y
+6	ClearFDIRFields : Remise à zéro des champs FDIR report, FDIR Par, et FDIR counter de la TM MediumRate de l ECM ZP
+1	CLEARFDIR2	3THR	TC	ClearFDIRFields : Remise a zero des champs FDIR report, FDIR Par, et FDIR counte	71	NOK			0	0	N
+3	0	2	1
+4	ECMTCID	8	TC ID pour l ECM	3h	Y
+6	ClearFDIRFields : Remise à zéro des champs FDIR report, FDIR Par, et FDIR counter de la TM MediumRate de l ECM ZM
+1	CLEARTCCNT1	3THR	TC	ClearIgnoredTCCnt : Remise a zero du champ Ignored TC counter de la TM MediumRat	70	NOK			0	0	N
+3	0	3	1
+4	ECMTCID	8	TC ID pour l ECM	0h	Y
+6	ClearIgnoredTCCnt : Remise à zéro du champ Ignored TC counter de la TM MediumRate de l ECM ZP
+1	CLEARTCCNT2	3THR	TC	ClearIgnoredTCCnt : Remise a zero du champ Ignored TC counter de la TM MediumRat	71	NOK			0	0	N
+3	0	3	1
+4	ECMTCID	8	TC ID pour l ECM	0h	Y
+6	ClearIgnoredTCCnt : Remise à zéro du champ Ignored TC counter de la TM MediumRate de l ECM ZM
+1	EEPROMUPLD1	3THR	TC	EEPROMUpload : Ecriture de donnees de la RAM vers l EEPROM de l ECM ZP.	70	NOK			0	0	N
+3	0	19	4
+4	ECMTCID	8	TC ID pour l ECM	Ch	Y
+5	ECMADRRAM	32	RAM start address of the memory to be copied			LD	NU	PID		Y	
+5	ECMMEMARLGT	32	Length of the memory area to be copied from RAM to EEPROM			LD	NU	PID		Y	
+5	ECMSTARTADR	32	EEPROM start address			LD	NU	PID		Y	
+1	EEPROMUPLD2	3THR	TC	EEPROMUpload : Ecriture de donnees de la RAM vers l EEPROM de l ECM ZM.	71	NOK			0	0	N
+3	0	19	4
+4	ECMTCID	8	TC ID pour l ECM	Ch	Y
+5	ECMADRRAM	32	RAM start address of the memory to be copied			LD	NU	PID		Y	
+5	ECMMEMARLGT	32	Length of the memory area to be copied from RAM to EEPROM			LD	NU	PID		Y	
+5	ECMSTARTADR	32	EEPROM start address			LD	NU	PID		Y	
+1	FREEZEHR1	3THR	TC	FREEZEHR : Demande a l ECM ZP de sauvegarder les donnees  TM High Rate	70	NOK			0	0	N
+3	0	4	1
+4	ECMTCID	8	TC ID pour l ECM	6h	Y
+1	FREEZEHR2	3THR	TC	FREEZEHR : Demande a l ECM ZM de sauvegarder les donnees TM High Rate	71	NOK			0	0	N
+3	0	4	1
+4	ECMTCID	8	TC ID pour l ECM	6h	Y
+1	GETCHCKSUM1	3THR	TC	GetMemoryCheksumReport : acquisition de la TM MemoryChecksum ECM ZP	70	NOK			1	0	N
+2	216
+3	0	24	1
+4	ECMTCID	8	TC ID pour l ECM	24h	Y
+1	GETCHCKSUM2	3THR	TC	GetMemoryCheksumReport : acquisition de la TM MemoryChecksum ECM ZM	71	NOK			1	0	N
+2	206
+3	0	24	1
+4	ECMTCID	8	TC ID pour l ECM	24h	Y
+1	GETPARAM1	3THR	TC	GETPARAMETER : Recuperation des parametres ECM ZP	70	NOK			9	0	N
+2	217
+2	218
+2	219
+2	230
+2	234
+2	235
+2	236
+2	237
+2	238
+3	0	5	3
+4	ECMTCID	8	TC ID pour l ECM	18h	Y
+5	PARAMGRPID	8	Identifier of the group of parameters			LD	ST	LPARAMSETID		Y	
+5	PARAMTABNB	8	Table number in the group of parameters			LD	NU	PID		Y	
+1	GETPARAM2	3THR	TC	GETPARAMETER : Recuperation des parametres ECM ZM	71	NOK			9	0	N
+2	207
+2	208
+2	209
+2	220
+2	224
+2	225
+2	226
+2	227
+2	228
+3	0	5	3
+4	ECMTCID	8	TC ID pour l ECM	18h	Y
+5	PARAMGRPID	8	Identifier of the group of parameters			LD	ST	LPARAMSETID		Y	
+5	PARAMTABNB	8	Table number in the group of parameters			LD	NU	PID		Y	
+1	GETTCREPOR1	3THR	TC	GetTCReport: acquisition des TM BOOT et CALIB - ECM ZP	70	NOK			2	0	N
+2	213
+2	214
+3	0	23	2
+4	ECMTCID	8	TC ID pour l ECM	22h	Y
+5	TMRQSELEC	8	Telemetry request selection			LD	ST	LTMREQSELEC		Y	
+1	GETTCREPOR2	3THR	TC	GetTCReport: acquisition des TM BOOT et CALIB - ECM ZM	71	NOK			2	0	N
+2	203
+2	204
+3	0	23	2
+4	ECMTCID	8	TC ID pour l ECM	22h	Y
+5	TMRQSELEC	8	Telemetry request selection			LD	ST	LTMREQSELEC		Y	
+1	HPLVOPCLOS1	3THR	TC	HPLVOPENCLOSE : Commande l ouverture de la vanne Haute Pression du PRM ZP	70	NOK			0	0	N
+3	0	21	5
+4	ECMTCID	8	TC ID pour l ECM	48h	Y
+4	HPLVSPARE1	3	Bit 0 .. Bit 2 Spare	0h	Y
+5	HPLVMSK	1	HPLV mask			ID	ST	LLVMSK		Y	
+4	HPLVSPARE2	3	Bit 4 .. Bit 6 Spare	0h	Y
+5	HPLVCMD	1	HPLV command			ID	ST	LLVCMD		Y	
+1	HPLVOPCLOS2	3THR	TC	HPLVOPENCLOSE : Commande l ouverture de la vanne Haute Pression du PRM ZM	71	NOK			0	0	N
+3	0	21	5
+4	ECMTCID	8	TC ID pour l ECM	48h	Y
+4	HPLVSPARE1	3	Bit 0 .. Bit 2 Spare	0h	Y
+5	HPLVMSK	1	HPLV mask			ID	ST	LLVMSK		Y	
+4	HPLVSPARE2	3	Bit 4 .. Bit 6 Spare	0h	Y
+5	HPLVCMD	1	HPLV command			ID	ST	LLVCMD		Y	
+1	LPLVOPCLOS1	3THR	TC	LPLVOPENCLOSE : Commande l ouverture des vannes Basse Pression du PRM ZP	70	NOK			0	0	N
+3	0	16	7
+4	ECMTCID	8	TC ID pour l ECM	44h	Y
+4	LPLVSPARE1	2	Bit 0 .. Bit 1 Spare	0h	Y
+5	LPLV2MSK	1	LPLV2 mask			ID	ST	LLVMSK		Y	
+5	LPLV1MSK	1	LPLV1 mask			ID	ST	LLVMSK		Y	
+4	LPLVSPARE2	2	Bit 4 .. Bit 5 Spare	0h	Y
+5	LPLV2CMD	1	LPLV2 command			ID	ST	LLVCMD		Y	
+5	LPLV1CMD	1	LPLV1 command			ID	ST	LLVCMD		Y	
+1	LPLVOPCLOS2	3THR	TC	LPLVOPENCLOSE : Commande l ouverture des vannes Basse Pression du PRM ZM	71	NOK			0	0	N
+3	0	16	7
+4	ECMTCID	8	TC ID pour l ECM	44h	Y
+4	LPLVSPARE1	2	Bit 0 .. Bit 1 Spare	0h	Y
+5	LPLV2MSK	1	LPLV2 mask			ID	ST	LLVMSK		Y	
+5	LPLV1MSK	1	LPLV1 mask			ID	ST	LLVMSK		Y	
+4	LPLVSPARE2	2	Bit 4 .. Bit 5 Spare	0h	Y
+5	LPLV2CMD	1	LPLV2 command			ID	ST	LLVCMD		Y	
+5	LPLV1CMD	1	LPLV1 command			ID	ST	LLVCMD		Y	
+1	MEMCHKSUM1	3THR	TC	MemoryChecksum : Calcule un checksum sur une partie de la memoire de l ECM ZP	70	NOK			0	0	N
+3	0	1	4
+4	ECMTCID	8	TC ID pour l ECM	14h	Y
+5	ECMMEMLENGT	32	Taille de la memoire associee a la valeur du checksum			LD	NU	PID		Y	
+5	ECMMEMPAGE	8	Memory page name			LD	ST	LMEMPAGE		Y	
+5	ECMADRDATA	32	Adresse des donnees			LD	NU	PID		Y	
+1	MEMCHKSUM2	3THR	TC	MemoryChecksum : Calcule u nchecksum sur une partie de la memoire de l ECM ZM.	71	NOK			0	0	N
+3	0	1	4
+4	ECMTCID	8	TC ID pour l ECM	14h	Y
+5	ECMMEMLENGT	32	Taille de la memoire associee a la valeur du checksum			LD	NU	PID		Y	
+5	ECMMEMPAGE	8	Memory page name			LD	ST	LMEMPAGE		Y	
+5	ECMADRDATA	32	Adresse des donnees			LD	NU	PID		Y	
+1	MEMDOWNLD1	3THR	TC	MemoryDownload : Vidage d une zone memoire de  l ECM ZP	70	NOK			1	0	N
+2	215
+3	0	6	4
+4	ECMTCID	8	TC ID pour l ECM	12h	Y
+4	ECMMEMLGT	8	Longueur de la donnee	48h	Y
+5	ECMMEMPAGE	8	Memory page name			LD	ST	LMEMPAGE		Y	
+5	ECMADRDATA	32	Adresse des donnees			LD	NU	PID		Y	
+1	MEMDOWNLD2	3THR	TC	MemoryDownload : Vidage d une zone memoire de  l ECM ZM	71	NOK			1	0	N
+2	205
+3	0	6	4
+4	ECMTCID	8	TC ID pour l ECM	12h	Y
+4	ECMMEMLGT	8	Longueur de la donnee	48h	Y
+5	ECMMEMPAGE	8	Memory page name			LD	ST	LMEMPAGE		Y	
+5	ECMADRDATA	32	Adresse des donnees			LD	NU	PID		Y	
+1	MODETRANS1	3THR	TC	MODETRANSITION : Demande a l ECM ZP de changer de mode.	70	NOK			0	0	N
+3	0	7	2
+4	ECMTCID	8	TC ID pour l ECM	9h	Y
+5	ECMNEWSTATE	8	Mode			LD	ST	LECMNEWST		Y	
+1	MODETRANS2	3THR	TC	MODETRANSITION : Demande a l ECM ZM de changer de mode.	71	NOK			0	0	N
+3	0	7	2
+4	ECMTCID	8	TC ID pour l ECM	9h	Y
+5	ECMNEWSTATE	8	Mode			LD	ST	LECMNEWST		Y	
+1	MTCALIBRAT1	3THR	TC	MTMFS0VCalibrate : Commande l etalonnage des MFS des moteurs de l ECM ZP	70	NOK			0	0	N
+3	0	8	2
+4	ECMTCID	8	TC ID pour l ECM	84h	Y
+5	MTMSK	8	MT mask			LD	NU	PID		Y	
+1	MTCALIBRAT2	3THR	TC	MTMFS0VCalibrate : Commande l etalonnage des MFS des moteurs de l ECM ZM	71	NOK			0	0	N
+3	0	8	2
+4	ECMTCID	8	TC ID pour l ECM	84h	Y
+5	MTMSK	8	MT mask			LD	NU	PID		Y	
+1	MTDIRECTWR1	3THR	TC	MTDIRECTWRITING : Commande directement un moteur de l ECM ZP.	70	NOK			0	0	N
+3	0	9	4
+4	ECMTCID	8	TC ID pour l ECM	90h	Y
+5	MTID	8	MT identification			LD	ST	LTGMOTORID		Y	
+5	VBASE	8	Direct value of DAC1			LD	NU	PID		Y	
+5	VREG	16	Direct value of DAC2			LD	NU	PID		Y	
+1	MTDIRECTWR2	3THR	TC	MTDIRECTWRITING : Commande directement un moteur de l ECM ZM.	71	NOK			0	0	N
+3	0	9	4
+4	ECMTCID	8	TC ID pour l ECM	90h	Y
+5	MTID	8	MT identification			LD	ST	LTGMOTORID		Y	
+5	VBASE	8	Direct value of DAC1			LD	NU	PID		Y	
+5	VREG	16	Direct value of DAC2			LD	NU	PID		Y	
+1	MTHTRONOFF1	3THR	TC	MTHEATERSONOFF : Pilote les rechauffeurs des moteurs de l ECM ZP.	70	NOK			0	0	N
+3	0	10	4
+4	ECMTCID	8	TC ID pour l ECM	88h	Y
+5	MTMSK	8	MT mask			LD	NU	PID		Y	
+5	MTCMD	8	MT command			LD	NU	PID		Y	
+5	RESETLCL	8	Reset latching current limiters			LD	NU	PID		Y	
+1	MTHTRONOFF2	3THR	TC	MTHEATERSONOFF : Pilote les rechauffeurs des moteurs de l ECM ZM.	71	NOK			0	0	N
+3	0	10	4
+4	ECMTCID	8	TC ID pour l ECM	88h	Y
+5	MTMSK	8	MT mask			LD	NU	PID		Y	
+5	MTCMD	8	MT command			LD	NU	PID		Y	
+5	RESETLCL	8	Reset latching current limiters			LD	NU	PID		Y	
+1	MTONOFF1	3THR	TC	MTONOFF : Commande l allumage des moteurs de l ECM ZP.	70	NOK			0	0	N
+3	0	11	3
+4	ECMTCID	8	TC ID pour l ECM	81h	Y
+5	MTMSK	8	MT mask			LD	NU	PID		Y	
+5	MTCMD	8	MT command			LD	NU	PID		Y	
+1	MTONOFF2	3THR	TC	MTONOFF : Commande l allumage des moteurs de l ECM ZM.	71	NOK			0	0	N
+3	0	11	3
+4	ECMTCID	8	TC ID pour l ECM	81h	Y
+5	MTMSK	8	MT mask			LD	NU	PID		Y	
+5	MTCMD	8	MT command			LD	NU	PID		Y	
+1	MTSETPOINT1	3THR	TC	MTHRUSTSETPOINT : Commande les moteurs de l ECM ZP.	70	NOK			0	0	N
+3	0	13	8
+4	ECMTCID	8	TC ID pour l ECM	82h	Y
+5	FREEZEFLAG	8	TM freeze option: if true, freeze high rate TM before applying the set points			LD	ST	LFREEZFLAG		Y	
+5	CLCMD	8	CL command			LD	NU	PID		Y	
+5	MTCMD	8	MT command			LD	NU	PID		Y	
+5	CL1SETPOINT	16	Control loop 1 set point	0	500	LD	NU	PCLSETPOINT	uN	Y	
+5	CL2SETPOINT	16	Control loop 2 set point	0	500	LD	NU	PCLSETPOINT	uN	Y	
+5	CL3SETPOINT	16	Control loop 3 set point	0	500	LD	NU	PCLSETPOINT	uN	Y	
+5	CL4SETPOINT	16	Control loop 4 set point	0	500	LD	NU	PCLSETPOINT	uN	Y	
+1	MTSETPOINT2	3THR	TC	MTHRUSTSETPOINT : Commande les moteurs de l ECM ZM.	71	NOK			0	0	N
+3	0	13	8
+4	ECMTCID	8	TC ID pour l ECM	82h	Y
+5	FREEZEFLAG	8	TM freeze option: if true, freeze high rate TM before applying the set points			LD	ST	LFREEZFLAG		Y	
+5	CLCMD	8	CL command			LD	NU	PID		Y	
+5	MTCMD	8	MT command			LD	NU	PID		Y	
+5	CL1SETPOINT	16	Control loop 1 set point	0	500	LD	NU	PCLSETPOINT	uN	Y	
+5	CL2SETPOINT	16	Control loop 2 set point	0	500	LD	NU	PCLSETPOINT	uN	Y	
+5	CL3SETPOINT	16	Control loop 3 set point	0	500	LD	NU	PCLSETPOINT	uN	Y	
+5	CL4SETPOINT	16	Control loop 4 set point	0	500	LD	NU	PCLSETPOINT	uN	Y	
+1	PLVARMCMD1	3THR	TC	PLVArmCmd : Armement des vannes HP et LP de l ECM ZP	70	NOK			0	0	N
+3	0	22	2
+4	ECMTCID	8	TC ID pour l ECM	42h	Y
+5	ARMDISARM	8	Permit or inhibit the PLV TCs			LD	ST	LARMDISARM		Y	
+1	PLVARMCMD2	3THR	TC	PLVArmCmd : Armement des vannes HP et LP de l ECM ZM	71	NOK			0	0	N
+3	0	22	2
+4	ECMTCID	8	TC ID pour l ECM	42h	Y
+5	ARMDISARM	8	Permit or inhibit the PLV TCs			LD	ST	LARMDISARM		Y	
+1	PTONOFF1	3THR	TC	PTONOFF : Commande l allumage des transducteurs de pression de  l ECM ZP.	70	NOK			0	0	N
+3	0	15	9
+4	ECMTCID	8	TC ID pour l ECM	41h	Y
+4	PTONOFSPARE	1	Bit 0 et 4 : not used	0h	Y
+5	HPT2MSK	1	HPT2 mask			ID	ST	LPTMSK		Y	
+5	HPT1MSK	1	HPT1 mask			ID	ST	LPTMSK		Y	
+5	LPTMSK	1	LPT mask			ID	ST	LPTMSK		Y	
+4	PTONOFSPARE	1	Bit 0 et 4 : not used	0h	Y
+5	HPT2CMD	1	HPT2 command			ID	ST	LPTCMD		Y	
+5	HPT1CMD	1	HPT1 command			ID	ST	LPTCMD		Y	
+5	LPTCMD	1	LPT command			ID	ST	LPTCMD		Y	
+1	PTONOFF2	3THR	TC	PTONOFF : Commande l allumage des transducteurs de pression de  l ECM ZM.	71	NOK			0	0	N
+3	0	15	9
+4	ECMTCID	8	TC ID pour l ECM	41h	Y
+4	PTONOFSPARE	1	Bit 0 et 4 : not used	0h	Y
+5	HPT2MSK	1	HPT2 mask			ID	ST	LPTMSK		Y	
+5	HPT1MSK	1	HPT1 mask			ID	ST	LPTMSK		Y	
+5	LPTMSK	1	LPT mask			ID	ST	LPTMSK		Y	
+4	PTONOFSPARE	1	Bit 0 et 4 : not used	0h	Y
+5	HPT2CMD	1	HPT2 command			ID	ST	LPTCMD		Y	
+5	HPT1CMD	1	HPT1 command			ID	ST	LPTCMD		Y	
+5	LPTCMD	1	LPT command			ID	ST	LPTCMD		Y	
+1	RAMUPLOAD1	3THR	TC	RAMUPLOAD : Chargement de donnees en RAM sur l ECM ZP.	70	NOK			0	0	N
+3	0	20	4
+4	ECMTCID	8	TC ID pour l ECM	Ah	Y
+4	ECMMEMLGT	8	Longueur de la donnee	44h	Y
+5	ECMADRDATA	32	Adresse des donnees			LD	NU	PID		Y	
+5	ECMDATA	544	Donnees			ID	NU	PID		Y	
+1	RAMUPLOAD2	3THR	TC	RAMUPLOAD : Chargement de donnees en RAM sur l ECM ZM.	71	NOK			0	0	N
+3	0	20	4
+4	ECMTCID	8	TC ID pour l ECM	Ah	Y
+4	ECMMEMLGT	8	Longueur de la donnee	44h	Y
+5	ECMADRDATA	32	Adresse des donnees			LD	NU	PID		Y	
+5	ECMDATA	544	Donnees			ID	NU	PID		Y	
+1	SETPARAM1	3THR	TC	SETPARAMETER : Chargement des parametres ECM ZP	70	NOK			0	0	N
+3	0	17	4
+4	ECMTCID	8	TC ID pour l ECM	21h	Y
+5	PARAMGRPID	8	Identifier of the group of parameters			LD	ST	LPARAMSETID		Y	
+5	PARAMTABNB	8	Table number in the group of parameters			LD	NU	PID		Y	
+5	PARAMDATA	560	Parameters values			ID	NU	PID		Y	
+1	SETPARAM2	3THR	TC	SETPARAMETER : Chargement des parametres ECM ZM	71	NOK			0	0	N
+3	0	17	4
+4	ECMTCID	8	TC ID pour l ECM	21h	Y
+5	PARAMGRPID	8	Identifier of the group of parameters			LD	ST	LPARAMSETID		Y	
+5	PARAMTABNB	8	Table number in the group of parameters			LD	NU	PID		Y	
+5	PARAMDATA	560	Parameters values			ID	NU	PID		Y	
+1	TRANSMITTM1	3THR	TC	TRANSMITTM : Demande la derniere telemetrie du type specifiee a l ECM ZP.	70	NOK			4	0	N
+2	210
+2	211
+2	212
+2	233
+3	0	18	2
+4	ECMTCID	8	TC ID pour l ECM	5h	Y
+5	ECMTMRQSEL	8	Telemetry request selection de l ECM			LD	ST	LECMRQSELEC		Y	
+1	TRANSMITTM2	3THR	TC	TRANSMITTM : Demande la derniere telemetrie du type specifiee a l ECM ZM.	71	NOK			4	0	N
+2	200
+2	201
+2	202
+2	223
+3	0	18	2
+4	ECMTCID	8	TC ID pour l ECM	5h	Y
+5	ECMTMRQSEL	8	Telemetry request selection de l ECM			LD	ST	LECMRQSELEC		Y	
+1	UNLOCKAREA1	3THR	TC	SETPROTECTEDAREASSTATUS : Demande l ECM ZP de proteger/deproteger contre l ecrit	70	NOK			0	0	N
+3	0	14	3
+4	ECMTCID	8	TC ID pour l ECM	11h	Y
+5	AREAID	8	EEPROM area identification			LD	ST	LAREAID		Y	
+5	LOCKUNLOCK	8	Permit or inhibit write on protected EEPROM Area			LD	ST	LLOCKUNLOCK		Y	
+6	SETPROTECTEDAREASSTATUS : Demande l ECM ZP de protéger/déprotéger contre l écriture, une zone mémoire de l EEPROM.
+1	UNLOCKAREA2	3THR	TC	SETPROTECTEDAREASSTATUS : Demande l ECM ZM de proteger/deproteger contre l ecrit	71	NOK			0	0	N
+3	0	14	3
+4	ECMTCID	8	TC ID pour l ECM	11h	Y
+5	AREAID	8	EEPROM area identification			LD	ST	LAREAID		Y	
+5	LOCKUNLOCK	8	Permit or inhibit write on protected EEPROM Area			LD	ST	LLOCKUNLOCK		Y	
+6	SETPROTECTEDAREASSTATUS : Demande l ECM ZM de protéger/déprotéger contre l écriture, une zone mémoire de l EEPROM.
+1	CONFSYSICU1	4ICU	TC	ConfigSyst : Chargement des parametres systeme en EEPROM ICU-REF	40	OK			0	0	N
+3	0	9	6
+4	TAILLEREQ	16	Longueur de la TC en octets	0C00h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	3300h	Y
+5	PHASESCAA	8	Phase Scaa en ms pour phaser la production des TM 4Hz sur le Top 1Hz	0	250	LD	NU	PID	ms	Y	PHASESCAA
+5	MODERUNASW	8	Mode de demarrage par defaut de l ASW			LD	ST	LMODERUNASW		Y	
+5	CLOCK	32	Frequence de l horloge ICU	19998000	20002000	LD	NU	PID	Hz	Y	
+1	CONFSYSICU2	4ICU	TC	ConfigSyst : Chargement des parametres systeme en EEPROM ICU-EP	41	OK			0	0	N
+3	0	9	6
+4	TAILLEREQ	16	Longueur de la TC en octets	0C00h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	3300h	Y
+5	PHASESCAA	8	Phase Scaa en ms pour phaser la production des TM 4Hz sur le Top 1Hz	0	250	LD	NU	PID	ms	Y	PHASESCAA
+5	MODERUNASW	8	Mode de demarrage par defaut de l ASW			LD	ST	LMODERUNASW		Y	
+5	CLOCK	32	Frequence de l horloge ICU	19998000	20002000	LD	NU	PID	Hz	Y	
+1	DEF2ATT1	4ICU	TC	TransDefAttente : Transfert des parametres de la table par defaut [EEPROM] vers 	40	OK			0	0	N
+3	0	20	3
+4	TAILLEREQ	16	Longueur de la TC en octets	0600h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	0003h	Y
+6	TransDefAttente : Transfert des paramètres de la table par défaut (EEPROM) vers la table d'attente ICU-REF
+1	DEF2ATT2	4ICU	TC	TransDefAttente : Transfert des parametres de la table par defaut [EEPROM] vers 	41	OK			0	0	N
+3	0	20	3
+4	TAILLEREQ	16	Longueur de la TC en octets	0600h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	0003h	Y
+6	TransDefAttente : Transfert des paramètres de la table par défaut (EEPROM) vers la table d'attente ICU-EP
+1	EDACDM1	4ICU	TC	TestEDAC_DM : Active l injection temporaire d erreur EDAC DM ICU-REF	28	OK			0	0	N
+3	0	28	4
+4	TAILLEREQ	16	Longueur de la TC en octets	0700h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	3C10h	Y
+5	TESTEDAC	8	Donnees de la TC de test EDAC			LD	NU	PID		Y	
+1	EDACDM2	4ICU	TC	TestEDAC_DM : Active l injection temporaire d erreur EDAC DM ICU-EP	29	OK			0	0	N
+3	0	28	4
+4	TAILLEREQ	16	Longueur de la TC en octets	0700h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	3C10h	Y
+5	TESTEDAC	8	Donnees de la TC de test EDAC			LD	NU	PID		Y	
+1	EDACPM1	4ICU	TC	TestEDAC_PM : Active l injection temporaire d erreur EDAC PM ICU-REF	28	OK			0	0	N
+3	0	27	4
+4	TAILLEREQ	16	Longueur de la TC en octets	0700h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	3610h	Y
+5	TESTEDAC	8	Donnees de la TC de test EDAC			LD	NU	PID		Y	
+1	EDACPM2	4ICU	TC	TestEDAC_PM : Active l injection temporaire d erreur EDAC PM ICU-EP	29	OK			0	0	N
+3	0	27	4
+4	TAILLEREQ	16	Longueur de la TC en octets	0700h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	3610h	Y
+5	TESTEDAC	8	Donnees de la TC de test EDAC			LD	NU	PID		Y	
+1	FIXBLOPAR1	4ICU	TC	FixeBlocParam : Telechargement par bloc des parametres des lois de commandes en 	40	OK			0	0	N
+3	0	6	6
+4	TAILLEREQ	16	Longueur de la TC en octets	3800h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	3000h	Y
+5	IDBLOCK	8	Identification du bloc de parametres			LD	ST	LIDBLOCK		Y	
+5	NUMTRONC	8	Numero Troncon [valeurs 0, 1, 2 ou 3]	0	3	LD	NU	PID		Y	
+5	BLOCPARAM	384	Parametres du bloc			LD	NU	PID		Y	
+6	FixeBlocParam : Téléchargement par bloc des paramètres des lois de commandes en table d'attente (ICU-REF)
+1	FIXBLOPAR2	4ICU	TC	FixeBlocParam : Telechargement par bloc des parametres des lois de commandes en 	41	OK			0	0	N
+3	0	6	6
+4	TAILLEREQ	16	Longueur de la TC en octets	3800h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	3000h	Y
+5	IDBLOCK	8	Identification du bloc de parametres			LD	ST	LIDBLOCK		Y	
+5	NUMTRONC	8	Numero Troncon [valeurs 0, 1, 2 ou 3]	0	3	LD	NU	PID		Y	
+5	BLOCPARAM	384	Parametres du bloc			LD	NU	PID		Y	
+6	FixeBlocParam : Téléchargement par bloc des paramètres des lois de commandes en table d'attente (ICU-EP)
+1	MODEASM1	4ICU	TC	ModeASM : Passage en mode ASM ICU-REF	40	OK			0	0	N
+3	0	12	6
+4	TAILLEREQ	16	Longueur de la TC en octets	0800h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	6300h	Y
+5	CONTROLFEEU	8	Controle FEEU			LD	ST	LCONFELEC		Y	
+4	UNUSED7	7	7 bits not used	0h	Y
+5	JEUPARAM	1	Controle asservissement : configuration HR/FR			ID	ST	LJEUPARAM		Y	
+1	MODEASM2	4ICU	TC	ModeASM : Passage en mode ASM ICU-EP	41	OK			0	0	N
+3	0	12	6
+4	TAILLEREQ	16	Longueur de la TC en octets	0800h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	6300h	Y
+5	CONTROLFEEU	8	Controle FEEU			LD	ST	LCONFELEC		Y	
+4	UNUSED7	7	7 bits not used	0h	Y
+5	JEUPARAM	1	Controle asservissement : configuration HR/FR			ID	ST	LJEUPARAM		Y	
+1	MODEPSM1	4ICU	TC	ModePSM : Passage en mode PSM ICU-REF	60	OK			0	0	N
+3	0	13	6
+4	TAILLEREQ	16	Longueur de la TC en octets	0800h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	6000h	Y
+5	CONTROLFEEU	8	Controle FEEU			LD	ST	LCONFELEC		Y	
+4	UNUSED7	7	7 bits not used	0h	Y
+5	JEUPARAM	1	Controle asservissement : configuration HR/FR			ID	ST	LJEUPARAM		Y	
+1	MODEPSM2	4ICU	TC	ModePSM : Passage en mode PSM ICU-EP	61	OK			0	0	N
+3	0	13	6
+4	TAILLEREQ	16	Longueur de la TC en octets	0800h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	6000h	Y
+5	CONTROLFEEU	8	Controle FEEU			LD	ST	LCONFELEC		Y	
+4	UNUSED7	7	7 bits not used	0h	Y
+5	JEUPARAM	1	Controle asservissement : configuration HR/FR			ID	ST	LJEUPARAM		Y	
+1	PATCHASW1	4ICU	TC	PatchASW : Telechargement complet du logiciel ASW du DSP en EEPROM [ICU-REF]	40	OK			0	0	N
+3	0	1	5
+4	TAILLEREQ	16	Longueur de la TC en octets	8700h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	0603h	Y
+5	INITPATCH	8	Initialisation ou incrementation du patch			LD	NU	PID		Y	
+5	DONNEES	1024	Pages binaires de code ASW sur 128 octets			LD	NU	PID		Y	
+1	PATCHASW2	4ICU	TC	PatchASW : Telechargement complet du logiciel ASW du DSP en EEPROM [ICU-EP]	41	OK			0	0	N
+3	0	1	5
+4	TAILLEREQ	16	Longueur de la TC en octets	8700h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	0603h	Y
+5	INITPATCH	8	Initialisation ou incrementation du patch			LD	NU	PID		Y	
+5	DONNEES	1024	Pages binaires de code ASW sur 128 octets			LD	NU	PID		Y	
+1	PATCHPAR1	4ICU	TC	PatchParam : Telechargement a bord par bloc des parametres des lois de commandes	40	OK			0	0	N
+3	0	3	5
+4	TAILLEREQ	16	Longueur de la TC en octets	C700h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	0600h	Y
+5	IDBLOCK	8	Identification du bloc de parametres			LD	ST	LIDBLOCK		Y	
+5	BLOCPATCH	1536	Parametres du bloc			LD	NU	PID		Y	
+6	PatchParam : Téléchargement à bord par bloc des paramètres des lois de commandes en EEPROM (table par défaut ICU-REF)
+1	PATCHPAR2	4ICU	TC	PatchParam : Telechargement a bord par bloc des parametres des lois de commandes	41	OK			0	0	N
+3	0	3	5
+4	TAILLEREQ	16	Longueur de la TC en octets	C700h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	0600h	Y
+5	IDBLOCK	8	Identification du bloc de parametres			LD	ST	LIDBLOCK		Y	
+5	BLOCPATCH	1536	Parametres du bloc			LD	NU	PID		Y	
+6	PatchParam : Téléchargement à bord par bloc des paramètres des lois de commandes en EEPROM (table par défaut ICU-REF)
+1	PATCHPROM1	4ICU	TC	PatchEEPROM : Patch local du logiciel DSP en EEPROM ICU-REF	34	OK			0	0	N
+3	0	21	6
+4	TAILLEREQ	16	Longueur de la TC en octets	3300h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	0010h	Y
+5	ADRDONNEES	32	Adresse des donnees			LD	NU	PID		Y	
+5	NBBYTESPROM	8	Nombre d octets a patcher			LD	NU	PID		Y	
+5	DATAPROM	320	Donnees [40 octets max.]			LD	NU	PID		Y	
+1	PATCHPROM2	4ICU	TC	PatchEEPROM : Patch local du logiciel DSP en EEPROM ICU-EP	35	OK			0	0	N
+3	0	21	6
+4	TAILLEREQ	16	Longueur de la TC en octets	3300h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	0010h	Y
+5	ADRDONNEES	32	Adresse des donnees			LD	NU	PID		Y	
+5	NBBYTESPROM	8	Nombre d octets a patcher			LD	NU	PID		Y	
+5	DATAPROM	320	Donnees [40 octets max.]			LD	NU	PID		Y	
+1	PATCHSRAMD1	4ICU	TC	PatchSRAM_DM : Patch local de la SRAM DM ICU-REF	40	OK			0	0	N
+3	0	25	6
+4	TAILLEREQ	16	Longueur de la TC en octets	3300h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	3010h	Y
+5	ADRDONNEES	32	Adresse des donnees			LD	NU	PID		Y	
+5	NBMOTSRAMD	8	Nombres de mots de 4 octets			LD	NU	PID		Y	
+5	DATARAMD	320	Donnees sur 40 octets max			LD	NU	PID		Y	
+1	PATCHSRAMD2	4ICU	TC	PatchSRAM_DM : Patch local de la SRAM DM ICU-EP	41	OK			0	0	N
+3	0	25	6
+4	TAILLEREQ	16	Longueur de la TC en octets	3300h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	3010h	Y
+5	ADRDONNEES	32	Adresse des donnees			LD	NU	PID		Y	
+5	NBMOTSRAMD	8	Nombres de mots de 4 octets			LD	NU	PID		Y	
+5	DATARAMD	320	Donnees sur 40 octets max			LD	NU	PID		Y	
+1	PATCHSRAMP1	4ICU	TC	PatchSRAM_PM : Patch local de la SRAM PM ICU-REF	40	OK			0	0	N
+3	0	23	6
+4	TAILLEREQ	16	Longueur de la TC en octets	4700h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	0610h	Y
+5	ADRDONNEES	32	Adresse des donnees			LD	NU	PID		Y	
+5	NBMOTSRAMP	8	Nombres de mots de 6 octets			LD	NU	PID		Y	
+5	DATARAMP	480	Donnees sur 60 octets max			LD	NU	PID		Y	
+1	PATCHSRAMP2	4ICU	TC	PatchSRAM_PM : Patch local de la SRAM PM ICU-EP	41	OK			0	0	N
+3	0	23	6
+4	TAILLEREQ	16	Longueur de la TC en octets	4700h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	0610h	Y
+5	ADRDONNEES	32	Adresse des donnees			LD	NU	PID		Y	
+5	NBMOTSRAMP	8	Nombres de mots de 6 octets			LD	NU	PID		Y	
+5	DATARAMP	480	Donnees sur 60 octets max			LD	NU	PID		Y	
+1	RAZICU1	4ICU	TC	RAZ_AutoTest : Reinitialisation table des segments SRAM defectueux ICU-REF	32	OK			0	0	N
+3	0	17	3
+4	TAILLEREQ	16	Longueur de la TC en octets	0600h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	C300h	Y
+1	RAZICU2	4ICU	TC	RAZ_AutoTest : Reinitialisation table des segments SRAM defectueux ICU-EP	33	OK			0	0	N
+3	0	17	3
+4	TAILLEREQ	16	Longueur de la TC en octets	0600h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	C300h	Y
+1	RQAUTOTS1	4ICU	TC	RequestTMAutotest : Demande acquisition TM Autotest ICU-REF	40	OK			1	0	N
+2	414
+3	0	16	3
+4	TAILLEREQ	16	Longueur de la TC en octets	0600h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	C000h	Y
+1	RQAUTOTS2	4ICU	TC	RequestTMAutotest : Demande acquisition TM Autotest ICU-EP	41	OK			1	0	N
+2	415
+3	0	16	3
+4	TAILLEREQ	16	Longueur de la TC en octets	0600h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	C000h	Y
+1	RQDUMPARAT1	4ICU	TC	DumpBlocParam : Demande de dump par bloc des parametres des lois de commande en 	40	OK			1	0	N
+2	406
+3	0	7	4
+4	TAILLEREQ	16	Longueur de la TC en octets	0700h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	0303h	Y
+5	IDBLOCK	8	Identification du bloc de parametres			LD	ST	LIDBLOCK		Y	
+6	DumpBlocParam : Demande de dump par bloc des paramètres des lois de commande en table d'attente (ICU-REF).  Cette TC est exécutée par la partie ASW du LV ICU
+1	RQDUMPARAT2	4ICU	TC	DumpBlocParam : Demande de dump par bloc des parametres des lois de commande en 	41	OK			1	0	N
+2	407
+3	0	7	4
+4	TAILLEREQ	16	Longueur de la TC en octets	0700h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	0303h	Y
+5	IDBLOCK	8	Identification du bloc de parametres			LD	ST	LIDBLOCK		Y	
+6	DumpBlocParam : Demande de dump par bloc des paramètres des lois de commande en table d'attente (ICU-EP).  Cette TC est exécutée par la partie ASW du LV ICU
+1	RQDUMPARBO1	4ICU	TC	RequestDumpParam : Demande de dump par bloc des parametres des lois de commande 	40	OK			1	0	N
+2	402
+3	0	4	4
+4	TAILLEREQ	16	Longueur de la TC en octets	0700h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	0C00h	Y
+5	IDBLOCK	8	Identification du bloc de parametres			LD	ST	LIDBLOCK		Y	
+6	RequestDumpParam : Demande de dump par bloc des paramètres des lois de commande en EEPROM (ICU-REF)
+1	RQDUMPARBO2	4ICU	TC	RequestDumpParam : Demande de dump par bloc des parametres des lois de commande 	41	OK			1	0	N
+2	403
+3	0	4	4
+4	TAILLEREQ	16	Longueur de la TC en octets	0700h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	0C00h	Y
+5	IDBLOCK	8	Identification du bloc de parametres			LD	ST	LIDBLOCK		Y	
+6	RequestDumpParam : Demande de dump par bloc des paramètres des lois de commande en EEPROM (ICU-EP)
+1	RQDUMPARCU1	4ICU	TC	DumpBlocParamCourant : Demande de dump par bloc des parametres des lois de comma	40	OK			1	0	N
+2	408
+3	0	8	4
+4	TAILLEREQ	16	Longueur de la TC en octets	0700h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	0C03h	Y
+5	IDBLOCK	8	Identification du bloc de parametres			LD	ST	LIDBLOCK		Y	
+6	DumpBlocParamCourant : Demande de dump par bloc des paramètres des lois de commande en table courante (ICU-REF).  Cette TC est exécutée par la partie ASW du LV ICU
+1	RQDUMPARCU2	4ICU	TC	DumpBlocParamCourant : Demande de dump par bloc des parametres des lois de comma	41	OK			1	0	N
+2	409
+3	0	8	4
+4	TAILLEREQ	16	Longueur de la TC en octets	0700h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	0C03h	Y
+5	IDBLOCK	8	Identification du bloc de parametres			LD	ST	LIDBLOCK		Y	
+6	DumpBlocParamCourant : Demande de dump par bloc des paramètres des lois de commande en table courante (ICU-EP).  Cette TC est exécutée par la partie ASW du LV ICU
+1	RQDUMPARTO1	4ICU	TC	RequestDumpTableParam :  Demande de dump par page de 512 octets des parametres d	40	OK			1	0	N
+2	404
+3	0	5	4
+4	TAILLEREQ	16	Longueur de la TC en octets	0700h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	0306h	Y
+5	INITDUMPPAR	8	 initialisation ou incrementation de l adresse de debut du dump			LD	NU	PID		Y	
+6	RequestDumpTableParam :  Demande de dump par page de 512 octets des paramètres des lois de commande en EEPROM (ICU-REF). Cette TC est exécutée par la partie IMSW du LV ICU.
+1	RQDUMPARTO2	4ICU	TC	RequestDumpTableParam : Demande de dump par page de 512 octets des parametres de	41	OK			1	0	N
+2	405
+3	0	5	4
+4	TAILLEREQ	16	Longueur de la TC en octets	0700h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	0306h	Y
+5	INITDUMPPAR	8	 initialisation ou incrementation de l adresse de debut du dump			LD	NU	PID		Y	
+6	RequestDumpTableParam : Demande de dump par page de 512 octets des paramètres des lois de commande en EEPROM (ICU-EP). Cette TC est exécutée par la partie IMSW du LV ICU.
+1	RQDUMPASW1	4ICU	TC	RequestDumpASW : Demande de Dump du logiciel ASW en EEPROM [ICU-REF]	40	OK			1	0	N
+2	400
+3	0	2	4
+4	TAILLEREQ	16	Longueur de la TC en octets	0700h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	0300h	Y
+5	INITDUMP	8	Initialisation ou incrementation du dump			LD	NU	PID		Y	
+1	RQDUMPASW2	4ICU	TC	RequestDumpASW : Demande de Dump du logiciel ASW en EEPROM [ICU-EP]	41	OK			1	0	N
+2	401
+3	0	2	4
+4	TAILLEREQ	16	Longueur de la TC en octets	0700h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	0300h	Y
+5	INITDUMP	8	Initialisation ou incrementation du dump			LD	NU	PID		Y	
+1	RQDUMPDM1	4ICU	TC	RequestDumpDM : Demande de dump local de la SRAM DM ICU-REF	36	OK			1	0	N
+2	422
+3	0	26	4
+4	TAILLEREQ	16	Longueur de la TC en octets	0A00h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	3310h	Y
+5	ADRDONNEES	32	Adresse des donnees			LD	NU	PID		Y	
+1	RQDUMPDM2	4ICU	TC	RequestDumpDM : Demande de dump local de la SRAM DM ICU-EP	37	OK			1	0	N
+2	423
+3	0	26	4
+4	TAILLEREQ	16	Longueur de la TC en octets	0A00h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	3310h	Y
+5	ADRDONNEES	32	Adresse des donnees			LD	NU	PID		Y	
+1	RQDUMPE2P1	4ICU	TC	RequestDumpEEPROM : Demande de dump local de l EEPROM ICU-REF	40	OK			1	0	N
+2	418
+3	0	22	4
+4	TAILLEREQ	16	Longueur de la TC en octets	0A00h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	0310h	Y
+5	ADRDONNEES	32	Adresse des donnees			LD	NU	PID		Y	
+1	RQDUMPE2P2	4ICU	TC	RequestDumpEEPROM : Demande de dump local de l EEPROM ICU-EP	41	OK			1	0	N
+2	419
+3	0	22	4
+4	TAILLEREQ	16	Longueur de la TC en octets	0A00h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	0310h	Y
+5	ADRDONNEES	32	Adresse des donnees			LD	NU	PID		Y	
+1	RQDUMPM1	4ICU	TC	RequestDumpPM : Demande de dump local de la SRAM PM ICU-REF	36	OK			1	0	N
+2	420
+3	0	24	4
+4	TAILLEREQ	16	Longueur de la TC en octets	0A00h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	0C10h	Y
+5	ADRDONNEES	32	Adresse des donnees			LD	NU	PID		Y	
+1	RQDUMPM2	4ICU	TC	RequestDumpPM : Demande de dump local de la SRAM PM ICU-EP	37	OK			1	0	N
+2	421
+3	0	24	4
+4	TAILLEREQ	16	Longueur de la TC en octets	0A00h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	0C10h	Y
+5	ADRDONNEES	32	Adresse des donnees			LD	NU	PID		Y	
+1	RQSIGNICU1	4ICU	TC	RequestSignature : Demande acquisition signature ASW ICU-REF	40	OK			1	0	N
+2	416
+3	0	18	3
+4	TAILLEREQ	16	Longueur de la TC en octets	0600h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	C600h	Y
+1	RQSIGNICU2	4ICU	TC	RequestSignature : Demande acquisition signature ASW ICU-EP	41	OK			1	0	N
+2	417
+3	0	18	3
+4	TAILLEREQ	16	Longueur de la TC en octets	0600h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	C600h	Y
+1	RQTMACC1	4ICU	TC	RequestTMACC_4Hz : Demande acquisition TM 4Hz ICU-REF	38	OK			0	0	N
+3	0	10	3
+4	TAILLEREQ	16	Longueur de la TC en octets	0600h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	3600h	Y
+1	RQTMACC2	4ICU	TC	RequestTMACC_4Hz : Demande acquisition TM 4Hz ICU-EP	39	OK			0	0	N
+3	0	10	3
+4	TAILLEREQ	16	Longueur de la TC en octets	0600h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	3600h	Y
+1	RQTMHK1	4ICU	TC	RequestTM_HK : Demande acquisition TM 1Hz ICU-REF	38	OK			0	0	N
+3	0	11	3
+4	TAILLEREQ	16	Longueur de la TC en octets	0600h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	3C00h	Y
+1	RQTMHK2	4ICU	TC	RequestTM_HK : Demande acquisition TM 1Hz ICU-EP	39	OK			0	0	N
+3	0	11	3
+4	TAILLEREQ	16	Longueur de la TC en octets	0600h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	3C00h	Y
+1	RUNICU1	4ICU	TC	Run : Demarrage du logiciel ASW ICU-REF	40	OK			0	0	N
+3	0	15	10
+4	TAILLEREQ	16	Longueur de la TC en octets	0F00h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	6C00h	Y
+5	SIGNASWAA	8	Siganture de l ASW : Annee			LD	NU	PID		Y	
+5	SIGNASWMM	8	Siganture de l ASW : Mois			LD	NU	PID		Y	
+5	SIGNASWJJ	8	Siganture de l ASW : Jour d edition du code ASW			LD	NU	PID		Y	
+5	SIGNASWVER	8	Siganture de l ASW : Version			LD	NU	PID		Y	
+5	SIGNASWLG	24	Siganture de l ASW : Taile du code ASW			LD	NU	PID		Y	
+5	SIGCRC8ICU	8	Siganture de l ASW : CRC8			LD	NU	PID		Y	
+5	FORCAGEASW	8	Forcage de l ASW			LD	ST	LFORCAGEASW		Y	
+1	RUNICU2	4ICU	TC	Run : Demarrage du logiciel ASW ICU-EP	41	OK			0	0	N
+3	0	15	10
+4	TAILLEREQ	16	Longueur de la TC en octets	0F00h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	6C00h	Y
+5	SIGNASWAA	8	Siganture de l ASW : Annee			LD	NU	PID		Y	
+5	SIGNASWMM	8	Siganture de l ASW : Mois			LD	NU	PID		Y	
+5	SIGNASWJJ	8	Siganture de l ASW : Jour d edition du code ASW			LD	NU	PID		Y	
+5	SIGNASWVER	8	Siganture de l ASW : Version			LD	NU	PID		Y	
+5	SIGNASWLG	24	Siganture de l ASW : Taile du code ASW			LD	NU	PID		Y	
+5	SIGCRC8ICU	8	Siganture de l ASW : CRC8			LD	NU	PID		Y	
+5	FORCAGEASW	8	Forcage de l ASW			LD	ST	LFORCAGEASW		Y	
+1	STBYICU1	4ICU	TC	ModeStandBy : Passage en mode StandBy ICU-REF	40	OK			0	0	N
+3	0	14	4
+4	TAILLEREQ	16	Longueur de la TC en octets	0700h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	6600h	Y
+5	MODERUNASW	8	Mode de demarrage par defaut de l ASW			LD	ST	LMODERUNASW		Y	
+1	STBYICU2	4ICU	TC	ModeStandBy : Passage en mode StandBy ICU-EP	41	OK			0	0	N
+3	0	14	4
+4	TAILLEREQ	16	Longueur de la TC en octets	0700h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	6600h	Y
+5	MODERUNASW	8	Mode de demarrage par defaut de l ASW			LD	ST	LMODERUNASW		Y	
+1	SWITCHPAR1	4ICU	TC	SwitchParam : Bascule les parametres des lois de commandes de la table d attente	40	OK			0	0	N
+3	0	19	3
+4	TAILLEREQ	16	Longueur de la TC en octets	0600h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	CC00h	Y
+6	SwitchParam : Bascule les paramètres des lois de commandes de la table d attente (BUFFER) vers la table courante et inversement ICU-REF
+1	SWITCHPAR2	4ICU	TC	SwitchParam : Bascule les parametres des lois de commandes de la table d attente	41	OK			0	0	N
+3	0	19	3
+4	TAILLEREQ	16	Longueur de la TC en octets	0600h	Y
+4	ADREMETTEUR	16	Adresse de l emetteur	A5EBh	Y
+4	IDREQ	16	Identifiant de la requete	CC00h	Y
+6	SwitchParam : Bascule les paramètres des lois de commandes de la table d attente (BUFFER) vers la table courante et inversement ICU-EP
+1	ACQMAG	4MAG	TC	TC2 demande acq sorties MAG [3 axes]	1840	OK			1	0	N
+2	570
+3	0	1	5
+5	TC2FREQ	8	Frequence acq ou cmd TC niveau 2			LD	NU	PID		Y	
+4	TC2APID1	16	APID paquet TM brute acquit TC2	23Ah	Y
+4	TC2APID2	16	APID paquet TM processee acquit TC2	0h	Y
+5	TC2NBEXEC	8	Nombre d executions cycliques des profils TC2			LD	NU	PID		Y	
+4	TC2NBPROFIL	8	Nombre de profils de la TC2	0h	Y
+1	SENDTMMAG	4MAG	TC	TC2 LV generation paquet TM MAG	1840	OK			1	0	N
+2	570
+3	0	2	0
+1	STOPACQMAG	4MAG	TC	TC2 arret acq sorties MAG	1840	OK			0	0	N
+3	0	81	0
+1	STOPTMMAG	4MAG	TC	TC2 LV arret generation paquet TM MAG [3 axes]	1840	OK			0	0	N
+3	0	82	0
+1	ACQRWX	4RWA	TC	TC2 acquisition TM roue X	1861	OK			1	0	N
+2	611
+3	0	1	5
+5	TC2FREQ	8	Frequence acq ou cmd TC niveau 2			LD	NU	PID		Y	
+4	TC2APID1	16	APID paquet TM brute acquit TC2	263h	Y
+4	TC2APID2	16	APID paquet TM processee acquit TC2	0h	Y
+5	TC2NBEXEC	8	Nombre d executions cycliques des profils TC2			LD	NU	PID		Y	
+4	TC2NBPROFIL	8	Nombre de profils de la TC2	0h	Y
+1	DISRWX	4RWA	TC	TC2 disable roue X	1861	OK			0	0	N
+3	0	2	0
+1	ENRWX	4RWA	TC	TC2 enable roue X	1861	OK			0	0	N
+3	0	3	0
+1	SENDTMRWX	4RWA	TC	TC2 LV generation paquet TM roue X	1861	OK			1	0	N
+2	611
+3	0	6	0
+1	SETRWXSPD	4RWA	TC	TC2 envoi de profils en vitesse a la roue X	1861	OK			0	0	N
+3	0	5	29
+5	TC2FREQ	8	Frequence acq ou cmd TC niveau 2			LD	NU	PID		Y	UPFREQ
+4	TC2APID1	16	APID paquet TM brute acquit TC2	0h	Y
+4	TC2APID2	16	APID paquet TM processee acquit TC2	0h	Y
+5	TC2NBEXEC	8	Nombre d executions cycliques des profils TC2			LD	NU	PID		Y	UPNBEXEC
+5	TC2NBPROFIL	8	Nombre de profils de la TC2			LD	NU	PID		Y	UPNBPROFIL
+5	TC2RWSPD1	32	Donnee 1 de la TC2 cmd speed RW			CA	NU	PSPEEDRW		Y	UPRWSPD1
+5	TC2RWSPD2	32	Donnee 2 de la TC2 cmd speed RW			CA	NU	PSPEEDRW		Y	UPRWSPD2
+5	TC2RWSPD3	32	Donnee 3 de la TC2 cmd speed RW			CA	NU	PSPEEDRW		Y	UPRWSPD3
+5	TC2RWSPD4	32	Donnee 4 de la TC2 cmd speed RW			CA	NU	PSPEEDRW		Y	UPRWSPD4
+5	TC2RWSPD5	32	Donnee 5 de la TC2 cmd speed RW			CA	NU	PSPEEDRW		Y	UPRWSPD5
+5	TC2RWSPD6	32	Donnee 6 de la TC2 cmd speed RW			CA	NU	PSPEEDRW		Y	UPRWSPD6
+5	TC2RWSPD7	32	Donnee 7 de la TC2 cmd speed RW			CA	NU	PSPEEDRW		Y	UPRWSPD7
+5	TC2RWSPD8	32	Donnee 8 de la TC2 cmd speed RW			CA	NU	PSPEEDRW		Y	UPRWSPD8
+5	TC2RWSPD9	32	Donnee 9 de la TC2 cmd speed RW			CA	NU	PSPEEDRW		Y	UPRWSPD9
+5	TC2RWSPD10	32	Donnee 10 de la TC2 cmd speed RW			CA	NU	PSPEEDRW		Y	UPRWSPD10
+5	TC2RWSPD11	32	Donnee 11 de la TC2 cmd speed RW			CA	NU	PSPEEDRW		Y	UPRWSPD11
+5	TC2RWSPD12	32	Donnee 12 de la TC2 cmd speed RW			CA	NU	PSPEEDRW		Y	UPRWSPD12
+5	TC2RWSPD13	32	Donnee 13 de la TC2 cmd speed RW			CA	NU	PSPEEDRW		Y	UPRWSPD13
+5	TC2RWSPD14	32	Donnee 14 de la TC2 cmd speed RW			CA	NU	PSPEEDRW		Y	UPRWSPD14
+5	TC2RWSPD15	32	Donnee 15 de la TC2 cmd speed RW			CA	NU	PSPEEDRW		Y	UPRWSPD15
+5	TC2RWSPD16	32	Donnee 16 de la TC2 cmd speed RW			CA	NU	PSPEEDRW		Y	UPRWSPD16
+5	TC2RWSPD17	32	Donnee 17 de la TC2 cmd speed RW			CA	NU	PSPEEDRW		Y	UPRWSPD17
+5	TC2RWSPD18	32	Donnee 18 de la TC2 cmd speed RW			CA	NU	PSPEEDRW		Y	UPRWSPD18
+5	TC2RWSPD19	32	Donnee 19 de la TC2 cmd speed RW			CA	NU	PSPEEDRW		Y	UPRWSPD19
+5	TC2RWSPD20	32	Donnee 20 de la TC2 cmd speed RW			CA	NU	PSPEEDRW		Y	UPRWSPD20
+5	TC2RWSPD21	32	Donnee 21 de la TC2 cmd speed RW			CA	NU	PSPEEDRW		Y	UPRWSPD21
+5	TC2RWSPD22	32	Donnee 22 de la TC2 cmd speed RW			CA	NU	PSPEEDRW		Y	UPRWSPD22
+5	TC2RWSPD23	32	Donnee 23 de la TC2 cmd speed RW			CA	NU	PSPEEDRW		Y	UPRWSPD23
+5	TC2RWSPD24	32	Donnee 24 de la TC2 cmd speed RW			CA	NU	PSPEEDRW		Y	UPRWSPD24
+1	SETRWXTRQ	4RWA	TC	TC2 envoi de profils en couple a la roue X	1861	OK			0	0	N
+3	0	4	29
+5	TC2FREQ	8	Frequence acq ou cmd TC niveau 2			LD	NU	PID		Y	UPFREQ
+4	TC2APID1	16	APID paquet TM brute acquit TC2	0h	Y
+4	TC2APID2	16	APID paquet TM processee acquit TC2	0h	Y
+5	TC2NBEXEC	8	Nombre d executions cycliques des profils TC2			LD	NU	PID		Y	UPNBEXEC
+5	TC2NBPROFIL	8	Nombre de profils de la TC2			LD	NU	PID		Y	UPNBPROFIL
+5	TC2RWTRQ1	32	Donnee 1 de la TC2 cmd torque RW			CA	NU	PTORQUERW		Y	UPRWTRQ1
+5	TC2RWTRQ2	32	Donnee 2 de la TC2 cmd torque RW			CA	NU	PTORQUERW		Y	UPRWTRQ2
+5	TC2RWTRQ3	32	Donnee 3 de la TC2 cmd torque RW			CA	NU	PTORQUERW		Y	UPRWTRQ3
+5	TC2RWTRQ4	32	Donnee 4 de la TC2 cmd torque RW			CA	NU	PTORQUERW		Y	UPRWTRQ4
+5	TC2RWTRQ5	32	Donnee 5 de la TC2 cmd torque RW			CA	NU	PTORQUERW		Y	UPRWTRQ5
+5	TC2RWTRQ6	32	Donnee 6 de la TC2 cmd torque RW			CA	NU	PTORQUERW		Y	UPRWTRQ6
+5	TC2RWTRQ7	32	Donnee 7 de la TC2 cmd torque RW			CA	NU	PTORQUERW		Y	UPRWTRQ7
+5	TC2RWTRQ8	32	Donnee 8 de la TC2 cmd torque RW			CA	NU	PTORQUERW		Y	UPRWTRQ8
+5	TC2RWTRQ9	32	Donnee 9 de la TC2 cmd torque RW			CA	NU	PTORQUERW		Y	UPRWTRQ9
+5	TC2RWTRQ10	32	Donnee 10 de la TC2 cmd torque RW			CA	NU	PTORQUERW		Y	UPRWTRQ10
+5	TC2RWTRQ11	32	Donnee 11 de la TC2 cmd torque RW			CA	NU	PTORQUERW		Y	UPRWTRQ11
+5	TC2RWTRQ12	32	Donnee 12 de la TC2 cmd torque RW			CA	NU	PTORQUERW		Y	UPRWTRQ12
+5	TC2RWTRQ13	32	Donnee 13 de la TC2 cmd torque RW			CA	NU	PTORQUERW		Y	UPRWTRQ13
+5	TC2RWTRQ14	32	Donnee 14 de la TC2 cmd torque RW			CA	NU	PTORQUERW		Y	UPRWTRQ14
+5	TC2RWTRQ15	32	Donnee 15 de la TC2 cmd torque RW			CA	NU	PTORQUERW		Y	UPRWTRQ15
+5	TC2RWTRQ16	32	Donnee 16 de la TC2 cmd torque RW			CA	NU	PTORQUERW		Y	UPRWTRQ16
+5	TC2RWTRQ17	32	Donnee 17 de la TC2 cmd torque RW			CA	NU	PTORQUERW		Y	UPRWTRQ17
+5	TC2RWTRQ18	32	Donnee 18 de la TC2 cmd torque RW			CA	NU	PTORQUERW		Y	UPRWTRQ18
+5	TC2RWTRQ19	32	Donnee 19 de la TC2 cmd torque RW			CA	NU	PTORQUERW		Y	UPRWTRQ19
+5	TC2RWTRQ20	32	Donnee 20 de la TC2 cmd torque RW			CA	NU	PTORQUERW		Y	UPRWTRQ20
+5	TC2RWTRQ21	32	Donnee 21 de la TC2 cmd torque RW			CA	NU	PTORQUERW		Y	UPRWTRQ21
+5	TC2RWTRQ22	32	Donnee 22 de la TC2 cmd torque RW			CA	NU	PTORQUERW		Y	UPRWTRQ22
+5	TC2RWTRQ23	32	Donnee 23 de la TC2 cmd torque RW			CA	NU	PTORQUERW		Y	UPRWTRQ23
+5	TC2RWTRQ24	32	Donnee 24 de la TC2 cmd torque RW			CA	NU	PTORQUERW		Y	UPRWTRQ24
+1	STOPACQRWX	4RWA	TC	TC2 arret acquisition TM roue X	1861	OK			0	0	N
+3	0	81	0
+1	STOPTMRWX	4RWA	TC	TC2 LV arret generation paquet TM roue X	1861	OK			0	0	N
+3	0	86	0
+1	SENDTMSASXM	4SAS	TC	TC2 LV generation paquet TM SASXM [4 cellules]	1833	OK			1	0	N
+2	563
+3	0	2	0
+1	SENDTMSASXP	4SAS	TC	TC2 LV generation paquet TM SASXP [4 cellules]	1831	OK			1	0	N
+2	561
+3	0	2	0
+1	SENDTMSASZP	4SAS	TC	TC2 LV generation paquet TM SASZP [4 cellules]	1832	OK			1	0	N
+2	562
+3	0	2	0
+1	STOPTMSASXM	4SAS	TC	TC2 LV arret generation paquet TM SASXM [4 cellules]	1833	OK			0	0	N
+3	0	82	0
+1	STOPTMSASXP	4SAS	TC	TC2 LV arret generation paquet TM SASXP [4 cellules]	1831	OK			0	0	N
+3	0	82	0
+1	STOPTMSASZP	4SAS	TC	TC2 LV arret generation paquet TM SASZP [4 cellules]	1832	OK			0	0	N
+3	0	82	0
+1	ACQATT	4SST	TC	To read and clear the attitude buffer	1800	OK			1	0	N
+2	500
+3	0	3	5
+5	TC2FREQ	8	Frequence acq ou cmd TC niveau 2			LD	NU	PID		Y	
+4	TC2APID1	16	APID paquet TM brute acquit TC2	1F4h	Y
+4	TC2APID2	16	APID paquet TM processee acquit TC2	0h	Y
+5	TC2NBEXEC	8	Nombre d executions cycliques des profils TC2			LD	NU	PID		Y	
+4	TC2NBPROFIL	8	Nombre de profils de la TC2	0h	Y
+1	ACQIMAG	4SST	TC	The image stored with StoreImage command is retrieved	1800	OK			1	0	N
+2	505
+3	0	10	5
+5	TC2FREQ	8	Frequence acq ou cmd TC niveau 2			LD	NU	PID		Y	
+4	TC2APID1	16	APID paquet TM brute acquit TC2	1F9h	Y
+4	TC2APID2	16	APID paquet TM processee acquit TC2	0h	Y
+5	TC2NBEXEC	8	Nombre d executions cycliques des profils TC2			LD	NU	PID		Y	
+4	TC2NBPROFIL	8	Nombre de profils de la TC2	0h	Y
+1	ACQSST	4SST	TC	Forces the ASC to send the HK data	1800	OK			1	0	N
+2	504
+3	0	4	5
+5	TC2FREQ	8	Frequence acq ou cmd TC niveau 2			LD	NU	PID		Y	
+4	TC2APID1	16	APID paquet TM brute acquit TC2	1F8h	Y
+4	TC2APID2	16	APID paquet TM processee acquit TC2	0h	Y
+5	TC2NBEXEC	8	Nombre d executions cycliques des profils TC2			LD	NU	PID		Y	
+4	TC2NBPROFIL	8	Nombre de profils de la TC2	0h	Y
+1	ACQSTAT	4SST	TC	To download the system variables area	1800	OK			1	0	N
+2	509
+3	0	16	0
+1	ATTMODE	4SST	TC	Places the ASC in attitude determination mode	1800	OK			0	0	N
+3	0	2	0
+1	DUMPLVSST	4SST	TC	TC2 pour dumper une zone memoire RAM [Flash ou DRAM] SST	1800	OK			2	0	N
+2	506
+2	510
+3	0	201	2
+5	ADRDUMPSST	32	Adresse de debut du dump memoire SST			LD	NU	PID		Y	
+5	LGDUMPSST	32	Nombre d octets memoire SST a dumper			LD	NU	PID		Y	
+1	LOADPARAM1	4SST	TC	TC2 to load one 8 bits parameter with a specified value	1800	OK			0	0	N
+3	0	20	3
+5	PARAMOFFSET	16	Index into parameter space			LD	NU	PID		Y	UPPARAOFFSE
+4	PARAMSIZE	8	Size of variable ParameterValue	1h	Y
+5	PARAMVALUE1	8	Specified value to flash RAM			LD	NU	PID		Y	UPPAMVALUE1
+1	LOADPARAM2	4SST	TC	TC2 to load one 16 bits parameter with a specified value	1800	OK			0	0	N
+3	0	21	3
+5	PARAMOFFSET	16	Index into parameter space			LD	NU	PID		Y	UPPARAOFFSE
+4	PARAMSIZE	8	Size of variable ParameterValue	2h	Y
+5	PARAMVALUE2	16	Specified value to flash RAM			LD	NU	PID		Y	UPPAMVALUE2
+1	LOADPARAM4	4SST	TC	TC2 to load one 32 bits parameter with a specified value	1800	OK			0	0	N
+3	0	22	3
+5	PARAMOFFSET	16	Index into parameter space			LD	NU	PID		Y	UPPARAOFFSE
+4	PARAMSIZE	8	Size of variable ParameterValue	4h	Y
+5	PARAMVALUE4	32	Specified value to flash RAM			LD	NU	PID		Y	UPPAMVALUE4
+1	LOADPARAM64	4SST	TC	TC2 to load one 64 bytes float parameter with a specified value	1800	OK			0	0	N
+3	0	26	3
+5	PARAMOFFSET	16	Index into parameter space			LD	NU	PID		Y	UPPARAOFFSE
+4	PARAMSIZE	8	Size of variable ParameterValue	40h	Y
+5	PARAMVALU64	512	Specified value to flash RAM			LF	NU	PID		Y	UPPAMVALU64
+1	LOADPARAM8	4SST	TC	TC2 to load one 64 bits float parameter with a specified value	1800	OK			0	0	N
+3	0	23	3
+5	PARAMOFFSET	16	Index into parameter space			LD	NU	PID		Y	UPPARAOFFSE
+4	PARAMSIZE	8	Size of variable ParameterValue	8h	Y
+5	PARAMVALUE8	64	Specified value to flash RAM			LF	NU	PID		Y	UPPAMVALUE8
+1	PATCHLVSST	4SST	TC	TC2 pour executer les commandes de patch RAM SST [Flash ou DRAM] contenues dans 	1800	OK			1	0	N
+2	510
+3	0	200	1
+5	ARRETSURERR	8	Arret sur erreur  lors du rechargement LV SST			LD	ST	LARRETSURER		Y	
+6	TC2 pour exécuter les commandes de patch RAM SST (Flash ou DRAM) contenues dans un fichier préalablement chargé à bord
+1	PATCHRAMSST	4SST	TC	Patch de 1 a 10 octets en RAM SST	1800	NOK			0	0	N
+3	0	202	11
+5	ADRPATCHSST	32	Adresse de debut du patch RAM SST			LD	NU	PID		Y	
+5	OCTETSPATCH1	8	Donnees a patcher en RAM SST [Longueur variable multiple d octets jusqu a 10 oct			LD	NU	PID		Y	
+5	OCTETSPATCH2	8	Donnees a patcher en RAM SST [Longueur variable multiple d octets jusqu a 10 oct			LD	NU	PID		N	
+5	OCTETSPATCH3	8	Donnees a patcher en RAM SST [Longueur variable multiple d octets jusqu a 10 oct			LD	NU	PID		N	
+5	OCTETSPATCH4	8	Donnees a patcher en RAM SST [Longueur variable multiple d octets jusqu a 10 oct			LD	NU	PID		N	
+5	OCTETSPATCH5	8	Donnees a patcher en RAM SST [Longueur variable multiple d octets jusqu a 10 oct			LD	NU	PID		N	
+5	OCTETSPATCH6	8	Donnees a patcher en RAM SST [Longueur variable multiple d octets jusqu a 10 oct			LD	NU	PID		N	
+5	OCTETSPATCH7	8	Donnees a patcher en RAM SST [Longueur variable multiple d octets jusqu a 10 oct			LD	NU	PID		N	
+5	OCTETSPATCH8	8	Donnees a patcher en RAM SST [Longueur variable multiple d octets jusqu a 10 oct			LD	NU	PID		N	
+5	OCTETSPATCH9	8	Donnees a patcher en RAM SST [Longueur variable multiple d octets jusqu a 10 oct			LD	NU	PID		N	
+5	OCTETSPATCH10	8	Donnees a patcher en RAM SST [Longueur variable multiple d octets jusqu a 10 oct			LD	NU	PID		N	
+1	REQMOD	4SST	TC	To read the current mode of SST	1800	OK			1	0	N
+2	507
+3	0	5	0
+1	REQSTATUS	4SST	TC	To bufferize the system parameters area	1800	OK			0	0	N
+3	0	15	0
+1	SENDTMATT	4SST	TC	TC2 LV generation paquet TM Attitude SST	1800	OK			1	0	N
+2	500
+3	0	14	0
+1	SENDTMIMAG	4SST	TC	TC2 LV generation paquet TM Image SST	1800	OK			1	0	N
+2	505
+3	0	18	0
+1	SENDTMSST	4SST	TC	TC2 LV generation paquet TM HK SST	1800	OK			1	0	N
+2	504
+3	0	24	0
+1	SENDTMSTAT	4SST	TC	TC2 LV generation paquet TM StatusReport SST	1800	OK			1	0	N
+2	509
+3	0	25	0
+1	SIMUMODE	4SST	TC	TC2 to put the ASC in simulation mode	1800	OK			0	0	N
+3	0	11	6
+5	SEEDRA	64	Right ascension of initial attitude			LF	NU	PID		Y	UPSEEDRA
+5	SEEDDEC	64	Declination of initial attitude			LF	NU	PID		Y	UPSEEDDEC
+5	SEEDROT	64	Rotation of initial attitude			LF	NU	PID		Y	UPSEEDROT
+5	YAWRATE	64	Yaw rate around initial attitude			LF	NU	PID		Y	UPYAWRATE
+5	PITCHRATE	64	Pitch rate around initial attitude			LF	NU	PID		Y	UPPITCHRATE
+5	ROLLRATE	64	Roll rate around initial attitude			LF	NU	PID		Y	UPROLLRATE
+1	STDBYMODE	4SST	TC	Places the ASC in idle mode, stops acquiring images	1800	OK			0	0	N
+3	0	1	0
+1	STIMUPDATE	4SST	TC	To update the star database of ASC with following acquired image	1800	OK			0	0	N
+3	0	17	1
+5	INITDIR	8	Initial direction			LD	ST	LINITDIR		Y	
+1	STOPACQATT	4SST	TC	To stop asking cyclicaly attitude buffer	1800	OK			0	0	N
+3	0	83	0
+1	STOPACQIMAG	4SST	TC	To stop asking cyclicaly stored image buffer	1800	OK			0	0	N
+3	0	90	0
+1	STOPACQSST	4SST	TC	To stop asking cyclicaly SST HK data	1800	OK			0	0	N
+3	0	84	0
+1	STOPACQSTAT	4SST	TC	To stop asking cyclicaly download system variables area	1800	OK			0	0	N
+3	0	96	0
+1	STOPTMATT	4SST	TC	TC2 LV stop generation paquet TM Attitude SST	1800	OK			0	0	N
+3	0	94	0
+1	STOPTMIMAG	4SST	TC	TC2 LV stop generation paquet TM Image SST	1800	OK			0	0	N
+3	0	98	0
+1	STOPTMSST	4SST	TC	TC2 LV stop generation paquet TM HK SST	1800	OK			0	0	N
+3	0	104	0
+1	STOPTMSTAT	4SST	TC	TC2 LV stop generation paquet TM StatusReport SST	1800	OK			0	0	N
+3	0	105	0
+1	STOREIMAGE	4SST	TC	Tells the ASC to store the next acquired image in temporary location in RAM	1800	OK			0	0	N
+3	0	9	2
+5	COMPMETHOD	8	Compression method			LD	ST	LCOMPMETHOD		Y	
+5	CAMERAID	8	Camera ID			LD	ST	LCAMERAID		Y	
+1	UTCTIME	4SST	TC	To send UT reference	1800	OK			0	0	N
+3	0	6	3
+5	SSTDAY	8	UTC day for SST			LD	NU	PID		Y	UPSSTDAY
+5	SSTMONTH	8	UTC month for SST			LD	NU	PID		Y	UPSSTMONTH
+5	SSTYEAR	16	UTC year for SST			LD	NU	PID		Y	UPSSTYEAR
+1	RESETRX1	5RX1	TC	Reset the receiver 1	1901	OK			0	0	N
+3	0	0	0
+1	WRIREG12RX1	5RX1	TC	Writing microcontroller register 12 for RX1: Autorisation de modification de seu	1901	OK			0	0	N
+3	0	27	0
+6	Writing microcontroller register 12 for RX1: Autorisation de modification de seuil RSSI
+1	WRIREG17RX1	5RX1	TC	Writing microcontroller register 17 for RX1	1901	OK			0	0	N
+3	0	22	1
+5	VALSEUILRX	16	Valeur de seuil de reveil des RX			IA	NU	PID		Y	
+1	RESETRX2	5RX2	TC	Reset the receiver 2	1902	OK			0	0	N
+3	0	0	0
+1	WRIREG12RX2	5RX2	TC	Writing microcontroller register 12 for RX2: Autorisation de modification de seu	1902	OK			0	0	N
+3	0	27	0
+6	Writing microcontroller register 12 for RX2: Autorisation de modification de seuil RSSI
+1	WRIREG17RX2	5RX2	TC	Writing microcontroller register 17 for RX2	1902	OK			0	0	N
+3	0	22	1
+5	VALSEUILRX	16	Valeur de seuil de reveil des RX			IA	NU	PID		Y	
+1	ACKANOM	8GEN	TC	Pour acquitter les TMs anomalies	7	OK			0	0	N
+3	0	5	1
+5	APIDTMH	16	Numero d APID			LD	NU	PAPIDTMH		Y	
+1	ACTABLEPF	8GEN	TC	Activation en DRAM du contenu de la table PF precedemment chargee par le sol	9	OK			1	0	N
+2	19
+3	0	4	1
+5	NOMENTITE	64	Nom de la donnee qui va etre chargee			LS	NU	PID		Y	
+1	ACTPLPF	8GEN	TC	Indique au LV PF que l on va activer le plan de nom donne dans le DATA	4	OK			1	0	N
+2	86
+3	0	2	3
+5	NOMPLAN	64	Pour decrire un nom de plan			LS	NU	PID		Y	
+5	DATEDEBUT	80	Date debut			ID	NU	PDATE		Y	
+5	DATEFIN	80	Date fin			ID	NU	PDATE		Y	
+1	ACTUNITPF	8GEN	TC	Activation d  une unite de surveillance LV PF dont le nom est indique dans la TC	11	OK			0	0	N
+3	0	0	1
+5	NOMUNITSURV	64	Nom de la l unite de surveillance			LS	NU	PID		Y	
+6	Activation d' une unité de surveillance LV PF dont le nom est indiqué dans la TC.
+1	ALT	8GEN	TC	Definition de l altitude du satellite	17	OK			0	0	N
+3	0	5	14
+5	DATEREF	80	Date de reference			ID	NU	PDATE		Y	
+5	NBDEGAXE	16	Degre de la serie de Fourier ou du polynome			LD	NU	PID		Y	
+5	ALT0	64	Coefficient de la partie constante de l altitude			LF	NU	PID	m	Y	
+5	ALT1	64	Coefficient de la partie lineaire de l altitude			LF	NU	PID	m/s	Y	
+5	AALT0	64	Coefficient de la partie harmonique du developpement sur l altitude			LF	NU	PID	m	Y	
+5	BALT0	64	Coefficient de la partie harmonique du developpement sur l altitude			LF	NU	PID	m	Y	
+5	AALT1	64	Coefficient de la partie harmonique du developpement sur l altitude			LF	NU	PID	m	Y	
+5	BALT1	64	Coefficient de la partie harmonique du developpement sur l altitude			LF	NU	PID	m	Y	
+5	AALT2	64	Coefficient de la partie harmonique du developpement sur l altitude			LF	NU	PID	m	Y	
+5	BALT2	64	Coefficient de la partie harmonique du developpement sur l altitude			LF	NU	PID	m	Y	
+5	AALT3	64	Coefficient de la partie harmonique du developpement sur l altitude			LF	NU	PID	m	Y	
+5	BALT3	64	Coefficient de la partie harmonique du developpement sur l altitude			LF	NU	PID	m	Y	
+5	AALT4	64	Coefficient de la partie harmonique du developpement sur l altitude			LF	NU	PID	m	Y	
+5	BALT4	64	Coefficient de la partie harmonique du developpement sur l altitude			LF	NU	PID	m	Y	
+1	AUTCELLPF	8GEN	TC	Autorisation d une cellule de surveillance LV PF dont le nom est indique dans la	11	OK			0	0	N
+3	0	6	1
+5	NOMCELLSURV	64	Nom de la cellule de surveillance a activer			LS	NU	PID		Y	
+6	Autorisation d'une cellule de surveillance LV PF dont le nom est indiqué dans la TC.
+1	AUTINHDOGPF	8GEN	TC	Pour autoriser ou inhiber le mecanisme hard du Watchdog local	3	OK			0	0	N
+3	0	5	1
+5	FLAGCTRL	8	Flag indiquant si le controle est autorise ou inhibe			LD	ST	LFLAGCTRL		Y	
+1	AUTINHDT	8GEN	TC	Autorisation/inhibition : du calcul des coefficients de l equation de la compens	2	OK			0	0	N
+3	0	5	2
+5	FLAGCOMPXO	8	Flag indiquant si la compensation de la derive de l OCXO est inhibee [=0] ou aut			LD	ST	LAUTINHIB		Y	
+5	FLAGCALCOXO	8	Flag indiquant si le calcul des coefficients de compensation de la derive de l O			LD	ST	LAUTINHIB		Y	
+6	Autorisation/inhibition : du calcul des coefficients de l équation de la compensation de la dérive de l'OCXO, et de la compensation de la dérive de l OCXO
+1	AUTINHGEN	8GEN	TC	Pour autoriser ou inhiber le controle de l executabilte des TC en mode survie et	8	OK			0	0	N
+3	0	0	1
+5	FLAGCTRLTC	8	Flag indiquant si le controle des TCs est autorise ou inhibe			LD	ST	LFLAGCTRLTC		Y	
+6	Pour autoriser ou inhiber le contrôle de l'exécutabilté des TC en mode survie et en mode MACQ (si « Autorisé » alors le contrôle sera effectué et la TC pourrait être rejetée).
+1	AUTINHMOD	8GEN	TC	Pour autoriser ou interdire l execution des TCs d APID donne [1 a 5 APIDs] dans 	8	OK			0	0	N
+3	0	1	8
+5	MODESAT	8	Mode dans lequel se trouve le satellite			LD	ST	LMODSATTC		Y	
+5	FLAGTC	8	Flag indiquant si les TCs sont autorisees a etre executees ou non			LD	ST	LAUTINHIB		Y	
+5	NOMBRE	8	Pour decrire un nombre de TC dans un plan ou un nombre de plans			LD	NU	PID		Y	
+5	APIDTC	16	Numero d APID			LD	NU	PID		Y	
+5	APIDTC	16	Numero d APID			LD	NU	PID		Y	
+5	APIDTC	16	Numero d APID			LD	NU	PID		Y	
+5	APIDTC	16	Numero d APID			LD	NU	PID		Y	
+5	APIDTC	16	Numero d APID			LD	NU	PID		Y	
+6	Pour autoriser ou interdire l'exécution des TCs d'APID donné (1 à 5 APIDs) dans un mode satellite (si « Autorisé » les TCs sont exécutées
+1	AUTINHRAFDG	8GEN	TC	Pour autoriser ou inhiber le rafraichissement des Watchdogs local et global	3	OK			0	0	N
+3	0	12	1
+5	FLAGCTRL	8	Flag indiquant si le controle est autorise ou inhibe			LD	ST	LFLAGCTRL		Y	
+1	AUTOTESTLVC	8GEN	TC	Lance un autotest sur les memoires flash	3	OK			1	0	N
+2	22
+3	0	3	1
+5	NUMFLASH	8	Numero Flash			LD	ST	LNUMFLASH		Y	
+1	AUTUNITPF	8GEN	TC	Autorisation d une unite de surveillance LV PF	11	OK			0	0	N
+3	0	2	1
+5	NOMUNITSURV	64	Nom de la l unite de surveillance			LS	NU	PID		Y	
+1	CALPARTUC	8GEN	TC	Calcul des parametres de recalage de l OBT et de compensation de la derive de l 	2	OK			1	0	N
+2	27
+3	0	0	4
+5	TMINDIC	8	Pour indiquer si une TC est envoyee avec une TM ou non			LD	ST	LTMYN		Y	
+5	TMFRAME	8	Numero de la TM si TMINDIC=1			LD	NU	PID		Y	
+5	DELTAT	32	Difference en temps			LD	NU	PID	100nanos	Y	
+5	DATETOPTC	80	Date transmission de la TCD TOPTC			ID	NU	PDATE		Y	
+6	Calcul des paramètres de recalage de l'OBT et de compensation de la dérive de l'OCXO
+1	CONSFORCE	8GEN	TC	Consigne en force	22	OK			0	0	N
+3	0	1	4
+5	TCFORCEX	64	Resultante en force commandee sur l axe X			LF	NU	PID	N	Y	
+5	TCFORCEY	64	Resultante en force commandee sur l axe Y			LF	NU	PID	N	Y	
+5	TCFORCEZ	64	Resultante en force commandee sur l axe Z			LF	NU	PID	N	Y	
+5	TCREPERE	8	Repere d expression de la force	0	1	LD	ST	LREPFORCE	N	Y	
+1	CONTROLTUC	8GEN	TC	TC qui permet d autoriser/inhiber le controle bord de plausibilite [ecart entre 	2	OK			1	0	N
+2	3
+3	0	3	1
+5	CTRLTUC	8	Pour specifier si on autorise ou inhibe un controle de la date TUC			LD	ST	LYESNO		Y	
+6	TC qui permet d'autoriser/inhiber le contrôle bord de plausibilité (écart entre 2 recalages successifs) effectué lors de toute procédure de recalage.
+1	CPTABLEPF	8GEN	TC	TC utilisee pour signifier au LVC de copier la donnee chargee en memoire interme	9	OK			1	0	N
+2	20
+3	0	3	2
+5	NOMENTITE	64	Nom de la donnee qui va etre chargee			LS	NU	PID		Y	
+5	NUMFLASH	8	Numero Flash			LD	ST	LNUMFLASH		Y	
+6	TC utilisée pour signifier au LVC de copier la donnée chargée en mémoire intermédiaire dans la destination spécifiée en indiquant le nom de la donnée et le numéro de la destination (1, 2 ou 3 Flash ou 1, 2 FRAM).
+1	CREATEDATA	8GEN	TC	Creation d une data en flash	3	OK			0	0	N
+3	0	7	3
+5	NUMFLASH	8	Numero Flash			LD	ST	LNUMFLASH		Y	
+5	NOMENTITE	64	Nom de la donnee qui va etre chargee			LS	NU	PID		Y	
+5	TAILLEMAX	32	Taille max d une data en octets			LD	NU	PID		Y	
+1	DEACTUNITPF	8GEN	TC	Desactivation d  une unite de surveillance LV PF dont le nom est indique dans la	11	OK			0	0	N
+3	0	1	1
+5	NOMUNITSURV	64	Nom de la l unite de surveillance			LS	NU	PID		Y	
+6	Désactivation d' une unité de surveillance LV PF dont le nom est indiqué dans la TC.
+1	DEBTRSFPF	8GEN	TC	Indique le debut d un transfert de fichier Sol->Bord [ LV PF]	9	OK			0	0	N
+3	0	0	1
+5	NOMENTITE	64	Nom de la donnee qui va etre chargee			LS	NU	PID		Y	
+1	DEBUTPLPF	8GEN	TC	TC utilisee pour indiquer au LVC la file bord òu ajouter des TC, le nombre de TC	4	OK			0	0	N
+3	0	0	2
+5	NOMPLAN	64	Pour decrire un nom de plan			LS	NU	PID		Y	
+5	NBTCPDT	16	Pour decrire un nombre de TC dans un plan ou un nombre de plans			LD	NU	PID		Y	
+6	TC utilisée pour indiquer au LVC la file bord òu ajouter des TC, le nombre de TC différées à venir (le LVC déclenche le chargement intermédiaire du plan de travail pour toutes les TC datées arrivant après cette TC et avant la TC FINPLPF)
+1	DELETEDATA	8GEN	TC	Suppression d une data en flash	3	OK			0	0	N
+3	0	8	2
+5	NUMFLASH	8	Numero Flash			LD	ST	LNUMFLASH		Y	
+5	NOMENTITE	64	Nom de la donnee qui va etre chargee			LS	NU	PID		Y	
+1	DEMTRSFPF	8GEN	TC	TC utilisee pour demander le transfert vers le sol du contenu de toute table don	10	OK			3	0	N
+2	8
+2	12
+2	16
+3	0	0	2
+5	NOMENTITE	64	Nom de la donnee qui va etre chargee			LS	NU	PID		Y	
+5	NUMSOURCE	8	Numero de la memoire source			LD	ST	LNUMSOURCE		Y	
+6	TC utilisée pour demander le transfert vers le sol du contenu de toute table données ou code (en Flash, FRAM, DRAM) en indiquant la mémoire source et le nom de la table à transférer.
+1	DIRLVC	8GEN	TC	Liste des fichiers d une flash ou DRAM	3	OK			1	0	N
+2	24
+3	0	6	1
+5	NUMSOURCE	8	Numero de la memoire source			LD	ST	LNUMSOURCE		Y	
+1	DUMPDRAMPF	8GEN	TC	TC utilisee pour vider la DRAM en indiquant l adresse de debut du dump et le nom	3	NOK			1	0	N
+2	6
+3	0	10	2
+5	ADRDUMP	32	Adresse a partir de laquelle on effectue un DUMP			LD	NU	PID		Y	UPADDRESS
+5	NBMOTS	16	Nombre de mots de 16 bits a dumper	1	502	LD	NU	PID		Y	UPNBMOTS
+6	TC utilisée pour vider la DRAM en indiquant l'adresse de début du dump et le nombre de mots de 16 bits à dumper
+1	EFFACERTM	8GEN	TC	Pour effacer tout ou partie de la TM	6	OK			0	0	N
+3	0	1	4
+5	REINITTOTAL	8	Flag indiquant si on reinitialise completement les pointeurs sur les trames TM e			LD	ST	LYESNO		Y	
+5	TYPETM	8	Pour specifier le type de TM[HKTM-R, PLTM-S,PLTM-XS]			LD	ST	LTYPETM		Y	
+5	FLAGNETTM	8	Flag indiquant si on efface tout ou une partie de la TM			LD	ST	LYESNO		Y	
+5	DATEDEBUT	80	Date debut			ID	NU	PDATE		Y	
+1	EFFDIAGTM	8GEN	TC	Pour effacer la Diagnostic Telemetry	6	OK			0	0	N
+3	0	3	0
+1	ETATSURVPF1	8GEN	TC	Pour telemesurer l etat des unites de surveillance PF1	11	OK			1	0	N
+2	25
+3	0	5	0
+1	ETATSURVPF2	8GEN	TC	Pour telemesurer l etat des unites de surveillance PF2	11	OK			1	0	N
+2	28
+3	0	15	0
+1	FINPLPF	8GEN	TC	Indique au LV [PF] que l on a fini de charger le plan de nom donne	4	OK			0	0	N
+3	0	1	1
+5	NOMPLAN	64	Pour decrire un nom de plan			LS	NU	PID		Y	
+1	FINTRSFPF	8GEN	TC	Indique la fin d un transfert de fichier Sol->Bord vers le LV PF	9	OK			1	0	N
+2	18
+3	0	2	1
+5	CRC	16	CRC d une donnee			LD	NU	PID		Y	
+1	FORCETUC	8GEN	TC	TC qui permet de forcer l OBT en absolu a une valeur arbitraire [Treception = He	2	OK			1	0	N
+2	29
+3	0	1	1
+5	TUCDATE	80	Pour decrire une date en TUC au format Sat			LD	NU	PDATE		Y	
+6	TC qui permet de forcer l'OBT en absolu à une valeur arbitraire (Tréception = Heure fournie dans la TC et HBréception = valeur courante du free running counter , à priori, TC utilisée en mode sol uniquement pour des essais au sol).
+1	HARGUIDEX	8GEN	TC	Definition du profil harmonique de la consigne sur l axe X	18	OK			0	0	N
+3	0	1	13
+5	DATEDEBGUID	80	Date de debut du profil de guidage			ID	NU	PDATE		Y	
+5	TYPECONS	16	Type de consigne			LD	ST	LTYPECONS		Y	
+5	NBDEGAXE	16	Degre de la serie de Fourier ou du polynome			LD	NU	PID		Y	
+5	AX0	64	Coefficient des profils sur l axe X			LF	NU	PID	rad/s	Y	
+5	BX0	64	Coefficient des profils sur l axe X			LF	NU	PID		Y	
+5	AX1	64	Coefficient des profils sur l axe X			LF	NU	PID	rad/s	Y	
+5	BX1	64	Coefficient des profils sur l axe X			LF	NU	PID		Y	
+5	AX2	64	Coefficient des profils sur l axe X			LF	NU	PID	rad/s	Y	
+5	BX2	64	Coefficient des profils sur l axe X			LF	NU	PID		Y	
+5	AX3	64	Coefficient des profils sur l axe X			LF	NU	PID	rad/s	Y	
+5	BX3	64	Coefficient des profils sur l axe X			LF	NU	PID		Y	
+5	AX4	64	Coefficient des profils sur l axe X			LF	NU	PID	rad/s	Y	
+5	BX4	64	Coefficient des profils sur l axe X			LF	NU	PID		Y	
+1	HARGUIDEY	8GEN	TC	Definition du profil harmonique de la consigne sur l axe Y	18	OK			0	0	N
+3	0	2	13
+5	DATEDEBGUID	80	Date de debut du profil de guidage			ID	NU	PDATE		Y	
+5	TYPECONS	16	Type de consigne			LD	ST	LTYPECONS		Y	
+5	NBDEGAXE	16	Degre de la serie de Fourier ou du polynome			LD	NU	PID		Y	
+5	AY0	64	Coefficient des profils sur l axe Y			LF	NU	PID	rad/s	Y	
+5	BY0	64	Coefficient des profils sur l axe Y			LF	NU	PID		Y	
+5	AY1	64	Coefficient des profils sur l axe Y			LF	NU	PID	rad/s	Y	
+5	BY1	64	Coefficient des profils sur l axe Y			LF	NU	PID		Y	
+5	AY2	64	Coefficient des profils sur l axe Y			LF	NU	PID	rad/s	Y	
+5	BY2	64	Coefficient des profils sur l axe Y			LF	NU	PID		Y	
+5	AY3	64	Coefficient des profils sur l axe Y			LF	NU	PID	rad/s	Y	
+5	BY3	64	Coefficient des profils sur l axe Y			LF	NU	PID		Y	
+5	AY4	64	Coefficient des profils sur l axe Y			LF	NU	PID	rad/s	Y	
+5	BY4	64	Coefficient des profils sur l axe Y			LF	NU	PID		Y	
+1	HARGUIDEZ	8GEN	TC	Definition du profil harmonique de la consigne sur l axe Z	18	OK			0	0	N
+3	0	3	13
+5	DATEDEBGUID	80	Date de debut du profil de guidage			ID	NU	PDATE		Y	
+5	TYPECONS	16	Type de consigne			LD	ST	LTYPECONS		Y	
+5	NBDEGAXE	16	Degre de la serie de Fourier ou du polynome			LD	NU	PID		Y	
+5	AZ0	64	Coefficient des profils sur l axe Z			LF	NU	PID	rad/s	Y	
+5	BZ0	64	Coefficient des profils sur l axe Z			LF	NU	PID		Y	
+5	AZ1	64	Coefficient des profils sur l axe Z			LF	NU	PID	rad/s	Y	
+5	BZ1	64	Coefficient des profils sur l axe Z			LF	NU	PID		Y	
+5	AZ2	64	Coefficient des profils sur l axe Z			LF	NU	PID	rad/s	Y	
+5	BZ2	64	Coefficient des profils sur l axe Z			LF	NU	PID		Y	
+5	AZ3	64	Coefficient des profils sur l axe Z			LF	NU	PID	rad/s	Y	
+5	BZ3	64	Coefficient des profils sur l axe Z			LF	NU	PID		Y	
+5	AZ4	64	Coefficient des profils sur l axe Z			LF	NU	PID	rad/s	Y	
+5	BZ4	64	Coefficient des profils sur l axe Z			LF	NU	PID		Y	
+1	HELLOLVPF	8GEN	TC	Pour obtenir un acquittement TM du LV PF	1	OK			1	0	N
+2	2
+3	0	0	1
+5	NUMHELLO	8	HELLO LV PF ou LV CU			LD	NU	PID		Y	UPHELLO
+1	INHCELLPF	8GEN	TC	Inhibition d une cellule de surveillance LV PF	11	OK			0	0	N
+3	0	7	1
+5	NOMCELLSURV	64	Nom de la cellule de surveillance a activer			LS	NU	PID		Y	
+1	INHUNITPF	8GEN	TC	Inhibition d une unite de surveillance LV PF	11	OK			0	0	N
+3	0	3	1
+5	NOMUNITSURV	64	Nom de la l unite de surveillance			LS	NU	PID		Y	
+1	LIBFILEPF	8GEN	TC	Pour debloquer une file de TC du LV PF,dont l execution aurait ete automatiqueme	4	OK			0	0	N
+3	0	4	1
+5	NOMPLAN	64	Pour decrire un nom de plan			LS	NU	PID		Y	
+6	Pour débloquer une file de TC du LV PF,dont l'exécution aurait été automatiquement inhibé par le LVC en cas de reset OBC et dans d'autres cas d'anomalies détectées par le bord .
+1	LVCACTIF	8GEN	TC	Demande au LV C de la version active	3	OK			1	0	N
+2	11
+3	0	2	0
+1	MODMACQMNOG	8GEN	TC	Transition du satellite du mode MACQ vers le mode MNOG	12	OK			0	0	N
+3	0	0	0
+1	MODMCANMNOF	8GEN	TC	Transition du satellite du mode MCAN vers le mode MNOF	12	OK			0	0	N
+3	0	6	0
+1	MODMNOFMCAN	8GEN	TC	Transition du satellite du mode MNOF vers le mode MCAN	12	OK			0	0	N
+3	0	3	0
+1	MODMNOFMNOG	8GEN	TC	Transition du satellite du mode MNOF vers le mode MNOG	12	OK			0	0	N
+3	0	4	0
+1	MODMNOGMNOF	8GEN	TC	Transition du satellite du mode MNOG vers le mode MNOF	12	OK			0	0	N
+3	0	2	0
+1	MODMSV1	8GEN	TC	Transition du satellite vers le mode MSV1	12	OK			0	0	N
+3	0	5	0
+1	MODMSV1MNOG	8GEN	TC	Transition du satellite du mode MSV1 vers le mode MNOG	12	OK			0	0	N
+3	0	1	0
+1	NETFILEPF	8GEN	TC	Nettoyage d un Plan de Travail PF : effacement des TCs d une file bord. Tout ou 	4	OK			0	0	N
+3	0	3	4
+5	NOMPLAN	64	Pour decrire un nom de plan			LS	NU	PID		Y	
+5	TYPENET	8	Pour decrire le type de nettoyage que l on veut appliquer sur une file			LD	ST	LDATEDYN		Y	
+5	DATEDEBUT	80	Date debut			ID	NU	PDATE		Y	
+5	DATEFIN	80	Date fin			ID	NU	PDATE		Y	
+6	Nettoyage d'un Plan de Travail PF : effacement des TCs d'une file bord. Tout ou partie de la file est effacé selon la valeur de l'argument TYPENET.
+1	NEWRNIRATEX	8GEN	TC	Definition des profils de guidage du Rni sur l axe X par rapport a J2000	17	OK			0	0	N
+3	0	7	12
+5	DATEDEBGUID	80	Date de debut du profil de guidage			ID	NU	PDATE		Y	
+5	NBDEGAXE	16	Degre de la serie de Fourier ou du polynome			LD	NU	PID		Y	
+5	AX0	64	Coefficient des profils sur l axe X			LF	NU	PID	rad/s	Y	
+5	BX0	64	Coefficient des profils sur l axe X			LF	NU	PID		Y	
+5	AX1	64	Coefficient des profils sur l axe X			LF	NU	PID	rad/s	Y	
+5	BX1	64	Coefficient des profils sur l axe X			LF	NU	PID		Y	
+5	AX2	64	Coefficient des profils sur l axe X			LF	NU	PID	rad/s	Y	
+5	BX2	64	Coefficient des profils sur l axe X			LF	NU	PID		Y	
+5	AX3	64	Coefficient des profils sur l axe X			LF	NU	PID	rad/s	Y	
+5	BX3	64	Coefficient des profils sur l axe X			LF	NU	PID		Y	
+5	AX4	64	Coefficient des profils sur l axe X			LF	NU	PID	rad/s	Y	
+5	BX4	64	Coefficient des profils sur l axe X			LF	NU	PID		Y	
+1	NEWRNIRATEY	8GEN	TC	Definition des profils de guidage du Rni sur l axe Y par rapport a J2000	17	OK			0	0	N
+3	0	8	12
+5	DATEDEBGUID	80	Date de debut du profil de guidage			ID	NU	PDATE		Y	
+5	NBDEGAXE	16	Degre de la serie de Fourier ou du polynome			LD	NU	PID		Y	
+5	AY0	64	Coefficient des profils sur l axe Y			LF	NU	PID	rad/s	Y	
+5	BY0	64	Coefficient des profils sur l axe Y			LF	NU	PID		Y	
+5	AY1	64	Coefficient des profils sur l axe Y			LF	NU	PID	rad/s	Y	
+5	BY1	64	Coefficient des profils sur l axe Y			LF	NU	PID		Y	
+5	AY2	64	Coefficient des profils sur l axe Y			LF	NU	PID	rad/s	Y	
+5	BY2	64	Coefficient des profils sur l axe Y			LF	NU	PID		Y	
+5	AY3	64	Coefficient des profils sur l axe Y			LF	NU	PID	rad/s	Y	
+5	BY3	64	Coefficient des profils sur l axe Y			LF	NU	PID		Y	
+5	AY4	64	Coefficient des profils sur l axe Y			LF	NU	PID	rad/s	Y	
+5	BY4	64	Coefficient des profils sur l axe Y			LF	NU	PID		Y	
+1	NEWRNIRATEZ	8GEN	TC	Definition des profils de guidage du Rni sur l axe Z par rapport a J2000	17	OK			0	0	N
+3	0	9	12
+5	DATEDEBGUID	80	Date de debut du profil de guidage			ID	NU	PDATE		Y	
+5	NBDEGAXE	16	Degre de la serie de Fourier ou du polynome			LD	NU	PID		Y	
+5	AZ0	64	Coefficient des profils sur l axe Z			LF	NU	PID	rad/s	Y	
+5	BZ0	64	Coefficient des profils sur l axe Z			LF	NU	PID		Y	
+5	AZ1	64	Coefficient des profils sur l axe Z			LF	NU	PID	rad/s	Y	
+5	BZ1	64	Coefficient des profils sur l axe Z			LF	NU	PID		Y	
+5	AZ2	64	Coefficient des profils sur l axe Z			LF	NU	PID	rad/s	Y	
+5	BZ2	64	Coefficient des profils sur l axe Z			LF	NU	PID		Y	
+5	AZ3	64	Coefficient des profils sur l axe Z			LF	NU	PID	rad/s	Y	
+5	BZ3	64	Coefficient des profils sur l axe Z			LF	NU	PID		Y	
+5	AZ4	64	Coefficient des profils sur l axe Z			LF	NU	PID	rad/s	Y	
+5	BZ4	64	Coefficient des profils sur l axe Z			LF	NU	PID		Y	
+1	NEWROLRATEX	8GEN	TC	Definition des profils de guidage du Rol sur l axe X par rapport a J2000	17	OK			0	0	N
+3	0	1	12
+5	DATEDEBGUID	80	Date de debut du profil de guidage			ID	NU	PDATE		Y	
+5	NBDEGAXE	16	Degre de la serie de Fourier ou du polynome			LD	NU	PID		Y	
+5	AX0	64	Coefficient des profils sur l axe X			LF	NU	PID	rad/s	Y	
+5	BX0	64	Coefficient des profils sur l axe X			LF	NU	PID		Y	
+5	AX1	64	Coefficient des profils sur l axe X			LF	NU	PID	rad/s	Y	
+5	BX1	64	Coefficient des profils sur l axe X			LF	NU	PID		Y	
+5	AX2	64	Coefficient des profils sur l axe X			LF	NU	PID	rad/s	Y	
+5	BX2	64	Coefficient des profils sur l axe X			LF	NU	PID		Y	
+5	AX3	64	Coefficient des profils sur l axe X			LF	NU	PID	rad/s	Y	
+5	BX3	64	Coefficient des profils sur l axe X			LF	NU	PID		Y	
+5	AX4	64	Coefficient des profils sur l axe X			LF	NU	PID	rad/s	Y	
+5	BX4	64	Coefficient des profils sur l axe X			LF	NU	PID		Y	
+1	NEWROLRATEY	8GEN	TC	Definition des profils de guidage du Rol sur l axe Y par rapport a J2000	17	OK			0	0	N
+3	0	2	12
+5	DATEDEBGUID	80	Date de debut du profil de guidage			ID	NU	PDATE		Y	
+5	NBDEGAXE	16	Degre de la serie de Fourier ou du polynome			LD	NU	PID		Y	
+5	AY0	64	Coefficient des profils sur l axe Y			LF	NU	PID	rad/s	Y	
+5	BY0	64	Coefficient des profils sur l axe Y			LF	NU	PID		Y	
+5	AY1	64	Coefficient des profils sur l axe Y			LF	NU	PID	rad/s	Y	
+5	BY1	64	Coefficient des profils sur l axe Y			LF	NU	PID		Y	
+5	AY2	64	Coefficient des profils sur l axe Y			LF	NU	PID	rad/s	Y	
+5	BY2	64	Coefficient des profils sur l axe Y			LF	NU	PID		Y	
+5	AY3	64	Coefficient des profils sur l axe Y			LF	NU	PID	rad/s	Y	
+5	BY3	64	Coefficient des profils sur l axe Y			LF	NU	PID		Y	
+5	AY4	64	Coefficient des profils sur l axe Y			LF	NU	PID	rad/s	Y	
+5	BY4	64	Coefficient des profils sur l axe Y			LF	NU	PID		Y	
+1	NEWROLRATEZ	8GEN	TC	Definition des profils de guidage du Rol sur l axe Z par rapport a J2000	17	OK			0	0	N
+3	0	3	12
+5	DATEDEBGUID	80	Date de debut du profil de guidage			ID	NU	PDATE		Y	
+5	NBDEGAXE	16	Degre de la serie de Fourier ou du polynome			LD	NU	PID		Y	
+5	AZ0	64	Coefficient des profils sur l axe Z			LF	NU	PID	rad/s	Y	
+5	BZ0	64	Coefficient des profils sur l axe Z			LF	NU	PID		Y	
+5	AZ1	64	Coefficient des profils sur l axe Z			LF	NU	PID	rad/s	Y	
+5	BZ1	64	Coefficient des profils sur l axe Z			LF	NU	PID		Y	
+5	AZ2	64	Coefficient des profils sur l axe Z			LF	NU	PID	rad/s	Y	
+5	BZ2	64	Coefficient des profils sur l axe Z			LF	NU	PID		Y	
+5	AZ3	64	Coefficient des profils sur l axe Z			LF	NU	PID	rad/s	Y	
+5	BZ3	64	Coefficient des profils sur l axe Z			LF	NU	PID		Y	
+5	AZ4	64	Coefficient des profils sur l axe Z			LF	NU	PID	rad/s	Y	
+5	BZ4	64	Coefficient des profils sur l axe Z			LF	NU	PID		Y	
+1	OFFBARRE	8GEN	TC	Indique au LV la mise a OFF de la barre NUMBARRE	13	OK			0	0	N
+3	0	1	1
+5	NUMBARRE	8	Identifie le numero [adresse] PCDU de la barre concernee : a noter qu il existe 			LD	ST	LIDENTBARRE		Y	
+1	OFFEMET	8GEN	TC	Pour mettre l emetteur OFF	5	OK			0	0	N
+3	0	2	0
+1	OFFLCLAIT	8GEN	TC	Indique au LV la mise OFF de[s] LCL	1920	OK			0	0	N
+3	0	22	4
+5	NUMLCL1	8	Indique au LV le Ndeg de LCL			LD	ST	LIDLCLAIT		Y	
+5	NUMLCL2	8	Indique au LV le Ndeg de LCL			LD	ST	LIDLCLAIT		Y	
+5	NUMLCL3	8	Indique au LV le Ndeg de LCL			LD	ST	LIDLCLAIT		Y	
+5	NUMLCL4	8	Indique au LV le Ndeg de LCL			LD	ST	LIDLCLAIT		Y	
+1	ONBARRE	8GEN	TC	Indique au LV la mise a ON de la barre NUMBARRE	13	OK			0	0	N
+3	0	0	1
+5	NUMBARRE	8	Identifie le numero [adresse] PCDU de la barre concernee : a noter qu il existe 			LD	ST	LIDENTBARRE		Y	
+1	ONEMETML	8GEN	TC	Pour mettre l emetteur ON en mode module en lui indiquant dans la TC la station 	5	OK			0	0	N
+3	0	1	10
+5	STATION	64	Nom de la station			LS	NU	PID		Y	
+5	HKTMP	1	Pour specifier les flots de TM a descendre pendant le passage			ID	ST	LYESNO		Y	
+5	HKTMR	1	Pour specifier les flots de TM a descendre pendant le passage			ID	ST	LYESNO		Y	
+4	PLTMS	1	Pour specifier les flots de TM a descendre pendant le passage:Bit 5	0h	Y
+4	PLTMXS	1	Pour specifier les flots de TM a descendre pendant le passage:Bit 4	0h	Y
+4	UNUSED4	4	4 bits not used	0h	Y
+5	NUMHKTMP	8	Number of frames per second for HKTM-P			ID	NU	PID		Y	
+5	NUMHKTMR	8	Number of frame per seconde for HKTM-R			ID	NU	PID		Y	
+4	NUMPLTMS	8	Number of frame per seconde for PLTM-S	0h	Y
+4	NUMPLTMXS	8	Number of frame per seconde for PLTM-XS	0h	Y
+6	Pour mettre l'émetteur ON en mode modulé en lui indiquant dans la TC la station en visibilité.
+1	ONEMETPC	8GEN	TC	Pour mettre l emetteur ON en mode non module en lui indiquant dans la TC la stat	5	OK			0	0	N
+3	0	0	1
+5	STATION	64	Nom de la station			LS	NU	PID		Y	
+6	Pour mettre l'émetteur ON en mode non modulé en lui indiquant dans la TC la station en visibilité.
+1	ONEMETPM	8GEN	TC	Mise ON emetteur en mode module avec prechauffage	5	OK			0	0	N
+3	0	3	6
+5	HKTMP	1	Pour specifier les flots de TM a descendre pendant le passage			ID	ST	LYESNO		Y	
+5	HKTMR	1	Pour specifier les flots de TM a descendre pendant le passage			ID	ST	LYESNO		Y	
+4	UNUSED6	6	6 bits not used	0h	Y
+5	NUMHKTMP	8	Number of frames per second for HKTM-P			ID	NU	PID		Y	
+5	NUMHKTMR	8	Number of frame per seconde for HKTM-R			ID	NU	PID		Y	
+5	HEATTIME	8	Duree de prechauffage en minutes			LD	NU	PID	mn	Y	
+1	ONLCLAIT	8GEN	TC	Indique au LV la mise ON de[s] LCL	1920	OK			0	0	N
+3	0	21	4
+5	NUMLCL1	8	Indique au LV le Ndeg de LCL			LD	ST	LIDLCLAIT		Y	
+5	NUMLCL2	8	Indique au LV le Ndeg de LCL			LD	ST	LIDLCLAIT		Y	
+5	NUMLCL3	8	Indique au LV le Ndeg de LCL			LD	ST	LIDLCLAIT		Y	
+5	NUMLCL4	8	Indique au LV le Ndeg de LCL			LD	ST	LIDLCLAIT		Y	
+1	ONPYRO	8GEN	TC	Mise a feu de la pyro de numero demande dans la TC	16	OK			1	0	N
+2	810
+3	0	0	1
+5	NUMPYRO	8	Numero de pyro [ 29  pour DEMETER]			LD	ST	LNUMPYRO		Y	
+1	ORPOS	8GEN	TC	Definition de la position sur orbite du satellite	17	OK			0	0	N
+3	0	4	3
+5	DATEREF	80	Date de reference			ID	NU	PDATE		Y	
+5	A0	64	Position sur orbite moyenne a la date DATEREF			LF	NU	PID	rad	Y	
+5	OMEGA0	64	Pulsation orbitale			LF	NU	PID	rad/s	Y	
+1	PAGEFAULT	8GEN	TC	Signifie au LV les pages memoires defectueuses en flash	3	OK			1	0	N
+2	23
+3	0	4	1
+5	NUMFLASH	8	Numero Flash			LD	ST	LNUMFLASH		Y	
+1	PAPIDECH	8GEN	TC	Pour modifier l echantillonnage des APID en HKTM-P	7	OK			0	0	N
+3	0	4	2
+5	APIDTMH	16	Numero d APID			LD	NU	PAPIDTMH		Y	
+5	APIDECH	16	Echantillonage a appliquer			LD	NU	PID		Y	
+1	PATCHCODEPF	8GEN	TC	Pour modifier une zone de n mots [de 16 bits] en memoire DRAM, d adresse de debu	3	NOK			0	0	N
+3	0	9	109
+5	ADRPATCH	32	Adresse de debut de la zone a patcher			LD	NU	PID		Y	
+5	DATAPATCH1	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		Y	
+5	DATAPATCH2	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH3	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH4	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH5	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH6	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH7	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH8	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH9	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH10	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH11	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH12	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH13	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH14	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH15	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH16	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH17	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH18	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH19	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH20	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH21	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH22	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH23	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH24	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH25	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH26	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH27	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH28	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH29	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH30	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH31	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH32	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH33	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH34	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH35	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH36	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH37	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH38	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH39	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH40	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH41	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH42	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH43	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH44	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH45	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH46	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH47	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH48	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH49	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH50	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH51	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH52	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH53	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH54	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH55	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH56	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH57	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH58	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH59	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH60	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH61	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH62	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH63	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH64	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH65	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH66	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH67	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH68	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH69	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH70	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH71	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH72	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH73	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH74	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH75	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH76	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH77	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH78	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH79	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH80	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH81	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH82	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH83	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH84	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH85	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH86	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH87	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH88	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH89	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH90	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH91	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH92	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH93	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH94	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH95	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH96	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH97	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH98	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATCH99	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATC100	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATC101	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATC102	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATC103	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATC104	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATC105	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATC106	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATC107	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+5	DATAPATC108	16	Nouvelle valeur zone a patcher [Longueur variable multiple de mots de 16 bits ju			LD	NU	PID		N	
+6	Pour modifier une zone de n mots (de 16 bits) en mémoire DRAM, d'adresse de début donnée
+1	POLGUIDANCE	8GEN	TC	Definition de profil de guidage sous forme polynomial du repere Rcons	18	OK			0	0	N
+3	0	4	19
+5	DATEDEBGUID	80	Date de debut du profil de guidage			ID	NU	PDATE		Y	
+5	TYPECONS	16	Type de consigne			LD	ST	LTYPECONS		Y	
+5	DTVALID	64	Duree de validite du polynome			LF	NU	PID	s	Y	
+5	NBDEGAXE	16	Degre de la serie de Fourier ou du polynome			LD	NU	PID		Y	
+5	AX0	64	Coefficient des profils sur l axe X			LF	NU	PID	rad/s	Y	
+5	AY0	64	Coefficient des profils sur l axe Y			LF	NU	PID	rad/s	Y	
+5	AZ0	64	Coefficient des profils sur l axe Z			LF	NU	PID	rad/s	Y	
+5	AX1	64	Coefficient des profils sur l axe X			LF	NU	PID	rad/s	Y	
+5	AY1	64	Coefficient des profils sur l axe Y			LF	NU	PID	rad/s	Y	
+5	AZ1	64	Coefficient des profils sur l axe Z			LF	NU	PID	rad/s	Y	
+5	AX2	64	Coefficient des profils sur l axe X			LF	NU	PID	rad/s	Y	
+5	AY2	64	Coefficient des profils sur l axe Y			LF	NU	PID	rad/s	Y	
+5	AZ2	64	Coefficient des profils sur l axe Z			LF	NU	PID	rad/s	Y	
+5	AX3	64	Coefficient des profils sur l axe X			LF	NU	PID	rad/s	Y	
+5	AY3	64	Coefficient des profils sur l axe Y			LF	NU	PID	rad/s	Y	
+5	AZ3	64	Coefficient des profils sur l axe Z			LF	NU	PID	rad/s	Y	
+5	AX4	64	Coefficient des profils sur l axe X			LF	NU	PID	rad/s	Y	
+5	AY4	64	Coefficient des profils sur l axe Y			LF	NU	PID	rad/s	Y	
+5	AZ4	64	Coefficient des profils sur l axe Z			LF	NU	PID	rad/s	Y	
+1	PONDERATION	8GEN	TC	Ponderation des masses TSAGE	15	OK			0	0	N
+3	0	1	8
+5	KLIN1	64	Ponderation mesure lineaire masse 1 [REFint]	0	1	LF	NU	PID		Y	
+5	KLIN2	64	Ponderation mesure lineaire masse 2 [REFext]	0	1	LF	NU	PID		Y	
+5	KLIN3	64	Ponderation mesure lineaire masse  3 [EPint]	0	1	LF	NU	PID		Y	
+5	KLIN4	64	Ponderation mesure lineaire masse  4 [EPext]	0	1	LF	NU	PID		Y	
+5	KANG1	64	Ponderation mesure angulaire masse 1 [REFint]	0	1	LF	NU	PID		Y	
+5	KANG2	64	Ponderation mesure angulaire masse 2 [REFext]	0	1	LF	NU	PID		Y	
+5	KANG3	64	Ponderation mesure angulaire masse 3 [EPint]	0	1	LF	NU	PID		Y	
+5	KANG4	64	Ponderation mesure angulaire masse 4 [EPext]	0	1	LF	NU	PID		Y	
+1	PROGTM	8GEN	TC	Pour programmer les flots TM	5	OK			0	0	N
+3	0	5	9
+5	HKTMP	1	Pour specifier les flots de TM a descendre pendant le passage			ID	ST	LYESNO		Y	
+5	HKTMR	1	Pour specifier les flots de TM a descendre pendant le passage			ID	ST	LYESNO		Y	
+4	PLTMS	1	Pour specifier les flots de TM a descendre pendant le passage:Bit 5	0h	Y
+4	PLTMXS	1	Pour specifier les flots de TM a descendre pendant le passage:Bit 4	0h	Y
+4	UNUSED4	4	4 bits not used	0h	Y
+5	NUMHKTMP	8	Number of frames per second for HKTM-P			ID	NU	PID		Y	
+5	NUMHKTMR	8	Number of frame per seconde for HKTM-R			ID	NU	PID		Y	
+4	NUMPLTMS	8	Number of frame per seconde for PLTM-S	0h	Y
+4	NUMPLTMXS	8	Number of frame per seconde for PLTM-XS	0h	Y
+1	RAPIDECH	8GEN	TC	Pour modifier l echantillonnage des APID en HKTM-R	7	OK			0	0	N
+3	0	3	2
+5	APIDTMH	16	Numero d APID			LD	NU	PAPIDTMH		Y	
+5	APIDECH	16	Echantillonage a appliquer			LD	NU	PID		Y	
+1	RECALTUC	8GEN	TC	Recalage de l OBT	2	NOK			1	0	N
+2	29
+3	0	4	0
+1	REEDSOLO	8GEN	TC	Permet de debrayer le codeur reed-solomon	5	OK			0	0	N
+3	0	6	1
+5	FLAGCTRL	8	Flag indiquant si le controle est autorise ou inhibe			LD	ST	LFLAGCTRL		Y	
+1	REINITQ	8GEN	TC	Definition a une date initiale de la position du repere Rcons	18	OK			0	0	N
+3	0	0	6
+5	DATEINIT	80	Date initiale			ID	NU	PDATE		Y	
+5	FLAGINIT	16	Flag de reinitisalisation de l attitude estimee. Non utilise sur Myriade			LD	NU	PID		Y	
+5	QCONS1	64	Quat1 definissant a la date DATNIT la valeur du quaternion de consigne			LF	NU	PID		Y	
+5	QCONS2	64	Quat2 definissant a la date DATNIT la valeur du quaternion de consigne			LF	NU	PID		Y	
+5	QCONS3	64	Quat3 definissant a la date DATNIT la valeur du quaternion de consigne			LF	NU	PID		Y	
+5	QCONS4	64	Quat4 definissant a la date DATNIT la valeur du quaternion de consigne			LF	NU	PID		Y	
+1	REINITRNIQ	8GEN	TC	Definition a une date de la position du repere Rni	17	OK			0	0	N
+3	0	6	5
+5	DATEQNI	80	Date du QNI			ID	NU	PDATE		Y	
+5	QNI1	64	Quat1 RNI a la date DATEQNI			LF	NU	PID		Y	
+5	QNI2	64	Quat1 RNI a la date DATEQNI			LF	NU	PID		Y	
+5	QNI3	64	Quat1 RNI a la date DATEQNI			LF	NU	PID		Y	
+5	QNI4	64	Quat1 RNI a la date DATEQNI			LF	NU	PID		Y	
+1	REINITROLQ	8GEN	TC	Definition a une date de la position du repere Rol	17	OK			0	0	N
+3	0	0	5
+5	DATEQOL	80	Date du QOL			ID	NU	PDATE		Y	
+5	QOL1	64	Quat1 orbital locale a la date DATEQOL			LF	NU	PID		Y	
+5	QOL2	64	Quat2 orbital locale a la date DATEQOL			LF	NU	PID		Y	
+5	QOL3	64	Quat3 orbital locale a la date DATEQOL			LF	NU	PID		Y	
+5	QOL4	64	Quat4 orbital locale a la date DATEQOL			LF	NU	PID		Y	
+1	RESETLVC	8GEN	TC	Provoque un reset OBC par l intermediaire du LVC	3	OK			0	0	N
+3	0	13	0
+1	RESTART	8GEN	TC	Pour rebooter le LV a partir de la flash specifie dans la TC	3	OK			1	0	N
+2	11
+3	0	0	1
+5	NUMFLASH	8	Numero Flash			LD	ST	LNUMFLASH		Y	
+1	RESTARTSAFE	8GEN	TC	Pour rebooter le LV en mode survie a partir de la flash specifie dans la TC	3	OK			1	0	N
+2	11
+3	0	1	1
+5	NUMFLASH	8	Numero Flash			LD	ST	LNUMFLASH		Y	
+1	RYTHMEMET	8GEN	TC	Pour configurer l emetteur [rythme bas ou rythme haut]	5	OK			0	0	N
+3	0	4	1
+5	RYTHME	16	Pour changer le rythme binaire de l emetteur			LD	ST	LRYTHME		Y	
+1	SAUTTUC	8GEN	TC	Forcer la date TUC, sans passer par la procedure de recalage [HBreception est in	2	OK			1	0	N
+2	29
+3	0	2	1
+5	SAUT	16	Saut a appliquer a une date TUC			L2	ST	LSAUT		Y	
+6	Forcer la date TUC, sans passer par la procédure de recalage (HBréception est inchangé et pas d'action sur le free running counter)
+1	SCRAMBLING	8GEN	TC	Permet de debrayer le scrambling TM	5	OK			0	0	N
+3	0	7	1
+5	FLAGCTRL	8	Flag indiquant si le controle est autorise ou inhibe			LD	ST	LFLAGCTRL		Y	
+1	SINGUIDANCE	8GEN	TC	Definition de profil de guidage sinusoidal	18	OK			0	0	N
+3	0	5	11
+5	DATEDEBGUID	80	Date de debut du profil de guidage			ID	NU	PDATE		Y	
+5	TYPECONS	16	Type de consigne			LD	ST	LTYPECONS		Y	
+5	AX	64	Amplitude des sinusoides pour le profil de vitesse angulaire sur l axe X			LF	NU	PID	rad/s	Y	
+5	AY	64	Amplitude des sinusoides pour le profil de vitesse angulaire sur l axe Y			LF	NU	PID	rad/s	Y	
+5	AZ	64	Amplitude des sinusoides pour le profil de vitesse angulaire sur l axe Z			LF	NU	PID	rad/s	Y	
+5	OMEGAX	64	Pulsation des sinusoides pour le profil de vitesse angulaire sur l axe X			LF	NU	PID	rad/s	Y	
+5	OMEGAY	64	Pulsation des sinusoides pour le profil de vitesse angulaire sur l axe Y			LF	NU	PID	rad/s	Y	
+5	OMEGAZ	64	Pulsation des sinusoides pour le profil de vitesse angulaire sur l axe Y			LF	NU	PID	rad/s	Y	
+5	PHIX	64	Phase des sinusoides pour le profil de vitesse angulaire de l axe X			LF	NU	PID	rad	Y	
+5	PHIY	64	Phase des sinusoides pour le profil de vitesse angulaire de l axe Y			LF	NU	PID	rad	Y	
+5	PHIZ	64	Phase des sinusoides pour le profil de vitesse angulaire de l axe Y			LF	NU	PID	rad	Y	
+1	SSMODEMCA	8GEN	TC	Sous-mode MCA	15	OK			0	0	N
+3	0	0	2
+5	SSMODEMCA	16	Identifiant du sous-mode MCA courant	1	11	LD	ST	LSMODEMCA		Y	
+5	COMINITBANG	8	Re-initialisation de l estimation des biais angulaires	0	1	LD	ST	LINITBANG		Y	
+1	SURVEDNSPF	8GEN	TC	Modification de seuils de surveillance de type entier double non signe LV PF	11	OK			0	0	N
+3	0	10	4
+5	NOMCELLSURV	64	Nom de la cellule de surveillance a activer			LS	NU	PID		Y	
+5	FLAGSEUIL	8	Flag indiquant si on modifie le seuil haut ou bas d une surveillance			LD	ST	LFLAGSEUIL		Y	
+5	SEUILBEDNS	32	Seuil bas de type entier double non signe			LD	NU	PID		Y	
+5	SEUILHEDNS	32	Seuil haut de type entier double non signe			LD	NU	PID		Y	
+1	SURVEDSPF	8GEN	TC	Modification de seuils de surveillance de type entier double signe LV PF	11	OK			0	0	N
+3	0	11	4
+5	NOMCELLSURV	64	Nom de la cellule de surveillance a activer			LS	NU	PID		Y	
+5	FLAGSEUIL	8	Flag indiquant si on modifie le seuil haut ou bas d une surveillance			LD	ST	LFLAGSEUIL		Y	
+5	SEUILBEDS	32	Seuil bas de type entier double signe			L2	NU	PID		Y	
+5	SEUILHEDS	32	Seuil haut de type entier double signe			L2	NU	PID		Y	
+1	SURVENSPF	8GEN	TC	Modification de seuils de surveillance de type entier non signe LV PF	11	OK			0	0	N
+3	0	8	4
+5	NOMCELLSURV	64	Nom de la cellule de surveillance a activer			LS	NU	PID		Y	
+5	FLAGSEUIL	8	Flag indiquant si on modifie le seuil haut ou bas d une surveillance			LD	ST	LFLAGSEUIL		Y	
+5	SEUILBENS	16	Seuil bas de type entier non signe			LD	NU	PID		Y	
+5	SEUILHENS	16	Seuil haut de type entier non signe			LD	NU	PID		Y	
+1	SURVESPF	8GEN	TC	Modification de seuils de surveillance de type entier signe LV PF	11	OK			0	0	N
+3	0	9	4
+5	NOMCELLSURV	64	Nom de la cellule de surveillance a activer			LS	NU	PID		Y	
+5	FLAGSEUIL	8	Flag indiquant si on modifie le seuil haut ou bas d une surveillance			LD	ST	LFLAGSEUIL		Y	
+5	SEUILBES	16	Seuil bas de type entier signe			L2	NU	PID		Y	
+5	SEUILHES	16	Seuil haut de type entier signe			L2	NU	PID		Y	
+1	SURVFILTRPF	8GEN	TC	Modification de la valeur du filtre de la cellule de surveillance	11	OK			0	0	N
+3	0	14	2
+5	NOMCELLSURV	64	Nom de la cellule de surveillance a activer			LS	NU	PID		Y	
+5	FILTRESURV	16	Valeur du filtre de la cellule de surveillance			LD	NU	PID		Y	
+1	SURVFLTDPPF	8GEN	TC	Modification de seuils de surveillance de type flottant double precision LV PF	11	OK			0	0	N
+3	0	13	4
+5	NOMCELLSURV	64	Nom de la cellule de surveillance a activer			LS	NU	PID		Y	
+5	FLAGSEUIL	8	Flag indiquant si on modifie le seuil haut ou bas d une surveillance			LD	ST	LFLAGSEUIL		Y	
+5	SEUILBFLTDP	64	Seuil bas de type flottant double precision			LF	NU	PID		Y	
+5	SEUILHFLTDP	64	Seuil haut de type flottant double precision			LF	NU	PID		Y	
+1	SURVFLTSPF	8GEN	TC	Modification de seuils de surveillance de type flottant LV PF	11	OK			0	0	N
+3	0	12	4
+5	NOMCELLSURV	64	Nom de la cellule de surveillance a activer			LS	NU	PID		Y	
+5	FLAGSEUIL	8	Flag indiquant si on modifie le seuil haut ou bas d une surveillance			LD	ST	LFLAGSEUIL		Y	
+5	SEUILBFLT	32	Seuil bas de type flottant			LF	NU	PID		Y	
+5	SEUILHFLT	32	Seuil haut de type flottant			LF	NU	PID		Y	
+1	TRONCONPF	8GEN	TC	Troncon d une donnee transferee dans le sens Sol->Bord vers le LV PF, [longueur 	9	OK			0	0	N
+3	0	1	110
+5	TRONCON1	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		Y	
+5	TRONCON2	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON3	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON4	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON5	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON6	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON7	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON8	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON9	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON10	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON11	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON12	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON13	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON14	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON15	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON16	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON17	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON18	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON19	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON20	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON21	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON22	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON23	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON24	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON25	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON26	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON27	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON28	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON29	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON30	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON31	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON32	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON33	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON34	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON35	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON36	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON37	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON38	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON39	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON40	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON41	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON42	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON43	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON44	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON45	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON46	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON47	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON48	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON49	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON50	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON51	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON52	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON53	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON54	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON55	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON56	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON57	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON58	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON59	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON60	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON61	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON62	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON63	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON64	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON65	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON66	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON67	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON68	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON69	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON70	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON71	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON72	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON73	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON74	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON75	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON76	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON77	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON78	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON79	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON80	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON81	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON82	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON83	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON84	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON85	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON86	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON87	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON88	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON89	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON90	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON91	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON92	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON93	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON94	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON95	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON96	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON97	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON98	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON99	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON100	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON101	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON102	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON103	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON104	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON105	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON106	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON107	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON108	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON109	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+5	TRONCON110	16	Troncon de donnee fourni par le producteur. Ce champ est donc considere comme 			LD	NU	PID		N	
+6	Tronçon d'une donnée transférée dans le sens Sol->Bord vers le LV PF, (longueur variable de 2 à 221 octets)
+1	VGSREF	8GEN	TC	TC au LVC d activation de l algorithme de filtrage et regulation de la tension G	13	OK			0	0	N
+3	0	4	1
+5	FLAGCTRL	8	Flag indiquant si le controle est autorise ou inhibe			LD	ST	LFLAGCTRL		Y	
+6	TC au LVC d'activation de l'algorithme de filtrage et régulation de la tension GS 
+1	VIDERDIAGTM	8GEN	TC	Pour redescendre la Diagnostic Telemetry	6	OK			0	0	N
+3	0	2	0
+1	VIDERTM	8GEN	TC	Pour vider la telemesure HKTM-R entre deux dates contenues dans la TC [DATEDEBUT	6	OK			0	0	N
+3	0	0	2
+5	DATEDEBUT	80	Date debut			ID	NU	PDATE		Y	
+5	DATEFIN	80	Date fin			ID	NU	PDATE		Y	
+6	Pour vider la télémesure HKTM-R entre deux dates contenues dans la TC (DATEDEBUT et DATEFIN)
+1	VOIRFILEPF	8GEN	TC	Dump entre 2 dates des donnees du buffer d execution d un PdT	4	OK			3	0	N
+2	8
+2	12
+2	16
+3	0	5	3
+5	NOMPLAN	64	Pour decrire un nom de plan			LS	NU	PID		Y	
+5	DATEDEBUT	80	Date debut			ID	NU	PDATE		Y	
+5	DATEFIN	80	Date fin			ID	NU	PDATE		Y	
+1	VOIRUNITPF	8GEN	TC	TC pour telemesurer dans la HKTM l unite de surveillance dont le nom est indique	11	OK			1	0	N
+2	26
+3	0	4	1
+5	NOMUNITSURV	64	Nom de la l unite de surveillance			LS	NU	PID		Y	
+6	TC pour télémesurer dans la HKTM l'unité de surveillance dont le nom est indiqué dans la TC (il contient le nombre de cellules de l'unité, et pour chacune d'entre elles, son nom, son status d'autorisation (autorisé/inhibé) et ses seuils haut et bas)
+#END_OF_FILE
