@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.commons.compress.utils.Lists;
 import org.junit.After;
@@ -160,7 +161,7 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
     public void cleanUp() throws URISyntaxException, IOException, InterruptedException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         LOG.info("Waiting for current jobs finished ....");
-        waitForJobsFinished(10);
+        waitForJobsFinished(10, true);
         LOG.info("All current jobs finished !");
         subscriber.purgeQueue(DataStorageEvent.class, DataStorageEventHandler.class);
         jobInfoRepo.deleteAll();
@@ -212,20 +213,32 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
         return aipBuilder.build();
     }
 
-    private void waitForJobsFinished(int nbMaxSeconds) throws InterruptedException {
+    private void waitForJobsFinished(int nbMaxSeconds, boolean forceStop) throws InterruptedException {
         List<JobInfo> jobs = Lists.newArrayList();
-        long unfinishedJobs = 0;
+        Set<JobInfo> unfinishedJobs;
         int cpt = 0;
         do {
-            Thread.sleep(1000);
             jobs = jobInfoService.retrieveJobs();
             unfinishedJobs = jobs.stream()
                     .filter(f -> !f.getStatus().getStatus().equals(JobStatus.SUCCEEDED)
                             && !f.getStatus().getStatus().equals(JobStatus.FAILED)
                             && !f.getStatus().getStatus().equals(JobStatus.ABORTED))
-                    .count();
+                    .collect(Collectors.toSet());
+            LOG.info("TEST CLEAN] Waiting for {} Unfinished jobs", unfinishedJobs.size());
+            if (forceStop) {
+                unfinishedJobs.forEach(j -> {
+                    LOG.info("[TEST CLEAN] Trying to stop running job {}-{} [{}]", j.getClassName(), j.getId(),
+                             j.getStatus());
+                    jobInfoService.stopJob(j.getId());
+                });
+            }
+            if (unfinishedJobs.size() > 0) {
+                Thread.sleep(1000);
+            }
             cpt++;
-        } while ((cpt < nbMaxSeconds) && (jobs.isEmpty() || (unfinishedJobs > 0)));
+
+        } while ((cpt < nbMaxSeconds) && (unfinishedJobs.size() > 0));
+
     }
 
     @Configuration
