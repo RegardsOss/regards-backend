@@ -23,6 +23,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -438,10 +439,16 @@ public class DataStorageService implements IDataStorageService {
                     + "has just been removed from the application", e);
             return;
         }
+
         storedDataFile.setChecksum(storedFileChecksum);
         storedDataFile.setFileSize(storedFileSize);
         storedDataFile.addDataStorageUsed(prioritizedDataStorageUsed);
-        storedDataFile.decreaseNotYetStoredBy();
+        try {
+            storedDataFile.decreaseNotYetStoredBy();
+        } catch (EntityOperationForbiddenException e) {
+            LOGGER.error("Data file {} of AIP {} has been successfuly stored one more time than expected into {} by IDataStorage plugin configuration {}",
+                         storedDataFile.getId(), associatedAIP.getId(), storedFileNewURL, dataStoragePluginConfId);
+        }
         storedDataFile.getUrls().add(storedFileNewURL);
         storedDataFile.setHeight(dataHeight);
         storedDataFile.setWidth(dataWidth);

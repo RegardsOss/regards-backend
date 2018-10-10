@@ -434,9 +434,7 @@ public class AIPService implements IAIPService {
         LOGGER.debug("{} data objects has been dispatched between {} data storage by allocation strategy",
                      dataFilesToStore.size(), storageWorkingSetMap.keySet().size());
         // as we are trusty people, we check that the dispatch gave us back all DataFiles into the WorkingSubSets
-        LOGGER.debug("Cheking dispatch results ....");
         checkDispatch(dataFilesToStore, storageWorkingSetMap, dispatchErrors);
-        LOGGER.debug("Dispatch results checked !");
         // now that those who should be in error are handled,  lets set notYetStoredBy and save data files
         for (StorageDataFile df : storageWorkingSetMap.values()) {
             df.increaseNotYetStoredBy();
@@ -444,9 +442,9 @@ public class AIPService implements IAIPService {
         // Save dataFiles
         for (StorageDataFile file : storageWorkingSetMap.values()) {
             dataFileDao.save(file);
-            em.flush();
-            em.clear();
         }
+        em.flush();
+        em.clear();
         return storageWorkingSetMap;
     }
 

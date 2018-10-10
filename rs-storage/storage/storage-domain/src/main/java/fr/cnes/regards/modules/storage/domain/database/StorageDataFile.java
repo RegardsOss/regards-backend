@@ -34,6 +34,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.jpa.converter.SetStringCsvConverter;
 import fr.cnes.regards.framework.jpa.converter.SetURLCsvConverter;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.DataType;
@@ -478,7 +479,9 @@ public class StorageDataFile {
     }
 
     public void setNotYetStoredBy(Long notYetStoredBy) {
-        this.notYetStoredBy = notYetStoredBy;
+        if (notYetStoredBy != null) {
+            this.notYetStoredBy = notYetStoredBy;
+        }
     }
 
     public String getStorageDirectory() {
@@ -522,18 +525,15 @@ public class StorageDataFile {
     }
 
     public void increaseNotYetStoredBy() {
-        if (notYetStoredBy == null) {
-            notYetStoredBy = 1L;
-        } else {
-            notYetStoredBy++;
-        }
+        notYetStoredBy++;
     }
 
-    public void decreaseNotYetStoredBy() {
-        if (notYetStoredBy == null) {
-            notYetStoredBy = -1L;
-        } else {
+    public void decreaseNotYetStoredBy() throws EntityOperationForbiddenException {
+        if (notYetStoredBy > 0L) {
             notYetStoredBy--;
+        } else {
+            throw new EntityOperationForbiddenException(
+                    String.format("Forbidden decrease <notYetStoredBy> for dataFile %s - %s", this.id, this.name));
         }
     }
 
