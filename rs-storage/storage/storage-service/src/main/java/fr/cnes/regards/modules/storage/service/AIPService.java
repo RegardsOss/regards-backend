@@ -916,16 +916,14 @@ public class AIPService implements IAIPService {
         do {
             pendingAips = aipDao.findAllByState(AIPState.PENDING, page);
             // first lets handle the case where every dataFiles of an AIP are successfully stored.
-            LOGGER.trace("[METADATA STORE] Number of AIP in pending state {}", pendingAips.getTotalElements());
+            LOGGER.trace("[METADATA STORE] Number of AIP in pending state ready for metadata storage {}/{}",
+                         metadataToStore.size(), pendingAips.getTotalElements());
             for (AIP aip : pendingAips) {
-                LOGGER.trace("[METADATA STORE] Checking if AIP {} is fully stored ...", aip.getProviderId());
                 AIPSession aipSession = getSession(aip.getSession(), false);
                 Set<StorageDataFile> storedDataFile = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
-                LOGGER.trace("[METADATA STORE] Checking if AIP {} is fully stored - Nb stored files = {}",
-                             aip.getProviderId(), storedDataFile.size());
                 Set<StorageDataFile> aipDataFiles = StorageDataFile.extractDataFiles(aip, aipSession);
-                LOGGER.trace("[METADATA STORE] Checking if AIP {} is fully stored - Nb files extracted from JSON = {}",
-                             aip.getProviderId(), aipDataFiles.size());
+                LOGGER.trace("[METADATA STORE] Checking if AIP {} is fully stored - {} / {} handled",
+                             aip.getProviderId(), storedDataFile.size(), aipDataFiles.size());
                 if (storedDataFile.containsAll(aipDataFiles)) {
                     // that means all StorageDataFile of this AIP has been stored, lets prepare the metadata storage,
                     // first we need to write the metadata into a file
@@ -1623,7 +1621,7 @@ public class AIPService implements IAIPService {
     public Page<AIPSession> searchSessions(String id, OffsetDateTime from, OffsetDateTime to, Pageable pageable) {
         Page<AIPSession> pagedSessions = aipSessionRepository.findAll(AIPSessionSpecifications.search(id, from, to),
                                                                       pageable);
-        List<AIPSession> sessions = org.apache.commons.compress.utils.Lists.newArrayList();
+        List<AIPSession> sessions = new ArrayList<>();
         pagedSessions.forEach(s -> sessions.add(this.addSessionSipInformations(s)));
         return new PageImpl<>(sessions, pageable, pagedSessions.getTotalElements());
     }
