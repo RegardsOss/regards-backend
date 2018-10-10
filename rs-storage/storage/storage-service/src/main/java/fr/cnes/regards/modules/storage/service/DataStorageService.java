@@ -294,7 +294,7 @@ public class DataStorageService implements IDataStorageService {
     @Override
     public void handleDeletionAction(StorageEventType type, DataStorageEvent event) {
         // Check that the given StorageDataFile id is associated to an existing StorageDataFile from db.
-        Optional<StorageDataFile> data = dataFileDao.findOneById(event.getDataFileId());
+        Optional<StorageDataFile> data = dataFileDao.findLockedOneById(event.getDataFileId());
         if (data.isPresent()) {
             switch (type) {
                 case SUCCESSFULL:
