@@ -398,7 +398,7 @@ public class DataStorageService implements IDataStorageService {
 
     @Override
     public void handleStoreAction(StorageEventType type, DataStorageEvent event) {
-        Optional<StorageDataFile> optionalData = dataFileDao.findOneById(event.getDataFileId());
+        Optional<StorageDataFile> optionalData = dataFileDao.findLockedOneById(event.getDataFileId());
         if (optionalData.isPresent()) {
             StorageDataFile data = optionalData.get();
             Optional<AIP> optionalAssociatedAip = aipDao.findOneByAipId(data.getAip().getId().toString());

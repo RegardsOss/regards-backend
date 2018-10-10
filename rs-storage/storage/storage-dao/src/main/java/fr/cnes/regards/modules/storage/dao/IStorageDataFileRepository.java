@@ -5,10 +5,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.persistence.LockModeType;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -72,11 +75,17 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
     Set<StorageDataFile> findByAipEntityAndDataType(AIPEntity aipEntity, DataType dataType);
 
     /**
-     * Retrieve a data file by its id
+     * Retrieve a data file by its id.
+     * This method lock access to the entity in db for other threads as long as the current transaction is not ended.
+     * <br/>
+     * <b>NOTE :</b> The {@link Lock} on this method is necessary to handle AMQ events on DataStorageFile to ensure two events
+     * do not modify the same entity at the same time.
+     *
      * @param dataFileId
      * @return the data file wrapped into an optional to avoid nulls
      */
-    Optional<StorageDataFile> findOneWithoutRelById(Long dataFileId);
+    @Lock(LockModeType.PESSIMISTIC_READ)
+    Optional<StorageDataFile> findLockedOneById(Long dataFileId);
 
     /**
      * Retrieve a data file by its id
