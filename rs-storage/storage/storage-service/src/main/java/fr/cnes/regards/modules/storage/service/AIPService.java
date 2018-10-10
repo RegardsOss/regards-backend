@@ -404,17 +404,14 @@ public class AIPService implements IAIPService {
     @Override
     public long storeMetadata() {
         long nbScheduled = 0;
-        Set<StorageDataFile> metadataToStore;
-        do {
-            // first lets get AIP that are not fully stored(at least metadata are not stored)
-            metadataToStore = getMetadataFilesToStore();
-            nbScheduled = nbScheduled + metadataToStore.size();
-            // now that we know all the metadata that should be stored, lets schedule their storage!
-            if (!metadataToStore.isEmpty()) {
-                LOGGER.debug("Scheduling {} new metadata files for storage.", metadataToStore.size());
-                scheduleStorageMetadata(metadataToStore);
-            }
-        } while (!metadataToStore.isEmpty());
+        // first lets get AIP that are not fully stored(at least metadata are not stored)
+        Set<StorageDataFile> metadataToStore = getMetadataFilesToStore(1000);
+        nbScheduled = nbScheduled + metadataToStore.size();
+        // now that we know all the metadata that should be stored, lets schedule their storage!
+        if (!metadataToStore.isEmpty()) {
+            LOGGER.debug("Scheduling {} new metadata files for storage.", metadataToStore.size());
+            scheduleStorageMetadata(metadataToStore);
+        }
         return nbScheduled;
     }
 
@@ -891,6 +888,8 @@ public class AIPService implements IAIPService {
                 AIP aip = dataFile.getAip();
                 aip.setState(AIPState.STORING_METADATA);
                 save(aip, true);
+                em.flush();
+                em.clear();
             }
         } catch (ModuleException e) {
             LOGGER.error(e.getMessage(), e);
@@ -904,47 +903,52 @@ public class AIPService implements IAIPService {
      * Retrieve all {@link StorageDataFile} ready to be stored.
      * @return data files to store
      */
-    private Set<StorageDataFile> getMetadataFilesToStore() {
+    private Set<StorageDataFile> getMetadataFilesToStore(int dataFileLimit) {
         Set<StorageDataFile> metadataToStore = Sets.newHashSet();
-        Page<AIP> pendingAips = aipDao.findAllByState(AIPState.PENDING, new PageRequest(0, aipIterationLimit));
-        List<AIP> notFullyStored = pendingAips.getContent();
-        // first lets handle the case where every dataFiles of an AIP are successfully stored.
-        for (AIP aip : notFullyStored) {
-            LOGGER.trace("Checking if AIP {} is fully stored ...", aip.getProviderId());
-            AIPSession aipSession = getSession(aip.getSession(), false);
-            Set<StorageDataFile> storedDataFile = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
-            LOGGER.trace("Checking if AIP {} is fully stored - Nb stored files = {}", aip.getProviderId(),
-                         storedDataFile.size());
-            Set<StorageDataFile> aipDataFiles = StorageDataFile.extractDataFiles(aip, aipSession);
-            LOGGER.trace("Checking if AIP {} is fully stored - Nb files extracted from JSON = {}", aip.getProviderId(),
-                         aipDataFiles.size());
-            if (storedDataFile.containsAll(aipDataFiles)) {
-                // that means all StorageDataFile of this AIP has been stored, lets prepare the metadata storage,
-                // first we need to write the metadata into a file
-                StorageDataFile meta;
-                try {
-                    LOGGER.debug("Writting meta-data for aip fully stored {}", aip.getId().toString());
-                    meta = writeMetaToWorkspace(aip);
-                    // now if we have a meta to store, lets add it
-                    meta.setState(DataFileState.PENDING);
-                    dataFileDao.save(meta);
-                    em.flush();
-                    em.clear();
-                    metadataToStore.add(meta);
-                    // We do not schedule StoreJob for this AIP here, to avoid multiple access to IDataStorage.
-                    // The StoreJob is scheduled after with all the AIP DataFiles to store.
-                } catch (IOException | FileCorruptedException e) {
-                    // if we don't have a meta to storeAndCreate that means a problem happened and we set the aip to
-                    // STORAGE_ERROR
-                    LOGGER.error(e.getMessage(), e);
-                    aip.setState(AIPState.STORAGE_ERROR);
-                    save(aip, true);
+        Pageable page = new PageRequest(0, aipIterationLimit);
+        Page<AIP> pendingAips = null;
+        do {
+            pendingAips = aipDao.findAllByState(AIPState.PENDING, page);
+            // first lets handle the case where every dataFiles of an AIP are successfully stored.
+            LOGGER.trace("Number of of AIP in pending state {}", pendingAips.getTotalElements());
+            for (AIP aip : pendingAips) {
+                LOGGER.trace("Checking if AIP {} is fully stored ...", aip.getProviderId());
+                AIPSession aipSession = getSession(aip.getSession(), false);
+                Set<StorageDataFile> storedDataFile = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
+                LOGGER.trace("Checking if AIP {} is fully stored - Nb stored files = {}", aip.getProviderId(),
+                             storedDataFile.size());
+                Set<StorageDataFile> aipDataFiles = StorageDataFile.extractDataFiles(aip, aipSession);
+                LOGGER.trace("Checking if AIP {} is fully stored - Nb files extracted from JSON = {}",
+                             aip.getProviderId(), aipDataFiles.size());
+                if (storedDataFile.containsAll(aipDataFiles)) {
+                    // that means all StorageDataFile of this AIP has been stored, lets prepare the metadata storage,
+                    // first we need to write the metadata into a file
+                    StorageDataFile meta;
+                    try {
+                        LOGGER.debug("Writting meta-data for aip fully stored {}", aip.getId().toString());
+                        meta = writeMetaToWorkspace(aip);
+                        // now if we have a meta to store, lets add it
+                        meta.setState(DataFileState.PENDING);
+                        dataFileDao.save(meta);
+                        em.flush();
+                        em.clear();
+                        metadataToStore.add(meta);
+                        // We do not schedule StoreJob for this AIP here, to avoid multiple access to IDataStorage.
+                        // The StoreJob is scheduled after with all the AIP DataFiles to store.
+                    } catch (IOException | FileCorruptedException e) {
+                        // if we don't have a meta to storeAndCreate that means a problem happened and we set the aip to
+                        // STORAGE_ERROR
+                        LOGGER.error(e.getMessage(), e);
+                        aip.setState(AIPState.STORAGE_ERROR);
+                        save(aip, true);
+                    }
+                } else {
+                    LOGGER.debug("There is still {} datafiles not stored for AIP {}. Metadata file cannot be generated yet.",
+                                 aipDataFiles.size() - storedDataFile.size(), aip.getProviderId());
                 }
-            } else {
-                LOGGER.debug("There is still {} datafiles not stored for AIP {}. Metadata file cannot be generated yet.",
-                             aipDataFiles.size() - storedDataFile.size(), aip.getProviderId());
             }
-        }
+            page = pendingAips.nextPageable();
+        } while (pendingAips.hasNext() && (metadataToStore.size() < dataFileLimit));
         return metadataToStore;
     }
 
