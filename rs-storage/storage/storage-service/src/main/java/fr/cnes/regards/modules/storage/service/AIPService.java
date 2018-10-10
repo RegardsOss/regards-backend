@@ -910,9 +910,14 @@ public class AIPService implements IAIPService {
         List<AIP> notFullyStored = pendingAips.getContent();
         // first lets handle the case where every dataFiles of an AIP are successfully stored.
         for (AIP aip : notFullyStored) {
+            LOGGER.trace("Checking if AIP {} is fully stored ...", aip.getProviderId());
             AIPSession aipSession = getSession(aip.getSession(), false);
             Set<StorageDataFile> storedDataFile = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
+            LOGGER.trace("Checking if AIP {} is fully stored - Nb stored files = {}", aip.getProviderId(),
+                         storedDataFile.size());
             Set<StorageDataFile> aipDataFiles = StorageDataFile.extractDataFiles(aip, aipSession);
+            LOGGER.trace("Checking if AIP {} is fully stored - Nb files extracted from JSON = {}", aip.getProviderId(),
+                         aipDataFiles.size());
             if (storedDataFile.containsAll(aipDataFiles)) {
                 // that means all StorageDataFile of this AIP has been stored, lets prepare the metadata storage,
                 // first we need to write the metadata into a file
