@@ -67,12 +67,6 @@ public interface IAIPDao {
     Page<AIP> findAllByState(AIPState state, Pageable pageable);
 
     /**
-     * Find {@link AIP} by state in transaction with pessimistic read lock
-     * @return a set of products with the above properties
-     */
-    Page<AIP> findAllWithLockByState(AIPState state, Pageable pageable);
-
-    /**
      * Retrieve a page of aip which state is the one provided and contains at least one of the provided tags and which
      * last event occurred after the given date
      * @param state
@@ -106,13 +100,6 @@ public interface IAIPDao {
      * @return an optional wrapping the aip to avoid nulls
      */
     Optional<AIP> findOneByAipId(String aipId);
-
-    /**
-     * Retrieve a single aip according to its ip id
-     * @param aipId
-     * @return an optional wrapping the aip to avoid nulls
-     */
-    Optional<AIP> findOneWithLockByAipId(String aipId);
 
     /**
      * Delete all aips from the database

@@ -93,8 +93,6 @@ public interface IDataFileDao {
      */
     Optional<StorageDataFile> findOneById(Long dataFileId);
 
-    Optional<StorageDataFile> findLockedOneById(Long dataFileId);
-
     /**
      * Find all data files which checksum is one of the provided ones
      * @param checksums

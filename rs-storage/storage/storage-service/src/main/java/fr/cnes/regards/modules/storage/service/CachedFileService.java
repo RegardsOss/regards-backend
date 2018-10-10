@@ -59,7 +59,6 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -305,13 +304,15 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         Set<String> dataFilesToRestoreChecksums = dataFilesToRestore.stream().map(df -> df.getChecksum())
                 .collect(Collectors.toSet());
         long endChecksumExtraction = System.currentTimeMillis();
-        LOGGER.trace("Checksum extraction from {} dataFiles to restore took {} ms", dataFilesToRestore.size(), endChecksumExtraction - startChecksumExtraction);
+        LOGGER.trace("Checksum extraction from {} dataFiles to restore took {} ms", dataFilesToRestore.size(),
+                     endChecksumExtraction - startChecksumExtraction);
         LOGGER.trace("Looking for {} checksums to restore from cache.", dataFilesToRestoreChecksums.size());
         long startFindCachedFileByChecksum = System.currentTimeMillis();
         List<CachedFile> cachedFiles = cachedFileRepository
                 .findAllByChecksumInOrderByLastRequestDateAsc(dataFilesToRestoreChecksums);
         long endFindCachedFileByChecksum = System.currentTimeMillis();
-        LOGGER.trace("Finding {} cached file out of {} checksums from the DB took {} ms", cachedFiles.size(), dataFilesToRestore.size(), endFindCachedFileByChecksum - startFindCachedFileByChecksum);
+        LOGGER.trace("Finding {} cached file out of {} checksums from the DB took {} ms", cachedFiles.size(),
+                     dataFilesToRestore.size(), endFindCachedFileByChecksum - startFindCachedFileByChecksum);
         // Update expiration to the new cacheExpirationDate if above the last one.
         long startExpirationDataUpdate = System.currentTimeMillis();
         long nbUpdate = 0;
@@ -323,7 +324,8 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
             }
         }
         long endExpirationDataUpdate = System.currentTimeMillis();
-        LOGGER.trace("Update Expiration date of {} cached file out of {} took {} ms", nbUpdate, cachedFiles.size(), endExpirationDataUpdate - startExpirationDataUpdate);
+        LOGGER.trace("Update Expiration date of {} cached file out of {} took {} ms", nbUpdate, cachedFiles.size(),
+                     endExpirationDataUpdate - startExpirationDataUpdate);
 
         long startFindAlreadyAvailable = System.currentTimeMillis();
         // Get cached files available
@@ -334,7 +336,8 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
                 .filter(df -> availableCachedFileChecksums.contains(df.getChecksum())).collect(Collectors.toSet());
         long endFindAlreadyAvailable = System.currentTimeMillis();
         LOGGER.trace("{} StorageDataFiles are already available from the cache.", alreadyAvailableData.size());
-        LOGGER.trace("Finding those already available StorageDataFile took {} ms", endFindAlreadyAvailable - startFindAlreadyAvailable);
+        LOGGER.trace("Finding those already available StorageDataFile took {} ms",
+                     endFindAlreadyAvailable - startFindAlreadyAvailable);
         long startFindAlreadyQueued = System.currentTimeMillis();
         // Get cached files queued
         Set<String> queuedCachedFileChecksums = cachedFiles.stream()
@@ -344,7 +347,8 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
                 .filter(df -> queuedCachedFileChecksums.contains(df.getChecksum())).collect(Collectors.toSet());
         long endFindAlreadyQueued = System.currentTimeMillis();
         LOGGER.trace("{} StorageDataFile are already queued.", queuedData.size());
-        LOGGER.trace("Finding those already queued StorageDataFile took {} ms", endFindAlreadyQueued - startFindAlreadyQueued);
+        LOGGER.trace("Finding those already queued StorageDataFile took {} ms",
+                     endFindAlreadyQueued - startFindAlreadyQueued);
 
         // Create the list of data files not handle by cache and needed to be restored
         Set<StorageDataFile> toRetrieve = Sets.newHashSet(dataFilesToRestore);
@@ -377,15 +381,17 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
             toRetrieveByStorage.put(computeDataStorageToUseToRetrieve(df.getPrioritizedDataStorages()), df);
         }
         long endDispatching = System.currentTimeMillis();
-        LOGGER.trace("Dispatching {} StorageDataFile into {} DataStorages took {} ms", toRetrieve.size(), toRetrieveByStorage.keySet().size(), endDispatching - startDispatching);
+        LOGGER.trace("Dispatching {} StorageDataFile into {} DataStorages took {} ms", toRetrieve.size(),
+                     toRetrieveByStorage.keySet().size(), endDispatching - startDispatching);
         long startScheduling = System.currentTimeMillis();
         Set<StorageDataFile> errors = Sets.newHashSet();
         for (Long storageConfId : toRetrieveByStorage.keySet()) {
-            errors = scheduleDataFileRestoration(storageConfId, toRetrieveByStorage.get(storageConfId), cacheExpirationDate);
+            errors = scheduleDataFileRestoration(storageConfId, toRetrieveByStorage.get(storageConfId),
+                                                 cacheExpirationDate);
         }
         long endScheduling = System.currentTimeMillis();
         LOGGER.trace("Scheduling jobs took {} ms", endScheduling - startScheduling);
-        for(StorageDataFile error: errors) {
+        for (StorageDataFile error : errors) {
             handleRestorationFailure(error);
         }
     }

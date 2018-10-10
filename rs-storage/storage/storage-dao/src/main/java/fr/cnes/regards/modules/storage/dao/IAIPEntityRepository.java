@@ -25,12 +25,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import javax.persistence.LockModeType;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -56,8 +53,7 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      * Find a page of aips which state is the provided one
      * @return a page of aips which state is the provided one
      */
-//    @Lock(LockModeType.PESSIMISTIC_READ)
-    Page<AIPEntity> findAllWithLockByState(AIPState state, Pageable pageable);
+    Page<AIPEntity> findAllByState(AIPState state, Pageable pageable);
 
     /**
      * Find a page of aips which state is the provided one
@@ -103,13 +99,6 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      * @return requested aip
      */
     Optional<AIPEntity> findOneByAipId(String aipId);
-
-    /**
-     * Retrieve an aip by its ip id
-     * @return requested aip
-     */
-//    @Lock(LockModeType.PESSIMISTIC_READ)
-    Optional<AIPEntity> findOneWithLockByAipId(String aipId);
 
     /**
      * Retrieve id by the assciated aipId

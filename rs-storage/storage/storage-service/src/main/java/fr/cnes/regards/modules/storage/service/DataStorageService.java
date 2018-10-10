@@ -11,8 +11,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -256,11 +254,6 @@ public class DataStorageService implements IDataStorageService {
         }
     }
 
-    @PostConstruct
-    public void init() {
-        pluginService.addPluginPackage("fr.cnes.regards.modules.storage");
-    }
-
     /**
      * Use the notification module in admin to create a notification for admins
      */
@@ -300,7 +293,7 @@ public class DataStorageService implements IDataStorageService {
     @Override
     public void handleDeletionAction(StorageEventType type, DataStorageEvent event) {
         // Check that the given StorageDataFile id is associated to an existing StorageDataFile from db.
-        Optional<StorageDataFile> data = dataFileDao.findLockedOneById(event.getDataFileId());
+        Optional<StorageDataFile> data = dataFileDao.findOneById(event.getDataFileId());
         if (data.isPresent()) {
             switch (type) {
                 case SUCCESSFULL:
@@ -404,7 +397,7 @@ public class DataStorageService implements IDataStorageService {
 
     @Override
     public void handleStoreAction(StorageEventType type, DataStorageEvent event) {
-        Optional<StorageDataFile> optionalData = dataFileDao.findLockedOneById(event.getDataFileId());
+        Optional<StorageDataFile> optionalData = dataFileDao.findOneById(event.getDataFileId());
         if (optionalData.isPresent()) {
             StorageDataFile data = optionalData.get();
             Optional<AIP> optionalAssociatedAip = aipDao.findOneByAipId(data.getAip().getId().toString());

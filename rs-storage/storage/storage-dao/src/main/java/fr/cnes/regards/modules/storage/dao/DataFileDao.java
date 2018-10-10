@@ -148,11 +148,6 @@ public class DataFileDao implements IDataFileDao {
     }
 
     @Override
-    public Optional<StorageDataFile> findLockedOneById(Long dataFileId) {
-        return repository.findOneWithoutRelById(dataFileId);
-    }
-
-    @Override
     public Set<StorageDataFile> findAllByChecksumIn(Set<String> checksums) {
         return repository.findAllByChecksumIn(checksums);
     }

@@ -374,7 +374,7 @@ public class AIPService implements IAIPService {
 
     @Override
     public Page<AIP> storePage(Pageable page) throws ModuleException {
-        Page<AIP> createdAips = aipDao.findAllWithLockByState(AIPState.VALID, page);
+        Page<AIP> createdAips = aipDao.findAllByState(AIPState.VALID, page);
         if (createdAips.getNumberOfElements() > 0) {
             List<AIP> aips = createdAips.getContent();
             Set<StorageDataFile> dataFilesToStore = Sets.newHashSet();
@@ -908,7 +908,7 @@ public class AIPService implements IAIPService {
      */
     private Set<StorageDataFile> getMetadataFilesToStore() {
         Set<StorageDataFile> metadataToStore = Sets.newHashSet();
-        Page<AIP> pendingAips = aipDao.findAllWithLockByState(AIPState.PENDING, new PageRequest(0, aipIterationLimit));
+        Page<AIP> pendingAips = aipDao.findAllByState(AIPState.PENDING, new PageRequest(0, aipIterationLimit));
         List<AIP> notFullyStored = pendingAips.getContent();
         // first lets handle the case where every dataFiles of an AIP are successfully stored.
         for (AIP aip : notFullyStored) {
@@ -996,7 +996,7 @@ public class AIPService implements IAIPService {
             updatePage = aipUpdateRequestRepo.findAll(page);
             for (AIPUpdateRequest request : updatePage) {
                 // Retrieve the associated AIP to update
-                Optional<AIPEntity> oAIP = aipEntityRepository.findOneWithLockByAipId(request.getAipId());
+                Optional<AIPEntity> oAIP = aipEntityRepository.findOneByAipId(request.getAipId());
                 if (oAIP.isPresent()) {
                     if (oAIP.get().getState() == AIPState.STORED) {
                         // If associated AIP is in STORED state, run the update request
@@ -1022,7 +1022,7 @@ public class AIPService implements IAIPService {
     @Override
     public Optional<AIP> updateAip(String ipId, AIP newAip, String updateMessage)
             throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException {
-        Optional<AIP> oAipToUpdate = aipDao.findOneWithLockByAipId(ipId);
+        Optional<AIP> oAipToUpdate = aipDao.findOneByAipId(ipId);
         // first lets check for issues
         if (!oAipToUpdate.isPresent()) {
             throw new EntityNotFoundException(ipId, AIP.class);
@@ -1136,8 +1136,7 @@ public class AIPService implements IAIPService {
      * @param updateMessage
      */
     private void addNewAIPUpdateRequest(AIP aipToUpdate, String updateMessage) {
-        Optional<AIPUpdateRequest> oUpdateRequest = aipUpdateRequestRepo
-                .findOneWithLockByAipId(aipToUpdate.getId().toString());
+        Optional<AIPUpdateRequest> oUpdateRequest = aipUpdateRequestRepo.findOneByAipId(aipToUpdate.getId().toString());
         if (oUpdateRequest.isPresent()) {
             AIPUpdateRequest updateRequest = oUpdateRequest.get();
             updateRequest.setAip(aipToUpdate);
@@ -1641,7 +1640,7 @@ public class AIPService implements IAIPService {
     private void handleContentInformationUpdate(AIPBuilder newAIPBuilder, AIP newAip, AIP aipToUpdate)
             throws EntityNotFoundException {
         Set<StorageDataFile> existingFiles = dataFileDao.findAllByAip(aipToUpdate);
-        Optional<AIPEntity> aipEntity = aipEntityRepository.findOneWithLockByAipId(aipToUpdate.getId().toString());
+        Optional<AIPEntity> aipEntity = aipEntityRepository.findOneByAipId(aipToUpdate.getId().toString());
         if (!aipEntity.isPresent()) {
             throw new EntityNotFoundException(aipToUpdate.getId().toString(), AIPEntity.class);
         }

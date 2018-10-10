@@ -20,12 +20,9 @@ package fr.cnes.regards.modules.storage.dao;
 
 import java.util.Optional;
 
-import javax.persistence.LockModeType;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Lock;
 
 import fr.cnes.regards.modules.storage.domain.database.AIPUpdateRequest;
 
@@ -35,10 +32,8 @@ import fr.cnes.regards.modules.storage.domain.database.AIPUpdateRequest;
  */
 public interface IAIPUpdateRequestRepository extends JpaRepository<AIPUpdateRequest, Long> {
 
-    @Lock(LockModeType.PESSIMISTIC_READ)
-    Optional<AIPUpdateRequest> findOneWithLockByAipId(String aipId);
+    Optional<AIPUpdateRequest> findOneByAipId(String aipId);
 
     @Override
-    @Lock(LockModeType.PESSIMISTIC_READ)
     Page<AIPUpdateRequest> findAll(Pageable page);
 }

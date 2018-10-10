@@ -79,12 +79,6 @@ public class AIPDao implements IAIPDao {
     }
 
     @Override
-    public Page<AIP> findAllWithLockByState(AIPState state, Pageable pageable) {
-        Page<AIPEntity> fromDb = repo.findAllWithLockByState(state, pageable);
-        return fromDb.map(this::buildAipFromAIPEntity);
-    }
-
-    @Override
     public Page<AIP> findAllByIpIdStartingWith(String aipIdWithoutVersion, Pageable page) {
         return buildAIPPage(repo.findAllByAipIdStartingWith(aipIdWithoutVersion, page), page);
     }
@@ -104,16 +98,6 @@ public class AIPDao implements IAIPDao {
     @Override
     public Optional<AIP> findOneByAipId(String aipId) {
         Optional<AIPEntity> aipDatabase = repo.findOneByAipId(aipId);
-        if (aipDatabase.isPresent()) {
-            return Optional.of(buildAipFromAIPEntity(aipDatabase.get()));
-        } else {
-            return Optional.empty();
-        }
-    }
-
-    @Override
-    public Optional<AIP> findOneWithLockByAipId(String aipId) {
-        Optional<AIPEntity> aipDatabase = repo.findOneWithLockByAipId(aipId);
         if (aipDatabase.isPresent()) {
             return Optional.of(buildAipFromAIPEntity(aipDatabase.get()));
         } else {
