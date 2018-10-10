@@ -38,6 +38,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
@@ -703,5 +704,11 @@ public class ProductService implements IProductService {
     @Override
     public void updateSipStates(AcquisitionProcessingChain processingChain, ISipState fromStatus, ISipState toStatus) {
         productRepository.updateSipStates(fromStatus, toStatus, processingChain);
+    }
+
+    @Override
+    public void updateSipStatesByProductNameIn(ISipState state, Set<String> productNames) {
+        Assert.notNull(productNames, "Product names is required");
+        productRepository.updateSipStatesByProductNameIn(state, productNames);
     }
 }

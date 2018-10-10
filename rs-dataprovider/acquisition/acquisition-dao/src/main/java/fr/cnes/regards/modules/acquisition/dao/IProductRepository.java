@@ -157,4 +157,8 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
     @Modifying
     @Query(value = "UPDATE Product p set p.sipState = ?2 where p.processingChain = ?3 and p.sipState = ?1")
     void updateSipStates(ISipState fromStatus, ISipState toStatus, AcquisitionProcessingChain processingChain);
+
+    @Modifying
+    @Query(value = "UPDATE Product p set p.sipState = ?1 where p.productName in (?2)")
+    void updateSipStatesByProductNameIn(ISipState state, Collection<String> productNames);
 }

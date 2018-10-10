@@ -37,6 +37,8 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  *      SUBMISSION_SCHEDULED
  *             |____________ SUBMISSION_ERROR
  *             |
+ *         SUBMITTED
+ *             |
  *       {@link SIPState}
  *
  * </pre>
@@ -74,7 +76,11 @@ public enum ProductSIPState implements ISipState {
     /**
      * An error occurs during submission job
      */
-    SUBMISSION_ERROR;
+    SUBMISSION_ERROR,
+    /**
+     * SIP submission is running or finished
+     */
+    SUBMITTED;
 
     @Override
     public String getName() {

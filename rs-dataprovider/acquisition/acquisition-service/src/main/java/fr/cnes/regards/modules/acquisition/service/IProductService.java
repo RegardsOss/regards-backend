@@ -220,4 +220,8 @@ public interface IProductService {
      */
     void updateSipStates(AcquisitionProcessingChain processingChain, ISipState fromStatus, ISipState toStatus);
 
+    /**
+     * Update a list of products by their names
+     */
+    void updateSipStatesByProductNameIn(ISipState state, Set<String> productNames);
 }

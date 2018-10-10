@@ -38,13 +38,13 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantService
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
+import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
@@ -56,7 +56,6 @@ import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
  * Launch a chain with very long plugin actions and stop it.
@@ -72,6 +71,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 @ActiveProfiles("testAmqp")
 public class StartStopChainTest extends AbstractMultitenantServiceTest {
 
+    @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(StartStopChainTest.class);
 
     @Autowired
@@ -79,9 +79,6 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
 
     @Autowired
     private IProductRepository productRepository;
-
-    @Autowired
-    private IJobService jobService;
 
     @Autowired
     private IJobInfoService jobInfoService;
@@ -235,10 +232,7 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
                                                                       JobStatus.RUNNING);
             runningGenerationJobs = jobInfoService.retrieveJobsCount(SIPGenerationJob.class.getName(),
                                                                      JobStatus.RUNNING);
-            runningSubmissionJobs = jobInfoService.retrieveJobsCount(SIPSubmissionJob.class.getName(),
-                                                                     JobStatus.RUNNING);
-        } while ((runningAcquisitionJobs != 0 || runningGenerationJobs != 0 || runningSubmissionJobs != 0)
-                && loops != 0);
+        } while ((runningAcquisitionJobs != 0 || runningGenerationJobs != 0) && loops != 0);
 
         if (loops == 0) {
             Assert.fail();
@@ -258,8 +252,8 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
         do {
             Thread.sleep(1_000);
             loops--;
-            validProducts = productRepository.countByProcessingChainAndSipStateIn(processingChain,
-                                                                                  Arrays.asList(SIPState.CREATED));
+            validProducts = productRepository
+                    .countByProcessingChainAndSipStateIn(processingChain, Arrays.asList(ProductSIPState.SUBMITTED));
         } while (validProducts < 100 && loops != 0);
 
         if (loops == 0) {
