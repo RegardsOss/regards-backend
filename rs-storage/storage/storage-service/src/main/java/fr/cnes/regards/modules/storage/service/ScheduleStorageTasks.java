@@ -26,6 +26,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -91,7 +92,7 @@ public class ScheduleStorageTasks {
                 long count = 0;
                 long startTime = System.currentTimeMillis();
                 // Extract data files from valid AIP (microservice concurrent action)
-                Pageable page = new PageRequest(0, aipIterationLimit);
+                Pageable page = new PageRequest(0, aipIterationLimit, Direction.ASC, "id");
                 Page<AIP> createdAips;
                 do {
                     createdAips = aipService.storePage(page);

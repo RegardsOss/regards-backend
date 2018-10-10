@@ -46,6 +46,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -222,7 +223,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     private void checkDiskDBCoherence(String tenant) throws IOException {
         runtimeTenantResolver.forceTenant(tenant);
         Page<CachedFile> shouldBeAvailableSet;
-        Pageable page = new PageRequest(0, filesIterationLimit);
+        Pageable page = new PageRequest(0, filesIterationLimit, Direction.ASC, "id");
         do {
             shouldBeAvailableSet = cachedFileRepository.findAllByState(CachedFileState.AVAILABLE, page);
             for (CachedFile shouldBeAvailable : shouldBeAvailableSet) {
@@ -233,7 +234,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
             page = page.next();
         } while (shouldBeAvailableSet.hasNext());
 
-        page = new PageRequest(0, filesIterationLimit);
+        page = new PageRequest(0, filesIterationLimit, Direction.ASC, "id");
         Page<CachedFile> availableFiles;
         do {
             availableFiles = cachedFileRepository.findAllByState(CachedFileState.AVAILABLE, page);
@@ -467,7 +468,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     private int purgeExpiredCachedFiles() {
         int nbPurged = 0;
         LOGGER.debug("Deleting expired files from cache. Current date : {}", OffsetDateTime.now().toString());
-        Pageable page = new PageRequest(0, filesIterationLimit);
+        Pageable page = new PageRequest(0, filesIterationLimit, Direction.ASC, "id");
         Page<CachedFile> files;
         do {
             files = cachedFileRepository.findByExpirationBefore(OffsetDateTime.now(), page);
@@ -498,7 +499,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
                 LOGGER.warn("Cache is overloaded.({}Mo) Deleting older files from cache to reached lower threshold ({}Mo). ",
                             cacheCurrentSize / (1024 * 1024), cacheSizePurgeLowerThresholdInOctets / (1024 * 1024));
                 Long filesTotalSizeToDelete = cacheCurrentSize - cacheSizePurgeLowerThresholdInOctets;
-                Pageable page = new PageRequest(0, filesIterationLimit);
+                Pageable page = new PageRequest(0, filesIterationLimit, Direction.ASC, "id");
                 Page<CachedFile> allOlderDeletableCachedFiles;
                 do {
                     allOlderDeletableCachedFiles = cachedFileRepository
@@ -526,7 +527,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     @Override
     public int restoreQueued() {
         int nbScheduled = 0;
-        Pageable page = new PageRequest(0, filesIterationLimit);
+        Pageable page = new PageRequest(0, filesIterationLimit, Direction.ASC, "id");
         Page<CachedFile> queuedFilesToCache;
         do {
             queuedFilesToCache = cachedFileRepository.findAllByState(CachedFileState.QUEUED, page);

@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
@@ -100,7 +101,7 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
         UpdateAIPsTagJobType updateType = parameters.get(UPDATE_TYPE_PARAMETER_NAME).getValue();
         AIPQueryFilters tagFilter = getFilter(updateType);
         AIPSession aipSession = aipService.getSession(tagFilter.getSession(), false);
-        Pageable pageRequest = new PageRequest(0, aipIterationLimit);
+        Pageable pageRequest = new PageRequest(0, aipIterationLimit, Direction.ASC, "id");
         Page<AIP> aipsPage;
         nbError = new AtomicInteger(0);
         nbEntityUpdated = new AtomicInteger(0);
@@ -149,9 +150,8 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
                 title = String.format("Failure while removing tag to %d AIPs", nbError.get());
             }
             StringBuilder message = new StringBuilder();
-            message.append(String
-                    .format("A job finished with %d successful updates and %d errors.%nAIP concerned:  ",
-                            nbEntityUpdated.get(), nbError.get()));
+            message.append(String.format("A job finished with %d successful updates and %d errors.%nAIP concerned:  ",
+                                         nbEntityUpdated.get(), nbError.get()));
             for (String ipId : entityFailed) {
                 message.append(ipId);
                 message.append("  \\n");

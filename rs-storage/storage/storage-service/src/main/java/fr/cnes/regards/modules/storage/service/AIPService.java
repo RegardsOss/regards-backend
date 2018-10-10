@@ -52,6 +52,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.util.Pair;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
@@ -651,7 +652,7 @@ public class AIPService implements IAIPService {
         List<String> versions = Lists.newArrayList();
         String ipIdWithoutVersion = pIpId.toString();
         ipIdWithoutVersion = ipIdWithoutVersion.substring(0, ipIdWithoutVersion.indexOf(":V"));
-        Pageable page = new PageRequest(0, aipIterationLimit);
+        Pageable page = new PageRequest(0, aipIterationLimit, Direction.ASC, "id");
         Page<AIP> aips;
         do {
             aips = aipDao.findAllByIpIdStartingWith(ipIdWithoutVersion, page);
@@ -909,7 +910,7 @@ public class AIPService implements IAIPService {
      */
     private Set<StorageDataFile> getMetadataFilesToStore(int dataFileLimit) {
         Set<StorageDataFile> metadataToStore = Sets.newHashSet();
-        Pageable page = new PageRequest(0, aipIterationLimit);
+        Pageable page = new PageRequest(0, aipIterationLimit, Direction.ASC, "id");
         Page<AIP> pendingAips = null;
         do {
             pendingAips = aipDao.findAllByState(AIPState.PENDING, page);
@@ -1002,7 +1003,7 @@ public class AIPService implements IAIPService {
     @Override
     public int handleUpdateRequests() throws ModuleException {
         int nbAipHandled = 0;
-        Pageable page = new PageRequest(0, 100);
+        Pageable page = new PageRequest(0, 100, Direction.ASC, "id");
         Page<AIPUpdateRequest> updatePage;
         do {
             // Retrieve all update requests.
@@ -1244,7 +1245,7 @@ public class AIPService implements IAIPService {
 
     @Override
     public Long doDelete() {
-        Pageable page = new PageRequest(0, aipIterationLimit);
+        Pageable page = new PageRequest(0, aipIterationLimit, Direction.ASC, "id");
         Page<StorageDataFile> pageToDelete;
         do {
             pageToDelete = dataFileDao.findPageByState(DataFileState.TO_BE_DELETED, page);
@@ -1437,7 +1438,8 @@ public class AIPService implements IAIPService {
 
     @Override
     public int removeDeletedAIPMetadatas() {
-        Page<AIP> aips = aipDao.findAllByStateService(AIPState.DELETED, new PageRequest(0, aipIterationLimit));
+        Page<AIP> aips = aipDao.findAllByStateService(AIPState.DELETED,
+                                                      new PageRequest(0, aipIterationLimit, Direction.ASC, "id"));
         for (AIP aip : aips) {
             // lets count the number of datafiles per aip:
             // if there is none:
