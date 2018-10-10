@@ -446,8 +446,10 @@ public class DataStorageService implements IDataStorageService {
         try {
             storedDataFile.decreaseNotYetStoredBy();
         } catch (EntityOperationForbiddenException e) {
-            LOGGER.error("Data file {} of AIP {} has been successfuly stored one more time than expected into {} by IDataStorage plugin configuration {}",
-                         storedDataFile.getId(), associatedAIP.getId(), storedFileNewURL, dataStoragePluginConfId);
+            LOGGER.error(String
+                    .format("Data file %s of AIP %s has been successfuly stored one more time than expected into %s by IDataStorage plugin configuration %s.",
+                            storedDataFile.getId(), associatedAIP.getId(), storedFileNewURL, dataStoragePluginConfId),
+                         e);
         }
         storedDataFile.getUrls().add(storedFileNewURL);
         storedDataFile.setHeight(dataHeight);
