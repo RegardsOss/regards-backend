@@ -71,8 +71,7 @@ public class DataFileDao implements IDataFileDao {
         Page<Long> ids = repository.findIdPageByState(state, pageable);
         Set<StorageDataFile> pageContent = repository.findAllDistinctByIdIn(ids.getContent());
         return new PageImpl<>(pageContent.stream().collect(Collectors.toList()),
-                new PageRequest(new Long(ids.getNumber()).intValue(), new Long(ids.getSize()).intValue()),
-                ids.getTotalElements());
+                new PageRequest(ids.getNumber(), ids.getSize()), ids.getTotalElements());
     }
 
     @Override
@@ -158,9 +157,7 @@ public class DataFileDao implements IDataFileDao {
         Page<Long> ids = repository.findIdPageByChecksumIn(checksums, pageable);
         List<StorageDataFile> pageContent = repository.findAllDistinctByIdIn(ids.getContent()).stream()
                 .collect(Collectors.toList());
-        return new PageImpl<>(pageContent,
-                new PageRequest(new Long(ids.getNumber()).intValue(), new Long(ids.getSize()).intValue()),
-                ids.getTotalElements());
+        return new PageImpl<>(pageContent, new PageRequest(ids.getNumber(), ids.getSize()), ids.getTotalElements());
     }
 
     @Override

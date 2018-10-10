@@ -407,7 +407,7 @@ public class AIPService implements IAIPService {
         long nbScheduled = 0;
         LOGGER.trace("[METADATA STORE] Start.");
         // first lets get AIP that are not fully stored(at least metadata are not stored)
-        Set<StorageDataFile> metadataToStore = getMetadataFilesToStore(1000);
+        Set<StorageDataFile> metadataToStore = getMetadataFilesToStore(aipIterationLimit);
         nbScheduled = nbScheduled + metadataToStore.size();
         // now that we know all the metadata that should be stored, lets schedule their storage!
         if (!metadataToStore.isEmpty()) {
@@ -416,6 +416,7 @@ public class AIPService implements IAIPService {
         } else {
             LOGGER.trace("[METADATA STORE] No new metadata file to store.");
         }
+        LOGGER.trace("[METADATA STORE] End.");
         return nbScheduled;
     }
 
@@ -949,6 +950,10 @@ public class AIPService implements IAIPService {
                 } else {
                     LOGGER.debug("[METADATA STORE] There is still {} datafiles not stored for AIP {}. Metadata file cannot be generated yet.",
                                  aipDataFiles.size() - storedDataFile.size(), aip.getProviderId());
+                }
+                // If maximum number of results is reached, then stop.
+                if (metadataToStore.size() >= dataFileLimit) {
+                    break;
                 }
             }
             em.flush();
@@ -1488,7 +1493,7 @@ public class AIPService implements IAIPService {
     public List<RejectedSip> deleteAipFromSips(Set<String> sipIds) throws ModuleException {
         List<RejectedSip> notHandledSips = new ArrayList<>();
         //to avoid memory issues with hibernate, lets paginate the select and then evict the entities from the cache
-        Pageable page = new PageRequest(0, 500);
+        Pageable page = new PageRequest(0, 500, Direction.ASC, "id");
         long daofindPageStart = System.currentTimeMillis();
         Page<AIP> aipPage = aipDao.findPageBySipIdIn(sipIds, page);
         long daofindPageEnd = System.currentTimeMillis();
