@@ -405,7 +405,7 @@ public class AIPService implements IAIPService {
     public long storeMetadata() {
         long nbScheduled = 0;
         // first lets get AIP that are not fully stored(at least metadata are not stored)
-        Set<StorageDataFile> metadataToStore = getMetadataFilesToStore(1000);
+        Set<StorageDataFile> metadataToStore = getMetadataFilesToStore(100);
         nbScheduled = nbScheduled + metadataToStore.size();
         // now that we know all the metadata that should be stored, lets schedule their storage!
         if (!metadataToStore.isEmpty()) {
@@ -901,6 +901,7 @@ public class AIPService implements IAIPService {
 
     /**
      * Retrieve all {@link StorageDataFile} ready to be stored.
+     * @param dataFileLimit maximum number of {@link StorageDataFile} to return
      * @return data files to store
      */
     private Set<StorageDataFile> getMetadataFilesToStore(int dataFileLimit) {
