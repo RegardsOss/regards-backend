@@ -29,7 +29,7 @@
  * @author Marc SORDI
  * @see https://jenkins.io/doc/book/pipeline/jenkinsfile/
  */
-@Library('regards/fastPipeline') _
+@Library('regards/standardPipeline') _
 
 fastPipeline {
 	upstreamProjects = 'rs-regards-multi-branch'
