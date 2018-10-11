@@ -83,7 +83,7 @@ public class ServicesAggregatorController {
     /**
      * Returns all services applied to all datasets plus those of the given dataset
      * @param datasetIpIds the ip ids of the {@link Dataset}s
-     * @param applicationMode the set of {@link ServiceScope}
+     * @param applicationModes the set of {@link ServiceScope}
      * @return the list of services configured for the given dataset and the given scope
      */
     @RequestMapping(method = RequestMethod.GET)
