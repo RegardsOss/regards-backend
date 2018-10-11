@@ -23,14 +23,14 @@
 
 	<groupId>fr.cnes.regards.cloud</groupId>
 	<artifactId>bootstrap-config</artifactId>
-	<version>3.0.0-SNAPSHOT</version>
+	<version>3.0.0-RELEASE</version>
 	<description>REGARDS Cloud - Configuration server</description>
 	<packaging>jar</packaging>
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-boot-parent</artifactId>
-		<version>3.0.0-SNAPSHOT</version>
+		<version>3.0.0-RELEASE</version>
 		<relativePath></relativePath>
 	</parent>
 
