@@ -345,7 +345,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         engineConfiguration.setImage("http://plop/image.png");
         engineConfiguration.setEntityLastUpdateDatePropertyPath("TimePeriod.startDate");
 
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(OpenSearchEngine.TIME_EXTENSION_PARAMETER, geoTime)
                 .addParameter(OpenSearchEngine.REGARDS_EXTENSION_PARAMETER, regardsExt)
                 .addParameter(OpenSearchEngine.MEDIA_EXTENSION_PARAMETER, mediaExt)
