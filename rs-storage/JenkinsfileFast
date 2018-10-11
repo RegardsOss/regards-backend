@@ -32,5 +32,5 @@
  */
 @Library('regards/standardPipeline') _
 fastPipeline {
-    upstreamProjects = 'rs-admin-multi-branch'
+    upstreamProjects = 'fast-admin-multi-branch'
 }
