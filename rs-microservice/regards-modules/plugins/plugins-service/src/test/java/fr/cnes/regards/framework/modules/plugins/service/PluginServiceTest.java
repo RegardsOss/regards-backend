@@ -87,7 +87,8 @@ public class PluginServiceTest extends PluginServiceUtility {
         BlowfishEncryptionService blowfishEncryptionService = new BlowfishEncryptionService();
         blowfishEncryptionService
                 .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "12345678"));
-        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, publisherMocked, runtimeTenantResolver, blowfishEncryptionService);
+        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, publisherMocked, runtimeTenantResolver,
+                blowfishEncryptionService);
         PluginUtils.setup(Arrays.asList("fr.cnes.regards.plugins", "fr.cnes.regards.framework.plugins",
                                         "fr.cnes.regards.framework.modules.plugins"));
     }
@@ -472,7 +473,7 @@ public class PluginServiceTest extends PluginServiceUtility {
 
         // the argument for the dynamic parameter
         final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
-                .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).getParameters().get(0);
+                .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).getParameters().stream().findFirst().get();
 
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class,
                                                                                     aDynamicPlgParam);
@@ -506,7 +507,7 @@ public class PluginServiceTest extends PluginServiceUtility {
 
         // the argument for the dynamic parameter
         final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
-                .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).getParameters().get(0);
+                .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).getParameters().stream().findFirst().get();
 
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class);
         Assert.assertNotNull(aSamplePlugin);
@@ -544,7 +545,7 @@ public class PluginServiceTest extends PluginServiceUtility {
 
         // the argument for the dynamic parameter
         final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
-                .addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, -1).getParameters().get(0);
+                .addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, -1).getParameters().stream().findFirst().get();
 
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class,
                                                                                     aDynamicPlgParam);
@@ -613,7 +614,7 @@ public class PluginServiceTest extends PluginServiceUtility {
 
         // the argument for the dynamic parameter
         final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
-                .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).getParameters().get(0);
+                .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).getParameters().stream().findFirst().get();
 
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class,
                                                                                     aDynamicPlgParam);

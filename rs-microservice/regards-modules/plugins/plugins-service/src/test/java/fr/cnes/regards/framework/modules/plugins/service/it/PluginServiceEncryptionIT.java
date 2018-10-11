@@ -1,6 +1,6 @@
 package fr.cnes.regards.framework.modules.plugins.service.it;
 
-import java.util.List;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -13,7 +13,6 @@ import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.plugins.ISamplePlugin;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -46,8 +45,8 @@ public class PluginServiceEncryptionIT extends AbstractRegardsServiceTransaction
     public void testSaveSensitiveConf() throws EncryptionException, EntityInvalidException, EntityNotFoundException {
         PluginMetaData pluginMeta = PluginUtils.createPluginMetaData(SensitivePlugin.class);
         String paramValue = "Un petit test";
-        String encryptedParamValue = encryptionService.encrypt(paramValue);
-        List<PluginParameter> params = PluginParametersFactory.build()
+        encryptionService.encrypt(paramValue);
+        Set<PluginParameter> params = PluginParametersFactory.build()
                 .addParameter(SensitivePlugin.MESSAGE_PLUGIN_PARAM, paramValue).getParameters();
         PluginConfiguration pluginConf = new PluginConfiguration(pluginMeta, PLUGIN_CONF_LABEL, params, 0);
         Long dbId = pluginService.savePluginConfiguration(pluginConf).getId();
@@ -63,13 +62,12 @@ public class PluginServiceEncryptionIT extends AbstractRegardsServiceTransaction
     public void testInstanciateSensitivePlugin() throws ModuleException {
         PluginMetaData pluginMeta = PluginUtils.createPluginMetaData(SensitivePlugin.class);
         String paramValue = "Un petit test";
-        List<PluginParameter> params = PluginParametersFactory.build()
+        Set<PluginParameter> params = PluginParametersFactory.build()
                 .addParameter(SensitivePlugin.MESSAGE_PLUGIN_PARAM, paramValue).getParameters();
         PluginConfiguration pluginConf = new PluginConfiguration(pluginMeta, PLUGIN_CONF_LABEL, params, 0);
         Long dbId = pluginService.savePluginConfiguration(pluginConf).getId();
         SensitivePlugin sensitivePlg = pluginService.getPlugin(dbId);
-        Assert.assertEquals("Once the plugin instantiated, the parameter should not be encrypted anymore",
-                            paramValue,
+        Assert.assertEquals("Once the plugin instantiated, the parameter should not be encrypted anymore", paramValue,
                             sensitivePlg.echo(""));
     }
 
@@ -77,8 +75,8 @@ public class PluginServiceEncryptionIT extends AbstractRegardsServiceTransaction
     public void testUpdateSensitiveParamUnchanged() throws ModuleException {
         PluginMetaData pluginMeta = PluginUtils.createPluginMetaData(SensitivePlugin.class);
         String paramValue = "Un petit test";
-        String encryptedParamValue = encryptionService.encrypt(paramValue);
-        List<PluginParameter> params = PluginParametersFactory.build()
+        encryptionService.encrypt(paramValue);
+        Set<PluginParameter> params = PluginParametersFactory.build()
                 .addParameter(SensitivePlugin.MESSAGE_PLUGIN_PARAM, paramValue).getParameters();
         PluginConfiguration pluginConf = new PluginConfiguration(pluginMeta, PLUGIN_CONF_LABEL, params, 0);
         PluginConfiguration savedPlgConf = pluginService.savePluginConfiguration(pluginConf);
@@ -93,12 +91,12 @@ public class PluginServiceEncryptionIT extends AbstractRegardsServiceTransaction
     public void testUpdateSensitiveParam() throws ModuleException {
         PluginMetaData pluginMeta = PluginUtils.createPluginMetaData(SensitivePlugin.class);
         String paramValue = "Un petit test";
-        List<PluginParameter> params = PluginParametersFactory.build()
+        Set<PluginParameter> params = PluginParametersFactory.build()
                 .addParameter(SensitivePlugin.MESSAGE_PLUGIN_PARAM, paramValue).getParameters();
         PluginConfiguration pluginConf = new PluginConfiguration(pluginMeta, PLUGIN_CONF_LABEL, params, 0);
         PluginConfiguration savedPlgConf = pluginService.savePluginConfiguration(pluginConf);
         String updatedParamValue = paramValue + "2";
-        String encryptedParamValue = encryptionService.encrypt(updatedParamValue);
+        encryptionService.encrypt(updatedParamValue);
         savedPlgConf.getParameter(SensitivePlugin.MESSAGE_PLUGIN_PARAM).setValue(updatedParamValue);
         PluginConfiguration updated = pluginService.updatePluginConfiguration(savedPlgConf);
         Assert.assertEquals("Plugin parameter value in DB should have been updated and encrypted",

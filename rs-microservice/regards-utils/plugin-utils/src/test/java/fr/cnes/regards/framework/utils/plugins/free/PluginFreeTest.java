@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.utils.plugins.free;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -47,7 +48,7 @@ public class PluginFreeTest {
 
         // Configure as dynamic parameter
         List<String> availableValues = Arrays.asList("string1", "string2");
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addDynamicParameter(PluginWithBoolean.FIELD_NAME_STRING, "string", availableValues).getParameters();
 
         // Pass a dynamic parameter

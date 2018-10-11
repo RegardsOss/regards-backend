@@ -19,12 +19,13 @@
 
 package fr.cnes.regards.framework.utils.plugins;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
@@ -40,7 +41,7 @@ public class PluginParametersFactory {
     /**
      * List of {@link PluginParameter}
      */
-    private List<PluginParameter> parameters = new ArrayList<>();
+    private final Set<PluginParameter> parameters = Sets.newHashSet();
 
     /**
      * Constructor
@@ -52,8 +53,8 @@ public class PluginParametersFactory {
      * Constructor with the {@link List} of {@link PluginParameter}
      * @param parameters the {@link List} of {@link PluginParameter}
      */
-    public PluginParametersFactory(List<PluginParameter> parameters) {
-        this.parameters = parameters;
+    public PluginParametersFactory(Collection<PluginParameter> parameters) {
+        this.parameters.addAll(parameters);
     }
 
     /**
@@ -69,7 +70,7 @@ public class PluginParametersFactory {
      * @param parameters the {@link List} of {@link PluginParameter}
      * @return a factory
      */
-    public static PluginParametersFactory build(List<PluginParameter> parameters) {
+    public static PluginParametersFactory build(Set<PluginParameter> parameters) {
         return new PluginParametersFactory(parameters);
     }
 
@@ -193,15 +194,7 @@ public class PluginParametersFactory {
      * Get all parameters as list
      * @return {@link PluginParameter} list
      */
-    public List<PluginParameter> getParameters() {
-        return parameters;
-    }
-
-    /**
-     * Get all parameters as list
-     * @return {@link PluginParameter} list
-     */
-    public List<PluginParameter> asList() {
+    public Set<PluginParameter> getParameters() {
         return parameters;
     }
 

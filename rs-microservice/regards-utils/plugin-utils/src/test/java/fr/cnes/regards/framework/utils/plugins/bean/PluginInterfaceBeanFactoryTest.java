@@ -19,7 +19,7 @@
 package fr.cnes.regards.framework.utils.plugins.bean;
 
 import java.util.HashMap;
-import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -60,7 +60,7 @@ public final class PluginInterfaceBeanFactoryTest extends PluginUtilsTestConstan
         SampleBeanFactoryPlugin samplePlugin = null;
         Assert.assertNotNull(sampleBeanService);
 
-        final List<PluginParameter> parameters = PluginParametersFactory.build()
+        final Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SampleBeanFactoryPlugin.FIELD_NAME_SUFFIX, "chris_test_1").getParameters();
         // instantiate plugin
 

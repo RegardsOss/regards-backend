@@ -142,7 +142,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
         LOGGER.debug(STARTING + toString());
         PluginUtils.setup(PLUGIN_CURRENT_PACKAGE);
 
-        List<PluginParameter> interfaceParameters = PluginParametersFactory.build()
+        Set<PluginParameter> interfaceParameters = PluginParametersFactory.build()
                 .addParameter(AParameterPluginImplementation.FIELD_NAME, PluginInterfaceUtilsTest.LONG_STR_VALUE)
                 .getParameters();
         PluginConfiguration pluginConfigurationInterface = PluginUtils
@@ -152,7 +152,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
         /*
          * Get the configuration for the complex Plugin (ie the parent)
          */
-        final List<PluginParameter> complexParameters = PluginParametersFactory.build()
+        final Set<PluginParameter> complexParameters = PluginParametersFactory.build()
                 .addPluginConfiguration(ComplexPlugin.FIELD_NAME_PLUGIN, pluginConfigurationInterface)
                 .addParameter(ComplexPlugin.FIELD_NAME_ACTIVE, TRUE)
                 .addParameter(ComplexPlugin.FIELD_NAME_COEF, PluginInterfaceUtilsTest.CINQ).getParameters();
@@ -189,7 +189,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
          * Set all parameters
          */
 
-        final List<PluginParameter> complexParameters = PluginParametersFactory.build()
+        final Set<PluginParameter> complexParameters = PluginParametersFactory.build()
                 .addParameter(ComplexErrorPlugin.FIELD_NAME_COEF, PluginInterfaceUtilsTest.CINQ)
                 .addParameter(ComplexErrorPlugin.FIELD_NAME_PLUGIN, "coucou").getParameters();
 
@@ -210,7 +210,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
          * Set all parameters
          */
 
-        final List<PluginParameter> complexParameters = PluginParametersFactory.build()
+        final Set<PluginParameter> complexParameters = PluginParametersFactory.build()
                 .addParameter(ComplexErrorPlugin.FIELD_NAME_COEF, "allo")
                 .addParameter(ComplexErrorPlugin.FIELD_NAME_PLUGIN, "lorem ipsum").getParameters();
 

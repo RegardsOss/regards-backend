@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.framework.modules.plugins.dao;
 
-import java.util.List;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -190,7 +190,7 @@ public class PluginConfigurationIT extends PluginDaoUtility {
         Assert.assertEquals(1, plgRepository.count());
 
         // delete a parameter
-        paramRepository.delete(aPluginConf.getParameters().get(0));
+        paramRepository.delete(aPluginConf.getParameters().stream().findFirst().get());
 
         Assert.assertEquals(1, plgRepository.count());
         Assert.assertEquals(aPluginConf.getParameters().size() - 1, paramRepository.count());
@@ -210,10 +210,10 @@ public class PluginConfigurationIT extends PluginDaoUtility {
                             paramRepository.count());
 
         // Create PluginParameter
-        List<PluginParameter> params1 = PluginParametersFactory.build().addPluginConfiguration(RED, pluginConf1)
+        Set<PluginParameter> params1 = PluginParametersFactory.build().addPluginConfiguration(RED, pluginConf1)
                 .getParameters();
 
-        List<PluginParameter> params2 = PluginParametersFactory.build().addPluginConfiguration(BLUE, pluginConf2)
+        Set<PluginParameter> params2 = PluginParametersFactory.build().addPluginConfiguration(BLUE, pluginConf2)
                 .getParameters();
 
         // Create 2 PluginConfiguration with the 2 PluginParameter above
@@ -240,7 +240,7 @@ public class PluginConfigurationIT extends PluginDaoUtility {
         Assert.assertEquals(nbPlgConfs, plgRepository.count());
 
         // Create PluginParameter
-        List<PluginParameter> params1 = PluginParametersFactory.build().addPluginConfiguration(RED, pluginConf1)
+        Set<PluginParameter> params1 = PluginParametersFactory.build().addPluginConfiguration(RED, pluginConf1)
                 .getParameters();
 
         // Create 2 PluginConfiguration with the same PluginParameter

@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -115,7 +116,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         /*
          * Set all parameters
          */
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS)
                 .addParameter(SamplePlugin.FIELD_NAME_SUFFIX, "chris_test_1").getParameters();
@@ -147,7 +148,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         /*
          * Set all parameters
          */
-        final List<PluginParameter> parameters = PluginParametersFactory.build()
+        final Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE)
                 .addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS)
                 .addParameter(SamplePlugin.FIELD_NAME_SUFFIX, "suffix").getParameters();
@@ -178,7 +179,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         /*
          * Set all parameters
          */
-        final List<PluginParameter> parameters = PluginParametersFactory.build()
+        final Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE)
                 .addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS)
                 .addParameter(SamplePlugin.FIELD_NAME_SUFFIX, "a suffix").getParameters();
@@ -211,7 +212,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         final List<String> dynamicValues = Arrays.asList(PluginUtilsTest.RED, PluginUtilsTest.BLUE,
                                                          PluginUtilsTest.GREEN);
 
-        final List<PluginParameter> parameters = PluginParametersFactory.build()
+        final Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS)
                 .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, PluginUtilsTest.RED, dynamicValues)
@@ -248,7 +249,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
          */
         final List<String> dynamicValues = Arrays.asList(PluginUtilsTest.RED, PluginUtilsTest.BLUE,
                                                          PluginUtilsTest.GREEN);
-        final List<PluginParameter> parameters = PluginParametersFactory.build()
+        final Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS)
                 .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, PluginUtilsTest.RED, dynamicValues)
@@ -278,7 +279,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
          */
         final List<String> dynamicValues = Arrays.asList(PluginUtilsTest.RED, PluginUtilsTest.BLUE,
                                                          PluginUtilsTest.GREEN);
-        final List<PluginParameter> parameters = PluginParametersFactory.build()
+        final Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS)
                 .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, PluginUtilsTest.RED, dynamicValues)
@@ -304,8 +305,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         LOGGER.debug(STARTING + toString());
 
         // Set parameters : Missing coeff parameter
-        final List<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> parameters = PluginParametersFactory
-                .build().addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE)
+        final Set<PluginParameter> parameters = PluginParametersFactory.build()
+                .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE)
                 .addParameter(SamplePlugin.FIELD_NAME_SUFFIX, PluginUtilsTest.RED).getParameters();
 
         // instantiate plugin
@@ -325,8 +326,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         LOGGER.debug(STARTING + toString());
 
         // Set parameters : Missing suffix parameter
-        final List<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> parameters = PluginParametersFactory
-                .build().addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE)
+        final Set<PluginParameter> parameters = PluginParametersFactory.build()
+                .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE)
                 .addParameter(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.CINQ).getParameters();
 
         // instantiate plugin
@@ -347,8 +348,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         /*
          * Set parameters
          */
-        final List<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> parameters = PluginParametersFactory
-                .build().addParameter(SampleErrorPlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE)
+        final Set<PluginParameter> parameters = PluginParametersFactory.build()
+                .addParameter(SampleErrorPlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SampleErrorPlugin.FIELD_NAME_SUFFIX, "chris_test_4")
                 .addParameter(SampleErrorPlugin.FIELD_NAME_COEF, PluginUtilsTest.CINQ).getParameters();
 
