@@ -76,7 +76,6 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
-import fr.cnes.regards.modules.search.rest.engine.plugin.legacy.LegacySearchEngine;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.EngineConfiguration;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchEngine;
 import fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.ParameterConfiguration;
@@ -303,13 +302,6 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     }
 
     protected void initPlugins() throws ModuleException {
-        PluginConfiguration legacyConf = PluginUtils
-                .getPluginConfiguration(PluginParametersFactory.build().getParameters(), LegacySearchEngine.class);
-        legacyConf = pluginService.savePluginConfiguration(legacyConf);
-        SearchEngineConfiguration seConf = new SearchEngineConfiguration();
-        seConf.setLabel("Legacy conf for all datasets");
-        seConf.setConfiguration(legacyConf);
-        searchEngineService.createConf(seConf);
 
         GeoTimeExtension geoTime = new GeoTimeExtension();
         geoTime.setActivated(true);
