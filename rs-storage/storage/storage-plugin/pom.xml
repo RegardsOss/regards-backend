@@ -27,7 +27,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>storage</artifactId>
-		<version>3.0.0-SNAPSHOT</version>
+		<version>3.0.0-RELEASE</version>
 	</parent>
 
 	<dependencies>
