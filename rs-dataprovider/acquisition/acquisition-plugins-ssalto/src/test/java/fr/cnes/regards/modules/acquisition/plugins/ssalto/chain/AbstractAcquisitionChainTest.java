@@ -39,7 +39,6 @@ import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
 import fr.cnes.regards.modules.ingest.client.IIngestClient;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
  * Test acquisition chain processing
@@ -110,7 +109,7 @@ public abstract class AbstractAcquisitionChainTest extends AbstractMultitenantSe
             fileAcquired = fileRepository.findByStateOrderByIdAsc(AcquisitionFileState.ACQUIRED, new PageRequest(0, 1))
                     .getTotalElements();
             loops--;
-        } while (fileAcquired != expectedFileAcquired && loops != 0);
+        } while ((fileAcquired != expectedFileAcquired) && (loops != 0));
 
         if (fileAcquired != expectedFileAcquired) {
             Assert.fail();
@@ -122,10 +121,10 @@ public abstract class AbstractAcquisitionChainTest extends AbstractMultitenantSe
         loops = 10;
         do {
             Thread.sleep(1_000);
-            productGenerated = productRepository.findBySipStateOrderByIdAsc(ProductSIPState.GENERATED, new PageRequest(0, 1))
-                    .getTotalElements();
+            productGenerated = productRepository
+                    .findBySipStateOrderByIdAsc(ProductSIPState.GENERATED, new PageRequest(0, 1)).getTotalElements();
             loops--;
-        } while (productGenerated != expectedProducts && loops != 0);
+        } while ((productGenerated != expectedProducts) && (loops != 0));
 
         if (productGenerated != expectedProducts) {
             Assert.fail();
@@ -136,10 +135,10 @@ public abstract class AbstractAcquisitionChainTest extends AbstractMultitenantSe
         loops = 10;
         do {
             Thread.sleep(1_000);
-            productSubmitted = productRepository.findBySipStateOrderByIdAsc(SIPState.VALID, new PageRequest(0, 1))
-                    .getTotalElements();
+            productSubmitted = productRepository
+                    .findBySipStateOrderByIdAsc(ProductSIPState.SUBMITTED, new PageRequest(0, 1)).getTotalElements();
             loops--;
-        } while (productSubmitted != expectedProducts && loops != 0);
+        } while ((productSubmitted != expectedProducts) && (loops != 0));
 
         if (productSubmitted != expectedProducts) {
             Assert.fail();
