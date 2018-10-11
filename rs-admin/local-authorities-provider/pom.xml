@@ -3,14 +3,14 @@
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-parent</artifactId>
-        <version>3.0.0-SNAPSHOT</version>
+        <version>3.0.0-RELEASE</version>
         <relativePath></relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fr.cnes.regards.microservices.administration</groupId>
     <artifactId>local-authorities-provider</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.0.0-RELEASE</version>
     <packaging>jar</packaging>
 
     <name>local-authorities-provider</name>
