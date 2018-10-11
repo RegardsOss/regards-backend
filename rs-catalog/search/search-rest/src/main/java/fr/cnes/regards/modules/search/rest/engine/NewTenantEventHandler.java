@@ -28,6 +28,7 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.search.rest.engine.plugin.legacy.LegacySearchEngine;
 import fr.cnes.regards.modules.search.service.ISearchEngineConfigurationService;
 
@@ -49,9 +50,21 @@ public class NewTenantEventHandler implements ApplicationListener<ApplicationRea
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    @Autowired
+    private ITenantResolver resolver;
+
     @Override
     public void onApplicationEvent(ApplicationReadyEvent pEvent) {
-        LOG.info("search-service module subscribing to new TenantConnectionReady events.");
+        LOG.info("search-service module subscribing to new TenantConnectionReady events and initializing already existing ones.");
+        // If does not exists, initialize the default search engine
+        for (String tenant : resolver.getAllActiveTenants()) {
+            try {
+                runtimeTenantResolver.forceTenant(tenant);
+                engineService.initDefaultSearchEngine(LegacySearchEngine.class);
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
+        }
     }
 
     @EventListener
