@@ -28,7 +28,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.framework.modules</groupId>
 		<artifactId>workspace</artifactId>
-		<version>3.0.0-SNAPSHOT</version>
+		<version>3.0.0-RELEASE</version>
 	</parent>
 
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>

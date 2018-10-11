@@ -5,14 +5,14 @@
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-parent</artifactId>
-        <version>3.0.0-SNAPSHOT</version>
+        <version>3.0.0-RELEASE</version>
         <relativePath/>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fr.cnes.regards.framework.utils</groupId>
     <artifactId>encryption-standalone</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.0.0-RELEASE</version>
     <description>executable tools to encrypt data using the microservices logic</description>
 
     <name>encryption-standalone</name>
