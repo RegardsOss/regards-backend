@@ -31,5 +31,5 @@
  */
 @Library('regards/standardPipeline') _
 fastPipeline {
-	upstreamProjects = 'rs-ingest-multi-branch'
+	upstreamProjects = 'fast-ingest-multi-branch'
 }
