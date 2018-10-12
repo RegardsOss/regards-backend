@@ -61,6 +61,11 @@ public class DataFileDao implements IDataFileDao {
     }
 
     @Override
+    public long findAllByStateAndAipSession(DataFileState stored, String session) {
+        return repository.countByStateAndAipEntitySessionId(stored, session);
+    }
+
+    @Override
     public Page<StorageDataFile> findAllByState(DataFileState state, Pageable page) {
         return repository.findAllByState(state, page);
     }
@@ -203,5 +208,20 @@ public class DataFileDao implements IDataFileDao {
 
     private Optional<AIPEntity> getAipDataBase(StorageDataFile dataFile) {
         return aipRepo.findOneByAipId(dataFile.getAipEntity().getAipId());
+    }
+
+    @Override
+    public long countByAipAndStateNotIn(AIP aip, Collection<DataFileState> dataFilesStates) {
+        Optional<AIPEntity> fromDbOpt = getAipDataBase(aip);
+        if (fromDbOpt.isPresent()) {
+            return repository.countByAipEntityAndStateNotIn(fromDbOpt.get(), dataFilesStates);
+        } else {
+            return 0;
+        }
+    }
+
+    @Override
+    public long findAllByAipSession(String id) {
+        return repository.countByAipEntitySessionId(id);
     }
 }

@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -84,24 +83,17 @@ public class ScheduleStorageTasks {
     @Value("${regards.storage.aips.iteration.limit:100}")
     private Integer aipIterationLimit;
 
-    @Scheduled(fixedDelayString = "${regards.storage.store.delay:60000}", initialDelay = 10000)
+    @Scheduled(fixedDelayString = "${regards.storage.store.delay:30000}", initialDelay = 10000)
     public void store() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
                 long count = 0;
                 long startTime = System.currentTimeMillis();
-                // Extract data files from valid AIP (microservice concurrent action)
-                Pageable page = new PageRequest(0, aipIterationLimit, Direction.ASC, "id");
-                Page<AIP> createdAips;
-                do {
-                    createdAips = aipService.storePage(page);
-                    count = count + createdAips.getNumberOfElements();
-                    page = createdAips.nextPageable();
-                } while (createdAips.hasNext());
-
+                Page<AIP> createdAips = aipService
+                        .storePage(new PageRequest(0, aipIterationLimit, Direction.ASC, "id"));
+                count = count + createdAips.getNumberOfElements();
                 LOGGER.trace("AIP data scheduled in {}ms for {} aips", System.currentTimeMillis() - startTime, count);
-
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

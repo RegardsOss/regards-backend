@@ -8,7 +8,6 @@ import java.util.Map;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.notification.domain.NotificationType;
-import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.domain.event.StorageAction;
@@ -69,22 +68,19 @@ public interface IDataStorageService {
     /**
      * Method called when a SUCCESSFULL {@link DataStorageEvent} {@link StorageAction#STORE} event is received.
      * @param storedDataFile {@link StorageDataFile} successfully stored
-     * @param associatedAIP {@link AIP} associated to the given {@link StorageDataFile} successfully stored
      */
     void handleStoreSuccess(StorageDataFile storedDataFile, String storedFileChecksum, URL storedFileNewURL,
-            Long storedFileSize, Long dataStoragePluginConfId, Integer dataWidth, Integer dataHeight,
-            AIP associatedAIP);
+            Long storedFileSize, Long dataStoragePluginConfId, Integer dataWidth, Integer dataHeight);
 
     /**
      * Method called when a FAILURE {@link DataStorageEvent} {@link StorageAction#STORE} event is received.
      * @param storeFailFile {@link StorageDataFile} not deleted.
-     * @param associatedAIP {@link AIP} Associated to the {@link StorageDataFile} in error.
      * @param failureCause
      */
-    void handleStoreFailed(StorageDataFile storeFailFile, AIP associatedAIP, String failureCause);
+    void handleStoreFailed(StorageDataFile storeFailFile, String failureCause);
 
     /**
      * @return all diagnostic information from all active {@link IDataStorage}s configuration
      */
-    List<Map<String,Object>> getDiagnostics();
+    List<Map<String, Object>> getDiagnostics();
 }
