@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.StringJoiner;
 
 import org.junit.Before;
@@ -66,7 +67,7 @@ public class AcquisitionFileControllerIT extends AbstractRegardsTransactionalIT 
         Path basePath = Paths.get("src", "test", "resources", "input");
         for (int i = 1; i < 3; i++) {
             Path file1 = basePath.resolve("data_" + i + ".txt");
-            processingService.registerFile(file1, processingChain.getFileInfos().get(0));
+            processingService.registerFile(file1, processingChain.getFileInfos().get(0), Optional.empty());
         }
     }
 
