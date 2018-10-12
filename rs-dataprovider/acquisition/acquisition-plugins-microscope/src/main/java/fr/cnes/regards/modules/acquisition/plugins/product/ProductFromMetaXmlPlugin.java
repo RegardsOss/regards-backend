@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.plugins.productreader;
+package fr.cnes.regards.modules.acquisition.plugins.product;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -35,6 +35,8 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.acquisition.exception.MetadataException;
 import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.MicroHelper;
+import fr.cnes.regards.modules.acquisition.plugins.Microscope;
 import fr.cnes.regards.modules.acquisition.plugins.validation.ValidationFromMetaXmlPlugin;
 
 /**
@@ -48,8 +50,6 @@ import fr.cnes.regards.modules.acquisition.plugins.validation.ValidationFromMeta
 public class ProductFromMetaXmlPlugin implements IProductPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ValidationFromMetaXmlPlugin.class);
-
-    private static final String FILENAME_TAG = "nomFichierDonnee";
 
     private static final DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 
@@ -71,11 +71,7 @@ public class ProductFromMetaXmlPlugin implements IProductPlugin {
             Document doc = builder.parse(metadataFilePath.toFile());
             doc.normalize();
             // Find data filename
-            NodeList filenameElements = doc.getElementsByTagName(FILENAME_TAG);
-            if (filenameElements.getLength() > 0) {
-                return this.findProductNameFromTagContent(filenameElements.item(0).getTextContent());
-            }
-            return null;
+            return this.findProductNameFromTagContent(MicroHelper.getTagValue(doc, Microscope.FILENAME_TAG));
         } catch (SAXException e) {
             throw new MetadataException(
                     String.format("Metadata file '%s' is not a valid XML file", metadataFilePath.toString()), e);

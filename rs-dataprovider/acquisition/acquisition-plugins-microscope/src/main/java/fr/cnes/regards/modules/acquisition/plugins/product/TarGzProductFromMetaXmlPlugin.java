@@ -16,9 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.plugins.productreader;
+package fr.cnes.regards.modules.acquisition.plugins.product;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.modules.acquisition.plugins.Microscope;
 
 /**
  * Microscope Metadata XML product name reader plugin.<br/>
@@ -33,6 +34,6 @@ public class TarGzProductFromMetaXmlPlugin extends ProductFromMetaXmlPlugin {
 
     @Override
     protected String findProductNameFromTagContent(String text) {
-        return text.substring(0, text.indexOf(".tar.gz"));
+        return text.substring(0, text.indexOf(Microscope.TAR_GZ_EXT));
     }
 }

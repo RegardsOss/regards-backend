@@ -1,5 +1,0 @@
-#BEGIN_OF_FILE
-#Copyright BDMS 2006
-#TC_MAP_2.TXT#	1.0	8	0	12/06/14
-#Myriade - Microscope	MYRIADE		V1.0.8.0	Extracteur_CC V2.5.1
-#END_OF_FILE

@@ -32,31 +32,26 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.acquisition.exception.MetadataException;
 import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
-import fr.cnes.regards.modules.acquisition.plugins.MicroHelper;
 import fr.cnes.regards.modules.acquisition.plugins.Microscope;
 
 /**
- * Microscope N0x products validation.<br/>
- * File to validate is found under directory with same name as given metadata file (without _metadata.xml at the end)
- * and has tgz extension. A file with same name with _MD5.txt at the end (in place of .tgz) contains MD5 informations.
+ * RINEX products validation.<br/>
+ * File to validate is RINEX_&gt;MISSION>.tar.gz. A file with same name with _MD5.txt at the end (in place of .tar.gz)
+ * contains MD5 informations.
  * @author Olivier Rousselot
  */
-@Plugin(id = "N0xValidationPlugin", version = "1.0.0-SNAPSHOT", description =
-        "Read given metadata XML file path and validate tgz file under associated directory with MD5 value contained "
-                + "into '_MD5.txt'", author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0",
-        owner = "CSSI", url = "https://github.com/RegardsOss")
-public class N0xValidationPlugin implements IValidationPlugin {
+@Plugin(id = "RinexValidationPlugin", version = "1.0.0-SNAPSHOT",
+        description = "Validate RINEX data file with checksum contained into _MD5.txt associated file",
+        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        url = "https://github.com/RegardsOss")
+public class RinexValidationPlugin implements IValidationPlugin {
 
     @Override
-    public boolean validate(Path metadataFilePath) throws ModuleException {
+    public boolean validate(Path dataFilePath) throws ModuleException {
+        // _MD5.txt file
+        File checksumFile = new File(dataFilePath.getParent().toFile(), dataFilePath.getFileName().toString()
+                .replace(Microscope.TAR_GZ_EXT, Microscope.CHECKSUM_FILE_SUFFIX));
         try {
-            File dir = findProductDirectory(metadataFilePath);
-
-            // Search for ".tgz" data file...
-            File dataFile = MicroHelper.findFileWithExtension(dir, Microscope.TGZ_EXT);
-            // ...and associated "_MD5.txt" file
-            File checksumFile = new File(dataFile.getParentFile(), dataFile.getName()
-                    .replace(Microscope.TGZ_EXT, Microscope.CHECKSUM_FILE_SUFFIX));
             if (!checksumFile.exists()) {
                 throw new FileNotFoundException(
                         String.format("MD5 file '%s' does not exist", checksumFile.getAbsolutePath()));
@@ -79,22 +74,13 @@ public class N0xValidationPlugin implements IValidationPlugin {
             }
             // Compute data file checksum
             String computedChecksum = ChecksumUtils
-                    .computeHexChecksum(new FileInputStream(dataFile), Microscope.CHECKSUM_ALGO);
+                    .computeHexChecksum(new FileInputStream(dataFilePath.toFile()), Microscope.CHECKSUM_ALGO);
             return providedChecksum.equals(computedChecksum);
         } catch (IOException e) {
             throw new MetadataException(
-                    String.format("Error while attempting to read metadata file '%s'", metadataFilePath.toString()), e);
+                    String.format("Error while attempting to read file '%s'", checksumFile.toString()), e);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    /**
-     * Retrieve product directory from metadata "_metadata.xml" path.
-     * For N0b_CMSM and N0b_CMSM, product directory is near metadata file with same name until "_metadata.xml"
-     */
-    protected File findProductDirectory(Path metadataFilePath) throws IOException {
-        // Determine product directory
-        return MicroHelper.findDirStartingWithSameName(metadataFilePath);
     }
 }
