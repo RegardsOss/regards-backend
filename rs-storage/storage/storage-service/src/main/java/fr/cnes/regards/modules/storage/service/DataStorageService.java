@@ -11,6 +11,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.persistence.EntityNotFoundException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +54,7 @@ import fr.cnes.regards.modules.storage.domain.event.StorageEventType;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.DataStorageInfo;
 import fr.cnes.regards.modules.storage.plugin.datastorage.PluginStorageInfo;
+import fr.cnes.regards.modules.storage.service.job.WriteAIPMetadataJob;
 
 /**
  * Data storage service
@@ -401,25 +404,17 @@ public class DataStorageService implements IDataStorageService {
         Optional<StorageDataFile> optionalData = dataFileDao.findLockedOneById(event.getDataFileId());
         if (optionalData.isPresent()) {
             StorageDataFile data = optionalData.get();
-            Optional<AIP> optionalAssociatedAip = aipDao.findOneByAipId(data.getAip().getId().toString());
-            if (optionalAssociatedAip.isPresent()) {
-                AIP associatedAIP = optionalAssociatedAip.get();
-                switch (type) {
-                    case SUCCESSFULL:
-                        handleStoreSuccess(data, event.getChecksum(), event.getHandledUrl(), event.getFileSize(),
-                                           event.getStorageConfId(), event.getWidth(), event.getHeight(),
-                                           associatedAIP);
-                        break;
-                    case FAILED:
-                        handleStoreFailed(data, associatedAIP, event.getFailureCause());
-                        break;
-                    default:
-                        LOGGER.error("Unhandle DataStorage STORE event type {}", type);
-                        break;
-                }
-            } else {
-                LOGGER.warn("[DATA STORAGE EVENT] StorageDataFile stored {} is not associated to an existing AIP",
-                            event.getDataFileId());
+            switch (type) {
+                case SUCCESSFULL:
+                    handleStoreSuccess(data, event.getChecksum(), event.getHandledUrl(), event.getFileSize(),
+                                       event.getStorageConfId(), event.getWidth(), event.getHeight());
+                    break;
+                case FAILED:
+                    handleStoreFailed(data, event.getFailureCause());
+                    break;
+                default:
+                    LOGGER.error("Unhandle DataStorage STORE event type {}", type);
+                    break;
             }
         } else {
             LOGGER.warn("[DATA STORAGE EVENT] StorageDataFile stored {} does not exists", event.getDataFileId());
@@ -428,8 +423,7 @@ public class DataStorageService implements IDataStorageService {
 
     @Override
     public void handleStoreSuccess(StorageDataFile storedDataFile, String storedFileChecksum, URL storedFileNewURL,
-            Long storedFileSize, Long dataStoragePluginConfId, Integer dataWidth, Integer dataHeight,
-            AIP associatedAIP) {
+            Long storedFileSize, Long dataStoragePluginConfId, Integer dataWidth, Integer dataHeight) {
         // update data status
         PrioritizedDataStorage prioritizedDataStorageUsed = null;
         try {
@@ -447,8 +441,8 @@ public class DataStorageService implements IDataStorageService {
             storedDataFile.decreaseNotYetStoredBy();
         } catch (EntityOperationForbiddenException e) {
             LOGGER.error(String
-                    .format("Data file %s of AIP %s has been successfuly stored one more time than expected into %s by IDataStorage plugin configuration %s.",
-                            storedDataFile.getId(), associatedAIP.getId(), storedFileNewURL, dataStoragePluginConfId),
+                    .format("Data file %s has been successfuly stored one more time than expected into %s by IDataStorage plugin configuration %s.",
+                            storedDataFile.getId(), storedFileNewURL, dataStoragePluginConfId),
                          e);
         }
         storedDataFile.getUrls().add(storedFileNewURL);
@@ -456,19 +450,48 @@ public class DataStorageService implements IDataStorageService {
         storedDataFile.setWidth(dataWidth);
         LOGGER.debug("Datafile {} stored for pluginConfId:{} missing {} confs.", storedDataFile.getId(),
                      dataStoragePluginConfId, storedDataFile.getNotYetStoredBy());
-        if (storedDataFile.getNotYetStoredBy().equals(0L)) {
-            storedDataFile.setState(DataFileState.STORED);
-            storedDataFile.emptyFailureCauses();
-            // specific save once it is stored
-            dataFileDao.save(storedDataFile);
-            LOGGER.debug("[STORE FILE SUCCESS] DATA FILE {} is in STORED state", storedDataFile.getUrls());
+        try {
+            if (storedDataFile.getNotYetStoredBy().equals(0L)) {
+                LOGGER.debug("[STORE FILE SUCCESS] Datafile {} ({}) is fully stored.", storedDataFile.getName(),
+                             storedDataFile.getChecksum());
+                storedDataFile.setState(DataFileState.STORED);
+                storedDataFile.emptyFailureCauses();
+                handleStorageDataFileFullyStored(storedDataFile);
+            } else {
+                LOGGER.debug("[STORE FILE SUCCESS] Datafile {} ({}) is not fully stored. Missing {} locations to be stored.",
+                             storedDataFile.getName(), storedDataFile.getChecksum(),
+                             storedDataFile.getNotYetStoredBy());
+            }
+        } catch (EntityNotFoundException e) {
+            LOGGER.warn(String.format("AIP %s does not exists anymore. Associated file {} stored will be deleted",
+                                      storedDataFile.getName()),
+                        e);
+            storedDataFile.setState(DataFileState.TO_BE_DELETED);
+        } finally {
+            storedDataFile = dataFileDao.save(storedDataFile);
+        }
+    }
+
+    /**
+     * Handle the case when a {@link StorageDataFile} is fully stored. (File is successfully stored in all his location).
+     * <ul>
+     * <li>If file is a metadata file then update associated AIP to STORED status.</li>
+     * <li>If file is not a metadata file then update associated AIP to add the file locations in it</li>
+     * </ul>
+     * @param storedDataFile
+     */
+    private void handleStorageDataFileFullyStored(StorageDataFile storedDataFile) throws EntityNotFoundException {
+        Optional<AIP> optionalAssociatedAip = aipDao.findOneByAipId(storedDataFile.getAip().getId().toString());
+        if (optionalAssociatedAip.isPresent()) {
+            AIP associatedAIP = optionalAssociatedAip.get();
             if (storedDataFile.getDataType() == DataType.AIP) {
                 // can only be obtained after the aip state STORING_METADATA which can only changed to STORED
                 // if we just stored the AIP, there is nothing to do but changing AIP state, and clean the
                 // workspace!
                 // Lets clean the workspace
                 try {
-                    workspaceService.removeFromWorkspace(storedDataFile.getChecksum() + AIPService.JSON_FILE_EXT);
+                    workspaceService
+                            .removeFromWorkspace(storedDataFile.getChecksum() + WriteAIPMetadataJob.JSON_FILE_EXT);
                 } catch (IOException e) {
                     LOGGER.error("Error during workspace cleaning", e);
                 }
@@ -484,7 +507,6 @@ public class DataStorageService implements IDataStorageService {
 
                 associatedAIP.setState(AIPState.STORED);
                 associatedAIP.addEvent(EventType.STORAGE.name(), METADATA_STORED_SUCCESSFULLY);
-                aipService.save(associatedAIP, false);
                 LOGGER.debug("[STORE FILE SUCCESS] AIP {} is in STORED state",
                              storedDataFile.getAip().getId().toString());
                 publisher.publish(new AIPEvent(associatedAIP));
@@ -506,26 +528,36 @@ public class DataStorageService implements IDataStorageService {
                     ci.get().getDataObject().setFilename(storedDataFile.getName());
                     associatedAIP.addEvent(EventType.STORAGE.name(),
                                            String.format(DATAFILE_STORED_SUCCESSFULLY, storedDataFile.getName()));
-                    aipService.save(associatedAIP, false);
                 }
             }
+            aipService.save(associatedAIP, false);
         } else {
-            LOGGER.debug("Datafile not fully stored missing {} confs.", storedDataFile.getNotYetStoredBy());
-            dataFileDao.save(storedDataFile);
+            // AIP does not exists anymore. File
+            String message = "AIP associated to fully stored Datafile does not exists.";
+            throw new EntityNotFoundException(message);
         }
     }
 
     @Override
-    public void handleStoreFailed(StorageDataFile storeFailFile, AIP associatedAIP, String failureCause) {
-        // update data status
-        storeFailFile.setState(DataFileState.ERROR);
-        storeFailFile.addFailureCause(failureCause);
-        dataFileDao.save(storeFailFile);
-        // Update associated AIP in db
-        associatedAIP.setState(AIPState.STORAGE_ERROR);
-        aipService.save(associatedAIP, false);
-        notifyAdmins("Storage of file " + storeFailFile.getChecksum() + " failed", failureCause, NotificationType.INFO);
-        publisher.publish(new AIPEvent(associatedAIP));
+    public void handleStoreFailed(StorageDataFile storeFailFile, String failureCause) {
+        Optional<AIP> optionalAssociatedAip = aipDao.findOneByAipId(storeFailFile.getAip().getId().toString());
+        if (optionalAssociatedAip.isPresent()) {
+            AIP associatedAIP = optionalAssociatedAip.get();
+            // update data status
+            storeFailFile.setState(DataFileState.ERROR);
+            storeFailFile.addFailureCause(failureCause);
+            dataFileDao.save(storeFailFile);
+            // Update associated AIP in db
+            associatedAIP.setState(AIPState.STORAGE_ERROR);
+            aipService.save(associatedAIP, false);
+            notifyAdmins("Storage of file " + storeFailFile.getChecksum() + " failed", failureCause,
+                         NotificationType.INFO);
+            publisher.publish(new AIPEvent(associatedAIP));
+        } else {
+            LOGGER.warn("AIP {} does not exists anymore. Associated file {} in store error status will be deleted",
+                        storeFailFile.getName());
+            dataFileDao.remove(storeFailFile);
+        }
     }
 
     @Override

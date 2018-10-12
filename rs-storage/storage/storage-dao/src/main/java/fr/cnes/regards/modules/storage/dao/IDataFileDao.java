@@ -28,6 +28,8 @@ public interface IDataFileDao {
      */
     Set<StorageDataFile> findAllByStateAndAip(DataFileState stored, AIP aip);
 
+    long findAllByStateAndAipSession(DataFileState stored, String session);
+
     /**
      * Find all data files which state is the given one
      * @param state
@@ -119,4 +121,8 @@ public interface IDataFileDao {
     long countByChecksumAndStorageDirectory(String checksum, String storageDirectory);
 
     long countByAip(AIP aip);
+
+    long countByAipAndStateNotIn(AIP aip, Collection<DataFileState> dataFilesStates);
+
+    long findAllByAipSession(String id);
 }

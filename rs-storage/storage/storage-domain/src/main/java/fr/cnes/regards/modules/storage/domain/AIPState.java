@@ -28,7 +28,7 @@ package fr.cnes.regards.modules.storage.domain;
  *             PENDING                  |
  *             /     \                  |
  *            /       \                 |
- *           /         \                |
+ *           /  WRITING_METADATA        |
  *          /           \               |
  * STORAGE_ERROR <- STORING_METADATA    |
  *        |                 |           |
@@ -58,6 +58,10 @@ public enum AIPState implements IAipState {
      * Data storage has been scheduled
      */
     PENDING,
+    /**
+     * Metadata has been scheduled to be written
+     */
+    WRITING_METADATA,
     /**
      * Metadata storage has been scheduled
      */

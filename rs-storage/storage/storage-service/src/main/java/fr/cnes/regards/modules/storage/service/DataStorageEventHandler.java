@@ -35,7 +35,6 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.domain.event.StorageAction;
-import fr.cnes.regards.modules.storage.domain.event.StorageEventType;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.service.job.StorageJobProgressManager;
 
@@ -88,21 +87,19 @@ public class DataStorageEventHandler implements IHandler<DataStorageEvent>, IDat
         LOG.debug("New DataStorageEvent received - action:{}/{} - pluginConfId:{} - dataFileId:{}",
                   wrapper.getContent().getStorageAction().toString(), wrapper.getContent().getType(),
                   wrapper.getContent().getStorageConfId(), wrapper.getContent().getDataFileId());
-        DataStorageEvent event = wrapper.getContent();
-        StorageAction action = event.getStorageAction();
-        StorageEventType type = event.getType();
-        switch (action) {
+        switch (wrapper.getContent().getStorageAction()) {
             case STORE:
-                dataStorageService.handleStoreAction(type, event);
+                dataStorageService.handleStoreAction(wrapper.getContent().getType(), wrapper.getContent());
                 break;
             case DELETION:
-                dataStorageService.handleDeletionAction(type, event);
+                dataStorageService.handleDeletionAction(wrapper.getContent().getType(), wrapper.getContent());
                 break;
             case RESTORATION:
-                dataStorageService.handleRestorationAction(type, event);
+                dataStorageService.handleRestorationAction(wrapper.getContent().getType(), wrapper.getContent());
                 break;
             default:
-                throw new EnumConstantNotPresentException(StorageAction.class, action.toString());
+                throw new EnumConstantNotPresentException(StorageAction.class,
+                        wrapper.getContent().getStorageAction().toString());
         }
         runtimeTenantResolver.clearTenant();
     }

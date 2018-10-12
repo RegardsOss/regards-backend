@@ -1,7 +1,7 @@
 package fr.cnes.regards.modules.storage.domain.database;
 
-import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import java.time.OffsetDateTime;
+
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -11,6 +11,8 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+
 /**
  * Entities to group {@link AIPSession}s. The {@link AIPSession#getLastActivationDate()}
  * is updated after each modification on a {@link AIPSession} of the session.
@@ -19,7 +21,7 @@ import javax.validation.constraints.NotNull;
  * @author Léo Mieulet
  */
 @Entity
-@Table(name = "t_aip_session", indexes = {@Index(name = "idx_aip_session", columnList = "id")})
+@Table(name = "t_aip_session", indexes = { @Index(name = "idx_aip_session", columnList = "id") })
 public class AIPSession {
 
     /**
@@ -47,6 +49,12 @@ public class AIPSession {
 
     @Transient
     private long storedAipsCount = 0;
+
+    @Transient
+    private long storedDataFilesCount = 0;
+
+    @Transient
+    private long dataFilesCount = 0;
 
     public String getId() {
         return id;
@@ -103,4 +111,21 @@ public class AIPSession {
     public void setStoredAipsCount(long storedAipsCount) {
         this.storedAipsCount = storedAipsCount;
     }
+
+    public long getStoredDataFilesCount() {
+        return storedDataFilesCount;
+    }
+
+    public void setStoredDataFilesCount(long storedDataFilesCount) {
+        this.storedDataFilesCount = storedDataFilesCount;
+    }
+
+    public long getDataFilesCount() {
+        return dataFilesCount;
+    }
+
+    public void setDataFilesCount(long dataFilesCount) {
+        this.dataFilesCount = dataFilesCount;
+    }
+
 }

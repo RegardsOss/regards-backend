@@ -74,7 +74,7 @@ public class AIPDao implements IAIPDao {
 
     @Override
     public Page<AIP> findAllByState(AIPState state, Pageable pageable) {
-        Page<AIPEntity> fromDb = repo.findAllByStateIn(state, pageable);
+        Page<AIPEntity> fromDb = repo.findAllByState(state, pageable);
         return fromDb.map(this::buildAipFromAIPEntity);
     }
 

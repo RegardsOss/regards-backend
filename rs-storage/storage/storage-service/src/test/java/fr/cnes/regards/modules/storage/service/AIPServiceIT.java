@@ -48,6 +48,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.test.annotation.DirtiesContext;
@@ -657,6 +658,13 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
                                    Files.exists(Paths.get(fileLocation.toURI())));
             }
         }
+    }
+
+    @Test
+    public void searchSession() throws ModuleException, InterruptedException {
+        createSuccessTest();
+        Page<AIPSession> sessions = aipService.searchSessions(null, null, null, new PageRequest(0, 100));
+        Assert.assertEquals(3, sessions.getTotalElements());
     }
 
     @Test

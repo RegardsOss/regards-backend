@@ -28,7 +28,6 @@ import java.util.stream.Stream;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
@@ -54,7 +53,6 @@ public interface IAIPDao {
     /**
      * Update specific state and retry field of existing aip.
      * @param aip
-     * @throws EntityNotFoundException
      */
     void updateAIPStateAndRetry(AIP aip);
 
