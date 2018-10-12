@@ -105,7 +105,7 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
                     if (lastModificationDate.isPresent()) {
                         OffsetDateTime lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(entry).toInstant(),
                                                                       ZoneOffset.UTC);
-                        if (lmd.isAfter(lastModificationDate.get())) {
+                        if (lmd.isAfter(lastModificationDate.get()) || lmd.isEqual(lastModificationDate.get())) {
                             genetateFeatureFiles.addAll(generateFeatureFiles(entry));
                         }
                     } else {

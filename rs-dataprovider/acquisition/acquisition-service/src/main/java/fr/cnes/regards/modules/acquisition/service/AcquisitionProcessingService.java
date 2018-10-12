@@ -550,8 +550,17 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         for (AcquisitionFileInfo fileInfo : processingChain.getFileInfos()) {
             // Get plugin instance
             IScanPlugin scanPlugin = pluginService.getPlugin(fileInfo.getScanPlugin().getId());
-            // Launch scanning
-            List<Path> scannedFiles = scanPlugin.scan(Optional.ofNullable(fileInfo.getLastModificationDate()));
+
+            // Clone scanning date for duplicate prevention
+            Optional<OffsetDateTime> scanningDate = Optional.empty();
+            if (fileInfo.getLastModificationDate() != null) {
+                scanningDate = Optional
+                        .of(OffsetDateTime.ofInstant(fileInfo.getLastModificationDate().toInstant(), ZoneOffset.UTC));
+            }
+
+            // Do scan
+            List<Path> scannedFiles = scanPlugin.scan(scanningDate);
+
             // Sort list according to last modification date
             Collections.sort(scannedFiles, (file1, file2) -> {
                 try {
@@ -568,14 +577,14 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             while (toIndex <= scannedFiles.size()) {
                 long transactionStartTime = System.currentTimeMillis();
                 // Do it in one transaction
-                self.registerFiles(scannedFiles.subList(fromIndex, toIndex), fileInfo);
+                self.registerFiles(scannedFiles.subList(fromIndex, toIndex), fileInfo, scanningDate);
                 LOGGER.debug("{}/{} new file(s) registered in {} milliseconds", toIndex, scannedFiles.size(),
                              System.currentTimeMillis() - transactionStartTime);
                 fromIndex = toIndex;
                 toIndex = toIndex + ENTITY_CREATION_BEFORE_COMMIT;
             }
             // Do it in one transaction
-            self.registerFiles(scannedFiles.subList(fromIndex, scannedFiles.size()), fileInfo);
+            self.registerFiles(scannedFiles.subList(fromIndex, scannedFiles.size()), fileInfo, scanningDate);
 
             LOGGER.info("{} new file(s) registered in {} milliseconds", scannedFiles.size(),
                         System.currentTimeMillis() - startTime);
@@ -584,17 +593,20 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     @Override
-    public int registerFiles(List<Path> filePaths, AcquisitionFileInfo info) throws ModuleException {
+    public int registerFiles(List<Path> filePaths, AcquisitionFileInfo info, Optional<OffsetDateTime> scanningDate)
+            throws ModuleException {
+        int countRegistered = 0;
         for (Path filePath : filePaths) {
-            registerFile(filePath, info);
+            if (registerFile(filePath, info, scanningDate)) {
+                countRegistered++;
+            }
         }
-        return filePaths.size();
+        return countRegistered;
     }
 
     @Override
-    public void registerFile(Path filePath, AcquisitionFileInfo info) throws ModuleException {
-
-        // Check if file not already registered : TODO
+    public boolean registerFile(Path filePath, AcquisitionFileInfo info, Optional<OffsetDateTime> scanningDate)
+            throws ModuleException {
 
         // Initialize new file
         AcquisitionFile scannedFile = new AcquisitionFile();
@@ -612,6 +624,16 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             // Update last modification date
             OffsetDateTime lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(filePath).toInstant(),
                                                           ZoneOffset.UTC);
+            // Prevent duplicates for files in the same second as the scanning one
+            if (scanningDate.isPresent() && scanningDate.get().isEqual(lmd)) {
+                // Check if file not already registered
+                if (acqFileRepository.countByFileInfoAndChecksum(info, scannedFile.getChecksum()) != 0) {
+                    LOGGER.info("Duplicate file with path \"{}\" and checksum \"{}\" detected, skipping registration",
+                                scannedFile.getFilePath(), scannedFile.getChecksum());
+                    return false;
+                }
+            }
+
             info.setLastModificationDate(lmd);
             fileInfoRepository.save(info);
         } catch (NoSuchAlgorithmException | IOException e) {
@@ -625,6 +647,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
         // Save file
         acqFileRepository.save(scannedFile);
+        return true;
     }
 
     @MultitenantTransactional(propagation = Propagation.SUPPORTS)

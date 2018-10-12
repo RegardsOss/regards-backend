@@ -18,9 +18,14 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -54,7 +59,7 @@ public class DiskScanningTest {
     }
 
     @Test
-    public void testDirectoryScanningWithoutGlobber() throws ModuleException {
+    public void testDirectoryScanningWithoutGlobber() throws ModuleException, IOException {
 
         // Plugin parameters
         Set<PluginParameter> parameters = PluginParametersFactory.build()
@@ -67,6 +72,21 @@ public class DiskScanningTest {
         // Run plugin
         List<Path> scannedFiles = plugin.scan(Optional.empty());
         Assert.assertNotNull(scannedFiles);
+        Assert.assertTrue(scannedFiles.size() == 4);
+
+        Collections.sort(scannedFiles, (file1, file2) -> {
+            try {
+                return Files.getLastModifiedTime(file1).compareTo(Files.getLastModifiedTime(file2));
+            } catch (IOException e) {
+                return 0;
+            }
+        });
+
+        // Scan from first LMD
+        OffsetDateTime lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(scannedFiles.get(0)).toInstant(),
+                                                      ZoneOffset.UTC);
+        scannedFiles = plugin.scan(Optional.of(lmd));
+        // File in same second are selected
         Assert.assertTrue(scannedFiles.size() == 4);
     }
 

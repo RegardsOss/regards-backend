@@ -95,7 +95,7 @@ public class RegexDiskScanning implements IScanPlugin {
                     if (lastModificationDate.isPresent()) {
                         OffsetDateTime lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(entry).toInstant(),
                                                                       ZoneOffset.UTC);
-                        if (lmd.isAfter(lastModificationDate.get())) {
+                        if (lmd.isAfter(lastModificationDate.get()) || lmd.isEqual(lastModificationDate.get())) {
                             scannedFiles.add(entry);
                         }
                     } else {
