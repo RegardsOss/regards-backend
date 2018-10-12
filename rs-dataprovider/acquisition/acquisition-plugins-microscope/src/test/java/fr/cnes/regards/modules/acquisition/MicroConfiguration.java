@@ -25,7 +25,7 @@ import org.springframework.context.annotation.Configuration;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 
 /**
- * @author oroussel
+ * @author Olivier Rousselot
  */
 @Configuration
 public class MicroConfiguration {

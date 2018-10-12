@@ -16,31 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.plugins.validation;
+package fr.cnes.regards.modules.acquisition.plugins.product;
 
-import java.io.File;
 import java.nio.file.Path;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 
 /**
- * Microscope N0b_GNSS products validation.<br/>
- * File to validate is found under same directory as sag_descripteur.xml metadata file and has tgz extension. A file
- * with same name with _MD5.txt at the end (in place of .tgz) contains MD5 informations.
+ * Microscope directory product name reader plugin.<br/>
+ * This plugin retrieves product name from "sag_descripteur.xml" path
  * @author Olivier Rousselot
  */
-@Plugin(id = "N0bGnssValidationPlugin", version = "1.0.0-SNAPSHOT", description =
-        "Read given 'sag_descripteur.xml' metadata XML file path and validate tgz file under same directory with "
-                + "MD5 value contained into associated '_MD5.txt' file",
+@Plugin(id = "ProductFromSagDescriptorPathPlugin", version = "1.0.0-SNAPSHOT",
+        description = "Retrieve product name from name of directory containing 'sag_descripteur.xml'",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
-public class N0bGnssValidationPlugin extends N0xValidationPlugin {
+public class ProductFromSagDescriptorPathPlugin implements IProductPlugin {
 
-    /**
-     * Same directory as sa_descripteur.xml file
-     */
     @Override
-    protected File findProductDirectory(Path sagDescriptorFilePath) {
-        return sagDescriptorFilePath.toFile().getParentFile();
+    public String getProductName(Path sagDescriptorFilePath) {
+        String productWithVersion = sagDescriptorFilePath.getParent().getFileName().toString();
+        return productWithVersion.replaceFirst("(.*)_V\\d+", "$1");
     }
 }

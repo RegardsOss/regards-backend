@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.plugins.productreader;
+package fr.cnes.regards.modules.acquisition.plugins.product;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 

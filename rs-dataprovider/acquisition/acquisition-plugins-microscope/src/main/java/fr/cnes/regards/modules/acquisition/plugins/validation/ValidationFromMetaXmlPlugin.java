@@ -41,12 +41,13 @@ import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.acquisition.exception.MetadataException;
 import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.MicroHelper;
 import fr.cnes.regards.modules.acquisition.plugins.Microscope;
 
 /**
  * Microscope product validation from XML metadata file.<br/>
  * File to validate is found under "nomFichierDonnee" tag, MD5 value is under "md5Check" tag.
- * @author oroussel
+ * @author Olivier Rousselot
  */
 @Plugin(id = "ValidationFromMetaXmlPlugin", version = "1.0.0-SNAPSHOT",
         description = "Read given metadata XML file and validate determined file of which name is under "
@@ -55,10 +56,6 @@ import fr.cnes.regards.modules.acquisition.plugins.Microscope;
 public class ValidationFromMetaXmlPlugin implements IValidationPlugin {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ValidationFromMetaXmlPlugin.class);
-
-    private static final String FILENAME_TAG = "nomFichierDonnee";
-
-    private static final String CHECKSUM_TAG = "md5Check";
 
     private static final DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 
@@ -79,33 +76,26 @@ public class ValidationFromMetaXmlPlugin implements IValidationPlugin {
         try {
             Document doc = builder.parse(metadataFilePath.toFile());
             doc.normalize();
-            // Find data filename
-            NodeList filenameElements = doc.getElementsByTagName(FILENAME_TAG);
-            // it should exist only one tag
-            if (filenameElements.getLength() == 1) {
-                String dataFilename = filenameElements.item(0).getTextContent();
-                // Determine data file from tag content, metada file path and/or validation plugin immplementation
-                File dataFile = this.findDataFile(metadataFilePath, dataFilename);
-                if (dataFile == null) {
-                    throw new IOException("Bad product directory tree");
-                }
-                if (!dataFile.exists()) {
-                    throw new FileNotFoundException(
-                            String.format("Data file '%s' does not exist", dataFile.getAbsolutePath()));
-                } else if (!dataFile.canRead()) {
-                    throw new IOException(
-                            String.format("Missing read access to '%s' data file", dataFile.getAbsolutePath()));
-                }
-                // Compute checksum
-                String computeChecksum = ChecksumUtils
-                        .computeHexChecksum(new FileInputStream(dataFile), Microscope.CHECKSUM_ALGO);
-                // Find checksum from tag content, metada file path and/or validation plugin immplementation
-                String givenChecksum = this.findChecksumValue(metadataFilePath, doc);
-                // Compare both
-                return computeChecksum.equals(givenChecksum);
+            String dataFilename = MicroHelper.getTagValue(doc, Microscope.FILENAME_TAG);
+            // Determine data file from tag content, metada file path and/or validation plugin immplementation
+            File dataFile = this.findDataFile(metadataFilePath, dataFilename);
+            if (dataFile == null) {
+                throw new IOException("Bad product directory tree");
             }
-            // More than one tag => validation NOK
-            return false;
+            if (!dataFile.exists()) {
+                throw new FileNotFoundException(
+                        String.format("Data file '%s' does not exist", dataFile.getAbsolutePath()));
+            } else if (!dataFile.canRead()) {
+                throw new IOException(
+                        String.format("Missing read access to '%s' data file", dataFile.getAbsolutePath()));
+            }
+            // Compute checksum
+            String computeChecksum = ChecksumUtils
+                    .computeHexChecksum(new FileInputStream(dataFile), Microscope.CHECKSUM_ALGO);
+            // Find checksum from tag content, metada file path and/or validation plugin immplementation
+            String providedChecksum = MicroHelper.getTagValue(doc, Microscope.CHECKSUM_TAG);
+            // Compare both
+            return computeChecksum.equals(providedChecksum);
         } catch (SAXException e) {
             throw new MetadataException(
                     String.format("Metadata file '%s' is not a valid XML file", metadataFilePath.toString()), e);
@@ -117,26 +107,7 @@ public class ValidationFromMetaXmlPlugin implements IValidationPlugin {
         }
     }
 
-    /**
-     * Data file is under sub-directory with same name as metadata xml file (after removing end "_metadata.xml").
-     */
     protected File findDataFile(Path metadataPath, String dataFilename) {
-        String metadataFilename = metadataPath.getFileName().toString();
-        Path dirPath = Paths.get(metadataPath.getParent().toString(),
-                                 metadataFilename.substring(0, metadataFilename.indexOf(Microscope.METADATA_SUFFIX)));
-        return Paths.get(dirPath.toString(), dataFilename).toFile();
-    }
-
-    /**
-     * MD5 value is under XML metadata file md5Check tag
-     */
-    protected String findChecksumValue(Path metadataPath, Document doc) throws MetadataException {
-        NodeList md5CheckElements = doc.getElementsByTagName(CHECKSUM_TAG);
-        if (md5CheckElements.getLength() == 1) {
-            return md5CheckElements.item(0).getTextContent();
-        }
-        throw new MetadataException(
-                String.format("XML Metadata file '%s' does not contain a unique %s tag", metadataPath.toString(),
-                              CHECKSUM_TAG));
+        return MicroHelper.findDataFileIntoSubDir(metadataPath, dataFilename);
     }
 }

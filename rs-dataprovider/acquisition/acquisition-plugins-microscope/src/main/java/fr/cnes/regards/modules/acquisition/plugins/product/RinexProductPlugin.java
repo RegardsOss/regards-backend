@@ -16,29 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.acquisition.plugins.productreader;
+package fr.cnes.regards.modules.acquisition.plugins.product;
 
 import java.nio.file.Path;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.Microscope;
 
 /**
- * Microscope directory product name reader plugin.<br/>
- * This plugin retrieves product name from directory containing given metadata "sag_descripteur.xml" file
+ * RINEX product name reader plugin.<br/>
  * @author Olivier Rousselot
  */
-@Plugin(id = "ProductFromSagDescriptorDirectoryPlugin", version = "1.0.0-SNAPSHOT",
-        description = "Retrieve product name from namle of directory containing 'sag_descripteur.xml'",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
-        url = "https://github.com/RegardsOss")
-public class ProductFromSagDescriptorDirectoryPlugin implements IProductPlugin {
+@Plugin(id = "RinexProductPlugin", version = "1.0.0-SNAPSHOT",
+        description = "Retrieve product name from product files directory name", author = "REGARDS Team",
+        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
+public class RinexProductPlugin implements IProductPlugin {
 
     @Override
-    public String getProductName(Path sagDescriptorFilePath) throws ModuleException {
-        String productWithVersion = sagDescriptorFilePath.getParent().getFileName().toString();
-        return productWithVersion.replaceFirst("(.*)_V\\d+", "$1");
+    public String getProductName(Path filePath) {
+        String filename = filePath.getFileName().toString();
+        return filename.replace(Microscope.TAR_GZ_EXT, "");
     }
 }

@@ -22,7 +22,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
  * Exception thrown when error occured  while attempting to read Metadata file
- * @author oroussel
+ * @author Olivier Rousselot
  */
 public class MetadataException extends ModuleException {
 
