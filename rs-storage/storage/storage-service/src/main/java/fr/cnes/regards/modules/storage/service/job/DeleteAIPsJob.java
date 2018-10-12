@@ -98,7 +98,7 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
         entityFailed = new ArrayList<>();
         do {
             aipsPage = aipDao
-                    .findAll(AIPQueryGenerator.search(tagFilter.getState(), tagFilter.getFrom(), tagFilter.getTo(),
+                    .findAll(AIPQueryGenerator.searchAIPContainingAllTags(tagFilter.getState(), tagFilter.getFrom(), tagFilter.getTo(),
                                                       tagFilter.getTags(), aipSession, tagFilter.getProviderId(),
                                                       tagFilter.getAipIds(), tagFilter.getAipIdsExcluded()),
                              pageRequest);

@@ -43,16 +43,31 @@ public class AIPQueryGenerator {
 
     /**
      * Return an SQL query that retrieve all entities matching provided criteria
+     * @param tags must be present in the AIP
      */
-    public static String search(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags,
+    public static String searchAIPContainingAllTags(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags,
             AIPSession session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded) {
-        StringBuilder request = new StringBuilder("SELECT * " + "FROM {h-schema}t_aip ");
-        Set<String> predicates = generatePredicates(state, from, to, tags, session, providerId, aipIds, aipIdsExcluded);
-        if (!predicates.isEmpty()) {
-            request.append("WHERE ");
-            Joiner.on(" AND ").appendTo(request, predicates);
+        Set<String> predicates = generatePredicates(state, from, to, session, providerId, aipIds, aipIdsExcluded);
+        if (tags != null && !tags.isEmpty()) {
+            predicates.add(getConjunctionTagPredicate(tags));
         }
-        return request.toString();
+        return createQuery(predicates);
+
+    }
+
+
+    /**
+     * Return an SQL query that retrieve all entities matching provided criteria
+     * @param tags At least one provided tag will be present in the AIP
+     */
+    public static String searchAIPContainingAtLeastOneTag(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags,
+            AIPSession session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded) {
+        Set<String> predicates = generatePredicates(state, from, to, session, providerId, aipIds, aipIdsExcluded);
+        if (tags != null && !tags.isEmpty()) {
+            predicates.add(getConjunctionTagPredicate(tags));
+        }
+        return createQuery(predicates);
+
     }
 
     /**
@@ -63,17 +78,16 @@ public class AIPQueryGenerator {
         StringBuilder request = new StringBuilder(
                 "SELECT distinct jsonb_array_elements_text(json_aip->'properties'->'pdi'->'contextInformation'->'tags') "
                         + "FROM {h-schema}t_aip ");
-        Set<String> predicates = generatePredicates(state, from, to, tags, session, providerId, aipIds, aipIdsExcluded);
-        if (!predicates.isEmpty()) {
-            request.append("WHERE ");
-            Joiner.on(" AND ").appendTo(request, predicates);
+        Set<String> predicates = generatePredicates(state, from, to, session, providerId, aipIds, aipIdsExcluded);
+        if (tags != null && !tags.isEmpty()) {
+            predicates.add(getConjunctionTagPredicate(tags));
         }
         // Do not handle pagination here. See CustomizedAIPEntityRepository for pagination
         return request.toString();
     }
 
     private static Set<String> generatePredicates(AIPState state, OffsetDateTime from, OffsetDateTime to,
-            List<String> tags, AIPSession session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded) {
+            AIPSession session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded) {
         Set<String> predicates = Sets.newHashSet();
         if (state != null) {
             predicates.add("(state = '" + state.getName() + "')");
@@ -103,18 +117,39 @@ public class AIPQueryGenerator {
             }
             predicates.add("(aip_id not in (" + String.join(" , ", aipExcludedPredicates) + "))");
         }
-        if (tags != null && !tags.isEmpty()) {
-            Set<String> tagPredicates = Sets.newHashSet();
-            for (String tag : tags) {
-                tagPredicates.add("'" + tag + "'");
-            }
-            predicates.add("(json_aip->'properties'->'pdi'->'contextInformation'->'tags' @> jsonb_build_array("
-                    + String.join(" , ", tagPredicates) + "))");
-        }
         if (providerId != null && !providerId.isEmpty()) {
             predicates.add("(provider_id like '%" + providerId + "%')");
         }
         return predicates;
     }
+
+    private static String createQuery(Set<String> predicates) {
+        StringBuilder request = new StringBuilder("SELECT * FROM {h-schema}t_aip ");;
+        if (!predicates.isEmpty()) {
+            request.append("WHERE ");
+            Joiner.on(" AND ").appendTo(request, predicates);
+        }
+        return request.toString();
+    }
+
+    private static String getConjunctionTagPredicate(List<String> tags) {
+        Set<String> tagPredicates = Sets.newHashSet();
+        for (String tag : tags) {
+            tagPredicates.add("'" + tag + "'");
+        }
+        return "(json_aip->'properties'->'pdi'->'contextInformation'->'tags' @> jsonb_build_array("
+                + String.join(" , ", tagPredicates) + "))";
+    }
+
+    private static String getDisjunctionTagPredicate(List<String> tags) {
+        Set<String> tagPredicates = Sets.newHashSet();
+        for (String tag : tags) {
+            tagPredicates.add("'" + tag + "'");
+        }
+        return "(json_aip#>'{properties,pdi,contextInformation,tags}'?|["
+                + String.join(" , ", tagPredicates) + "])";
+    }
+
+
 
 }
