@@ -162,8 +162,8 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
     /**
      * Check if SIP is already ingested based on its checksum
      */
-    default Boolean isAlreadyIngested(String checksum) {
-        return countByChecksum(checksum) == 1;
+    default boolean isAlreadyIngested(String checksum) {
+        return countByChecksum(checksum) != 0;
     }
 
     Page<SIPEntity> findPageByState(SIPState state, Pageable pageable);
