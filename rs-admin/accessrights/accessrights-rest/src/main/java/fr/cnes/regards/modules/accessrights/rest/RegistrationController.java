@@ -62,6 +62,11 @@ public class RegistrationController {
     public static final String REQUEST_MAPPING_ROOT = "/accesses";
 
     /**
+     * Relative path to the endpoint to request an access wit external account
+     */
+    public static final String EXTERNAL_ACCESS_PATH = "/external";
+
+    /**
      * Relative path to the endpoint accepting accesses (project users)
      */
     public static final String ACCEPT_ACCESS_RELATIVE_PATH = "/{access_id}/accept";
@@ -119,8 +124,24 @@ public class RegistrationController {
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Request for a new projectUser (Public feature).", role = DefaultRole.PUBLIC)
-    public ResponseEntity<Void> requestAccess(@Valid @RequestBody final AccessRequestDto accessRequestDto) throws EntityException {
-        registrationService.requestAccess(accessRequestDto);
+    public ResponseEntity<Void> requestAccess(@Valid @RequestBody final AccessRequestDto accessRequestDto)
+            throws EntityException {
+        registrationService.requestAccess(accessRequestDto, false);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    /**
+     * Request a new access, i.e. a new project user with external authentication system.
+     * @param accessRequestDto A Dto containing all information for creating the account/project user and sending the activation link
+     * @return the passed Dto
+     * @throws EntityException if error occurs.
+     */
+    @ResponseBody
+    @RequestMapping(value = EXTERNAL_ACCESS_PATH, method = RequestMethod.POST)
+    @ResourceAccess(description = "Request for a new projectUser (Public feature).", role = DefaultRole.PROJECT_ADMIN)
+    public ResponseEntity<Void> requestExternalAccess(@Valid @RequestBody final AccessRequestDto accessRequestDto)
+            throws EntityException {
+        registrationService.requestAccess(accessRequestDto, true);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

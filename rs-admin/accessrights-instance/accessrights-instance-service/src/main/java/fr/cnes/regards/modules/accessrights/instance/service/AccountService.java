@@ -178,11 +178,13 @@ public class AccountService implements IAccountService {
     }
 
     @Override
-    public Account createAccount(final Account pAccount) {
-        pAccount.setId(null);
-        pAccount.setPassword(EncryptionUtils.encryptPassword(pAccount.getPassword()));
-        pAccount.setInvalidityDate(LocalDateTime.now().plusDays(accountValidityDuration));
-        return accountRepository.save(pAccount);
+    public Account createAccount(final Account account) {
+        account.setId(null);
+        if (account.getPassword() != null) {
+            account.setPassword(EncryptionUtils.encryptPassword(account.getPassword()));
+        }
+        account.setInvalidityDate(LocalDateTime.now().plusDays(accountValidityDuration));
+        return accountRepository.save(account);
     }
 
     @Override

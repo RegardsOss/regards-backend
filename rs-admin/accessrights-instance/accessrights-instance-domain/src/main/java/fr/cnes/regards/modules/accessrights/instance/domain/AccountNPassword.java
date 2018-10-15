@@ -2,8 +2,6 @@ package fr.cnes.regards.modules.accessrights.instance.domain;
 
 import javax.validation.Valid;
 
-import org.hibernate.validator.constraints.NotBlank;
-
 /**
  * DTO used to comunicate between rs-admin and rs-admin-instance. This allows us to pass the password for account creation which is not serialized otherwise.
  *
@@ -45,7 +43,7 @@ public class AccountNPassword {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
         }
 
@@ -60,7 +58,7 @@ public class AccountNPassword {
     @Override
     public int hashCode() {
         int result = account != null ? account.hashCode() : 0;
-        result = 31 * result + (password != null ? password.hashCode() : 0);
+        result = (31 * result) + (password != null ? password.hashCode() : 0);
         return result;
     }
 }
