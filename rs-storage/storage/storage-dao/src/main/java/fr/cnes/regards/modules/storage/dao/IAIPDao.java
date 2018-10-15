@@ -129,7 +129,7 @@ public interface IAIPDao {
      * @param tag
      * @return aip tagged by tag
      */
-    Page<AIP> findAllByTags(String tag, Pageable page);
+    Page<AIP> findAllByTag(String tag, Pageable page);
 
     /**
      * Retrieve all aips which sip ip id is the given one

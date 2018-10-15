@@ -43,7 +43,7 @@ public class UpdateAIPsTagJobIT extends AbstractJobIT {
         int nbUpdated = 20;
         Assert.assertEquals("should produce updated AIP", nbUpdated, result.getNbUpdated());
         Assert.assertEquals("AIP shall be tagged", nbUpdated,
-                            aipDao.findAllByTags("new tag", new PageRequest(0, 100)).getTotalElements());
+                            aipDao.findAllByTag("new tag", new PageRequest(0, 100)).getTotalElements());
     }
 
     @Test
@@ -67,8 +67,8 @@ public class UpdateAIPsTagJobIT extends AbstractJobIT {
         int nbUpdated = 20;
         Assert.assertEquals("should produce updated AIP", nbUpdated, result.getNbUpdated());
         Assert.assertEquals("no more AIP shall be tagged with the tag", 0,
-                            aipDao.findAllByTags("first tag", new PageRequest(0, 100)).getTotalElements());
+                            aipDao.findAllByTag("first tag", new PageRequest(0, 100)).getTotalElements());
         Assert.assertEquals("AIP still have this tag", nbUpdated,
-                            aipDao.findAllByTags("second tag", new PageRequest(0, 100)).getTotalElements());
+                            aipDao.findAllByTag("second tag", new PageRequest(0, 100)).getTotalElements());
     }
 }

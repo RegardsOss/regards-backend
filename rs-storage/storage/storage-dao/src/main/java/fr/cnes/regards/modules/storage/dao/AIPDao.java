@@ -134,8 +134,8 @@ public class AIPDao implements IAIPDao {
     }
 
     @Override
-    public Page<AIP> findAllByTags(String tag, Pageable page) {
-        return buildAIPPage(repo.findAllByTags(tag, page), page);
+    public Page<AIP> findAllByTag(String tag, Pageable page) {
+        return buildAIPPage(repo.findAllByTag(tag, page), page);
     }
 
     @Override

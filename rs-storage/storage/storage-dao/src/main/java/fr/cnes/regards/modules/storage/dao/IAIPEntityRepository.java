@@ -72,9 +72,9 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      * occurred after the given date
      * @return a page of aip
      */
-    @Query(value = "select * from {h-schema}t_aip where json_aip#>'{properties,pdi,contextInformation,tags}'?|array[:tags] "
+    @Query(value = "select * from {h-schema}t_aip where json_aip#>'{properties,pdi,contextInformation,tags}'??|array[:tags] "
             + "AND state=:state AND date > :lastUpdate ORDER BY ?#{#pageable}",
-            countQuery = "select count(*) from {h-schema}t_aip where json_aip#>'{properties,pdi,contextInformation,tags}'?|array[:tags]"
+            countQuery = "select count(*) from {h-schema}t_aip where json_aip#>'{properties,pdi,contextInformation,tags}'??|array[:tags]"
                     + " AND state=:state AND date > :lastUpdate",
             nativeQuery = true)
     Page<AIPEntity> findAllByStateAndTagsInAndLastEventDateAfter(@Param("state") String state,
@@ -124,10 +124,10 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      * Retrieve all aips which are tagged by at least one of the provided tag
      * @return a page of aip
      */
-    @Query(value = "select * from {h-schema}t_aip where json_aip#>'{properties,pdi,contextInformation,tags}'?|array[?1]  ORDER BY ?#{#pageable}",
-            countQuery = "select count(*) from {h-schema}t_aip where json_aip#>'{properties,pdi,contextInformation,tags}'?|array[?1]",
+    @Query(value = "select * from {h-schema}t_aip where json_aip#>'{properties,pdi,contextInformation,tags}'??|array[?1]  ORDER BY ?#{#pageable}",
+            countQuery = "select count(*) from {h-schema}t_aip where json_aip#>'{properties,pdi,contextInformation,tags}'??|array[?1]",
             nativeQuery = true)
-    Page<AIPEntity> findAllByTags(String tag, Pageable page);
+    Page<AIPEntity> findAllByTag(String tag, Pageable page);
 
     /**
      * Retrieve all aips which sip id is the provided one

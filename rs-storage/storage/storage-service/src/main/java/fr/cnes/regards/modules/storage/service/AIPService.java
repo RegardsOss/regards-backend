@@ -954,7 +954,7 @@ public class AIPService implements IAIPService {
 
     @Override
     public Page<AIP> retrieveAipsByTag(String tag, Pageable page) {
-        return aipDao.findAllByTags(tag, page);
+        return aipDao.findAllByTag(tag, page);
     }
 
     @Override

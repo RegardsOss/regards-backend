@@ -327,7 +327,7 @@ public class DaoIT extends AbstractDaoTransactionalTest {
     public void testFindAllByTags() {
         // aips have been generated with there own ipId as tag(except for aip12 which is tagged by aip1 ipId), lets
         // retrieve them according to there ipId
-        Page<AIP> aips = dao.findAllByTags(aip1.getId().toString(), new PageRequest(0, 100));
+        Page<AIP> aips = dao.findAllByTag(aip1.getId().toString(), new PageRequest(0, 100));
         Assert.assertTrue(aips.getContent().contains(aip1));
         Assert.assertTrue(aips.getContent().contains(aip12));
         Assert.assertFalse(aips.getContent().contains(aip2));
@@ -335,7 +335,7 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         Assert.assertFalse(aips.getContent().contains(aip4));
         Assert.assertFalse(aips.getContent().contains(aip5));
 
-        aips = dao.findAllByTags(aip2.getId().toString(), new PageRequest(0, 100));
+        aips = dao.findAllByTag(aip2.getId().toString(), new PageRequest(0, 100));
         Assert.assertFalse(aips.getContent().contains(aip1));
         Assert.assertFalse(aips.getContent().contains(aip12));
         Assert.assertTrue(aips.getContent().contains(aip2));
@@ -343,7 +343,7 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         Assert.assertFalse(aips.getContent().contains(aip4));
         Assert.assertFalse(aips.getContent().contains(aip5));
 
-        aips = dao.findAllByTags(aip3.getId().toString(), new PageRequest(0, 100));
+        aips = dao.findAllByTag(aip3.getId().toString(), new PageRequest(0, 100));
         Assert.assertFalse(aips.getContent().contains(aip1));
         Assert.assertFalse(aips.getContent().contains(aip12));
         Assert.assertFalse(aips.getContent().contains(aip2));
@@ -351,7 +351,7 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         Assert.assertFalse(aips.getContent().contains(aip4));
         Assert.assertFalse(aips.getContent().contains(aip5));
 
-        aips = dao.findAllByTags(aip4.getId().toString(), new PageRequest(0, 100));
+        aips = dao.findAllByTag(aip4.getId().toString(), new PageRequest(0, 100));
         Assert.assertFalse(aips.getContent().contains(aip1));
         Assert.assertFalse(aips.getContent().contains(aip12));
         Assert.assertFalse(aips.getContent().contains(aip2));
@@ -359,7 +359,7 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         Assert.assertTrue(aips.getContent().contains(aip4));
         Assert.assertFalse(aips.getContent().contains(aip5));
 
-        aips = dao.findAllByTags(aip5.getId().toString(), new PageRequest(0, 100));
+        aips = dao.findAllByTag(aip5.getId().toString(), new PageRequest(0, 100));
         Assert.assertFalse(aips.getContent().contains(aip1));
         Assert.assertFalse(aips.getContent().contains(aip12));
         Assert.assertFalse(aips.getContent().contains(aip2));
