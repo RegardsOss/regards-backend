@@ -190,7 +190,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
                 && (status.equals(AuthenticationStatus.USER_UNKNOWN)
                         || status.equals(AuthenticationStatus.ACCOUNT_UNKNOWN))
                 && (!response.getPluginClassName().equals(defaultAuthenticationPlugin.getClass().getName()))) {
-            this.createMissingProjectUser(response.getEmail(), pOrigineUrl, pRequestLink);
+            this.createExternalProjectUser(response.getEmail(), status, pOrigineUrl, pRequestLink);
             status = checkUserStatus(response.getEmail(), pScope);
         }
 
@@ -281,8 +281,8 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
      * @param pUserEmail
      * @since 1.0-SNAPSHOT
      */
-    private void createMissingProjectUser(final String pUserEmail, final String pOrigineUrl,
-            final String pRequestLink) {
+    private void createExternalProjectUser(final String pUserEmail, AuthenticationStatus userStatus,
+            final String pOrigineUrl, final String pRequestLink) {
         final IRegistrationClient client = beanFactory.getBean(IRegistrationClient.class);
         if (client == null) {
             final String message = "Context not initialized, Accounts client is not available";
@@ -292,8 +292,16 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         LOG.info("Creating new account for user email=" + pUserEmail);
         try {
             FeignSecurityManager.asSystem();
-            client.requestAccess(new AccessRequestDto(pUserEmail, pUserEmail, pUserEmail, DefaultRole.PUBLIC.name(),
-                    null, null, pOrigineUrl, pRequestLink));
+            switch (userStatus) {
+                case ACCOUNT_UNKNOWN:
+                case USER_UNKNOWN:
+                    client.requestExternalAccess(new AccessRequestDto(pUserEmail, pUserEmail, pUserEmail,
+                            DefaultRole.PUBLIC.name(), null, null, pOrigineUrl, pRequestLink));
+                    break;
+                default:
+                    // Nothing to do
+                    break;
+            }
         } catch (FeignException e) {
             final String message = String.format("Error creation new account for user %s. Cause : %s", pUserEmail,
                                                  e.getMessage());
