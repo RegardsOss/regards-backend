@@ -74,7 +74,7 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      */
     @Query(value = "select * from {h-schema}t_aip where json_aip#>'{properties,pdi,contextInformation,tags}'?|array[:tags] "
             + "AND state=:state AND date > :lastUpdate ORDER BY ?#{#pageable}",
-            countQuery = "select count(*) from {h-schema}t_aip wherejson_aip#>'{properties,pdi,contextInformation,tags}'?|array[:tags]"
+            countQuery = "select count(*) from {h-schema}t_aip where json_aip#>'{properties,pdi,contextInformation,tags}'?|array[:tags]"
                     + " AND state=:state AND date > :lastUpdate",
             nativeQuery = true)
     Page<AIPEntity> findAllByStateAndTagsInAndLastEventDateAfter(@Param("state") String state,
