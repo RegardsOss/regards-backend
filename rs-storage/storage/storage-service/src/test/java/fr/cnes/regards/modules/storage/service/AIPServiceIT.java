@@ -92,6 +92,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
+import fr.cnes.regards.modules.storage.dao.IAIPSessionRepository;
 import fr.cnes.regards.modules.storage.dao.IAIPUpdateRequestRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.dao.IPrioritizedDataStorageRepository;
@@ -176,6 +177,9 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private IAIPUpdateRequestRepository aipUpdateRepo;
+
+    @Autowired
+    private IAIPSessionRepository sessionRepo;
 
     private AIP aip;
 
@@ -663,8 +667,15 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
     @Test
     public void searchSession() throws ModuleException, InterruptedException {
         createSuccessTest();
-        Page<AIPSession> sessions = aipService.searchSessions(null, null, null, new PageRequest(0, 100));
-        Assert.assertEquals(3, sessions.getTotalElements());
+        Page<AIPSession> sessions = aipService.searchSessions(SESSION, OffsetDateTime.now().minusDays(1L),
+                                                              OffsetDateTime.now().plusDays(1L),
+                                                              new PageRequest(0, 100));
+        Assert.assertEquals(1, sessions.getTotalElements());
+        Assert.assertEquals(SESSION, sessions.getContent().stream().findFirst().get().getId());
+        Assert.assertEquals(2, sessions.getContent().stream().findFirst().get().getDataFilesCount());
+        Assert.assertEquals(2, sessions.getContent().stream().findFirst().get().getStoredDataFilesCount());
+        Assert.assertEquals(1, sessions.getContent().stream().findFirst().get().getAipsCount());
+        Assert.assertEquals(1, sessions.getContent().stream().findFirst().get().getStoredAipsCount());
     }
 
     @Test
@@ -807,6 +818,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         aipDao.deleteAll();
         prioritizedDataStorageRepository.deleteAll();
         pluginRepo.deleteAll();
+        sessionRepo.deleteAll();
     }
 
     @Configuration

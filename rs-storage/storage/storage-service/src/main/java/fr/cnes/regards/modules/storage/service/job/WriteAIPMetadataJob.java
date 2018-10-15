@@ -1,3 +1,21 @@
+/*
+ * Copyright 2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.storage.service.job;
 
 import java.io.ByteArrayInputStream;
@@ -37,8 +55,17 @@ import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.service.IAIPService;
 import fr.cnes.regards.modules.storage.service.IDataStorageService;
 
+/**
+ * Job to handle AIP metadata files write in temporary directory.
+ * This job also schedule a job to store the metadata files written.
+ *
+ * @author Sébastien Binda
+ */
 public class WriteAIPMetadataJob extends AbstractJob<Void> {
 
+    /**
+     * Class logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(WriteAIPMetadataJob.class);
 
     /**
@@ -46,6 +73,9 @@ public class WriteAIPMetadataJob extends AbstractJob<Void> {
      */
     public static final String JSON_FILE_EXT = ".json";
 
+    /**
+     * JOB parameter name containing all aip ids to handle metadata
+     */
     public static final String AIP_IDS_TO_WRITE_METADATA = "aipIds";
 
     @Autowired
