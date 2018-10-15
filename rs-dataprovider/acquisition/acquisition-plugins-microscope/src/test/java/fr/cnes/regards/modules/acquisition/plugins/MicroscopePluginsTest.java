@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.acquisition.plugins;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
@@ -48,6 +47,7 @@ import fr.cnes.regards.modules.acquisition.MicroConfiguration;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.plugins.product.BdsProductPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.product.ProductFromMetaXmlPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.product.ProductFromDirectoryPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.product.ProductFromSagDescriptorPathPlugin;
@@ -57,6 +57,7 @@ import fr.cnes.regards.modules.acquisition.plugins.product.TsvProductFromMetaXml
 import fr.cnes.regards.modules.acquisition.plugins.scan.MetadataScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.scan.SagDescriptorScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.scan.TarGzScanPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.sip.BdsSipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.sip.CccHistoriqueSipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.sip.CccRawHktmSipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.sip.DopplerSipGenerationPlugin;
@@ -68,7 +69,7 @@ import fr.cnes.regards.modules.acquisition.plugins.sip.N0cCmsmSipGenerationPlugi
 import fr.cnes.regards.modules.acquisition.plugins.sip.RinexSipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.validation.HktmValidationPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.validation.N0bGnssValidationPlugin;
-import fr.cnes.regards.modules.acquisition.plugins.validation.RinexValidationPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.validation.ValidationFromMd5TxtPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.validation.ValidationFromMetaXmlPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.validation.N0xValidationPlugin;
 import fr.cnes.regards.modules.ingest.domain.SIP;
@@ -82,7 +83,9 @@ public class MicroscopePluginsTest extends AbstractRegardsServiceIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MicroscopePluginsTest.class);
 
-    // SCAN PLUGINS
+    //////////////////////////
+    // SCAN PLUGINS         //
+    //////////////////////////
     // CCC_HISTORIQUE, DETERMINED_ORBIT, DOPPLER, ORBIT_EVENTS, PVT
     private MetadataScanPlugin cccHistoriqueScanPlugin;
 
@@ -106,12 +109,14 @@ public class MicroscopePluginsTest extends AbstractRegardsServiceIT {
 
     private SagDescriptorScanPlugin n0bGnssScanPlugin;
 
-    // RINEX
+    // RINEX, BDS
     private TarGzScanPlugin rinexScanPlugin;
 
-    // BDS ?
+    private TarGzScanPlugin bdsScanPlugin;
 
-    // VALIDATION PLUGINS
+    //////////////////////////
+    // VALIDATION PLUGINS   //
+    //////////////////////////
     // CCC_HISTORIQUE, DETERMINED_ORBIT, DOPPLER, PVT
     // ORBIT_EVENTS (even if file name is always MIC_ORBIT_EVENTS, this name is set under nomFichierDonnee tag)
     private ValidationFromMetaXmlPlugin sagValidationPlugin;
@@ -125,12 +130,12 @@ public class MicroscopePluginsTest extends AbstractRegardsServiceIT {
     // N0b_GNSS
     private N0xValidationPlugin n0bGnssValidationPlugin;
 
-    // RINEX
-    private RinexValidationPlugin rinexValidationPlugin;
+    // RINEX, BDS
+    private ValidationFromMd5TxtPlugin validationFromMd5TxtPlugin;
 
-    // BDS ?
-
-    // PRODUCT NAME PLUGINS
+    //////////////////////////
+    // PRODUCT NAME PLUGINS //
+    //////////////////////////
     // CCC_RAW_HKTM, DETERMINATED_ORBIT, DOPPLER, PVT,
     private ProductFromMetaXmlPlugin productFromMetaXmlPlugin;
 
@@ -149,9 +154,12 @@ public class MicroscopePluginsTest extends AbstractRegardsServiceIT {
     // RINEX
     private RinexProductPlugin rinexProductPlugin;
 
-    // BDS ?
+    // BDS
+    private BdsProductPlugin bdsProductPlugin;
 
-    // SIP GENERATION PLUGINS
+    ////////////////////////////
+    // SIP GENERATION PLUGINS //
+    ////////////////////////////
     // CCC_HISTORIQUE
     private CccHistoriqueSipGenerationPlugin cccHistoriqueSipGenerationPlugin;
 
@@ -178,6 +186,9 @@ public class MicroscopePluginsTest extends AbstractRegardsServiceIT {
 
     // RINEX
     private RinexSipGenerationPlugin rinexSipGenerationPlugin;
+
+    // BDS
+    private BdsSipGenerationPlugin bdsSipGenerationPlugin;
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
@@ -245,6 +256,10 @@ public class MicroscopePluginsTest extends AbstractRegardsServiceIT {
                                                                                              "src/test/resources/MICROSCOPE/RINEX")
                                                         .getParameters(), TarGzScanPlugin.class, pluginCacheMap);
 
+        bdsScanPlugin = PluginUtils.getPlugin(PluginParametersFactory.build().addParameter(TarGzScanPlugin.FIELD_DIR,
+                                                                                           "src/test/resources/MICROSCOPE/BDS")
+                                                      .getParameters(), TarGzScanPlugin.class, pluginCacheMap);
+
         // VALIDATION PLUGINS
         sagValidationPlugin = PluginUtils
                 .getPlugin(Collections.emptySet(), ValidationFromMetaXmlPlugin.class, pluginCacheMap);
@@ -257,8 +272,8 @@ public class MicroscopePluginsTest extends AbstractRegardsServiceIT {
         n0bGnssValidationPlugin = PluginUtils
                 .getPlugin(Collections.emptySet(), N0bGnssValidationPlugin.class, pluginCacheMap);
 
-        rinexValidationPlugin = PluginUtils
-                .getPlugin(Collections.emptySet(), RinexValidationPlugin.class, pluginCacheMap);
+        validationFromMd5TxtPlugin = PluginUtils
+                .getPlugin(Collections.emptySet(), ValidationFromMd5TxtPlugin.class, pluginCacheMap);
 
         // PRODUCT NAME PLUGINS
         productFromMetaXmlPlugin = PluginUtils
@@ -277,6 +292,8 @@ public class MicroscopePluginsTest extends AbstractRegardsServiceIT {
                 .getPlugin(Collections.emptySet(), ProductFromSagDescriptorPathPlugin.class, pluginCacheMap);
 
         rinexProductPlugin = PluginUtils.getPlugin(Collections.emptySet(), RinexProductPlugin.class, pluginCacheMap);
+
+        bdsProductPlugin = PluginUtils.getPlugin(Collections.emptySet(), BdsProductPlugin.class, pluginCacheMap);
 
         // SIP GENERATION PLUGINS
         cccHistoriqueSipGenerationPlugin = PluginUtils
@@ -305,6 +322,25 @@ public class MicroscopePluginsTest extends AbstractRegardsServiceIT {
 
         rinexSipGenerationPlugin = PluginUtils
                 .getPlugin(Collections.emptySet(), RinexSipGenerationPlugin.class, pluginCacheMap);
+
+        bdsSipGenerationPlugin =  PluginUtils
+                .getPlugin(Collections.emptySet(), BdsSipGenerationPlugin.class, pluginCacheMap);
+    }
+
+    @Test
+    public void testBds() throws ModuleException {
+        List<Path> files = bdsScanPlugin.scan(Optional.empty());
+        Assert.assertEquals(1, files.size());
+
+        Assert.assertTrue(validationFromMd5TxtPlugin.validate(files.get(0)));
+        String productName = bdsProductPlugin.getProductName(files.get(0));
+        Assert.assertEquals("BDS_3.3.0.3patchDM10688", productName);
+        Product product = createProduct(files.get(0), productName, true);
+
+        SIP sip1 = bdsSipGenerationPlugin.generate(product);
+        Assert.assertTrue(sip1.getProperties().getDescriptiveInformation().containsKey(Microscope.START_DATE));
+        Assert.assertTrue(sip1.getProperties().getDescriptiveInformation().containsKey(Microscope.END_DATE));
+        Assert.assertTrue(sip1.getProperties().getDescriptiveInformation().containsKey(Microscope.VERSION));
     }
 
     @Test
@@ -487,8 +523,8 @@ public class MicroscopePluginsTest extends AbstractRegardsServiceIT {
         List<Path> files = rinexScanPlugin.scan(Optional.empty());
         Assert.assertEquals(2, files.size());
 
-        Assert.assertTrue(rinexValidationPlugin.validate(files.get(0)));
-        Assert.assertTrue(rinexValidationPlugin.validate(files.get(1)));
+        Assert.assertTrue(validationFromMd5TxtPlugin.validate(files.get(0)));
+        Assert.assertTrue(validationFromMd5TxtPlugin.validate(files.get(1)));
 
         String product1Name = rinexProductPlugin.getProductName(files.get(0));
         Assert.assertEquals("RINEX_0120", product1Name);
