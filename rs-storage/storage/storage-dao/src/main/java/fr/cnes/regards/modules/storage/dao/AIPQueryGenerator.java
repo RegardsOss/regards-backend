@@ -146,7 +146,7 @@ public class AIPQueryGenerator {
         for (String tag : tags) {
             tagPredicates.add("'" + tag + "'");
         }
-        return "(json_aip#>'{properties,pdi,contextInformation,tags}'?|array["
+        return "(json_aip#>'{properties,pdi,contextInformation,tags}'??|array["
                 + String.join(" , ", tagPredicates) + "])";
     }
 
