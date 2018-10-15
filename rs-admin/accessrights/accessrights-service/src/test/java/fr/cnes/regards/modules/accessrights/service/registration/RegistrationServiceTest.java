@@ -256,7 +256,9 @@ public class RegistrationServiceTest {
         registrationService.requestAccess(dto, true);
 
         // Check that the repository's method was called to create a project user containing values from the DTO and
-        // with status WAITING_ACCESS. We therefore exclude id, lastConnection and lastUpdate which we do not care about
+        // with status ACCESS_GRANTED. We therefore exclude id, lastConnection and lastUpdate which we do not care about.
+        // With external accounts, the project user does not need to validate his email.
+        projectUser.setStatus(UserStatus.ACCESS_GRANTED);
         Mockito.verify(projectUserRepository).save(Mockito.refEq(projectUser, "id", "lastConnection", "lastUpdate"));
     }
 
@@ -305,7 +307,9 @@ public class RegistrationServiceTest {
         registrationService.requestAccess(dto, true);
 
         // Check that the repository's method was called to create a project user containing values from the DTO and
-        // with status WAITING_ACCESS. We therefore exclude id, lastConnection and lastUpdate which we do not care about
+        // with status ACCESS_GRANTED. We therefore exclude id, lastConnection and lastUpdate which we do not care about.
+        // With external accounts, the project user does not need to validate his email.
+        projectUser.setStatus(UserStatus.ACCESS_GRANTED);
         Mockito.verify(projectUserRepository).save(Mockito.refEq(projectUser, "id", "lastConnection", "lastUpdate"));
     }
 

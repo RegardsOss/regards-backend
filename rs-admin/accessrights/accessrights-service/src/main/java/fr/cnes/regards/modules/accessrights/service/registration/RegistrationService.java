@@ -34,6 +34,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsExcept
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
+import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -51,6 +52,7 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 /**
  * {@link IRegistrationService} implementation.
  * @author Xavier-Alexandre Brochard
+ * @author Sébastien Binda
  */
 @Service
 @RegardsTransactional
@@ -101,38 +103,43 @@ public class RegistrationService implements IRegistrationService {
     }
 
     @Override
-    public void requestAccess(final AccessRequestDto pDto, Boolean isExternalAccess) throws EntityException {
+    public void requestAccess(final AccessRequestDto accountDto, Boolean isExternalAccess) throws EntityException {
         // Create the account if needed
-        requestAccountIfNecessary(pDto, isExternalAccess);
+        requestAccountIfNecessary(accountDto, isExternalAccess);
 
         // Create the project user
-        requestProjectUser(pDto);
+        requestProjectUser(accountDto, isExternalAccess);
     }
 
     /**
      * Create the account if necessary
+     * @param accountDto {@link AccessRequestDto} account to create if missing
+     * @param isExternalAccess {@link Boolean} if true, the account is an external account (authentication not handled by regards system).
      */
-    private void requestAccountIfNecessary(final AccessRequestDto pDto, Boolean isExternalAccess)
+    private void requestAccountIfNecessary(final AccessRequestDto accountDto, Boolean isExternalAccess)
             throws EntityException {
         // Check existence
         try {
             FeignSecurityManager.asSystem();
-            ResponseEntity<Resource<Account>> accountResponse = accountsClient.retrieveAccounByEmail(pDto.getEmail());
+            ResponseEntity<Resource<Account>> accountResponse = accountsClient
+                    .retrieveAccounByEmail(accountDto.getEmail());
             if (accountResponse.getStatusCode() != HttpStatus.NOT_FOUND) {
                 LOG.info("Requesting access with an existing account. Ok, no account created");
                 return;
             } else {
                 // Check that all information are provided to create account
-                if ((pDto.getEmail() == null) || (pDto.getFirstName() == null) || (pDto.getLastName() == null)
-                        || ((pDto.getPassword() == null) && !isExternalAccess)) {
+                if ((accountDto.getEmail() == null) || (accountDto.getFirstName() == null)
+                        || (accountDto.getLastName() == null)
+                        || ((accountDto.getPassword() == null) && !isExternalAccess)) {
                     LOG.error("Account does not exists for user {} and there not enought information to create a new one.",
-                              pDto.getEmail());
-                    throw new EntityNotFoundException(pDto.getEmail(), Account.class);
+                              accountDto.getEmail());
+                    throw new EntityNotFoundException(accountDto.getEmail(), Account.class);
                 }
             }
 
             // Create the new account
-            Account account = new Account(pDto.getEmail(), pDto.getFirstName(), pDto.getLastName(), pDto.getPassword());
+            Account account = new Account(accountDto.getEmail(), accountDto.getFirstName(), accountDto.getLastName(),
+                    accountDto.getPassword());
             account.setExternal(isExternalAccess);
 
             // Check status
@@ -158,33 +165,42 @@ public class RegistrationService implements IRegistrationService {
 
     /**
      * Create the project user
+     * @param accountDto {@link AccessRequestDto} account to create if missing
+     * @param isExternalAccess {@link Boolean} if true, the account is an external account (authentication not handled by regards system).
      */
-    private void requestProjectUser(final AccessRequestDto pDto) throws EntityException {
+    private void requestProjectUser(final AccessRequestDto accountDto, Boolean isExternal) throws EntityException {
         try {
             FeignSecurityManager.asSystem();
             // Check that an associated account exists
-            ResponseEntity<Resource<Account>> accountResponse = accountsClient.retrieveAccounByEmail(pDto.getEmail());
+            ResponseEntity<Resource<Account>> accountResponse = accountsClient
+                    .retrieveAccounByEmail(accountDto.getEmail());
             if (accountResponse.getStatusCode() == HttpStatus.NOT_FOUND) {
-                throw new EntityNotFoundException(pDto.getEmail(), Account.class);
+                throw new EntityNotFoundException(accountDto.getEmail(), Account.class);
             }
             Account account = accountResponse.getBody().getContent();
 
             // Check that no project user with same email exists
-            if (projectUserRepository.findOneByEmail(pDto.getEmail()).isPresent()) {
-                throw new EntityAlreadyExistsException("The email " + pDto.getEmail() + "is already in use.");
+            if (projectUserRepository.findOneByEmail(accountDto.getEmail()).isPresent()) {
+                throw new EntityAlreadyExistsException("The email " + accountDto.getEmail() + "is already in use.");
             }
 
             // Init with default role
             final Role role = roleService.getDefaultRole();
 
             // Create a new project user
-            ProjectUser projectUser = new ProjectUser(pDto.getEmail(), role, new ArrayList<>(), pDto.getMetadata());
+            ProjectUser projectUser = new ProjectUser(accountDto.getEmail(), role, new ArrayList<>(),
+                    accountDto.getMetadata());
 
             // Create
-            projectUser = projectUserRepository.save(projectUser);
-
-            // Init the email verification token
-            tokenService.create(projectUser, pDto.getOriginUrl(), pDto.getRequestLink());
+            if (isExternal) {
+                // External authenticated accounts doesn't need to validate email.
+                projectUser.setStatus(UserStatus.ACCESS_GRANTED);
+                projectUser = projectUserRepository.save(projectUser);
+            } else {
+                projectUser = projectUserRepository.save(projectUser);
+                // Init the email verification token
+                tokenService.create(projectUser, accountDto.getOriginUrl(), accountDto.getRequestLink());
+            }
 
             // Check the status
             if (AccountStatus.ACTIVE.equals(account.getStatus())) {
