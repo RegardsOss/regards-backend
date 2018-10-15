@@ -598,11 +598,9 @@ public class AIPService implements IAIPService {
                                       pageable);
             }
         } else {
-            if ((tags == null) || tags.isEmpty()) {
-                aips = aipDao.findAllByStateAndLastEventDateAfter(state, fromLastUpdateDate, pageable);
-            } else {
-                aips = aipDao.findAllByStateAndTagsInAndLastEventDateAfter(state, tags, fromLastUpdateDate, pageable);
-            }
+            aips = aipDao.findAll(AIPQueryGenerator.searchAIPContainingAtLeastOneTag(state, fromLastUpdateDate, null, new ArrayList<>(tags), null, null,
+                    null, null),
+                    pageable);
         }
         // Associate data files with their AIP (=> multimap)
         List<AipDataFiles> aipDataFiles = new ArrayList<>();
@@ -954,7 +952,7 @@ public class AIPService implements IAIPService {
 
     @Override
     public Page<AIP> retrieveAipsByTag(String tag, Pageable page) {
-        return aipDao.findAllByTags(tag, page);
+        return aipDao.findAllByTag(tag, page);
     }
 
     @Override

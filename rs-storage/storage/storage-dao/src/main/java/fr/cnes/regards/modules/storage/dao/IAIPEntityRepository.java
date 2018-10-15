@@ -18,23 +18,18 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
-import java.sql.Timestamp;
+import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-
-import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
-import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 
 /**
  * Repository handling JPA representation of AIP.
@@ -67,25 +62,6 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      */
     Page<AIPEntity> findAllByStateIn(Collection<AIPState> states, Pageable pageable);
 
-    /**
-     * Retrieve a page of aip which state is the one provided and contains at least one of the provided tags and which last event
-     * occurred after the given date
-     * @return a page of aip
-     */
-    @Query(value = "select * from {h-schema}t_aip where json_aip#>'{properties,pdi,contextInformation,tags}'?|[:tags] "
-            + "AND state=:state AND date > :lastUpdate ORDER BY ?#{#pageable}",
-            countQuery = "select count(*) from {h-schema}t_aip wherejson_aip#>'{properties,pdi,contextInformation,tags}'?|[:tags]"
-                    + " AND state=:state AND date > :lastUpdate",
-            nativeQuery = true)
-    Page<AIPEntity> findAllByStateAndTagsInAndLastEventDateAfter(@Param("state") String state,
-            @Param("tags") Set<String> tags, @Param("lastUpdate") Timestamp fromLastUpdateDate, Pageable pageable);
-
-    default Page<AIPEntity> findAllByStateAndTagsInAndLastEventDateAfter(AIPState state, Set<String> tags,
-            OffsetDateTime fromLastUpdateDate, Pageable pageable) {
-        // use the right converter for OffsetDateTime
-        Timestamp date = new OffsetDateTimeAttributeConverter().convertToDatabaseColumn(fromLastUpdateDate);
-        return findAllByStateAndTagsInAndLastEventDateAfter(state.getName(), tags, date, pageable);
-    }
 
     /**
      * Retrieve all aips which ip id starts with the provided string
@@ -121,13 +97,13 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
     Stream<AIPEntity> findByAipIdIn(Collection<String> aipIds);
 
     /**
-     * Retrieve all aips which are tagged by at least one of the provided tag
-     * @return a page of aip
+     * Retrieve all aips which are tagged by the provided tag
+     * @return a aip page
      */
-    @Query(value = "select * from {h-schema}t_aip where json_aip#>'{properties,pdi,contextInformation,tags}'?|[?1]  ORDER BY ?#{#pageable}",
-            countQuery = "select count(*) from {h-schema}t_aip where json_aip#>'{properties,pdi,contextInformation,tags}'?|[?1]",
+    @Query(value = "select * from {h-schema}t_aip where json_aip->'properties'->'pdi'->'contextInformation'->'tags' @> to_jsonb(?1)  ORDER BY ?#{#pageable}",
+            countQuery = "select count(*) from {h-schema}t_aip where json_aip->'properties'->'pdi'->'contextInformation'->'tags' @> to_jsonb(?1)",
             nativeQuery = true)
-    Page<AIPEntity> findAllByTags(String tag, Pageable page);
+    Page<AIPEntity> findAllByTag(String tag, Pageable page);
 
     /**
      * Retrieve all aips which sip id is the provided one
@@ -140,9 +116,6 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      * @return a page of aip respecting the constraints
      */
     Page<AIPEntity> findAllBySipId(String sipId, Pageable pageable);
-
-    Page<AIPEntity> findAllByStateAndLastEventDateAfter(AIPState state, OffsetDateTime fromLastUpdateDate,
-            Pageable pageable);
 
     /**
      * Count number of {@link AIPEntity} associated to a given session

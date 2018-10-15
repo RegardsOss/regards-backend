@@ -141,13 +141,20 @@ public class AIPQueryGenerator {
                 + String.join(" , ", tagPredicates) + "))";
     }
 
+    /**
+     * We use here a workaround, we use
+     * jsonb_exists_any instead of  ?|
+     * Otherwise JDBC would detect the question mark and ask for another parameter
+     * @param tags one of the tag present in the AIP
+     * @return sql constraint
+     */
     private static String getDisjunctionTagPredicate(List<String> tags) {
         Set<String> tagPredicates = Sets.newHashSet();
         for (String tag : tags) {
             tagPredicates.add("'" + tag + "'");
         }
-        return "(json_aip#>'{properties,pdi,contextInformation,tags}'?|["
-                + String.join(" , ", tagPredicates) + "])";
+        return "(jsonb_exists_any(json_aip#>'{properties,pdi,contextInformation,tags}', array["
+                + String.join(" , ", tagPredicates) + "]))";
     }
 
 

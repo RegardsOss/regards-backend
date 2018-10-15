@@ -1,24 +1,21 @@
 package fr.cnes.regards.modules.storage.dao;
 
-import java.time.OffsetDateTime;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.storage.domain.AIP;
+import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import org.apache.commons.compress.utils.Lists;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
-
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
-import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 
 /**
  * Implementation of {@link IAIPDao}
@@ -84,13 +81,6 @@ public class AIPDao implements IAIPDao {
     }
 
     @Override
-    public Page<AIP> findAllByStateAndTagsInAndLastEventDateAfter(AIPState state, Set<String> tags,
-            OffsetDateTime fromLastUpdateDate, Pageable pageable) {
-        return repo.findAllByStateAndTagsInAndLastEventDateAfter(state, tags, fromLastUpdateDate, pageable)
-                .map(this::buildAipFromAIPEntity);
-    }
-
-    @Override
     public Page<AIP> findAllByStateService(AIPState state, Pageable page) {
         return buildAIPPage(repo.findAllByStateIn(state, page), page);
     }
@@ -134,8 +124,8 @@ public class AIPDao implements IAIPDao {
     }
 
     @Override
-    public Page<AIP> findAllByTags(String tag, Pageable page) {
-        return buildAIPPage(repo.findAllByTags(tag, page), page);
+    public Page<AIP> findAllByTag(String tag, Pageable page) {
+        return buildAIPPage(repo.findAllByTag(tag, page), page);
     }
 
     @Override
@@ -151,12 +141,6 @@ public class AIPDao implements IAIPDao {
     @Override
     public Page<AIP> findPageBySipIdIn(Collection<String> sipIds, Pageable page) {
         return repo.findPageBySipIdIn(sipIds, page).map(this::buildAipFromAIPEntity);
-    }
-
-    @Override
-    public Page<AIP> findAllByStateAndLastEventDateAfter(AIPState state, OffsetDateTime fromLastUpdateDate,
-            Pageable pageable) {
-        return buildAIPPage(repo.findAllByStateAndLastEventDateAfter(state, fromLastUpdateDate, pageable), pageable);
     }
 
     @Override
