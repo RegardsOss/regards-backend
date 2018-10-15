@@ -579,7 +579,7 @@ public class AIPService implements IAIPService {
             throw new EntityOperationForbiddenException("Only Admins can access this feature.");
         }
         AIPSession aipSession = getSession(session, false);
-        return aipDao.findAll(AIPQueryGenerator.search(state, from, to, tags, aipSession, providerId, null, null),
+        return aipDao.findAll(AIPQueryGenerator.searchAIPContainingAllTags(state, from, to, tags, aipSession, providerId, null, null),
                               pageable);
     }
 
@@ -593,7 +593,7 @@ public class AIPService implements IAIPService {
             if ((tags == null) || tags.isEmpty()) {
                 aips = aipDao.findAllByState(state, pageable);
             } else {
-                aips = aipDao.findAll(AIPQueryGenerator.search(state, null, null, new ArrayList<>(tags), null, null,
+                aips = aipDao.findAll(AIPQueryGenerator.searchAIPContainingAtLeastOneTag(state, null, null, new ArrayList<>(tags), null, null,
                                                                null, null),
                                       pageable);
             }

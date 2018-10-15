@@ -68,14 +68,13 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
     Page<AIPEntity> findAllByStateIn(Collection<AIPState> states, Pageable pageable);
 
     /**
-     * Retrieve a page of aip which state is the one provided and contains the provided tags and which last event
+     * Retrieve a page of aip which state is the one provided and contains at least one of the provided tags and which last event
      * occurred after the given date
-     * @return a page of aip which state is the one provided and contains the provided tags and which last event
-     *         occurred after the given date
+     * @return a page of aip
      */
-    @Query(value = "select * from {h-schema}t_aip where json_aip->'properties'->'pdi'->'contextInformation'->'tags' @> jsonb_build_array(:tags) "
+    @Query(value = "select * from {h-schema}t_aip where json_aip#>'{properties,pdi,contextInformation,tags}'?|[:tags] "
             + "AND state=:state AND date > :lastUpdate ORDER BY ?#{#pageable}",
-            countQuery = "select count(*) from {h-schema}t_aip where json_aip->'properties'->'pdi'->'contextInformation'->'tags' @> jsonb_build_array(:tags)"
+            countQuery = "select count(*) from {h-schema}t_aip wherejson_aip#>'{properties,pdi,contextInformation,tags}'?|[:tags]"
                     + " AND state=:state AND date > :lastUpdate",
             nativeQuery = true)
     Page<AIPEntity> findAllByStateAndTagsInAndLastEventDateAfter(@Param("state") String state,
@@ -122,11 +121,11 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
     Stream<AIPEntity> findByAipIdIn(Collection<String> aipIds);
 
     /**
-     * Retrieve all aips which are tagged by the provided tag
-     * @return aips which respects the constraints
+     * Retrieve all aips which are tagged by at least one of the provided tag
+     * @return a page of aip
      */
-    @Query(value = "select * from {h-schema}t_aip where json_aip->'properties'->'pdi'->'contextInformation'->'tags' @> to_jsonb(?1)  ORDER BY ?#{#pageable}",
-            countQuery = "select count(*) from {h-schema}t_aip where json_aip->'properties'->'pdi'->'contextInformation'->'tags' @> to_jsonb(?1)",
+    @Query(value = "select * from {h-schema}t_aip where json_aip#>'{properties,pdi,contextInformation,tags}'?|[?1]  ORDER BY ?#{#pageable}",
+            countQuery = "select count(*) from {h-schema}t_aip where json_aip#>'{properties,pdi,contextInformation,tags}'?|[?1]",
             nativeQuery = true)
     Page<AIPEntity> findAllByTags(String tag, Pageable page);
 
