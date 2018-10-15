@@ -64,7 +64,7 @@ public class AIPQueryGenerator {
             AIPSession session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded) {
         Set<String> predicates = generatePredicates(state, from, to, session, providerId, aipIds, aipIdsExcluded);
         if (tags != null && !tags.isEmpty()) {
-            predicates.add(getConjunctionTagPredicate(tags));
+            predicates.add(getDisjunctionTagPredicate(tags));
         }
         return createQuery(predicates);
 
