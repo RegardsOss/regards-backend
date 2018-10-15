@@ -101,9 +101,9 @@ public class RegistrationService implements IRegistrationService {
     }
 
     @Override
-    public void requestAccess(final AccessRequestDto pDto) throws EntityException {
+    public void requestAccess(final AccessRequestDto pDto, Boolean isExternalAccess) throws EntityException {
         // Create the account if needed
-        requestAccountIfNecessary(pDto);
+        requestAccountIfNecessary(pDto, isExternalAccess);
 
         // Create the project user
         requestProjectUser(pDto);
@@ -112,7 +112,8 @@ public class RegistrationService implements IRegistrationService {
     /**
      * Create the account if necessary
      */
-    private void requestAccountIfNecessary(final AccessRequestDto pDto) throws EntityException {
+    private void requestAccountIfNecessary(final AccessRequestDto pDto, Boolean isExternalAccess)
+            throws EntityException {
         // Check existence
         try {
             FeignSecurityManager.asSystem();
@@ -123,7 +124,7 @@ public class RegistrationService implements IRegistrationService {
             } else {
                 // Check that all information are provided to create account
                 if ((pDto.getEmail() == null) || (pDto.getFirstName() == null) || (pDto.getLastName() == null)
-                        || (pDto.getPassword() == null)) {
+                        || ((pDto.getPassword() == null) && !isExternalAccess)) {
                     LOG.error("Account does not exists for user {} and there not enought information to create a new one.",
                               pDto.getEmail());
                     throw new EntityNotFoundException(pDto.getEmail(), Account.class);
@@ -132,6 +133,7 @@ public class RegistrationService implements IRegistrationService {
 
             // Create the new account
             Account account = new Account(pDto.getEmail(), pDto.getFirstName(), pDto.getLastName(), pDto.getPassword());
+            account.setExternal(isExternalAccess);
 
             // Check status
             Assert.isTrue(AccountStatus.PENDING.equals(account.getStatus()),

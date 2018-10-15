@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.domain;
 
+import java.time.LocalDateTime;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -30,7 +32,6 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
@@ -112,22 +113,22 @@ public class Account implements IIdentifiable<Long> {
     /**
      * Creates new Account
      *
-     * @param pEmail
+     * @param email
      *            the email
-     * @param pFirstName
+     * @param firstName
      *            the first name
-     * @param pLastName
+     * @param lastName
      *            the last name
-     * @param pPassword
+     * @param password
      *            the password
      */
-    public Account(final String pEmail, final String pFirstName, final String pLastName, final String pPassword) {
+    public Account(final String email, final String firstName, final String lastName, final String password) {
         super();
         status = AccountStatus.PENDING;
-        email = pEmail;
-        firstName = pFirstName;
-        lastName = pLastName;
-        setPassword(pPassword);
+        this.email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        setPassword(password);
     }
 
     /**
@@ -142,8 +143,8 @@ public class Account implements IIdentifiable<Long> {
      * @param pId
      *            the id to set
      */
-    public void setId(final Long pId) {
-        id = pId;
+    public void setId(final Long id) {
+        this.id = id;
     }
 
     /**
@@ -157,8 +158,8 @@ public class Account implements IIdentifiable<Long> {
      * @param pEmail
      *            the email to set
      */
-    public void setEmail(final String pEmail) {
-        email = pEmail;
+    public void setEmail(final String email) {
+        this.email = email;
     }
 
     /**
@@ -169,11 +170,11 @@ public class Account implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pFirstName
+     * @param firstName
      *            the firstName to set
      */
-    public void setFirstName(final String pFirstName) {
-        firstName = pFirstName;
+    public void setFirstName(final String firstName) {
+        this.firstName = firstName;
     }
 
     /**
@@ -184,11 +185,11 @@ public class Account implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pLastName
+     * @param lastName
      *            the lastName to set
      */
-    public void setLastName(final String pLastName) {
-        lastName = pLastName;
+    public void setLastName(final String lastName) {
+        this.lastName = lastName;
     }
 
     /**
@@ -199,12 +200,14 @@ public class Account implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pPassword
+     * @param password
      *            the password to set
      */
-    public final void setPassword(final String pPassword) {
-        passwordUpdateDate = LocalDateTime.now();
-        password = pPassword;
+    public final void setPassword(final String password) {
+        if (password != null) {
+            passwordUpdateDate = LocalDateTime.now();
+            this.password = password;
+        }
     }
 
     /**
@@ -215,11 +218,11 @@ public class Account implements IIdentifiable<Long> {
     }
 
     /**
-     * @param pStatus
+     * @param status
      *            the status to set
      */
-    public void setStatus(final AccountStatus pStatus) {
-        status = pStatus;
+    public void setStatus(final AccountStatus status) {
+        this.status = status;
     }
 
     /**
@@ -240,8 +243,8 @@ public class Account implements IIdentifiable<Long> {
         return external;
     }
 
-    public void setExternal(final Boolean pExternal) {
-        external = pExternal;
+    public void setExternal(final Boolean external) {
+        this.external = external;
     }
 
     /**
@@ -251,8 +254,8 @@ public class Account implements IIdentifiable<Long> {
         return authenticationFailedCounter;
     }
 
-    public void setAuthenticationFailedCounter(final Long pAuthenticationFailedCounter) {
-        authenticationFailedCounter = pAuthenticationFailedCounter;
+    public void setAuthenticationFailedCounter(final Long authenticationFailedCounter) {
+        this.authenticationFailedCounter = authenticationFailedCounter;
     }
 
     /**
@@ -262,8 +265,8 @@ public class Account implements IIdentifiable<Long> {
         return invalidityDate;
     }
 
-    public void setInvalidityDate(final LocalDateTime pInvalidityDate) {
-        invalidityDate = pInvalidityDate;
+    public void setInvalidityDate(final LocalDateTime invalidityDate) {
+        this.invalidityDate = invalidityDate;
     }
 
     @Override
@@ -271,7 +274,7 @@ public class Account implements IIdentifiable<Long> {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
         }
 

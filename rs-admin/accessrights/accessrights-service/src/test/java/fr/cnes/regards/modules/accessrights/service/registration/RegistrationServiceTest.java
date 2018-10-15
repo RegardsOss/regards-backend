@@ -26,6 +26,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -199,7 +201,7 @@ public class RegistrationServiceTest {
         Assert.assertTrue(projectUser.getEmail().equals(dto.getEmail()));
 
         // Trigger the exception
-        registrationService.requestAccess(dto);
+        registrationService.requestAccess(dto, false);
     }
 
     /**
@@ -223,7 +225,84 @@ public class RegistrationServiceTest {
         Mockito.when(roleService.retrieveRole(projectUser.getRole().getName())).thenReturn(projectUser.getRole());
 
         // Call the service
-        registrationService.requestAccess(dto);
+        registrationService.requestAccess(dto, false);
+
+        // Check that the repository's method was called to create a project user containing values from the DTO and
+        // with status WAITING_ACCESS. We therefore exclude id, lastConnection and lastUpdate which we do not care about
+        Mockito.verify(projectUserRepository).save(Mockito.refEq(projectUser, "id", "lastConnection", "lastUpdate"));
+    }
+
+    /**
+     * Check that the system allows the user to request a registration.
+     *
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} if the passed role culd not be found<br>
+     *             {@link EntityAlreadyExistsException} Thrown if a {@link ProjectUser} with same <code>email</code>
+     *             already exists<br>
+     *             {@link EntityTransitionForbiddenException} when illegal transition call<br>
+     */
+    @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_510")
+    @Purpose("Check that the system allows the user to request a registration by creating a new project user for external accounts.")
+    public void requestExternalAccess() throws EntityException {
+        // Mock
+        Mockito.when(accountsClient.retrieveAccounByEmail(dto.getEmail()))
+                .thenReturn(new ResponseEntity<>(new Resource<>(account), HttpStatus.OK));
+        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
+        Mockito.when(roleService.retrieveRole(projectUser.getRole().getName())).thenReturn(projectUser.getRole());
+
+        // Call the service
+        registrationService.requestAccess(dto, true);
+
+        // Check that the repository's method was called to create a project user containing values from the DTO and
+        // with status WAITING_ACCESS. We therefore exclude id, lastConnection and lastUpdate which we do not care about
+        Mockito.verify(projectUserRepository).save(Mockito.refEq(projectUser, "id", "lastConnection", "lastUpdate"));
+    }
+
+    /**
+     * Check that the system allows the user to request a registration.
+     *
+     * @throws EntityException
+     *             <br>
+     *             {@link EntityNotFoundException} if the passed role culd not be found<br>
+     *             {@link EntityAlreadyExistsException} Thrown if a {@link ProjectUser} with same <code>email</code>
+     *             already exists<br>
+     *             {@link EntityTransitionForbiddenException} when illegal transition call<br>
+     */
+    @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_510")
+    @Purpose("Check that the system allows the user to request a registration by creating a new project user and account for external accounts.")
+    public void requestExternalAccessWithAccountCreation() throws EntityException {
+        Account newAccountToCreate = new Account(dto.getEmail(), dto.getFirstName(), dto.getLastName(), null);
+        // Mock.
+        // First call : Account not found
+        // Second call : Return created account
+        Answer<ResponseEntity<Resource<Account>>> accountsClientResponse = new Answer<ResponseEntity<Resource<Account>>>() {
+
+            private int nbCalls = 0;
+
+            @Override
+            public ResponseEntity<Resource<Account>> answer(InvocationOnMock invocation) throws Throwable {
+                nbCalls++;
+                if (nbCalls == 1) {
+                    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                } else {
+                    return new ResponseEntity<>(new Resource<>(newAccountToCreate), HttpStatus.OK);
+                }
+            }
+
+        };
+        Mockito.when(accountsClient.retrieveAccounByEmail(dto.getEmail())).then(accountsClientResponse);
+        Mockito.when(accountsClient.createAccount(Mockito.any()))
+                .thenReturn(new ResponseEntity<>(new Resource<>(newAccountToCreate), HttpStatus.CREATED));
+        Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(null));
+        Mockito.when(roleService.retrieveRole(projectUser.getRole().getName())).thenReturn(projectUser.getRole());
+        Mockito.when(accountSettingsClient.retrieveAccountSettings())
+                .thenReturn(new ResponseEntity<>(new Resource<>(accountSettings), HttpStatus.OK));
+
+        // Call the service
+        registrationService.requestAccess(dto, true);
 
         // Check that the repository's method was called to create a project user containing values from the DTO and
         // with status WAITING_ACCESS. We therefore exclude id, lastConnection and lastUpdate which we do not care about
@@ -259,7 +338,7 @@ public class RegistrationServiceTest {
         Mockito.when(roleService.retrieveRole(projectUser.getRole().getName())).thenReturn(projectUser.getRole());
 
         // Trigger the exception
-        registrationService.requestAccess(dto);
+        registrationService.requestAccess(dto, false);
 
         // Check that the repository's method was called to create a project user containing values from the DTO and
         // with status PENDING. We therefore exclude id, lastConnection and lastUpdate which we do not care about
@@ -290,7 +369,7 @@ public class RegistrationServiceTest {
         // Trigger the exception
         final AccessRequestDto dto = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, ROLE.getName(), META_DATA,
                 PASSOWRD, ORIGIN_URL, REQUEST_LINK);
-        registrationService.requestAccess(dto);
+        registrationService.requestAccess(dto, false);
     }
 
 }

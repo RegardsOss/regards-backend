@@ -18,9 +18,10 @@
  */
 package fr.cnes.regards.modules.accessrights.client;
 
+import java.util.List;
+
 import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
-import java.util.List;
 
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
@@ -46,7 +47,8 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
  * @since 1.0-SNAPSHOT
  */
 @RestClient(name = "rs-admin")
-@RequestMapping(value = "/accesses", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/accesses", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
+        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IRegistrationClient {
 
     /**
@@ -69,6 +71,18 @@ public interface IRegistrationClient {
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
     ResponseEntity<Resource<AccessRequestDto>> requestAccess(@Valid @RequestBody AccessRequestDto pAccessRequest);
+
+    /**
+     * Request a new access, i.e. a new project user with external authentication system.
+     *
+     * @param pAccessRequest
+     *            A Dto containing all information for creating a the new project user
+     * @return the passed Dto
+     */
+    @ResponseBody
+    @RequestMapping(value = "/external", method = RequestMethod.POST)
+    ResponseEntity<Resource<AccessRequestDto>> requestExternalAccess(
+            @Valid @RequestBody AccessRequestDto pAccessRequest);
 
     /**
      * Grants access to the project user

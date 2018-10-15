@@ -337,13 +337,13 @@ public class AccountsController implements IResourceController<Account> {
     public ResponseEntity<Void> performChangePassword(@PathVariable("account_email") String accountEmail,
             @Valid @RequestBody PerformChangePasswordDto changePasswordDto) throws EntityException {
         final Account toReset = accountService.retrieveAccountByEmail(accountEmail);
-        if (!authResolver.getUser().equals(accountEmail) && !accountService
-                .validatePassword(accountEmail, changePasswordDto.getOldPassword(), false)) {
+        if (!authResolver.getUser().equals(accountEmail)
+                && !accountService.validatePassword(accountEmail, changePasswordDto.getOldPassword(), false)) {
             return new ResponseEntity<Void>(HttpStatus.FORBIDDEN);
         }
         accountService.validPassword(changePasswordDto.getNewPassword());
-        accountService
-                .changePassword(toReset.getId(), EncryptionUtils.encryptPassword(changePasswordDto.getNewPassword()));
+        accountService.changePassword(toReset.getId(),
+                                      EncryptionUtils.encryptPassword(changePasswordDto.getNewPassword()));
         return ResponseEntity.noContent().build();
     }
 
