@@ -64,6 +64,12 @@ public final class Microscope {
     // MD5.txt related informations
     public static final String CHECKSUM_KEY_COMMENT = "# Archive MD5:";
 
+    public static final String START_DATE_COLON = "StartDate:";
+
+    public static final String END_DATE_COLON = "EndDate:";
+
+    public static final String VERSION_COLON = "Version:";
+
     public static final String CHECKSUM_FILE_SUFFIX = "_MD5.txt";
 
     public static final String TGZ_EXT = ".tgz";
@@ -84,6 +90,8 @@ public final class Microscope {
     public static final String TM_TYPE = "Type de TM";
 
     public static final String BDS_VERSION = "Version BDS";
+
+    public static final String VERSION = "Version";
 
     public static final String SCOPE = "Scope";
 

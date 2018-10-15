@@ -22,21 +22,20 @@ import java.nio.file.Path;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
-import fr.cnes.regards.modules.acquisition.plugins.Microscope;
 
 /**
- * RINEX product name reader plugin.<br/>
- * Product name is all that is before ".tag.gz" into data file name (ex: RINEX_0120 for RINEX_0120.tar.gz)
+ * BDS product name reader plugin.<br/>
+ * Product name is all that is before '_V&lt;version>.tar.gz' into data file name
  * @author Olivier Rousselot
  */
-@Plugin(id = "RinexProductPlugin", version = "1.0.0-SNAPSHOT",
+@Plugin(id = "BdsProductPlugin", version = "1.0.0-SNAPSHOT",
         description = "Retrieve product name from product data file name", author = "REGARDS Team",
         contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
-public class RinexProductPlugin implements IProductPlugin {
+public class BdsProductPlugin implements IProductPlugin {
 
     @Override
     public String getProductName(Path filePath) {
         String filename = filePath.getFileName().toString();
-        return filename.replace(Microscope.TAR_GZ_EXT, "");
+        return filename.replaceFirst("_V\\d+\\.tar\\.gz", "");
     }
 }

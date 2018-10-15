@@ -35,16 +35,16 @@ import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.Microscope;
 
 /**
- * RINEX products validation.<br/>
- * File to validate is RINEX_&gt;MISSION>.tar.gz. A file with same name with _MD5.txt at the end (in place of .tar.gz)
+ * RINEX and BDS products validation.<br/>
+ * File to validate is a 'tar.gz' file. A file with same name with _MD5.txt at the end (in place of .tar.gz)
  * contains MD5 informations.
  * @author Olivier Rousselot
  */
-@Plugin(id = "RinexValidationPlugin", version = "1.0.0-SNAPSHOT",
-        description = "Validate RINEX data file with checksum contained into _MD5.txt associated file",
+@Plugin(id = "ValidationFromMd5TxtPlugin", version = "1.0.0-SNAPSHOT",
+        description = "Validate tar gz data file with checksum contained into _MD5.txt associated file",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
-public class RinexValidationPlugin implements IValidationPlugin {
+public class ValidationFromMd5TxtPlugin implements IValidationPlugin {
 
     @Override
     public boolean validate(Path dataFilePath) throws ModuleException {
