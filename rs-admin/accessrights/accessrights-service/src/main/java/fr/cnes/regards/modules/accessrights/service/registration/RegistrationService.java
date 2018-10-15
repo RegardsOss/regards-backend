@@ -200,14 +200,15 @@ public class RegistrationService implements IRegistrationService {
                 projectUser = projectUserRepository.save(projectUser);
                 // Init the email verification token
                 tokenService.create(projectUser, accountDto.getOriginUrl(), accountDto.getRequestLink());
+
+                // Check the status
+                if (AccountStatus.ACTIVE.equals(account.getStatus())) {
+                    LOG.info("Account is already active for new user {}. Sending AccountAcceptedEvent to handle ProjectUser status.",
+                             account.getEmail());
+                    listener.onAccountActivation(account.getEmail());
+                }
             }
 
-            // Check the status
-            if (AccountStatus.ACTIVE.equals(account.getStatus())) {
-                LOG.info("Account is already active for new user {}. Sending AccountAcceptedEvent to handle ProjectUser status.",
-                         account.getEmail());
-                listener.onAccountActivation(account.getEmail());
-            }
         } finally {
             FeignSecurityManager.reset();
         }
