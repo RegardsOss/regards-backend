@@ -18,29 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.time.OffsetDateTime;
-import java.util.Optional;
-import java.util.Random;
-import java.util.UUID;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.util.MimeType;
-
-import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.EventType;
@@ -56,6 +33,27 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.OffsetDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+import java.util.UUID;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.MimeType;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -369,17 +367,57 @@ public class DaoIT extends AbstractDaoTransactionalTest {
     }
 
     @Test
-    public void testFindAllByStateAndTagsInAndLastEventDateAfter() {
-        Page<AIP> aips = dao.findAllByStateAndTagsInAndLastEventDateAfter(AIPState.VALID,
-                                                                          Sets.newHashSet("aip", "aip1"),
-                                                                          aip1.getLastEvent().getDate().minusHours(1),
-                                                                          new PageRequest(0, 10));
+    public void testCustomQueryAtLeastOneTag() {
+        List<String> tags = Arrays.asList("aip", "aip1", "aip12");
+
+        Page<AIP> aips = dao.findAll(
+                // test at least one tag
+                AIPQueryGenerator.searchAIPContainingAtLeastOneTag(null, null, null, tags,
+                    null, null,null, null),
+                new PageRequest(0, 100)
+        );
+        Assert.assertTrue(aips.getContent().contains(aip1));
+        Assert.assertTrue(aips.getContent().contains(aip12));
+        Assert.assertTrue(aips.getContent().contains(aip2));
+        Assert.assertTrue(aips.getContent().contains(aip3));
+        Assert.assertTrue(aips.getContent().contains(aip4));
+        Assert.assertTrue(aips.getContent().contains(aip5));
+    }
+
+    @Test
+    public void testCustomQueryAtLeastOneTag2() {
+        List<String> tags = Arrays.asList("aip", "aip1", "aip12");
+
+        Page<AIP> aips = dao.findAll(
+                // test at least one tag
+                AIPQueryGenerator.searchAIPContainingAtLeastOneTag(AIPState.STORED, null, null, tags,
+                        null , null,null, null),
+                new PageRequest(0, 100)
+        );
+        Assert.assertFalse(aips.getContent().contains(aip1));
+        Assert.assertFalse(aips.getContent().contains(aip12));
+        Assert.assertFalse(aips.getContent().contains(aip2));
+        Assert.assertFalse(aips.getContent().contains(aip3));
+        Assert.assertFalse(aips.getContent().contains(aip4));
+        Assert.assertTrue(aips.getContent().contains(aip5));
+    }
+
+
+    @Test
+    public void testCustomQueryContainingAllTags() {
+        List<String> tags = Arrays.asList("aip", "aip1");
+
+        Page<AIP> aips = dao.findAll(
+                // test at least one tag
+                AIPQueryGenerator.searchAIPContainingAllTags(AIPState.VALID, null, null, tags,
+                        null , null,null, null),
+                new PageRequest(0, 100)
+        );
         Assert.assertTrue(aips.getContent().contains(aip1));
         Assert.assertTrue(aips.getContent().contains(aip12));
         Assert.assertFalse(aips.getContent().contains(aip2));
         Assert.assertFalse(aips.getContent().contains(aip3));
         Assert.assertFalse(aips.getContent().contains(aip4));
-        Assert.assertFalse(aips.getContent().contains(aip5));
     }
 
 }

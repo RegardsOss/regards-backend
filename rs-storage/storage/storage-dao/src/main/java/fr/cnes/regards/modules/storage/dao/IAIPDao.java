@@ -18,21 +18,18 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * DAO to access {@link AIP} entities by requesting {@link AIPEntity}.
@@ -63,19 +60,6 @@ public interface IAIPDao {
      * @return {@link AIP}s
      */
     Page<AIP> findAllByState(AIPState state, Pageable pageable);
-
-    /**
-     * Retrieve a page of aip which state is the one provided and contains at least one of the provided tags and which
-     * last event occurred after the given date
-     * @param state
-     * @param tags
-     * @param fromLastUpdateDate
-     * @param pageable
-     * @return a page of aip which state is the one provided and contains at least one of the provided tags and which
-     *         last event occurred after the given date
-     */
-    Page<AIP> findAllByStateAndTagsInAndLastEventDateAfter(AIPState state, Set<String> tags,
-            OffsetDateTime fromLastUpdateDate, Pageable pageable);
 
     /**
      * Retrieve all existing {@link AIP}s with given starting ipId {@link String}
@@ -138,14 +122,6 @@ public interface IAIPDao {
      */
     Set<AIP> findAllBySipId(String sipId);
 
-    /**
-     * Retrieve all aips which state is the one given with lastEventDate above fromLastUpdateDate provided
-     * @param state AIP state
-     * @param fromLastUpdateDate AIP last update
-     * @param pageable
-     * @return
-     */
-    Page<AIP> findAllByStateAndLastEventDateAfter(AIPState state, OffsetDateTime fromLastUpdateDate, Pageable pageable);
 
     /**
      * Allow to make a research
