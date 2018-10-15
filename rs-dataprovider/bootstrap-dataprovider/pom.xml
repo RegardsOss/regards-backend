@@ -86,6 +86,11 @@
 			<groupId>fr.cnes.regards.modules.acquisition</groupId>
 			<artifactId>acquisition-plugins-ssalto</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.acquisition</groupId>
+			<artifactId>acquisition-plugins-microscope</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<profiles>
