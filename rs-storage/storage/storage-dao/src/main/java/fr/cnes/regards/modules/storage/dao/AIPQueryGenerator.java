@@ -82,6 +82,10 @@ public class AIPQueryGenerator {
         if (tags != null && !tags.isEmpty()) {
             predicates.add(getConjunctionTagPredicate(tags));
         }
+        if (!predicates.isEmpty()) {
+            request.append("WHERE ");
+            Joiner.on(" AND ").appendTo(request, predicates);
+        }
         // Do not handle pagination here. See CustomizedAIPEntityRepository for pagination
         return request.toString();
     }
