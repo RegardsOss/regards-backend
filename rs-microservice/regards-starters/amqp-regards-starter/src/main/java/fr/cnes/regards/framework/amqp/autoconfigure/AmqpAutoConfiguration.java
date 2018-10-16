@@ -24,12 +24,12 @@ import org.springframework.amqp.rabbit.connection.SimpleRoutingConnectionFactory
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.transaction.RabbitTransactionManager;
+import org.springframework.amqp.support.converter.Jackson2JavaTypeMapper.TypePrecedence;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -62,6 +62,8 @@ import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.VirtualHostMode;
 import fr.cnes.regards.framework.amqp.converter.Gson2JsonMessageConverter;
+import fr.cnes.regards.framework.amqp.converter.JsonMessageConverters;
+import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.single.SingleVhostPoller;
 import fr.cnes.regards.framework.amqp.single.SingleVhostPublisher;
 import fr.cnes.regards.framework.amqp.single.SingleVhostSubscriber;
@@ -81,10 +83,6 @@ import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantBootstrapP
 @AutoConfigureAfter(name = { "fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration" })
 @EnableTransactionManagement
 public class AmqpAutoConfiguration {
-
-    private static final String JACKSON_JSON_RABBIT_TEMPLATE_BEAN = "JacksonRabbitTemplate";
-
-    private static final String GSON_RABBIT_TEMPLATE_BEAN = "GsonRabbitTemplate";
 
     @Autowired
     private MultitenantBootstrapProperties bootstrapProperties;
@@ -151,104 +149,81 @@ public class AmqpAutoConfiguration {
         return new RabbitAdmin(pSimpleRoutingConnectionFactory);
     }
 
-    @Bean(name = JACKSON_JSON_RABBIT_TEMPLATE_BEAN)
-    public RabbitTemplate jacksonTransactionalRabbitTemplate() {
+    @Bean
+    public RabbitTemplate transactionalRabbitTemplate(MessageConverter jsonMessageConverters) {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(simpleRoutingConnectionFactory());
         // Enable transaction management : if action is executed in a transaction and transaction fails,
         // message is return to the broker.
         rabbitTemplate.setChannelTransacted(true);
-        rabbitTemplate.setMessageConverter(jackson2JsonMessageConverter());
+        rabbitTemplate.setMessageConverter(jsonMessageConverters);
         return rabbitTemplate;
     }
 
-    /**
-     * @return a {@link Jackson2JsonMessageConverter} instance used to (de)serialize events
-     */
     @Bean
-    public Jackson2JsonMessageConverter jackson2JsonMessageConverter() {
-        return new Jackson2JsonMessageConverter();
-    }
+    public MessageConverter jsonMessageConverters(@Autowired(required = false) Gson gson) {
 
-    @Bean
-    @ConditionalOnBean(Gson.class)
-    public Gson2JsonMessageConverter gson2JsonMessageConverter(Gson gson) {
-        return new Gson2JsonMessageConverter(gson);
-    }
+        JsonMessageConverters converters = new JsonMessageConverters();
 
-    @Bean(name = GSON_RABBIT_TEMPLATE_BEAN)
-    @ConditionalOnBean(Gson.class)
-    public RabbitTemplate gsonTransactionalRabbitTemplate(Gson2JsonMessageConverter gsonMessageConverter) {
-        RabbitTemplate rabbitTemplate = new RabbitTemplate(simpleRoutingConnectionFactory());
-        // Enable transaction management : if action is executed in a transaction and transaction fails,
-        // message is return to the broker.
-        rabbitTemplate.setChannelTransacted(true);
-        rabbitTemplate.setMessageConverter(gsonMessageConverter);
-        return rabbitTemplate;
+        // Register Jackson
+        Jackson2JsonMessageConverter jacksonConverter = new Jackson2JsonMessageConverter();
+        jacksonConverter.setTypePrecedence(TypePrecedence.INFERRED);
+        converters.registerConverter(JsonMessageConverter.JACKSON, jacksonConverter);
+
+        // Register GSON
+        if (gson != null) {
+            Gson2JsonMessageConverter gsonConverter = new Gson2JsonMessageConverter(gson);
+            converters.registerConverter(JsonMessageConverter.GSON, gsonConverter);
+        }
+        return converters;
     }
 
     @Bean
     public IPublisher publisher(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, IAmqpAdmin amqpAdmin,
-            IRuntimeTenantResolver pThreadTenantResolver,
-            @Autowired(required = false) @Qualifier(GSON_RABBIT_TEMPLATE_BEAN) RabbitTemplate gsonRabbitTemplate) {
+            IRuntimeTenantResolver pThreadTenantResolver, RabbitTemplate rabbitTemplate) {
         if (VirtualHostMode.MULTI.equals(amqpManagmentProperties.getMode())) {
-            return new Publisher(pRabbitVirtualHostAdmin, jacksonTransactionalRabbitTemplate(), gsonRabbitTemplate,
-                    amqpAdmin, pThreadTenantResolver);
+            return new Publisher(pRabbitVirtualHostAdmin, rabbitTemplate, amqpAdmin, pThreadTenantResolver);
         } else {
-            return new SingleVhostPublisher(jacksonTransactionalRabbitTemplate(), gsonRabbitTemplate, amqpAdmin,
-                    pRabbitVirtualHostAdmin, pThreadTenantResolver);
+            return new SingleVhostPublisher(rabbitTemplate, amqpAdmin, pRabbitVirtualHostAdmin, pThreadTenantResolver);
         }
     }
 
     @Bean
     public ISubscriber subscriber(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, IAmqpAdmin amqpAdmin,
-            Jackson2JsonMessageConverter jackson2JsonMessageConverter,
-            @Autowired(required = false) Gson2JsonMessageConverter gson2JsonMessageConverter,
-            ITenantResolver pTenantResolver) {
+            MessageConverter jsonMessageConverters, ITenantResolver pTenantResolver) {
         if (VirtualHostMode.MULTI.equals(amqpManagmentProperties.getMode())) {
-            return new Subscriber(pRabbitVirtualHostAdmin, amqpAdmin, jackson2JsonMessageConverter,
-                    gson2JsonMessageConverter, pTenantResolver);
+            return new Subscriber(pRabbitVirtualHostAdmin, amqpAdmin, jsonMessageConverters, pTenantResolver);
         } else {
-            return new SingleVhostSubscriber(pRabbitVirtualHostAdmin, amqpAdmin, jackson2JsonMessageConverter,
-                    gson2JsonMessageConverter, pTenantResolver);
+            return new SingleVhostSubscriber(pRabbitVirtualHostAdmin, amqpAdmin, jsonMessageConverters,
+                    pTenantResolver);
         }
     }
 
     @Bean
     public IPoller poller(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, IAmqpAdmin amqpAdmin,
-            IRuntimeTenantResolver pThreadTenantResolver,
-            @Autowired(required = false) @Qualifier(GSON_RABBIT_TEMPLATE_BEAN) RabbitTemplate gsonRabbitTemplate) {
+            IRuntimeTenantResolver pThreadTenantResolver, RabbitTemplate rabbitTemplate) {
         if (VirtualHostMode.MULTI.equals(amqpManagmentProperties.getMode())) {
-            return new Poller(pRabbitVirtualHostAdmin, jacksonTransactionalRabbitTemplate(), gsonRabbitTemplate,
-                    amqpAdmin, pThreadTenantResolver);
+            return new Poller(pRabbitVirtualHostAdmin, rabbitTemplate, amqpAdmin, pThreadTenantResolver);
         } else {
-            return new SingleVhostPoller(pRabbitVirtualHostAdmin, jacksonTransactionalRabbitTemplate(),
-                    gsonRabbitTemplate, amqpAdmin, pThreadTenantResolver);
+            return new SingleVhostPoller(pRabbitVirtualHostAdmin, rabbitTemplate, amqpAdmin, pThreadTenantResolver);
         }
     }
 
     @Bean
     public IInstancePublisher instancePublisher(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, IAmqpAdmin amqpAdmin,
-            IRuntimeTenantResolver pThreadTenantResolver,
-            @Autowired(required = false) @Qualifier(GSON_RABBIT_TEMPLATE_BEAN) RabbitTemplate gsonRabbitTemplate) {
-        return new InstancePublisher(jacksonTransactionalRabbitTemplate(), gsonRabbitTemplate, amqpAdmin,
-                pRabbitVirtualHostAdmin);
+            IRuntimeTenantResolver pThreadTenantResolver, RabbitTemplate rabbitTemplate) {
+        return new InstancePublisher(rabbitTemplate, amqpAdmin, pRabbitVirtualHostAdmin);
     }
 
     @Bean
     public IInstanceSubscriber instanceSubscriber(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, IAmqpAdmin amqpAdmin,
-            Jackson2JsonMessageConverter jackson2JsonMessageConverter,
-            @Autowired(required = false) Gson2JsonMessageConverter gson2JsonMessageConverter,
-            ITenantResolver pTenantResolver) {
-        return new InstanceSubscriber(pRabbitVirtualHostAdmin, amqpAdmin, jackson2JsonMessageConverter,
-                gson2JsonMessageConverter);
+            MessageConverter jsonMessageConverters, ITenantResolver pTenantResolver) {
+        return new InstanceSubscriber(pRabbitVirtualHostAdmin, amqpAdmin, jsonMessageConverters);
     }
 
     @Bean
     public IInstancePoller instancePoller(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, IAmqpAdmin amqpAdmin,
-            IRuntimeTenantResolver pThreadTenantResolver,
-            @Autowired(required = false) @Qualifier(GSON_RABBIT_TEMPLATE_BEAN) RabbitTemplate gsonRabbitTemplate) {
-        return new InstancePoller(pRabbitVirtualHostAdmin, jacksonTransactionalRabbitTemplate(), gsonRabbitTemplate,
-                amqpAdmin);
+            IRuntimeTenantResolver pThreadTenantResolver, RabbitTemplate rabbitTemplate) {
+        return new InstancePoller(pRabbitVirtualHostAdmin, rabbitTemplate, amqpAdmin);
     }
 
     @Bean

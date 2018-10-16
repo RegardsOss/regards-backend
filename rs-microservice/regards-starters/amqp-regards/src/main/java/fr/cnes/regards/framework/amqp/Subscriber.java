@@ -24,12 +24,11 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.support.converter.MessageConverter;
 
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.converter.Gson2JsonMessageConverter;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 
 /**
@@ -55,9 +54,8 @@ public class Subscriber extends AbstractSubscriber implements ISubscriber {
     private final ITenantResolver tenantResolver;
 
     public Subscriber(IRabbitVirtualHostAdmin pVirtualHostAdmin, IAmqpAdmin amqpAdmin,
-            Jackson2JsonMessageConverter jackson2JsonMessageConverter,
-            Gson2JsonMessageConverter gson2JsonMessageConverter, ITenantResolver pTenantResolver) {
-        super(pVirtualHostAdmin, amqpAdmin, jackson2JsonMessageConverter, gson2JsonMessageConverter);
+            MessageConverter jsonMessageConverters, ITenantResolver pTenantResolver) {
+        super(pVirtualHostAdmin, amqpAdmin, jsonMessageConverters);
         tenantResolver = pTenantResolver;
     }
 

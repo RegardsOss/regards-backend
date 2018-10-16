@@ -35,8 +35,6 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
-import org.springframework.amqp.support.converter.Jackson2JavaTypeMapper.TypePrecedence;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -44,11 +42,9 @@ import com.google.common.collect.Multimap;
 
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.converter.Gson2JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
 
@@ -79,14 +75,9 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     protected final IRabbitVirtualHostAdmin virtualHostAdmin;
 
     /**
-     * bean handling the conversion using {@link com.fasterxml.jackson} 2
+     * bean handling the conversion using either Jackson or Gson
      */
-    private final Jackson2JsonMessageConverter jackson2JsonMessageConverter;
-
-    /**
-     * bean handling the conversion using Gson
-     */
-    private final Gson2JsonMessageConverter gson2JsonMessageConverter;
+    private final MessageConverter jsonMessageConverters;
 
     /**
      * Reference to running listeners per handlers and virtual hosts
@@ -104,13 +95,10 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     protected final Map<Class<?>, IHandler<? extends ISubscribable>> handlerInstances;
 
     public AbstractSubscriber(IRabbitVirtualHostAdmin virtualHostAdmin, IAmqpAdmin amqpAdmin,
-            Jackson2JsonMessageConverter jackson2JsonMessageConverter,
-            Gson2JsonMessageConverter gson2JsonMessageConverter) {
+            MessageConverter jsonMessageConverters) {
         this.virtualHostAdmin = virtualHostAdmin;
         this.amqpAdmin = amqpAdmin;
-        this.jackson2JsonMessageConverter = jackson2JsonMessageConverter;
-        jackson2JsonMessageConverter.setTypePrecedence(TypePrecedence.INFERRED);
-        this.gson2JsonMessageConverter = gson2JsonMessageConverter;
+        this.jsonMessageConverters = jsonMessageConverters;
         listeners = new HashMap<>();
         handledEvents = new HashMap<>();
         handlerInstances = new HashMap<>();
@@ -205,16 +193,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
         // Init listeners
         for (Map.Entry<String, Collection<Queue>> entry : vhostQueues.asMap().entrySet()) {
-            declareListener(entry.getKey(), getMessageConverter(eventType), handler, entry.getValue());
-        }
-    }
-
-    private <E extends ISubscribable> MessageConverter getMessageConverter(Class<E> eventType) {
-        JsonMessageConverter jmc = EventUtils.getMessageConverter(eventType);
-        if (jmc == JsonMessageConverter.JACKSON) {
-            return jackson2JsonMessageConverter;
-        } else {
-            return gson2JsonMessageConverter;
+            declareListener(entry.getKey(), jsonMessageConverters, handler, entry.getValue());
         }
     }
 
@@ -340,7 +319,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
                 // Manage listeners
                 List<Queue> queues = new ArrayList<>();
                 queues.add(queue);
-                declareListener(virtualHost, getMessageConverter(eventType), handler, queues);
+                declareListener(virtualHost, jsonMessageConverters, handler, queues);
             }
         }
     }

@@ -48,7 +48,7 @@ public class Gson2JsonMessageConverter extends AbstractJsonMessageConverter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Gson2JsonMessageConverter.class);
 
-    public static final String TYPE_HEADER = "__type__";
+    public static final String WRAPPED_TYPE_HEADER = "__gson_wrapped_type__";
 
     private Gson gson;
 
@@ -62,7 +62,6 @@ public class Gson2JsonMessageConverter extends AbstractJsonMessageConverter {
         messageProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
         messageProperties.setContentEncoding(getDefaultCharset());
         messageProperties.setContentLength(bytes.length);
-        messageProperties.setInferredArgumentType(String.class);
         return new Message(bytes, messageProperties);
     }
 
@@ -73,7 +72,7 @@ public class Gson2JsonMessageConverter extends AbstractJsonMessageConverter {
         if (messageProperties != null) {
             try (Reader json = new InputStreamReader(new ByteArrayInputStream(message.getBody()),
                     Charset.forName("UTF-8"))) {
-                Class<?> eventType = Class.forName((String) messageProperties.getHeaders().get(TYPE_HEADER));
+                Class<?> eventType = Class.forName((String) messageProperties.getHeaders().get(WRAPPED_TYPE_HEADER));
                 Type type = createTypeToken(eventType).getType();
                 content = gson.fromJson(json, type);
             } catch (IOException | ClassNotFoundException e) {

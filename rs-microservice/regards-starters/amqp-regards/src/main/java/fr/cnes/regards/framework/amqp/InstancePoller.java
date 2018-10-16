@@ -32,9 +32,9 @@ import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
  */
 public class InstancePoller extends AbstractPoller implements IInstancePoller {
 
-    public InstancePoller(IRabbitVirtualHostAdmin pVirtualHostAdmin, RabbitTemplate jacksonRabbitTemplate,
-            RabbitTemplate gsonRabbitTemplate, IAmqpAdmin amqpAdmin) {
-        super(pVirtualHostAdmin, jacksonRabbitTemplate, gsonRabbitTemplate, amqpAdmin);
+    public InstancePoller(IRabbitVirtualHostAdmin pVirtualHostAdmin, RabbitTemplate rabbitTemplate,
+            IAmqpAdmin amqpAdmin) {
+        super(pVirtualHostAdmin, rabbitTemplate, amqpAdmin);
     }
 
     @Override

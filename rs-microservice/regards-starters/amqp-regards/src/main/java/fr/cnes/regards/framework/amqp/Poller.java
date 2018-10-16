@@ -40,9 +40,9 @@ public class Poller extends AbstractPoller implements IPoller {
      */
     private final IRuntimeTenantResolver threadTenantResolver;
 
-    public Poller(IRabbitVirtualHostAdmin pVirtualHostAdmin, RabbitTemplate jacksonRabbitTemplate,
-            RabbitTemplate gsonRabbitTemplate, IAmqpAdmin amqpAdmin, IRuntimeTenantResolver pThreadTenantResolver) {
-        super(pVirtualHostAdmin, jacksonRabbitTemplate, gsonRabbitTemplate, amqpAdmin);
+    public Poller(IRabbitVirtualHostAdmin pVirtualHostAdmin, RabbitTemplate rabbitTemplate, IAmqpAdmin amqpAdmin,
+            IRuntimeTenantResolver pThreadTenantResolver) {
+        super(pVirtualHostAdmin, rabbitTemplate, amqpAdmin);
         this.threadTenantResolver = pThreadTenantResolver;
     }
 

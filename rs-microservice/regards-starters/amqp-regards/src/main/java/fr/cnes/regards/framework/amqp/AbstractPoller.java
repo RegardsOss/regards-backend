@@ -31,7 +31,6 @@ import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.IPollable;
-import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
 
@@ -50,12 +49,7 @@ public abstract class AbstractPoller implements IPollerContract {
     /**
      * bean provided by spring to receive message from broker
      */
-    private final RabbitTemplate jacksonRabbitTemplate;
-
-    /**
-     * bean provided by spring to receive message from broker
-     */
-    private final RabbitTemplate gsonRabbitTemplate;
+    private final RabbitTemplate rabbitTemplate;
 
     /**
      * bean assisting us to declare elements
@@ -67,12 +61,11 @@ public abstract class AbstractPoller implements IPollerContract {
      */
     private final IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
 
-    public AbstractPoller(IRabbitVirtualHostAdmin pVirtualHostAdmin, RabbitTemplate jacksonRabbitTemplate,
-            RabbitTemplate gsonRabbitTemplate, IAmqpAdmin amqpAdmin) {
+    public AbstractPoller(IRabbitVirtualHostAdmin pVirtualHostAdmin, RabbitTemplate rabbitTemplate,
+            IAmqpAdmin amqpAdmin) {
         super();
         this.rabbitVirtualHostAdmin = pVirtualHostAdmin;
-        this.jacksonRabbitTemplate = jacksonRabbitTemplate;
-        this.gsonRabbitTemplate = gsonRabbitTemplate;
+        this.rabbitTemplate = rabbitTemplate;
         this.amqpAdmin = amqpAdmin;
     }
 
@@ -119,14 +112,8 @@ public abstract class AbstractPoller implements IPollerContract {
             Queue queue = amqpAdmin.declareQueue(tenant, eventType, workerMode, target, Optional.empty());
             amqpAdmin.declareBinding(queue, exchange, workerMode);
 
-            JsonMessageConverter jmc = EventUtils.getMessageConverter(eventType);
-
             // routing key is unnecessary for fanout exchanges but is for direct exchanges
-            if (jmc == JsonMessageConverter.JACKSON) {
-                return (TenantWrapper<T>) jacksonRabbitTemplate.receiveAndConvert(queue.getName(), 0);
-            } else {
-                return (TenantWrapper<T>) gsonRabbitTemplate.receiveAndConvert(queue.getName(), 0);
-            }
+            return (TenantWrapper<T>) rabbitTemplate.receiveAndConvert(queue.getName(), 0);
         } finally {
             rabbitVirtualHostAdmin.unbind();
         }

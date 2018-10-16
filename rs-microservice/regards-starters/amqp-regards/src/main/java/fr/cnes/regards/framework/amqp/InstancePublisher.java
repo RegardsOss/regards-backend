@@ -33,9 +33,9 @@ import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
  */
 public class InstancePublisher extends AbstractPublisher implements IInstancePublisher {
 
-    public InstancePublisher(RabbitTemplate jacksonRabbitTemplate, RabbitTemplate gsonRabbitTemplate,
-            IAmqpAdmin amqpAdmin, IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {
-        super(jacksonRabbitTemplate, gsonRabbitTemplate, amqpAdmin, pRabbitVirtualHostAdmin);
+    public InstancePublisher(RabbitTemplate rabbitTemplate, IAmqpAdmin amqpAdmin,
+            IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {
+        super(rabbitTemplate, amqpAdmin, pRabbitVirtualHostAdmin);
     }
 
     @Override

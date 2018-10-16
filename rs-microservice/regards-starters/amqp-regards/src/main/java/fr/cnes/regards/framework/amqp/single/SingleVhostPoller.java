@@ -37,9 +37,9 @@ public class SingleVhostPoller extends AbstractPoller implements IPoller {
 
     private final IRuntimeTenantResolver threadTenantResolver;
 
-    public SingleVhostPoller(IRabbitVirtualHostAdmin virtualHostAdmin, RabbitTemplate jacksonRabbitTemplate,
-            RabbitTemplate gsonRabbitTemplate, IAmqpAdmin amqpAdmin, IRuntimeTenantResolver threadTenantResolver) {
-        super(virtualHostAdmin, jacksonRabbitTemplate, gsonRabbitTemplate, amqpAdmin);
+    public SingleVhostPoller(IRabbitVirtualHostAdmin virtualHostAdmin, RabbitTemplate rabbitTemplate,
+            IAmqpAdmin amqpAdmin, IRuntimeTenantResolver threadTenantResolver) {
+        super(virtualHostAdmin, rabbitTemplate, amqpAdmin);
         this.threadTenantResolver = threadTenantResolver;
     }
 
