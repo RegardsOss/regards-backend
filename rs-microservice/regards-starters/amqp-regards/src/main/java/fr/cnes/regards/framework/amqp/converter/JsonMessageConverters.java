@@ -43,7 +43,7 @@ public class JsonMessageConverters implements MessageConverter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonMessageConverters.class);
 
-    public static final String CONVERTER_TYPE_HEADER = "__ctype__";
+    private static final String CONVERTER_TYPE_HEADER = "__ctype__";
 
     /**
      * Registered JSON message converters
@@ -52,7 +52,15 @@ public class JsonMessageConverters implements MessageConverter {
 
     @Override
     public Message toMessage(Object object, MessageProperties messageProperties) throws MessageConversionException {
-        return selectConverter(object).toMessage(object, messageProperties);
+        // Retrieve wrapper event
+        TenantWrapper<?> wrapper = (TenantWrapper<?>) object;
+        JsonMessageConverter jmc = EventUtils.getMessageConverter(wrapper.getContent().getClass());
+        // Add converter selector
+        messageProperties.getHeaders().put(JsonMessageConverters.CONVERTER_TYPE_HEADER, jmc);
+        // Add wrapped type information for Gson deserialization
+        messageProperties.getHeaders().put(Gson2JsonMessageConverter.WRAPPED_TYPE_HEADER,
+                                           wrapper.getContent().getClass().getName());
+        return selectConverter(jmc).toMessage(object, messageProperties);
     }
 
     @Override
@@ -66,9 +74,14 @@ public class JsonMessageConverters implements MessageConverter {
         converters.put(converterType, converter);
     }
 
-    private MessageConverter selectConverter(Object object) {
-        TenantWrapper<?> wrapper = (TenantWrapper<?>) object;
-        return converters.get(EventUtils.getMessageConverter(wrapper.getContent().getClass()));
+    private MessageConverter selectConverter(JsonMessageConverter converterType) {
+        MessageConverter converter = converters.get(converterType);
+        if (converter == null) {
+            String errorMessage = String.format("Cannot determine JSON converter for type \"%s\"", converterType);
+            LOGGER.error(errorMessage);
+            throw new MessageConversionException(errorMessage);
+        }
+        return converter;
     }
 
     private MessageConverter selectConverter(MessageProperties messageProperties) throws MessageConversionException {
@@ -87,14 +100,7 @@ public class JsonMessageConverters implements MessageConverter {
 
         try {
             JsonMessageConverter converterTypeEnum = JsonMessageConverter.valueOf((String) converterType);
-            MessageConverter converter = converters.get(converterTypeEnum);
-            if (converter == null) {
-                String errorMessage = String.format("Cannot determine JSON converter for type \"%s\"",
-                                                    converterTypeEnum);
-                LOGGER.error(errorMessage);
-                throw new MessageConversionException(errorMessage);
-            }
-            return converter;
+            return selectConverter(converterTypeEnum);
 
         } catch (Exception e) {
             String errorMessage = String.format("Cannot determine JSON converter for type \"%s\"", converterType);

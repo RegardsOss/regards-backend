@@ -30,13 +30,10 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.converter.Gson2JsonMessageConverter;
-import fr.cnes.regards.framework.amqp.converter.JsonMessageConverters;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.IPollable;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
-import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
 
@@ -236,18 +233,10 @@ public abstract class AbstractPublisher implements IPublisherContract {
 
         // Message to publish
         final TenantWrapper<T> messageSended = new TenantWrapper<>(event, tenant);
-
-        JsonMessageConverter jmc = EventUtils.getMessageConverter(event.getClass());
-
         // routing key is unnecessary for fanout exchanges but is for direct exchanges
         rabbitTemplate.convertAndSend(exchangeName, routingKey, messageSended, pMessage -> {
             MessageProperties messageProperties = pMessage.getMessageProperties();
             messageProperties.setPriority(priority);
-            // To select converter
-            messageProperties.getHeaders().put(JsonMessageConverters.CONVERTER_TYPE_HEADER, jmc);
-            // For GSON deserialization
-            messageProperties.getHeaders().put(Gson2JsonMessageConverter.WRAPPED_TYPE_HEADER,
-                                               event.getClass().getName());
             return new Message(pMessage.getBody(), messageProperties);
         });
     }
