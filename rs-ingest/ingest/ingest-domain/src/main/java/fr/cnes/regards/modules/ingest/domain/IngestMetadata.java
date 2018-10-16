@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.domain;
 import java.util.Optional;
 
 import org.hibernate.validator.constraints.NotBlank;
+import org.springframework.util.Assert;
 
 /**
  * Extra information useful for bulk SIP submission.<br/>
@@ -57,5 +58,13 @@ public class IngestMetadata {
 
     public void setSession(String session) {
         this.session = session;
+    }
+
+    public static IngestMetadata build(String ingestProcessingChain, String session) {
+        Assert.notNull(ingestProcessingChain, "Ingest processing chain is required");
+        IngestMetadata m = new IngestMetadata();
+        m.setProcessing(ingestProcessingChain);
+        m.setSession(session);
+        return m;
     }
 }

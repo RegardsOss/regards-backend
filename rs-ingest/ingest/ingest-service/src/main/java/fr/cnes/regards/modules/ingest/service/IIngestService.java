@@ -21,9 +21,12 @@ package fr.cnes.regards.modules.ingest.service;
 import java.io.InputStream;
 import java.util.Collection;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
+import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 
@@ -64,4 +67,13 @@ public interface IIngestService {
      */
     Boolean isRetryable(UniformResourceName sipId) throws EntityNotFoundException;
 
+    /**
+     * Validate ingest metadata consistency received by HTTP bulk request or data flow
+     */
+    void validateIngestMetadata(IngestMetadata metadata) throws EntityInvalidException;
+
+    /**
+     * Store SIP received by HTTP bulk request or data flow
+     */
+    SIPDto store(SIP sip, IngestMetadata metadata);
 }

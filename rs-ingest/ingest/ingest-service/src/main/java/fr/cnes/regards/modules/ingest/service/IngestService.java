@@ -132,7 +132,8 @@ public class IngestService implements IIngestService {
      * @param metadata {@link IngestMetadata}
      * @throws EntityInvalidException if invalid!
      */
-    private void validateIngestMetadata(IngestMetadata metadata) throws EntityInvalidException {
+    @Override
+    public void validateIngestMetadata(IngestMetadata metadata) throws EntityInvalidException {
         // Check metadata not null
         if (metadata == null) {
             String message = "Ingest metadata is required in SIP submission request.";
@@ -227,7 +228,8 @@ public class IngestService implements IIngestService {
      * @param metadata bulk ingest metadata
      * @return a {@link SIPEntity} ready to be processed saved in database or a rejected one not saved in database
      */
-    private SIPDto store(SIP sip, IngestMetadata metadata) {
+    @Override
+    public SIPDto store(SIP sip, IngestMetadata metadata) {
 
         LOGGER.info("Handling new SIP {}", sip.getId());
         // Manage version
@@ -256,10 +258,10 @@ public class IngestService implements IIngestService {
 
         try {
             // Compute checksum
-            LOGGER.info("Handling new SIP {} -> MD5 sum ....", sip.getId());
+            LOGGER.debug("Handling new SIP {} -> MD5 sum ....", sip.getId());
             String checksum = SIPEntityBuilder.calculateChecksum(gson, sip, MD5_ALGORITHM);
             entity.setChecksum(checksum);
-            LOGGER.info("Handling new SIP {} -> MD5 sum ok", sip.getId());
+            LOGGER.debug("Handling new SIP {} -> MD5 sum ok", sip.getId());
 
             // Prevent SIP from being ingested twice
             if (sipRepository.isAlreadyIngested(checksum)) {
@@ -271,7 +273,7 @@ public class IngestService implements IIngestService {
                 // And SIP not already stored with a same checksum
                 sipService.saveSIPEntity(entity);
                 publisher.publish(new SIPEvent(entity));
-                LOGGER.info("SIP {} saved, ready for asynchronous processing", entity.getProviderId());
+                LOGGER.debug("SIP {} saved, ready for asynchronous processing", entity.getProviderId());
             }
 
         } catch (NoSuchAlgorithmException | IOException e) {
@@ -281,7 +283,7 @@ public class IngestService implements IIngestService {
             entity.getRejectionCauses().add("Not able to generate internal SIP checksum");
         }
 
-        // Ensure permformance by flushing transaction cache
+        // Ensure performance by flushing transaction cache
         em.flush();
         em.clear();
 
