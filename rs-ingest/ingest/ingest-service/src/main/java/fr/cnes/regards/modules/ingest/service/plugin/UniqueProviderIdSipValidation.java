@@ -43,7 +43,7 @@ public class UniqueProviderIdSipValidation implements ISipValidation {
      */
     @Override
     public void validate(SIP sip, Errors errors) {
-        if (!sipService.getAllVersions(sip.getId()).isEmpty()) {
+        if (sipService.validatedVersionExists(sip.getId())) {
             errors.reject("Existing providerId", "Only one version of SIP is allowed");
         }
     }
