@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 
 /**
- * Data flow response to {@link InputSipFlow} handling
+ * Data flow response to {@link SipFlowItem} handling
  *
  * @author Marc SORDI
  *

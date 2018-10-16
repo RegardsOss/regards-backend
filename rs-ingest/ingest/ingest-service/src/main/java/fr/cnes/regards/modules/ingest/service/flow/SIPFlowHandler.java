@@ -28,10 +28,8 @@ import org.springframework.stereotype.Component;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
-import fr.cnes.regards.modules.ingest.domain.flow.InputSipFlow;
+import fr.cnes.regards.modules.ingest.domain.flow.SipFlowItem;
 import fr.cnes.regards.modules.ingest.service.IIngestService;
 
 /**
@@ -41,7 +39,7 @@ import fr.cnes.regards.modules.ingest.service.IIngestService;
  *
  */
 @Component
-public class SIPFlowHandler implements ApplicationListener<ApplicationReadyEvent>, IHandler<InputSipFlow> {
+public class SIPFlowHandler implements ApplicationListener<ApplicationReadyEvent>, IHandler<SipFlowItem> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPFlowHandler.class);
 
@@ -56,24 +54,20 @@ public class SIPFlowHandler implements ApplicationListener<ApplicationReadyEvent
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(InputSipFlow.class, this);
+        subscriber.subscribeTo(SipFlowItem.class, this);
     }
 
     @Override
-    public void handle(TenantWrapper<InputSipFlow> wrapper) {
+    public void handle(TenantWrapper<SipFlowItem> wrapper) {
         LOGGER.trace("New SIP data flow event detected for tenant {}", wrapper.getTenant());
-        InputSipFlow event = wrapper.getContent();
+        SipFlowItem event = wrapper.getContent();
 
         // Handle data flow for specified tenant
         try {
             // Set working tenant
             runtimeTenantResolver.forceTenant(wrapper.getTenant());
-            ingestService.validateIngestMetadata(event.getMetadata());
-            SIPDto dto = ingestService.store(event.getSip(), event.getMetadata());
-            // FIXME do something
-        } catch (EntityInvalidException e) {
-            // Invalid ingest metadata
-            // FIXME do something
+            ingestService.store(event.getSip(), event.getMetadata(), true);
+            LOGGER.trace("SIP \"{}\" handled", event.getSip().getId());
         } finally {
             runtimeTenantResolver.clearTenant();
         }

@@ -25,6 +25,7 @@ import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.SIP;
@@ -35,8 +36,8 @@ import fr.cnes.regards.modules.ingest.domain.SIP;
  * @author Marc SORDI
  *
  */
-@Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
-public class InputSipFlow implements ISubscribable {
+@Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
+public class SipFlowItem implements ISubscribable {
 
     @Valid
     @NotNull
@@ -61,9 +62,9 @@ public class InputSipFlow implements ISubscribable {
         this.sip = sip;
     }
 
-    public static InputSipFlow build(String ingestProcessingChain, String session, SIP sip) {
+    public static SipFlowItem build(String ingestProcessingChain, String session, SIP sip) {
         Assert.notNull(sip, "SIP is required");
-        InputSipFlow event = new InputSipFlow();
+        SipFlowItem event = new SipFlowItem();
         event.setMetadata(IngestMetadata.build(ingestProcessingChain, session));
         event.setSip(sip);
         return event;
