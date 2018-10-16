@@ -81,7 +81,7 @@ public final class PluginParameterUtils {
         List<PluginParameterType> parameters = new ArrayList<>();
 
         for (final Field field : ReflectionUtils.getAllDeclaredFields(pluginClass)) {
-            if (field.isAnnotationPresent(PluginParameter.class) || (isChildParameters && isToBeConsidered(field))) {
+            if (field.isAnnotationPresent(PluginParameter.class) || isChildParameters && isToBeConsidered(field)) {
                 // Initialize list of managed types for in depth scanning from root fields
                 List<String> managedTypes = new ArrayList<>();
                 if (isChildParameters) {
@@ -124,8 +124,8 @@ public final class PluginParameterUtils {
         // Create PluginParameter
         if (pluginParameter == null) {
             // Guess values
-            result = PluginParameterType
-                    .create(field.getName(), field.getName(), null, field.getType(), paramType, false, false, false);
+            result = PluginParameterType.create(field.getName(), field.getName(), null, field.getType(), paramType,
+                                                false, false, false);
         } else {
             // Report values from annotation
             String name = getFieldName(field, pluginParameter);
@@ -133,31 +133,24 @@ public final class PluginParameterUtils {
             // Lets restrict @PluginParameter#sensitive() usage to strings.
             if (pluginParameter.sensitive()) {
                 if (!String.class.isAssignableFrom(field.getType())) {
-                    String msg = String.format(
-                            "Sensible parameters must be of type %s. Faulty parameter: %s in plugin: %s",
-                            String.class.getName(),
-                            field.getName(),
-                            pluginClass.getName());
+                    String msg = String
+                            .format("Sensible parameters must be of type %s. Faulty parameter: %s in plugin: %s",
+                                    String.class.getName(), field.getName(), pluginClass.getName());
                     LOGGER.error(msg);
                     throw new PluginUtilsRuntimeException(msg);
                 }
             }
 
-            result = PluginParameterType.create(name,
-                                                pluginParameter.label(),
-                                                pluginParameter.description(),
-                                                field.getType(),
-                                                paramType,
-                                                pluginParameter.optional(),
-                                                pluginParameter.unconfigurable(),
-                                                pluginParameter.sensitive());
+            result = PluginParameterType.create(name, pluginParameter.label(), pluginParameter.description(),
+                                                field.getType(), paramType, pluginParameter.optional(),
+                                                pluginParameter.unconfigurable(), pluginParameter.sensitive());
 
             // Manage markdown description
             String markdown = AnnotationUtils.loadMarkdown(pluginClass, pluginParameter.markdown());
             result.setMarkdown(markdown);
 
             // Manage default value
-            if ((pluginParameter.defaultValue() != null) && !pluginParameter.defaultValue().isEmpty()) {
+            if (pluginParameter.defaultValue() != null && !pluginParameter.defaultValue().isEmpty()) {
                 result.setDefaultValue(pluginParameter.defaultValue());
             }
         }
@@ -310,7 +303,7 @@ public final class PluginParameterUtils {
         boolean isSupportedType = false;
         Set<String> pluginInterfaces = PluginUtils.getPluginInterfaces();
 
-        if ((pluginInterfaces != null) && !pluginInterfaces.isEmpty()) {
+        if (pluginInterfaces != null && !pluginInterfaces.isEmpty()) {
             isSupportedType = pluginInterfaces.stream().filter(s -> s.equalsIgnoreCase(clazz.getName())).count() > 0;
         }
 
@@ -324,7 +317,7 @@ public final class PluginParameterUtils {
     /**
      * Use configured values to set field values.
      *
-     * @param @param <T> a {@link Plugin} type
+     * @param <T> a {@link Plugin} type
      * @param gson GSON deserializer instance. Fallback to default local Gson instance is {@link Optional#empty()}
      * @param returnPlugin the plugin instance
      * @param plgConf the {@link PluginConfiguration}
@@ -422,7 +415,7 @@ public final class PluginParameterUtils {
         String paramValue = pluginConf.getParameterValue(parameterName);
 
         // Manage dynamic parameters
-        if ((dynamicPluginParameters != null) && (dynamicPluginParameters.length > 0)) {
+        if (dynamicPluginParameters != null && dynamicPluginParameters.length > 0) {
 
             // Search dynamic parameter for current parameter name
             Optional<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> dynamicParameterOpt = Arrays
@@ -577,16 +570,16 @@ public final class PluginParameterUtils {
         try {
             Object effectiveVal;
             if (typeWrapper.get().getType().equals(PrimitiveObject.STRING.getType())) {
-                if(plgParamAnnotation.sensitive()) {
+                if (plgParamAnnotation.sensitive()) {
                     effectiveVal = plgConf.getParameter(parameterName).getDecryptedValue();
                 } else {
                     // Strip quotes using Gson
                     JsonElement el = gson.fromJson(paramValue, JsonElement.class);
                     // FIXME : Handle datasource plugin configurations
-                    if ((el != null) && el.isJsonPrimitive()) {
+                    if (el != null && el.isJsonPrimitive()) {
                         effectiveVal = el.getAsString();
                     } else {
-                        if (paramValue.startsWith("\"") && paramValue.endsWith("\"") && (paramValue.length() > 2)) {
+                        if (paramValue.startsWith("\"") && paramValue.endsWith("\"") && paramValue.length() > 2) {
                             effectiveVal = paramValue.substring(1, paramValue.length() - 1);
                         } else {
                             effectiveVal = paramValue;

@@ -94,4 +94,8 @@ public class SingleVhostSubscriberIT extends AbstractSubscriberIT {
         super.onePerMicroserviceTypeTest();
     }
 
+    @Override
+    public void publishInfoWithGson() {
+        super.publishInfoWithGson();
+    }
 }

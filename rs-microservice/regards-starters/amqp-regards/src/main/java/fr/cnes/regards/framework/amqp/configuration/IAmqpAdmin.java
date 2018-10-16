@@ -85,7 +85,6 @@ public interface IAmqpAdmin {
 
     /**
      * Purge the queue that manages the specified event
-     * @param eventType event type
      * @param noWait true to not await completion of the purge
      */
     public void purgeQueue(String queueName, boolean noWait);

@@ -38,12 +38,14 @@ import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.VirtualHostMode;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
+import fr.cnes.regards.framework.amqp.test.event.GsonInfo;
 import fr.cnes.regards.framework.amqp.test.event.Info;
 import fr.cnes.regards.framework.amqp.test.event.MicroserviceInfo;
 import fr.cnes.regards.framework.amqp.test.event.OnePerMicroserviceInfo;
 import fr.cnes.regards.framework.amqp.test.event.UnicastInfo;
 import fr.cnes.regards.framework.amqp.test.handler.AbstractInfoReceiver;
 import fr.cnes.regards.framework.amqp.test.handler.AbstractReceiver;
+import fr.cnes.regards.framework.amqp.test.handler.GsonInfoHandler;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -92,6 +94,17 @@ public abstract class AbstractSubscriberIT {
         subscriber.subscribeTo(Info.class, infoSubscriber, true);
         publisher.publish(new Info());
         infoSubscriber.assertCount(1);
+    }
+
+    @Requirement("REGARDS_DSL_CMP_ARC_030")
+    @Requirement("REGARDS_DSL_CMP_ARC_160")
+    @Purpose("Publish and receive a broadcast event without restriction with GSON message converter")
+    @Test
+    public void publishInfoWithGson() {
+        GsonInfoHandler handler = new GsonInfoHandler();
+        subscriber.subscribeTo(GsonInfo.class, handler, true);
+        publisher.publish(new GsonInfo());
+        handler.assertCount(1);
     }
 
     @Requirement("REGARDS_DSL_CMP_ARC_030")

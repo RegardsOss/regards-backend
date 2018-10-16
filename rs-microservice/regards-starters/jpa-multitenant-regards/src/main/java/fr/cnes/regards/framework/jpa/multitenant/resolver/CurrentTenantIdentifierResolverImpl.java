@@ -45,7 +45,7 @@ public class CurrentTenantIdentifierResolverImpl implements CurrentTenantIdentif
     @Override
     public String resolveCurrentTenantIdentifier() {
         String tenant = runtimeTenantResolver.getTenant() != null ? runtimeTenantResolver.getTenant() : "default";
-        LOGGER.debug("Resolved tenant : {}", tenant);
+        LOGGER.trace("Resolved tenant : {}", tenant);
         return tenant;
     }
 

@@ -30,10 +30,12 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.converter.Gson2JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.IPollable;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
 
@@ -54,7 +56,12 @@ public abstract class AbstractPublisher implements IPublisherContract {
     /**
      * bean allowing us to send message to the broker
      */
-    private final RabbitTemplate rabbitTemplate;
+    private final RabbitTemplate jacksonRabbitTemplate;
+
+    /**
+     * bean allowing us to send message to the broker
+     */
+    private final RabbitTemplate gsonRabbitTemplate;
 
     /**
      * configuration initializing required bean
@@ -66,9 +73,10 @@ public abstract class AbstractPublisher implements IPublisherContract {
      */
     private final IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
 
-    public AbstractPublisher(RabbitTemplate pRabbitTemplate, IAmqpAdmin amqpAdmin,
-            IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {
-        this.rabbitTemplate = pRabbitTemplate;
+    public AbstractPublisher(RabbitTemplate jacksonRabbitTemplate, RabbitTemplate gsonRabbitTemplate,
+            IAmqpAdmin amqpAdmin, IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {
+        this.jacksonRabbitTemplate = jacksonRabbitTemplate;
+        this.gsonRabbitTemplate = gsonRabbitTemplate;
         this.amqpAdmin = amqpAdmin;
         this.rabbitVirtualHostAdmin = pRabbitVirtualHostAdmin;
     }
@@ -234,11 +242,22 @@ public abstract class AbstractPublisher implements IPublisherContract {
         // Message to publish
         final TenantWrapper<T> messageSended = new TenantWrapper<>(event, tenant);
 
+        JsonMessageConverter jmc = EventUtils.getMessageConverter(event.getClass());
+
         // routing key is unnecessary for fanout exchanges but is for direct exchanges
-        rabbitTemplate.convertAndSend(exchangeName, routingKey, messageSended, pMessage -> {
-            final MessageProperties propertiesWithPriority = pMessage.getMessageProperties();
-            propertiesWithPriority.setPriority(priority);
-            return new Message(pMessage.getBody(), propertiesWithPriority);
-        });
+        if (jmc == JsonMessageConverter.JACKSON) {
+            jacksonRabbitTemplate.convertAndSend(exchangeName, routingKey, messageSended, pMessage -> {
+                MessageProperties messageProperties = pMessage.getMessageProperties();
+                messageProperties.setPriority(priority);
+                return new Message(pMessage.getBody(), messageProperties);
+            });
+        } else {
+            gsonRabbitTemplate.convertAndSend(exchangeName, routingKey, messageSended, pMessage -> {
+                MessageProperties messageProperties = pMessage.getMessageProperties();
+                messageProperties.setPriority(priority);
+                messageProperties.getHeaders().put(Gson2JsonMessageConverter.TYPE_HEADER, event.getClass().getName());
+                return new Message(pMessage.getBody(), messageProperties);
+            });
+        }
     }
 }

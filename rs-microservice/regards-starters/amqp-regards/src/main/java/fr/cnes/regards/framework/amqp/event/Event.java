@@ -76,4 +76,10 @@ public @interface Event {
      * @return event {@link WorkerMode}
      */
     WorkerMode mode() default WorkerMode.BROADCAST;
+
+    /**
+     * Allows to chose between JACKSON and GSON message converters.
+     * @return event JSON converter
+     */
+    JsonMessageConverter converter() default JsonMessageConverter.JACKSON;
 }

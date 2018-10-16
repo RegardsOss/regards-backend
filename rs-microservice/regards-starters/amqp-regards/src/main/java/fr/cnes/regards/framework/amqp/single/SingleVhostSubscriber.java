@@ -30,6 +30,7 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.converter.Gson2JsonMessageConverter;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
@@ -48,8 +49,9 @@ public class SingleVhostSubscriber extends AbstractSubscriber implements ISubscr
     private final ITenantResolver tenantResolver;
 
     public SingleVhostSubscriber(IRabbitVirtualHostAdmin virtualHostAdmin, IAmqpAdmin amqpAdmin,
-            Jackson2JsonMessageConverter jackson2JsonMessageConverter, ITenantResolver tenantResolver) {
-        super(virtualHostAdmin, amqpAdmin, jackson2JsonMessageConverter);
+            Jackson2JsonMessageConverter jackson2JsonMessageConverter,
+            Gson2JsonMessageConverter gson2JsonMessageConverter, ITenantResolver tenantResolver) {
+        super(virtualHostAdmin, amqpAdmin, jackson2JsonMessageConverter, gson2JsonMessageConverter);
         this.tenantResolver = tenantResolver;
     }
 

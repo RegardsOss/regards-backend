@@ -64,4 +64,12 @@ public final class EventUtils {
         return EventUtils.getEventProperties(eventType).mode();
     }
 
+    /**
+     * @param eventType {@link Event} annotated class
+     * @return {@link JsonMessageConverter}
+     */
+    public static JsonMessageConverter getMessageConverter(Class<?> eventType) {
+        return EventUtils.getEventProperties(eventType).converter();
+    }
+
 }
