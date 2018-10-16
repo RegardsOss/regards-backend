@@ -158,7 +158,7 @@ public class PluginService implements IPluginService {
                 LOGGER.error("cannot instantiate the class : %s" + metaData.getPluginClassName(), e);
             }
         });
-
+        Collections.sort(availablePlugins);
         return availablePlugins;
     }
 
