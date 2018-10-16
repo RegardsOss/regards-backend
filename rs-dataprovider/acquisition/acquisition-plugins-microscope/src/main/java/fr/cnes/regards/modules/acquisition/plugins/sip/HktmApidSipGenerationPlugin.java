@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
  * HKTM_APID product SIP generation based upon CccRawHktmSipGenerationPlugin
  * @author Olivier Rousselot
  */
-@Plugin(id = "DopplerSipGenerationPlugin", version = "1.0.0-SNAPSHOT",
+@Plugin(id = "HktmApidSipGenerationPlugin", version = "1.0.0-SNAPSHOT",
         description = "HKTM_APID product SIP generation plugin", author = "REGARDS Team", contact = "regards@c-s.fr",
         licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class HktmApidSipGenerationPlugin extends CccRawHktmSipGenerationPlugin {

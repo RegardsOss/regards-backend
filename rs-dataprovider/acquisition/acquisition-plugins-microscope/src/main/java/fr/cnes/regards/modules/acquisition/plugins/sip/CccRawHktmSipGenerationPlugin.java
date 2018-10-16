@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
  * CCC_RAW_HKTM product SIP generation based upon FromMetadataSipGenerationPlugin
  * @author Olivier Rousselot
  */
-@Plugin(id = "DopplerSipGenerationPlugin", version = "1.0.0-SNAPSHOT",
+@Plugin(id = "CccRawHktmSipGenerationPlugin", version = "1.0.0-SNAPSHOT",
         description = "CCC_RAW_HKTM product SIP generation plugin", author = "REGARDS Team", contact = "regards@c-s.fr",
         licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class CccRawHktmSipGenerationPlugin extends FromMetadataSipGenerationPlugin {

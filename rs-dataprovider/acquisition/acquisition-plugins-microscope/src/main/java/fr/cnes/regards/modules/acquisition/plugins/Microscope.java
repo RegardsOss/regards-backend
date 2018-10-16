@@ -76,6 +76,8 @@ public final class Microscope {
 
     public static final String TAR_GZ_EXT = ".tar.gz";
 
+    public static final String ZIP_EXT = ".zip";
+
     // SIP Descriptive informations keys
     public static final String START_DATE = "StartDate";
 
