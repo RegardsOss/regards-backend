@@ -40,16 +40,14 @@ import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.Microscope;
 
 /**
- * Microscope product with "sag_descripteur.xml" metadata file scan plugin.<br/>
- * This plugin recursively scans specified directory and searches for metadata "sag_descripteur.xml" files.
  * @author Olivier Rousselot
  */
-@Plugin(id = "SagDescriptorScanPlugin", version = "1.0.0-SNAPSHOT",
-        description = "Scan directory to detect Microscope product 'sag_descripteur.xml' metadata files",
+@Plugin(id = "ZipScanPlugin", version = "1.0.0-SNAPSHOT", description = "Scan directory to detect files with '.tar.gz'",
         author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
-public class SagDescriptorScanPlugin implements IScanPlugin {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SagDescriptorScanPlugin.class);
+public class ZipScanPlugin implements IScanPlugin {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ZipScanPlugin.class);
 
     public static final String FIELD_DIR = "directory";
 
@@ -58,21 +56,21 @@ public class SagDescriptorScanPlugin implements IScanPlugin {
 
     @Override
     public List<Path> scan(Optional<OffsetDateTime> lastModificationDate) {
-        List<Path> metadataFiles = new ArrayList<>();
+        List<Path> dataFiles = new ArrayList<>();
         Path dirPath = Paths.get(directory);
         if (Files.isDirectory(dirPath)) {
-            metadataFiles.addAll(scanDirectory(dirPath, lastModificationDate));
+            dataFiles.addAll(scanDirectory(dirPath, lastModificationDate));
         } else {
             LOGGER.error("Invalid directory path : {}", dirPath.toString());
         }
-        return metadataFiles;
+        return dataFiles;
     }
 
     private List<Path> scanDirectory(Path dirPath, Optional<OffsetDateTime> lastModificationDate) {
-        List<Path> metadataFiles = new ArrayList<>();
+        List<Path> dataFiles = new ArrayList<>();
         // Search only sub directories and metadata files
         try (DirectoryStream<Path> paths = Files.newDirectoryStream(dirPath, path -> Files.isDirectory(path) || path
-                .getFileName().toString().equals(Microscope.SAG_DESCRIPTOR))) {
+                .getFileName().toString().endsWith(Microscope.ZIP_EXT))) {
             for (Path path : paths) {
                 // metadata file...
                 if (Files.isRegularFile(path)) {
@@ -80,20 +78,20 @@ public class SagDescriptorScanPlugin implements IScanPlugin {
                         OffsetDateTime lmd = OffsetDateTime
                                 .ofInstant(Files.getLastModifiedTime(path).toInstant(), ZoneOffset.UTC);
                         if (lmd.isAfter(lastModificationDate.get())) {
-                            metadataFiles.add(path);
+                            dataFiles.add(path);
                         }
                     } else {
-                        metadataFiles.add(path);
+                        dataFiles.add(path);
                     }
                 } else { // directory => recursive
-                    metadataFiles.addAll(scanDirectory(path, lastModificationDate));
+                    dataFiles.addAll(scanDirectory(path, lastModificationDate));
                 }
             }
             // Sort by path
-            Collections.sort(metadataFiles);
+            Collections.sort(dataFiles);
         } catch (IOException x) {
             throw new PluginUtilsRuntimeException("Scanning failure", x);
         }
-        return metadataFiles;
+        return dataFiles;
     }
 }

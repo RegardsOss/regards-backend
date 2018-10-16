@@ -57,6 +57,7 @@ import fr.cnes.regards.modules.acquisition.plugins.product.TsvProductFromMetaXml
 import fr.cnes.regards.modules.acquisition.plugins.scan.MetadataScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.scan.SagDescriptorScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.scan.TarGzScanPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.scan.ZipScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.sip.BdsSipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.sip.CccHistoriqueSipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.sip.CccRawHktmSipGenerationPlugin;
