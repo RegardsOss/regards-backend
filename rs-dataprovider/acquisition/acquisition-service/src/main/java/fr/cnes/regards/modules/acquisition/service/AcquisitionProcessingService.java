@@ -33,10 +33,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.persistence.EntityManager;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -89,14 +90,6 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionProcessingService.class);
 
-    /**
-     * Parameter to register scanned files by group avoiding too many commits
-     */
-    private static final int ENTITY_CREATION_BEFORE_COMMIT = 1000;
-
-    @Value("${regards.acquisition.pagination.default.page.size:100}")
-    private Integer defaultPageSize;
-
     @Autowired
     private IAcquisitionProcessingChainRepository acqChainRepository;
 
@@ -129,6 +122,10 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @Autowired
     private IAcquisitionProcessingService self;
+
+    @SuppressWarnings("unused")
+    @Autowired
+    private EntityManager entityManager;
 
     /**
      * Compute file checksum
@@ -356,7 +353,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         }
 
         Page<Product> products;
-        Pageable pageable = new PageRequest(0, defaultPageSize);
+        Pageable pageable = new PageRequest(0, AcquisitionProperties.WORKING_UNIT);
         do {
             products = productService.findChainProducts(processingChain, pageable);
             if (products.hasNext()) {
@@ -573,7 +570,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
             long startTime = System.currentTimeMillis();
             int fromIndex = 0;
-            int toIndex = ENTITY_CREATION_BEFORE_COMMIT;
+            int toIndex = AcquisitionProperties.WORKING_UNIT;
             while (toIndex <= scannedFiles.size()) {
                 long transactionStartTime = System.currentTimeMillis();
                 // Do it in one transaction
@@ -581,7 +578,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 LOGGER.debug("{}/{} new file(s) registered in {} milliseconds", toIndex, scannedFiles.size(),
                              System.currentTimeMillis() - transactionStartTime);
                 fromIndex = toIndex;
-                toIndex = toIndex + ENTITY_CREATION_BEFORE_COMMIT;
+                toIndex = toIndex + AcquisitionProperties.WORKING_UNIT;
             }
             // Do it in one transaction
             self.registerFiles(scannedFiles.subList(fromIndex, scannedFiles.size()), fileInfo, scanningDate);
@@ -669,7 +666,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         Page<AcquisitionFile> page = acqFileRepository
                 .findByStateAndFileInfoInOrderByAcqDateAsc(AcquisitionFileState.IN_PROGRESS,
                                                            processingChain.getFileInfos(),
-                                                           new PageRequest(0, defaultPageSize));
+                                                           new PageRequest(0, AcquisitionProperties.WORKING_UNIT));
         LOGGER.debug("Managing next new {} registered files (of {})", page.getNumberOfElements(),
                      page.getTotalElements());
         long startTime = System.currentTimeMillis();
@@ -761,7 +758,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     private boolean handleProductAcquisitionErrorByPage(AcquisitionFileInfo fileInfo) {
         Page<AcquisitionFile> page = acqFileRepository
                 .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.IN_PROGRESS, fileInfo,
-                                                    new PageRequest(0, defaultPageSize));
+                                                    new PageRequest(0, AcquisitionProperties.WORKING_UNIT));
         for (AcquisitionFile acqFile : page) {
             acqFile.setState(AcquisitionFileState.ERROR);
         }

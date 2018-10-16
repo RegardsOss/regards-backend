@@ -101,12 +101,9 @@ public class ProductService implements IProductService {
     @Value("${regards.acquisition.sip.bulk.request.limit:100}")
     private Integer bulkRequestLimit;
 
-    @Value("${regards.acquisition.pagination.default.page.size:100}")
-    private Integer defaultPageSize;
-
     @Override
     public Product save(Product product) {
-        LOGGER.debug("Saving product \"{}\" with IP ID \"{}\" and SIP state \"{}\"", product.getProductName(),
+        LOGGER.trace("Saving product \"{}\" with IP ID \"{}\" and SIP state \"{}\"", product.getProductName(),
                      product.getIpId(), product.getSipState());
         product.setLastUpdate(OffsetDateTime.now());
         return productRepository.save(product);
@@ -373,7 +370,7 @@ public class ProductService implements IProductService {
 
         // Find all products already scheduled for submission
         Page<Product> products;
-        Pageable pageable = new PageRequest(0, defaultPageSize);
+        Pageable pageable = new PageRequest(0, AcquisitionProperties.WORKING_UNIT);
         do {
             products = productRepository.findBySipStateOrderByIdAsc(ProductSIPState.SUBMISSION_SCHEDULED, pageable);
             if (products.hasNext()) {
@@ -511,12 +508,14 @@ public class ProductService implements IProductService {
                 products = productRepository
                         .findByProcessingChainIngestChainAndSipStateOrderByIdAsc(ingestChain,
                                                                                  ProductSIPState.SUBMISSION_SCHEDULED,
-                                                                                 new PageRequest(0, defaultPageSize));
+                                                                                 new PageRequest(0,
+                                                                                         AcquisitionProperties.WORKING_UNIT));
             } else {
                 products = productRepository
                         .findByProcessingChainIngestChainAndSessionAndSipState(ingestChain, session,
                                                                                ProductSIPState.SUBMISSION_SCHEDULED,
-                                                                               new PageRequest(0, defaultPageSize));
+                                                                               new PageRequest(0,
+                                                                                       AcquisitionProperties.WORKING_UNIT));
             }
             if (products.hasContent()) {
                 for (Product product : products) {
@@ -626,7 +625,7 @@ public class ProductService implements IProductService {
     public boolean isProductJobStoppedAndCleaned(AcquisitionProcessingChain processingChain) throws ModuleException {
         // Handle SIP generation jobs
         Page<Product> products;
-        Pageable pageable = new PageRequest(0, defaultPageSize);
+        Pageable pageable = new PageRequest(0, AcquisitionProperties.WORKING_UNIT);
         do {
             products = productRepository.findWithLockByProcessingChainAndSipStateOrderByIdAsc(processingChain,
                                                                                               ProductSIPState.SCHEDULED,
@@ -678,7 +677,7 @@ public class ProductService implements IProductService {
 
         Page<Product> products = productRepository
                 .findByProcessingChainAndSipStateOrderByIdAsc(processingChain, ProductSIPState.SCHEDULED_INTERRUPTED,
-                                                              new PageRequest(0, defaultPageSize));
+                                                              new PageRequest(0, AcquisitionProperties.WORKING_UNIT));
         // Schedule SIP generation
         if (products.hasContent()) {
             LOGGER.debug("Restarting interrupted SIP generation for {} product(s)", products.getContent().size());
@@ -692,7 +691,7 @@ public class ProductService implements IProductService {
 
         Page<Product> products = productRepository
                 .findByProcessingChainAndSipStateOrderByIdAsc(processingChain, ProductSIPState.GENERATION_ERROR,
-                                                              new PageRequest(0, defaultPageSize));
+                                                              new PageRequest(0, AcquisitionProperties.WORKING_UNIT));
         // Schedule SIP generation
         if (products.hasContent()) {
             LOGGER.debug("Retrying SIP generation for {} product(s)", products.getContent().size());
