@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +46,9 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
 
     @Autowired
     private IStorageDataFileRepository storageDataFileRepository;
+
+    @Autowired
+    private EntityManager em;
 
     @Override
     public PrioritizedDataStorage create(PluginConfiguration toBeCreated) throws ModuleException {
@@ -178,6 +182,7 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
                                                                                           toDelete.getPriority());
                 prioritizedDataStorageRepository.delete(toDelete);
                 pluginService.deletePluginConfiguration(toDelete.getDataStorageConfiguration().getId());
+                em.flush();
                 for (PrioritizedDataStorage lessPrioritized : lessPrioritizeds) {
                     lessPrioritized.setPriority(lessPrioritized.getPriority() - 1);
                 }
