@@ -40,6 +40,7 @@ import org.springframework.test.context.TestPropertySource;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
@@ -563,7 +564,7 @@ public class MicroscopePluginsTest extends AbstractRegardsServiceIT {
                 af.setChecksum(ChecksumUtils.computeHexChecksum(new FileInputStream(filePath.toFile()),
                                                                 Microscope.CHECKSUM_ALGO));
             } catch (NoSuchAlgorithmException | IOException e) {
-                throw new RuntimeException(e);
+                throw new RsRuntimeException(e);
             }
         }
         product.addAcquisitionFile(af);

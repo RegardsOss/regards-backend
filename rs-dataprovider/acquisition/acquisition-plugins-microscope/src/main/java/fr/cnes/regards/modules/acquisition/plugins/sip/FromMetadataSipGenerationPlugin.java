@@ -24,6 +24,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,7 @@ import org.xml.sax.SAXException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -69,14 +71,15 @@ public class FromMetadataSipGenerationPlugin implements ISipGenerationPlugin {
         Path metadataFilePath = metadataAcqFile.getFilePath();
 
         try {
-            DocumentBuilder builder = builderFactory.newDocumentBuilder();;
+            DocumentBuilder builder = builderFactory.newDocumentBuilder();
+            ;
             Document doc = builder.parse(metadataFilePath.toFile());
             doc.normalize();
             // Find data file
             File dataFile = findDataFile(metadataFilePath, MicroHelper.getTagValue(doc, Microscope.FILENAME_TAG));
 
             // Find data file checksum
-            String checksum = MicroHelper.getTagValue(doc, Microscope.CHECKSUM_TAG);
+            String checksum = getDataFileChecksum(doc, dataFile);
 
             // Add data file to SIP
             sipBuilder.getContentInformationBuilder()
@@ -100,11 +103,18 @@ public class FromMetadataSipGenerationPlugin implements ISipGenerationPlugin {
         } catch (ParserConfigurationException e) {
             LOGGER.error("Unable to create an XML document builder", e);
             throw new PluginUtilsRuntimeException(e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RsRuntimeException(e);
         }
     }
 
     protected MimeType getDataFileMimeType() {
         return MediaType.TEXT_PLAIN;
+    }
+
+    protected String getDataFileChecksum(Document doc, File dataFile)
+            throws MetadataException, IOException, NoSuchAlgorithmException {
+        return MicroHelper.getTagValue(doc, Microscope.CHECKSUM_TAG);
     }
 
     protected File findDataFile(Path metadataFilePath, String filename) throws IOException {
@@ -113,7 +123,6 @@ public class FromMetadataSipGenerationPlugin implements ISipGenerationPlugin {
 
     /**
      * Only add StartDate and EndDate from metadata file
-     * @throws MetadataException
      */
     protected void addDescriptiveInformations(SIPBuilder sipBuilder, Document doc) throws MetadataException {
         sipBuilder.addDescriptiveInformation(Microscope.START_DATE,
