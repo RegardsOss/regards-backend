@@ -1,0 +1,111 @@
+/*
+ * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
+package fr.cnes.regards.modules.acquisition.plugins;
+
+import java.io.File;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
+import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.acquisition.MicroConfiguration;
+import fr.cnes.regards.modules.acquisition.plugins.product.CmsmScientificProductPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.scan.ZipScanPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.validation.CmsmScientificValidationPlugin;
+
+/**
+ * Specific test for CMSM scientific (data file is huge so it depends on its existence)
+ * @author Olivier Rousselot
+ */
+@ContextConfiguration(classes = { MicroConfiguration.class })
+@TestPropertySource("classpath:microscope-test.properties")
+public class CmsmScientificTest extends AbstractRegardsServiceIT {
+
+    private static final String CMSM_SCIENTIFIC_ROOT_PATH =
+            System.getProperty("user.home") + "/REGARDS/MICROSCOPE/CMSM_SCIENTIFIQUE";
+
+    //////////////////////////
+    // SCAN PLUGINS         //
+    //////////////////////////
+    // CMSM SCIENTIFIQUE
+    private ZipScanPlugin cmsmScientificScanPlugin;
+
+    ////////////////////////
+    // VALIDATION PLUGINS //
+    ////////////////////////
+    private CmsmScientificValidationPlugin cmsmScientificValidationPlugin;
+
+
+    //////////////////////////
+    // PRODUCT NAME PLUGINS //
+    //////////////////////////
+    private CmsmScientificProductPlugin cmsmScientificProductPlugin;
+    @Autowired
+    private IRuntimeTenantResolver tenantResolver;
+
+    @BeforeClass
+    public static void canLaunchTest() {
+        Assume.assumeTrue(new File(CMSM_SCIENTIFIC_ROOT_PATH, "N2b_01_L_SCA_G_0050_CN2_MRO_RN2_M.zip").exists());
+    }
+
+    @Before
+    public void setUp() {
+        tenantResolver.forceTenant(getDefaultTenant());
+
+        Map<Long, Object> pluginCacheMap = new HashMap<>();
+        // SCAN PLUGINS
+        cmsmScientificScanPlugin = PluginUtils.getPlugin(
+                PluginParametersFactory.build().addParameter(ZipScanPlugin.FIELD_DIR, CMSM_SCIENTIFIC_ROOT_PATH)
+                        .getParameters(), ZipScanPlugin.class, pluginCacheMap);
+
+        // VALIDATION PLUGINS
+        cmsmScientificValidationPlugin = PluginUtils
+                .getPlugin(Collections.emptySet(), CmsmScientificValidationPlugin.class, pluginCacheMap);
+
+        // PRODUCT PLUGINS
+        cmsmScientificProductPlugin = PluginUtils
+                .getPlugin(Collections.emptySet(), CmsmScientificProductPlugin.class, pluginCacheMap);
+    }
+
+    @Test
+    public void test() throws ModuleException {
+        List<Path> files = cmsmScientificScanPlugin.scan(Optional.empty());
+        Assert.assertEquals(1, files.size());
+
+        Assert.assertTrue(cmsmScientificValidationPlugin.validate(files.get(0)));
+        String productName = cmsmScientificProductPlugin.getProductName(files.get(0));
+        Assert.assertEquals("N2b_01_L_SCA_G_0050_CN2_MRO_RN2_M", productName);
+    }
+}

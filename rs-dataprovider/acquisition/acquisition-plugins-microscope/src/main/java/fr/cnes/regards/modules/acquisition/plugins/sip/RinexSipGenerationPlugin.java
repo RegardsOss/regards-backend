@@ -63,18 +63,6 @@ public class RinexSipGenerationPlugin implements ISipGenerationPlugin {
 
     private static final DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 
-    private static DocumentBuilder builder;
-
-    // Initialize Xml builder
-    static {
-        try {
-            builder = builderFactory.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            LOGGER.error("Unable to create an XML document builder", e);
-            throw new PluginUtilsRuntimeException(e);
-        }
-    }
-
     @Override
     public SIP generate(Product product) throws ModuleException {
         // Init the builder
@@ -106,6 +94,7 @@ public class RinexSipGenerationPlugin implements ISipGenerationPlugin {
             if (!Files.isRegularFile(scenarioFile.toPath())) {
                 throw new IOException(String.format("'%s' is not a regular file", scenarioFile.getAbsolutePath()));
             }
+            DocumentBuilder builder = builderFactory.newDocumentBuilder();
             Document doc = builder.parse(scenarioFile);
             doc.normalize();
             // For all "Sequence" tags
@@ -130,6 +119,9 @@ public class RinexSipGenerationPlugin implements ISipGenerationPlugin {
         } catch (IOException e) {
             throw new MetadataException(
                     String.format("Error while attempting to read scenario file '%s'", scenarioFile.toString()), e);
+        } catch (ParserConfigurationException e) {
+            LOGGER.error("Unable to create an XML document builder", e);
+            throw new PluginUtilsRuntimeException(e);
         }
         return sipBuilder.build();
     }

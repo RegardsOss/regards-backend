@@ -59,18 +59,6 @@ public class FromMetadataSipGenerationPlugin implements ISipGenerationPlugin {
 
     private static final DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 
-    private static DocumentBuilder builder;
-
-    // Initialize Xml builder
-    static {
-        try {
-            builder = builderFactory.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            LOGGER.error("Unable to create an XML document builder", e);
-            throw new PluginUtilsRuntimeException(e);
-        }
-    }
-
     @Override
     public SIP generate(Product product) throws ModuleException {
         // Init the builder
@@ -81,6 +69,7 @@ public class FromMetadataSipGenerationPlugin implements ISipGenerationPlugin {
         Path metadataFilePath = metadataAcqFile.getFilePath();
 
         try {
+            DocumentBuilder builder = builderFactory.newDocumentBuilder();;
             Document doc = builder.parse(metadataFilePath.toFile());
             doc.normalize();
             // Find data file
@@ -108,6 +97,9 @@ public class FromMetadataSipGenerationPlugin implements ISipGenerationPlugin {
         } catch (IOException e) {
             throw new MetadataException(
                     String.format("Error while attempting to read metadata file '%s'", metadataFilePath.toString()), e);
+        } catch (ParserConfigurationException e) {
+            LOGGER.error("Unable to create an XML document builder", e);
+            throw new PluginUtilsRuntimeException(e);
         }
     }
 

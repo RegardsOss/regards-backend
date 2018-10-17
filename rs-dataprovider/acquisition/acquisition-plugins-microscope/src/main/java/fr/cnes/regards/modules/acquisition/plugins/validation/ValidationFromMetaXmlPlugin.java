@@ -57,21 +57,10 @@ public class ValidationFromMetaXmlPlugin implements IValidationPlugin {
 
     private static final DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 
-    private static DocumentBuilder builder;
-
-    // Initialize Xml builder
-    static {
-        try {
-            builder = builderFactory.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            LOGGER.error("Unable to create an XML document builder", e);
-            throw new PluginUtilsRuntimeException(e);
-        }
-    }
-
     @Override
     public boolean validate(Path metadataFilePath) throws ModuleException {
         try {
+            DocumentBuilder builder = builderFactory.newDocumentBuilder();
             Document doc = builder.parse(metadataFilePath.toFile());
             doc.normalize();
             String dataFilename = MicroHelper.getTagValue(doc, Microscope.FILENAME_TAG);
@@ -102,6 +91,9 @@ public class ValidationFromMetaXmlPlugin implements IValidationPlugin {
                     String.format("Error while attempting to read metadata file '%s'", metadataFilePath.toString()), e);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
+        } catch (ParserConfigurationException e) {
+            LOGGER.error("Unable to create an XML document builder", e);
+            throw new PluginUtilsRuntimeException(e);
         }
     }
 

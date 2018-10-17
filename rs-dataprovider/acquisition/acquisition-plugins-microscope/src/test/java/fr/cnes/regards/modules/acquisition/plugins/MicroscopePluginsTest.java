@@ -87,7 +87,7 @@ public class MicroscopePluginsTest extends AbstractRegardsServiceIT {
     //////////////////////////
     // SCAN PLUGINS         //
     //////////////////////////
-    // CCC_HISTORIQUE, DETERMINED_ORBIT, DOPPLER, ORBIT_EVENTS, PVT
+    // CCC_HISTORIQUE, DETERMINATEED_ORBIT, DOPPLER, ORBIT_EVENTS, PVT
     private MetadataScanPlugin cccHistoriqueScanPlugin;
 
     private MetadataScanPlugin orbitEventsScanPlugin;
@@ -118,7 +118,7 @@ public class MicroscopePluginsTest extends AbstractRegardsServiceIT {
     //////////////////////////
     // VALIDATION PLUGINS   //
     //////////////////////////
-    // CCC_HISTORIQUE, DETERMINED_ORBIT, DOPPLER, PVT
+    // CCC_HISTORIQUE, DETERMINATED_ORBIT, DOPPLER, PVT
     // ORBIT_EVENTS (even if file name is always MIC_ORBIT_EVENTS, this name is set under nomFichierDonnee tag)
     private ValidationFromMetaXmlPlugin sagValidationPlugin;
 
@@ -129,7 +129,7 @@ public class MicroscopePluginsTest extends AbstractRegardsServiceIT {
     private N0xValidationPlugin n0xValidationPlugin;
 
     // N0b_GNSS
-    private N0xValidationPlugin n0bGnssValidationPlugin;
+    private N0bGnssValidationPlugin n0bGnssValidationPlugin;
 
     // RINEX, BDS
     private ValidationFromMd5TxtPlugin validationFromMd5TxtPlugin;
@@ -164,7 +164,7 @@ public class MicroscopePluginsTest extends AbstractRegardsServiceIT {
     // CCC_HISTORIQUE
     private CccHistoriqueSipGenerationPlugin cccHistoriqueSipGenerationPlugin;
 
-    // DETERMINATED_ORBIT, ORBIT_EVENTS
+    // DETERMINATED_ORBIT, ORBIT_EVENTS, PVT
     private FromMetadataSipGenerationPlugin fromMetadataSipGenerationPlugin;
 
     // DOPPLER
