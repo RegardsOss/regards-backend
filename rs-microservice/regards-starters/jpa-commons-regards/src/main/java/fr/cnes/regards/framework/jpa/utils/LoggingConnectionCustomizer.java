@@ -17,7 +17,7 @@ public class LoggingConnectionCustomizer extends AbstractConnectionCustomizer {
     @Override
     public void onAcquire(Connection c, String parentDataSourceIdentityToken) throws Exception {
         super.onAcquire(c, parentDataSourceIdentityToken);
-        LOG.info("Database connection to acquired");
+        LOG.info("Database connection acquired");
     }
 
     @Override
