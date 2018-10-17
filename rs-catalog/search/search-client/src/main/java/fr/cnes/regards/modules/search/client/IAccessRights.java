@@ -40,7 +40,8 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
  *
  */
 @RestClient(name = "rs-catalog")
-@RequestMapping(value = IAccessRights.TYPE_MAPPING, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = IAccessRights.TYPE_MAPPING, produces = MediaType.APPLICATION_JSON_UTF8_VALUE,
+        consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IAccessRights {
 
     String TYPE_MAPPING = "/entities";
