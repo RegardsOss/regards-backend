@@ -52,21 +52,10 @@ public class ProductFromMetaXmlPlugin implements IProductPlugin {
 
     private static final DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
 
-    private static DocumentBuilder builder;
-
-    // Initialize Xml builder
-    static {
-        try {
-            builder = builderFactory.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            LOGGER.error("Unable to create an XML document builder", e);
-            throw new PluginUtilsRuntimeException(e);
-        }
-    }
-
     @Override
     public String getProductName(Path metadataFilePath) throws ModuleException {
         try {
+            DocumentBuilder builder = builderFactory.newDocumentBuilder();
             Document doc = builder.parse(metadataFilePath.toFile());
             doc.normalize();
             // Find data filename
@@ -77,6 +66,9 @@ public class ProductFromMetaXmlPlugin implements IProductPlugin {
         } catch (IOException e) {
             throw new MetadataException(
                     String.format("Error while attempting to read metadata file '%s'", metadataFilePath.toString()), e);
+        } catch (ParserConfigurationException e) {
+            LOGGER.error("Unable to create an XML document builder", e);
+            throw new PluginUtilsRuntimeException(e);
         }
     }
 
