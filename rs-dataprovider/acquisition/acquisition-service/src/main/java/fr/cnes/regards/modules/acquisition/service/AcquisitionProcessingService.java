@@ -761,8 +761,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                                                                    ProductSIPState.SUBMISSION_SCHEDULED)));
 
         // Handle file summary
-        summary.setNbFileErrors(acqFileService.countByChainAndStateIn(chain,
-                                                                      Arrays.asList(AcquisitionFileState.ERROR)));
+        summary.setNbFileErrors(acqFileService
+                .countByChainAndStateIn(chain,
+                                        Arrays.asList(AcquisitionFileState.ERROR, AcquisitionFileState.INVALID)));
         summary.setNbFiles(acqFileService.countByChain(chain));
         summary.setNbFilesInProgress(acqFileService
                 .countByChainAndStateIn(chain,
