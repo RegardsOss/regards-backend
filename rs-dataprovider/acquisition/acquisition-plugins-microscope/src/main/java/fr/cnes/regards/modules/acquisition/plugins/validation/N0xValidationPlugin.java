@@ -29,6 +29,7 @@ import java.security.NoSuchAlgorithmException;
 import com.google.common.base.Strings;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.acquisition.exception.MetadataException;
 import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
@@ -85,7 +86,7 @@ public class N0xValidationPlugin implements IValidationPlugin {
             throw new MetadataException(
                     String.format("Error while attempting to read metadata file '%s'", metadataFilePath.toString()), e);
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+            throw new RsRuntimeException(e);
         }
     }
 

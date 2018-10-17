@@ -19,9 +19,11 @@
 package fr.cnes.regards.modules.acquisition.plugins.sip;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.temporal.ChronoUnit;
@@ -31,6 +33,7 @@ import org.springframework.util.MimeType;
 import org.w3c.dom.Document;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.acquisition.exception.MetadataException;
 import fr.cnes.regards.modules.acquisition.plugins.MicroHelper;
 import fr.cnes.regards.modules.acquisition.plugins.Microscope;
@@ -46,6 +49,11 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 public class N0bGnssSipGenerationPlugin extends FromMetadataSipGenerationPlugin {
 
     private final SimpleDateFormat dateFormat = new SimpleDateFormat(Microscope.DATE_FORMAT_PATTERN);
+
+    @Override
+    protected String getDataFileChecksum(Document doc, File dataFile) throws IOException, NoSuchAlgorithmException {
+        return ChecksumUtils.computeHexChecksum(new FileInputStream(dataFile), Microscope.CHECKSUM_ALGO);
+    }
 
     @Override
     protected File findDataFile(Path metadataFilePath, String filename) throws IOException {
