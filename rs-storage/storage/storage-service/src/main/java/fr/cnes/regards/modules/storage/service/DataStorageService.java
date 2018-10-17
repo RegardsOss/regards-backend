@@ -394,7 +394,6 @@ public class DataStorageService implements IDataStorageService {
 
         // If associated AIP is not linked to any dataFile anymore, delete aip.
         if (dataFileDao.countByAip(associatedAIP) == 0) {
-            publisher.publish(new AIPEvent(associatedAIP));
             aipDao.remove(associatedAIP);
         }
     }
