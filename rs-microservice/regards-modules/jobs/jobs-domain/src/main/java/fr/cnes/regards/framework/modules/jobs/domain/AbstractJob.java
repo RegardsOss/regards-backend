@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.modules.jobs.domain;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Observable;
@@ -26,6 +27,8 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.gson.reflect.TypeToken;
 
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
@@ -85,7 +88,7 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
     public void advanceCompletion() {
         this.completion++;
         super.setChanged();
-        super.notifyObservers((this.completion * 100) / getCompletionCount());
+        super.notifyObservers(this.completion * 100 / getCompletionCount());
     }
 
     /**
@@ -128,8 +131,8 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
      * @throws JobParameterInvalidException the related exception
      */
     protected void handleInvalidParameter(String parameterName, Exception reason) throws JobParameterInvalidException {
-        String errorMessage = String
-                .format("Invalid job parameter \"%s\" : \"%s\"", parameterName, reason.getMessage());
+        String errorMessage = String.format("Invalid job parameter \"%s\" : \"%s\"", parameterName,
+                                            reason.getMessage());
         logger.error(errorMessage, reason);
         throw new JobParameterInvalidException(errorMessage);
     }
@@ -138,33 +141,47 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
      * Get a required non null parameter value
      * @param parameters map of parameters
      * @param parameterName parameter name to retrieve
+     * @param type to return (may be guessed for simple type, use {@link TypeToken#getType()} instead)
      * @return the parameter value
      * @throws JobParameterMissingException if parameter does not exist
      * @throws JobParameterInvalidException if parameter value is null
      */
-    protected <T> T getValue(Map<String, JobParameter> parameters, String parameterName)
+    protected <T> T getValue(Map<String, JobParameter> parameters, String parameterName, Type type)
             throws JobParameterMissingException, JobParameterInvalidException {
         JobParameter parameter = parameters.get(parameterName);
         if (parameter == null) {
             handleMissingParameter(parameterName);
         }
-        if (parameter.getValue() == null) { // NOSONAR : an exception is thrown when calling handleMissingParameter
+        T val = type == null ? parameter.getValue() : parameter.getValue(type);
+        if (val == null) { // NOSONAR : an exception is thrown when calling handleMissingParameter
             handleInvalidParameter(parameterName, "Null value");
         }
-        return parameter.getValue();
+        return val;
+    }
+
+    protected <T> T getValue(Map<String, JobParameter> parameters, String parameterName)
+            throws JobParameterMissingException, JobParameterInvalidException {
+        return getValue(parameters, parameterName, null);
     }
 
     /**
      * Get parameter value as an Optional
      * @param parameters map of parameters
      * @param parameterName parameter name to retrieve
+     * @param type to return (may be guessed for simple type, use {@link TypeToken#getType()} instead)
      * @return an {@link java.util.Optional} parameter value
      */
-    protected <T> Optional<T> getOptionalValue(Map<String, JobParameter> parameters, String parameterName) {
+    protected <T> Optional<T> getOptionalValue(Map<String, JobParameter> parameters, String parameterName, Type type) {
         JobParameter parameter = parameters.get(parameterName);
         if (parameter == null) {
             return Optional.empty();
         }
-        return Optional.ofNullable(parameter.getValue());
+        T val = type == null ? parameter.getValue() : parameter.getValue(type);
+        return Optional.ofNullable(val);
     }
+
+    protected <T> Optional<T> getOptionalValue(Map<String, JobParameter> parameters, String parameterName) {
+        return getOptionalValue(parameters, parameterName, null);
+    }
+
 }

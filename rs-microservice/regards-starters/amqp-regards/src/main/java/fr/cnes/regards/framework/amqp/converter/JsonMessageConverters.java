@@ -93,9 +93,13 @@ public class JsonMessageConverters implements MessageConverter {
 
         Object converterType = messageProperties.getHeaders().get(CONVERTER_TYPE_HEADER);
         if (converterType == null) {
-            String errorMessage = "Cannot determine JSON converter type";
-            LOGGER.error(errorMessage);
-            throw new MessageConversionException(errorMessage);
+            String message = "Cannot determine JSON converter type, falling back to Jackson";
+            LOGGER.trace(message);
+            converterType = JsonMessageConverter.JACKSON.toString();
+            // FIXME remove above behavior only enabled for compatibility and uncomment following lines
+            //            String errorMessage = "Cannot determine JSON converter type";
+            //            LOGGER.error(errorMessage);
+            //            throw new MessageConversionException(errorMessage);
         }
 
         try {
