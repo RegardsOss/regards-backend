@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<donnees xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <donnee dummyid="203930" xsi:type="fr.cnes.sag.ui.model.specifique.CCCHKTM"
+            importPath="CCCHKTM/2016/10/CCCHKTM_4_20161027015003_V1">
+        <id>203930</id>
+        <idExterne>CCCHKTM_4_20161027015003</idExterne>
+        <motsCles/>
+        <commentaire/>
+        <dateCreation>27/10/2016 01:56:52.872</dateCreation>
+        <dateDernierAcces>27/10/2016 01:58:08.926</dateDernierAcces>
+        <estValide>true</estValide>
+        <estEnLigne>true</estEnLigne>
+        <importLien>false</importLien>
+        <version>1</version>
+        <estDerniereVersion>true</estDerniereVersion>
+        <estVerrouillee>false</estVerrouillee>
+        <purgePartielle>false</purgePartielle>
+        <dateArchivage/>
+        <datePurgePrevue>25/01/2017 01:58:08.926</datePurgePrevue>
+        <datePurgeEffective/>
+        <proprietaire>ops_cect</proprietaire>
+        <cheminDansCatalogue>CCCHKTM/2016/10/CCCHKTM_4_20161027015003_V1</cheminDansCatalogue>
+        <nomFichierDonnee>MIC_HKTMR_0004_2016_10_27_01_50_03</nomFichierDonnee>
+        <typeDonnee>CCCHKTM</typeDonnee>
+        <md5Check>37450b7e87d42b3d0baa3fb46d799431</md5Check>
+        <apid>4</apid>
+        <passageDate>27/10/2016 01:56:03.000</passageDate>
+        <startDate>26/10/2016 21:47:01.000</startDate>
+        <endDate>27/10/2016 01:23:22.000</endDate>
+        <fileStartDate/>
+        <parent/>
+        <processingStatus>PROCESSED</processingStatus>
+    </donnee>
+</donnees>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<donnees xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<donnee dummyid="604168" xsi:type="fr.cnes.sag.mapping.specifique.N0CCMSM" importPath="N0CCMSM/2018/01/N0CCMSM_MISSION_20161027T121959_20180131T132337_V1">
+<n0Type>MISSION</n0Type>
+<startDate>27/10/2016 12:19:59.000</startDate>
+<endDate>04/11/2016 18:32:01.000</endDate>
+<deliveryStatus>COMPLETE</deliveryStatus>
+<reprocessingStatus>true</reprocessingStatus>
+<numeroSequenceSession>120</numeroSequenceSession>
+<md5Check>569bd9236fd32bf496ccd1bff0becbbd</md5Check>
+<!-- Attributs suivants a garder pour le versioning : idExterne. Peuvent etre modifies : motsCles, commentaire, estVerouillee -->
+<id>604168</id>
+<typeDonnee>N0CCMSM</typeDonnee>
+<idExterne>N0CCMSM_MISSION_20161027T121959_20180131T132337</idExterne>
+<motsCles/>
+<commentaire/>
+<dateCreation>31/01/2018 13:25:30.188</dateCreation>
+<dateDernierAcces>01/06/2018 09:10:26.392</dateDernierAcces>
+<estValide>true</estValide>
+<estEnLigne>true</estEnLigne>
+<importLien>false</importLien>
+<version>1</version>
+<estDerniereVersion>true</estDerniereVersion>
+<estVerrouillee>false</estVerrouillee>
+<purgePartielle>false</purgePartielle>
+<dateArchivage>02/02/2018 09:28:59.386</dateArchivage>
+<datePurgePrevue>30/08/2018 09:10:26.392</datePurgePrevue>
+<datePurgeEffective/>
+<proprietaire>donnyc</proprietaire>
+<cheminDansCatalogue>N0CCMSM/2018/01/N0CCMSM_MISSION_20161027T121959_20180131T132337_V1</cheminDansCatalogue>
+<nomFichierDonnee>MIC_CECT_N0c_MISSION_20161027T121959_20180131T132337_120</nomFichierDonnee>
+</donnee>
+</donnees>

@@ -83,7 +83,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ssalto.tools.xsd.XMLValidator
  * @author Christophe Mertz
  */
 @SuppressWarnings("deprecation")
-@ActiveProfiles({ "disableDataProviderTask", "noschdule" })
+@ActiveProfiles({ "disableDataProviderTask", "noschedule" })
 public abstract class AbstractProductMetadataPluginTest extends AbstractRegardsIT
         implements IProductMetadataPluginTest {
 
