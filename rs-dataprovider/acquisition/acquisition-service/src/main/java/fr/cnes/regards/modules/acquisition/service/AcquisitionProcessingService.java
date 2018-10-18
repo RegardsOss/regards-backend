@@ -686,10 +686,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             }
         }
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Validation of {} file(s) finished with {} valid and {} invalid.", page.getNumberOfElements(),
-                         validFiles.size(), page.getNumberOfElements() - validFiles.size());
-        }
+        LOGGER.debug("Validation of {} file(s) finished with {} valid and {} invalid.", page.getNumberOfElements(),
+                     validFiles.size(), page.getNumberOfElements() - validFiles.size());
 
         // Build and schedule products
         Set<Product> products = productService.linkAcquisitionFilesToProducts(processingChain, validFiles);
@@ -781,8 +779,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                                                                    ProductSIPState.SUBMISSION_SCHEDULED)));
 
         // Handle file summary
-        summary.setNbFileErrors(acqFileService.countByChainAndStateIn(chain,
-                                                                      Arrays.asList(AcquisitionFileState.ERROR)));
+        summary.setNbFileErrors(acqFileService
+                .countByChainAndStateIn(chain,
+                                        Arrays.asList(AcquisitionFileState.ERROR, AcquisitionFileState.INVALID)));
         summary.setNbFiles(acqFileService.countByChain(chain));
         summary.setNbFilesInProgress(acqFileService
                 .countByChainAndStateIn(chain,
