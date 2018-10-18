@@ -62,8 +62,9 @@ public enum ProductSIPState implements ISipState {
      */
     SCHEDULED_INTERRUPTED,
     /**
-     * SIP has been generated.
+     * SIP has been generated
      */
+    @Deprecated
     GENERATED,
     /**
      * SIP has not been generated because an error occurs.
@@ -72,13 +73,15 @@ public enum ProductSIPState implements ISipState {
     /**
      * SIP submission has been scheduled
      */
+    @Deprecated
     SUBMISSION_SCHEDULED,
     /**
      * An error occurs during submission job
      */
+    @Deprecated
     SUBMISSION_ERROR,
     /**
-     * SIP submission is running or finished
+     * SIP has been generated and submit to INGEST
      */
     SUBMITTED;
 

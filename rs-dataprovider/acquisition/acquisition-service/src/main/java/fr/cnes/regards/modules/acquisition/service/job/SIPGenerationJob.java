@@ -98,32 +98,41 @@ public class SIPGenerationJob extends AbstractJob<Void> {
         int generatedCount = 0; // Effectively count generated products in case of interruption
         String debugInterruption = "";
 
+        ISipGenerationPlugin generateSipPlugin;
         try {
             // Get an instance of the plugin
-            ISipGenerationPlugin generateSipPlugin = pluginService
-                    .getPlugin(processingChain.getGenerateSipPluginConf().getId());
-
-            // Launch generation plugin
-            for (Product product : products) {
-                if (Thread.interrupted()) {
-                    debugInterruption = "before thread interruption";
-                    break;
-                }
-                logger.trace("Generating SIP for product {}", product.getProductName());
-                SIP sip = generateSipPlugin.generate(product);
-
-                // Update product
-                product.setSip(sip);
-                product.setSipState(ProductSIPState.GENERATED);
-                productService.save(product);
-                generatedCount++;
-            }
-
-            logger.debug("[{}] : {} SIP(s) generated in {} milliseconds {}", processingChain.getLabel(), generatedCount,
-                         System.currentTimeMillis() - startTime, debugInterruption);
+            generateSipPlugin = pluginService.getPlugin(processingChain.getGenerateSipPluginConf().getId());
         } catch (ModuleException e) {
+            // Throw a global job error, do not iterate on products
             logger.error(e.getMessage(), e);
             throw new JobRuntimeException(e.getMessage());
         }
+
+        // Launch generation plugin
+        for (Product product : products) {
+            if (Thread.interrupted()) {
+                debugInterruption = "before thread interruption";
+                break;
+            }
+            logger.trace("Generating SIP for product {}", product.getProductName());
+
+            try {
+                SIP sip = generateSipPlugin.generate(product);
+                // Update product
+                product.setSip(sip);
+                product.setSipState(ProductSIPState.SUBMITTED);
+                productService.saveAndSubmitSIP(product);
+                generatedCount++;
+            } catch (ModuleException e) {
+                logger.debug("Error while generating product \"{}\"", product.getProductName());
+                product.setSipState(ProductSIPState.GENERATION_ERROR);
+                product.setError(e.getMessage());
+                productService.save(product);
+            }
+        }
+
+        logger.debug("[{}] : {} SIP(s) generated in {} milliseconds {}", processingChain.getLabel(), generatedCount,
+                     System.currentTimeMillis() - startTime, debugInterruption);
+
     }
 }

@@ -62,18 +62,19 @@ public class ScheduledDataProviderTasks {
         return new ConcurrentTaskScheduler();
     }
 
-    @Scheduled(fixedDelayString = "${regards.acquisition.process.new.sip.ingest.delay:60000}", initialDelay = 10000)
-    public void processSipSubmission() {
-        LOGGER.trace("Process new SIP bulk request to ingest");
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
-            try {
-                runtimeTenantResolver.forceTenant(tenant);
-                productService.scheduleProductSIPSubmission();
-            } finally {
-                runtimeTenantResolver.clearTenant();
-            }
-        }
-    }
+    // FIXME remove after SIP flow test
+    //    @Scheduled(fixedDelayString = "${regards.acquisition.process.new.sip.ingest.delay:60000}", initialDelay = 10000)
+    //    public void processSipSubmission() {
+    //        LOGGER.trace("Process new SIP bulk request to ingest");
+    //        for (String tenant : tenantResolver.getAllActiveTenants()) {
+    //            try {
+    //                runtimeTenantResolver.forceTenant(tenant);
+    //                productService.scheduleProductSIPSubmission();
+    //            } finally {
+    //                runtimeTenantResolver.clearTenant();
+    //            }
+    //        }
+    //    }
 
     @Scheduled(fixedDelayString = "${regards.acquisition.process.run.chains.delay:60000}", initialDelay = 10000)
     public void processAcquisitionChains() {

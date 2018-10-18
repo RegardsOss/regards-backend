@@ -44,6 +44,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -71,6 +72,7 @@ import fr.cnes.regards.modules.acquisition.service.job.SIPSubmissionJob;
 import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
+import fr.cnes.regards.modules.ingest.domain.flow.SipFlowItem;
 
 /**
  * Manage acquisition {@link Product}
@@ -98,6 +100,9 @@ public class ProductService implements IProductService {
     @Autowired
     private IAcquisitionFileRepository acqFileRepository;
 
+    @Autowired
+    private IPublisher publisher;
+
     @Value("${regards.acquisition.sip.bulk.request.limit:100}")
     private Integer bulkRequestLimit;
 
@@ -107,6 +112,17 @@ public class ProductService implements IProductService {
                      product.getIpId(), product.getSipState());
         product.setLastUpdate(OffsetDateTime.now());
         return productRepository.save(product);
+    }
+
+    @Override
+    public Product saveAndSubmitSIP(Product product) {
+        LOGGER.trace("Saving and submitting product \"{}\" with IP ID \"{}\" and SIP state \"{}\"",
+                     product.getProductName(), product.getIpId(), product.getSipState());
+        // Build flow item
+        SipFlowItem item = SipFlowItem.build(product.getProcessingChain().getIngestChain(), product.getSession(),
+                                             product.getSip());
+        publisher.publish(item);
+        return save(product);
     }
 
     @Override

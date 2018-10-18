@@ -49,6 +49,11 @@ public interface IProductService {
     Product save(Product product);
 
     /**
+     * After product SIP generation, save the product state and submit its SIP in the SIP data flow (within the same transaction)
+     */
+    Product saveAndSubmitSIP(Product product);
+
+    /**
      * @return all {@link Product}
      */
     Page<Product> retrieveAll(Pageable page);
