@@ -46,6 +46,11 @@ public interface ISIPService {
     Collection<SIPEntity> getAllVersions(String providerId);
 
     /**
+     * Does a version of asked SIP into "after valid" state alreaty exist ? (see {@link SIPState} for accepted states
+     */
+    boolean validatedVersionExists(String providerId);
+
+    /**
      * Retrieve all {@link SIPEntity}s matching the parameters. SIPs are ordered by {@link SIPEntity#getIngestDate()}
      */
     Page<SIPEntity> search(String providerId, String sessionId, String owner, OffsetDateTime from, List<SIPState> state,

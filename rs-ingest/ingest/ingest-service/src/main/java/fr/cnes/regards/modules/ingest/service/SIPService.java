@@ -143,6 +143,13 @@ public class SIPService implements ISIPService {
     }
 
     @Override
+    public boolean validatedVersionExists(String providerId) {
+        return sipRepository.countByProviderIdAndStateIn(providerId, SIPState.VALID, SIPState.AIP_CREATED,
+                                                         SIPState.SUBMISSION_ERROR, SIPState.STORE_ERROR,
+                                                         SIPState.STORED, SIPState.INDEXED, SIPState.INCOMPLETE) > 0;
+    }
+
+    @Override
     public Boolean isDeletable(UniformResourceName sipId) throws EntityNotFoundException {
         Optional<SIPEntity> os = sipRepository.findOneBySipId(sipId.toString());
         if (os.isPresent()) {
@@ -171,7 +178,6 @@ public class SIPService implements ISIPService {
      * {@link SIPEntity} state
      * to deleted.
      * @param sip {@link SIPEntity} to check for deletion
-     * @return
      */
     private boolean isDeletableWithAIPs(SIPEntity sip) {
         switch (sip.getState()) {
@@ -197,7 +203,6 @@ public class SIPService implements ISIPService {
      * confirmation
      * of other microservices.
      * @param sip {@link SIPEntity} to check for deletion.
-     * @return
      */
     private boolean isDeletableWithoutAips(SIPEntity sip) {
         switch (sip.getState()) {
