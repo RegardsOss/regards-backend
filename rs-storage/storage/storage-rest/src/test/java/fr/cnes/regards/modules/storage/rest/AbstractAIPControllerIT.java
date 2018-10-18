@@ -160,6 +160,7 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
     @After
     public void cleanUp() throws URISyntaxException, IOException, InterruptedException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
+        subscriber.purgeQueue(DataStorageEvent.class, DataStorageEventHandler.class);
         LOG.info("Waiting for current jobs finished ....");
         waitForJobsFinished(10, true);
         LOG.info("All current jobs finished !");

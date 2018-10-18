@@ -605,8 +605,8 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         aipService.doDelete();
 
         // Wait for AIP deleteion
-        Set<AIPEvent> events = waitForEventsReceived(AIPState.DELETED, 1);
-        Assert.assertEquals("There should not been any AIP delete event ", 0, events.size());
+        Set<AIPEvent> events = waitForEventsReceived(AIPState.DELETED, 2);
+        Assert.assertEquals("There should not been any AIP delete event ", 1, events.size());
         Assert.assertTrue("AIP should be referenced in the database", aipDao.findOneByAipId(aipIpId).isPresent());
         for (StorageDataFile df : aipFiles) {
             // As only one of the two storage system allow deletion, only one file should be deleted on disk
@@ -653,6 +653,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
         // Wait for AIP deletion
         Set<AIPEvent> events = waitForEventsReceived(AIPState.DELETED, 1);
+        waitForJobsFinished();
         Assert.assertEquals("There should been only one AIP delete event ", 1, events.size());
         Assert.assertFalse("AIP should not be referenced in the database", aipDao.findOneByAipId(aipIpId).isPresent());
         for (StorageDataFile df : aipFiles) {
@@ -720,7 +721,8 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
 
         // Wait for AIP deletion events
         Set<AIPEvent> events = waitForEventsReceived(AIPState.DELETED, 2);
-        Assert.assertEquals("There should been only one AIP delete event ", 2, events.size());
+        waitForJobsFinished();
+        Assert.assertEquals("There should been only two AIP delete event ", 2, events.size());
         Assert.assertFalse("AIP should not be referenced in the database", aipDao.findOneByAipId(aipIpId).isPresent());
     }
 

@@ -1213,7 +1213,7 @@ public class AIPService implements IAIPService {
         long endChangeState = System.currentTimeMillis();
         LOGGER.trace("Changing AIP {} state to DELETED took {} ms", toBeDeleted.getId().toString(),
                      endChangeState - endRebuild);
-        save(toBeDeleted, false);
+        save(toBeDeleted, true);
         long endSave = System.currentTimeMillis();
         LOGGER.trace("Saving AIP {} to DB took {} ms", toBeDeleted.getId().toString(), endSave - endChangeState);
         long methodEnd = System.currentTimeMillis();
