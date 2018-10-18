@@ -141,7 +141,8 @@ public final class DataSourceHelper {
         cpds.setMaxPoolSize(pMaxPoolSize);
         cpds.setDriverClass(pDriverClassName);
         cpds.setPreferredTestQuery(pPreferredTestQuery);
-        cpds.setConnectionCustomizerClassName(LoggingConnectionCustomizer.class.getName());
+        //FIXME: pollute logs way too fast, waiting on insights
+//        cpds.setConnectionCustomizerClassName(LoggingConnectionCustomizer.class.getName());
         LOGGER.info("\n{}\nCreating a POOLED datasource for tenant {} with url {}\n{}", HR, pTenant, pUrl, HR);
 
         return cpds;
