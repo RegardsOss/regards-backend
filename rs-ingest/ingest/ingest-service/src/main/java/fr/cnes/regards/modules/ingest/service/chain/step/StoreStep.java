@@ -24,9 +24,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
-import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -49,7 +49,7 @@ public class StoreStep extends AbstractIngestStep<List<AIP>, Void> {
     protected Void doExecute(List<AIP> in) throws ProcessingStepException {
         // Store generated aips in db with raw object.
         // Created AIPEntities will be handled by a scheduled task to be sent to archival storage microservice
-        in.forEach(aip -> this.job.getIngestProcessingService().createAIP(this.job.getEntity().getId(),
+        in.forEach(aip -> this.job.getIngestProcessingService().createAIP(this.job.getCurrentEntity().getId(),
                                                                           SipAIPState.CREATED, aip));
         // After success
         SIPEntity sip = updateSIPEntityState(SIPState.AIP_CREATED);
@@ -59,7 +59,7 @@ public class StoreStep extends AbstractIngestStep<List<AIP>, Void> {
 
     @Override
     protected void doAfterError(List<AIP> pIn) {
-        SIPEntity sip = this.job.getEntity();
+        SIPEntity sip = this.job.getCurrentEntity();
         sip.setState(SIPState.AIP_GEN_ERROR);
         this.updateSIPEntityState(SIPState.AIP_GEN_ERROR);
         this.job.getPublisher().publish(new SIPEvent(sip));

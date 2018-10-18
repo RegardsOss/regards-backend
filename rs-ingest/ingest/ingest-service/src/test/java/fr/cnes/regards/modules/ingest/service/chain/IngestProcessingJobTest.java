@@ -249,7 +249,7 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
     public void testDefaultProcessingChain() {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(IngestProcessingJob.CHAIN_NAME_PARAMETER, DEFAULT_PROCESSING_CHAIN_TEST));
-        parameters.add(new JobParameter(IngestProcessingJob.SIP_PARAMETER, entityDefaultChainTest));
+        parameters.add(new JobParameter(IngestProcessingJob.IDS_PARAMETER, Sets.newHashSet(entityDefaultChainTest)));
 
         // Simulate a full process without error
         JobInfo toTest = new JobInfo(false, 0, parameters, "owner", IngestProcessingJob.class.getName());
@@ -272,17 +272,13 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
     public void testProcessingChain() throws JobParameterMissingException, JobParameterInvalidException {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(IngestProcessingJob.CHAIN_NAME_PARAMETER, PROCESSING_CHAIN_TEST));
-        parameters.add(new JobParameter(IngestProcessingJob.SIP_PARAMETER, entityIdTest));
+        parameters.add(new JobParameter(IngestProcessingJob.IDS_PARAMETER, Sets.newHashSet(entityIdTest)));
 
         // Simulate an error during PreprocessingStep
         stepErrorSimulator.setSimulateErrorForStep(PreprocessingTestPlugin.class);
         JobInfo toTest = new JobInfo(false, 1, parameters, "owner", IngestProcessingJob.class.getName());
-        try {
-            runJob(toTest);
-            Assert.fail("A runtime exception should thrown here");
-        } catch (RuntimeException e) {
-            LOG.info(e.getMessage());
-        }
+        runJob(toTest);
+
         // Assert that SIP is in INVALID state
         SIPEntity resultSip = sipRepository.findOne(entityIdTest);
         Assert.assertTrue("State of SIP should be INVALID after a error during PreprocessingTestPlugin",
@@ -294,12 +290,8 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
         // Simulate an error during ValidationStep
         stepErrorSimulator.setSimulateErrorForStep(ValidationTestPlugin.class);
         toTest = new JobInfo(false, 1, parameters, "owner", IngestProcessingJob.class.getName());
-        try {
-            runJob(toTest);
-            Assert.fail("A runtime exception should thrown here");
-        } catch (RuntimeException e) {
-            LOG.info(e.getMessage());
-        }
+        runJob(toTest);
+
         // Assert that SIP is in INVALID state
         resultSip = sipRepository.findOne(entityIdTest);
         Assert.assertTrue("State of SIP should be INVALID after a error during ValidationStep",
@@ -311,12 +303,8 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
         // Simulate an error during GenerationStep
         stepErrorSimulator.setSimulateErrorForStep(AIPGenerationTestPlugin.class);
         toTest = new JobInfo(false, 1, parameters, "owner", IngestProcessingJob.class.getName());
-        try {
-            runJob(toTest);
-            Assert.fail("A runtime exception should thrown here");
-        } catch (RuntimeException e) {
-            LOG.info(e.getMessage());
-        }
+        runJob(toTest);
+
         // Assert that SIP is in AIP_GEN_ERROR state
         resultSip = sipRepository.findOne(entityIdTest);
         Assert.assertTrue("State of SIP should be AIP_GEN_ERROR after a error during GenerationStep",
@@ -328,12 +316,8 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
         // Simulate an error during TaggingStep
         stepErrorSimulator.setSimulateErrorForStep(AIPTaggingTestPlugin.class);
         toTest = new JobInfo(false, 1, parameters, "owner", IngestProcessingJob.class.getName());
-        try {
-            runJob(toTest);
-            Assert.fail("A runtime exception should thrown here");
-        } catch (RuntimeException e) {
-            LOG.info(e.getMessage());
-        }
+        runJob(toTest);
+
         // Assert that SIP is in AIP_GEN_ERROR state
         resultSip = sipRepository.findOne(entityIdTest);
         Assert.assertTrue("State of SIP should be AIP_GEN_ERROR after a error during GenerationStep",
@@ -367,7 +351,7 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
     public void testProcessingChainByRef() throws JobParameterMissingException, JobParameterInvalidException {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(IngestProcessingJob.CHAIN_NAME_PARAMETER, PROCESSING_CHAIN_TEST));
-        parameters.add(new JobParameter(IngestProcessingJob.SIP_PARAMETER, sipRefIdTest));
+        parameters.add(new JobParameter(IngestProcessingJob.IDS_PARAMETER, Sets.newHashSet(sipRefIdTest)));
 
         // Simulate a full process without error
         JobInfo toTest = new JobInfo(false, 0, parameters, "owner", IngestProcessingJob.class.getName());

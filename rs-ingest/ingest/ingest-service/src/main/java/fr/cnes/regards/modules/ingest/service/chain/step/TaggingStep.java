@@ -65,7 +65,7 @@ public class TaggingStep extends AbstractIngestStep<List<AIP>, Void> {
 
     @Override
     protected void doAfterError(List<AIP> pIn) {
-        SIPEntity sipEntity = this.job.getEntity();
+        SIPEntity sipEntity = this.job.getCurrentEntity();
         sipEntity.setState(SIPState.AIP_GEN_ERROR);
         this.updateSIPEntityState(SIPState.AIP_GEN_ERROR);
         this.job.getPublisher().publish(new SIPEvent(sipEntity));

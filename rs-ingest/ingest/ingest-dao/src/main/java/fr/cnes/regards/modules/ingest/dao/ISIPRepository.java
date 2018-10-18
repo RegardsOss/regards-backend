@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.ingest.dao;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -46,6 +47,14 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
     @Override
     @EntityGraph("graph.sip.entity.complete")
     SIPEntity findOne(Long id);
+
+    /**
+     * Retrieve all {@link SIPEntity} for the given ids
+     * @param sipIds
+     * @return {@link SIPEntity}s
+     */
+    @EntityGraph("graph.sip.entity.complete")
+    Set<SIPEntity> findByIdIn(Collection<Long> ids);
 
     /**
      * Find last ingest SIP with specified SIP ID according to ingest date
@@ -112,12 +121,19 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
     void updateSIPEntityState(SIPState state, Long id);
 
     /**
+     * Update state for a set of {@link SIPEntity}
+     */
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("UPDATE SIPEntity s set s.state = ?1 where s.id in (?2)")
+    void updateSIPEntitiesState(SIPState state, Collection<Long> ids);
+
+    /**
      * Switch state for a given session
      */
     @Modifying
     @Query("UPDATE SIPEntity s set s.state = :newState where s.state = :state AND s.session = :session")
-    void updateSIPEntityStateByStateAndSession(@Param("newState") SIPState state,
-            @Param("state") SIPState filterState, @Param("session") SIPSession session);
+    void updateSIPEntityStateByStateAndSession(@Param("newState") SIPState state, @Param("state") SIPState filterState,
+            @Param("session") SIPSession session);
 
     /**
      * Count number of {@link SIPEntity} associated to a given session

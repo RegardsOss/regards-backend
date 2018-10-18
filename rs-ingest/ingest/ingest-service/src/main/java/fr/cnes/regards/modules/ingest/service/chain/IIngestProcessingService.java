@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -49,6 +50,11 @@ public interface IIngestProcessingService {
     void ingest();
 
     /**
+     * Really build ingestion job and schedule it in transaction.
+     */
+    void scheduleIngestProcessingJob(Set<Long> entityIdsToProcess, String processingChain);
+
+    /**
      * Update state of given SIPEntity
      * @param id of {@link SIPEntity} to update
      * @param newState new {@link SIPState}
@@ -61,6 +67,12 @@ public interface IIngestProcessingService {
      * Return {@link SIPEntity} for the given id
      */
     SIPEntity getSIPEntity(Long id);
+
+    /**
+     *
+     * Return all {@link SIPEntity}s for the given ids
+     */
+    Set<SIPEntity> getAllSipEntities(Set<Long> ids);
 
     /**
      * Create AIP

@@ -27,6 +27,7 @@ import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -39,10 +40,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -73,8 +77,8 @@ import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
-import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
 import fr.cnes.regards.modules.ingest.service.ISIPService;
+import fr.cnes.regards.modules.ingest.service.IngestProperties;
 import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.ingest.service.plugin.DefaultSingleAIPGeneration;
@@ -124,14 +128,13 @@ public class IngestProcessingService implements IIngestProcessingService {
     private Gson gsonWithIdExclusionStrategy;
 
     @Autowired
+    private IIngestProcessingService self;
+
+    @Autowired
     private Validator validator;
 
     @PostConstruct
     public void initDefaultPluginPackages() {
-        pluginService.addPluginPackage(IAipGeneration.class.getPackage().getName());
-        pluginService.addPluginPackage(DefaultSingleAIPGeneration.class.getPackage().getName());
-        pluginService.addPluginPackage(DefaultSipValidation.class.getPackage().getName());
-
         // Initialize specific GSON instance
         GsonBuilder customBuilder = gsonBuilderFactory.newBuilder();
         customBuilder.addSerializationExclusionStrategy(new FieldNamePatternExclusionStrategy("id"));
@@ -166,13 +169,28 @@ public class IngestProcessingService implements IIngestProcessingService {
         }
     }
 
+    @MultitenantTransactional(propagation = Propagation.SUPPORTS) // No transaction if not wrapped into already existing one
     @Override
     public void ingest() {
         // Retrieve all created sips
         // In order to avoid loading all rawSip in memory (can be huge), retrieve only the needed id and processing
         // parameters of SIPEntity
         List<Object[]> sips = sipRepository.findIdAndProcessingByState(SIPState.CREATED);
-        sips.forEach(sip -> this.scheduleIngestProcessingJob((Long) sip[0], (String) sip[1]));
+
+        Multimap<String, Long> sipByChain = ArrayListMultimap.create();
+        sips.forEach(pair -> sipByChain.put((String) pair[1], (Long) pair[0]));
+
+        for (String ingestChain : sipByChain.keySet()) {
+            List<Long> ids = (List<Long>) sipByChain.get(ingestChain);
+            int fromIndex = 0;
+            int toIndex = IngestProperties.WORKING_UNIT;
+            while (toIndex <= ids.size()) {
+                self.scheduleIngestProcessingJob(new HashSet<>(ids.subList(fromIndex, toIndex)), ingestChain);
+                fromIndex = toIndex;
+                toIndex = toIndex + IngestProperties.WORKING_UNIT;
+            }
+            self.scheduleIngestProcessingJob(new HashSet<>(ids.subList(fromIndex, ids.size())), ingestChain);
+        }
     }
 
     @Override
@@ -189,6 +207,11 @@ public class IngestProcessingService implements IIngestProcessingService {
     }
 
     @Override
+    public Set<SIPEntity> getAllSipEntities(Set<Long> ids) {
+        return sipRepository.findByIdIn(ids);
+    }
+
+    @Override
     public AIPEntity createAIP(Long pSipEntityId, SipAIPState pAipState, AIP pAip) {
         SIPEntity sip = sipRepository.findOne(pSipEntityId);
         return aipRepository.save(AIPEntityBuilder.build(sip, SipAIPState.CREATED, pAip));
@@ -196,18 +219,23 @@ public class IngestProcessingService implements IIngestProcessingService {
 
     /**
      * Schedule a new {@link IngestProcessingJob} to ingest given {@link SIPEntity}
-     * @param entityIdToProcess {@link SIPEntity} to ingest
      */
-    private void scheduleIngestProcessingJob(Long entityIdToProcess, String processingChain) {
-        LOGGER.debug("Scheduling new IngestProcessingJob for SIP {} and processing chain {}", entityIdToProcess,
+    @Override
+    public void scheduleIngestProcessingJob(Set<Long> entityIdsToProcess, String processingChain) {
+        if (entityIdsToProcess.isEmpty()) {
+            // Nothing to do
+            return;
+        }
+
+        LOGGER.debug("Scheduling new IngestProcessingJob for SIP {} and processing chain {}", entityIdsToProcess,
                      processingChain);
         Set<JobParameter> jobParameters = Sets.newHashSet();
-        jobParameters.add(new JobParameter(IngestProcessingJob.SIP_PARAMETER, entityIdToProcess));
+        jobParameters.add(new JobParameter(IngestProcessingJob.IDS_PARAMETER, entityIdsToProcess));
         jobParameters.add(new JobParameter(IngestProcessingJob.CHAIN_NAME_PARAMETER, processingChain));
         JobInfo jobInfo = new JobInfo(false, IngestJobPriority.INGEST_PROCESSING_JOB_PRIORITY.getPriority(),
                 jobParameters, authResolver.getUser(), IngestProcessingJob.class.getName());
+        sipRepository.updateSIPEntitiesState(SIPState.QUEUED, entityIdsToProcess);
         jobInfoService.createAsQueued(jobInfo);
-        sipRepository.updateSIPEntityState(SIPState.QUEUED, entityIdToProcess);
     }
 
     @Override

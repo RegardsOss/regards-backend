@@ -16,28 +16,23 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.domain.flow;
-
-import fr.cnes.regards.framework.amqp.event.Event;
-import fr.cnes.regards.framework.amqp.event.Target;
-import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
+package fr.cnes.regards.modules.ingest.service;
 
 /**
- * Data flow response to {@link SipFlowItem} handling
+ * Global ingest properties
  *
  * @author Marc SORDI
  *
  */
-@Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
-public class OutputSIPFlow {
+public final class IngestProperties {
 
-    private SIPDto dto;
+    /**
+     * All transactions only manage at most {@link #WORKING_UNIT} entities at a time
+     * in order to take care of the memory consumption and potential tenant starvation.
+     */
+    public static final Integer WORKING_UNIT = 100;
 
-    public SIPDto getDto() {
-        return dto;
-    }
-
-    public void setDto(SIPDto dto) {
-        this.dto = dto;
+    private IngestProperties() {
+        // Nothing to do
     }
 }

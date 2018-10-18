@@ -70,7 +70,7 @@ public class ValidationStep extends AbstractIngestStep<SIP, Void> {
 
         // On success
         updateSIPEntityState(SIPState.VALID);
-        SIPEntity sipEntity = this.job.getEntity();
+        SIPEntity sipEntity = this.job.getCurrentEntity();
         sipEntity.setState(SIPState.VALID);
         job.getPublisher().publish(new SIPEvent(sipEntity));
         return null;
@@ -78,7 +78,7 @@ public class ValidationStep extends AbstractIngestStep<SIP, Void> {
 
     @Override
     protected void doAfterError(SIP sip) {
-        SIPEntity sipEntity = this.job.getEntity();
+        SIPEntity sipEntity = this.job.getCurrentEntity();
         sipEntity.setState(SIPState.INVALID);
         LOGGER.error("Error prepocessing SIP \"{}\"", sip.getId());
         this.updateSIPEntityState(SIPState.INVALID);

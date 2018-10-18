@@ -73,7 +73,7 @@ public class PreprocessingStep extends AbstractIngestStep<SIP, SIP> {
 
     @Override
     protected void doAfterError(SIP sip) {
-        SIPEntity sipEntity = this.job.getEntity();
+        SIPEntity sipEntity = this.job.getCurrentEntity();
         sipEntity.setState(SIPState.INVALID);
         LOGGER.error("Error prepocessing SIP \"{}\"", sip.getId());
         this.updateSIPEntityState(SIPState.INVALID);
