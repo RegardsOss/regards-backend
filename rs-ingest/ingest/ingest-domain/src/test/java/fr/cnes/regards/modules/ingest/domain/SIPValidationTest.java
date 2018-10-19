@@ -119,7 +119,7 @@ public class SIPValidationTest {
         if (!errors.hasErrors()) {
             Assert.fail("An empty SIP reference should be invalid");
         }
-        Assert.assertTrue(errors.getErrorCount() == 4);
+        Assert.assertEquals(3, errors.getErrorCount());
     }
 
     /**
