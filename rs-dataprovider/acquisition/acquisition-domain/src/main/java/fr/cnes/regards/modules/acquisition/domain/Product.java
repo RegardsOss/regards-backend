@@ -158,10 +158,6 @@ public class Product {
     @JoinColumn(name = "post_prod_job_info_id", foreignKey = @ForeignKey(name = "fk_post_prod_job_info_id"))
     private JobInfo lastPostProductionJobInfo;
 
-    @OneToOne
-    @JoinColumn(name = "sip_submission_job_info_id", foreignKey = @ForeignKey(name = "fk_sip_submission_job_info_id"))
-    private JobInfo lastSIPSubmissionJobInfo;
-
     public Long getId() {
         return id;
     }
@@ -318,14 +314,6 @@ public class Product {
 
     public void setLastPostProductionJobInfo(JobInfo lastPostProductionJobInfo) {
         this.lastPostProductionJobInfo = lastPostProductionJobInfo;
-    }
-
-    public JobInfo getLastSIPSubmissionJobInfo() {
-        return lastSIPSubmissionJobInfo;
-    }
-
-    public void setLastSIPSubmissionJobInfo(JobInfo lastSIPSubmissionJobInfo) {
-        this.lastSIPSubmissionJobInfo = lastSIPSubmissionJobInfo;
     }
 
     public String getError() {

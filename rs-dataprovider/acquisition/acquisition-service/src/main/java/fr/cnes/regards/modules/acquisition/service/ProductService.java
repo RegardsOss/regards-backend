@@ -19,9 +19,7 @@
 package fr.cnes.regards.modules.acquisition.service;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +40,6 @@ import org.springframework.util.Assert;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -68,7 +65,6 @@ import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
 import fr.cnes.regards.modules.acquisition.service.job.PostAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
-import fr.cnes.regards.modules.acquisition.service.job.SIPSubmissionJob;
 import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
@@ -84,6 +80,8 @@ import fr.cnes.regards.modules.ingest.domain.flow.SipFlowItem;
 public class ProductService implements IProductService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductService.class);
+
+    private static final String DEFAULT_SESSION = "Default";
 
     @Autowired
     private IPluginService pluginService;
@@ -106,6 +104,9 @@ public class ProductService implements IProductService {
     @Value("${regards.acquisition.sip.bulk.request.limit:100}")
     private Integer bulkRequestLimit;
 
+    @Value("${spring.application.name}")
+    private String appName;
+
     @Override
     public Product save(Product product) {
         LOGGER.trace("Saving product \"{}\" with IP ID \"{}\" and SIP state \"{}\"", product.getProductName(),
@@ -119,8 +120,9 @@ public class ProductService implements IProductService {
         LOGGER.trace("Saving and submitting product \"{}\" with IP ID \"{}\" and SIP state \"{}\"",
                      product.getProductName(), product.getIpId(), product.getSipState());
         // Build flow item
-        SipFlowItem item = SipFlowItem.build(product.getProcessingChain().getIngestChain(), product.getSession(),
-                                             product.getSip());
+        String session = product.getSession() == null ? DEFAULT_SESSION : product.getSession();
+        SipFlowItem item = SipFlowItem.build(product.getProcessingChain().getIngestChain(), session, product.getSip(),
+                                             appName);
         publisher.publish(item);
         return save(product);
     }
@@ -360,189 +362,6 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public Page<Product> findProductsToSubmit(String ingestChain, Optional<String> session) {
-
-        if (session.isPresent()) {
-            return productRepository.findByProcessingChainIngestChainAndSessionAndSipState(ingestChain, session
-                    .get(), ProductSIPState.SUBMISSION_SCHEDULED, new PageRequest(0, bulkRequestLimit));
-        } else {
-            return productRepository
-                    .findByProcessingChainIngestChainAndSipStateOrderByIdAsc(ingestChain,
-                                                                             ProductSIPState.SUBMISSION_SCHEDULED,
-                                                                             new PageRequest(0, bulkRequestLimit));
-        }
-    }
-
-    /**
-     * This method is called by a time scheduler. We only schedule a new job for a specified chain and session if and
-     * only if an existing job not already exists. To detect that a job is already scheduled, we check the SIP state of
-     * the products. Product not already scheduled will be scheduled on next scheduler call.
-     */
-    @Override
-    public void scheduleProductSIPSubmission() {
-
-        // Register all chains and sessions already scheduled
-        Multimap<String, String> scheduledSessionsByChain = ArrayListMultimap.create();
-
-        // Find all products already scheduled for submission
-        Page<Product> products;
-        Pageable pageable = new PageRequest(0, AcquisitionProperties.WORKING_UNIT);
-        do {
-            products = productRepository.findBySipStateOrderByIdAsc(ProductSIPState.SUBMISSION_SCHEDULED, pageable);
-            if (products.hasNext()) {
-                // Prepare for new search
-                pageable = products.nextPageable();
-            }
-            if (products.hasContent()) {
-                for (Product product : products) {
-                    if (!scheduledSessionsByChain.containsEntry(product.getProcessingChain().getIngestChain(),
-                                                                product.getSession())) {
-                        scheduledSessionsByChain.put(product.getProcessingChain().getIngestChain(),
-                                                     product.getSession());
-                    }
-                }
-            }
-        } while (products.hasNext());
-
-        // Find all products with available SIPs ready for submission
-        // Reset pagination
-        pageable = new PageRequest(0, bulkRequestLimit);
-        Multimap<String, String> sessionsByChain = ArrayListMultimap.create();
-        // Register products per ingest chain and session for reporting
-        Map<String, Map<String, List<Product>>> productsPerIngestChain = new HashMap<>();
-
-        // Just managed one page at a time
-        products = productRepository.findWithLockBySipStateOrderByIdAsc(ProductSIPState.GENERATED, pageable);
-
-        if (products.hasContent()) {
-
-            for (Product product : products) {
-                // Check if chain and session not already scheduled
-                if (!scheduledSessionsByChain.containsEntry(product.getProcessingChain().getIngestChain(),
-                                                            product.getSession())) {
-                    // Register chains and sessions for scheduling
-                    if (!sessionsByChain.containsEntry(product.getProcessingChain().getIngestChain(),
-                                                       product.getSession())) {
-                        sessionsByChain.put(product.getProcessingChain().getIngestChain(), product.getSession());
-                    }
-
-                    // Register product
-                    registerProduct(productsPerIngestChain, product);
-                }
-            }
-        }
-
-        // Schedule submission jobs
-        for (String ingestChain : sessionsByChain.keySet()) {
-            for (String session : sessionsByChain.get(ingestChain)) {
-                // Schedule job
-                Set<JobParameter> jobParameters = Sets.newHashSet();
-                jobParameters.add(new JobParameter(SIPSubmissionJob.INGEST_CHAIN_PARAMETER, ingestChain));
-                jobParameters.add(new JobParameter(SIPSubmissionJob.SESSION_PARAMETER, session));
-
-                JobInfo jobInfo = new JobInfo(true);
-                jobInfo.setPriority(AcquisitionJobPriority.SIP_SUBMISSION_JOB_PRIORITY.getPriority());
-                jobInfo.setParameters(jobParameters);
-                jobInfo.setClassName(SIPSubmissionJob.class.getName());
-                jobInfo.setOwner(authResolver.getUser());
-                jobInfoService.createAsPending(jobInfo);
-
-                // Link report to all related products
-                linkSubmissionJobInfo(productsPerIngestChain, jobInfo, ingestChain, session);
-                jobInfo.updateStatus(JobStatus.QUEUED);
-                jobInfoService.save(jobInfo);
-            }
-        }
-    }
-
-    /**
-     * Register product
-     * @param productsPerIngestChain list of product per session per ingest chain
-     * @param product {@link Product} to register
-     */
-    private void registerProduct(Map<String, Map<String, List<Product>>> productsPerIngestChain, Product product) {
-        String ingestChain = product.getProcessingChain().getIngestChain();
-        String session = product.getSession();
-
-        Map<String, List<Product>> productsPerSession = productsPerIngestChain.get(ingestChain);
-        if (productsPerSession == null) {
-            productsPerSession = new HashMap<>();
-            productsPerIngestChain.put(ingestChain, productsPerSession);
-        }
-
-        List<Product> products = productsPerSession.get(session);
-        if (products == null) {
-            products = new ArrayList<>();
-            productsPerSession.put(session, products);
-        }
-
-        products.add(product);
-    }
-
-    /**
-     * Link submission report to related products
-     * @param productsPerIngestChain list of registered products
-     * @param jobInfo {@link JobInfo} to link
-     * @param ingestChain INGEST chain
-     * @param session INGEST session
-     */
-    private void linkSubmissionJobInfo(Map<String, Map<String, List<Product>>> productsPerIngestChain, JobInfo jobInfo,
-            String ingestChain, String session) {
-
-        Map<String, List<Product>> productsPerSession = productsPerIngestChain.get(ingestChain);
-        if (productsPerSession != null) {
-            List<Product> products = productsPerSession.get(session);
-            if (products != null) {
-                for (Product product : products) {
-                    // Release lock
-                    if (product.getLastSIPSubmissionJobInfo() != null) {
-                        jobInfoService.unlock(product.getLastSIPSubmissionJobInfo());
-                    }
-                    product.setLastSIPSubmissionJobInfo(jobInfo);
-                    product.setSipState(ProductSIPState.SUBMISSION_SCHEDULED);
-                    save(product);
-                }
-            }
-        }
-
-    }
-
-    /**
-     * If {@link SIPSubmissionJob} fails, no job can be run as long as there are products in
-     * {@link ProductSIPState#SUBMISSION_SCHEDULED}. This handler updates product states to
-     * {@link ProductSIPState#SUBMISSION_ERROR}.<br>
-     */
-    @Override
-    public void handleSIPSubmissiontError(JobInfo jobInfo) {
-        Map<String, JobParameter> params = jobInfo.getParametersAsMap();
-        String ingestChain = params.get(SIPSubmissionJob.INGEST_CHAIN_PARAMETER).getValue();
-        String session = params.get(SIPSubmissionJob.SESSION_PARAMETER).getValue();
-        // Update product status
-        Page<Product> products;
-        do {
-            if (session == null) {
-                products = productRepository
-                        .findByProcessingChainIngestChainAndSipStateOrderByIdAsc(ingestChain,
-                                                                                 ProductSIPState.SUBMISSION_SCHEDULED,
-                                                                                 new PageRequest(0,
-                                                                                         AcquisitionProperties.WORKING_UNIT));
-            } else {
-                products = productRepository
-                        .findByProcessingChainIngestChainAndSessionAndSipState(ingestChain, session,
-                                                                               ProductSIPState.SUBMISSION_SCHEDULED,
-                                                                               new PageRequest(0,
-                                                                                       AcquisitionProperties.WORKING_UNIT));
-            }
-            if (products.hasContent()) {
-                for (Product product : products) {
-                    product.setSipState(ProductSIPState.SUBMISSION_ERROR);
-                    save(product);
-                }
-            }
-        } while (products.hasNext());
-    }
-
-    @Override
     public void handleSIPGenerationError(JobInfo jobInfo) {
         JobParameter productNameParam = jobInfo.getParametersAsMap().get(SIPGenerationJob.PRODUCT_NAMES);
         if (productNameParam != null) {
@@ -628,12 +447,6 @@ public class ProductService implements IProductService {
         Set<JobInfo> jobInfos = productRepository
                 .findDistinctLastSIPGenerationJobInfoByProcessingChainAndSipStateIn(processingChain,
                                                                                     ProductSIPState.SCHEDULED);
-        jobInfos.forEach(j -> jobInfoService.stopJob(j.getId()));
-
-        // Stop submission jobs
-        jobInfos = productRepository
-                .findDistinctLastSIPSubmissionJobInfoByProcessingChainAndSipStateIn(processingChain,
-                                                                                    ProductSIPState.SUBMISSION_SCHEDULED);
         jobInfos.forEach(j -> jobInfoService.stopJob(j.getId()));
     }
 

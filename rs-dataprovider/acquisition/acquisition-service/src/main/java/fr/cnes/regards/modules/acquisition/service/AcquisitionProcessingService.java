@@ -369,9 +369,6 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                     if (product.getLastSIPGenerationJobInfo() != null) {
                         jobInfoService.unlock(product.getLastSIPGenerationJobInfo());
                     }
-                    if (product.getLastSIPSubmissionJobInfo() != null) {
-                        jobInfoService.unlock(product.getLastSIPSubmissionJobInfo());
-                    }
 
                     productService.delete(product);
                 }
@@ -728,12 +725,6 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     @Override
-    public void retrySIPSubmission(AcquisitionProcessingChain processingChain) {
-        // Scheduler for SIP submission will handle automatically products in GENERATED states
-        productService.updateSipStates(processingChain, ProductSIPState.SUBMISSION_ERROR, ProductSIPState.GENERATED);
-    }
-
-    @Override
     public Page<AcquisitionProcessingChainMonitor> buildAcquisitionProcessingChainSummaries(String label,
             Boolean running, AcquisitionProcessingChainMode mode, Pageable pageable) throws ModuleException {
         Page<AcquisitionProcessingChain> acqChains = acqChainRepository
@@ -769,14 +760,11 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         AcquisitionProcessingChainMonitor summary = new AcquisitionProcessingChainMonitor(chain);
 
         // Handle product summary
-        summary.setNbProductErrors(productService.countByProcessingChainAndSipStateIn(chain, Arrays
-                .asList(ProductSIPState.GENERATION_ERROR, ProductSIPState.SUBMISSION_ERROR)));
+        summary.setNbProductErrors(productService
+                .countByProcessingChainAndSipStateIn(chain, Arrays.asList(ProductSIPState.GENERATION_ERROR)));
         summary.setNbProducts(productService.countByChain(chain));
-        summary.setNbProductsInProgress(productService
-                .countByProcessingChainAndSipStateIn(chain,
-                                                     Arrays.asList(ProductSIPState.NOT_SCHEDULED,
-                                                                   ProductSIPState.SCHEDULED, ProductSIPState.GENERATED,
-                                                                   ProductSIPState.SUBMISSION_SCHEDULED)));
+        summary.setNbProductsInProgress(productService.countByProcessingChainAndSipStateIn(chain, Arrays
+                .asList(ProductSIPState.NOT_SCHEDULED, ProductSIPState.SCHEDULED)));
 
         // Handle file summary
         summary.setNbFileErrors(acqFileService
@@ -794,13 +782,6 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         }
         summary.setNbSIPGenerationJobs(productService
                 .countSIPGenerationJobInfoByProcessingChainAndSipStateIn(chain, ProductSIPState.SCHEDULED));
-        if (productService
-                .countByProcessingChainAndSipStateIn(chain, Arrays.asList(ProductSIPState.SUBMISSION_SCHEDULED)) > 0) {
-            summary.setNbSIPSubmissionJobs(1);
-        } else {
-            summary.setNbSIPSubmissionJobs(0);
-
-        }
         summary.isActive();
 
         return summary;

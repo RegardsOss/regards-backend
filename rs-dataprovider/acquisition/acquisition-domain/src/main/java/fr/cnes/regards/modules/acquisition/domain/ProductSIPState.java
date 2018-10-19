@@ -32,11 +32,6 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  *          SCHEDULED
  *             |_______ GENERATION_ERROR or SCHEDULED_INTERRUPTED
  *             |
- *          GENERATED
- *             |
- *      SUBMISSION_SCHEDULED
- *             |____________ SUBMISSION_ERROR
- *             |
  *         SUBMITTED
  *             |
  *       {@link SIPState}
@@ -62,24 +57,9 @@ public enum ProductSIPState implements ISipState {
      */
     SCHEDULED_INTERRUPTED,
     /**
-     * SIP has been generated
-     */
-    @Deprecated
-    GENERATED,
-    /**
      * SIP has not been generated because an error occurs.
      */
     GENERATION_ERROR,
-    /**
-     * SIP submission has been scheduled
-     */
-    @Deprecated
-    SUBMISSION_SCHEDULED,
-    /**
-     * An error occurs during submission job
-     */
-    @Deprecated
-    SUBMISSION_ERROR,
     /**
      * SIP has been generated and submit to INGEST
      */
