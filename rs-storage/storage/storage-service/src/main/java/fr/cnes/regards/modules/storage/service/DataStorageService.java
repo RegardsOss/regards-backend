@@ -319,11 +319,12 @@ public class DataStorageService implements IDataStorageService {
                 case FAILED:
                 default:
                     // IDataStorage plugin used to delete the file is not able to delete the file right now.
-                    // Maybe the file can be deleted later. So do nothing and just notify administrator.
-                    String message = String.format("Error deleting file (id: %s, checksum: %s).",
+                    // Notify administrator and set data file to STORED, because it is its real state for now.
+                    String message = String.format("Error deleting file (id: %s, checksum: %s).%n Error:%s",
                                                    event.getDataFileId(),
-                                                   event.getChecksum());
-                    data.get().setState(DataFileState.TO_BE_DELETED);
+                                                   event.getChecksum(),
+                                                   event.getFailureCause());
+                    data.get().setState(DataFileState.STORED);
                     dataFileDao.save(data.get());
                     LOGGER.error(message);
                     notifyAdmins("File deletion error", message, NotificationType.INFO);
