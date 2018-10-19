@@ -18,18 +18,20 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
-import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
-import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+
+import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 
 /**
  * Repository handling JPA representation of AIP.
@@ -50,6 +52,8 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      */
     Page<AIPEntity> findAllByState(AIPState state, Pageable pageable);
 
+    List<AIPEntity> findFirst100ByState(AIPState state);
+
     /**
      * Find a page of aips which state is the provided one
      * @return a page of aips which state is the provided one
@@ -61,7 +65,6 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      * @return aips which state is one of the provided one
      */
     Page<AIPEntity> findAllByStateIn(Collection<AIPState> states, Pageable pageable);
-
 
     /**
      * Retrieve all aips which ip id starts with the provided string
@@ -76,9 +79,7 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
     Optional<AIPEntity> findOneByAipId(String aipId);
 
     /**
-     * Retrieve id by the assciated aipId
-     * @param aipId
-     * @return
+     * Retrieve id by its associated aipId
      */
     @Query(value = "select id from {h-schema}t_aip where aip_id= ?1", nativeQuery = true)
     Optional<Long> findIdByAipId(String aipId);

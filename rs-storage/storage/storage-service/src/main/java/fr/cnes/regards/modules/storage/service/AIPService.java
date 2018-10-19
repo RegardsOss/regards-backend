@@ -579,7 +579,8 @@ public class AIPService implements IAIPService {
             throw new EntityOperationForbiddenException("Only Admins can access this feature.");
         }
         AIPSession aipSession = getSession(session, false);
-        return aipDao.findAll(AIPQueryGenerator.searchAIPContainingAllTags(state, from, to, tags, aipSession, providerId, null, null),
+        return aipDao.findAll(AIPQueryGenerator.searchAIPContainingAllTags(state, from, to, tags, aipSession,
+                                                                           providerId, null, null),
                               pageable);
     }
 
@@ -590,17 +591,19 @@ public class AIPService implements IAIPService {
         // we have two cases: there is a date or not
         Page<AIP> aips;
         if (fromLastUpdateDate == null) {
-            if ((tags == null) || tags.isEmpty()) {
+            if (tags == null || tags.isEmpty()) {
                 aips = aipDao.findAllByState(state, pageable);
             } else {
-                aips = aipDao.findAll(AIPQueryGenerator.searchAIPContainingAtLeastOneTag(state, null, null, new ArrayList<>(tags), null, null,
-                                                               null, null),
+                aips = aipDao.findAll(AIPQueryGenerator.searchAIPContainingAtLeastOneTag(state, null, null,
+                                                                                         new ArrayList<>(tags), null,
+                                                                                         null, null, null),
                                       pageable);
             }
         } else {
-            aips = aipDao.findAll(AIPQueryGenerator.searchAIPContainingAtLeastOneTag(state, fromLastUpdateDate, null, new ArrayList<>(tags), null, null,
-                    null, null),
-                    pageable);
+            aips = aipDao.findAll(AIPQueryGenerator.searchAIPContainingAtLeastOneTag(state, fromLastUpdateDate, null,
+                                                                                     new ArrayList<>(tags), null, null,
+                                                                                     null, null),
+                                  pageable);
         }
         // Associate data files with their AIP (=> multimap)
         List<AipDataFiles> aipDataFiles = new ArrayList<>();
@@ -668,7 +671,7 @@ public class AIPService implements IAIPService {
      * status.
      * @param dataFilesToStore {@link StorageDataFile}s
      * @param storageWorkingSetMap {@link Multimap}<{@link PluginConfiguration}, {@link StorageDataFile}>
-     * @param {@link DispatchErrors} errors during files dispatch
+     * @param dispatchErrors {@link DispatchErrors} errors during files dispatch
      */
     private void checkDispatch(Set<StorageDataFile> dataFilesToStore,
             Multimap<Long, StorageDataFile> storageWorkingSetMap, DispatchErrors dispatchErrors) {
@@ -932,7 +935,7 @@ public class AIPService implements IAIPService {
             LOGGER.trace("[METADATA STORE] Number of AIP in pending state ready for metadata storage {}/{}",
                          metadataToStore.size(), pendingAips.getTotalElements());
             page = pendingAips.nextPageable();
-        } while (pendingAips.hasNext() && (metadataToStore.size() < dataFileLimit));
+        } while (pendingAips.hasNext() && metadataToStore.size() < dataFileLimit);
         LOGGER.trace("[METADATA STORE] Number of AIP metadata {} to schedule for storage.", metadataToStore.size());
         return metadataToStore;
     }
@@ -1020,7 +1023,7 @@ public class AIPService implements IAIPService {
             throw new EntityNotFoundException(ipId, AIP.class);
         }
         AIP aipToUpdate = oAipToUpdate.get();
-        if ((aipToUpdate.getState() != AIPState.STORED)) {
+        if (aipToUpdate.getState() != AIPState.STORED) {
             LOGGER.info("AIP to update {}, is already handled by a storage process. The requested udpdate is delayed.",
                         aipToUpdate.getProviderId());
             addNewAIPUpdateRequest(newAip, updateMessage);
