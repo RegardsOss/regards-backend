@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -62,6 +63,15 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
      */
     @EntityGraph("graph.sip.entity.complete")
     Collection<SIPEntity> findAllByProviderIdOrderByVersionAsc(String providerId);
+
+    /**
+     * Count SIPEntity with given providerId that have one the given states
+     */
+    long countByProviderIdAndStateIn(String providerId, Collection<SIPState> states);
+
+    default long countByProviderIdAndStateIn(String providerId, SIPState... states) {
+        return countByProviderIdAndStateIn(providerId, Arrays.asList(states));
+    }
 
     /**
      * Find all {@link SIPEntity}s by given {@link SIPState}
@@ -162,8 +172,8 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
     /**
      * Check if SIP is already ingested based on its checksum
      */
-    default Boolean isAlreadyIngested(String checksum) {
-        return countByChecksum(checksum) == 1;
+    default boolean isAlreadyIngested(String checksum) {
+        return countByChecksum(checksum) != 0;
     }
 
     Page<SIPEntity> findPageByState(SIPState state, Pageable pageable);
