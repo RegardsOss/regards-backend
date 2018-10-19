@@ -52,6 +52,9 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      */
     Page<AIPEntity> findAllByState(AIPState state, Pageable pageable);
 
+    /**
+     * Find first 100 entities in specified state
+     */
     List<AIPEntity> findFirst100ByState(AIPState state);
 
     /**

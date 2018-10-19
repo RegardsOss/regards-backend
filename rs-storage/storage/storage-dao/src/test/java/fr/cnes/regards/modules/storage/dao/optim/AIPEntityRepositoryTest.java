@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +58,7 @@ import fr.cnes.regards.modules.storage.domain.database.AIPSession;
  * @author Marc SORDI
  *
  */
+@Ignore
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=optimstorage" })
 @ContextConfiguration(classes = DAOTestConfiguration.class)
 public class AIPEntityRepositoryTest extends AbstractDaoTest {
@@ -72,6 +74,7 @@ public class AIPEntityRepositoryTest extends AbstractDaoTest {
     @Autowired
     private TransactionalService search;
 
+    @SuppressWarnings("unused")
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
 
