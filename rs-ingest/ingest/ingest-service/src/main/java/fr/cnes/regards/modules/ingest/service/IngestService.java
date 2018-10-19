@@ -117,7 +117,7 @@ public class IngestService implements IIngestService {
 
         // Process SIPs
         for (SIP sip : sips.getFeatures()) {
-            dtos.add(store(sip, sips.getMetadata(), false));
+            dtos.add(store(sip, sips.getMetadata(), authResolver.getUser(), false));
         }
 
         return dtos;
@@ -224,7 +224,7 @@ public class IngestService implements IIngestService {
      * @return a {@link SIPEntity} ready to be processed saved in database or a rejected one not saved in database
      */
     @Override
-    public SIPDto store(SIP sip, IngestMetadata metadata, boolean publishRejected) {
+    public SIPDto store(SIP sip, IngestMetadata metadata, String owner, boolean publishRejected) {
 
         LOGGER.info("Handling new SIP {}", sip.getId());
         // Manage version
@@ -234,8 +234,8 @@ public class IngestService implements IIngestService {
         SIPSession session = sipSessionService.getSession(metadata.getSession().orElse(null), true);
 
         SIPEntity entity = SIPEntityBuilder.build(runtimeTenantResolver.getTenant(), session, sip,
-                                                  metadata.getProcessing(), authResolver.getUser(), version,
-                                                  SIPState.CREATED, EntityType.DATA);
+                                                  metadata.getProcessing(), owner, version, SIPState.CREATED,
+                                                  EntityType.DATA);
 
         // Validate metadata
         try {

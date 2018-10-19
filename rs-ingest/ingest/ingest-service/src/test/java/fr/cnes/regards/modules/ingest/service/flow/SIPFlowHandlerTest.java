@@ -76,7 +76,8 @@ public class SIPFlowHandlerTest extends AbstractMultitenantServiceTest {
         for (long i = 0; i < maxloops; i++) {
             SIP sip = create("provider" + i);
             // Create event
-            SipFlowItem flowItem = SipFlowItem.build(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, "default", sip);
+            SipFlowItem flowItem = SipFlowItem.build(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, "default", sip,
+                                                     "TEST");
             publisher.publish(flowItem);
         }
 

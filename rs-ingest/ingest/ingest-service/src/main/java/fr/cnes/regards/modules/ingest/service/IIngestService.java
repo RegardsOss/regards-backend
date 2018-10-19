@@ -69,5 +69,5 @@ public interface IIngestService {
     /**
      * Store SIP received by HTTP bulk request or data flow
      */
-    SIPDto store(SIP sip, IngestMetadata metadata, boolean publishRejected);
+    SIPDto store(SIP sip, IngestMetadata metadata, String owner, boolean publishRejected);
 }

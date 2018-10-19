@@ -66,7 +66,8 @@ public class SIPFlowHandler implements ApplicationListener<ApplicationReadyEvent
         try {
             // Set working tenant
             runtimeTenantResolver.forceTenant(wrapper.getTenant());
-            ingestService.store(event.getSip(), event.getMetadata(), true);
+            String owner = event.getOwner() == null ? "DATAFLOW" : event.getOwner();
+            ingestService.store(event.getSip(), event.getMetadata(), owner, true);
             LOGGER.trace("SIP \"{}\" handled", event.getSip().getId());
         } finally {
             runtimeTenantResolver.clearTenant();

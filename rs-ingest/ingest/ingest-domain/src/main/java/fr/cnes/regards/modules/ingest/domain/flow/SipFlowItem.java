@@ -46,6 +46,9 @@ public class SipFlowItem implements ISubscribable {
     @NotNull
     private SIP sip;
 
+    @NotNull
+    private String owner;
+
     public IngestMetadata getMetadata() {
         return metadata;
     }
@@ -62,11 +65,23 @@ public class SipFlowItem implements ISubscribable {
         this.sip = sip;
     }
 
-    public static SipFlowItem build(String ingestProcessingChain, String session, SIP sip) {
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
+    public static SipFlowItem build(String ingestProcessingChain, String session, SIP sip, String owner) {
+        Assert.hasText(ingestProcessingChain, "INGEST processing chain is required");
+        Assert.hasText(session, "Session is required");
         Assert.notNull(sip, "SIP is required");
+        Assert.hasText(owner, "Owner is required");
         SipFlowItem event = new SipFlowItem();
         event.setMetadata(IngestMetadata.build(ingestProcessingChain, session));
         event.setSip(sip);
+        event.setOwner(owner);
         return event;
     }
 }
