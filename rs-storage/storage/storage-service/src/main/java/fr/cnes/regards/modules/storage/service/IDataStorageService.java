@@ -76,8 +76,9 @@ public interface IDataStorageService {
      * Method called when a FAILURE {@link DataStorageEvent} {@link StorageAction#STORE} event is received.
      * @param storeFailFile {@link StorageDataFile} not deleted.
      * @param failureCause
+     * @param storageConfId
      */
-    void handleStoreFailed(StorageDataFile storeFailFile, String failureCause);
+    void handleStoreFailed(StorageDataFile storeFailFile, String failureCause, Long storageConfId);
 
     /**
      * @return all diagnostic information from all active {@link IDataStorage}s configuration
