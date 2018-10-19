@@ -396,7 +396,6 @@ public class OrderService implements IOrderService {
                 } else {
                     addExternalFileToExternalBucket(order, externalBucketFiles, dataFile, feature);
                 }
-                break;
             }
         }
     }
