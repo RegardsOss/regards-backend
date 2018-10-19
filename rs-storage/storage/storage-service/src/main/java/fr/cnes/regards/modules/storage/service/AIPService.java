@@ -300,23 +300,43 @@ public class AIPService implements IAIPService {
 
         // Store valid AIPs
         for (AIP aip : validAips) {
-            aip.setState(AIPState.VALID);
-            aip.addEvent(EventType.SUBMISSION.name(), "Submission to REGARDS");
-            save(aip, false);
-
-            // Extract data files
-            AIPSession aipSession = getSession(aip.getSession(), false);
-            Set<StorageDataFile> dataFiles = StorageDataFile.extractDataFiles(aip, aipSession);
-            dataFiles.forEach(df -> {
-                df.setState(DataFileState.PENDING);
-                dataFileDao.save(df);
-            });
-            // To avoid performance problems due to hibernate cache size. We flush entity manager after each entity to save.
-            em.flush();
-            em.clear();
+            storeValidAip(aip, false);
         }
 
         return rejectedAips;
+    }
+
+    private void storeValidAip(AIP aip, boolean publish) {
+        aip.setState(AIPState.VALID);
+        aip.addEvent(EventType.SUBMISSION.name(), "Submission to REGARDS");
+        save(aip, publish);
+
+        // Extract data files
+        AIPSession aipSession = getSession(aip.getSession(), false);
+        Set<StorageDataFile> dataFiles = StorageDataFile.extractDataFiles(aip, aipSession);
+        dataFiles.forEach(df -> {
+            df.setState(DataFileState.PENDING);
+            dataFileDao.save(df);
+        });
+        // To avoid performance problems due to hibernate cache size. We flush entity manager after each entity to save.
+        em.flush();
+        em.clear();
+    }
+
+    @Override
+    public void validateAndStore(AIP aip) {
+        List<String> rejectionReasons = Lists.newArrayList();
+        if (validate(aip, rejectionReasons)) {
+            storeValidAip(aip, true);
+        } else {
+            aip.setState(AIPState.REJECTED);
+            AIPEvent event = new AIPEvent(aip);
+            StringJoiner joiner = new StringJoiner(" ");
+            rejectionReasons.forEach(r -> joiner.add(r));
+            event.setFailureCause(joiner.toString());
+            publisher.publish(event);
+        }
+
     }
 
     /**
@@ -331,29 +351,39 @@ public class AIPService implements IAIPService {
 
         for (AIP aip : aips.getFeatures()) {
             // each aip can be rejected for multiple reasons, lets aggregate them into a string
-            boolean rejected = false;
             List<String> rejectionReasons = Lists.newArrayList();
-            String ipId = aip.getId().toString();
-            // first of all lets see if there already is an aip with this ip id into the database
-            if (aipDao.findOneByAipId(ipId).isPresent()) {
-                rejectionReasons.add(String.format("AIP with ip id %s already exists", ipId));
-                rejected = true;
-            }
-            Errors errors = new BeanPropertyBindingResult(aip, "aip");
-            validator.validate(aip, errors);
-            if (errors.hasErrors()) {
-                errors.getFieldErrors().forEach(oe -> rejectionReasons
-                        .add(String.format("Property %s is invalid: %s", oe.getField(), oe.getDefaultMessage())));
-                // now lets handle validation issues
-                rejected = true;
-            }
-            if (rejected) {
-                rejectedAips.add(new RejectedAip(ipId, rejectionReasons));
-            } else {
+            if (validate(aip, rejectionReasons)) {
                 validAips.add(aip);
+            } else {
+                rejectedAips.add(new RejectedAip(aip.getId().toString(), rejectionReasons));
             }
         }
         return validAips;
+    }
+
+    /**
+     * Validate a single AIP
+     * @param AIP the AIP to validate
+     * @param rejectionReasons reasons for rejection if not valid
+     * @return true is AIP is valid
+     */
+    private boolean validate(AIP aip, List<String> rejectionReasons) {
+        boolean validated = true;
+        // first of all lets see if there already is an aip with this ip id into the database
+        String ipId = aip.getId().toString();
+        if (aipDao.findOneByAipId(ipId).isPresent()) {
+            rejectionReasons.add(String.format("AIP with ip id %s already exists.", ipId));
+            validated = false;
+        }
+        Errors errors = new BeanPropertyBindingResult(aip, "aip");
+        validator.validate(aip, errors);
+        if (errors.hasErrors()) {
+            errors.getFieldErrors().forEach(oe -> rejectionReasons
+                    .add(String.format("Property %s is invalid: %s.", oe.getField(), oe.getDefaultMessage())));
+            // now lets handle validation issues
+            validated = false;
+        }
+        return validated;
     }
 
     @Override

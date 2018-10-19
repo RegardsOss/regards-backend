@@ -23,6 +23,9 @@ package fr.cnes.regards.modules.storage.domain;
  * State transition from top to bottom unless indicated otherwise.
  *
  * <pre>
+ *                o
+ *                |_______ REJECTED
+ *                |
  *              VALID <------------------
  *                |                     |
  *             PENDING                  |
@@ -50,6 +53,10 @@ package fr.cnes.regards.modules.storage.domain;
  *
  */
 public enum AIPState implements IAipState {
+    /**
+     * AIP has been rejected
+     */
+    REJECTED,
     /**
      * AIP has been validated, network has not corrupted it
      */

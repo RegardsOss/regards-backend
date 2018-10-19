@@ -20,6 +20,7 @@ import org.mockito.internal.matchers.NotNull;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.request.RequestDocumentation;
 import org.springframework.restdocs.snippet.Attributes;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.common.collect.Lists;
@@ -48,6 +49,7 @@ import fr.cnes.regards.modules.storage.domain.job.AddAIPTagsFilters;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
+@DirtiesContext
 public class AIPControllerIT extends AbstractAIPControllerIT {
 
     private static final int MAX_WAIT = 60000;
