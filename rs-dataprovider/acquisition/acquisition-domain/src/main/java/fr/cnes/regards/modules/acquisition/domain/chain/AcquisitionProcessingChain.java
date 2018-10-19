@@ -184,13 +184,6 @@ public class AcquisitionProcessingChain {
     @Column(name = "generation_retry_enabled")
     private boolean generationRetryEnabled = false;
 
-    /**
-     * When starting processing chain, system tries to re-launch SIP submission for product in {@link ProductSIPState#SUBMISSION_ERROR}
-     */
-    @NotNull(message = "Submission retry status is required")
-    @Column(name = "submission_retry_enabled")
-    private boolean submissionRetryEnabled = true;
-
     public String getLabel() {
         return label;
     }
@@ -330,19 +323,5 @@ public class AcquisitionProcessingChain {
      */
     public void setGenerationRetryEnabled(boolean generationRetryEnabled) {
         this.generationRetryEnabled = generationRetryEnabled;
-    }
-
-    /**
-     * @return the submissionRetryEnabled
-     */
-    public boolean isSubmissionRetryEnabled() {
-        return submissionRetryEnabled;
-    }
-
-    /**
-     * @param submissionRetryEnabled the submissionRetryEnabled to set
-     */
-    public void setSubmissionRetryEnabled(boolean submissionRetryEnabled) {
-        this.submissionRetryEnabled = submissionRetryEnabled;
     }
 }

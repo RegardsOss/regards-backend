@@ -79,10 +79,6 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
             if (processingChain.isGenerationRetryEnabled()) {
                 processingService.retrySIPGeneration(processingChain);
             }
-            // Trying to restart products that fail during SIP submission
-            if (processingChain.isSubmissionRetryEnabled()) {
-                processingService.retrySIPSubmission(processingChain);
-            }
             // Restart interrupted jobs
             processingService.restartInterruptedJobs(processingChain);
 

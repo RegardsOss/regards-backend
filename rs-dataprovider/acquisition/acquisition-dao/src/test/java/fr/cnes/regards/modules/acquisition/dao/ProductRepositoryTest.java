@@ -63,7 +63,7 @@ public class ProductRepositoryTest extends AbstractDaoTest {
 
         Page<Product> productByState = productRepository
                 .findByProcessingChainIngestChainAndSessionAndSipState("DefaultIngestChain", "NO_SESSION",
-                                                                       ProductSIPState.SUBMISSION_SCHEDULED,
+                                                                       ProductSIPState.SUBMITTED,
                                                                        new PageRequest(0, 10));
         Assert.assertNotNull(productByState);
 

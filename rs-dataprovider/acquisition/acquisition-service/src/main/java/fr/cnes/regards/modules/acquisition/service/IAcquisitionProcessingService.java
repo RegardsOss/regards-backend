@@ -184,11 +184,6 @@ public interface IAcquisitionProcessingService {
     void retrySIPGeneration(AcquisitionProcessingChain processingChain);
 
     /**
-     * Retry SIP submission for products in {@link ProductSIPState#SUBMISSION_ERROR}
-     */
-    void retrySIPSubmission(AcquisitionProcessingChain processingChain);
-
-    /**
      * Build summaries list of {@link AcquisitionProcessingChain}s.
      * Each summary allow to monitor chain progress.
      * @param label {@link String} optional search parameter on {@link AcquisitionProcessingChain}s label

@@ -23,7 +23,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
@@ -38,7 +37,6 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
-import fr.cnes.regards.modules.ingest.client.IIngestClient;
 
 /**
  * Test acquisition chain processing
@@ -64,10 +62,6 @@ public abstract class AbstractAcquisitionChainTest extends AbstractMultitenantSe
     @Configuration
     static class AcquisitionConfiguration {
 
-        @Bean
-        public IIngestClient ingestClient() {
-            return new IngestClientMock();
-        }
     }
 
     /**
@@ -109,36 +103,22 @@ public abstract class AbstractAcquisitionChainTest extends AbstractMultitenantSe
             fileAcquired = fileRepository.findByStateOrderByIdAsc(AcquisitionFileState.ACQUIRED, new PageRequest(0, 1))
                     .getTotalElements();
             loops--;
-        } while ((fileAcquired != expectedFileAcquired) && (loops != 0));
+        } while (fileAcquired != expectedFileAcquired && loops != 0);
 
         if (fileAcquired != expectedFileAcquired) {
             Assert.fail();
         }
 
-        // Wait until SIP are generated
-        long productGenerated = 0;
-        long expectedProducts = getExpectedProducts();
-        loops = 10;
-        do {
-            Thread.sleep(1_000);
-            productGenerated = productRepository
-                    .findBySipStateOrderByIdAsc(ProductSIPState.GENERATED, new PageRequest(0, 1)).getTotalElements();
-            loops--;
-        } while ((productGenerated != expectedProducts) && (loops != 0));
-
-        if (productGenerated != expectedProducts) {
-            Assert.fail();
-        }
-
         // Wait until SIP are submitted to INGEST (mock!)
         long productSubmitted = 0;
+        long expectedProducts = getExpectedProducts();
         loops = 10;
         do {
             Thread.sleep(1_000);
             productSubmitted = productRepository
                     .findBySipStateOrderByIdAsc(ProductSIPState.SUBMITTED, new PageRequest(0, 1)).getTotalElements();
             loops--;
-        } while ((productSubmitted != expectedProducts) && (loops != 0));
+        } while (productSubmitted != expectedProducts && loops != 0);
 
         if (productSubmitted != expectedProducts) {
             Assert.fail();
