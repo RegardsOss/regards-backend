@@ -49,8 +49,8 @@ import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.plugins.product.BdsProductPlugin;
-import fr.cnes.regards.modules.acquisition.plugins.product.ProductFromMetaXmlPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.product.ProductFromDirectoryPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.product.ProductFromMetaXmlPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.product.ProductFromSagDescriptorPathPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.product.RinexProductPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.product.TarGzProductFromMetaXmlPlugin;
@@ -58,7 +58,6 @@ import fr.cnes.regards.modules.acquisition.plugins.product.TsvProductFromMetaXml
 import fr.cnes.regards.modules.acquisition.plugins.scan.MetadataScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.scan.SagDescriptorScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.scan.TarGzScanPlugin;
-import fr.cnes.regards.modules.acquisition.plugins.scan.ZipScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.sip.BdsSipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.sip.CccHistoriqueSipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.sip.CccRawHktmSipGenerationPlugin;
@@ -71,9 +70,9 @@ import fr.cnes.regards.modules.acquisition.plugins.sip.N0cCmsmSipGenerationPlugi
 import fr.cnes.regards.modules.acquisition.plugins.sip.RinexSipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.validation.HktmValidationPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.validation.N0bGnssValidationPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.validation.N0xValidationPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.validation.ValidationFromMd5TxtPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.validation.ValidationFromMetaXmlPlugin;
-import fr.cnes.regards.modules.acquisition.plugins.validation.N0xValidationPlugin;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 
 /**
