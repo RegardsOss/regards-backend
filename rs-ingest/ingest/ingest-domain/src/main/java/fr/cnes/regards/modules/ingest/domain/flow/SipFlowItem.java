@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 
 /**
- * Data flow to ingest SIP using event driven mechanism.
+ * Data flow item to ingest SIP using event driven mechanism.
  *
  * @author Marc SORDI
  *
@@ -78,10 +78,10 @@ public class SipFlowItem implements ISubscribable {
         Assert.hasText(session, "Session is required");
         Assert.notNull(sip, "SIP is required");
         Assert.hasText(owner, "Owner is required");
-        SipFlowItem event = new SipFlowItem();
-        event.setMetadata(IngestMetadata.build(ingestProcessingChain, session));
-        event.setSip(sip);
-        event.setOwner(owner);
-        return event;
+        SipFlowItem item = new SipFlowItem();
+        item.setMetadata(IngestMetadata.build(ingestProcessingChain, session));
+        item.setSip(sip);
+        item.setOwner(owner);
+        return item;
     }
 }

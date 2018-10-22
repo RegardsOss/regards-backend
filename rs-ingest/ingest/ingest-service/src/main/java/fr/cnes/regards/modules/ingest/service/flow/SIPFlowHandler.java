@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.ingest.domain.flow.SipFlowItem;
 import fr.cnes.regards.modules.ingest.service.IIngestService;
 
 /**
- * Manage input/output SIP flow
+ * This handler absorbs the incoming SIP flow
  *
  * @author Marc SORDI
  *
@@ -62,7 +62,6 @@ public class SIPFlowHandler implements ApplicationListener<ApplicationReadyEvent
         LOGGER.trace("New SIP data flow event detected for tenant {}", wrapper.getTenant());
         SipFlowItem event = wrapper.getContent();
 
-        // Handle data flow for specified tenant
         try {
             // Set working tenant
             runtimeTenantResolver.forceTenant(wrapper.getTenant());

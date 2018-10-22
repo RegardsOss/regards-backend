@@ -56,10 +56,6 @@ public enum SipAIPState implements IAipState {
      */
     SUBMISSION_ERROR,
     /**
-     * AIP has been rejected by storage
-     */
-    REJECTED,
-    /**
      * AIP is indexed
      */
     INDEXED,
