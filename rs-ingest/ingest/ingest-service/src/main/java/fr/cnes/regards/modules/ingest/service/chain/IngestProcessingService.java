@@ -53,6 +53,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 import com.google.gson.stream.JsonWriter;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.gson.GsonBuilderFactory;
 import fr.cnes.regards.framework.gson.strategy.FieldNamePatternExclusionStrategy;
@@ -84,6 +85,7 @@ import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.ingest.service.plugin.DefaultSingleAIPGeneration;
 import fr.cnes.regards.modules.ingest.service.plugin.DefaultSipValidation;
 import fr.cnes.regards.modules.storage.domain.AIP;
+import fr.cnes.regards.modules.storage.domain.flow.AipFlowItem;
 
 /**
  * Ingest processing service
@@ -132,6 +134,9 @@ public class IngestProcessingService implements IIngestProcessingService {
 
     @Autowired
     private Validator validator;
+
+    @Autowired
+    private IPublisher publisher;
 
     @PostConstruct
     public void initDefaultPluginPackages() {
@@ -194,11 +199,24 @@ public class IngestProcessingService implements IIngestProcessingService {
     }
 
     @Override
-    public SIPEntity updateSIPEntityState(Long pId, SIPState pNewState, List<String> processingErrors) {
-        SIPEntity sip = sipRepository.findOne(pId);
-        sip.setState(pNewState);
-        sip.setProcessingErrors(processingErrors);
+    public SIPEntity updateSIPEntity(SIPEntity sip) {
         return sipService.saveSIPEntity(sip);
+    }
+
+    @Override
+    public SIPEntity saveAndSubmitAIP(SIPEntity entity, List<AIP> aips) {
+        // Store generated AIP(s) in with raw json object.
+        for (AIP aip : aips) {
+            createAIP(entity.getId(), aip);
+            // Submit AIP(s) to AIP data flow in same transaction
+            AipFlowItem item = AipFlowItem.build(aip);
+            publisher.publish(item);
+        }
+        // Update SIP entity state
+        entity.setState(SIPState.AIP_CREATED);
+        sipService.saveSIPEntity(entity);
+
+        return entity;
     }
 
     @Override
@@ -212,9 +230,9 @@ public class IngestProcessingService implements IIngestProcessingService {
     }
 
     @Override
-    public AIPEntity createAIP(Long pSipEntityId, SipAIPState pAipState, AIP pAip) {
-        SIPEntity sip = sipRepository.findOne(pSipEntityId);
-        return aipRepository.save(AIPEntityBuilder.build(sip, SipAIPState.CREATED, pAip));
+    public AIPEntity createAIP(Long sipEntityId, AIP aip) {
+        SIPEntity sip = sipRepository.findOne(sipEntityId);
+        return aipRepository.save(AIPEntityBuilder.build(sip, SipAIPState.CREATED, aip));
     }
 
     /**

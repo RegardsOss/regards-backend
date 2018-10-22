@@ -61,9 +61,6 @@ public class SIPSession {
     private long errorSipsCount = 0;
 
     @Transient
-    private long submissionErrorCount = 0;
-
-    @Transient
     private long deletedSipsCount = 0;
 
     @Transient
@@ -131,14 +128,6 @@ public class SIPSession {
 
     public void setLastActivationDate(OffsetDateTime lastActivationDate) {
         this.lastActivationDate = lastActivationDate;
-    }
-
-    public long getSubmissionErrorCount() {
-        return submissionErrorCount;
-    }
-
-    public void setSubmissionErrorCount(long submissionErrorCount) {
-        this.submissionErrorCount = submissionErrorCount;
     }
 
     public long getGenerationErrorCount() {

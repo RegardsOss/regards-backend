@@ -31,6 +31,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
@@ -74,8 +75,8 @@ public class SIPSessionService implements ISIPSessionService {
 
     @Override
     public Page<SIPSession> search(String id, OffsetDateTime from, OffsetDateTime to, Pageable pageable) {
-        Page<SIPSession> pagedSessions = sipSessionRepository
-                .findAll(SIPSessionSpecifications.search(id, from, to), pageable);
+        Page<SIPSession> pagedSessions = sipSessionRepository.findAll(SIPSessionSpecifications.search(id, from, to),
+                                                                      pageable);
         List<SIPSession> sessions = Lists.newArrayList();
         pagedSessions.forEach(s -> sessions.add(this.addSessionSipInformations(s)));
         return new PageImpl<>(sessions, pageable, pagedSessions.getTotalElements());
@@ -87,35 +88,26 @@ public class SIPSessionService implements ISIPSessionService {
      */
     private SIPSession addSessionSipInformations(SIPSession session) {
         long sipsCount = sipRepository.countBySessionId(session.getId());
-        long indexedSipsCount = sipRepository
-                .countBySessionIdAndStateIn(session.getId(), Sets.newHashSet(SIPState.INDEXED));
-        long storedSipsCount = sipRepository.countBySessionIdAndStateIn(session.getId(),
-                                                                        Sets.newHashSet(SIPState.STORED,
-                                                                                        SIPState.INDEXED,
-                                                                                        SIPState.INDEX_ERROR));
-        long generatedSipsCount = sipRepository.countBySessionIdAndStateIn(session.getId(),
-                                                                           Sets.newHashSet(SIPState.AIP_CREATED,
-                                                                                           SIPState.STORED,
-                                                                                           SIPState.INDEXED,
-                                                                                           SIPState.INDEX_ERROR,
-                                                                                           SIPState.INCOMPLETE,
-                                                                                           SIPState.SUBMISSION_ERROR,
-                                                                                           SIPState.STORE_ERROR));
-        long errorSipsCount = sipRepository.countBySessionIdAndStateIn(session.getId(),
-                                                                       Sets.newHashSet(SIPState.AIP_GEN_ERROR,
-                                                                                       SIPState.REJECTED,
-                                                                                       SIPState.SUBMISSION_ERROR,
-                                                                                       SIPState.STORE_ERROR,
-                                                                                       SIPState.INVALID,
-                                                                                       SIPState.INDEX_ERROR));
-        long submissionErrorCount = sipRepository
-                .countBySessionIdAndStateIn(session.getId(), Sets.newHashSet(SIPState.SUBMISSION_ERROR));
+        long indexedSipsCount = sipRepository.countBySessionIdAndStateIn(session.getId(),
+                                                                         Sets.newHashSet(SIPState.INDEXED));
+        long storedSipsCount = sipRepository
+                .countBySessionIdAndStateIn(session.getId(),
+                                            Sets.newHashSet(SIPState.STORED, SIPState.INDEXED, SIPState.INDEX_ERROR));
+        long generatedSipsCount = sipRepository
+                .countBySessionIdAndStateIn(session.getId(),
+                                            Sets.newHashSet(SIPState.AIP_CREATED, SIPState.STORED, SIPState.INDEXED,
+                                                            SIPState.INDEX_ERROR, SIPState.INCOMPLETE,
+                                                            SIPState.AIP_SUBMITTED, SIPState.STORE_ERROR));
+        long errorSipsCount = sipRepository
+                .countBySessionIdAndStateIn(session.getId(),
+                                            Sets.newHashSet(SIPState.AIP_GEN_ERROR, SIPState.REJECTED,
+                                                            SIPState.STORE_ERROR, SIPState.INVALID,
+                                                            SIPState.INDEX_ERROR));
         long aipGenerationErrorCount = sipRepository
                 .countBySessionIdAndStateIn(session.getId(), Sets.newHashSet(SIPState.AIP_GEN_ERROR));
-        long deletedSipsCount = sipRepository
-                .countBySessionIdAndStateIn(session.getId(), Sets.newHashSet(SIPState.DELETED));
+        long deletedSipsCount = sipRepository.countBySessionIdAndStateIn(session.getId(),
+                                                                         Sets.newHashSet(SIPState.DELETED));
         session.setErrorSipsCount(errorSipsCount);
-        session.setSubmissionErrorCount(submissionErrorCount);
         session.setGeneratedSipsCount(generatedSipsCount);
         session.setGenerationErrorCount(aipGenerationErrorCount);
         session.setIndexedSipsCount(indexedSipsCount);
@@ -132,8 +124,7 @@ public class SIPSessionService implements ISIPSessionService {
 
     @Override
     public void retryAipGeneration(String id) {
-        sipRepository.updateSIPEntityStateByStateAndSession(SIPState.CREATED,
-                                                            SIPState.AIP_GEN_ERROR,
+        sipRepository.updateSIPEntityStateByStateAndSession(SIPState.CREATED, SIPState.AIP_GEN_ERROR,
                                                             SIPSessionBuilder.build(id));
     }
 

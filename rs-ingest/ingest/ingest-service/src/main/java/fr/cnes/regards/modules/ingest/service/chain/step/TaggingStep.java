@@ -26,9 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
-import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipTagging;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -65,9 +63,6 @@ public class TaggingStep extends AbstractIngestStep<List<AIP>, Void> {
 
     @Override
     protected void doAfterError(List<AIP> pIn) {
-        SIPEntity sipEntity = this.job.getCurrentEntity();
-        sipEntity.setState(SIPState.AIP_GEN_ERROR);
-        this.updateSIPEntityState(SIPState.AIP_GEN_ERROR);
-        this.job.getPublisher().publish(new SIPEvent(sipEntity));
+        updateSIPEntityState(SIPState.AIP_GEN_ERROR);
     }
 }

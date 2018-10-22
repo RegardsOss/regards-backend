@@ -18,13 +18,14 @@
  */
 package fr.cnes.regards.modules.ingest.dao;
 
-import javax.persistence.criteria.Predicate;
-import java.time.OffsetDateTime;
 import java.util.Set;
+
+import javax.persistence.criteria.Predicate;
 
 import org.springframework.data.jpa.domain.Specification;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 
 /**
@@ -39,11 +40,7 @@ public final class IngestProcessingChainSpecifications {
     }
 
     /**
-     * Filter on the given attributes (sessionId, owner, ingestDate and state) and return result ordered by descending ingestDate
-     * @param id {@link String}
-     * @param from {@link OffsetDateTime}
-     * @param to {@link OffsetDateTime}
-     * @return
+     * Filter on the given attributes
      */
     public static Specification<IngestProcessingChain> search(String name) {
         return (root, query, cb) -> {

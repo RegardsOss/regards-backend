@@ -42,7 +42,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
-import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 
@@ -50,10 +49,8 @@ import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.microservice.maintenance.MaintenanceException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
@@ -62,16 +59,11 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
-import fr.cnes.regards.modules.ingest.domain.builder.SIPSessionBuilder;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.ingest.service.ISIPService;
-import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingService;
-import fr.cnes.regards.modules.ingest.service.job.AIPSubmissionJob;
-import fr.cnes.regards.modules.ingest.service.job.IngestJobPriority;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.notification.domain.NotificationType;
 import fr.cnes.regards.modules.storage.client.IAipClient;
@@ -107,9 +99,6 @@ public class AIPService implements IAIPService {
 
     @Autowired
     private IAIPRepository aipRepository;
-
-    @Autowired
-    private IIngestProcessingService processingService;
 
     @Autowired
     private IJobInfoService jobInfoService;
@@ -179,7 +168,7 @@ public class AIPService implements IAIPService {
         ResponseEntity<PagedResources<Resource<fr.cnes.regards.modules.storage.domain.database.AIPEntity>>> result = aipEntityClient
                 .retrieveAIPEntities(sipId.toString(), 0, 100);
         FeignSecurityManager.reset();
-        if (result.getStatusCode().equals(HttpStatus.OK) && (result.getBody() != null)) {
+        if (result.getStatusCode().equals(HttpStatus.OK) && result.getBody() != null) {
             Optional<SIPEntity> oSip = sipRepository.findOneBySipId(sipId.toString());
             if (oSip.isPresent()) {
                 SIPEntity sip = oSip.get();
@@ -240,62 +229,14 @@ public class AIPService implements IAIPService {
         return aip;
     }
 
-    /**
-     * This method is called by a time scheduler. We only schedule on job per ingest chain if and
-     * only if an existing job not already exists. To detect that a job is already scheduled, we check the AIP state of
-     * the chain. AIPs not already scheduled will be scheduled on next scheduler call.
-     */
-    @Override
-    public void scheduleAIPStorageBulkRequest() {
-        // Find all processing chains
-        List<IngestProcessingChain> ipcs = processingService.findAll();
-        // For each processing chain
-        for (IngestProcessingChain ipc : ipcs) {
-            // Check if submission not already scheduled
-            if (!aipRepository.isAlreadyWorking(ipc.getName())) {
-                Page<AIPEntity> page = aipRepository
-                        .findWithLockBySipProcessingAndState(ipc.getName(), SipAIPState.CREATED,
-                                                             new PageRequest(0, bulkRequestLimit));
-                if (page.hasContent()) {
-                    // Schedule AIP page submission
-                    for (AIPEntity aip : page.getContent()) {
-                        aip.setState(SipAIPState.SUBMISSION_SCHEDULED);
-                        aipRepository.save(aip);
-                    }
-                    // Schedule job
-                    Set<JobParameter> jobParameters = Sets.newHashSet();
-                    jobParameters.add(new JobParameter(AIPSubmissionJob.INGEST_CHAIN_PARAMETER, ipc.getName()));
-
-                    JobInfo jobInfo = new JobInfo(false);
-                    jobInfo.setPriority(IngestJobPriority.AIP_SUBMISSION_JOB_PRIORITY.getPriority());
-                    jobInfo.setParameters(jobParameters);
-                    jobInfo.setClassName(AIPSubmissionJob.class.getName());
-                    jobInfoService.createAsQueued(jobInfo);
-                }
-            }
-        }
-    }
-
     @Override
     public void handleJobEvent(JobEvent jobEvent) {
         if (JobEventType.FAILED.equals(jobEvent.getJobEventType())) {
             // Load job info
+            @SuppressWarnings("unused")
             JobInfo jobInfo = jobInfoService.retrieveJob(jobEvent.getJobId());
-            handleAIPSubmissiontError(jobInfo);
-        }
-    }
-
-    private void handleAIPSubmissiontError(JobInfo jobInfo) {
-        if (AIPSubmissionJob.class.getName().equals(jobInfo.getClassName())) {
-            Map<String, JobParameter> params = jobInfo.getParametersAsMap();
-            String ingestChain = params.get(AIPSubmissionJob.INGEST_CHAIN_PARAMETER).getValue();
-            // Set to submission error
-            Set<AIPEntity> aips = aipRepository.findBySipProcessingAndState(ingestChain,
-                                                                            SipAIPState.SUBMISSION_SCHEDULED);
-            for (AIPEntity aip : aips) {
-                setAipInError(aip.getAipIdUrn(), SipAIPState.SUBMISSION_ERROR, "Submission job error",
-                              SIPState.SUBMISSION_ERROR);
-            }
+            // FIXME handle ingest job errors!
+            LOGGER.warn("Unhandled job error : {}/{}", jobEvent.getClass().getName(), jobEvent.getJobId());
         }
     }
 
@@ -325,11 +266,6 @@ public class AIPService implements IAIPService {
     @Override
     public AIPEntity save(AIPEntity entity) {
         return aipRepository.save(entity);
-    }
-
-    @Override
-    public Set<AIPEntity> findAIPToSubmit(String ingestProcessingChain) {
-        return aipRepository.findBySipProcessingAndState(ingestProcessingChain, SipAIPState.SUBMISSION_SCHEDULED);
     }
 
     @Override
@@ -411,14 +347,5 @@ public class AIPService implements IAIPService {
         }
         notificationClient.notifyRoles(email.getText(), "Errors during SIPs deletions", "rs-ingest",
                                        NotificationType.ERROR, DefaultRole.ADMIN);
-    }
-
-    @Override
-    public void retryAipSubmission(String sessionId) throws ModuleException {
-        aipRepository.updateAIPEntityStateAndErrorMessageByStateAndSessionId(SipAIPState.CREATED.toString(), null,
-                                                                             SipAIPState.SUBMISSION_ERROR.toString(),
-                                                                             sessionId);
-        sipRepository.updateSIPEntityStateByStateAndSession(SIPState.AIP_CREATED, SIPState.SUBMISSION_ERROR,
-                                                            SIPSessionBuilder.build(sessionId));
     }
 }

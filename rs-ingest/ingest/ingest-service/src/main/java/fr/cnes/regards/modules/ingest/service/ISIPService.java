@@ -99,8 +99,8 @@ public interface ISIPService {
     Boolean isDeletable(UniformResourceName sipId) throws EntityNotFoundException;
 
     /**
-     * Save the given {@link SIPEntity} in DAO and update the associated session
-     * @param {@link SIPEntity} to update
+     * Save the given {@link SIPEntity} in DAO, update the associated session and publish a change event
+     * @param sip {@link SIPEntity} to update
      * @return {@link SIPEntity} updated
      */
     SIPEntity saveSIPEntity(SIPEntity sip);

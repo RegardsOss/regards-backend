@@ -177,7 +177,7 @@ public class IngestService implements IIngestService {
                 case DELETED:
                     sipRepository.updateSIPEntityState(SIPState.CREATED, sip.getId());
                     break;
-                case SUBMISSION_ERROR:
+                case AIP_SUBMITTED:
                 case STORE_ERROR:
                 case STORED:
                     throw new EntityOperationForbiddenException(sipId.toString(), SIPEntity.class,

@@ -49,8 +49,9 @@ public abstract class AbstractIngestStep<I, O> extends AbstractProcessingStep<I,
     }
 
     protected SIPEntity updateSIPEntityState(SIPState newEntitySIPState) {
-        return job.getIngestProcessingService().updateSIPEntityState(this.job.getCurrentEntity().getId(),
-                                                                     newEntitySIPState, processingErrors);
+        job.getCurrentEntity().setState(newEntitySIPState);
+        job.getCurrentEntity().setProcessingErrors(processingErrors);
+        return job.getIngestProcessingService().updateSIPEntity(job.getCurrentEntity());
     }
 
     protected <T> T getStepPlugin(Long confId) throws ProcessingStepException {

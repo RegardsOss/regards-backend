@@ -47,7 +47,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
 import fr.cnes.regards.modules.ingest.service.ISIPSessionService;
-import fr.cnes.regards.modules.ingest.service.store.IAIPService;
 
 @RestController
 @RequestMapping(SIPSessionController.TYPE_MAPPING)
@@ -72,9 +71,6 @@ public class SIPSessionController implements IResourceController<SIPSession> {
     @Autowired
     private ISIPSessionService sipSessionService;
 
-    @Autowired
-    private IAIPService aipService;
-
     /**
      * Service handling hypermedia resources
      */
@@ -85,10 +81,11 @@ public class SIPSessionController implements IResourceController<SIPSession> {
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<PagedResources<Resource<SIPSession>>> search(
             @RequestParam(name = REQUEST_PARAM_ID, required = false) String id,
-            @RequestParam(name = REQUEST_PARAM_FROM, required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
-            @RequestParam(name = REQUEST_PARAM_TO, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                    OffsetDateTime to, @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            @RequestParam(name = REQUEST_PARAM_FROM,
+                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
+            @RequestParam(name = REQUEST_PARAM_TO,
+                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to,
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<SIPSession> pAssembler) {
         Page<SIPSession> sipSessions = sipSessionService.search(id, from, to, pageable);
         PagedResources<Resource<SIPSession>> resources = toPagedResources(sipSessions, pAssembler);
@@ -102,13 +99,6 @@ public class SIPSessionController implements IResourceController<SIPSession> {
         sipSessionService.deleteSIPSession(id);
         long methodEnd = System.currentTimeMillis();
         LOGGER.debug("Deleting session {} took {} ms", id, methodEnd - methodStart);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @ResourceAccess(description = "Retry session AIP submission")
-    @RequestMapping(value = RETRY_SUBMISSION_MAPPING, method = RequestMethod.PUT)
-    public ResponseEntity<Void> retrySessionSubmission(@PathVariable("id") String id) throws ModuleException {
-        aipService.retryAipSubmission(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -133,11 +123,7 @@ public class SIPSessionController implements IResourceController<SIPSession> {
                                 MethodParamFactory.build(String.class, sipSession.getId()));
         resourceService.addLink(resource, this.getClass(), "deleteSipEntityBySessionId", LinkRels.DELETE,
                                 MethodParamFactory.build(String.class, sipSession.getId()));
-        if (sipSession.getSubmissionErrorCount() > 0) {
-            resourceService.addLink(resource, this.getClass(), "retrySessionSubmission", "retrySubmission",
-                                    MethodParamFactory.build(String.class, sipSession.getId()));
-        }
-        if(sipSession.getGenerationErrorCount() > 0) {
+        if (sipSession.getGenerationErrorCount() > 0) {
             resourceService.addLink(resource, this.getClass(), "retrySessionGeneration", "retryGeneration",
                                     MethodParamFactory.build(String.class, sipSession.getId()));
         }

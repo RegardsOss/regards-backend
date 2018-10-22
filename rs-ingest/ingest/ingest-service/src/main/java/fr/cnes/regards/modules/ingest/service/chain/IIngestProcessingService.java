@@ -32,7 +32,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
-import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
+import fr.cnes.regards.modules.ingest.service.ISIPService;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.storage.domain.AIP;
 
@@ -55,13 +55,14 @@ public interface IIngestProcessingService {
     void scheduleIngestProcessingJob(Set<Long> entityIdsToProcess, String processingChain);
 
     /**
-     * Update state of given SIPEntity
-     * @param id of {@link SIPEntity} to update
-     * @param newState new {@link SIPState}
-     * @param processingErrors processing errors (may be null)
-     * @return updated {@link SIPEntity}
+     *  {@link ISIPService} delegated method, save and publish entity
      */
-    SIPEntity updateSIPEntityState(Long id, SIPState newState, List<String> processingErrors);
+    SIPEntity updateSIPEntity(SIPEntity sip);
+
+    /**
+     * After AIP(s) generation, save the context and submit AIP(s) in the AIP data flow (within the same transaction)
+     */
+    SIPEntity saveAndSubmitAIP(SIPEntity entity, List<AIP> aips);
 
     /**
      * Return {@link SIPEntity} for the given id
@@ -77,7 +78,7 @@ public interface IIngestProcessingService {
     /**
      * Create AIP
      */
-    AIPEntity createAIP(Long sipEntityId, SipAIPState aipState, AIP aip);
+    AIPEntity createAIP(Long sipEntityId, AIP aip);
 
     /**
      * Create a new {@link IngestProcessingChain}

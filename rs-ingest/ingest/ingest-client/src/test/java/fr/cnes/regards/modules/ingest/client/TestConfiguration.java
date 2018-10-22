@@ -24,17 +24,11 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 import fr.cnes.regards.modules.notification.client.INotificationClient;
-import fr.cnes.regards.modules.storage.client.IAipClient;
 import fr.cnes.regards.modules.storage.client.IAipEntityClient;
 
 @Configuration
 @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
 public class TestConfiguration {
-
-    @Bean
-    public IAipClient mockAIPClient() {
-        return Mockito.mock(IAipClient.class);
-    }
 
     @Bean
     public IAipEntityClient mockAIPEntityClient() {

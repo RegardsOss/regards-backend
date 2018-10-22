@@ -28,7 +28,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.reflect.TypeToken;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -71,9 +70,6 @@ public class IngestProcessingJob extends AbstractJob<Void> {
     @Autowired
     private IIngestProcessingService ingestProcessingService;
 
-    @Autowired
-    private IPublisher publisher;
-
     private Set<SIPEntity> entities;
 
     /**
@@ -106,9 +102,6 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-
-        //        super.logger.debug("Launching processing chain \"{}\" for SIP \"{}\"", processingChain.getName(),
-        //                           entity.getSipId());
 
         // Initializing steps
         // Step 1 : optional preprocessing
@@ -177,10 +170,6 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
     public IIngestProcessingService getIngestProcessingService() {
         return ingestProcessingService;
-    }
-
-    public IPublisher getPublisher() {
-        return publisher;
     }
 
     public SIPEntity getCurrentEntity() {

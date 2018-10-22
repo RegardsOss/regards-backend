@@ -26,16 +26,6 @@ package fr.cnes.regards.modules.ingest.service.job;
 public enum IngestJobPriority {
 
     /**
-     * Only one job per ingest chain can be available at a time
-     */
-    AIP_SUBMISSION_JOB_PRIORITY {
-
-        @Override
-        public int getPriority() {
-            return 10;
-        }
-    },
-    /**
      * One SIP, one job!
      */
     INGEST_PROCESSING_JOB_PRIORITY {

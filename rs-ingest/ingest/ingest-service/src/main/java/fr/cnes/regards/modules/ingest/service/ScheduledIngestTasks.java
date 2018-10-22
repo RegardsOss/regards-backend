@@ -70,17 +70,6 @@ public class ScheduledIngestTasks {
         }
     }
 
-    @Scheduled(fixedRateString = "${regards.ingest.process.new.aips.storage.delay:30000}")
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void processNewAipsBulkRequest() {
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
-            LOGGER.trace("Scheduled task : Process new AIP bulk request to archival storage for tenant {}", tenant);
-            runtimeTenantResolver.forceTenant(tenant);
-            aipBulkRequestService.scheduleAIPStorageBulkRequest();
-            runtimeTenantResolver.clearTenant();
-        }
-    }
-
     @Scheduled(fixedRateString = "${regards.ingest.ask.for.aips.deletion.rate:60000}")
     public void askForAipsDeletion() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {

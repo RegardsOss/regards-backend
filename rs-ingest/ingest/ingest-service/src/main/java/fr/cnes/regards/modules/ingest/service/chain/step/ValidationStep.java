@@ -29,9 +29,7 @@ import org.springframework.validation.ObjectError;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
-import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 import fr.cnes.regards.modules.ingest.domain.plugin.ISipValidation;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 
@@ -70,18 +68,12 @@ public class ValidationStep extends AbstractIngestStep<SIP, Void> {
 
         // On success
         updateSIPEntityState(SIPState.VALID);
-        SIPEntity sipEntity = this.job.getCurrentEntity();
-        sipEntity.setState(SIPState.VALID);
-        job.getPublisher().publish(new SIPEvent(sipEntity));
         return null;
     }
 
     @Override
     protected void doAfterError(SIP sip) {
-        SIPEntity sipEntity = this.job.getCurrentEntity();
-        sipEntity.setState(SIPState.INVALID);
         LOGGER.error("Error prepocessing SIP \"{}\"", sip.getId());
         this.updateSIPEntityState(SIPState.INVALID);
-        this.job.getPublisher().publish(new SIPEvent(sipEntity));
     }
 }
