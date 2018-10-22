@@ -78,6 +78,8 @@ public final class Microscope {
 
     public static final String ZIP_EXT = ".zip";
 
+    public static final String NCD_EXT = ".nc";
+
     // SIP Descriptive informations keys
     public static final String START_DATE = "StartDate";
 
@@ -98,6 +100,67 @@ public final class Microscope {
     public static final String SCOPE = "Scope";
 
     public static final String SESSION = "Session";
+
+    public static final String SESSION_NB = "NumSession";
+
+    public static final String PHASE = "Phase";
+
+    public static final String TECHNO = "Techno";
+
+    public static final String SESSION_TYPE = "SessionType";
+
+    public static final String SESSION_SUB_TYPE = "SessionSubType";
+
+    public static final String SPIN = "SPIN";
+
+    public static final String CAL_PARAM = "CalParam";
+
+    public static final String RECORD_FILE_NAME = "RecordFileName";
+
+    public static final String RECORD_VERSION = "RecordVersion";
+
+    public static final String ENV_CONSTRAINT = "EnvConstraint";
+
+    public static final String ACTIVE_SU = "ActiveSU";
+
+    public static final String PID_VERSION = "PIDVersion";
+
+    public static final String ORBITS_COUNT = "NumberOfOrbits";
+
+    public static final String COMMENT = "Comment";
+
+    // NETCDF TAGS
+    public static final String SESSION_NB_NC_TAG = SESSION_NB;
+
+    public static final String START_DATE_NC_TAG = START_DATE;
+
+    public static final String END_DATE_NC_TAG = END_DATE;
+
+    public static final String PHASE_NC_TAG = PHASE;
+
+    public static final String TECHNO_NC_TAG = TECHNO;
+
+    public static final String SESSION_TYPE_NC_TAG = SESSION_TYPE;
+
+    public static final String SESSION_SUB_TYPE_NC_TAG = SESSION_SUB_TYPE;
+
+    public static final String ROTATE_MOD_NC_TAG = "RotateMod";
+
+    public static final String CAL_PARAM_NC_TAG = CAL_PARAM;
+
+    public static final String RECORD_FILE_NAME_NC_TAG = RECORD_FILE_NAME;
+
+    public static final String RECORD_VERSION_NC_TAG = RECORD_VERSION;
+
+    public static final String ENV_CONSTRAINT_NC_TAG = ENV_CONSTRAINT;
+
+    public static final String ACTIVE_SU_NC_TAG = ACTIVE_SU;
+
+    public static final String PID_VERSION_NC_TAG = PID_VERSION;
+
+    public static final String ORBITS_COUNT_NC_TAG = ORBITS_COUNT;
+
+    public static final String COMMENT_NC_TAG = COMMENT;
 
     // Missing MimeTypes
     public static final MimeType GZIP_MIME_TYPE = new MimeType("application", "gzip");
