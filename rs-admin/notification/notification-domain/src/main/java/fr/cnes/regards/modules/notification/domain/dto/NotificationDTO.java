@@ -82,6 +82,16 @@ public class NotificationDTO {
      * @param type notification type
      */
     public NotificationDTO(String message, Set<String> projectUserRecipients, Set<String> roleRecipients, String sender,
+            String title, NotificationType type) {
+        this.message = message;
+        this.projectUserRecipients = projectUserRecipients;
+        this.roleRecipients = roleRecipients;
+        this.sender = sender;
+        this.title = title;
+        this.type = type;
+    }
+
+    public NotificationDTO(String message, Set<String> projectUserRecipients, Set<String> roleRecipients, String sender,
             String title, NotificationType type, MimeType mimeType) {
         this.message = message;
         this.projectUserRecipients = projectUserRecipients;
