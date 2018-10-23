@@ -69,11 +69,8 @@ public class MaintenanceControllerIT extends AbstractRegardsIT {
     public void setMaintenanceTest() {
         List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_ACTIVATE_URL,
-                          null,
-                          expectations,
-                          ERROR_MSG,
-                          TENANT);
+        performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_ACTIVATE_URL, null,
+                          expectations, ERROR_MSG, TENANT);
     }
 
     @Test
@@ -81,10 +78,7 @@ public class MaintenanceControllerIT extends AbstractRegardsIT {
         List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
         performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_DESACTIVATE_URL,
-                          null,
-                          expectations,
-                          ERROR_MSG,
-                          TENANT);
+                          null, expectations, ERROR_MSG, TENANT);
     }
 
     @Test
@@ -121,11 +115,8 @@ public class MaintenanceControllerIT extends AbstractRegardsIT {
         // Set the maintenance mode is for the tenant
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_ACTIVATE_URL,
-                          null,
-                          expectations,
-                          ERROR_MSG,
-                          DEFAULT_TENANT);
+        performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_ACTIVATE_URL, null,
+                          expectations, ERROR_MSG, DEFAULT_TENANT);
 
         // control that the service is in maintenance for the default tenant
         expectations.clear();
@@ -160,11 +151,8 @@ public class MaintenanceControllerIT extends AbstractRegardsIT {
         // Set the maintenance mode is for the tenant
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_ACTIVATE_URL,
-                          null,
-                          expectations,
-                          ERROR_MSG,
-                          DEFAULT_TENANT);
+        performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_ACTIVATE_URL, null,
+                          expectations, ERROR_MSG, DEFAULT_TENANT);
 
         // control that the service is in maintenance for the default tenant
         expectations.clear();
@@ -180,10 +168,7 @@ public class MaintenanceControllerIT extends AbstractRegardsIT {
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isOk());
         performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_DESACTIVATE_URL,
-                          null,
-                          expectations,
-                          ERROR_MSG,
-                          DEFAULT_TENANT);
+                          null, expectations, ERROR_MSG, DEFAULT_TENANT);
 
         // control that the service is not in maintenance for the default tenant
         expectations.clear();
@@ -208,11 +193,8 @@ public class MaintenanceControllerIT extends AbstractRegardsIT {
         // Set the maintenance mode is for the default tenant
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_ACTIVATE_URL,
-                          null,
-                          expectations,
-                          ERROR_MSG,
-                          DEFAULT_TENANT);
+        performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_ACTIVATE_URL, null,
+                          expectations, ERROR_MSG, DEFAULT_TENANT);
 
         // control that the service is in maintenance for the default tenant
         expectations.clear();
@@ -225,15 +207,11 @@ public class MaintenanceControllerIT extends AbstractRegardsIT {
         performDefaultGet(MaintenanceController.MAINTENANCE_URL, expectations, ERROR_MSG);
 
         // control that the service is not in maintenance for the other tenant
-        String token = jwtService.generateToken(TENANT, DEFAULT_USER_EMAIL, DEFAULT_ROLE);
+        String token = jwtService.generateToken(TENANT, DEFAULT_USER_EMAIL, DEFAULT_USER_EMAIL, DEFAULT_ROLE);
         expectations.clear();
         expectations.add(MockMvcResultMatchers.status().isCreated());
-        performPostWithContentType(TestController.MAINTENANCE_TEST_URL,
-                                   token,
-                                   null,
-                                   MediaType.APPLICATION_JSON_VALUE,
-                                   expectations,
-                                   ERROR_MSG);
+        performPostWithContentType(TestController.MAINTENANCE_TEST_URL, token, null, MediaType.APPLICATION_JSON_VALUE,
+                                   expectations, ERROR_MSG);
 
         resetMaintenanceMode();
     }
@@ -242,10 +220,7 @@ public class MaintenanceControllerIT extends AbstractRegardsIT {
         List<ResultMatcher> expectations = new ArrayList<>();
         expectations.add(MockMvcResultMatchers.status().isOk());
         performDefaultPut(MaintenanceController.MAINTENANCE_URL + MaintenanceController.MAINTENANCE_DESACTIVATE_URL,
-                          null,
-                          expectations,
-                          ERROR_MSG,
-                          DEFAULT_TENANT);
+                          null, expectations, ERROR_MSG, DEFAULT_TENANT);
     }
 
 }

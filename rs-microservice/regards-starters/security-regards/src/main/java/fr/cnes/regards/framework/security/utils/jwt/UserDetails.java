@@ -43,19 +43,39 @@ public class UserDetails implements Serializable {
     /**
      * User email
      */
-    private String name;
+    private String email;
+
+    /**
+     * User login
+     */
+    private String login;
 
     /**
      * User role name
      */
     private String role;
 
-    public String getName() {
-        return name;
+    public UserDetails(String tenant, String email, String login, String role) {
+        super();
+        this.tenant = tenant;
+        this.email = email;
+        this.login = login;
+        this.role = role;
     }
 
-    public void setName(String pName) {
-        name = pName;
+    public UserDetails(String tenant, String email, String role) {
+        super();
+        this.tenant = tenant;
+        this.email = email;
+        this.role = role;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     /**
@@ -79,6 +99,14 @@ public class UserDetails implements Serializable {
 
     public void setRole(String pRole) {
         role = pRole;
+    }
+
+    public String getLogin() {
+        return login;
+    }
+
+    public void setLogin(String login) {
+        this.login = login;
     }
 
 }
