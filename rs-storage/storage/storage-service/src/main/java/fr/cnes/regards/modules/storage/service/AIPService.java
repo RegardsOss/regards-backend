@@ -52,6 +52,8 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.util.Pair;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MimeType;
+import org.springframework.util.MimeTypeUtils;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
@@ -700,16 +702,17 @@ public class AIPService implements IAIPService {
             } catch (EntityNotFoundException e) {
                 throw new MaintenanceException(e.getMessage(), e);
             }
-            notifyAdmins("Some file were not associated to a data storage", email.getText(), NotificationType.ERROR);
+            notifyAdmins("Some file were not associated to a data storage", email.getText(), NotificationType.ERROR,
+                         MimeTypeUtils.TEXT_HTML);
         }
     }
 
     /**
      * Use the notification module in admin to create a notification for admins
      */
-    private void notifyAdmins(String title, String message, NotificationType type) {
+    private void notifyAdmins(String title, String message, NotificationType type, MimeType mimeType) {
         NotificationDTO notif = new NotificationDTO(message, Sets.newHashSet(),
-                Sets.newHashSet(DefaultRole.ADMIN.name()), applicationName, title, type);
+                Sets.newHashSet(DefaultRole.ADMIN.name()), applicationName, title, type, mimeType);
         try {
             FeignSecurityManager.asSystem();
             notificationClient.createNotification(notif);
@@ -818,16 +821,16 @@ public class AIPService implements IAIPService {
                 } catch (EntityNotFoundException e) {
                     throw new MaintenanceException(e.getMessage(), e);
                 }
-                notifyAdmins("Some file were not handled by a data storage", email.getText(), NotificationType.ERROR);
+                notifyAdmins("Some file were not handled by a data storage", email.getText(), NotificationType.ERROR, MimeTypeUtils.TEXT_HTML);
             }
             return workingSubSets;
         } else {
             notifyAdmins("Some files could not be handled by their storage plugin.",
                          String.format("Plugin Configuration %s could not be instanciated."
-                                 + " Please check the configuration."
+                                 + " Please check the configuration.%n"
                                  + " Skipping work(mode: %s) on this Plugin configuration for now.", dataStorageConfId,
                                        accessMode),
-                         NotificationType.ERROR);
+                         NotificationType.ERROR, MimeTypeUtils.TEXT_PLAIN);
             return new HashSet<>();
         }
     }
@@ -843,7 +846,7 @@ public class AIPService implements IAIPService {
             return pluginService.getPlugin(activeAllocationStrategy.getId());
         } catch (PluginUtilsRuntimeException e) {
             LOGGER.error(e.getMessage(), e);
-            notifyAdmins("Allocation Strategy miss configured", e.getMessage(), NotificationType.ERROR);
+            notifyAdmins("Allocation Strategy miss configured", e.getMessage(), NotificationType.ERROR, MimeTypeUtils.TEXT_PLAIN);
             throw e;
         }
     }
@@ -859,7 +862,7 @@ public class AIPService implements IAIPService {
             IllegalStateException e = new IllegalStateException(
                     "The application needs one and only one active configuration of "
                             + IAllocationStrategy.class.getName());
-            notifyAdmins("No active Allocation Strategy", e.getMessage(), NotificationType.ERROR);
+            notifyAdmins("No active Allocation Strategy", e.getMessage(), NotificationType.ERROR, MimeTypeUtils.TEXT_PLAIN);
             LOGGER.error(e.getMessage(), e);
             throw e;
         }
@@ -903,7 +906,7 @@ public class AIPService implements IAIPService {
             LOGGER.error(e.getMessage(), e);
             notifyAdmins("Could not schedule metadata storage",
                          "Metadata storage could not be realized because an error occured. Please check the logs",
-                         NotificationType.ERROR);
+                         NotificationType.ERROR, MimeTypeUtils.TEXT_PLAIN);
         }
     }
 

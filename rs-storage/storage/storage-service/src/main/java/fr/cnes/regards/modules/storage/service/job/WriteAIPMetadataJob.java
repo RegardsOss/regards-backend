@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.MimeType;
+import org.springframework.util.MimeTypeUtils;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
@@ -62,11 +63,6 @@ import fr.cnes.regards.modules.storage.service.IDataStorageService;
  * @author Sébastien Binda
  */
 public class WriteAIPMetadataJob extends AbstractJob<Void> {
-
-    /**
-     * Class logger
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(WriteAIPMetadataJob.class);
 
     /**
      * JSON files extension.
@@ -109,10 +105,10 @@ public class WriteAIPMetadataJob extends AbstractJob<Void> {
                 try {
                     aip = aipService.retrieveAip(aipId);
                     try {
-                        LOGGER.debug("[METADATA STORE] Writting meta-data for aip fully stored {}", aipId);
+                        logger.debug("[METADATA STORE] Writting meta-data for aip fully stored {}", aipId);
                         metadataToStore.add(writeMetaToWorkspace(aip));
                     } catch (IOException | FileCorruptedException e) {
-                        LOGGER.error(e.getMessage(), e);
+                        logger.error(e.getMessage(), e);
                         aip.setState(AIPState.STORAGE_ERROR);
                         aipService.save(aip, true);
                     }
@@ -120,7 +116,8 @@ public class WriteAIPMetadataJob extends AbstractJob<Void> {
                     String message = String
                             .format("Unable to write metadata file for AIP fully stored %s. The AIP does not exists anymore.",
                                     aipId);
-                    dataStorageService.notifyAdmins("Storage error", message, NotificationType.ERROR);
+                    dataStorageService.notifyAdmins("Storage error", message, NotificationType.ERROR,
+                                                    MimeTypeUtils.TEXT_PLAIN);
                 }
             }
 
@@ -163,7 +160,7 @@ public class WriteAIPMetadataJob extends AbstractJob<Void> {
                 metadataAipFile.setState(DataFileState.PENDING);
             } else {
                 workspaceService.removeFromWorkspace(metadataName);
-                LOGGER.error(String
+                logger.error(String
                         .format("Storage of AIP metadata(%s) into workspace(%s) failed. Computed checksum once stored does not "
                                 + "match expected one", aip.getId().toString(),
                                 workspaceService.getMicroserviceWorkspace()));
@@ -173,7 +170,7 @@ public class WriteAIPMetadataJob extends AbstractJob<Void> {
             }
         } catch (NoSuchAlgorithmException e) {
             // Delete written file
-            LOGGER.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
             workspaceService.removeFromWorkspace(metadataName);
             // this exception should never be thrown as it comes from the same algorithm then at the beginning
             throw new IOException(e);
