@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
+import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -50,8 +53,6 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.role.RoleService;
-import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Integration tests for Roles REST Controller.
@@ -206,7 +207,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultDelete(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING, expectations,
                              "TODO Error message", publicRole.getName());
 
-        jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString(), "");
+        jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString(), "", "");
         Assert.assertEquals(nRole, roleRepository.count());
     }
 
@@ -256,7 +257,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultDelete(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING, expectations,
                              "TODO Error message", roleTest.getName());
 
-        jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString(), "");
+        jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString(), "", "");
         Assert.assertEquals(nRole - 1, roleRepository.count());
     }
 

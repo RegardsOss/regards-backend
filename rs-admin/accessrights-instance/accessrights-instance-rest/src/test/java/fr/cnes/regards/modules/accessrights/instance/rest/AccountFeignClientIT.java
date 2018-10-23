@@ -72,8 +72,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
     @Before
     public void init() {
         accountsClient = FeignClientBuilder.build(new TokenClientProvider<>(IAccountsClient.class,
-                                                                            "http://" + serverAddress + ":" + getPort(),
-                                                                            feignSecurityManager));
+                "http://" + serverAddress + ":" + getPort(), feignSecurityManager));
         FeignSecurityManager.asSystem();
 
         final Optional<Account> account = accountRepo.findOneByEmail(MAIL_TEST);
@@ -90,8 +89,8 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
     @Test
     public void retrieveAccountListFromFeignClient() {
         try {
-            final ResponseEntity<PagedResources<Resource<Account>>> accounts = accountsClient
-                    .retrieveAccountList(0, 10);
+            final ResponseEntity<PagedResources<Resource<Account>>> accounts = accountsClient.retrieveAccountList(0,
+                                                                                                                  10);
             Assert.assertTrue(accounts.getStatusCode().equals(HttpStatus.OK));
         } catch (final Exception e) {
             LOG.error(e.getMessage(), e);
@@ -221,7 +220,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
     @Ignore
     public void sendAccountCodeFromFeignClient() {
         try {
-            jwtService.injectToken(DEFAULT_TENANT, DefaultRole.REGISTERED_USER.toString(), "");
+            jwtService.injectToken(DEFAULT_TENANT, DefaultRole.REGISTERED_USER.toString(), "", "");
             final ResponseEntity<Void> response = accountsClient.sendAccountCode("email@unkown.fr", CodeType.UNLOCK);
             Assert.assertTrue(response.getStatusCode().equals(HttpStatus.NOT_FOUND));
         } catch (final Exception e) {

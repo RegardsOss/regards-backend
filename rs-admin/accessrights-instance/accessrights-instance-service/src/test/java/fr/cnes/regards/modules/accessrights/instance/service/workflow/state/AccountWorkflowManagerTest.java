@@ -139,9 +139,7 @@ public class AccountWorkflowManagerTest {
 
         // Mock authentication
         final JWTAuthentication jwtAuth = new JWTAuthentication("foo");
-        final UserDetails details = new UserDetails();
-        details.setName(EMAIL);
-        jwtAuth.setUser(details);
+        jwtAuth.setUser(new UserDetails(null, EMAIL, EMAIL, null));
         SecurityContextHolder.getContext().setAuthentication(jwtAuth);
 
         // Construct the tested service with mock deps
@@ -166,12 +164,9 @@ public class AccountWorkflowManagerTest {
         Mockito.when(tenantService.getAllActiveTenants(IProjectUsersClient.TARGET_NAME)).thenReturn(TENANTS);
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(EMAIL))
                 .thenReturn(new ResponseEntity<>(new Resource<>(new ProjectUser()), HttpStatus.OK));
-        Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUsersClient,
-                                                                                        accountRepository,
-                                                                                        tenantService,
-                                                                                        runtimeTenantResolver,
-                                                                                        passwordResetService,
-                                                                                        accountUnlockTokenService));
+        Mockito.when(accountStateProvider.getState(account))
+                .thenReturn(new ActiveState(projectUsersClient, accountRepository, tenantService, runtimeTenantResolver,
+                        passwordResetService, accountUnlockTokenService));
 
         // Trigger the exception
         accountWorkflowManager.deleteAccount(account);
@@ -195,12 +190,9 @@ public class AccountWorkflowManagerTest {
         Mockito.when(tenantService.getAllActiveTenants(IProjectUsersClient.TARGET_NAME)).thenReturn(TENANTS);
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(EMAIL))
                 .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
-        Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUsersClient,
-                                                                                        accountRepository,
-                                                                                        tenantService,
-                                                                                        runtimeTenantResolver,
-                                                                                        passwordResetService,
-                                                                                        accountUnlockTokenService));
+        Mockito.when(accountStateProvider.getState(account))
+                .thenReturn(new ActiveState(projectUsersClient, accountRepository, tenantService, runtimeTenantResolver,
+                        passwordResetService, accountUnlockTokenService));
 
         // Call the method
         accountWorkflowManager.deleteAccount(account);
@@ -226,12 +218,9 @@ public class AccountWorkflowManagerTest {
         Mockito.when(tenantService.getAllActiveTenants(IProjectUsersClient.TARGET_NAME)).thenReturn(TENANTS);
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(EMAIL))
                 .thenReturn(new ResponseEntity<>(new Resource<>(new ProjectUser()), HttpStatus.OK));
-        Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUsersClient,
-                                                                                        accountRepository,
-                                                                                        tenantService,
-                                                                                        runtimeTenantResolver,
-                                                                                        passwordResetService,
-                                                                                        accountUnlockTokenService));
+        Mockito.when(accountStateProvider.getState(account))
+                .thenReturn(new ActiveState(projectUsersClient, accountRepository, tenantService, runtimeTenantResolver,
+                        passwordResetService, accountUnlockTokenService));
 
         // Call the method
         final boolean result = accountWorkflowManager.canDelete(account);
@@ -255,12 +244,9 @@ public class AccountWorkflowManagerTest {
         Mockito.when(tenantService.getAllActiveTenants(IProjectUsersClient.TARGET_NAME)).thenReturn(TENANTS);
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(EMAIL))
                 .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
-        Mockito.when(accountStateProvider.getState(account)).thenReturn(new ActiveState(projectUsersClient,
-                                                                                        accountRepository,
-                                                                                        tenantService,
-                                                                                        runtimeTenantResolver,
-                                                                                        passwordResetService,
-                                                                                        accountUnlockTokenService));
+        Mockito.when(accountStateProvider.getState(account))
+                .thenReturn(new ActiveState(projectUsersClient, accountRepository, tenantService, runtimeTenantResolver,
+                        passwordResetService, accountUnlockTokenService));
 
         // Call the method
         final boolean result = accountWorkflowManager.canDelete(account);
