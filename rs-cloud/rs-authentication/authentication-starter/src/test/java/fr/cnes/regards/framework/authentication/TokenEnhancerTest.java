@@ -76,9 +76,7 @@ public class TokenEnhancerTest {
         final JWTService service = new JWTService();
         service.setSecret("1234546789");
 
-        final UserDetails details = new UserDetails();
-        details.setName(EMAIL);
-        details.setRole(ROLE);
+        final UserDetails details = new UserDetails(PROJECT, EMAIL, EMAIL, ROLE);
 
         final DefaultOAuth2AccessToken token = new DefaultOAuth2AccessToken(Mockito.mock(OAuth2AccessToken.class));
         final OAuth2Authentication auth = Mockito.mock(OAuth2Authentication.class);
@@ -96,6 +94,7 @@ public class TokenEnhancerTest {
         Assert.assertTrue(result.getAdditionalInformation().get(JWTService.CLAIM_TENANT).equals(PROJECT));
         Assert.assertTrue(result.getAdditionalInformation().get(JWTService.CLAIM_ROLE).equals(ROLE));
         Assert.assertTrue(result.getAdditionalInformation().get(JWTService.CLAIM_SUBJECT).equals(EMAIL));
+        Assert.assertTrue(result.getAdditionalInformation().get(JWTService.CLAIM_EMAIL).equals(EMAIL));
 
     }
 

@@ -89,7 +89,7 @@ public class BorrowRoleServiceTest {
                 HateoasUtils.wrapList(borrowableRolesForAdmin), HttpStatus.OK);
         Mockito.when(mockedRoleClient.getBorrowableRoles()).thenReturn(mockedResponse);
         // mock JWTAuthentication
-        JwtService.injectToken("test", "ADMIN", "test@test.test");
+        JwtService.injectToken("test", "ADMIN", "test@test.test", "test@test.test");
 
         CoupleJwtRole newToken = borrowRoleService.switchTo(DefaultRole.PUBLIC.toString());
 
@@ -111,10 +111,9 @@ public class BorrowRoleServiceTest {
                 HateoasUtils.wrapList(borrowableRolesForAdmin), HttpStatus.OK);
         Mockito.when(mockedRoleClient.getBorrowableRoles()).thenReturn(mockedResponse);
         // mock JWTAuthentication
-        JwtService.injectToken("test", DefaultRole.PUBLIC.toString(), "test@test.test");
+        JwtService.injectToken("test", DefaultRole.PUBLIC.toString(), "test@test.test", "test@test.test");
 
-        CoupleJwtRole newToken = borrowRoleService.switchTo(DefaultRole.ADMIN.toString());
-
+        borrowRoleService.switchTo(DefaultRole.ADMIN.toString());
         Assert.fail("Exception should have been thrown before here");
     }
 

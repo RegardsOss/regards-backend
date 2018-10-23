@@ -63,9 +63,7 @@ public class RoleSysFilterTest {
     public void testFilter() throws ServletException, IOException {
 
         final JWTAuthentication jwtAuth = new JWTAuthentication("foo");
-        final UserDetails details = new UserDetails();
-        details.setName("test@regards.fr");
-        jwtAuth.setUser(details);
+        jwtAuth.setUser(new UserDetails("tenant", "test", "test@regards.fr", "role"));
         jwtAuth.setRole("role");
         SecurityContextHolder.getContext().setAuthentication(jwtAuth);
 
@@ -96,9 +94,7 @@ public class RoleSysFilterTest {
     public void testFilterAcessDenied() throws ServletException, IOException {
 
         final JWTAuthentication jwtAuth = new JWTAuthentication("foo");
-        final UserDetails details = new UserDetails();
-        details.setName("test@regards.fr");
-        jwtAuth.setUser(details);
+        jwtAuth.setUser(new UserDetails("tenant", "test", "test@regards.fr", "role"));
         jwtAuth.setRole(RoleAuthority.getSysRole("test"));
         SecurityContextHolder.getContext().setAuthentication(jwtAuth);
 
