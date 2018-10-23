@@ -74,7 +74,6 @@ public class CmsmScientificSipGenerationPlugin implements ISipGenerationPlugin {
             }
             // UNZIP ncd file
             File ncdTmpFile = File.createTempFile(product.getProductName(), Microscope.NCD_EXT);
-            ncdTmpFile.deleteOnExit();
             try (InputStream ncdZipInputStream = zipFile.getInputStream(ncdFileEntryOpt.get())) {
                 // REPLACE_EXISTING because File.createTempFile has already creted the file
                 Files.copy(ncdZipInputStream, ncdTmpFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -98,6 +97,7 @@ public class CmsmScientificSipGenerationPlugin implements ISipGenerationPlugin {
             sipBuilder.addDescriptiveInformation(ORBITS_COUNT, findValue(netcdfFile, ORBITS_COUNT_NC_TAG));
             sipBuilder.addDescriptiveInformation(COMMENT, findValue(netcdfFile, COMMENT_NC_TAG));
             netcdfFile.close();
+            ncdTmpFile.delete();
         } catch (IOException e) {
             throw new ModuleException("I/O error occured", e);
         }
