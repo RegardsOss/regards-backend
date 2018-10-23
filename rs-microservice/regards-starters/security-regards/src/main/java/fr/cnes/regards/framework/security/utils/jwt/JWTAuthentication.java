@@ -69,7 +69,7 @@ public class JWTAuthentication implements Authentication {
 
     @Override
     public String getName() {
-        return user.getName();
+        return user.getEmail();
     }
 
     @Override
@@ -164,7 +164,7 @@ public class JWTAuthentication implements Authentication {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
         }
         JWTAuthentication that = (JWTAuthentication) o;
