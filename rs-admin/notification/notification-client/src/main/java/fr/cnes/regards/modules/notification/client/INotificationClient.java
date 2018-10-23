@@ -6,6 +6,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MimeType;
+import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -118,12 +120,27 @@ public interface INotificationClient {
      */
     default void notifyRoles(String message, String title, String sender, NotificationType notificationType,
             DefaultRole... roles) {
+        notifyRoles(message, title, sender, notificationType, MimeTypeUtils.TEXT_PLAIN, roles);
+    }
+
+    /**
+     * Shortcut to create notification for specific roles
+     * @param message
+     * @param title
+     * @param sender
+     * @param notificationType
+     * @param mimeType
+     * @param roles
+     */
+    default void notifyRoles(String message, String title, String sender, NotificationType notificationType,
+            MimeType mimeType, DefaultRole... roles) {
         createNotification(new NotificationDTO(message,
                                                Sets.newHashSet(),
                                                Arrays.stream(roles).map(r -> r.name()).collect(Collectors.toSet()),
                                                sender,
                                                title,
-                                               notificationType));
+                                               notificationType,
+                                               mimeType));
     }
 
 }

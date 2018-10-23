@@ -148,17 +148,18 @@ public class NotificationService implements INotificationService, ApplicationLis
     }
 
     @Override
-    public Notification createNotification(final NotificationDTO pDto) {
+    public Notification createNotification(final NotificationDTO dto) {
         Notification notification = new Notification();
         notification.setDate(OffsetDateTime.now());
-        notification.setMessage(pDto.getMessage());
-        notification.setTitle(pDto.getTitle());
-        notification.setSender(pDto.getSender());
+        notification.setMessage(dto.getMessage());
+        notification.setTitle(dto.getTitle());
+        notification.setSender(dto.getSender());
         notification.setStatus(NotificationStatus.UNREAD);
-        notification.setType(pDto.getType());
-        notification.setProjectUserRecipients(pDto.getProjectUserRecipients());
+        notification.setType(dto.getType());
+        notification.setMimeType(dto.getMimeType());
+        notification.setProjectUserRecipients(dto.getProjectUserRecipients());
 
-        notification.setRoleRecipients(getAllRecipientRoles(pDto.getRoleRecipients()));
+        notification.setRoleRecipients(getAllRecipientRoles(dto.getRoleRecipients()));
 
         // check the notification type and send it immediately if FATAL or ERROR
         if (notification.getType() == NotificationType.FATAL || notification.getType() == NotificationType.ERROR) {
