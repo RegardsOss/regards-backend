@@ -20,6 +20,9 @@ package fr.cnes.regards.modules.notification.domain.dto;
 
 import java.util.Set;
 
+import org.springframework.util.MimeType;
+import org.springframework.util.MimeTypeUtils;
+
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationType;
 
@@ -61,6 +64,8 @@ public class NotificationDTO {
      */
     private NotificationType type;
 
+    private MimeType mimeType = MimeTypeUtils.TEXT_PLAIN;
+
     /**
      * Default constructor
      */
@@ -76,14 +81,15 @@ public class NotificationDTO {
      * @param title notification title
      * @param type notification type
      */
-    public NotificationDTO(String message, Set<String> projectUserRecipients, Set<String> roleRecipients,
-            String sender, String title, NotificationType type) {
+    public NotificationDTO(String message, Set<String> projectUserRecipients, Set<String> roleRecipients, String sender,
+            String title, NotificationType type, MimeType mimeType) {
         this.message = message;
         this.projectUserRecipients = projectUserRecipients;
         this.roleRecipients = roleRecipients;
         this.sender = sender;
         this.title = title;
         this.type = type;
+        this.mimeType = mimeType;
     }
 
     /**
@@ -174,5 +180,13 @@ public class NotificationDTO {
      */
     public void setType(NotificationType type) {
         this.type = type;
+    }
+
+    public MimeType getMimeType() {
+        return mimeType;
+    }
+
+    public void setMimeType(MimeType mimeType) {
+        this.mimeType = mimeType;
     }
 }
