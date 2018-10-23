@@ -17,6 +17,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MimeType;
+import org.springframework.util.MimeTypeUtils;
 
 import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.amqp.IPublisher;
@@ -239,7 +241,7 @@ public class DataStorageService implements IDataStorageService {
                             LOGGER.error(message);
                             notifyAdmins("Data storage " + activeDataStorageConf.getLabel() + " is almost full",
                                          message,
-                                         NotificationType.ERROR);
+                                         NotificationType.ERROR, MimeTypeUtils.TEXT_PLAIN);
                             MaintenanceManager.setMaintenance(runtimeTenantResolver.getTenant());
                             return;
                         }
@@ -254,7 +256,7 @@ public class DataStorageService implements IDataStorageService {
                             LOGGER.warn(message);
                             notifyAdmins("Data storage " + activeDataStorageConf.getLabel() + " is almost full",
                                          message,
-                                         NotificationType.WARNING);
+                                         NotificationType.WARNING, MimeTypeUtils.TEXT_PLAIN);
                         }
                     }
 
@@ -271,7 +273,7 @@ public class DataStorageService implements IDataStorageService {
      * Use the notification module in admin to create a notification for admins
      */
     @Override
-    public void notifyAdmins(String title, String message, NotificationType type) {
+    public void notifyAdmins(String title, String message, NotificationType type, MimeType mimeType) {
         FeignSecurityManager.asSystem();
         try {
             NotificationDTO notif = new NotificationDTO(message,
@@ -279,7 +281,7 @@ public class DataStorageService implements IDataStorageService {
                                                         Sets.newHashSet(DefaultRole.ADMIN.name()),
                                                         applicationName,
                                                         title,
-                                                        type);
+                                                        type, mimeType);
             notificationClient.createNotification(notif);
         } finally {
             FeignSecurityManager.reset();
@@ -327,7 +329,7 @@ public class DataStorageService implements IDataStorageService {
                     data.get().setState(DataFileState.STORED);
                     dataFileDao.save(data.get());
                     LOGGER.error(message);
-                    notifyAdmins("File deletion error", message, NotificationType.INFO);
+                    notifyAdmins("File deletion error", message, NotificationType.INFO, MimeTypeUtils.TEXT_PLAIN);
                     break;
             }
         } else {
@@ -597,7 +599,8 @@ public class DataStorageService implements IDataStorageService {
                             storeFailFile.getAip().getProviderId(),
                             storageConf == null ? null : storageConf.getDataStorageConfiguration().getLabel(),
                             failureCause);
-            notifyAdmins("Storage of file " + storeFailFile.getName() + " failed", notifMsg, NotificationType.INFO);
+            notifyAdmins("Storage of file " + storeFailFile.getName() + " failed", notifMsg, NotificationType.INFO,
+                         MimeTypeUtils.TEXT_PLAIN);
             publisher.publish(new AIPEvent(associatedAIP));
         } else {
             LOGGER.warn("AIP {} does not exists anymore. Associated file {} in store error status will be deleted",

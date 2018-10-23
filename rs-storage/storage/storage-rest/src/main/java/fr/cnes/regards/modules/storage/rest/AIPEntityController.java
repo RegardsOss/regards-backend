@@ -59,8 +59,7 @@ public class AIPEntityController implements IResourceController<AIPEntity> {
     @ResponseBody
     @ResourceAccess(description = "send pages of AIPEntity")
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<PagedResources<Resource<AIPEntity>>> retrieveAIPEntities(
-            @PathVariable("sip_id") String sipId,
+    public ResponseEntity<PagedResources<Resource<AIPEntity>>> retrieveAIPEntities(@PathVariable("sip_id") String sipId,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<AIPEntity> pagedResourcesAssembler) {
         return new ResponseEntity<>(toPagedResources(aipEntityService.retrieveBySip(sipId, pageable),
@@ -74,7 +73,9 @@ public class AIPEntityController implements IResourceController<AIPEntity> {
                                 this.getClass(),
                                 "retrieveAIPEntities",
                                 LinkRels.LIST,
-                                MethodParamFactory.build(String.class));
+                                MethodParamFactory.build(String.class),
+                                MethodParamFactory.build(Pageable.class),
+                                MethodParamFactory.build(PagedResourcesAssembler.class));
         return resource;
     }
 }

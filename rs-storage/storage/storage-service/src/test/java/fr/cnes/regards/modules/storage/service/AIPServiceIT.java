@@ -718,6 +718,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         // delete the AIP metadata
         aipService.removeDeletedAIPMetadatas();
         aipService.doDelete();
+        waitForJobsFinished();
 
         // Wait for AIP deletion events
         Set<AIPEvent> events = waitForEventsReceived(AIPState.DELETED, 2);
