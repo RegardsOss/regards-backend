@@ -143,8 +143,8 @@ public class KerberosServiceProviderPluginTest {
                     userPrincipal, "test", ticket, "");
             Assert.assertTrue(plugin.checkTicketValidity(authInformations));
             final UserDetails details = plugin.getUserInformations(authInformations);
-            Assert.assertTrue((details.getName() != null) && !details.getName().isEmpty());
-            LOG.info("Email retrieved : {}", details.getName());
+            Assert.assertTrue((details.getEmail() != null) && !details.getEmail().isEmpty());
+            LOG.info("Email retrieved : {}", details.getEmail());
         } else {
             LOG.warn("Skip Test");
         }

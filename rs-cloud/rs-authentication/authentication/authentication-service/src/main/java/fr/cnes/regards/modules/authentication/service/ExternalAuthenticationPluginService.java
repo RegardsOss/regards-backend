@@ -155,16 +155,16 @@ public class ExternalAuthenticationPluginService implements IExternalAuthenticat
 
                 // Get informations about the user from the regards internal accounts.
                 final ResponseEntity<Resource<ProjectUser>> userResponse = projectUsersClient
-                        .retrieveProjectUserByEmail(userDetails.getName());
+                        .retrieveProjectUserByEmail(userDetails.getEmail());
 
                 if (userResponse.getStatusCode().equals(HttpStatus.OK)
                         && (userResponse.getBody().getContent() != null)) {
-                    jwtService.generateToken(pAuthInformations.getProject(),
+                    jwtService.generateToken(pAuthInformations.getProject(), pAuthInformations.getUserName(),
                                              userResponse.getBody().getContent().getEmail(),
                                              userResponse.getBody().getContent().getRole().getName());
                 } else {
                     throw new BadCredentialsException(
-                            String.format("User %s does not have access to project %s", userDetails.getName(),
+                            String.format("User %s does not have access to project %s", userDetails.getLogin(),
                                           pAuthInformations.getProject()));
                 }
             }

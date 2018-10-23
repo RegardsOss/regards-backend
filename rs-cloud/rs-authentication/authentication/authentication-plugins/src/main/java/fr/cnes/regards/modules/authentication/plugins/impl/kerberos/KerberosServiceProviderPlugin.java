@@ -179,9 +179,8 @@ public class KerberosServiceProviderPlugin implements IServiceProviderPlugin {
     public UserDetails getUserInformations(final ExternalAuthenticationInformations pAuthInformations) {
 
         // Get credential
-        final UserDetails userDetails = new UserDetails();
-        userDetails.setName(pAuthInformations.getUserName());
-        userDetails.setTenant(pAuthInformations.getProject());
+        final UserDetails userDetails = new UserDetails(pAuthInformations.getProject(), pAuthInformations.getUserName(),
+                null, null);
         if ((validateAction != null) && (validateAction.getGssContext() != null)) {
             try {
                 final GSSCredential credentialDeleg = validateAction.getGssContext().getDelegCred();
@@ -194,7 +193,7 @@ public class KerberosServiceProviderPlugin implements IServiceProviderPlugin {
                 Subject.doAs(subject, ldapAction);
                 final String mail = ldapAction.getUserEmail(ldapCN, ldapEmailAttribute, ldapSearchUserFilter,
                                                             ldapUserLoginAttribute);
-                userDetails.setName(mail);
+                userDetails.setEmail(mail);
             } catch (final GSSException | LdapException e) {
                 LOG.error(e.getMessage(), e);
             }
