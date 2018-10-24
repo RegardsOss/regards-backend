@@ -117,7 +117,7 @@ public abstract class AbstractRegardsServiceIT {
      * @return JWT
      */
     protected String generateToken(final String pName, final String pRole) {
-        return jwtService.generateToken(getDefaultTenant(), pName, pRole);
+        return jwtService.generateToken(getDefaultTenant(), pName, pName, pRole);
     }
 
     /**
