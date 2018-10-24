@@ -156,6 +156,10 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
     }
 
     @After
+    public void cleanUp() throws URISyntaxException, IOException, InterruptedException {
+        cleanUp(false);
+    }
+
     public void cleanUp(boolean haveFailed) throws URISyntaxException, IOException, InterruptedException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         subscriber.purgeQueue(DataStorageEvent.class, DataStorageEventHandler.class);
