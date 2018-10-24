@@ -360,7 +360,7 @@ public class SIPServiceTest extends AbstractSIPTest {
         Assert.assertTrue(session.getIndexedSipsCount() == 2);
         Assert.assertTrue(session.getStoredSipsCount() == 6);
         Assert.assertTrue(session.getGeneratedSipsCount() == 14);
-        Assert.assertTrue(session.getErrorSipsCount() == 12);
+        Assert.assertTrue(session.getErrorSipsCount() == 10);
         Assert.assertTrue(session.getDeletedSipsCount() == 2);
 
     }
