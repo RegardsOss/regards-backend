@@ -181,6 +181,7 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
             if (!haveFailed) {
                 // Try another time
                 cleanUp(true);
+                return;
             }
         }
         if (baseStorageLocation != null) {
