@@ -86,6 +86,17 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
+    public void fullTextSearchCollections() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(1)));
+        addCommontMatchers(customizer);
+        addFullTextSearchQuery(customizer, SUN);
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
+    }
+
+    @Test
     public void searchCollectionsWithShortName() {
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
@@ -124,9 +135,15 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
                           customizer, "Search all error", ENGINE_TYPE);
     }
 
-    // http://172.26.47.52/api/v1/rs-access-project/dataobjects/search?
-    // sort=properties.fragment1.activated,ASC&sort=label,ASC
-    // &facets=properties.description,properties.fragment1.activated&offset=0&page=0&size=500
+    @Test
+    public void fullTextSearchDataobjects() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        addCommontMatchers(customizer);
+        addFullTextSearchQuery(customizer, "\"" + MERCURY + " " + JUPITER + "\"");
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
+    }
 
     @Test
     public void searchDataobjectsWithFacets() {
@@ -269,5 +286,12 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
         customizer.customizeRequestParam()
                 .param(SEARCH_TERMS_QUERY,
                        StaticProperties.FEATURE_PROPERTIES + "." + relativePropertyName + ":" + value);
+    }
+
+    /**
+     * Add full text query to current request
+     */
+    private void addFullTextSearchQuery(RequestBuilderCustomizer customizer, String value) {
+        customizer.customizeRequestParam().param(SEARCH_TERMS_QUERY, value);
     }
 }
