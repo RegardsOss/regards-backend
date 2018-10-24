@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.modules.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPluginResponse;
@@ -86,7 +85,8 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
     /**
      * LDAP Port
      */
-    @PluginParameter(name = PARAM_LDAP_PORT, label = "LDAP Server port (default 389)")
+    @PluginParameter(name = PARAM_LDAP_PORT, label = "LDAP Server port (default:389)", defaultValue = "389",
+            optional = true)
     private String ldapPort;
 
     /**
@@ -98,53 +98,27 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
     /**
      * LDAP User login attribute.
      */
-    @PluginParameter(name = PARAM_LDAP_USER_LOGIN_ATTTRIBUTE, label = "LDAP login attribute",
-            description = "LDAP User parameter containing user login (default=sAMAccountLogin)", optional = true)
+    @PluginParameter(name = PARAM_LDAP_USER_LOGIN_ATTTRIBUTE, label = "LDAP UID (default:sAMAccountName)",
+            description = "LDAP User parameter containing user login. Default value is 'sAMAccountName'.",
+            optional = true, defaultValue = "sAMAccountName")
     private String ldapUserLoginAttribute;
 
     /**
      * LDAP Filter to find the User object
      */
-    @PluginParameter(name = PARAM_LDAP_USER_FILTER_ATTTRIBUTE, label = "LDAP Filter",
-            description = "LDAP Filter to find the user object (default = (ObjectClass=user)", optional = true)
+    @PluginParameter(name = PARAM_LDAP_USER_FILTER_ATTTRIBUTE, label = "LDAP Filter (default: (ObjectClass=person)",
+            description = "LDAP Filter to find the user object. Default value is '(ObjectClass=person)'.",
+            optional = true)
     private String ldapSearchUserFilter;
 
     /**
      * LDAP email attribute label
      */
-    @PluginParameter(name = PARAM_LDAP_USER_EMAIL_ATTTRIBUTE, label = "LDAP email attribute",
-            description = "LDAP parameter for user email (default=mail)")
+    @PluginParameter(name = PARAM_LDAP_USER_EMAIL_ATTTRIBUTE, label = "LDAP email attribute (default:mail)",
+            optional = true, description = "LDAP parameter for user email. Default value is 'mail'.",
+            defaultValue = "mail")
     private String ldapEmailAttribute;
 
-    /**
-     *
-     * Initialize default values
-     *
-     * @since 1.0-SNAPSHOT
-     */
-    @PluginInit
-    public void setDefaultValues() {
-        if (ldapSearchUserFilter == null) {
-            ldapSearchUserFilter = "(ObjectClass=user)";
-        }
-
-        if (ldapPort == null) {
-            ldapPort = "389";
-        }
-
-        if (ldapEmailAttribute == null) {
-            ldapEmailAttribute = "mail";
-        }
-
-    }
-
-    /**
-     * Overridden method
-     *
-     * @see fr.cs.regards.interfaces.plugins.IAuthenticationPlugin#authenticate(java.lang.String, java.lang.String,
-     *      java.lang.String)
-     * @since 1.0
-     */
     @Override
     public AuthenticationPluginResponse authenticate(final String pLogin, final String pPassword, final String pScope) {
 
