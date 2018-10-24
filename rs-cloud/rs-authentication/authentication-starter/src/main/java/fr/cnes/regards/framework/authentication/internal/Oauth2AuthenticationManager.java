@@ -474,7 +474,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         } else if (!runTimeTenantResolver.isInstance()) {
             // Retrieve account
             try {
-                userDetails = retrieveUserDetails(email, scope);
+                userDetails = retrieveUserDetails(login, email, scope);
             } catch (final EntityNotFoundException e) {
                 LOG.debug(e.getMessage(), e);
                 throw new BadCredentialsException(String.format("User %s does not exists ", login));
@@ -491,17 +491,16 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
     /**
      *
      * Retrieve user information from internal REGARDS database
-     *
-     * @param email
-     *            user email
-     * @param scope
-     *            project to authenticate to
+     * @param login user login
+     * @param email user email
+     * @param scope project to authenticate to
      * @return UserDetails
      * @throws EntityNotFoundException
      *             user not found in internal REGARDS database
      * @since 1.0-SNAPSHOT
      */
-    public UserDetails retrieveUserDetails(final String email, final String scope) throws EntityNotFoundException {
+    public UserDetails retrieveUserDetails(final String login, final String email, final String scope)
+            throws EntityNotFoundException {
         UserDetails user = null;
         try {
 
@@ -518,8 +517,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
                 if (response.getStatusCode() == HttpStatus.OK) {
                     final ProjectUser projectUser = response.getBody().getContent();
                     // In regards system login is same as email
-                    user = new UserDetails(scope, projectUser.getEmail(), projectUser.getEmail(),
-                            projectUser.getRole().getName());
+                    user = new UserDetails(scope, projectUser.getEmail(), login, projectUser.getRole().getName());
                 } else {
                     final String message = String.format("Remote administration request error. Returned code %s",
                                                          response.getStatusCode());
