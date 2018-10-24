@@ -223,16 +223,16 @@ public class UniformResourceName {
 
     /**
      * Build a pseudo random UUID starting with 00000000-0000-0000-0000
-     * @param oaisIdentifier
-     * @param entityType
-     * @param tenant
-     * @param version
-     * @return
      */
     public static UniformResourceName pseudoRandomUrn(OAISIdentifier oaisIdentifier, EntityType entityType,
             String tenant, int version) {
         return new UniformResourceName(oaisIdentifier, entityType, tenant,
                 UUID.fromString("0-0-0-0-" + (int) (Math.random() * Integer.MAX_VALUE)), version);
+    }
+
+    public static UniformResourceName clone(UniformResourceName template, Long order) {
+        return new UniformResourceName(template.getOaisIdentifier(), template.getEntityType(), template.getTenant(),
+                template.getEntityId(), template.getVersion(), order);
     }
 
     /**
@@ -369,7 +369,7 @@ public class UniformResourceName {
 
     @Override
     public boolean equals(Object other) {
-        return (other instanceof UniformResourceName) && other.toString().equals(toString());
+        return other instanceof UniformResourceName && other.toString().equals(toString());
     }
 
     @Override
