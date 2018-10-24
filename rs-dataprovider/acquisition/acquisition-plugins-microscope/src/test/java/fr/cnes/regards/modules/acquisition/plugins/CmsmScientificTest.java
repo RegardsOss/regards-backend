@@ -19,7 +19,10 @@
 package fr.cnes.regards.modules.acquisition.plugins;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -38,12 +41,19 @@ import org.springframework.test.context.TestPropertySource;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.acquisition.MicroConfiguration;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
+import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
+import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.plugins.product.CmsmScientificProductPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.scan.ZipScanPlugin;
+import fr.cnes.regards.modules.acquisition.plugins.sip.CmsmScientificSipGenerationPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.validation.CmsmScientificValidationPlugin;
+import fr.cnes.regards.modules.ingest.domain.SIP;
 
 /**
  * Specific test for CMSM scientific (data file is huge so it depends on its existence)
@@ -67,11 +77,16 @@ public class CmsmScientificTest extends AbstractRegardsServiceIT {
     ////////////////////////
     private CmsmScientificValidationPlugin cmsmScientificValidationPlugin;
 
-
     //////////////////////////
     // PRODUCT NAME PLUGINS //
     //////////////////////////
     private CmsmScientificProductPlugin cmsmScientificProductPlugin;
+
+    ///////////////////////////
+    // SIP GENERATION PLUGIN //
+    ///////////////////////////
+    private CmsmScientificSipGenerationPlugin cmsmScientificSipGenerationPlugin;
+
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
 
@@ -97,15 +112,59 @@ public class CmsmScientificTest extends AbstractRegardsServiceIT {
         // PRODUCT PLUGINS
         cmsmScientificProductPlugin = PluginUtils
                 .getPlugin(Collections.emptySet(), CmsmScientificProductPlugin.class, pluginCacheMap);
+
+        // SIP GENERATION PLUGIN
+        cmsmScientificSipGenerationPlugin = PluginUtils
+                .getPlugin(Collections.emptySet(), CmsmScientificSipGenerationPlugin.class, pluginCacheMap);
     }
 
     @Test
-    public void test() throws ModuleException {
+    public void testWithValidation() throws ModuleException {
         List<Path> files = cmsmScientificScanPlugin.scan(Optional.empty());
         Assert.assertEquals(1, files.size());
 
         Assert.assertTrue(cmsmScientificValidationPlugin.validate(files.get(0)));
         String productName = cmsmScientificProductPlugin.getProductName(files.get(0));
         Assert.assertEquals("N2b_01_L_SCA_G_0050_CN2_MRO_RN2_M", productName);
+    }
+
+    @Test
+    public void testWithoutValidation() throws ModuleException {
+        List<Path> files = cmsmScientificScanPlugin.scan(Optional.empty());
+        Assert.assertEquals(1, files.size());
+
+        String productName = cmsmScientificProductPlugin.getProductName(files.get(0));
+        Assert.assertEquals("N2b_01_L_SCA_G_0050_CN2_MRO_RN2_M", productName);
+        Product product = createProduct(files.get(0), productName);
+
+        SIP sip = cmsmScientificSipGenerationPlugin.generate(product);
+        Assert.assertTrue(sip.getProperties().getDescriptiveInformation().containsKey(Microscope.SESSION_NB));
+        Assert.assertTrue(sip.getProperties().getDescriptiveInformation().containsKey(Microscope.START_DATE));
+        Assert.assertTrue(sip.getProperties().getDescriptiveInformation().containsKey(Microscope.END_DATE));
+        Assert.assertTrue(sip.getProperties().getDescriptiveInformation().containsKey(Microscope.PHASE));
+        Assert.assertTrue(sip.getProperties().getDescriptiveInformation().containsKey(Microscope.TECHNO));
+        Assert.assertTrue(sip.getProperties().getDescriptiveInformation().containsKey(Microscope.SESSION_TYPE));
+        Assert.assertTrue(sip.getProperties().getDescriptiveInformation().containsKey(Microscope.SESSION_SUB_TYPE));
+        Assert.assertTrue(sip.getProperties().getDescriptiveInformation().containsKey(Microscope.SPIN));
+        Assert.assertTrue(sip.getProperties().getDescriptiveInformation().containsKey(Microscope.CAL_PARAM));
+        Assert.assertTrue(sip.getProperties().getDescriptiveInformation().containsKey(Microscope.RECORD_FILE_NAME));
+        Assert.assertTrue(sip.getProperties().getDescriptiveInformation().containsKey(Microscope.RECORD_VERSION));
+        Assert.assertTrue(sip.getProperties().getDescriptiveInformation().containsKey(Microscope.ENV_CONSTRAINT));
+        Assert.assertTrue(sip.getProperties().getDescriptiveInformation().containsKey(Microscope.ACTIVE_SU));
+        Assert.assertTrue(sip.getProperties().getDescriptiveInformation().containsKey(Microscope.PID_VERSION));
+        Assert.assertTrue(sip.getProperties().getDescriptiveInformation().containsKey(Microscope.COMMENT));
+        Assert.assertTrue(sip.getProperties().getDescriptiveInformation().containsKey(Microscope.ORBITS_COUNT));
+    }
+
+    private static Product createProduct(Path filePath, String productName) {
+        Product product = new Product();
+        product.setProductName(productName);
+        AcquisitionFile af = new AcquisitionFile();
+        af.setFilePath(filePath);
+        af.setState(AcquisitionFileState.ACQUIRED);
+        af.setChecksumAlgorithm(Microscope.CHECKSUM_ALGO);
+        af.setChecksum("60a3573cc7d978e537c6497605464525");
+        product.addAcquisitionFile(af);
+        return product;
     }
 }

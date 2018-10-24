@@ -104,6 +104,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>edu.ucar</groupId>
+            <artifactId>netcdf</artifactId>
+            <version>4.2.20</version>
+        </dependency>
+        <dependency>
             <groupId>fr.cnes.regards.framework.utils</groupId>
             <artifactId>file-utils</artifactId>
         </dependency>
