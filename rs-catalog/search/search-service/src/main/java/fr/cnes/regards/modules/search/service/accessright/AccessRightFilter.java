@@ -33,6 +33,7 @@ import org.springframework.util.Assert;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
@@ -81,131 +82,140 @@ public class AccessRightFilter implements IAccessRightFilter {
         this.projectUserClient = pProjectUserClient;
     }
 
-    @Override
-    public ICriterion addAccessRights(ICriterion userCriterion) throws AccessRightFilterException {
+    /**
+     * First, check current user role. If role is a custom one, call admin to know if its an admin role.
+     * @return true if current authentified user is an admin
+     */
+    private boolean isAdmin() {
 
         // Retrieve current user from security context
         String userEmail = authResolver.getUser();
-        Assert.notNull(userEmail, "No user found!");
+        String role = authResolver.getRole();
+        Assert.notNull(userEmail, "Unknown request user!");
+        Assert.notNull(role, "Unknown request user role!");
 
+        // For default ROLE, avoid feign request
+        if (role.equals(DefaultRole.ADMIN.toString()) || role.equals(DefaultRole.PROJECT_ADMIN.toString())
+                || role.equals(DefaultRole.INSTANCE_ADMIN.toString())) {
+            return true;
+        }
+
+        if (role.equals(DefaultRole.PUBLIC.toString()) || role.equals(DefaultRole.REGISTERED_USER.toString())) {
+            return false;
+        }
+
+        // We have to check parent role ... not available in token at the moment
+        // FIXME add parent role in the JWT token CLAIMS
         try {
             FeignSecurityManager.asUser(userEmail, authResolver.getRole());
-            if (!projectUserClient.isAdmin(userEmail).getBody()) {
-
-                // Retrieve public groups
-                Set<AccessGroup> accessGroups = new HashSet<>(
-                        cache.getPublicAccessGroups(runtimeTenantResolver.getTenant()));
-
-                // Add explicitly associated group
-                accessGroups.addAll(cache.getAccessGroups(userEmail, runtimeTenantResolver.getTenant()));
-
-                // Throw an error if no access group
-                if (accessGroups.isEmpty()) {
-                    String errorMessage = String.format("Cannot set access right filter because user %s does not have "
-                                                                + "any access group", userEmail);
-                    LOGGER.error(errorMessage);
-                    throw new AccessRightFilterException(errorMessage);
-                }
-
-                List<ICriterion> searchCriterion = new ArrayList<>();
-
-                // Add security filter
-                List<ICriterion> groupCriterions = new ArrayList<>();
-                accessGroups.forEach(accessGroup -> groupCriterions.add(GROUP_TO_CRITERION.apply(accessGroup)));
-                searchCriterion.add(ICriterion.or(groupCriterions));
-
-                // Add user criterion (theorically, userCriterion should not be null at this point but...)
-                if ((userCriterion != null) && !userCriterion.equals(ICriterion.all())) {
-                    searchCriterion.add(userCriterion);
-                }
-
-                // Build the final "and" criterion
-                return ICriterion.and(searchCriterion);
-            }
-            return userCriterion;
+            return projectUserClient.isAdmin(userEmail).getBody();
         } finally {
             FeignSecurityManager.reset();
         }
+    }
+
+    @Override
+    public ICriterion addAccessRights(ICriterion userCriterion) throws AccessRightFilterException {
+
+        if (!isAdmin()) {
+
+            // Retrieve public groups
+            Set<AccessGroup> accessGroups = new HashSet<>(
+                    cache.getPublicAccessGroups(runtimeTenantResolver.getTenant()));
+
+            // Add explicitly associated group
+            accessGroups.addAll(cache.getAccessGroups(authResolver.getUser(), runtimeTenantResolver.getTenant()));
+
+            // Throw an error if no access group
+            if (accessGroups.isEmpty()) {
+                String errorMessage = String
+                        .format("Cannot set access right filter because user %s does not have " + "any access group",
+                                authResolver.getUser());
+                LOGGER.error(errorMessage);
+                throw new AccessRightFilterException(errorMessage);
+            }
+
+            List<ICriterion> searchCriterion = new ArrayList<>();
+
+            // Add security filter
+            List<ICriterion> groupCriterions = new ArrayList<>();
+            accessGroups.forEach(accessGroup -> groupCriterions.add(GROUP_TO_CRITERION.apply(accessGroup)));
+            searchCriterion.add(ICriterion.or(groupCriterions));
+
+            // Add user criterion (theorically, userCriterion should not be null at this point but...)
+            if (userCriterion != null && !userCriterion.equals(ICriterion.all())) {
+                searchCriterion.add(userCriterion);
+            }
+
+            // Build the final "and" criterion
+            return ICriterion.and(searchCriterion);
+        }
+        return userCriterion;
     }
 
     // TODO : by now, is the same as previous method
     @Override
     public ICriterion addDataAccessRights(ICriterion userCriterion) throws AccessRightFilterException {
 
-        // Retrieve current user from security context
-        String userEmail = authResolver.getUser();
-        Assert.notNull(userEmail, "No user found!");
+        if (!isAdmin()) {
 
-        try {
-            FeignSecurityManager.asUser(userEmail, authResolver.getRole());
-            if (!projectUserClient.isAdmin(userEmail).getBody()) {
+            // Retrieve public groups
+            Set<AccessGroup> accessGroups = new HashSet<>(
+                    cache.getPublicAccessGroups(runtimeTenantResolver.getTenant()));
 
-                // Retrieve public groups
-                Set<AccessGroup> accessGroups = new HashSet<>(
-                        cache.getPublicAccessGroups(runtimeTenantResolver.getTenant()));
+            // Add explicitly associated group
+            accessGroups.addAll(cache.getAccessGroups(authResolver.getUser(), runtimeTenantResolver.getTenant()));
 
-                // Add explicitly associated group
-                accessGroups.addAll(cache.getAccessGroups(userEmail, runtimeTenantResolver.getTenant()));
-
-                // Throw an error if no access group
-                if (accessGroups.isEmpty()) {
-                    String errorMessage = String.format("Cannot set access right filter because user %s does not have "
-                                                                + "any access group", userEmail);
-                    LOGGER.error(errorMessage);
-                    throw new AccessRightFilterException(errorMessage);
-                }
-
-                List<ICriterion> searchCriterion = new ArrayList<>();
-
-                // Add security filter
-                List<ICriterion> groupCriterions = new ArrayList<>();
-                accessGroups.forEach(accessGroup -> groupCriterions.add(GROUP_TO_CRITERION.apply(accessGroup)));
-                searchCriterion.add(ICriterion.or(groupCriterions));
-
-                // Add user criterion (theorically, userCriterion should not be null at this point but...)
-                if ((userCriterion != null) && !userCriterion.equals(ICriterion.all())) {
-                    searchCriterion.add(userCriterion);
-                }
-
-                // Build the final "and" criterion
-                return ICriterion.and(searchCriterion);
+            // Throw an error if no access group
+            if (accessGroups.isEmpty()) {
+                String errorMessage = String
+                        .format("Cannot set access right filter because user %s does not have " + "any access group",
+                                authResolver.getUser());
+                LOGGER.error(errorMessage);
+                throw new AccessRightFilterException(errorMessage);
             }
-            return userCriterion;
-        } finally {
-            FeignSecurityManager.reset();
+
+            List<ICriterion> searchCriterion = new ArrayList<>();
+
+            // Add security filter
+            List<ICriterion> groupCriterions = new ArrayList<>();
+            accessGroups.forEach(accessGroup -> groupCriterions.add(GROUP_TO_CRITERION.apply(accessGroup)));
+            searchCriterion.add(ICriterion.or(groupCriterions));
+
+            // Add user criterion (theorically, userCriterion should not be null at this point but...)
+            if (userCriterion != null && !userCriterion.equals(ICriterion.all())) {
+                searchCriterion.add(userCriterion);
+            }
+
+            // Build the final "and" criterion
+            return ICriterion.and(searchCriterion);
         }
+        return userCriterion;
     }
 
     @Override
     public Set<String> getUserAccessGroups() throws AccessRightFilterException {
-        // Retrieve current user from security context
-        String userEmail = authResolver.getUser();
-        Assert.notNull(userEmail, "No user found!");
 
-        try {
-            FeignSecurityManager.asSystem();
-            if (!projectUserClient.isAdmin(userEmail).getBody()) {
+        if (!isAdmin()) {
 
-                // Retrieve public groups
-                Set<AccessGroup> accessGroups = new HashSet<>(
-                        cache.getPublicAccessGroups(runtimeTenantResolver.getTenant()));
+            // Retrieve public groups
+            Set<AccessGroup> accessGroups = new HashSet<>(
+                    cache.getPublicAccessGroups(runtimeTenantResolver.getTenant()));
 
-                // Add explicitly associated group
-                accessGroups.addAll(cache.getAccessGroups(userEmail, runtimeTenantResolver.getTenant()));
+            // Add explicitly associated group
+            accessGroups.addAll(cache.getAccessGroups(authResolver.getUser(), runtimeTenantResolver.getTenant()));
 
-                // Throw an error if no access group
-                if (accessGroups.isEmpty()) {
-                    String errorMessage = String.format("Cannot set access right filter because user %s does not have "
-                                                                + "any access group", userEmail);
-                    LOGGER.error(errorMessage);
-                    throw new AccessRightFilterException(errorMessage);
-                }
-
-                return accessGroups.stream().map(AccessGroup::getName).collect(Collectors.toSet());
+            // Throw an error if no access group
+            if (accessGroups.isEmpty()) {
+                String errorMessage = String
+                        .format("Cannot set access right filter because user %s does not have " + "any access group",
+                                authResolver.getUser());
+                LOGGER.error(errorMessage);
+                throw new AccessRightFilterException(errorMessage);
             }
-            return null;
-        } finally {
-            FeignSecurityManager.reset();
+
+            return accessGroups.stream().map(AccessGroup::getName).collect(Collectors.toSet());
         }
+        return null;
     }
 }
