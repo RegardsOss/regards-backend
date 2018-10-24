@@ -63,7 +63,7 @@ public interface IBusinessSearchService {
     /**
      * Compute summary for given request (delegate method to catalog search service)
      * @param criterion business criterions
-     * @param searchKey search key
+     * @param searchType search key
      * @param dataset restriction to a specified dataset
      * @param dataTypes file types on which to compute summary
      * @return summary
@@ -74,7 +74,7 @@ public interface IBusinessSearchService {
     /**
      * Retrieve property values for specified property name (delegate method to catalog search service)
      * @param criterion business criterions
-     * @param SearchType the search type containing the search type and the result type
+     * @param searchType the search type containing the search type and the result type
      * @param propertyPath target propertu
      * @param maxCount maximum result count
      * @param partialText text that property should contains (can be null)
