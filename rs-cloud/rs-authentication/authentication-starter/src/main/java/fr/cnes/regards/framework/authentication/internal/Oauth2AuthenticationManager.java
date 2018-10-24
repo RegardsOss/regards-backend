@@ -474,7 +474,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         } else if (!runTimeTenantResolver.isInstance()) {
             // Retrieve account
             try {
-                userDetails = retrieveUserDetails(login, scope);
+                userDetails = retrieveUserDetails(email, scope);
             } catch (final EntityNotFoundException e) {
                 LOG.debug(e.getMessage(), e);
                 throw new BadCredentialsException(String.format("User %s does not exists ", login));
