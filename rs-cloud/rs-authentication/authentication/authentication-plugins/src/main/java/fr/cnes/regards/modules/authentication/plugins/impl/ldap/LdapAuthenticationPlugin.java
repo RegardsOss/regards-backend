@@ -92,7 +92,8 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
     /**
      * LDAP DN
      */
-    @PluginParameter(name = PARAM_LDAP_CN, label = "LDAP Root CN")
+    @PluginParameter(name = PARAM_LDAP_CN, label = "LDAP Bind DN",
+            description = "Value exemple : ou=people,ou=commun,o=company")
     private String ldapDN;
 
     /**
@@ -108,14 +109,14 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
      */
     @PluginParameter(name = PARAM_LDAP_USER_FILTER_ATTTRIBUTE, label = "LDAP Filter (default: (ObjectClass=person)",
             description = "LDAP Filter to find the user object. Default value is '(ObjectClass=person)'.",
-            optional = true)
+            optional = true, defaultValue = "(ObjectClass=person)")
     private String ldapSearchUserFilter;
 
     /**
      * LDAP email attribute label
      */
     @PluginParameter(name = PARAM_LDAP_USER_EMAIL_ATTTRIBUTE, label = "LDAP email attribute (default:mail)",
-            optional = true, description = "LDAP parameter for user email. Default value is 'mail'.",
+            description = "LDAP parameter for user email. Default value is 'mail'.", optional = true,
             defaultValue = "mail")
     private String ldapEmailAttribute;
 
