@@ -94,7 +94,6 @@
 		<module>acquisition-plugins-ssalto</module>
 		<module>acquisition-plugins</module>
 		<module>acquisition-cdpp-plugins</module>
-        <module>acquisition-plugins-microscope</module>
     </modules>
 
 </project>
