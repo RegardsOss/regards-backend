@@ -998,6 +998,12 @@
                 <version>3.0.0-SNAPSHOT</version>
                 <classifier>shaded</classifier>
             </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.acquisition.plugins</groupId>
+                <artifactId>microscope</artifactId>
+                <version>3.0.0-SNAPSHOT</version>
+                <classifier>shaded</classifier>
+            </dependency>
             <!-- CNES REMOTE STORAGES -->
             <dependency>
                 <groupId>fr.cnes.regards.storages</groupId>
