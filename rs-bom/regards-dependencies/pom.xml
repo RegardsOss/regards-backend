@@ -943,6 +943,11 @@
                 <artifactId>templates-service</artifactId>
                 <version>${fr.cnes.regards.modules.templates.version}</version>
             </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.templates</groupId>
+                <artifactId>templates-dao</artifactId>
+                <version>${fr.cnes.regards.modules.templates.version}</version>
+            </dependency>
             <!-- OpenSearch -->
             <dependency>
                 <groupId>fr.cnes.regards.modules.opensearch</groupId>
