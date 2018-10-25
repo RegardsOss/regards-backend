@@ -20,16 +20,18 @@
  */
 
 
-/**
- * Declaratve Jenkinsfile. The language is Groovy.
- * Contains the definition of a Jenkins Pipeline, is checked into source control
- * and is expected to be the reference.
- * To fully support multibranch builds without issues, we are using docker-compose to setup cots for each build.
- * storage <- catalog <- dam <- admin <- microservice
- * @author Sylvain VISSIERE-GUERINET
- * @author Marc SORDI
- * @see https://jenkins.io/doc/book/pipeline/jenkinsfile/
- */
-@Library('regards/standardPipeline') _
-fastPipeline {
+pipeline {
+    agent { label 'fast-build' }
+
+    stages {
+        stage('Deploy artifacts') {
+            when {
+                expression { BRANCH_NAME ==~ /(develop.*|release.*)/ }
+            }
+            steps {
+                sh 'mvn -U clean org.jacoco:jacoco-maven-plugin:0.7.7.201606060606:prepare-agent install sonar:sonar' +
+                        ' -Dsonar.branch=${BRANCH_NAME} -Dmaven.repo.local=/DATA/maven-fast-repository'
+            }
+        }
+    }
 }
