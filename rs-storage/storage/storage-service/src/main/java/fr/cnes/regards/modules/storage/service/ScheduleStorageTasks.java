@@ -190,8 +190,7 @@ public class ScheduleStorageTasks {
         }
     }
 
-    @Scheduled(fixedRateString = "${regards.storage.check.data.storage.disk.usage.rate:30000}",
-            initialDelay = 60 * 1000)
+    @Scheduled(fixedRateString = "${regards.storage.update.aips.rate.ms:30000}", initialDelay = 60 * 1000)
     public void handleUpdateRequests() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
