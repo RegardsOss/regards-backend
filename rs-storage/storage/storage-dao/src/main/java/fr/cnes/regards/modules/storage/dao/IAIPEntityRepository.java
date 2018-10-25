@@ -104,8 +104,8 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      * Retrieve all aips which are tagged by the provided tag
      * @return a aip page
      */
-    @Query(value = "select * from {h-schema}t_aip where json_aip->'properties'->'pdi'->'contextInformation'->'tags' @> to_jsonb(?1)  ORDER BY ?#{#pageable}",
-            countQuery = "select count(*) from {h-schema}t_aip where json_aip->'properties'->'pdi'->'contextInformation'->'tags' @> to_jsonb(?1)",
+    @Query(value = "select * from {h-schema}t_aip where json_aip#>'{properties,pdi,contextInformation,tags}' @> to_jsonb(?1)  ORDER BY ?#{#pageable}",
+            countQuery = "select count(*) from {h-schema}t_aip where json_aip#>'{properties,pdi,contextInformation,tags}' @> to_jsonb(?1)",
             nativeQuery = true)
     Page<AIPEntity> findAllByTag(String tag, Pageable page);
 
