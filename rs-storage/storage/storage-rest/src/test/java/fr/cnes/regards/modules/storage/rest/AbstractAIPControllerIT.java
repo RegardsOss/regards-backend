@@ -1,36 +1,6 @@
 package fr.cnes.regards.modules.storage.rest;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import org.apache.commons.compress.utils.Lists;
-import org.junit.After;
-import org.junit.Before;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.util.MimeType;
-
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -66,6 +36,34 @@ import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultAllocat
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.service.DataStorageEventHandler;
 import fr.cnes.regards.modules.storage.service.IPrioritizedDataStorageService;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import org.apache.commons.compress.utils.Lists;
+import org.junit.After;
+import org.junit.Before;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.MimeType;
 
 /**
  * @author Léo Mieulet
@@ -129,7 +127,7 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
 
     @Before
     public void init() throws IOException, ModuleException, URISyntaxException, InterruptedException {
-        cleanUp();
+        cleanUp(false);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         // first of all, lets get an AIP with accessible dataObjects and real checksums
         aip = getAIP();
@@ -159,18 +157,33 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
 
     @After
     public void cleanUp() throws URISyntaxException, IOException, InterruptedException {
+        cleanUp(false);
+    }
+
+    public void cleanUp(boolean haveFailed) throws URISyntaxException, IOException, InterruptedException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         subscriber.purgeQueue(DataStorageEvent.class, DataStorageEventHandler.class);
         LOG.info("Waiting for current jobs finished ....");
         waitForJobsFinished(10, true);
         LOG.info("All current jobs finished !");
         subscriber.purgeQueue(DataStorageEvent.class, DataStorageEventHandler.class);
-        jobInfoRepo.deleteAll();
-        dataFileDao.deleteAll();
-        aipUpdateRepo.deleteAll();
-        aipDao.deleteAll();
-        prioritizedDataStorageRepository.deleteAll();
-        pluginRepo.deleteAll();
+        try {
+            jobInfoRepo.deleteAll();
+            dataFileDao.deleteAll();
+            aipUpdateRepo.deleteAll();
+            aipDao.deleteAll();
+            prioritizedDataStorageRepository.deleteAll();
+            pluginRepo.deleteAll();
+        } catch (DataIntegrityViolationException e) {
+            LOG.warn("Something went wrong while cleaning up database",e.getMessage());
+            // Sometimes there is a problem to clean up entities stored in the database,
+            // so if that's occurs, let's try another time
+            if (!haveFailed) {
+                // Try another time
+                cleanUp(true);
+                return;
+            }
+        }
         if (baseStorageLocation != null) {
             Files.walk(Paths.get(baseStorageLocation.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile)
                     .forEach(File::delete);
@@ -225,7 +238,7 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
                             && !f.getStatus().getStatus().equals(JobStatus.FAILED)
                             && !f.getStatus().getStatus().equals(JobStatus.ABORTED))
                     .collect(Collectors.toSet());
-            LOG.info("TEST CLEAN] Waiting for {} Unfinished jobs", unfinishedJobs.size());
+            LOG.info("[TEST CLEAN] Waiting for {} Unfinished jobs", unfinishedJobs.size());
             if (forceStop) {
                 unfinishedJobs.forEach(j -> {
                     LOG.info("[TEST CLEAN] Trying to stop running job {}-{} [{}]", j.getClassName(), j.getId(),
