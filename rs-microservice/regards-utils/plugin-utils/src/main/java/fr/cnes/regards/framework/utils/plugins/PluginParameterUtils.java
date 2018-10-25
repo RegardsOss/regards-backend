@@ -124,8 +124,8 @@ public final class PluginParameterUtils {
         // Create PluginParameter
         if (pluginParameter == null) {
             // Guess values
-            result = PluginParameterType
-                    .create(field.getName(), field.getName(), null, field.getType(), paramType, false, false, false);
+            result = PluginParameterType.create(field.getName(), field.getName(), null, field.getType(), paramType,
+                                                false, false, false);
         } else {
             // Report values from annotation
             String name = getFieldName(field, pluginParameter);
@@ -133,24 +133,17 @@ public final class PluginParameterUtils {
             // Lets restrict @PluginParameter#sensitive() usage to strings.
             if (pluginParameter.sensitive()) {
                 if (!String.class.isAssignableFrom(field.getType())) {
-                    String msg = String.format(
-                            "Sensible parameters must be of type %s. Faulty parameter: %s in plugin: %s",
-                            String.class.getName(),
-                            field.getName(),
-                            pluginClass.getName());
+                    String msg = String
+                            .format("Sensible parameters must be of type %s. Faulty parameter: %s in plugin: %s",
+                                    String.class.getName(), field.getName(), pluginClass.getName());
                     LOGGER.error(msg);
                     throw new PluginUtilsRuntimeException(msg);
                 }
             }
 
-            result = PluginParameterType.create(name,
-                                                pluginParameter.label(),
-                                                pluginParameter.description(),
-                                                field.getType(),
-                                                paramType,
-                                                pluginParameter.optional(),
-                                                pluginParameter.unconfigurable(),
-                                                pluginParameter.sensitive());
+            result = PluginParameterType.create(name, pluginParameter.label(), pluginParameter.description(),
+                                                field.getType(), paramType, pluginParameter.optional(),
+                                                pluginParameter.unconfigurable(), pluginParameter.sensitive());
 
             // Manage markdown description
             String markdown = AnnotationUtils.loadMarkdown(pluginClass, pluginParameter.markdown());
@@ -324,7 +317,7 @@ public final class PluginParameterUtils {
     /**
      * Use configured values to set field values.
      *
-     * @param @param <T> a {@link Plugin} type
+     * @param <T> a {@link Plugin} type
      * @param gson GSON deserializer instance. Fallback to default local Gson instance is {@link Optional#empty()}
      * @param returnPlugin the plugin instance
      * @param plgConf the {@link PluginConfiguration}
@@ -551,8 +544,10 @@ public final class PluginParameterUtils {
         String paramValue = getParameterValue(parameterName, plgConf, dynamicPluginParameters);
 
         // If the parameter value is not defined, get the default parameter value
+        Boolean isDefaultValue = false;
         if (Strings.isNullOrEmpty(paramValue) && !plgParamAnnotation.defaultValue().isEmpty()) {
             paramValue = plgParamAnnotation.defaultValue();
+            isDefaultValue = true;
         }
 
         // Stop if no value and optional parameter
@@ -577,19 +572,23 @@ public final class PluginParameterUtils {
         try {
             Object effectiveVal;
             if (typeWrapper.get().getType().equals(PrimitiveObject.STRING.getType())) {
-                if(plgParamAnnotation.sensitive()) {
+                if (plgParamAnnotation.sensitive()) {
                     effectiveVal = plgConf.getParameter(parameterName).getDecryptedValue();
                 } else {
-                    // Strip quotes using Gson
-                    JsonElement el = gson.fromJson(paramValue, JsonElement.class);
-                    // FIXME : Handle datasource plugin configurations
-                    if ((el != null) && el.isJsonPrimitive()) {
-                        effectiveVal = el.getAsString();
+                    if (isDefaultValue) {
+                        // If default value do not parse json. The default value is a string.
+                        effectiveVal = paramValue;
                     } else {
-                        if (paramValue.startsWith("\"") && paramValue.endsWith("\"") && (paramValue.length() > 2)) {
-                            effectiveVal = paramValue.substring(1, paramValue.length() - 1);
+                        // Strip quotes using Gson
+                        JsonElement el = gson.fromJson(paramValue, JsonElement.class);
+                        if ((el != null) && el.isJsonPrimitive()) {
+                            effectiveVal = el.getAsString();
                         } else {
-                            effectiveVal = paramValue;
+                            if (paramValue.startsWith("\"") && paramValue.endsWith("\"") && (paramValue.length() > 2)) {
+                                effectiveVal = paramValue.substring(1, paramValue.length() - 1);
+                            } else {
+                                effectiveVal = paramValue;
+                            }
                         }
                     }
                 }
