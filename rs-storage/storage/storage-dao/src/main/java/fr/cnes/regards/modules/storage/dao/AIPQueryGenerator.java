@@ -33,7 +33,9 @@ import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 
 /**
  * Specification class to filter DAO searches on {@link AIP} entities
- *
+ * Note there is an index on json_aip.properties.pdi.contextInformation.tags,
+ * so you must use the same accessor defined in the index V3.0.5__storage_replace_tags_column_fix.sql
+ * (#>'{properties,pdi,contextInformation,tags})
  * @author Léo Mieulet
  */
 public class AIPQueryGenerator {
@@ -76,7 +78,7 @@ public class AIPQueryGenerator {
     public static String searchAipTagsUsingSQL(AIPState state, OffsetDateTime from, OffsetDateTime to,
             List<String> tags, AIPSession session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded) {
         StringBuilder request = new StringBuilder(
-                "SELECT distinct jsonb_array_elements_text(json_aip->'properties'->'pdi'->'contextInformation'->'tags') "
+                "SELECT distinct jsonb_array_elements_text(json_aip#>'{properties,pdi,contextInformation,tags}') "
                         + "FROM {h-schema}t_aip ");
         Set<String> predicates = generatePredicates(state, from, to, session, providerId, aipIds, aipIdsExcluded);
         if (tags != null && !tags.isEmpty()) {
@@ -141,7 +143,7 @@ public class AIPQueryGenerator {
         for (String tag : tags) {
             tagPredicates.add("'" + tag + "'");
         }
-        return "(json_aip->'properties'->'pdi'->'contextInformation'->'tags' @> jsonb_build_array("
+        return "(json_aip#>'{properties,pdi,contextInformation,tags}' @> jsonb_build_array("
                 + String.join(" , ", tagPredicates) + "))";
     }
 

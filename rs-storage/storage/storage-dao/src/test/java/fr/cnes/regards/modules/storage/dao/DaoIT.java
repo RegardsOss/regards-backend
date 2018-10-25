@@ -420,4 +420,21 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         Assert.assertFalse(aips.getContent().contains(aip4));
     }
 
+    @Test
+    public void testCustomQueryGetTags() {
+        List<String> tags = Arrays.asList("aip");
+
+        List<String> aips = dao.findAllByCustomQuery(
+            // test at least one tag
+            AIPQueryGenerator.searchAipTagsUsingSQL(AIPState.VALID, null, null, tags,
+                    null, null, null,
+                    null)
+        );
+
+        Assert.assertTrue(aips.containsAll(aip1.getTags()));
+        Assert.assertTrue(aips.containsAll(aip12.getTags()));
+        Assert.assertFalse(aips.containsAll(aip2.getTags()));
+        Assert.assertFalse(aips.containsAll(aip3.getTags()));
+        Assert.assertFalse(aips.containsAll(aip4.getTags()));
+    }
 }
