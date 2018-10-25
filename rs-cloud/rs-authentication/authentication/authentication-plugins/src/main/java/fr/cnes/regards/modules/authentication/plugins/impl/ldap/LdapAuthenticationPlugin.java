@@ -109,7 +109,7 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
      */
     @PluginParameter(name = PARAM_LDAP_USER_FILTER_ATTTRIBUTE, label = "LDAP Filter (default: (ObjectClass=person)",
             description = "LDAP Filter to find the user object. Default value is '(ObjectClass=person)'.",
-            optional = true, defaultValue = "\"(ObjectClass=person)\"")
+            optional = true, defaultValue = "(ObjectClass=person)")
     private String ldapSearchUserFilter;
 
     /**
