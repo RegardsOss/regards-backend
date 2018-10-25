@@ -1,9 +1,11 @@
 <#setting datetime_format='yyyy-MM-dd HH:mm:ss z'>
-    <h1>REGARDS - Some file were not associated to a data storage</h1>
-    <div>
-        One or more files could not be associated to a data storage:
-        <#list dataFiles as dataFile>
-            - File (urls:<#list dataFile.urls as dataFileUrl> ${dataFileUrl}</#list>) associated to aip ${dataFile.aipEntity.id} could not be affected to any data
-            storages by the following allocation strategy ${allocationStrategy.label}.<br/>
-        </#list>
-    </div>
+    <p>
+One or more files could not be associated to a data storage:<br/>
+        <ul>
+<#list dataFiles as dataFile>
+    <li>File (urls:<#list dataFile.urls as dataFileUrl> ${dataFileUrl}</#list>) associated to
+        aip ${dataFile.aipEntity.id} could not be affected to any data storages by the following
+        allocation strategy ${allocationStrategy.label}.</li>
+</#list>
+</ul>
+    </p>

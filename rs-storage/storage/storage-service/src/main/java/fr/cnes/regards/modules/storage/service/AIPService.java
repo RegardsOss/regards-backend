@@ -52,6 +52,8 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.util.Pair;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MimeType;
+import org.springframework.util.MimeTypeUtils;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
@@ -579,7 +581,8 @@ public class AIPService implements IAIPService {
             throw new EntityOperationForbiddenException("Only Admins can access this feature.");
         }
         AIPSession aipSession = getSession(session, false);
-        return aipDao.findAll(AIPQueryGenerator.searchAIPContainingAllTags(state, from, to, tags, aipSession, providerId, null, null),
+        return aipDao.findAll(AIPQueryGenerator.searchAIPContainingAllTags(state, from, to, tags, aipSession,
+                                                                           providerId, null, null),
                               pageable);
     }
 
@@ -590,17 +593,19 @@ public class AIPService implements IAIPService {
         // we have two cases: there is a date or not
         Page<AIP> aips;
         if (fromLastUpdateDate == null) {
-            if ((tags == null) || tags.isEmpty()) {
+            if (tags == null || tags.isEmpty()) {
                 aips = aipDao.findAllByState(state, pageable);
             } else {
-                aips = aipDao.findAll(AIPQueryGenerator.searchAIPContainingAtLeastOneTag(state, null, null, new ArrayList<>(tags), null, null,
-                                                               null, null),
+                aips = aipDao.findAll(AIPQueryGenerator.searchAIPContainingAtLeastOneTag(state, null, null,
+                                                                                         new ArrayList<>(tags), null,
+                                                                                         null, null, null),
                                       pageable);
             }
         } else {
-            aips = aipDao.findAll(AIPQueryGenerator.searchAIPContainingAtLeastOneTag(state, fromLastUpdateDate, null, new ArrayList<>(tags), null, null,
-                    null, null),
-                    pageable);
+            aips = aipDao.findAll(AIPQueryGenerator.searchAIPContainingAtLeastOneTag(state, fromLastUpdateDate, null,
+                                                                                     new ArrayList<>(tags), null, null,
+                                                                                     null, null),
+                                  pageable);
         }
         // Associate data files with their AIP (=> multimap)
         List<AipDataFiles> aipDataFiles = new ArrayList<>();
@@ -668,7 +673,7 @@ public class AIPService implements IAIPService {
      * status.
      * @param dataFilesToStore {@link StorageDataFile}s
      * @param storageWorkingSetMap {@link Multimap}<{@link PluginConfiguration}, {@link StorageDataFile}>
-     * @param {@link DispatchErrors} errors during files dispatch
+     * @param dispatchErrors {@link DispatchErrors} errors during files dispatch
      */
     private void checkDispatch(Set<StorageDataFile> dataFilesToStore,
             Multimap<Long, StorageDataFile> storageWorkingSetMap, DispatchErrors dispatchErrors) {
@@ -697,16 +702,17 @@ public class AIPService implements IAIPService {
             } catch (EntityNotFoundException e) {
                 throw new MaintenanceException(e.getMessage(), e);
             }
-            notifyAdmins("Some file were not associated to a data storage", email.getText(), NotificationType.ERROR);
+            notifyAdmins("Some file were not associated to a data storage", email.getText(), NotificationType.ERROR,
+                         MimeTypeUtils.TEXT_HTML);
         }
     }
 
     /**
      * Use the notification module in admin to create a notification for admins
      */
-    private void notifyAdmins(String title, String message, NotificationType type) {
+    private void notifyAdmins(String title, String message, NotificationType type, MimeType mimeType) {
         NotificationDTO notif = new NotificationDTO(message, Sets.newHashSet(),
-                Sets.newHashSet(DefaultRole.ADMIN.name()), applicationName, title, type);
+                Sets.newHashSet(DefaultRole.ADMIN.name()), applicationName, title, type, mimeType);
         try {
             FeignSecurityManager.asSystem();
             notificationClient.createNotification(notif);
@@ -815,16 +821,16 @@ public class AIPService implements IAIPService {
                 } catch (EntityNotFoundException e) {
                     throw new MaintenanceException(e.getMessage(), e);
                 }
-                notifyAdmins("Some file were not handled by a data storage", email.getText(), NotificationType.ERROR);
+                notifyAdmins("Some file were not handled by a data storage", email.getText(), NotificationType.ERROR, MimeTypeUtils.TEXT_HTML);
             }
             return workingSubSets;
         } else {
             notifyAdmins("Some files could not be handled by their storage plugin.",
                          String.format("Plugin Configuration %s could not be instanciated."
-                                 + " Please check the configuration."
+                                 + " Please check the configuration.%n"
                                  + " Skipping work(mode: %s) on this Plugin configuration for now.", dataStorageConfId,
                                        accessMode),
-                         NotificationType.ERROR);
+                         NotificationType.ERROR, MimeTypeUtils.TEXT_PLAIN);
             return new HashSet<>();
         }
     }
@@ -840,7 +846,7 @@ public class AIPService implements IAIPService {
             return pluginService.getPlugin(activeAllocationStrategy.getId());
         } catch (PluginUtilsRuntimeException e) {
             LOGGER.error(e.getMessage(), e);
-            notifyAdmins("Allocation Strategy miss configured", e.getMessage(), NotificationType.ERROR);
+            notifyAdmins("Allocation Strategy miss configured", e.getMessage(), NotificationType.ERROR, MimeTypeUtils.TEXT_PLAIN);
             throw e;
         }
     }
@@ -856,7 +862,7 @@ public class AIPService implements IAIPService {
             IllegalStateException e = new IllegalStateException(
                     "The application needs one and only one active configuration of "
                             + IAllocationStrategy.class.getName());
-            notifyAdmins("No active Allocation Strategy", e.getMessage(), NotificationType.ERROR);
+            notifyAdmins("No active Allocation Strategy", e.getMessage(), NotificationType.ERROR, MimeTypeUtils.TEXT_PLAIN);
             LOGGER.error(e.getMessage(), e);
             throw e;
         }
@@ -900,7 +906,7 @@ public class AIPService implements IAIPService {
             LOGGER.error(e.getMessage(), e);
             notifyAdmins("Could not schedule metadata storage",
                          "Metadata storage could not be realized because an error occured. Please check the logs",
-                         NotificationType.ERROR);
+                         NotificationType.ERROR, MimeTypeUtils.TEXT_PLAIN);
         }
     }
 
@@ -932,7 +938,7 @@ public class AIPService implements IAIPService {
             LOGGER.trace("[METADATA STORE] Number of AIP in pending state ready for metadata storage {}/{}",
                          metadataToStore.size(), pendingAips.getTotalElements());
             page = pendingAips.nextPageable();
-        } while (pendingAips.hasNext() && (metadataToStore.size() < dataFileLimit));
+        } while (pendingAips.hasNext() && metadataToStore.size() < dataFileLimit);
         LOGGER.trace("[METADATA STORE] Number of AIP metadata {} to schedule for storage.", metadataToStore.size());
         return metadataToStore;
     }
@@ -1020,7 +1026,7 @@ public class AIPService implements IAIPService {
             throw new EntityNotFoundException(ipId, AIP.class);
         }
         AIP aipToUpdate = oAipToUpdate.get();
-        if ((aipToUpdate.getState() != AIPState.STORED)) {
+        if (aipToUpdate.getState() != AIPState.STORED) {
             LOGGER.info("AIP to update {}, is already handled by a storage process. The requested udpdate is delayed.",
                         aipToUpdate.getProviderId());
             addNewAIPUpdateRequest(newAip, updateMessage);

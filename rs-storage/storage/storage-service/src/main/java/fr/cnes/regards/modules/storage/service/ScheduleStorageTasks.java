@@ -49,7 +49,7 @@ import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
  * <li>Data storage monitoring: {@link #monitorDataStorages()}</li>
  * <li>AIP data storage: {@link #store()}</li>
  * <li>AIP metadata storage: {@link #storeMetadata()}</li>
- * <li>AIP metadata updates: {@link #updateAlreadyStoredMetadata()}</li>
+ * <li>AIP metadata updates: {@link #handleUpdateRequests()}</li>
  * </ul>
  * @author Marc Sordi
  * @author Sylvain Vissiere-Guerinet

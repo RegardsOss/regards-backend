@@ -30,6 +30,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.util.MimeTypeUtils;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
@@ -138,7 +139,7 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
                 message.append(ipId);
                 message.append("  \\n");
             }
-            dataStorageService.notifyAdmins(title, message.toString(), NotificationType.ERROR);
+            dataStorageService.notifyAdmins(title, message.toString(), NotificationType.ERROR, MimeTypeUtils.TEXT_PLAIN);
         }
     }
 
