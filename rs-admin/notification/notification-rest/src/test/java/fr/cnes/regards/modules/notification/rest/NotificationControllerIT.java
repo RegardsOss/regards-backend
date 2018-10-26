@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.util.MimeTypeUtils;
 
 import com.google.common.collect.Sets;
 
@@ -85,7 +86,7 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
         Mockito.when(projectUsersClient.retrieveRoleProjectUsersList(roleName, 0, 100)).thenReturn(new ResponseEntity<>(
                 HateoasUtils.wrapToPagedResources(Lists.newArrayList(pu)), HttpStatus.OK));
         NotificationDTO notif = new NotificationDTO("Lets test", Sets.newHashSet(), Sets.newHashSet(roleName),
-                "microservice", "test", NotificationType.INFO);
+                                                    "microservice", "test", NotificationType.INFO, MimeTypeUtils.TEXT_PLAIN);
         Mockito.when(rolesClient.retrieveRoleDescendants(roleName))
                 .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(roleName)), HttpStatus.OK));
 
@@ -106,18 +107,18 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
         Mockito.when(rolesClient.retrieveRoleDescendants(roleName))
                 .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(roleName)), HttpStatus.OK));
         NotificationDTO notif = new NotificationDTO("Bonne", Sets.newHashSet(), Sets.newHashSet(roleName),
-                "microservice", "test", NotificationType.INFO);
+                "microservice", "test", NotificationType.INFO, MimeTypeUtils.TEXT_PLAIN);
         notificationService.createNotification(notif);
         notif = new NotificationDTO("Année", Sets.newHashSet(), Sets.newHashSet(roleName), "microservice", "test",
-                NotificationType.INFO);
+                NotificationType.INFO, MimeTypeUtils.TEXT_PLAIN);
         notificationService.createNotification(notif);
         notif = new NotificationDTO("2018", Sets.newHashSet(), Sets.newHashSet(roleName), "microservice", "test",
-                NotificationType.INFO);
+                NotificationType.INFO, MimeTypeUtils.TEXT_PLAIN);
         notificationService.createNotification(notif);
         //some lorem ipsum so we have a notification with content
         notif = new NotificationDTO(
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus sed magna turpis. Curabitur ultrices scelerisque magna pretium mollis. Sed suscipit, ligula eu tempus pretium, lorem quam vehicula urna, vel efficitur leo mauris quis mauris. Pellentesque ac ullamcorper lectus. Aliquam sed tempor massa. Proin ex massa, sodales vel turpis non, sodales rhoncus lacus. Maecenas a convallis nisi. Aliquam felis justo, pellentesque id vestibulum id, tempus sit amet dui. Quisque quis lacus vehicula, gravida lectus a, elementum erat. In vitae venenatis turpis, et venenatis lacus. Phasellus facilisis pellentesque elit, in lacinia enim placerat quis.",
-                Sets.newHashSet(), Sets.newHashSet(roleName), "microservice", "test", NotificationType.INFO);
+                Sets.newHashSet(), Sets.newHashSet(roleName), "microservice", "test", NotificationType.INFO, MimeTypeUtils.TEXT_PLAIN);
         notificationService.createNotification(notif);
         RequestBuilderCustomizer requestCustomizer = getNewRequestBuilderCustomizer();
         requestCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
@@ -159,7 +160,7 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
                 .thenReturn(new ResponseEntity<>(HateoasUtils.wrapToPagedResources(Lists.newArrayList(pu)),
                         HttpStatus.OK));
         NotificationDTO notificationDTO = new NotificationDTO("Bonne", Sets.newHashSet(), Sets.newHashSet(roleName),
-                "microservice", "test", NotificationType.INFO);
+                "microservice", "test", NotificationType.INFO, MimeTypeUtils.TEXT_PLAIN);
         Mockito.when(rolesClient.retrieveRoleDescendants(roleName))
                 .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(roleName)), HttpStatus.OK));
         Notification notification = notificationService.createNotification(notificationDTO);
@@ -179,7 +180,7 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
                 .thenReturn(new ResponseEntity<>(HateoasUtils.wrapToPagedResources(Lists.newArrayList(pu)),
                         HttpStatus.OK));
         NotificationDTO notificationDTO = new NotificationDTO("Bonne", Sets.newHashSet(), Sets.newHashSet(roleName),
-                "microservice", "test", NotificationType.INFO);
+                "microservice", "test", NotificationType.INFO, MimeTypeUtils.TEXT_PLAIN);
         Mockito.when(rolesClient.retrieveRoleDescendants(roleName))
                 .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(roleName)), HttpStatus.OK));
         Notification notification = notificationService.createNotification(notificationDTO);

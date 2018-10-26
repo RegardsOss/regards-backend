@@ -1,0 +1,1 @@
+ALTER TABLE t_notification ADD COLUMN mime_type varchar(255) DEFAULT 'text/plain';
