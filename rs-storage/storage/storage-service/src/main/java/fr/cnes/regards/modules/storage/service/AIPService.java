@@ -593,7 +593,7 @@ public class AIPService implements IAIPService {
         // we have two cases: there is a date or not
         Page<AIP> aips;
         if (fromLastUpdateDate == null) {
-            if (tags == null || tags.isEmpty()) {
+            if ((tags == null) || tags.isEmpty()) {
                 aips = aipDao.findAllByState(state, pageable);
             } else {
                 aips = aipDao.findAll(AIPQueryGenerator.searchAIPContainingAtLeastOneTag(state, null, null,
@@ -731,6 +731,7 @@ public class AIPService implements IAIPService {
      * @param storingData FALSE to store {@link DataType#AIP}, or TRUE for all other type of
      * {@link StorageDataFile}.
      * @return List of {@link UUID} of jobs scheduled.
+     * @throws ModuleException
      */
     public Set<UUID> scheduleStorage(Multimap<Long, StorageDataFile> storageWorkingSetMap, boolean storingData)
             throws ModuleException {
@@ -821,7 +822,8 @@ public class AIPService implements IAIPService {
                 } catch (EntityNotFoundException e) {
                     throw new MaintenanceException(e.getMessage(), e);
                 }
-                notifyAdmins("Some file were not handled by a data storage", email.getText(), NotificationType.ERROR, MimeTypeUtils.TEXT_HTML);
+                notifyAdmins("Some file were not handled by a data storage", email.getText(), NotificationType.ERROR,
+                             MimeTypeUtils.TEXT_HTML);
             }
             return workingSubSets;
         } else {
@@ -846,7 +848,8 @@ public class AIPService implements IAIPService {
             return pluginService.getPlugin(activeAllocationStrategy.getId());
         } catch (PluginUtilsRuntimeException e) {
             LOGGER.error(e.getMessage(), e);
-            notifyAdmins("Allocation Strategy miss configured", e.getMessage(), NotificationType.ERROR, MimeTypeUtils.TEXT_PLAIN);
+            notifyAdmins("Allocation Strategy miss configured", e.getMessage(), NotificationType.ERROR,
+                         MimeTypeUtils.TEXT_PLAIN);
             throw e;
         }
     }
@@ -862,7 +865,8 @@ public class AIPService implements IAIPService {
             IllegalStateException e = new IllegalStateException(
                     "The application needs one and only one active configuration of "
                             + IAllocationStrategy.class.getName());
-            notifyAdmins("No active Allocation Strategy", e.getMessage(), NotificationType.ERROR, MimeTypeUtils.TEXT_PLAIN);
+            notifyAdmins("No active Allocation Strategy", e.getMessage(), NotificationType.ERROR,
+                         MimeTypeUtils.TEXT_PLAIN);
             LOGGER.error(e.getMessage(), e);
             throw e;
         }
@@ -927,7 +931,7 @@ public class AIPService implements IAIPService {
                 if (nbNotStoredFile == 0) {
                     metadataToStore.add(aip);
                 } else {
-                    LOGGER.trace("[METADATA STORE] There is still {} datafiles not stored for AIP {}. Metadata file cannot be generated yet.",
+                    LOGGER.debug("[METADATA STORE] There is still {} datafiles not stored for AIP {}. Metadata file cannot be generated yet.",
                                  nbNotStoredFile, aip.getProviderId());
                 }
                 // If maximum number of results is reached, then stop.
@@ -938,7 +942,7 @@ public class AIPService implements IAIPService {
             LOGGER.trace("[METADATA STORE] Number of AIP in pending state ready for metadata storage {}/{}",
                          metadataToStore.size(), pendingAips.getTotalElements());
             page = pendingAips.nextPageable();
-        } while (pendingAips.hasNext() && metadataToStore.size() < dataFileLimit);
+        } while (pendingAips.hasNext() && (metadataToStore.size() < dataFileLimit));
         LOGGER.trace("[METADATA STORE] Number of AIP metadata {} to schedule for storage.", metadataToStore.size());
         return metadataToStore;
     }
@@ -1290,6 +1294,7 @@ public class AIPService implements IAIPService {
     private Set<UUID> scheduleDeletion(Collection<StorageDataFile> dataFilesToDelete) throws ModuleException {
         // when we delete DataFiles, we have to get the DataStorages to use thanks to DB informations
         Multimap<Long, StorageDataFile> deletionWorkingSetMultimap = HashMultimap.create();
+        LOGGER.debug("Start schedule deletion for {} StorageDataFiles", dataFilesToDelete.size());
         for (StorageDataFile toDelete : dataFilesToDelete) {
             toDelete.getPrioritizedDataStorages().forEach(dataStorage -> {
                 deletionWorkingSetMultimap.put(dataStorage.getId(), toDelete);
@@ -1304,9 +1309,11 @@ public class AIPService implements IAIPService {
             Set<IWorkingSubset> workingSubSets = getWorkingSubsets(deletionWorkingSetMultimap.get(dataStorageConfId),
                                                                    dataStorageConfId,
                                                                    DataStorageAccessModeEnum.DELETION_MODE);
-            LOGGER.trace("Preparing a deletion job for each working subsets");
+            LOGGER.debug("Schedule deletion for {} working subsets", workingSubSets.size());
             // lets instantiate every job for every DataStorage to use
             for (IWorkingSubset workingSubset : workingSubSets) {
+                LOGGER.debug("Schedule deletion for working subset with {} StorageDataFiles",
+                             workingSubset.getDataFiles().size());
                 // for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets storeAndCreate a
                 // job for
                 // each of them

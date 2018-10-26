@@ -125,6 +125,7 @@ public class SimpleOnlineDataStorage implements IOnlineDataStorage<LocalWorkingS
 
     /**
      * Plugin init method
+     * @throws MalformedURLException
      */
     @PluginInit
     public void init() throws MalformedURLException {

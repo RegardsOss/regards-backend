@@ -26,6 +26,9 @@ public interface IDataStorageService {
 
     /**
      * Retrieve monitoring information on each and every one of IDataStorage plugin which are active.
+     * @return {@link PluginStorageInfo}s
+     * @throws ModuleException
+     * @throws IOException
      */
     Collection<PluginStorageInfo> getMonitoringInfos() throws ModuleException, IOException;
 
@@ -50,12 +53,17 @@ public interface IDataStorageService {
 
     /**
      * Use the notification module in admin to create a notification for admins
+     * @param title
+     * @param message
+     * @param type
+     * @param mimeType
      */
     void notifyAdmins(String title, String message, NotificationType type, MimeType mimeType);
 
     /**
      * Method called when a SUCCESSFULL {@link DataStorageEvent} {@link StorageAction#DELETION} event is received.
      * @param dataFileDeleted {@link StorageDataFile} deleted.
+     * @param deletedUrl
      * @param checksumOfDeletedFile {@link String} checksum of the deleted {@link StorageDataFile}
      */
     void handleDeletionSuccess(StorageDataFile dataFileDeleted, URL deletedUrl, String checksumOfDeletedFile);
@@ -70,6 +78,12 @@ public interface IDataStorageService {
     /**
      * Method called when a SUCCESSFULL {@link DataStorageEvent} {@link StorageAction#STORE} event is received.
      * @param storedDataFile {@link StorageDataFile} successfully stored
+     * @param storedFileChecksum
+     * @param storedFileNewURL
+     * @param storedFileSize
+     * @param dataStoragePluginConfId
+     * @param dataWidth
+     * @param dataHeight
      */
     void handleStoreSuccess(StorageDataFile storedDataFile, String storedFileChecksum, URL storedFileNewURL,
             Long storedFileSize, Long dataStoragePluginConfId, Integer dataWidth, Integer dataHeight);

@@ -28,8 +28,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;

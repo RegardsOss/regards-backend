@@ -1,3 +1,21 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.storage.service;
 
 import java.io.IOException;
@@ -54,7 +72,6 @@ public abstract class AbstractJobIT extends AbstractMultitenantServiceTest {
 
     public static final String SESSION = "SESSION 42";
 
-    @SuppressWarnings("unused")
     @Autowired
     protected IRuntimeTenantResolver runtimeTenantResolver;
 
@@ -80,7 +97,7 @@ public abstract class AbstractJobIT extends AbstractMultitenantServiceTest {
 
     @Before
     public void init() throws IOException, URISyntaxException, ModuleException {
-        tenantResolver.forceTenant(DEFAULT_TENANT);
+        tenantResolver.forceTenant(getDefaultTenant());
 
         AIPSession aipSession = aipService.getSession(SESSION, true);
         for (int i = 0; i < 20; i++) {
@@ -109,9 +126,9 @@ public abstract class AbstractJobIT extends AbstractMultitenantServiceTest {
 
     protected AIP getNewAipWithTags(String aipSession, String... tags) throws MalformedURLException {
 
-        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP, EntityType.DATA, DEFAULT_TENANT,
+        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP, EntityType.DATA, getDefaultTenant(),
                 UUID.randomUUID(), 1);
-        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT,
+        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, getDefaultTenant(),
                 sipId.getEntityId(), 1);
         AIPBuilder aipBuilder = new AIPBuilder(aipId, Optional.of(sipId), "providerId", EntityType.DATA, aipSession);
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", MimeType.valueOf("text/plain"));
@@ -126,7 +143,7 @@ public abstract class AbstractJobIT extends AbstractMultitenantServiceTest {
 
     @After
     public void after() throws URISyntaxException, IOException {
-        tenantResolver.forceTenant(DEFAULT_TENANT);
+        tenantResolver.forceTenant(getDefaultTenant());
         jobInfoRepo.deleteAll();
         dataFileDao.deleteAll();
         pluginRepo.deleteAll();

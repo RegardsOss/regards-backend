@@ -184,7 +184,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
     private IPrioritizedDataStorageRepository prioritizedDataStorageRepository;
 
     @Autowired
-    private IStorageDataFileRepository repositori;
+    private IStorageDataFileRepository repository;
 
     @Value("${regards.storage.cache.size.limit.ko.per.tenant}")
     private Long cacheSizeLimitKo;
@@ -294,6 +294,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
     /**
      * Verify that errors are handled when an avaibility request is sent for files that does not exists.<br/>
      * Expected result : The {@link AvailabilityResponse} contains all files in error.
+     * @throws ModuleException
      */
     @Test
     public void loadUnavailableFilesTest() throws ModuleException {
@@ -311,6 +312,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
      * Verify that online files are directly available from an avaibility request.<br/>
      * Expected result : The {@link AvailabilityResponse} contains all files available from online storage.
      * @throws MalformedURLException
+     * @throws ModuleException
      */
     @Test
     public void loadOnlineFilesTest() throws MalformedURLException, ModuleException {
@@ -330,6 +332,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
      * online storage.<br/>
      * Expected result : The {@link AvailabilityResponse} contains all files available from online storage.
      * @throws MalformedURLException
+     * @throws ModuleException
      */
     @Test
     public void loadOnlineNNearlineFilesTest() throws MalformedURLException, ModuleException {
@@ -345,25 +348,11 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
-    public void testSeb() throws MalformedURLException {
+    public void testRetrieveDistinctSotageDataFiles() throws MalformedURLException {
         fillNearlineDataFileDb(50L, 3, "dataFile");
-
         Set<String> checksums = nearlineFiles.stream().map(f -> f.getChecksum()).collect(Collectors.toSet());
-
-        Page<Long> ids = repositori.findIdPageByChecksumIn(checksums, new PageRequest(0, 500));
-
-        LOG.info("Number of ids={}", ids.getContent().size());
-        Set<StorageDataFile> result = repositori.findAllDistinctByIdIn(ids.getContent());
-
-        LOG.info("result size {}", result.size());
-
-        result.forEach(p -> {
-            p.getPrioritizedDataStorages().forEach(ps -> {
-                LOG.info("Parameters {} - {}", ps.getDataStorageConfiguration().getId(),
-                         ps.getDataStorageConfiguration().getParameters().size());
-            });
-        });
-
+        Page<Long> ids = repository.findIdPageByChecksumIn(checksums, new PageRequest(0, 500));
+        Set<StorageDataFile> result = repository.findAllDistinctByIdIn(ids.getContent());
         Assert.assertEquals("There should be only 3 storage data files found", 3, result.size());
     }
 
@@ -380,6 +369,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
      *
      * @throws MalformedURLException
      * @throws InterruptedException
+     * @throws ModuleException
      */
     @Test
     @Requirements({ @Requirement("REGARDS_DSL_STO_CMD_110") })
@@ -451,6 +441,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
      *
      * @throws MalformedURLException
      * @throws InterruptedException
+     * @throws ModuleException
      */
     @Test
     public void loadNearlineFilesWithQueuedTest() throws MalformedURLException, InterruptedException, ModuleException {
@@ -512,6 +503,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
      *
      * @throws MalformedURLException
      * @throws InterruptedException
+     * @throws ModuleException
      */
     @Test
     public void loadNearlineFilesWithFullCache() throws MalformedURLException, InterruptedException, ModuleException {
@@ -728,6 +720,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
      * schedule restoration job when there is enough space left.
      * @throws IOException
      * @throws InterruptedException
+     * @throws ModuleException
      */
     @Test
     @Requirement("REGARDS_DSL_STO_ARC_440")
