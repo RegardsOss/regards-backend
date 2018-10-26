@@ -18,10 +18,11 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import javax.validation.Valid;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
@@ -115,6 +116,7 @@ public class RoleController implements IResourceController<Role> {
 
     /**
      * Define the endpoint for retrieving the list of borrowable Roles for the current user.
+     * The borowalble roles contains at least the authenticated user own role.
      * @return list of borrowable roles for current authenticated user
      */
     @RequestMapping(method = RequestMethod.GET, path = BORROWABLE_MAPPING)
@@ -219,13 +221,13 @@ public class RoleController implements IResourceController<Role> {
                                             MethodParamFactory.build(String.class, role.getName()));
                 }
             }
-            if (!(RoleAuthority.isProjectAdminRole(role.getName()) || RoleAuthority
-                    .isInstanceAdminRole(role.getName()))) {
+            if (!(RoleAuthority.isProjectAdminRole(role.getName())
+                    || RoleAuthority.isInstanceAdminRole(role.getName()))) {
 
                 //we add the link to manage a role resources accesses except for PROJECT_ADMIN and INSTANCE_ADMIN
-                resourceService
-                        .addLink(resource, RoleResourceController.class, "getRoleResources", "manage-resource-access",
-                                 MethodParamFactory.build(String.class, role.getName()));
+                resourceService.addLink(resource, RoleResourceController.class, "getRoleResources",
+                                        "manage-resource-access",
+                                        MethodParamFactory.build(String.class, role.getName()));
             }
             resourceService.addLink(resource, this.getClass(), "getAllRoles", LinkRels.LIST);
             resourceService.addLink(resource, this.getClass(), "getBorrowableRoles", "borrowable");

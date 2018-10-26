@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.service.role;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -30,6 +29,8 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -40,6 +41,7 @@ import org.springframework.util.Assert;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -284,9 +286,9 @@ public class RoleService implements IRoleService {
         }
         Role beforeUpdate = roleRepository.findByName(pRoleName)
                 .orElseThrow(() -> new EntityNotFoundException(pRoleName, Role.class));
-        if (beforeUpdate.isNative() && (
-                ((beforeUpdate.getParentRole() == null) && (pUpdatedRole.getParentRole() != null)) || (!Objects
-                        .equal(beforeUpdate.getParentRole(), pUpdatedRole.getParentRole())))) {
+        if (beforeUpdate.isNative()
+                && (((beforeUpdate.getParentRole() == null) && (pUpdatedRole.getParentRole() != null))
+                        || (!Objects.equal(beforeUpdate.getParentRole(), pUpdatedRole.getParentRole())))) {
             throw new EntityOperationForbiddenException(pRoleName, Role.class, "Native role parent cannot be changed");
         }
         Role updated = pUpdatedRole;
@@ -389,8 +391,8 @@ public class RoleService implements IRoleService {
         }
 
         // System role always granted
-        if (RoleAuthority.isSysRole(securityRole) || RoleAuthority.isInstanceAdminRole(securityRole) || RoleAuthority
-                .isProjectAdminRole(securityRole)) {
+        if (RoleAuthority.isSysRole(securityRole) || RoleAuthority.isInstanceAdminRole(securityRole)
+                || RoleAuthority.isProjectAdminRole(securityRole)) {
             LOGGER.debug("Priviledged call granted");
             return;
         }
@@ -406,8 +408,7 @@ public class RoleService implements IRoleService {
         // Check if target role is hierarchically inferior so current user can alter it
         if (currentRole.isPresent() && isHierarchicallyInferior(refRole, currentRole.get())) {
 
-            LOGGER.debug("User with role {} can add resource accesses to role {}",
-                         currentRole.get().getName(),
+            LOGGER.debug("User with role {} can add resource accesses to role {}", currentRole.get().getName(),
                          pRole.getName());
 
         } else if (currentRole.isPresent()) {
@@ -435,8 +436,8 @@ public class RoleService implements IRoleService {
         }
 
         // System role always granted
-        if (RoleAuthority.isSysRole(securityRole) || RoleAuthority.isInstanceAdminRole(securityRole) || RoleAuthority
-                .isProjectAdminRole(securityRole)) {
+        if (RoleAuthority.isSysRole(securityRole) || RoleAuthority.isInstanceAdminRole(securityRole)
+                || RoleAuthority.isProjectAdminRole(securityRole)) {
             LOGGER.debug("Priviledged call granted");
             return;
         }
@@ -701,9 +702,8 @@ public class RoleService implements IRoleService {
             throws EntityOperationForbiddenException {
         // If PROJECT_ADMIN, nothing to do / removal forbidden
         if (role.getName().equals(DefaultRole.PROJECT_ADMIN.toString())) {
-            throw new EntityOperationForbiddenException(role.getName(),
-                                                        Role.class,
-                                                        "Removing resource accesses from role PROJECT_ADMIN is forbidden!");
+            throw new EntityOperationForbiddenException(role.getName(), Role.class,
+                    "Removing resource accesses from role PROJECT_ADMIN is forbidden!");
         }
 
         // Apply changes and publish changes inside removeAndPropagate or RemoveAndManageParent so we are sure that
@@ -737,9 +737,7 @@ public class RoleService implements IRoleService {
             if (changed) {
                 StringJoiner sj = new StringJoiner(", ");
                 Arrays.stream(pResourcesAccesses).forEach(ra -> sj.add(ra.getVerb() + "@" + ra.getResource()));
-                LOGGER.info(ROLE_LOST_ACCESS,
-                            pRole.getName(),
-                            sj.toString());
+                LOGGER.info(ROLE_LOST_ACCESS, pRole.getName(), sj.toString());
                 publishResourceAccessEvent(pRole.getName(), pResourcesAccesses);
             }
             // Propagate
@@ -779,9 +777,7 @@ public class RoleService implements IRoleService {
         if (changed) {
             StringJoiner sj = new StringJoiner(", ");
             Arrays.stream(pResourcesAccesses).forEach(ra -> sj.add(ra.getVerb() + "@" + ra.getResource()));
-            LOGGER.info(ROLE_LOST_ACCESS,
-                        pRole.getName(),
-                        sj.toString());
+            LOGGER.info(ROLE_LOST_ACCESS, pRole.getName(), sj.toString());
             publishResourceAccessEvent(pRole.getName(), pResourcesAccesses);
         }
         // Change parent if required
@@ -819,9 +815,9 @@ public class RoleService implements IRoleService {
         // throw exception
         // a role must have a parent and cannot have less accesses than public
         if (parentRole == null) {
-            final String message = String.format(
-                    "Role %s cannot have less accesses than public role. Accesses removal cancelled.",
-                    role.getName());
+            final String message = String
+                    .format("Role %s cannot have less accesses than public role. Accesses removal cancelled.",
+                            role.getName());
             LOGGER.error(message);
             throw new EntityOperationForbiddenException(message);
         }
@@ -855,12 +851,14 @@ public class RoleService implements IRoleService {
         final ProjectUser user = optionnalUser.get();
         // get Original Role of the user
         final Role originalRole = user.getRole();
-        final List<String> roleNamesAllowedToBorrow = Lists
-                .newArrayList(DefaultRole.ADMIN.toString(), DefaultRole.PROJECT_ADMIN.toString());
+        final List<String> roleNamesAllowedToBorrow = Lists.newArrayList(DefaultRole.ADMIN.toString(),
+                                                                         DefaultRole.PROJECT_ADMIN.toString());
         // It is impossible to borrow a role if your original role is not ADMIN or PROJECT_ADMIN or one of their sons
+        // To simplify client interraction we returned the actual role of the user even if this role is not borowable.
+        // The regards frontend use this role to calculate user ihm rights based on his role.
         if (!roleNamesAllowedToBorrow.contains(originalRole.getName()) && ((originalRole.getParentRole() == null)
                 || !roleNamesAllowedToBorrow.contains(originalRole.getParentRole().getName()))) {
-            return Sets.newHashSet();
+            return Sets.newHashSet(originalRole);
         }
         // get ascendants of the original Role
         if (originalRole.getParentRole() != null) {
