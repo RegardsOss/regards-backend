@@ -61,6 +61,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.MimeType;
 
 import com.google.common.collect.Sets;
+import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
@@ -85,7 +86,7 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
@@ -121,7 +122,7 @@ import fr.cnes.regards.modules.storage.service.plugins.CatalogSecurityDelegation
 @ActiveProfiles({ "testAmqp", "disableStorageTasks", "noschdule" })
 @DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE, classMode = ClassMode.BEFORE_CLASS)
 @EnableAsync
-public class AIPServiceIT extends AbstractRegardsTransactionalIT {
+public class AIPServiceIT extends AbstractRegardsIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(AIPServiceIT.class);
 
@@ -136,6 +137,9 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
     private static final String SESSION = "Session 1";
 
     private static final String CHECKSUM = "de89a907d33a9716d11765582102b2e0";
+
+    @Autowired
+    private Gson gson;
 
     @Autowired
     private IAIPService aipService;
@@ -214,13 +218,15 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         Set<AIPEvent> events = mockEventHandler.getReceivedEvents().stream().filter(e -> e.getAipState().equals(state))
                 .collect(Collectors.toSet());
         int waitCount = 0;
+        LOG.info("Waiting for {} events {}. Current={}", nbExpectedEvents, state.getName(), events.size());
         while ((events.size() < nbExpectedEvents) && (waitCount < 10)) {
             Thread.sleep(WAITING_TIME_MS);
-            mockEventHandler.log();
             events = mockEventHandler.getReceivedEvents().stream().filter(e -> e.getAipState().equals(state))
                     .collect(Collectors.toSet());
             waitCount++;
         }
+        mockEventHandler.log(gson);
+        LOG.info("After waiting {}/{} events {}", events.size(), nbExpectedEvents, state.getName());
         return events;
     }
 
@@ -288,6 +294,8 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
             nbUnsucceedJobs = jobs.stream().filter(f -> !f.getStatus().getStatus().equals(JobStatus.SUCCEEDED)
                     && !f.getStatus().getStatus().equals(JobStatus.FAILED)).count();
         } while (jobs.isEmpty() || (nbUnsucceedJobs > 0));
+        // Wait for events handled.
+        Thread.sleep(2000);
         LOG.info("Waiting jobs succeed ok");
     }
 
@@ -312,6 +320,7 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
     private void processStorage() throws ModuleException, InterruptedException {
         // Simulate store scheduler
         aipService.storePage(new PageRequest(0, 500));
+        waitForJobsFinished();
         // Simulate storeMetadata scheduler
         aipService.storeMetadata();
         waitForJobsFinished();
@@ -514,30 +523,30 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
                 .setValue(Boolean.TRUE.toString());
         pluginService.updatePluginConfiguration(dsConfWithDeleteDisabled);
         // first lets storeAndCreate the aip
-        LOG.info("############## 1. Store new AIP");
+        LOG.info("==================> 1. Store new AIP");
         createSuccessTest();
-        LOG.info("############## 1. Store new AIP OK");
+        LOG.info("==================> 2. Store new AIP OK");
         mockEventHandler.clear();
         // now that it is correctly created, lets say it has been updated and add a tag
         aip = aipDao.findOneByAipId(aip.getId().toString()).get();
         String newTag = "Exemple Tag For Fun";
         aip.getTags().add(newTag);
         // Run first update request
-        LOG.info("############## 1. Update AIP Request");
+        LOG.info("==================> 3. Update AIP Request");
         updateAIP(aip, true);
-        LOG.info("############## 1. Update AIP Request done");
+        LOG.info("==================> 4. Update AIP Request done");
         // Run second update request
         String newTag2 = "Another tag for fun";
         aip.getTags().add(newTag2);
-        LOG.info("############## 1. Update AIP Request");
+        LOG.info("==================> 5. Update AIP Request");
         updateAIP(aip, true);
-        LOG.info("############## 1. Update AIP Request done");
+        LOG.info("==================> 6. Update AIP Request done");
         // Run a third update request
         String newTag3 = "Another tag for more fun";
         aip.getTags().add(newTag3);
-        LOG.info("############## 1. Update AIP Request");
+        LOG.info("==================> 7. Update AIP Request");
         updateAIP(aip, true);
-        LOG.info("############## 1. Update AIP Request done");
+        LOG.info("==================> 8. Update AIP Request done");
 
         // Result  should be
         // - AIP should be in VALID state. Ready to be handled by storage process (StorePage -> StoreMeta)
@@ -555,9 +564,12 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
         Assert.assertEquals("There should be only one AIP update request in db", 1, aipUpdateRepo.count());
 
         // Run process to end first update pending.
-        LOG.info("############## 1. Process first Update AIP Request");
+        LOG.info("==================> 9. Process first Update AIP Request");
         processStorage();
-        LOG.info("############## 1. First Update AIP Request done");
+        LOG.info("==================> 10. First Update AIP Request done");
+        waitForEventsReceived(AIPState.STORED, 1);
+        mockEventHandler.clear();
+
         runningAip = aipDao.findOneByAipId(aip.getId().toString());
         Assert.assertEquals("After storage process the AIP should be in STORED state", AIPState.STORED.toString(),
                             runningAip.get().getState().toString());
@@ -570,18 +582,19 @@ public class AIPServiceIT extends AbstractRegardsTransactionalIT {
                            runningAip.get().getTags().contains(newTag3));
 
         // Run update scheduler to handle the update request nw that the aip is in STORED state
-        LOG.info("############## 1. Process second Update AIP Request");
+        LOG.info("==================> 11. Process second Update AIP Request");
         aipService.handleUpdateRequests();
         runningAip = aipDao.findOneByAipId(aip.getId().toString());
         Assert.assertEquals("After an update request the AIP should be in VALID state", AIPState.VALID.toString(),
                             runningAip.get().getState().toString());
         Assert.assertEquals("There should be no more AIP update request in db.", 0, aipUpdateRepo.count());
+
+        LOG.info("==================> 12. Process second Update AIP Request done");
         // Run process to end last update request
         processStorage();
-        LOG.info("############## 1. Process second Update AIP Request done");
 
-        Set<AIPEvent> events = waitForEventsReceived(AIPState.STORED, 2);
-        Assert.assertEquals("There should be two stored events for updated AIP", 2, events.size());
+        Set<AIPEvent> events = waitForEventsReceived(AIPState.STORED, 1);
+        Assert.assertEquals("There should be one stored events for updated AIP", 1, events.size());
 
         Optional<AIP> updatedAip = aipDao.findOneByAipId(aip.getId().toString());
 
