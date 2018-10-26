@@ -303,16 +303,18 @@ public class PluginService implements IPluginService {
         // only way to know if a plugin parameter is sensitive is via the plugin metadata
         PluginMetaData pluginMeta = PluginUtils.getPlugins().get(pluginConf.getPluginId());
         for (PluginParameterType paramMeta : pluginMeta.getParameters()) {
-            if (paramMeta.isSensible()) {
-                PluginParameter newParam = pluginConf.getParameter(paramMeta.getName());
-                PluginParameter oldParam = oldConf.getParameter(paramMeta.getName());
-                if ((newParam != null) && !newParam.getValue().isEmpty()) {
-                    if (!Objects.equals(newParam.getStripParameterValue(), oldParam.getStripParameterValue())) {
-                        PluginParametersFactory
-                                .updateParameter(newParam,
-                                                 encryptionService.encrypt(newParam.getStripParameterValue()));
-                    }
+            PluginParameter newParam = pluginConf.getParameter(paramMeta.getName());
+            PluginParameter oldParam = oldConf.getParameter(paramMeta.getName());
+            if ((newParam != null) && (newParam.getValue() != null) && !newParam.getValue().isEmpty()) {
+                // Check if parameter is sensitive and value changed. If it does, encrypt the new value
+                if (paramMeta.isSensible()
+                        && !Objects.equals(newParam.getStripParameterValue(), oldParam.getStripParameterValue())) {
+                    PluginParametersFactory
+                            .updateParameter(newParam, encryptionService.encrypt(newParam.getStripParameterValue()));
                 }
+            } else if (newParam != null) {
+                // Plugin param value is null or empty, so remove the parameter
+                pluginConf.getParameters().remove(newParam);
             }
         }
 
