@@ -544,8 +544,10 @@ public final class PluginParameterUtils {
         String paramValue = getParameterValue(parameterName, plgConf, dynamicPluginParameters);
 
         // If the parameter value is not defined, get the default parameter value
+        Boolean isDefaultValue = false;
         if (Strings.isNullOrEmpty(paramValue) && !plgParamAnnotation.defaultValue().isEmpty()) {
             paramValue = plgParamAnnotation.defaultValue();
+            isDefaultValue = true;
         }
 
         // Stop if no value and optional parameter
@@ -573,16 +575,20 @@ public final class PluginParameterUtils {
                 if (plgParamAnnotation.sensitive()) {
                     effectiveVal = plgConf.getParameter(parameterName).getDecryptedValue();
                 } else {
-                    // Strip quotes using Gson
-                    JsonElement el = gson.fromJson(paramValue, JsonElement.class);
-                    // FIXME : Handle datasource plugin configurations
-                    if (el != null && el.isJsonPrimitive()) {
-                        effectiveVal = el.getAsString();
+                    if (isDefaultValue) {
+                        // If default value do not parse json. The default value is a string.
+                        effectiveVal = paramValue;
                     } else {
-                        if (paramValue.startsWith("\"") && paramValue.endsWith("\"") && paramValue.length() > 2) {
-                            effectiveVal = paramValue.substring(1, paramValue.length() - 1);
+                        // Strip quotes using Gson
+                        JsonElement el = gson.fromJson(paramValue, JsonElement.class);
+                        if ((el != null) && el.isJsonPrimitive()) {
+                            effectiveVal = el.getAsString();
                         } else {
-                            effectiveVal = paramValue;
+                            if (paramValue.startsWith("\"") && paramValue.endsWith("\"") && (paramValue.length() > 2)) {
+                                effectiveVal = paramValue.substring(1, paramValue.length() - 1);
+                            } else {
+                                effectiveVal = paramValue;
+                            }
                         }
                     }
                 }
