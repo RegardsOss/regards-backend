@@ -37,6 +37,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
@@ -298,6 +299,7 @@ public class RoleServiceTest {
 
     /**
      * Check that the system allows to create a role in a regular case.
+     * @throws EntityException
      *
      * @throws EntityAlreadyExistsException
      *             Thrown if a role with passed id already exists

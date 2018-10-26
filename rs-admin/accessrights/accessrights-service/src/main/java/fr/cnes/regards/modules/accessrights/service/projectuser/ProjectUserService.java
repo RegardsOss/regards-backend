@@ -27,7 +27,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.postgresql.util.ServerErrorMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +40,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
@@ -158,7 +158,7 @@ public class ProjectUserService implements IProjectUserService {
         final ProjectUser user;
         if (instanceAdminUserEmail.equals(pUserEmail)) {
             user = new ProjectUser(pUserEmail, new Role(DefaultRole.INSTANCE_ADMIN.toString(), null), new ArrayList<>(),
-                                   new ArrayList<>());
+                    new ArrayList<>());
         } else {
             user = projectUserRepository.findOneByEmail(pUserEmail)
                     .orElseThrow(() -> new EntityNotFoundException(pUserEmail, ProjectUser.class));
@@ -261,8 +261,8 @@ public class ProjectUserService implements IProjectUserService {
         try (final Stream<ResourcesAccess> previous = user.getPermissions().stream();
                 final Stream<ResourcesAccess> updated = pUpdatedUserAccessRights.stream();
                 final Stream<ResourcesAccess> merged = Stream.concat(updated, previous)) {
-            user.setPermissions(
-                    merged.filter(RegardsStreamUtils.distinctByKey(r -> r.getId())).collect(Collectors.toList()));
+            user.setPermissions(merged.filter(RegardsStreamUtils.distinctByKey(r -> r.getId()))
+                    .collect(Collectors.toList()));
         }
 
         save(user);
@@ -344,7 +344,7 @@ public class ProjectUserService implements IProjectUserService {
                 returnedRole = borrowedRole;
             } else {
                 throw new EntityOperationForbiddenException(pBorrowedRoleName, Role.class,
-                                                            "Borrowed role must be hierachically inferior to the project user's role");
+                        "Borrowed role must be hierachically inferior to the project user's role");
             }
         }
 
@@ -362,13 +362,13 @@ public class ProjectUserService implements IProjectUserService {
     }
 
     @Override
-    public ProjectUser createProjectUser(final AccessRequestDto pDto) throws EntityAlreadyExistsException,
-            EntityInvalidException {
+    public ProjectUser createProjectUser(final AccessRequestDto pDto)
+            throws EntityAlreadyExistsException, EntityInvalidException {
         try {
             ResponseEntity<Resource<Account>> accountResponse = accountsClient.retrieveAccounByEmail(pDto.getEmail());
             if (accountResponse.getStatusCode() == HttpStatus.NOT_FOUND) {
                 Account newAccount = new Account(pDto.getEmail(), pDto.getFirstName(), pDto.getLastName(),
-                                                 pDto.getPassword());
+                        pDto.getPassword());
                 newAccount.setStatus(AccountStatus.ACTIVE);
                 AccountNPassword newAccountWithPassword = new AccountNPassword(newAccount, newAccount.getPassword());
                 accountsClient.createAccount(newAccountWithPassword);

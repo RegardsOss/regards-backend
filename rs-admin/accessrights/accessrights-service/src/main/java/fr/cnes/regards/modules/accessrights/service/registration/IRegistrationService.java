@@ -43,7 +43,6 @@ public interface IRegistrationService { //NOSONAR
      *             {@link EntityAlreadyExistsException} Thrown when an account with same <code>email</code> already
      *             exists<br>
      *             {@link EntityTransitionForbiddenException} Thrown when the account is not in status PENDING<br>
-     * @return void
      */
     void requestAccess(final AccessRequestDto dto, Boolean isExternalAccess) throws EntityException;
 

@@ -28,7 +28,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
-import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -147,8 +146,8 @@ public interface IRoleService {
      * @throws EntityNotFoundException
      *             Thrown when no {@link Role} with passed <code>id</code> could be found
      * @return The updated {@link Role}
-     * @throws EntityOperationForbiddenException
-     *             if pRoleId is the id of PROJECT_ADMIN
+     * @throws EntityException {@link EntityOperationForbiddenException} if pRoleId is the id of PROJECT_ADMIN
+     *
      */
     Role updateRoleResourcesAccess(Long pRoleId, Set<ResourcesAccess> pResourcesAccesses) throws EntityException;
 
@@ -244,8 +243,7 @@ public interface IRoleService {
      *
      * @param pRoleName the role name
      * @param pResourcesAccess the resources accesses to remove on the role
-     * @throws EntityOperationForbiddenException
-     *             thrown if pRole is PROJECT_ADMIN
+     * @throws EntityException {@link EntityOperationForbiddenException} thrown if pRole is PROJECT_ADMIN
      */
     void removeResourcesAccesses(String pRoleName, ResourcesAccess... pResourcesAccess) throws EntityException;
 
@@ -262,7 +260,6 @@ public interface IRoleService {
      * Retrieve roles that a user can borrow.
      *
      * @return roles which are borrowable for the current user
-     * @throws JwtException
      */
     Set<Role> retrieveBorrowableRoles();
 

@@ -40,6 +40,7 @@ public class WaitingAccountActiveState extends AbstractDeletableState {
     /**
      * @param pProjectUserRepository
      * @param pEmailVerificationTokenService
+     * @param publisher
      */
     public WaitingAccountActiveState(IProjectUserRepository pProjectUserRepository,
             IEmailVerificationTokenService pEmailVerificationTokenService, IPublisher publisher) {
