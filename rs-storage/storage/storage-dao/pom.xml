@@ -77,5 +77,10 @@
 			<artifactId>plugins-dao</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.templates</groupId>
+			<artifactId>templates-dao</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>
