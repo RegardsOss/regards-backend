@@ -100,10 +100,10 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
     /**
      * The default constructor.
      *
-     * @param pMicroserviceName
-     *            The microservice name
      * @param pDefaultAuthenticationPlugin
      *            The {@link IAuthenticationPlugin} to used
+     * @param pRunTimeTenantResolver
+     * @param pStaticRootLogin
      */
     public Oauth2AuthenticationManager(final IAuthenticationPlugin pDefaultAuthenticationPlugin,
             final IRuntimeTenantResolver pRunTimeTenantResolver, final String pStaticRootLogin) {

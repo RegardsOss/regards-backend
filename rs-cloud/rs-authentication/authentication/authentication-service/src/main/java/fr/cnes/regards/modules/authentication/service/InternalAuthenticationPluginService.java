@@ -20,8 +20,6 @@ package fr.cnes.regards.modules.authentication.service;
 
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -57,11 +55,6 @@ public class InternalAuthenticationPluginService implements IInternalAuthenticat
     public InternalAuthenticationPluginService(final IPluginService pPluginService) {
         super();
         pluginService = pPluginService;
-    }
-
-    @PostConstruct
-    public void addPluginPackage() {
-        pluginService.addPluginPackage(IAuthenticationPlugin.class.getPackage().getName());
     }
 
     @Override
