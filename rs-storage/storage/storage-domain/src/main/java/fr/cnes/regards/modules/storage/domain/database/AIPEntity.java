@@ -8,6 +8,7 @@ import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -15,6 +16,9 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
+import javax.persistence.NamedEntityGraphs;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -45,6 +49,8 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
                 @Index(name = "idx_aip_last_event_date", columnList = "date") },
         uniqueConstraints = { @UniqueConstraint(name = "uk_aip_ipId", columnNames = "aip_id") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
+@NamedEntityGraphs({ @NamedEntityGraph(name = "graph.aip.with.session",
+        attributeNodes = { @NamedAttributeNode(value = "session") }) })
 public class AIPEntity {
 
     /**
@@ -115,7 +121,7 @@ public class AIPEntity {
      * The REGARDS session identifier used while creating this entity
      */
     @NotNull(message = "Session is required")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "session", foreignKey = @ForeignKey(name = "fk_aip_session"))
     private AIPSession session;
 
@@ -282,7 +288,7 @@ public class AIPEntity {
         if (this == o) {
             return true;
         }
-        if ((o == null) || (getClass() != o.getClass())) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
 

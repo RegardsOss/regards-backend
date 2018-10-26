@@ -26,6 +26,7 @@ import java.util.stream.Stream;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -50,35 +51,38 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      * Find a page of aips which state is the provided one
      * @return a page of aips which state is the provided one
      */
+    @EntityGraph("graph.aip.with.session")
     Page<AIPEntity> findAllByState(AIPState state, Pageable pageable);
 
-    /**
-     * Find first 100 entities in specified state
-     */
-    List<AIPEntity> findFirst100ByState(AIPState state);
+    @EntityGraph("graph.aip.with.session")
+    List<AIPEntity> findAllNoCountByState(AIPState state, Pageable pageable);
 
     /**
      * Find a page of aips which state is the provided one
      * @return a page of aips which state is the provided one
      */
+    @EntityGraph("graph.aip.with.session")
     Page<AIPEntity> findAllByStateIn(AIPState state, Pageable pageable);
 
     /**
      * Find all aips which state is one of the provided one
      * @return aips which state is one of the provided one
      */
+    @EntityGraph("graph.aip.with.session")
     Page<AIPEntity> findAllByStateIn(Collection<AIPState> states, Pageable pageable);
 
     /**
      * Retrieve all aips which ip id starts with the provided string
      * @return aips respecting the constraints
      */
+    @EntityGraph("graph.aip.with.session")
     Page<AIPEntity> findAllByAipIdStartingWith(String urnWithoutVersion, Pageable page);
 
     /**
      * Retrieve an aip by its ip id
      * @return requested aip
      */
+    @EntityGraph("graph.aip.with.session")
     Optional<AIPEntity> findOneByAipId(String aipId);
 
     /**
@@ -91,6 +95,7 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      * Retrieve all aips which ip id is one of the provided ones
      * @return all aips which respects the constraints
      */
+    @EntityGraph("graph.aip.with.session")
     Set<AIPEntity> findAllByAipIdIn(Collection<String> aipIds);
 
     /**
@@ -98,6 +103,7 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      * No entity graph specified
      * @return a Stream
      */
+    @EntityGraph("graph.aip.with.session")
     Stream<AIPEntity> findByAipIdIn(Collection<String> aipIds);
 
     /**
@@ -113,12 +119,14 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      * Retrieve all aips which sip id is the provided one
      * @return aips which respects the constraints
      */
+    @EntityGraph("graph.aip.with.session")
     Set<AIPEntity> findAllBySipId(String sipId);
 
     /**
      * Retrieve page of aips which sip id is the provided one
      * @return a page of aip respecting the constraints
      */
+    @EntityGraph("graph.aip.with.session")
     Page<AIPEntity> findAllBySipId(String sipId, Pageable pageable);
 
     /**
@@ -135,7 +143,9 @@ public interface IAIPEntityRepository extends JpaRepository<AIPEntity, Long> {
      */
     long countBySessionIdAndStateIn(String sessionId, Collection<AIPState> states);
 
+    @EntityGraph("graph.aip.with.session")
     Collection<AIPEntity> findAllBySipIdIn(Collection<String> sipIds);
 
+    @EntityGraph("graph.aip.with.session")
     Page<AIPEntity> findPageBySipIdIn(Collection<String> sipIds, Pageable page);
 }

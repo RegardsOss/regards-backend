@@ -107,8 +107,8 @@ public class AIPEntityRepositoryTest extends AbstractDaoTest {
         //        beanFactory.autowireBean(tasks);
         //        tasks.start();
 
-        //        Page<AIPEntity> page = search.search(AIPState.VALID);
-        List<AIPEntity> page = search.findFirst100(AIPState.VALID);
+        List<AIPEntity> page = search.searchWithoutCount(AIPState.VALID);
+        //List<AIPEntity> page = search.findFirst100(AIPState.VALID);
         Assert.assertNotNull(page);
     }
 
