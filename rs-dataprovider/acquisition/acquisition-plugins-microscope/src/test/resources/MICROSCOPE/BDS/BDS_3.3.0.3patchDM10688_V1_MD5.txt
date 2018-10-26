@@ -1,4 +1,0 @@
-StartDate: 14/05/2016 12:45:23.555
-EndDate: 15/10/2018 10:59:00.000
-Version: 1
-# Archive MD5:	357496eccf8805ce96b60f02bcd155fb
