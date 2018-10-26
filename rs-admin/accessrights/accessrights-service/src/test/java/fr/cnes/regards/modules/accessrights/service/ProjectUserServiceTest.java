@@ -36,13 +36,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -151,20 +152,10 @@ public class ProjectUserServiceTest {
         projectUser.setStatus(STATUS);
         projectUser.setMetadata(META_DATA);
         projectUser.setPermissions(PERMISSIONS);
-        projectUser.getPermissions().add(new ResourcesAccess(0L,
-                                                             "desc0",
-                                                             "ms0",
-                                                             "res0",
-                                                             "Controller",
-                                                             RequestMethod.GET,
-                                                             DefaultRole.ADMIN));
-        projectUser.getPermissions().add(new ResourcesAccess(1L,
-                                                             "desc1",
-                                                             "ms1",
-                                                             "res1",
-                                                             "Controller",
-                                                             RequestMethod.PUT,
-                                                             DefaultRole.ADMIN));
+        projectUser.getPermissions().add(new ResourcesAccess(0L, "desc0", "ms0", "res0", "Controller",
+                RequestMethod.GET, DefaultRole.ADMIN));
+        projectUser.getPermissions().add(new ResourcesAccess(1L, "desc1", "ms1", "res1", "Controller",
+                RequestMethod.PUT, DefaultRole.ADMIN));
         projectUser.setRole(ROLE);
 
         // Mock untested services & repos
@@ -174,12 +165,8 @@ public class ProjectUserServiceTest {
         authResolver = Mockito.mock(IAuthenticationResolver.class);
 
         // Construct the tested service
-        projectUserService = new ProjectUserService(authResolver,
-                                                    projectUserRepository,
-                                                    roleService,
-                                                    accountsClient,
-                                                    "instance_admin@regards.fr",
-                                                    new Gson());
+        projectUserService = new ProjectUserService(authResolver, projectUserRepository, roleService, accountsClient,
+                "instance_admin@regards.fr", new Gson());
     }
 
     @Test
@@ -190,14 +177,8 @@ public class ProjectUserServiceTest {
         Mockito.when(projectUserRepository.findOneByEmail("test@regards.fr")).thenReturn(Optional.ofNullable(null));
         Mockito.when(roleService.retrieveRole("roleName")).thenReturn(new Role());
 
-        final AccessRequestDto accessRequest = new AccessRequestDto("test@regards.fr",
-                                                                    "pFirstName",
-                                                                    "pLastName",
-                                                                    "roleName",
-                                                                    null,
-                                                                    "pPassword",
-                                                                    "pOriginUrl",
-                                                                    "pRequestLink");
+        final AccessRequestDto accessRequest = new AccessRequestDto("test@regards.fr", "pFirstName", "pLastName",
+                "roleName", null, "pPassword", "pOriginUrl", "pRequestLink");
 
         try {
             projectUserService.createProjectUser(accessRequest);
@@ -215,22 +196,13 @@ public class ProjectUserServiceTest {
     @Purpose("Check that the system allows to create a new projectUser with the associated account.")
     public void createUserByBypassingRegristrationProcessWithoutAccount()
             throws EntityNotFoundException, EntityInvalidException {
-        Mockito.when(accountsClient.retrieveAccounByEmail("test@regards.fr"))
-                .thenReturn(new ResponseEntity<>(new Resource<>(new Account("test@regards.fr",
-                                                                            "pFirstName",
-                                                                            "pLastName",
-                                                                            "pPassword")), HttpStatus.OK));
+        Mockito.when(accountsClient.retrieveAccounByEmail("test@regards.fr")).thenReturn(new ResponseEntity<>(
+                new Resource<>(new Account("test@regards.fr", "pFirstName", "pLastName", "pPassword")), HttpStatus.OK));
         Mockito.when(projectUserRepository.findOneByEmail("test@regards.fr")).thenReturn(Optional.ofNullable(null));
         Mockito.when(roleService.retrieveRole("roleName")).thenReturn(new Role());
 
-        final AccessRequestDto accessRequest = new AccessRequestDto("test@regards.fr",
-                                                                    "pFirstName",
-                                                                    "pLastName",
-                                                                    "roleName",
-                                                                    null,
-                                                                    "pPassword",
-                                                                    "pOriginUrl",
-                                                                    "pRequestLink");
+        final AccessRequestDto accessRequest = new AccessRequestDto("test@regards.fr", "pFirstName", "pLastName",
+                "roleName", null, "pPassword", "pOriginUrl", "pRequestLink");
 
         try {
             projectUserService.createProjectUser(accessRequest);
@@ -246,26 +218,17 @@ public class ProjectUserServiceTest {
 
     @Test
     @Purpose("Check that the system allows to create a new projectUser with the associated account.")
-    public void createUserByBypassingRegristrationProcessError() throws EntityNotFoundException,
-            EntityInvalidException {
+    public void createUserByBypassingRegristrationProcessError()
+            throws EntityNotFoundException, EntityInvalidException {
 
-        Mockito.when(accountsClient.retrieveAccounByEmail("test@regards.fr"))
-                .thenReturn(new ResponseEntity<>(new Resource<>(new Account("test@regards.fr",
-                                                                            "pFirstName",
-                                                                            "pLastName",
-                                                                            "pPassword")), HttpStatus.OK));
+        Mockito.when(accountsClient.retrieveAccounByEmail("test@regards.fr")).thenReturn(new ResponseEntity<>(
+                new Resource<>(new Account("test@regards.fr", "pFirstName", "pLastName", "pPassword")), HttpStatus.OK));
         Mockito.when(projectUserRepository.findOneByEmail("test@regards.fr"))
                 .thenReturn(Optional.of(new ProjectUser()));
         Mockito.when(roleService.retrieveRole("roleName")).thenReturn(new Role());
 
-        final AccessRequestDto accessRequest = new AccessRequestDto("test@regards.fr",
-                                                                    "pFirstName",
-                                                                    "pLastName",
-                                                                    "roleName",
-                                                                    null,
-                                                                    "pPassword",
-                                                                    "pOriginUrl",
-                                                                    "pRequestLink");
+        final AccessRequestDto accessRequest = new AccessRequestDto("test@regards.fr", "pFirstName", "pLastName",
+                "roleName", null, "pPassword", "pOriginUrl", "pRequestLink");
 
         try {
             projectUserService.createProjectUser(accessRequest);
@@ -278,6 +241,7 @@ public class ProjectUserServiceTest {
     /**
      * Check that the system allows to retrieve the users of a project.
      */
+    @SuppressWarnings("unchecked")
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_300")
     @Requirement("REGARDS_DSL_ADM_ADM_310")
@@ -293,10 +257,12 @@ public class ProjectUserServiceTest {
         final Page<ProjectUser> expectedPage = new PageImpl<>(expected, pageable, 1);
 
         // Mock the repository returned value
-        Mockito.when(projectUserRepository.findAll(Mockito.any(Specification.class), Mockito.eq(pageable))).thenReturn(expectedPage);
+        Mockito.when(projectUserRepository.findAll(Mockito.any(Specification.class), Mockito.eq(pageable)))
+                .thenReturn(expectedPage);
 
         // Retrieve actual value
-        final Page<ProjectUser> actual = projectUserService.retrieveUserList(UserStatus.ACCESS_GRANTED.toString(), null, pageable);
+        final Page<ProjectUser> actual = projectUserService.retrieveUserList(UserStatus.ACCESS_GRANTED.toString(), null,
+                                                                             pageable);
 
         // Check that the expected and actual role have same values
         Assert.assertEquals(expectedPage, actual);
@@ -305,6 +271,7 @@ public class ProjectUserServiceTest {
     /**
      * Check that the system allows to retrieve the users of a project.
      */
+    @SuppressWarnings("unchecked")
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_300")
     @Requirement("REGARDS_DSL_ADM_ADM_310")
@@ -320,7 +287,8 @@ public class ProjectUserServiceTest {
         final Page<ProjectUser> expectedPage = new PageImpl<>(expected, pageable, 1);
 
         // Mock the repository returned value
-        Mockito.when(projectUserRepository.findAll(Mockito.any(Specification.class), Mockito.eq(pageable))).thenReturn(expectedPage);
+        Mockito.when(projectUserRepository.findAll(Mockito.any(Specification.class), Mockito.eq(pageable)))
+                .thenReturn(expectedPage);
 
         // Retrieve actual value
         final Page<ProjectUser> actual = projectUserService.retrieveUserList(null, null, pageable);
@@ -579,22 +547,12 @@ public class ProjectUserServiceTest {
         // Define updated permissions
         final List<ResourcesAccess> input = new ArrayList<>();
         // Updating an existing one
-        final ResourcesAccess updatedPermission = new ResourcesAccess(0L,
-                                                                      "updated desc0",
-                                                                      "updated ms0",
-                                                                      "updated res0",
-                                                                      "Controller",
-                                                                      RequestMethod.POST,
-                                                                      DefaultRole.ADMIN);
+        final ResourcesAccess updatedPermission = new ResourcesAccess(0L, "updated desc0", "updated ms0",
+                "updated res0", "Controller", RequestMethod.POST, DefaultRole.ADMIN);
         input.add(updatedPermission);
         // Adding a new permission
-        final ResourcesAccess newPermission = new ResourcesAccess(2L,
-                                                                  "desc2",
-                                                                  "ms2",
-                                                                  "res2",
-                                                                  "Controller",
-                                                                  RequestMethod.GET,
-                                                                  DefaultRole.ADMIN);
+        final ResourcesAccess newPermission = new ResourcesAccess(2L, "desc2", "ms2", "res2", "Controller",
+                RequestMethod.GET, DefaultRole.ADMIN);
         input.add(newPermission);
 
         // Define expected result
@@ -679,8 +637,8 @@ public class ProjectUserServiceTest {
         expected.addAll(projectUser.getPermissions());
 
         // Define actual result
-        final List<ResourcesAccess> actual = projectUserService
-                .retrieveProjectUserAccessRights(EMAIL, borrowedRoleName);
+        final List<ResourcesAccess> actual = projectUserService.retrieveProjectUserAccessRights(EMAIL,
+                                                                                                borrowedRoleName);
 
         // Check
         Assert.assertTrue(actual.containsAll(expected));

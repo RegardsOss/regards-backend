@@ -35,7 +35,6 @@ public interface IEmailVerificationTokenService {
      * @param pProjectUser the project user
      * @param pOriginUrl Necessary to the frontend for redirecting the user after he clicked on the email validation link.
      * @param pRequestLink Also necessary to the frontend for redirecting the user after he clicked on the email validation link.
-     * @throws EntityNotFoundException if the token could not be found
      */
     void create(final ProjectUser pProjectUser, final String pOriginUrl, final String pRequestLink);
 

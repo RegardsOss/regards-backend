@@ -100,7 +100,6 @@ public class WaitForQualificationListener
     /**
      * Pass a {@link ProjectUser} from WAITING_ACCOUNT_ACTIVATION to WAITING_ACCESS
      * @param wrapper the event
-     * @throws EntityException if not project user with given email (in event) could be found
      */
     @Override
     public void handle(TenantWrapper<AccountAcceptedEvent> wrapper) {

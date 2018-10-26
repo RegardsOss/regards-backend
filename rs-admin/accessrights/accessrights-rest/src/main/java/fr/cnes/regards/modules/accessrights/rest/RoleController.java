@@ -38,7 +38,6 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
@@ -58,8 +57,6 @@ import fr.cnes.regards.modules.accessrights.service.role.RoleService;
  * @author Marc Sordi
  */
 @RestController
-@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping(RoleController.TYPE_MAPPING)
 public class RoleController implements IResourceController<Role> {
 
@@ -128,6 +125,7 @@ public class RoleController implements IResourceController<Role> {
 
     /**
      * Define the endpoint for retrieving the list of roles that can access the specified resource.
+     * @param resourceId
      * @return list of borrowable roles for current authenticated user
      */
     @RequestMapping(method = RequestMethod.GET, path = ROLE_WITH_RESOURCE_MAPPING)
@@ -164,6 +162,7 @@ public class RoleController implements IResourceController<Role> {
 
     /**
      * Define the endpoint for retrieving the descendnats {@link Role}s of passed role through its name
+     * @param roleName
      * @return the ascendants wrapped into a {@link ResponseEntity}
      * @throws EntityNotFoundException if given role does not exists
      */

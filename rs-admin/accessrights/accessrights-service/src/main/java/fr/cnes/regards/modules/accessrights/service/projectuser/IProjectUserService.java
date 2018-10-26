@@ -36,6 +36,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
+import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 
 /**
  * Strategy interface to handle Read an Update operations on access settings.
@@ -45,6 +46,8 @@ public interface IProjectUserService {
 
     /**
      * Retrieve the paged {@link List} of all {@link ProjectUser}s filtered by given properties.
+     * @param status
+     * @param emailStart
      * @param pPageable the paging information
      * @return The list of project users
      */
@@ -76,6 +79,10 @@ public interface IProjectUserService {
 
     /**
      * Create a new projectUser (and account if missing) without resitration process.
+     * @param pDto
+     * @return {@link ProjectUser}
+     * @throws EntityAlreadyExistsException
+     * @throws EntityInvalidException
      */
     ProjectUser createProjectUser(final AccessRequestDto pDto)
             throws EntityAlreadyExistsException, EntityInvalidException;
@@ -84,6 +91,7 @@ public interface IProjectUserService {
      * Update the {@link ProjectUser} of id <code>pUserId</code>.
      * @param pUserId The {@link ProjectUser} <code>id</code>
      * @param pUpdatedProjectUser The new {@link ProjectUser}
+     * @return {@link ProjectUser}
      * @throws EntityException <br>
      *                         {@link EntityInconsistentIdentifierException} Thrown when <code>pUserId</code> differs from the id of
      *                         <code>pUpdatedProjectUser</code><br>
@@ -97,6 +105,7 @@ public interface IProjectUserService {
      * not overidden.
      * @param pUserId The {@link ProjectUser} <code>id</code>
      * @param pUpdatedProjectUser The new {@link ProjectUser}
+     * @return {@link ProjectUser}
      * @throws EntityException <br>
      *                         {@link EntityInconsistentIdentifierException} Thrown when <code>pUserId</code> differs from the id of
      *                         <code>pUpdatedProjectUser</code><br>
@@ -147,6 +156,8 @@ public interface IProjectUserService {
      * Set the passed {@link MetaData} onto the {@link ProjectUser} of passed <code>id</code>
      * @param pUserId The {@link ProjectUser}'s <code>id</code>
      * @param pUpdatedUserMetaData The {@link List} of {@link MetaData} to set
+     * @return {@link MetaData}s updated
+     *
      * @throws EntityNotFoundException Thhrown when not project user of passed <code>id</code> could be found
      */
     List<MetaData> updateUserMetaData(Long pUserId, List<MetaData> pUpdatedUserMetaData) throws EntityNotFoundException;
@@ -185,6 +196,7 @@ public interface IProjectUserService {
     void resetLicence();
 
     /**
+     * @param role
      * @return users which role is the given one
      */
     Collection<ProjectUser> retrieveUserByRole(Role role);

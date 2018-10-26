@@ -50,9 +50,11 @@ public class WaitingAccessState extends AbstractDeletableState {
      * @param pProjectUserRepository
      * @param pEmailVerificationTokenService
      * @param pEventPublisher
+     * @param publisher
      */
     public WaitingAccessState(IProjectUserRepository pProjectUserRepository,
-            IEmailVerificationTokenService pEmailVerificationTokenService, ApplicationEventPublisher pEventPublisher, IPublisher publisher) {
+            IEmailVerificationTokenService pEmailVerificationTokenService, ApplicationEventPublisher pEventPublisher,
+            IPublisher publisher) {
         super(pProjectUserRepository, pEmailVerificationTokenService, publisher);
         eventPublisher = pEventPublisher;
     }
