@@ -58,13 +58,14 @@ public class LicenseControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check license agreement can be reset by an ADMIN")
     public void resetLicense() {
 
-        String customToken = jwtService.generateToken(DEFAULT_TENANT, DEFAULT_USER_EMAIL, DefaultRole.ADMIN.toString());
-        authService.setAuthorities(DEFAULT_TENANT, LicenseController.PATH_LICENSE + LicenseController.PATH_RESET,
+        String customToken = jwtService.generateToken(getDefaultTenant(), getDefaultUserEmail(),
+                                                      DefaultRole.ADMIN.toString());
+        authService.setAuthorities(getDefaultTenant(), LicenseController.PATH_LICENSE + LicenseController.PATH_RESET,
                                    "osef", RequestMethod.PUT, DefaultRole.ADMIN.toString());
 
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
         performPut(LicenseController.PATH_LICENSE + LicenseController.PATH_RESET, customToken, null,
-                   requestBuilderCustomizer, "Error retrieving endpoints", DEFAULT_TENANT);
+                   requestBuilderCustomizer, "Error retrieving endpoints", getDefaultTenant());
     }
 }

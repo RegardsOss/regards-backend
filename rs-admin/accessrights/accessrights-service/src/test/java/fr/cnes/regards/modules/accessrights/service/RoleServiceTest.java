@@ -223,7 +223,8 @@ public class RoleServiceTest {
         // PUBLIC cannot borrow roles
         projectUser.setRole(rolePublic);
         result = roleService.retrieveBorrowableRoles();
-        Assert.assertTrue(result.isEmpty());
+        Assert.assertEquals(1, result.size());
+        Assert.assertTrue(result.contains(rolePublic));
         // PROJECT_ADMIN can borrow all roles except instance_admin
         projectUser.setRole(roleProjectAdmin);
         result = roleService.retrieveBorrowableRoles();

@@ -85,7 +85,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
 
     @Before
     public void init() {
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         client = FeignClientBuilder.build(new TokenClientProvider<>(IProjectUsersClient.class,
                 "http://" + serverAddress + ":" + getPort(), feignSecurityManager));
         FeignSecurityManager.asSystem();
@@ -156,6 +156,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
     /**
      *
      * Check that the accounts Feign Client can retrieve all accounts.
+     * @throws EntityException
      * @throws EntityInvalidException
      * @throws EntityAlreadyExistsException
      *

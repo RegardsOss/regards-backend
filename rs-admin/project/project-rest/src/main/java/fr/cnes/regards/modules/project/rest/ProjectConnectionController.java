@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.project.rest;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
 import javax.validation.Valid;
 
 import org.springframework.data.domain.Page;
@@ -40,7 +38,6 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -52,8 +49,6 @@ import fr.cnes.regards.modules.project.service.IProjectConnectionService;
  * @author Marc Sordi
  */
 @RestController
-@ModuleInfo(name = "project", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping(ProjectConnectionController.TYPE_MAPPING)
 public class ProjectConnectionController implements IResourceController<ProjectConnection> {
 
@@ -97,8 +92,8 @@ public class ProjectConnectionController implements IResourceController<ProjectC
             @PathVariable String projectName,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<ProjectConnection> assembler) {
-        Page<ProjectConnection> connections = projectConnectionService
-                .retrieveProjectsConnectionsByProject(projectName, pageable);
+        Page<ProjectConnection> connections = projectConnectionService.retrieveProjectsConnectionsByProject(projectName,
+                                                                                                            pageable);
         return ResponseEntity.ok(toPagedResources(connections, assembler));
     }
 
@@ -147,8 +142,8 @@ public class ProjectConnectionController implements IResourceController<ProjectC
     public ResponseEntity<Resource<ProjectConnection>> updateProjectConnection(@PathVariable String projectName,
             @PathVariable Long connectionId, @Valid @RequestBody ProjectConnection projectConnection)
             throws ModuleException {
-        ProjectConnection connection = projectConnectionService
-                .updateProjectConnection(connectionId, projectConnection);
+        ProjectConnection connection = projectConnectionService.updateProjectConnection(connectionId,
+                                                                                        projectConnection);
         return ResponseEntity.ok(toResource(connection));
     }
 

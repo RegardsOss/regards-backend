@@ -34,7 +34,6 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -49,8 +48,6 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.IAccessSettingsS
  * @author Sébastien Binda
  */
 @RestController
-@ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping(path = AccessSettingsController.REQUEST_MAPPING_ROOT)
 public class AccessSettingsController implements IResourceController<AccessSettings> {
 
@@ -74,7 +71,6 @@ public class AccessSettingsController implements IResourceController<AccessSetti
     /**
      * Retrieve the {@link AccessSettings}.
      * @return The {@link AccessSettings}
-     * @throws EntityNotFoundException Thrown when an {@link AccessSettings} with passed id could not be found
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)

@@ -107,11 +107,11 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
 
         final JWTService service = new JWTService();
         service.setSecret("123456789");
-        publicToken = service.generateToken(DEFAULT_TENANT, DEFAULT_USER_EMAIL, DefaultRole.PUBLIC.toString());
-        projectAdminToken = service
-                .generateToken(DEFAULT_TENANT, DEFAULT_USER_EMAIL, DefaultRole.PROJECT_ADMIN.toString());
-        instanceAdminToken = service
-                .generateToken(DEFAULT_TENANT, DEFAULT_USER_EMAIL, DefaultRole.INSTANCE_ADMIN.toString());
+        publicToken = service.generateToken(getDefaultTenant(), getDefaultUserEmail(), DefaultRole.PUBLIC.toString());
+        projectAdminToken = service.generateToken(getDefaultTenant(), getDefaultUserEmail(),
+                                                  DefaultRole.PROJECT_ADMIN.toString());
+        instanceAdminToken = service.generateToken(getDefaultTenant(), getDefaultUserEmail(),
+                                                   DefaultRole.INSTANCE_ADMIN.toString());
     }
 
     /**
@@ -127,9 +127,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isArray());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty());
-        performGet(ResourceController.TYPE_MAPPING,
-                   publicToken,
-                   requestBuilderCustomizer,
+        performGet(ResourceController.TYPE_MAPPING, publicToken, requestBuilderCustomizer,
                    "Error retrieving endpoints");
     }
 
@@ -146,9 +144,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isArray());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty());
-        performGet(ResourceController.TYPE_MAPPING,
-                   projectAdminToken,
-                   requestBuilderCustomizer,
+        performGet(ResourceController.TYPE_MAPPING, projectAdminToken, requestBuilderCustomizer,
                    "Error retrieving endpoints");
     }
 
@@ -165,9 +161,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isArray());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty());
-        performGet(ResourceController.TYPE_MAPPING,
-                   instanceAdminToken,
-                   requestBuilderCustomizer,
+        performGet(ResourceController.TYPE_MAPPING, instanceAdminToken, requestBuilderCustomizer,
                    "Error retrieving endpoints");
     }
 
@@ -179,12 +173,8 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     public void getResourceAccessTest() {
-        ResourcesAccess resource = new ResourcesAccess("description",
-                                                       DEFAULT_MICROSERVICE,
-                                                       CONFIGURED_ENDPOINT_URL,
-                                                       DEFAULT_CONTROLLER,
-                                                       RequestMethod.GET,
-                                                       DefaultRole.ADMIN);
+        ResourcesAccess resource = new ResourcesAccess("description", DEFAULT_MICROSERVICE, CONFIGURED_ENDPOINT_URL,
+                DEFAULT_CONTROLLER, RequestMethod.GET, DefaultRole.ADMIN);
         resourcesAccessRepository.save(resource);
         final Role adminRole = roleRepository.findOneByName(DefaultRole.ADMIN.toString()).get();
         adminRole.addPermission(resource);
@@ -193,11 +183,8 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        performGet(ResourceController.TYPE_MAPPING + ResourceController.RESOURCE_MAPPING,
-                   publicToken,
-                   requestBuilderCustomizer,
-                   "Error retrieving endpoints",
-                   resource.getId());
+        performGet(ResourceController.TYPE_MAPPING + ResourceController.RESOURCE_MAPPING, publicToken,
+                   requestBuilderCustomizer, "Error retrieving endpoints", resource.getId());
     }
 
     @Override

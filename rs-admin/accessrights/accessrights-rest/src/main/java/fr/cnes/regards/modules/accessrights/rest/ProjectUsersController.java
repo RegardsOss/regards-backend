@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import javax.validation.Valid;
 import java.util.List;
+
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -44,7 +45,6 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -68,8 +68,6 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
  * @since 1.0-SNAPSHOT
  */
 @RestController
-@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping(ProjectUsersController.TYPE_MAPPING)
 public class ProjectUsersController implements IResourceController<ProjectUser> {
 
@@ -115,6 +113,10 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
 
     /**
      * Retrieve the {@link List} of all {@link ProjectUser}s.
+     * @param status
+     * @param emailStart
+     * @param pageable
+     * @param pagedResourcesAssembler
      * @return a {@link List} of {@link ProjectUser}
      */
     @ResponseBody
@@ -132,6 +134,8 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
 
     /**
      * Retrieve all users with a pending access requests.
+     * @param pageable
+     * @param assembler
      * @return The {@link List} of all {@link ProjectUser}s with status {@link UserStatus#WAITING_ACCESS}
      */
     @ResponseBody
@@ -148,6 +152,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      * Retrieve the {@link ProjectUser} of passed <code>id</code>.
      * @param userId The {@link ProjectUser}'s <code>id</code>
      * @return a {@link ProjectUser}
+     * @throws EntityNotFoundException
      */
     @ResponseBody
     @RequestMapping(value = USER_ID_RELATIVE_PATH, method = RequestMethod.GET)
@@ -162,6 +167,8 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     /**
      * Retrieve the {@link ProjectUser} of current authenticated user
      * @return a {@link ProjectUser}
+     * @throws EntityNotFoundException
+     * @throws EntityOperationForbiddenException
      */
     @ResponseBody
     @RequestMapping(value = "/myuser", method = RequestMethod.GET)
@@ -182,6 +189,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      * Retrieve the {@link ProjectUser} of passed <code>id</code>.
      * @param userEmail The {@link ProjectUser}'s <code>id</code>
      * @return a {@link ProjectUser}
+     * @throws EntityNotFoundException
      */
     @ResponseBody
     @RequestMapping(value = "/email/{user_email}", method = RequestMethod.GET)
@@ -199,10 +207,11 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
     public ResponseEntity<Boolean> isAdmin(@PathVariable("user_email") String userEmail)
             throws EntityNotFoundException {
         ProjectUser user = projectUserService.retrieveOneByEmail(userEmail);
-        if (user.getRole().getName().equals(DefaultRole.INSTANCE_ADMIN.toString()) || user.getRole().getName()
-                .equals(DefaultRole.ADMIN.toString()) || (user.getRole().getName()
-                .equals(DefaultRole.PROJECT_ADMIN.toString())) || ((user.getRole().getParentRole() != null) && user
-                .getRole().getParentRole().getName().equals(DefaultRole.ADMIN.toString()))) {
+        if (user.getRole().getName().equals(DefaultRole.INSTANCE_ADMIN.toString())
+                || user.getRole().getName().equals(DefaultRole.ADMIN.toString())
+                || (user.getRole().getName().equals(DefaultRole.PROJECT_ADMIN.toString()))
+                || ((user.getRole().getParentRole() != null)
+                        && user.getRole().getParentRole().getName().equals(DefaultRole.ADMIN.toString()))) {
             return new ResponseEntity<>(true, HttpStatus.OK);
         }
         return new ResponseEntity<>(false, HttpStatus.OK);
@@ -292,6 +301,8 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      * Define the endpoint for retrieving the {@link List} of {@link ProjectUser} for the {@link Role} of passed
      * <code>id</code> by crawling through parents' hierarachy.
      * @param roleId The {@link Role}'s <code>id</code>
+     * @param pageable
+     * @param assembler
      * @return The {@link List} of {@link ProjectUser} wrapped in an {@link ResponseEntity}
      * @throws EntityNotFoundException Thrown when no {@link Role} with passed <code>id</code> could be found
      */
@@ -312,6 +323,8 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      * Define the endpoint for retrieving the {@link List} of {@link ProjectUser} for the {@link Role} of passed
      * <code>name</code> by crawling through parents' hierarachy.
      * @param role The {@link Role}'s <code>name</code>
+     * @param pageable
+     * @param assembler
      * @return The {@link List} of {@link ProjectUser} wrapped in an {@link ResponseEntity}
      * @throws EntityNotFoundException Thrown when no {@link Role} with passed <code>id</code> could be found
      */

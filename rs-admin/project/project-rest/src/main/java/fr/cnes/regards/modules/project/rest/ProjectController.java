@@ -88,6 +88,8 @@ public class ProjectController implements IResourceController<Project> {
 
     /**
      * Retrieve projects list
+     * @param pageable
+     * @param assembler
      * @return List of projects
      */
     @RequestMapping(method = RequestMethod.GET, produces = "application/json")
@@ -102,6 +104,8 @@ public class ProjectController implements IResourceController<Project> {
 
     /**
      * Retrieve projects list
+     * @param pageable
+     * @param assembler
      * @return List of projects
      */
     @RequestMapping(value = "/public", method = RequestMethod.GET, produces = "application/json")
