@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
@@ -51,8 +50,6 @@ import fr.cnes.regards.modules.accessrights.service.registration.IRegistrationSe
  * @since 1.0-SNAPSHOT
  */
 @RestController
-@ModuleInfo(name = "registration", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping(RegistrationController.REQUEST_MAPPING_ROOT)
 public class RegistrationController {
 

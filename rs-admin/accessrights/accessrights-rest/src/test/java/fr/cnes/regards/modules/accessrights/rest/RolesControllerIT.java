@@ -21,9 +21,7 @@ package fr.cnes.regards.modules.accessrights.rest;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -36,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -146,29 +143,29 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         }
         final Role newRole = new Role(newRoleName, publicRole);
 
-        List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isCreated());
-        performDefaultPost(RoleController.TYPE_MAPPING, newRole, expectations, "TODO Error message");
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+        performDefaultPost(RoleController.TYPE_MAPPING, newRole, requestBuilderCustomizer, "TODO Error message");
 
-        expectations = new ArrayList<>(1);
-        expectations.add(status().isConflict());
-        performDefaultPost(RoleController.TYPE_MAPPING, newRole, expectations, "TODO Error message");
+        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isConflict());
+        performDefaultPost(RoleController.TYPE_MAPPING, newRole, requestBuilderCustomizer, "TODO Error message");
     }
 
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the allows to retrieve a single role and handle fail cases.")
     public void retrieveRole() {
-        List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        performDefaultGet(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING, expectations, "TODO Error message",
-                          DefaultRole.REGISTERED_USER);
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        performDefaultGet(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING, requestBuilderCustomizer,
+                          "TODO Error message", DefaultRole.REGISTERED_USER);
 
         final String wrongRoleName = "WRONG_ROLE";
-        expectations = new ArrayList<>(1);
-        expectations.add(status().isNotFound());
-        performDefaultGet(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING, expectations, "TODO Error message",
-                          wrongRoleName);
+        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNotFound());
+        performDefaultGet(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING, requestBuilderCustomizer,
+                          "TODO Error message", wrongRoleName);
     }
 
     @Test
@@ -179,15 +176,15 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         roleTest.setName("newValue");
 
         // Regular case
-        List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        performDefaultPut(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING, roleTest, expectations,
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        performDefaultPut(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING, roleTest, requestBuilderCustomizer,
                           "TODO Error message", roleTest.getName());
 
         // Fail case: ids differ
-        expectations = new ArrayList<>(1);
-        expectations.add(MockMvcResultMatchers.status().isBadRequest());
-        performDefaultPut(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING, roleTest, expectations,
+        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isBadRequest());
+        performDefaultPut(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING, roleTest, requestBuilderCustomizer,
                           "TODO Error message", 99L);
     }
 
@@ -202,12 +199,12 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     public void removeRoleNative() throws JwtException {
         // Role public is native, we use this one
         final long nRole = roleRepository.count();
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isForbidden());
-        performDefaultDelete(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING, expectations,
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isForbidden());
+        performDefaultDelete(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING, requestBuilderCustomizer,
                              "TODO Error message", publicRole.getName());
 
-        jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString(), "", "");
+        jwtService.injectToken(getDefaultTenant(), DefaultRole.PROJECT_ADMIN.toString(), "", "");
         Assert.assertEquals(nRole, roleRepository.count());
     }
 
@@ -226,7 +223,8 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.*.content.parentRole", hasSize(3)));
 
         // Use PROJECT ADMIN
-        String projectAdminJwt = manageSecurity(RoleController.TYPE_MAPPING, RequestMethod.GET, DEFAULT_USER_EMAIL,
+        String projectAdminJwt = manageSecurity(getDefaultTenant(), RoleResourceController.TYPE_MAPPING,
+                                                RequestMethod.GET, getDefaultUserEmail(),
                                                 DefaultRole.PROJECT_ADMIN.name());
         performGet(RoleController.TYPE_MAPPING, projectAdminJwt, requestBuilderCustomizer, "TODO Error message");
     }
@@ -234,11 +232,11 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     @Purpose("Check that the microservice allow to retrieve all roles associated to a given resource.")
     public void retrieveRoleAsswoatedToAResourceAccess() throws JwtException {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.id", hasSize(1)));
-        performDefaultGet(RoleController.TYPE_MAPPING + RoleController.ROLE_WITH_RESOURCE_MAPPING, expectations,
-                          "TODO Error message", resourceAccessPublic.getId());
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.*.content.id", hasSize(1)));
+        performDefaultGet(RoleController.TYPE_MAPPING + RoleController.ROLE_WITH_RESOURCE_MAPPING,
+                          requestBuilderCustomizer, "TODO Error message", resourceAccessPublic.getId());
     }
 
     /**
@@ -252,12 +250,12 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     public void removeRole() throws JwtException {
         final long nRole = roleRepository.count();
         // Create a non-native role
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        performDefaultDelete(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING, expectations,
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        performDefaultDelete(RoleController.TYPE_MAPPING + RoleController.ROLE_MAPPING, requestBuilderCustomizer,
                              "TODO Error message", roleTest.getName());
 
-        jwtService.injectToken(DEFAULT_TENANT, DefaultRole.PROJECT_ADMIN.toString(), "", "");
+        jwtService.injectToken(getDefaultTenant(), DefaultRole.PROJECT_ADMIN.toString(), "", "");
         Assert.assertEquals(nRole - 1, roleRepository.count());
     }
 
@@ -265,18 +263,19 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to retrieve all resources accesses of a role.")
     public void retrieveRoleResourcesAccessList() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        performDefaultGet(RoleResourceController.TYPE_MAPPING, expectations, "TODO Error message", roleTest.getName());
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        performDefaultGet(RoleResourceController.TYPE_MAPPING, requestBuilderCustomizer, "TODO Error message",
+                          roleTest.getName());
     }
 
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to retrieve all users of a role.")
     public void retrieveRoleProjectUserList() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        performDefaultGet(apiRolesUsers, expectations, "TODO Error message", roleTest.getId());
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        performDefaultGet(apiRolesUsers, requestBuilderCustomizer, "TODO Error message", roleTest.getId());
     }
 
     /**

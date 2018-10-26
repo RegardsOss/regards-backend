@@ -18,12 +18,11 @@
  */
 package fr.cnes.regards.modules.project.rest;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,6 +97,7 @@ public class TenantConnectionController {
      * @param microservice target microservice
      * @param tenantConnection connection to update
      * @return updated connection
+     * @throws ModuleException
      */
     @ResourceAccess(description = "Update a project (i.e. tenant) connection state")
     @RequestMapping(method = RequestMethod.PUT)

@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import javax.validation.Valid;
 import java.util.List;
+
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
@@ -35,7 +36,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -50,8 +50,6 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserServ
  * @since 1.0-SNAPSHOT
  */
 @RestController
-@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping(ProjectUserMetadataController.REQUEST_MAPPING_ROOT)
 public class ProjectUserMetadataController implements IResourceController<MetaData> {
 

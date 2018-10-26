@@ -39,7 +39,6 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -56,8 +55,6 @@ import fr.cnes.regards.modules.accessrights.service.resources.IResourcesService;
  * @since 1.0-SNASHOT
  */
 @RestController
-@ModuleInfo(name = "accessrights", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping(value = ResourceController.TYPE_MAPPING)
 public class ResourceController implements IResourceController<ResourcesAccess> {
 
@@ -97,7 +94,7 @@ public class ResourceController implements IResourceController<ResourcesAccess> 
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<ResourcesAccess> assembler) throws ModuleException {
         return new ResponseEntity<>(toPagedResources(resourceService.retrieveRessources(null, pageable), assembler),
-                                    HttpStatus.OK);
+                HttpStatus.OK);
     }
 
     /**

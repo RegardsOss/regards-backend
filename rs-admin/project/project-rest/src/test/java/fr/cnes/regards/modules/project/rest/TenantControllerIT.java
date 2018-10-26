@@ -71,7 +71,8 @@ public class TenantControllerIT extends AbstractRegardsIT {
 
     @Before
     public void initialize() {
-        instanceAdmintoken = jwtService.generateToken("test1", DEFAULT_USER_EMAIL, DefaultRole.INSTANCE_ADMIN.name());
+        instanceAdmintoken = jwtService.generateToken("test1", getDefaultUserEmail(),
+                                                      DefaultRole.INSTANCE_ADMIN.name());
 
         Project activeProject = new Project("description", "icon", true, ACTIVE_PROJECT_NAME);
         activeProject.setLabel("label");

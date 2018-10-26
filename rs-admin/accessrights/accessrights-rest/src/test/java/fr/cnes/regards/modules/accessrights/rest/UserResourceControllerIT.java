@@ -19,21 +19,21 @@
 package fr.cnes.regards.modules.accessrights.rest;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
@@ -70,7 +70,7 @@ public class UserResourceControllerIT extends AbstractRegardsTransactionalIT {
         // Create user
         Role adminRole = roleRepository.findOneByName(DefaultRole.ADMIN.toString()).get();
         ProjectUser user = projectUserRepository
-                .save(new ProjectUser(DEFAULT_USER_EMAIL, adminRole, new ArrayList<>(), new ArrayList<>()));
+                .save(new ProjectUser(getDefaultUserEmail(), adminRole, new ArrayList<>(), new ArrayList<>()));
 
         // Create a new resource
         ResourcesAccess resource = new ResourcesAccess(null, "microservice", "/to/user", "controller",
@@ -80,14 +80,14 @@ public class UserResourceControllerIT extends AbstractRegardsTransactionalIT {
         // Add access to user
         user.setPermissions(Lists.newArrayList(resource));
 
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(UserResourceController.TYPE_MAPPING, expectations,
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        performDefaultGet(UserResourceController.TYPE_MAPPING, requestBuilderCustomizer,
                           "Error retrieving resourcesAccess for user.", user.getEmail());
 
-        expectations.clear();
-        expectations.add(MockMvcResultMatchers.status().isNotFound());
-        performDefaultGet(UserResourceController.TYPE_MAPPING, expectations,
+        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNotFound());
+        performDefaultGet(UserResourceController.TYPE_MAPPING, requestBuilderCustomizer,
                           "The user does not exists. There should be an error 404", "wrongEmail");
     }
 
