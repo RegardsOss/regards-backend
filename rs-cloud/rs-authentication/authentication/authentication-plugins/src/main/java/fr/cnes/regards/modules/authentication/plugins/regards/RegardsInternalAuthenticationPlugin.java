@@ -18,13 +18,19 @@
  */
 package fr.cnes.regards.modules.authentication.plugins.regards;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
+import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPluginResponse;
 
@@ -43,6 +49,11 @@ import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPlugi
 public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugin {
 
     /**
+     * Class logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(RegardsInternalAuthenticationPlugin.class);
+
+    /**
      * rs-admin microservice client for accounts
      */
     @Autowired
@@ -58,7 +69,21 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
         // Validate password as system
         try {
             FeignSecurityManager.asSystem();
-            validateResponse = accountsClient.validatePassword(pEmail, pPassword);
+            ResponseEntity<Resource<Account>> response = accountsClient.retrieveAccounByEmail(pEmail);
+            if ((response != null) && (response.getBody() != null) && (response.getBody().getContent() != null)
+                    && !response.getBody().getContent().getExternal()) {
+                validateResponse = accountsClient.validatePassword(pEmail, pPassword);
+            } else {
+                String message = String
+                        .format("Account %s is not allowed to authenticate (External account authentication)", pEmail);
+                LOG.error(message);
+                return new AuthenticationPluginResponse(false, pEmail, message);
+            }
+        } catch (HttpServerErrorException |
+
+                HttpClientErrorException e) {
+            LOG.error(e.getMessage(), e);
+            return new AuthenticationPluginResponse(false, pEmail, "Invalid password");
         } finally {
             FeignSecurityManager.reset();
         }
@@ -67,12 +92,12 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
             if (validateResponse.getBody()) {
                 accessGranted = validateResponse.getBody();
             } else {
-                errorMessage = String
-                        .format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists", pEmail);
+                errorMessage = String.format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists",
+                                             pEmail);
             }
         } else {
-            errorMessage = String
-                    .format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists", pEmail);
+            errorMessage = String.format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists",
+                                         pEmail);
         }
 
         return new AuthenticationPluginResponse(accessGranted, pEmail, errorMessage);

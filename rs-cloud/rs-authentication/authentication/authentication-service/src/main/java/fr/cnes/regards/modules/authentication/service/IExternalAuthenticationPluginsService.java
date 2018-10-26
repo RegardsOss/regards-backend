@@ -54,6 +54,7 @@ public interface IExternalAuthenticationPluginsService {
      * @param pPluginConfigurationId
      *            PluginConfiguration identifier to retrieve
      * @return PluginConfiguration
+     * @throws ModuleException
      * @throws EntityNotFoundException
      *             Plugin does not exists
      * @since 1.0-SNAPSHOT

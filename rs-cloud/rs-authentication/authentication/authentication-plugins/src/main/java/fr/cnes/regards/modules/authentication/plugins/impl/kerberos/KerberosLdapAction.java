@@ -91,7 +91,7 @@ public class KerberosLdapAction implements PrivilegedAction<DirContext> {
      *
      * {@inheritDoc}
      *
-     * @return
+     * @return {@link DirContext}
      * @see java.security.PrivilegedAction#run()
      */
     @Override

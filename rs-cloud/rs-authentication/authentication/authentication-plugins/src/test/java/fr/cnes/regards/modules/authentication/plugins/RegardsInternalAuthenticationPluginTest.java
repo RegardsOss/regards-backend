@@ -26,6 +26,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -38,6 +39,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
+import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.modules.authentication.plugins.regards.RegardsInternalAuthenticationPlugin;
 
@@ -96,9 +98,13 @@ public class RegardsInternalAuthenticationPluginTest {
         Field privateField;
         try {
 
+            String email = "test@regards.fr";
             final IAccountsClient client = Mockito.mock(IAccountsClient.class);
             final ResponseEntity<Boolean> response = new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK);
             Mockito.when(client.validatePassword(Mockito.anyString(), Mockito.anyString())).thenReturn(response);
+            final ResponseEntity<Resource<Account>> accountResponse = new ResponseEntity<Resource<Account>>(
+                    new Resource<Account>(new Account(email, "firstName", "lastName", "password")), HttpStatus.OK);
+            Mockito.when(client.retrieveAccounByEmail(email)).thenReturn(accountResponse);
 
             privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("accountsClient");
             privateField.setAccessible(true);
@@ -113,6 +119,38 @@ public class RegardsInternalAuthenticationPluginTest {
         Assert.assertTrue(response.getEmail().equals("test@regards.fr"));
         Assert.assertNull(response.getErrorMessage());
         Assert.assertTrue(response.getAccessGranted());
+
+    }
+
+    @Test
+    public void testAuthenticationWithEternalAccount() throws EntityNotFoundException {
+
+        Field privateField;
+        try {
+
+            String email = "test@regards.fr";
+            Account extAccount = new Account(email, "firstName", "lastName", "password");
+            extAccount.setExternal(true);
+            final IAccountsClient client = Mockito.mock(IAccountsClient.class);
+            final ResponseEntity<Boolean> response = new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK);
+            Mockito.when(client.validatePassword(Mockito.anyString(), Mockito.anyString())).thenReturn(response);
+            final ResponseEntity<Resource<Account>> accountResponse = new ResponseEntity<Resource<Account>>(
+                    new Resource<Account>(extAccount), HttpStatus.OK);
+            Mockito.when(client.retrieveAccounByEmail(email)).thenReturn(accountResponse);
+
+            privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("accountsClient");
+            privateField.setAccessible(true);
+            privateField.set(plugin, client);
+
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+            Assert.fail(e.getMessage());
+        }
+
+        final AuthenticationPluginResponse response = plugin.authenticate("test@regards.fr", "password", "test1");
+        Assert.assertNotNull(response);
+        Assert.assertTrue(response.getEmail().equals("test@regards.fr"));
+        Assert.assertNotNull(response.getErrorMessage());
+        Assert.assertFalse(response.getAccessGranted());
 
     }
 

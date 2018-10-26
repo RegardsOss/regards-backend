@@ -37,7 +37,6 @@ import fr.cnes.regards.framework.authentication.internal.AuthenticationStatus;
 import fr.cnes.regards.framework.authentication.internal.Oauth2AuthenticationManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
@@ -173,7 +172,7 @@ public class Oauth2AuthenticationManagerTest {
         projectUsersClientMock = Mockito.mock(IProjectUsersClient.class);
         final Resource<ProjectUser> resourceUser = new Resource<>(validUser);
         final ResponseEntity<Resource<ProjectUser>> resp = new ResponseEntity<Resource<ProjectUser>>(resourceUser,
-                                                                                                     HttpStatus.OK);
+                HttpStatus.OK);
         Mockito.when(projectUsersClientMock.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(resp);
         Mockito.when(beanFactoryMock.getBean(IProjectUsersClient.class)).thenReturn(projectUsersClientMock);
 
@@ -191,11 +190,6 @@ public class Oauth2AuthenticationManagerTest {
      * Check that an account is created after success authentication by plugin if account does not exits
      *
      * @throws EntityException
-     *             <br>
-     *             {@link InvalidEntityException} test error<br>
-     *             {@link AlreadyExistingException} test error<br>
-     *             {@link ModuleAlreadyExistsException}<br>
-     *             {@link EntityTransitionForbiddenException}<br>
      *
      * @since 1.0-SNAPSHOT
      */
@@ -248,7 +242,7 @@ public class Oauth2AuthenticationManagerTest {
         // Mock a valid project user
         final Resource<ProjectUser> resourceUser = new Resource<>(validUser);
         final ResponseEntity<Resource<ProjectUser>> resp = new ResponseEntity<Resource<ProjectUser>>(resourceUser,
-                                                                                                     HttpStatus.OK);
+                HttpStatus.OK);
         Mockito.when(projectUsersClientMock.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(resp);
 
         // Mock a valid account
