@@ -68,7 +68,7 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -234,8 +234,13 @@ public class AIPController implements IResourceController<AIP> {
      * @param state state the aips should be in
      * @param from date(UTC) after which the aip should have been added to the system
      * @param to date(UTC) before which the aip should have been added to the system
+     * @param tags
+     * @param providerId
      * @param session {@link String}
+     * @param pageable
+     * @param assembler
      * @return page of aip metadata respecting the constraints
+     * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
@@ -257,7 +262,12 @@ public class AIPController implements IResourceController<AIP> {
 
     /**
      * Retrieve a page of aip with indexing information on associated files according to the given parameters
+     * @param state
+     * @param inTags
+     * @param fromLastUpdateDate
+     * @param pageable
      * @return page of aip with indexing information on associated files respecting the constraints
+     * @throws MalformedURLException
      */
     @RequestMapping(method = RequestMethod.GET, path = INDEXING_PATH)
     @ResponseBody
@@ -295,6 +305,9 @@ public class AIPController implements IResourceController<AIP> {
 
     /**
      * Same as {@link AIPController#storeRetryUnit(String)} with multiple aips
+     * @param aipIpIds
+     * @return {@link RejectedAip}s
+     * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.POST, value = RETRY_STORE_PATH)
     @ResponseBody
@@ -316,7 +329,9 @@ public class AIPController implements IResourceController<AIP> {
 
     /**
      * Retry the storage of an aip
+     * @param ipId
      * @return whether the aip could be scheduled for storage or not
+     * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.POST, value = AIP_ID_RETRY_STORE_PATH)
     @ResponseBody
@@ -335,7 +350,9 @@ public class AIPController implements IResourceController<AIP> {
 
     /**
      * Ask for the storage of the aips into the collection
+     * @param aips
      * @return the aips that could not be prepared for storage
+     * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
     @ResourceAccess(description = "validate and store the specified AIPs")
@@ -357,7 +374,9 @@ public class AIPController implements IResourceController<AIP> {
 
     /**
      * Delete aips that are associated to at least one of the provided sips, represented by their ip id
+     * @param sipIds
      * @return SIP for which the deletion could not be made
+     * @throws ModuleException
      */
     @RequestMapping(value = AIP_BULK_DELETE, method = RequestMethod.POST)
     @ResourceAccess(description = "Delete AIPs associated to the given SIP", role = DefaultRole.ADMIN)
@@ -379,7 +398,9 @@ public class AIPController implements IResourceController<AIP> {
 
     /**
      * Retrieve the aip files metadata associated to an aip, represented by its ip id
+     * @param ipId
      * @return aip files metadata associated to the aip
+     * @throws ModuleException
      */
     @RequestMapping(value = OBJECT_LINK_PATH, method = RequestMethod.GET)
     @ResponseBody
@@ -392,7 +413,9 @@ public class AIPController implements IResourceController<AIP> {
 
     /**
      * Ask for the files into the availability request to be set into the cache
+     * @param availabilityRequest
      * @return the files that are already available and those that could not be set into the cache
+     * @throws ModuleException
      */
     @RequestMapping(path = PREPARE_DATA_FILES, method = RequestMethod.POST)
     @ResponseBody
@@ -405,6 +428,7 @@ public class AIPController implements IResourceController<AIP> {
 
     /**
      * Retrieve all aips which ip id is one of the provided ones
+     * @param ipIds
      * @return aips as an {@link AIPCollection}
      */
     @RequestMapping(value = AIP_BULK, method = RequestMethod.POST)
@@ -426,7 +450,9 @@ public class AIPController implements IResourceController<AIP> {
 
     /**
      * Retrieve the aip for the given aipId
+     * @param aipId
      * @return the aip
+     * @throws EntityNotFoundException
      */
     @RequestMapping(value = AIP_ID_PATH, method = RequestMethod.GET)
     @ResourceAccess(description = "allow to retrieve a given aip metadata thanks to its ipId")
@@ -438,19 +464,24 @@ public class AIPController implements IResourceController<AIP> {
 
     /**
      * Add tags to an aip, represented by its ip id
+     * @param ipId
+     * @param toAddTags
+     * @return Void
+     * @throws EntityException
      */
     @RequestMapping(value = TAG_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "allow to add multiple tags to a given aip")
     @ResponseBody
     public ResponseEntity<Void> addTags(@PathVariable(name = AIP_ID_PATH_PARAM) String ipId,
-            @RequestBody Set<String> toAddTags)
-            throws EntityNotFoundException, EntityOperationForbiddenException, EntityInconsistentIdentifierException {
+            @RequestBody Set<String> toAddTags) throws EntityException {
         aipService.addTags(ipId, toAddTags);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /**
      * Add tags to a list of aips
+     * @param request
+     * @return Void
      */
     @RequestMapping(value = TAG_MANAGEMENT_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "allow to add multiple tags to several aips")
@@ -465,19 +496,24 @@ public class AIPController implements IResourceController<AIP> {
 
     /**
      * Remove tags from a given aip, represented by its ip id
+     * @param ipId
+     * @param toRemoveTags
+     * @return  Void
+     * @throws EntityException
      */
     @RequestMapping(value = TAG_PATH, method = RequestMethod.DELETE)
     @ResourceAccess(description = "allow to remove multiple tags to a given aip")
     @ResponseBody
     public ResponseEntity<Void> removeTags(@PathVariable(name = AIP_ID_PATH_PARAM) String ipId,
-            @RequestBody Set<String> toRemoveTags)
-            throws EntityNotFoundException, EntityOperationForbiddenException, EntityInconsistentIdentifierException {
+            @RequestBody Set<String> toRemoveTags) throws EntityException {
         aipService.removeTags(ipId, toRemoveTags);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
      * Remove tags from a list of aips
+     * @param request
+     * @return Void
      */
     @RequestMapping(value = TAG_DELETION_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "allow to remove multiple tags to several aips")
@@ -492,6 +528,8 @@ public class AIPController implements IResourceController<AIP> {
 
     /**
      * Retrieve common tags from a list of aips
+     * @param request
+     * @return tags
      */
     @RequestMapping(value = TAG_SEARCH_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "allow to search tags used by aips")
@@ -502,6 +540,9 @@ public class AIPController implements IResourceController<AIP> {
 
     /**
      * Retrieve all aips which are tagged by the provided tag
+     * @param tag
+     * @param pageable
+     * @param assembler
      * @return aips tagged by the tag
      */
     @RequestMapping(value = TAG, method = RequestMethod.GET)
@@ -515,21 +556,26 @@ public class AIPController implements IResourceController<AIP> {
 
     /**
      * Update an aip, represented by its ip id, thanks to the provided pojo
+     * @param ipId
+     * @param updated
      * @return updated aip
+     * @throws EntityException
      */
     @RequestMapping(value = AIP_ID_PATH, method = RequestMethod.PUT,
             consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
     @ResourceAccess(description = "allow to update a given aip metadata")
     @ResponseBody
     public ResponseEntity<Void> updateAip(@PathVariable(name = AIP_ID_PATH_PARAM) String ipId,
-            @RequestBody @Valid AIP updated)
-            throws EntityInconsistentIdentifierException, EntityOperationForbiddenException, EntityNotFoundException {
+            @RequestBody @Valid AIP updated) throws EntityException {
         aipService.updateAip(ipId, updated, "Update AIP");
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
      * Delete an aip, represented by its ip id
+     * @param ipId
+     * @return Not deletable aips ids.
+     * @throws ModuleException
      */
     @RequestMapping(value = AIP_ID_PATH, method = RequestMethod.DELETE)
     @ResourceAccess(description = "allow to delete a given aip", role = DefaultRole.ADMIN)
@@ -551,7 +597,9 @@ public class AIPController implements IResourceController<AIP> {
 
     /**
      * Retrieve the history of events that occurred on a given aip, represented by its ip id
+     * @param ipId
      * @return the history of events that occurred to the aip
+     * @throws ModuleException
      */
     @RequestMapping(value = HISTORY_PATH, method = RequestMethod.GET)
     @ResourceAccess(description = "send the history of event occurred on each data file of the specified AIP")
