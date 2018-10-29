@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.encryption.AESEncryptionService;
-import fr.cnes.regards.framework.encryption.BlowfishEncryptionService;
 import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
 import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 
@@ -28,21 +27,23 @@ public class EncryptionApp {
 
     private static final String VALUE = "value";
 
+    public static final String PARAMETER_IS_MISSING = "{} parameter is missing";
+
     public static void main(String[] args)
             throws InvalidAlgorithmParameterException, InvalidKeyException, IOException, EncryptionException {
         String keyLocation = System.getProperty(KEY_LOCATION, null);
         String iv = System.getProperty(IV, null);
         String value = System.getProperty(VALUE, null);
         if (keyLocation == null) {
-            LOG.error("{} parameter is missing", KEY_LOCATION);
+            LOG.error(PARAMETER_IS_MISSING, KEY_LOCATION);
             System.exit(1);
         }
         if (iv == null) {
-            LOG.error("{} parameter is missing", IV);
+            LOG.error(PARAMETER_IS_MISSING, IV);
             System.exit(1);
         }
         if (value == null) {
-            LOG.error("{} parameter is missing", VALUE);
+            LOG.error(PARAMETER_IS_MISSING, VALUE);
             System.exit(1);
         }
         AESEncryptionService aesEncryptionService = new AESEncryptionService();
