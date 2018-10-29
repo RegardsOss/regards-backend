@@ -853,6 +853,18 @@
                 <version>${fr.cnes.regards.modules.dataprovider.version}</version>
                 <classifier>shaded</classifier>
             </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.acquisition</groupId>
+                <artifactId>cdpp-plugins</artifactId>
+                <version>${fr.cnes.regards.modules.dataprovider.version}</version>
+                <classifier>shaded</classifier>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.acquisition</groupId>
+                <artifactId>ssalto-plugins</artifactId>
+                <version>${fr.cnes.regards.modules.dataprovider.version}</version>
+                <classifier>shaded</classifier>
+            </dependency>
 
             <!-- Frontend -->
             <dependency>
