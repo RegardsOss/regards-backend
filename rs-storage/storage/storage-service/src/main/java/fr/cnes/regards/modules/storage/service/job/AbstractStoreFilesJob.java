@@ -262,7 +262,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
 
     private void setQuicklookProperties(StorageDataFile storageDataFile) throws IOException, NoSuchAlgorithmException {
         // first to get the quicklook properties(height and width), we need to download it.
-        // unless it is already on filesystem
+        // unless it is already on filesystem TODO: use StorageDataFileUtils in place of lambda
         Optional<URL> dataFileUrlOpt = storageDataFile.getUrls().stream()
                 .filter(url -> url.getProtocol().equals("file")).findAny();
         if (!dataFileUrlOpt.isPresent()) {
