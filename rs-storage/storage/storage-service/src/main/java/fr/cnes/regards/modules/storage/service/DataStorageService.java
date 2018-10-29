@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.storage.service;
 
-import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
@@ -25,6 +24,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -241,7 +241,8 @@ public class DataStorageService implements IDataStorageService {
                             LOGGER.error(message);
                             notifyAdmins("Data storage " + activeDataStorageConf.getLabel() + " is almost full",
                                          message,
-                                         NotificationType.ERROR, MimeTypeUtils.TEXT_PLAIN);
+                                         NotificationType.ERROR,
+                                         MimeTypeUtils.TEXT_PLAIN);
                             MaintenanceManager.setMaintenance(runtimeTenantResolver.getTenant());
                             return;
                         }
@@ -256,7 +257,8 @@ public class DataStorageService implements IDataStorageService {
                             LOGGER.warn(message);
                             notifyAdmins("Data storage " + activeDataStorageConf.getLabel() + " is almost full",
                                          message,
-                                         NotificationType.WARNING, MimeTypeUtils.TEXT_PLAIN);
+                                         NotificationType.WARNING,
+                                         MimeTypeUtils.TEXT_PLAIN);
                         }
                     }
 
@@ -281,7 +283,8 @@ public class DataStorageService implements IDataStorageService {
                                                         Sets.newHashSet(DefaultRole.ADMIN.name()),
                                                         applicationName,
                                                         title,
-                                                        type, mimeType);
+                                                        type,
+                                                        mimeType);
             notificationClient.createNotification(notif);
         } finally {
             FeignSecurityManager.reset();
@@ -320,12 +323,22 @@ public class DataStorageService implements IDataStorageService {
                     break;
                 case FAILED:
                 default:
+                    PluginConfiguration storageConf = null;
+                    try {
+                        storageConf = pluginService.getPluginConfiguration(event.getStorageConfId());
+                    } catch (EntityNotFoundException e) {
+                        LOGGER.error(e.getMessage(), e);
+                    }
                     // IDataStorage plugin used to delete the file is not able to delete the file right now.
-                    // Maybe the file can be deleted later. So do nothing and just notify administrator.
-                    String message = String.format("Error deleting file (id: %s, checksum: %s).",
+                    // Notify administrator and set data file to STORED, because it is its real state for now.
+                    String message = String.format("Error deleting file (id: %s, checksum: %s).%n"
+                                                           + "Data Storage configuration: %s(%s)%n" + "Error:%s",
                                                    event.getDataFileId(),
-                                                   event.getChecksum());
-                    data.get().setState(DataFileState.TO_BE_DELETED);
+                                                   event.getChecksum(),
+                                                   event.getStorageConfId(),
+                                                   storageConf == null ? null : storageConf.getLabel(),
+                                                   event.getFailureCause());
+                    data.get().setState(DataFileState.STORED);
                     dataFileDao.save(data.get());
                     LOGGER.error(message);
                     notifyAdmins("File deletion error", message, NotificationType.INFO, MimeTypeUtils.TEXT_PLAIN);
@@ -598,7 +611,9 @@ public class DataStorageService implements IDataStorageService {
                             storeFailFile.getAip().getProviderId(),
                             storageConf == null ? null : storageConf.getDataStorageConfiguration().getLabel(),
                             failureCause);
-            notifyAdmins("Storage of file " + storeFailFile.getName() + " failed", notifMsg, NotificationType.INFO,
+            notifyAdmins("Storage of file " + storeFailFile.getName() + " failed",
+                         notifMsg,
+                         NotificationType.INFO,
                          MimeTypeUtils.TEXT_PLAIN);
             publisher.publish(new AIPEvent(associatedAIP));
         } else {
