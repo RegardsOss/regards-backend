@@ -85,8 +85,7 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
     /**
      * LDAP Port
      */
-    @PluginParameter(name = PARAM_LDAP_PORT, label = "LDAP Server port (default:389)", defaultValue = "389",
-            optional = true)
+    @PluginParameter(name = PARAM_LDAP_PORT, label = "LDAP Server port", defaultValue = "389", optional = true)
     private String ldapPort;
 
     /**
@@ -99,7 +98,7 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
     /**
      * LDAP User login attribute.
      */
-    @PluginParameter(name = PARAM_LDAP_USER_LOGIN_ATTTRIBUTE, label = "LDAP UID (default:sAMAccountName)",
+    @PluginParameter(name = PARAM_LDAP_USER_LOGIN_ATTTRIBUTE, label = "LDAP UID",
             description = "LDAP User parameter containing user login. Default value is 'sAMAccountName'.",
             optional = true, defaultValue = "sAMAccountName")
     private String ldapUserLoginAttribute;
@@ -107,7 +106,7 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
     /**
      * LDAP Filter to find the User object
      */
-    @PluginParameter(name = PARAM_LDAP_USER_FILTER_ATTTRIBUTE, label = "LDAP Filter (default: (ObjectClass=person)",
+    @PluginParameter(name = PARAM_LDAP_USER_FILTER_ATTTRIBUTE, label = "LDAP Filter",
             description = "LDAP Filter to find the user object. Default value is '(ObjectClass=person)'.",
             optional = true, defaultValue = "(ObjectClass=person)")
     private String ldapSearchUserFilter;
@@ -115,7 +114,7 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
     /**
      * LDAP email attribute label
      */
-    @PluginParameter(name = PARAM_LDAP_USER_EMAIL_ATTTRIBUTE, label = "LDAP email attribute (default:mail)",
+    @PluginParameter(name = PARAM_LDAP_USER_EMAIL_ATTTRIBUTE, label = "LDAP email attribute",
             description = "LDAP parameter for user email. Default value is 'mail'.", optional = true,
             defaultValue = "mail")
     private String ldapEmailAttribute;
