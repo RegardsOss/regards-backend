@@ -134,13 +134,16 @@
         <fr.cnes.regards.microservices.administration.remote-authorities-provider>3.0.0-SNAPSHOT</fr.cnes.regards.microservices.administration.remote-authorities-provider>
 
         <custom.deployment.version>3.0.0-SNAPSHOT</custom.deployment.version>
-        
+
+        <fr.cnes.regards.modules.ingest.plugins.version>3.0.0-SNAPSHOT</fr.cnes.regards.modules.ingest.plugins.version>
+        <fr.cnes.regards.modules.acquisition.plugins.version>3.0.0-SNAPSHOT</fr.cnes.regards.modules.acquisition.plugins.version>
+
         <!-- CNES remote storages -->
-        <fr.cnes.regards.storages.version>1.0.0</fr.cnes.regards.storages.version>
-        <fr.cnes.regards.storages.staf.version>1.0.0</fr.cnes.regards.storages.staf.version>
-        <fr.cnes.regards.storages.hpss.version>1.0.0</fr.cnes.regards.storages.hpss.version>
-        <fr.cnes.regards.storages.mission.version>1.0.0</fr.cnes.regards.storages.mission.version>
-        <fr.cnes.regards.storages.noop.version>1.0.0</fr.cnes.regards.storages.noop.version>
+        <fr.cnes.regards.storages.version>3.0.0-SNAPSHOT</fr.cnes.regards.storages.version>
+        <fr.cnes.regards.storages.staf.version>3.0.0-SNAPSHOT</fr.cnes.regards.storages.staf.version>
+        <fr.cnes.regards.storages.hpss.version>3.0.0-SNAPSHOT</fr.cnes.regards.storages.hpss.version>
+        <fr.cnes.regards.storages.mission.version>3.0.0-SNAPSHOT</fr.cnes.regards.storages.mission.version>
+        <fr.cnes.regards.storages.noop.version>3.0.0-SNAPSHOT</fr.cnes.regards.storages.noop.version>
 
         <!-- COTS -->
         <flyway.version>4.2.0</flyway.version>
@@ -846,9 +849,11 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.acquisition</groupId>
-                <artifactId>acquisition-plugins-microscope</artifactId>
+                <artifactId>microscope-plugins</artifactId>
                 <version>${fr.cnes.regards.modules.dataprovider.version}</version>
+                <classifier>shaded</classifier>
             </dependency>
+
             <!-- Frontend -->
             <dependency>
                 <groupId>fr.cnes.regards</groupId>
@@ -990,78 +995,79 @@
             <dependency>
                 <groupId>fr.cnes.regards.modules.ingest.plugins</groupId>
                 <artifactId>enhanced-descriptive-aip-generation</artifactId>
-                <version>3.0.0-SNAPSHOT</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.ingest.plugins</groupId>
-                <artifactId>enhanced-descriptive-aip-generation</artifactId>
-                <version>3.0.0-SNAPSHOT</version>
+                <version>${fr.cnes.regards.modules.ingest.plugins.version}</version>
                 <classifier>shaded</classifier>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.acquisition.plugins</groupId>
                 <artifactId>microscope</artifactId>
-                <version>3.0.0-SNAPSHOT</version>
+                <version>${fr.cnes.regards.modules.acquisition.plugins.version}</version>
                 <classifier>shaded</classifier>
             </dependency>
             <!-- CNES REMOTE STORAGES -->
             <dependency>
-                <groupId>fr.cnes.regards.storages</groupId>
+                <groupId>fr.cnes.regards.modules.storage</groupId>
+                <artifactId>test-plugins</artifactId>
+                <version>${fr.cnes.regards.storages.version}</version>
+                <classifier>shaded</classifier>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.storage</groupId>
                 <artifactId>common-storages</artifactId>
                 <version>${fr.cnes.regards.storages.version}</version>
             </dependency>
             <dependency>
-                <groupId>fr.cnes.regards.storages</groupId>
+                <groupId>fr.cnes.regards.modules.storage</groupId>
                 <artifactId>common-plugins</artifactId>
                 <version>${fr.cnes.regards.storages.version}</version>
             </dependency>
             <dependency>
-                <groupId>fr.cnes.regards.storages</groupId>
+                <groupId>fr.cnes.regards.modules.storage</groupId>
                 <artifactId>cnes-url-protocols-handler</artifactId>
                 <version>${fr.cnes.regards.storages.version}</version>
             </dependency>
         	<dependency>
-                <groupId>fr.cnes.regards.storages.staf</groupId>
+                <groupId>fr.cnes.regards.modules.storage</groupId>
                 <artifactId>staf</artifactId>
                 <version>${fr.cnes.regards.storages.staf.version}</version>
             </dependency>
             <dependency>
-                <groupId>fr.cnes.regards.storages.staf</groupId>
+                <groupId>fr.cnes.regards.modules.storage</groupId>
                 <artifactId>staf-data-storage-plugin</artifactId>
                 <version>${fr.cnes.regards.storages.staf.version}</version>
             </dependency>
             <dependency>
-                <groupId>fr.cnes.regards.storages.staf</groupId>
+                <groupId>fr.cnes.regards.modules.storage</groupId>
                 <artifactId>staf-standalone</artifactId>
                 <version>${fr.cnes.regards.storages.staf.version}</version>
             </dependency>
             <!-- CNES REMOTE STORAGES - Shaded-->
             <dependency>
-                <groupId>fr.cnes.regards.storages</groupId>
+                <groupId>fr.cnes.regards.modules.storage</groupId>
                 <artifactId>cnes-url-protocols-handler</artifactId>
                 <version>${fr.cnes.regards.storages.version}</version>
                 <classifier>shaded</classifier>
             </dependency>
              <dependency>
-                <groupId>fr.cnes.regards.storages.staf</groupId>
+                <groupId>fr.cnes.regards.modules.storage</groupId>
                 <artifactId>staf-data-storage-plugin</artifactId>
                 <version>${fr.cnes.regards.storages.staf.version}</version>
                 <classifier>shaded</classifier>
             </dependency>
             <dependency>
-                <groupId>fr.cnes.regards.storages.hpss</groupId>
+                <groupId>fr.cnes.regards.modules.storage</groupId>
                 <artifactId>hpss-data-storage-plugin</artifactId>
                 <version>${fr.cnes.regards.storages.hpss.version}</version>
                 <classifier>shaded</classifier>
             </dependency>
             <dependency>
-                <groupId>fr.cnes.regards.storages</groupId>
+                <groupId>fr.cnes.regards.modules.storage</groupId>
                 <artifactId>mission-allocation-strategy-plugin</artifactId>
                 <version>${fr.cnes.regards.storages.mission.version}</version>
                 <classifier>shaded</classifier>
             </dependency>
             <dependency>
-                <groupId>fr.cnes.regards.storages</groupId>
+                <groupId>fr.cnes.regards.modules.storage</groupId>
                 <artifactId>noop-allocation-strategy-plugin</artifactId>
                 <version>${fr.cnes.regards.storages.noop.version}</version>
                 <classifier>shaded</classifier>
