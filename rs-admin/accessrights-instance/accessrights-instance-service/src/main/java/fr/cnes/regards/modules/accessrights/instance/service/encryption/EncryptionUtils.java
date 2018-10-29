@@ -33,7 +33,7 @@ import fr.cnes.regards.framework.utils.RsRuntimeException;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-public class EncryptionUtils {
+public final class EncryptionUtils {
 
     /**
      * Encryption algorithm

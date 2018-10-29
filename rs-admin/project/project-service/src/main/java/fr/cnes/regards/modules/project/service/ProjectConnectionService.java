@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.project.service;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
 import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.Objects;
@@ -200,8 +198,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
     }
 
     @Override
-    public ProjectConnection createStaticProjectConnection(ProjectConnection projectConnection)
-            throws ModuleException {
+    public ProjectConnection createStaticProjectConnection(ProjectConnection projectConnection) throws ModuleException {
 
         // Only store connection if it's really does not exist
         if (existsProjectConnection(projectConnection.getProject().getName(), projectConnection.getMicroservice())) {
@@ -250,8 +247,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
 
     @Override
     public ProjectConnection updateProjectConnection(final Long projectConnectionId,
-            final ProjectConnection projectConnection)
-            throws ModuleException {
+            final ProjectConnection projectConnection) throws ModuleException {
         final ProjectConnection connection;
         // Check that entity to update exists
         if ((projectConnection.getId() != null) && projectConnectionRepository.exists(projectConnection.getId())) {
@@ -265,7 +261,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
                 projectConnection.setState(TenantConnectionState.DISABLED);
                 // lets handle password modifications
                 ProjectConnection fromDb = projectConnectionRepository.findOne(projectConnectionId);
-//                FIXME: might not be neccessary em.detach(fromDb);
+                //                FIXME: might not be neccessary em.detach(fromDb);
                 if (!Objects.equals(fromDb.getPassword(), projectConnection.getPassword())) {
                     projectConnection.setPassword(encryptionService.encrypt(projectConnection.getPassword()));
                 }

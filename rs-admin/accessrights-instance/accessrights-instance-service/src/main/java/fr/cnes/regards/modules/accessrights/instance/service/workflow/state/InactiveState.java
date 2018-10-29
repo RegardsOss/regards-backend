@@ -46,7 +46,7 @@ public class InactiveState extends AbstractDeletableState {
     /**
      * In days. Provided by property file.
      */
-    private Long accountValidityDuration;
+    private final Long accountValidityDuration;
 
     /**
      * @param projectUsersClient

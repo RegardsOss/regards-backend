@@ -1,6 +1,5 @@
 package fr.cnes.regards.microservices.administration;
 
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -34,10 +33,13 @@ public class RemoteAuthoritiesProviderAutoConfiguration {
      */
     @Bean
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
-    IAuthoritiesProvider authoritiesProvider(final DiscoveryClient discoveryClient,
+    public IAuthoritiesProvider authoritiesProvider(final DiscoveryClient discoveryClient,
             final IMicroserviceResourceClient resourcesClient, final IRolesClient rolesClient,
             final IRuntimeTenantResolver runtimeTenantResolver, final IRoleResourceClient pRoleResourceClient) {
-        return new RemoteAuthoritiesProvider(discoveryClient, resourcesClient, rolesClient, runtimeTenantResolver,
+        return new RemoteAuthoritiesProvider(discoveryClient,
+                                             resourcesClient,
+                                             rolesClient,
+                                             runtimeTenantResolver,
                                              pRoleResourceClient);
     }
 

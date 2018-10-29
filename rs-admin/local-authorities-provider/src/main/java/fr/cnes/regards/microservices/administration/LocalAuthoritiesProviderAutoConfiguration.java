@@ -24,7 +24,7 @@ public class LocalAuthoritiesProviderAutoConfiguration {
      */
     @Bean
     @Primary
-    IAuthoritiesProvider authoritiesProvider(IRoleService pRoleService, IResourcesService pResourcesService,
+    public IAuthoritiesProvider authoritiesProvider(IRoleService pRoleService, IResourcesService pResourcesService,
             IRuntimeTenantResolver runtimeTenantResolver) {
         return new LocalAuthoritiesProvider(pRoleService, pResourcesService, runtimeTenantResolver);
     }
