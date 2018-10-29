@@ -305,7 +305,7 @@ public class PluginService implements IPluginService {
         for (PluginParameterType paramMeta : pluginMeta.getParameters()) {
             PluginParameter newParam = pluginConf.getParameter(paramMeta.getName());
             PluginParameter oldParam = oldConf.getParameter(paramMeta.getName());
-            if ((newParam != null) && (newParam.getValue() != null) && !newParam.getValue().isEmpty()) {
+            if ((newParam != null) && (newParam.getValue() != null) && !newParam.getStripParameterValue().isEmpty()) {
                 // Check if parameter is sensitive and value changed. If it does, encrypt the new value
                 if (paramMeta.isSensible()
                         && !Objects.equals(newParam.getStripParameterValue(), oldParam.getStripParameterValue())) {
