@@ -27,7 +27,7 @@ import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.IModuleManager;
 
 /**
- * This annotation is deprecated. You have to create a file "module.properties" in association with your
+ * @deprecated You have to create a file "module.properties" in association with your
  * {@link IModuleManager}. You can see {@link AbstractModuleManager} for required content.
  *
  * @author Marc Sordi

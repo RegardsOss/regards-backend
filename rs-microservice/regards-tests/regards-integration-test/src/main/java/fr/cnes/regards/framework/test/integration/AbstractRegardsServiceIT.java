@@ -66,13 +66,13 @@ import fr.cnes.regards.framework.test.util.JUnitLogRule;
 public abstract class AbstractRegardsServiceIT {
 
     /**
-     * Default tenant. Use {@link #getDefaultTenant()} instead.
+     * @deprecated Default tenant. Use {@link #getDefaultTenant()} instead.
      */
     @Deprecated
     protected static final String DEFAULT_TENANT = "PROJECT";
 
     /**
-     * Default user email. Use {@link #getDefaultUserEmail()} instead.
+     * @deprecated Default user email. Use {@link #getDefaultUserEmail()} instead.
      */
     @Deprecated
     protected static final String DEFAULT_USER_EMAIL = "default_user@regards.fr";
