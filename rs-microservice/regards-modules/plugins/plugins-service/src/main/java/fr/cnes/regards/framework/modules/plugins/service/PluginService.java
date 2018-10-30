@@ -195,10 +195,15 @@ public class PluginService implements IPluginService {
         // only way to know if a plugin parameter is sensitive is via the plugin metadata
         PluginMetaData pluginMeta = PluginUtils.getPlugins().get(plgConf.getPluginId());
         for (PluginParameterType paramMeta : pluginMeta.getParameters()) {
-            if (paramMeta.isSensible()) {
-                PluginParameter param = plgConf.getParameter(paramMeta.getName());
-                PluginParametersFactory.updateParameter(param,
-                                                        encryptionService.encrypt(param.getStripParameterValue()));
+            PluginParameter param = plgConf.getParameter(paramMeta.getName());
+            if ((param != null) && (param.getValue() != null) && !param.getStripParameterValue().isEmpty()) {
+                if (paramMeta.isSensible()) {
+                    PluginParametersFactory.updateParameter(param,
+                                                            encryptionService.encrypt(param.getStripParameterValue()));
+                }
+            } else if (param != null) {
+                // Plugin param value is null or empty, so remove the parameter
+                plgConf.getParameters().remove(param);
             }
         }
 
