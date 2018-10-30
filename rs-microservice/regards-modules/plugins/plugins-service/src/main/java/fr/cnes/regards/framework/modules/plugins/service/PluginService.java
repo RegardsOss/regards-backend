@@ -201,7 +201,7 @@ public class PluginService implements IPluginService {
                     PluginParametersFactory.updateParameter(param,
                                                             encryptionService.encrypt(param.getStripParameterValue()));
                 }
-            } else if ((param != null) && (param.getPluginConfiguration() == null)) {
+            } else if ((param != null) && (param.getPluginConfiguration() == null) && !param.isDynamic()) {
                 // Plugin param value is null or empty and is not associate an other plugin conf  so remove the parameter
                 plgConf.getParameters().remove(param);
             }
@@ -317,7 +317,7 @@ public class PluginService implements IPluginService {
                     PluginParametersFactory
                             .updateParameter(newParam, encryptionService.encrypt(newParam.getStripParameterValue()));
                 }
-            } else if ((newParam != null) && (newParam.getPluginConfiguration() == null)) {
+            } else if ((newParam != null) && (newParam.getPluginConfiguration() == null) && !newParam.isDynamic()) {
                 // Plugin param value is null or empty and is not associated to an other plugin conf  so remove the parameter
                 pluginConf.getParameters().remove(newParam);
             }
