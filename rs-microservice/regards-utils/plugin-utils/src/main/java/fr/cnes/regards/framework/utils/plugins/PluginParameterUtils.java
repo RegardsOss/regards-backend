@@ -628,12 +628,13 @@ public final class PluginParameterUtils {
         // Get setup value
         PluginConfiguration paramValue = plgConf.getParameterConfiguration(getFieldName(field, plgParamAnnotation));
 
-        LOGGER.debug(String.format("interface parameter value : %s", paramValue));
-
         try {
             // Retrieve instantiated plugin from cache map
-            Object effectiveVal = instantiatedPluginMap.get(paramValue.getId());
-            field.set(pluginInstance, effectiveVal);
+            if (paramValue != null) {
+                LOGGER.debug(String.format("interface parameter value : %s", paramValue));
+                Object effectiveVal = instantiatedPluginMap.get(paramValue.getId());
+                field.set(pluginInstance, effectiveVal);
+            }
         } catch (IllegalArgumentException | IllegalAccessException e) {
             // Propagate exception
             throw new PluginUtilsRuntimeException(
