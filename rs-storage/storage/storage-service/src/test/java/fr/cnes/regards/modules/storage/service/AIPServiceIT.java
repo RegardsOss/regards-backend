@@ -645,7 +645,7 @@ public class AIPServiceIT extends AbstractRegardsIT {
     }
 
     @Test
-    @Requirements({ @Requirement("REGARDS_DSL_STO_ARC_100") })
+    @Requirements({ @Requirement("REGARDS_DSL_STO_ARC_100"), @Requirement("REGARDS_DSL_STO_AIP_115") })
     public void testDeleteAip() throws InterruptedException, ModuleException, URISyntaxException {
 
         dsConfWithDeleteDisabled.getParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION)
@@ -657,6 +657,10 @@ public class AIPServiceIT extends AbstractRegardsIT {
         // lets get all the dataFile before deleting them for further verification
         Set<StorageDataFile> aipFiles = dataFileDao.findAllByAip(aip);
         Assert.assertEquals(0, aipService.deleteAip(aipIpId).size());
+        AIP deleted = aipService.retrieveAip(aipIpId);
+        Optional<Event> deletionEventOpt = deleted.getHistory().stream().filter(evt->evt.getType().equals(EventType.DELETION.toString())).findAny();
+        Assert.assertTrue("Deletion event should be present into AIP history", deletionEventOpt.isPresent());
+        Assert.assertNotNull("Deletion event date should not be null", deletionEventOpt.get().getDate());
         aipService.doDelete();
         waitForJobsFinished();
 
