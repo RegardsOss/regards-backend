@@ -27,9 +27,10 @@ import fr.cnes.regards.modules.ingest.domain.plugin.ISipValidation;
 import fr.cnes.regards.modules.ingest.service.ISIPService;
 
 /**
- * @author oroussel
+ * Validation plugin rejecting a SIP if a version of it already exists.
+ * @author Olivier Rousselot
  */
-@Plugin(author = "REGARDS Team", description = "Unique provider Id SIP validation plugin",
+@Plugin(author = "REGARDS Team", description = "Unique provider id SIP validation plugin",
         id = "UniqueProviderIdSipValidation", version = "1.0.0", contact = "regards@c-s.fr", licence = "GPLv3",
         owner = "CNES", url = "https://regardsoss.github.io/")
 public class UniqueProviderIdSipValidation implements ISipValidation {
