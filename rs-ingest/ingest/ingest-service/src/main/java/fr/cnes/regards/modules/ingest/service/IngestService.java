@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import javax.persistence.EntityManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,19 +30,18 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Optional;
 
-import javax.persistence.EntityManager;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import org.springframework.validation.Errors;
+import org.springframework.validation.FieldError;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -75,11 +75,11 @@ import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 @MultitenantTransactional
 public class IngestService implements IIngestService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(IngestService.class);
-
     public static final String MD5_ALGORITHM = "MD5";
 
     public static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(IngestService.class);
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -184,20 +184,24 @@ public class IngestService implements IIngestService {
                 case SUBMISSION_ERROR:
                 case STORE_ERROR:
                 case STORED:
-                    throw new EntityOperationForbiddenException(sipId.toString(), SIPEntity.class,
-                            "SIP ingest process is already successully done");
+                    throw new EntityOperationForbiddenException(sipId.toString(),
+                                                                SIPEntity.class,
+                                                                "SIP ingest process is already successully done");
                 case REJECTED:
-                    throw new EntityOperationForbiddenException(sipId.toString(), SIPEntity.class,
-                            "SIP format is not valid");
+                    throw new EntityOperationForbiddenException(sipId.toString(),
+                                                                SIPEntity.class,
+                                                                "SIP format is not valid");
                 case VALID:
                 case QUEUED:
                 case CREATED:
                 case AIP_CREATED:
-                    throw new EntityOperationForbiddenException(sipId.toString(), SIPEntity.class,
-                            "SIP ingest is already running");
+                    throw new EntityOperationForbiddenException(sipId.toString(),
+                                                                SIPEntity.class,
+                                                                "SIP ingest is already running");
                 default:
-                    throw new EntityOperationForbiddenException(sipId.toString(), SIPEntity.class,
-                            "SIP is in undefined state for ingest retry");
+                    throw new EntityOperationForbiddenException(sipId.toString(),
+                                                                SIPEntity.class,
+                                                                "SIP is in undefined state for ingest retry");
             }
             return sipRepository.findOne(sip.getId()).toDto();
         } else {
@@ -236,9 +240,14 @@ public class IngestService implements IIngestService {
         // Manage session
         SIPSession session = sipSessionService.getSession(metadata.getSession().orElse(null), true);
 
-        SIPEntity entity = SIPEntityBuilder.build(runtimeTenantResolver.getTenant(), session, sip,
-                                                  metadata.getProcessing(), authResolver.getUser(), version,
-                                                  SIPState.CREATED, EntityType.DATA);
+        SIPEntity entity = SIPEntityBuilder.build(runtimeTenantResolver.getTenant(),
+                                                  session,
+                                                  sip,
+                                                  metadata.getProcessing(),
+                                                  authResolver.getUser(),
+                                                  version,
+                                                  SIPState.CREATED,
+                                                  EntityType.DATA);
 
         // Validate SIP
         Errors errors = new MapBindingResult(new HashMap<>(), "sip");
@@ -247,7 +256,16 @@ public class IngestService implements IIngestService {
             // Invalid SIP
             entity.setState(SIPState.REJECTED);
             errors.getAllErrors().forEach(error -> {
-                entity.getRejectionCauses().add(error.getDefaultMessage());
+                if (error instanceof FieldError) {
+                    FieldError fieldError = (FieldError) error;
+                    entity.getRejectionCauses().add(String.format("%s at %s: rejected value [%s].",
+                                                                  fieldError.getDefaultMessage(),
+                                                                  fieldError.getField(),
+                                                                  ObjectUtils.nullSafeToString(fieldError
+                                                                                                       .getRejectedValue())));
+                } else {
+                    entity.getRejectionCauses().add(error.getDefaultMessage());
+                }
                 LOGGER.warn("SIP {} error : {}", entity.getProviderId(), error.toString());
             });
             LOGGER.warn("SIP {} rejected cause invalid", entity.getProviderId());
