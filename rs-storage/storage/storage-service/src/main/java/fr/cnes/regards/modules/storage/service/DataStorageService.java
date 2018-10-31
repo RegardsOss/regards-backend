@@ -373,6 +373,7 @@ public class DataStorageService implements IDataStorageService {
             LOGGER.info("Partial deletion of StorageDataFile {}. One of the location has been removed {}.",
                         dataFileDeleted.getName(), urlToRemove);
             associatedAIP.getProperties().getContentInformations().stream()
+                    .filter(ci -> !ci.getDataObject().isReference())
                     .filter(ci -> dataFileDeleted.getChecksum().equals(ci.getDataObject().getChecksum()))
                     .forEach(ci -> ci.getDataObject().getUrls().remove(urlToRemove));
             String message = String.format(DATAFILE_URL_DELETED_SUCCESSFULLY, urlToRemove, dataFileDeleted.getName());
@@ -397,6 +398,7 @@ public class DataStorageService implements IDataStorageService {
             LOGGER.info(message);
             // Remove content information from aip
             Set<ContentInformation> ciToRemove = associatedAIP.getProperties().getContentInformations().stream()
+                    .filter(ci -> !ci.getDataObject().isReference())
                     .filter(ci -> dataFileDeleted.getChecksum().equals(ci.getDataObject().getChecksum()))
                     .collect(Collectors.toSet());
             ciToRemove.forEach(ci -> associatedAIP.getProperties().getContentInformations().remove(ci));
@@ -529,7 +531,7 @@ public class DataStorageService implements IDataStorageService {
                     associatedAIP.getProperties().getContentInformations()
                         .stream()
                         .filter(contentInformation -> !contentInformation.getDataObject().isReference())
-                        .filter(contentInformation -> (storedDataFileFinal.getChecksum() != null) && storedDataFileFinal.getChecksum().equals(contentInformation.getDataObject().getChecksum()))
+                        .filter(contentInformation -> contentInformation.getDataObject().getChecksum().equals(storedDataFileFinal.getChecksum()))
                         .findFirst();
             // @formatter:on
                 if (ci.isPresent()) {
