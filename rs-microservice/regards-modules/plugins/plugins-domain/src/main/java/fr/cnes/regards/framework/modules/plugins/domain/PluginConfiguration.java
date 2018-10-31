@@ -203,6 +203,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
      * Constructor initializing a new plugin configuration from an other one
+     * @param other
      */
     public PluginConfiguration(PluginConfiguration other) {
         active = other.active;
@@ -229,10 +230,11 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * Return the {@link PluginParameter} of a specific parameter
      * @param parameterName the parameter to get the value
+     * @return {@link PluginParameter}
      */
     public PluginParameter getParameter(String parameterName) {
         for (PluginParameter p : parameters) {
-            if (p.getName().equals(parameterName)) {
+            if ((p != null) && p.getName().equals(parameterName)) {
                 return p;
             }
         }
@@ -242,6 +244,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * Return the value of a specific parameter
      * @param parameterName the parameter to get the value
+     * @return {@link String}
      */
     public String getParameterValue(String parameterName) {
         PluginParameter param;
@@ -260,6 +263,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * Return the value of a specific {@link PluginConfiguration} parameter
      * @param parameterName the parameter to get the value
+     * @return {@link PluginConfiguration}
      */
     public PluginConfiguration getParameterConfiguration(String parameterName) {
         PluginParameter param;
@@ -311,35 +315,36 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
      * This setter <b>must</b> only be used while TESTING
+     * @param version
      */
-    public final void setVersion(String pVersion) {
-        version = pVersion;
+    public final void setVersion(String version) {
+        this.version = version;
     }
 
     public final String getPluginId() {
         return pluginId;
     }
 
-    public final void setPluginId(String pPluginId) {
-        pluginId = pPluginId;
+    public final void setPluginId(String pluginId) {
+        this.pluginId = pluginId;
     }
 
     public final Integer getPriorityOrder() {
         return priorityOrder;
     }
 
-    public final void setPriorityOrder(Integer pOrder) {
-        priorityOrder = pOrder;
+    public final void setPriorityOrder(Integer order) {
+        priorityOrder = order;
     }
 
     public final Set<PluginParameter> getParameters() {
         return parameters;
     }
 
-    public final void setParameters(Set<PluginParameter> pParameters) {
-        parameters.clear();
-        if ((pParameters != null) && !pParameters.isEmpty()) {
-            parameters.addAll(pParameters);
+    public final void setParameters(Set<PluginParameter> parameters) {
+        this.parameters.clear();
+        if ((parameters != null) && !parameters.isEmpty()) {
+            this.parameters.addAll(parameters);
         }
     }
 
@@ -368,9 +373,10 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
      * Set the interface names
+     * @param interfaceNames
      */
-    public void setInterfaceNames(Set<String> pInterfaceNames) {
-        interfaceNames = pInterfaceNames;
+    public void setInterfaceNames(Set<String> interfaceNames) {
+        this.interfaceNames = interfaceNames;
     }
 
     @Override
