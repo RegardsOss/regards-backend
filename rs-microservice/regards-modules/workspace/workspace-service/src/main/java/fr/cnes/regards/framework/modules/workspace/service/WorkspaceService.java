@@ -197,7 +197,7 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
         return Paths.get(getMicroserviceWorkspace().toString(), fileName);
     }
 
-    @Scheduled(fixedDelay = 60 * 60000, initialDelay = 60000)
+    @Scheduled(fixedDelayString = "${regards.workspace.monitoring.delay.ms:3600000}", initialDelay = 60000)
     public void monitorWorkspace() {
         for (String tenant : tenantResolver.getAllTenants()) {
             runtimeTenantResolver.forceTenant(tenant);

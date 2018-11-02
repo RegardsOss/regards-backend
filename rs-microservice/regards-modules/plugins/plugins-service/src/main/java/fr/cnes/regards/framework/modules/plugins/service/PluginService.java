@@ -195,10 +195,15 @@ public class PluginService implements IPluginService {
         // only way to know if a plugin parameter is sensitive is via the plugin metadata
         PluginMetaData pluginMeta = PluginUtils.getPlugins().get(plgConf.getPluginId());
         for (PluginParameterType paramMeta : pluginMeta.getParameters()) {
-            if (paramMeta.isSensible()) {
-                PluginParameter param = plgConf.getParameter(paramMeta.getName());
-                PluginParametersFactory.updateParameter(param,
-                                                        encryptionService.encrypt(param.getStripParameterValue()));
+            PluginParameter param = plgConf.getParameter(paramMeta.getName());
+            if ((param != null) && (param.getValue() != null) && !param.getStripParameterValue().isEmpty()) {
+                if (paramMeta.isSensible()) {
+                    PluginParametersFactory.updateParameter(param,
+                                                            encryptionService.encrypt(param.getStripParameterValue()));
+                }
+            } else if ((param != null) && (param.getPluginConfiguration() == null) && !param.isDynamic()) {
+                // Plugin param value is null or empty and is not associate an other plugin conf  so remove the parameter
+                plgConf.getParameters().remove(param);
             }
         }
 
@@ -303,16 +308,18 @@ public class PluginService implements IPluginService {
         // only way to know if a plugin parameter is sensitive is via the plugin metadata
         PluginMetaData pluginMeta = PluginUtils.getPlugins().get(pluginConf.getPluginId());
         for (PluginParameterType paramMeta : pluginMeta.getParameters()) {
-            if (paramMeta.isSensible()) {
-                PluginParameter newParam = pluginConf.getParameter(paramMeta.getName());
-                PluginParameter oldParam = oldConf.getParameter(paramMeta.getName());
-                if ((newParam != null) && !newParam.getValue().isEmpty()) {
-                    if (!Objects.equals(newParam.getStripParameterValue(), oldParam.getStripParameterValue())) {
-                        PluginParametersFactory
-                                .updateParameter(newParam,
-                                                 encryptionService.encrypt(newParam.getStripParameterValue()));
-                    }
+            PluginParameter newParam = pluginConf.getParameter(paramMeta.getName());
+            PluginParameter oldParam = oldConf.getParameter(paramMeta.getName());
+            if ((newParam != null) && (newParam.getValue() != null) && !newParam.getStripParameterValue().isEmpty()) {
+                // Check if parameter is sensitive and value changed. If it does, encrypt the new value
+                if (paramMeta.isSensible()
+                        && !Objects.equals(newParam.getStripParameterValue(), oldParam.getStripParameterValue())) {
+                    PluginParametersFactory
+                            .updateParameter(newParam, encryptionService.encrypt(newParam.getStripParameterValue()));
                 }
+            } else if ((newParam != null) && (newParam.getPluginConfiguration() == null) && !newParam.isDynamic()) {
+                // Plugin param value is null or empty and is not associated to an other plugin conf  so remove the parameter
+                pluginConf.getParameters().remove(newParam);
             }
         }
 

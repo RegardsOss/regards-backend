@@ -25,7 +25,6 @@ import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -131,7 +130,8 @@ public final class XmlHelper {
         assertNotNull(pClass, "Missing JAXB annotated class");
 
         //because jaxb unmarshall uses urls, lets url encode the %
-        final File sourceFile = Paths.get(pDirectory.resolve(pFilename).toAbsolutePath().toString().replaceAll("%", "%25")).toFile();
+        final File sourceFile = Paths
+                .get(pDirectory.resolve(pFilename).toAbsolutePath().toString().replaceAll("%", "%25")).toFile();
 
         try {
             // Init unmarshaller
@@ -139,8 +139,7 @@ public final class XmlHelper {
             final Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
 
             // Unmarshall data
-            @SuppressWarnings("unchecked")
-            final T results = (T) jaxbUnmarshaller.unmarshal(sourceFile);
+            @SuppressWarnings("unchecked") final T results = (T) jaxbUnmarshaller.unmarshal(sourceFile);
 
             return results;
         } catch (JAXBException e) {

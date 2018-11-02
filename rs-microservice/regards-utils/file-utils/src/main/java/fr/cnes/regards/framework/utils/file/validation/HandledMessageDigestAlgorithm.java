@@ -3,13 +3,11 @@ package fr.cnes.regards.framework.utils.file.validation;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.security.MessageDigest;
-
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.PARAMETER;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * Verify thanks to {@link HandledMessageDigestAlgorithmValidator} that the annotated field or parameter represents
@@ -19,8 +17,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  *
  * @author Sylvain VISSIERE-GUERINET
  */
-@Target({ FIELD, PARAMETER })
-@Retention(RUNTIME)
+@Target({ ElementType.FIELD, ElementType.PARAMETER })
+@Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Constraint(validatedBy = { HandledMessageDigestAlgorithmValidator.class })
 public @interface HandledMessageDigestAlgorithm {

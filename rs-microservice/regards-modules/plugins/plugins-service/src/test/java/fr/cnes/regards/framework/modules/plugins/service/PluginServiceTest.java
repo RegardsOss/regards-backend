@@ -75,6 +75,9 @@ public class PluginServiceTest extends PluginServiceUtility {
 
     /**
      * This method is run before all tests
+     * @throws InvalidAlgorithmParameterException
+     * @throws InvalidKeyException
+     * @throws IOException
      */
     @Before
     public void init() throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
@@ -152,8 +155,6 @@ public class PluginServiceTest extends PluginServiceUtility {
 
     /**
      * Get a {@link PluginConfiguration}.
-     *
-     * @throws ModuleException
      */
     @Test
     @Requirement("REGARDS_DSL_SYS_ARC_100")

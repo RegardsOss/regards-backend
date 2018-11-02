@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,12 +71,12 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
      * Authorities cache that provide granted authorities per tenant and per resource.<br/>
      * Map<Tenant, Map<Resource, List<GrantedAuthority>>>
      */
-    private final Map<String, Map<String, ArrayList<GrantedAuthority>>> grantedAuthoritiesByTenant = new HashMap<>();
+    private final Map<String, Map<String, ArrayList<GrantedAuthority>>> grantedAuthoritiesByTenant = new ConcurrentHashMap<>();
 
     /**
      * Roles allowed ip addresses cache
      */
-    private final Map<String, List<RoleAuthority>> rolesByTenant = new HashMap<>();
+    private final Map<String, List<RoleAuthority>> rolesByTenant = new ConcurrentHashMap<>();
 
     /**
      * Plugin resource manager. To handle plugins endpoints specific resources.
