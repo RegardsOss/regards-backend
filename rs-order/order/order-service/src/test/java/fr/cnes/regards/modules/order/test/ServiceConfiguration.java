@@ -107,6 +107,7 @@ public class ServiceConfiguration {
             this.publisher = publisher;
         }
 
+        @SuppressWarnings("unused")
         public ResponseEntity<AvailabilityResponse> makeFilesAvailable(AvailabilityRequest availabilityRequest) {
             for (String checksum : availabilityRequest.getChecksums()) {
                 if (((int) (Math.random() * 10) % 2) == 0) {
@@ -119,6 +120,7 @@ public class ServiceConfiguration {
                     Collections.emptySet()));
         }
 
+        @SuppressWarnings("unused")
         public Response downloadFile(String aipId, String checksum) {
             Response mockResp = Mockito.mock(Response.class);
             try {

@@ -36,7 +36,6 @@ import fr.cnes.regards.modules.order.domain.exception.CannotDeleteOrderException
 import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotRemoveOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
-import fr.cnes.regards.modules.order.domain.exception.NotYetAvailableException;
 
 /**
  * Order service
@@ -80,6 +79,7 @@ public interface IOrderService {
      * Load an order.
      * Order is simple loaded
      * @param id order id
+     * @return {@link Order}
      */
     Order loadSimple(Long id);
 
@@ -88,17 +88,22 @@ public interface IOrderService {
      * Order is completely loaded
      * <b>BEWARE : this method use systematically a new transaction</b>
      * @param id order id
+     * @return {@link Order}
      */
     Order loadComplete(Long id);
 
     /**
      * Pause an order (status is immediately updated but it's an async task)
+     * @param id
+     * @throws CannotPauseOrderException
      */
     void pause(Long id) throws CannotPauseOrderException;
 
     /**
      * Resume a paused order.
      * All associated jobs must be compatible with a PAUSED status (not running nor planned to be run)
+     * @param id
+     * @throws CannotResumeOrderException
      */
     void resume(Long id) throws CannotResumeOrderException;
 
@@ -106,22 +111,30 @@ public interface IOrderService {
      * Delete an order. Order must be PAUSED and effectiveley paused (ie all associated jobs must be compatible with a
      * PAUSED status (not running nor planned to be run))
      * Only associated data files are removed from database (stats are still available)
+     * @param id
+     * @throws CannotDeleteOrderException
      */
     void delete(Long id) throws CannotDeleteOrderException;
 
     /**
      * Remove completely an order. Current order must not be RUNNING,
+     * @param id
+     * @throws CannotRemoveOrderException
      */
     void remove(Long id) throws CannotRemoveOrderException;
 
     /**
      * Find all orders sorted by descending date.
      * Orders are simple loaded
+     * @param pageRequest
+     * @return {@link Order}s
      */
     Page<Order> findAll(Pageable pageRequest);
 
     /**
      * Write all orders in CSV format
+     * @param writer
+     * @throws IOException
      */
     void writeAllOrdersInCsv(BufferedWriter writer) throws IOException;
 
@@ -133,7 +146,9 @@ public interface IOrderService {
      * Find all user orders sorted by descending date
      * Orders are simple loaded
      * @param user user
+     * @param pageRequest
      * @param excludeStatuses statuses to exclude from the search
+     * @return {@link Order}s
      */
     Page<Order> findAll(String user, Pageable pageRequest, OrderStatus... excludeStatuses);
 
@@ -146,13 +161,14 @@ public interface IOrderService {
      * part of another again.
      * @param orderOwner order owner
      * @param inDataFiles concerned order data files
-     * @throws NotYetAvailableException if no files are available yet
+     * @param os
      */
     void downloadOrderCurrentZip(String orderOwner, List<OrderDataFile> inDataFiles, OutputStream os);
 
     /**
      * Create a metalink file with all files.
      * @param orderId concerned order id
+     * @param os
      */
     void downloadOrderMetalink(Long orderId, OutputStream os);
 
@@ -184,11 +200,13 @@ public interface IOrderService {
 
     /**
      * Search for ONE order that has reached its expiration date and change sets its status to EXPIRED.
+     * @return {@link Order}
      */
     Optional<Order> findOneOrderAndMarkAsExpired();
 
     /**
      * Clean expired order (pause, wait for end of pause then delete it)
+     * @param order
      */
     void cleanExpiredOrder(Order order);
 }

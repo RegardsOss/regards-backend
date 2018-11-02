@@ -88,7 +88,6 @@ import fr.cnes.regards.modules.order.service.job.FilesJobParameter;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
-import fr.cnes.regards.modules.templates.service.TemplateService;
 
 /**
  * @author oroussel
@@ -133,12 +132,7 @@ public class OrderServiceIT {
     private IEmailClient emailClient;
 
     @Autowired
-    private TemplateService templateService;
-
-    @Autowired
     private INotificationClient notificationClient;
-
-    private static TemplateService staticTemplateService;
 
     private static final String USER_EMAIL = "leo.mieulet@margoulin.com";
 
@@ -178,8 +172,6 @@ public class OrderServiceIT {
         dataFileRepos.deleteAll();
 
         jobInfoRepos.deleteAll();
-
-        staticTemplateService = templateService;
     }
 
     private BasketSelectionRequest createBasketSelectionRequest(String query) {

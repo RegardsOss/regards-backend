@@ -19,9 +19,9 @@
 package fr.cnes.regards.modules.order.service;
 
 import java.time.OffsetDateTime;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -29,7 +29,6 @@ import javax.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.MultiValueMap;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -251,12 +250,9 @@ public class BasketService implements IBasketService {
             int size) {
         ComplexSearchRequest complexReq = new ComplexSearchRequest(DataTypeSelection.ALL.getFileTypes(), page, size);
         complexReq.getRequests()
-                .add(new SearchRequest(bascketSelectionRequest.getEngineType(),
-                                        bascketSelectionRequest.getDatasetUrn(),
-                                        bascketSelectionRequest.getSearchParameters(),
-                                        bascketSelectionRequest.getEntityIdsToInclude(),
-                                        bascketSelectionRequest.getEntityIdsToExclude(),
-                                        bascketSelectionRequest.getSelectionDate()));
+                .add(new SearchRequest(bascketSelectionRequest.getEngineType(), bascketSelectionRequest.getDatasetUrn(),
+                        bascketSelectionRequest.getSearchParameters(), bascketSelectionRequest.getEntityIdsToInclude(),
+                        bascketSelectionRequest.getEntityIdsToExclude(), bascketSelectionRequest.getSelectionDate()));
         return complexReq;
 
     }
@@ -264,13 +260,15 @@ public class BasketService implements IBasketService {
     public static ComplexSearchRequest buildSearchRequest(BasketDatasetSelection datasetSelection, int page, int size) {
         ComplexSearchRequest request = new ComplexSearchRequest(DataTypeSelection.ALL.getFileTypes(), page, size);
         datasetSelection.getItemsSelections().forEach(selectionItem -> {
+            // If selected dataset is not defined in the item selection request, use the one from the datasetSelection.
+            String datasetUrn = Optional.ofNullable(selectionItem.getSelectionRequest().getDatasetUrn())
+                    .orElse(datasetSelection.getDatasetIpid());
             request.getRequests()
-                    .add(new SearchRequest(selectionItem.getSelectionRequest().getEngineType(),
-                                            selectionItem.getSelectionRequest().getDatasetUrn(),
-                                            selectionItem.getSelectionRequest().getSearchParameters(),
-                                            selectionItem.getSelectionRequest().getEntityIdsToInclude(),
-                                            selectionItem.getSelectionRequest().getEntityIdsToExclude(),
-                                            selectionItem.getSelectionRequest().getSelectionDate()));
+                    .add(new SearchRequest(selectionItem.getSelectionRequest().getEngineType(), datasetUrn,
+                            selectionItem.getSelectionRequest().getSearchParameters(),
+                            selectionItem.getSelectionRequest().getEntityIdsToInclude(),
+                            selectionItem.getSelectionRequest().getEntityIdsToExclude(),
+                            selectionItem.getSelectionRequest().getSelectionDate()));
         });
         return request;
     }
