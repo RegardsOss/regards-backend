@@ -41,6 +41,7 @@ public interface IBasketService {
 
     /**
      * Delete basket
+     * @param user
      */
     void deleteIfExists(String user);
 
@@ -55,25 +56,34 @@ public interface IBasketService {
     /**
      * Load basket with all its relations
       * @param id basket id
+     * @return {@link Basket}
      */
     Basket load(Long id);
 
     /**
      * Add a selection to a basket through an opensearch request. The selection concerns a priori several datasets.
      * Adding a selection concerns RAWDATA and QUICKLOOKS files
+     * @param basketId
+     * @param selectionRequest
+     * @return {@link Basket}
+     * @throws EmptySelectionException
      */
     Basket addSelection(Long basketId, BasketSelectionRequest selectionRequest) throws EmptySelectionException;
 
     /**
      * Remove specified dataset selection from basket
-     * @return updated basket
+     * @param basket
+     * @param datasetId
+     * @return updated {@link Basket}
      */
     Basket removeDatasetSelection(Basket basket, Long datasetId);
 
     /**
      * Remove specified dated items selection from basket
+     * @param basket
      * @param datasetId id of dataset selection whom items selection belongs to
-     * @return updated basket
+     * @param itemsSelectionDate
+     * @return updated {@link Basket}
      */
     Basket removeDatedItemsSelection(Basket basket, Long datasetId, OffsetDateTime itemsSelectionDate);
 }

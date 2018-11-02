@@ -36,18 +36,24 @@ public interface IOrderDataFileService {
 
     /**
      * Simply save OrderDataFile in database, no more action is done. This method is to be used at sub-orders creation.
+     * @param dataFiles
+     * @return {@link OrderDataFile}s
      */
     Iterable<OrderDataFile> create(Iterable<OrderDataFile> dataFiles);
 
     /**
      * Save given OrderDataFile, search for associated files task, update its end state then update associated order
      * waiting for user flag
+     * @param dataFile
+     * @return {@link OrderDataFile}
      */
     OrderDataFile save(OrderDataFile dataFile);
 
     /**
      * Save given OrderDataFiles, search for associated files task, update them end state then update associated order
      * waiting for user flag
+     * @param dataFiles
+     * @return {@link OrderDataFile}s
      */
     Iterable<OrderDataFile> save(Iterable<OrderDataFile> dataFiles);
 
@@ -58,17 +64,22 @@ public interface IOrderDataFileService {
     /**
      * Find all OrderDataFile with state AVAILABLE associated to given order
      * @param orderId id of order
+     * @return {@link OrderDataFile}s
      */
     List<OrderDataFile> findAllAvailables(Long orderId);
 
     /**
      * Find all OrderDataFile of given order
      * @param orderId if of order
+     * @return {@link OrderDataFile}s
      */
     List<OrderDataFile> findAll(Long orderId);
 
     /**
      * Copy asked file from storage to HttpServletResponse
+     * @param dataFile
+     * @param os
+     * @throws IOException
      */
     void downloadFile(OrderDataFile dataFile, OutputStream os) throws IOException;
 
@@ -84,6 +95,7 @@ public interface IOrderDataFileService {
 
     /**
      * Remove all data files from an order
+     * @param orderId
      */
     void removeAll(Long orderId);
 }

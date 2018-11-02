@@ -41,9 +41,7 @@ import org.springframework.util.MultiValueMap;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
-import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
@@ -78,9 +76,6 @@ public class BasketServiceIT {
     @Autowired
     private IProjectsClient projectsClient;
 
-    @Autowired
-    private IEmailClient emailClient;
-
     private static final String USER_EMAIL = "marc.sordi@baltringue.fr";
 
     @Before
@@ -107,6 +102,9 @@ public class BasketServiceIT {
 
     /**
      * BECAUSE OF OffsetDateTime.now() used by BasketService, THIS TEST CLASS MUST DEFINE ONLY ONE TEST
+     * @throws EmptyBasketException
+     * @throws EmptySelectionException
+     * @throws InterruptedException
      */
     @Test
     @Requirement("REGARDS_DSL_STO_CMD_100")
@@ -196,7 +194,7 @@ public class BasketServiceIT {
             }
         }
 
-        Order order = orderService.createOrder(basket, "http://perdu.com");
+        orderService.createOrder(basket, "http://perdu.com");
 
         // manage periodic email notifications
         orderService.sendPeriodicNotifications();
