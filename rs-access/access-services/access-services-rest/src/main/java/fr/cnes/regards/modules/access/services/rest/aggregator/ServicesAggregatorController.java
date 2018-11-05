@@ -40,7 +40,7 @@ import fr.cnes.regards.modules.access.services.service.ui.IUIPluginConfiguration
 import fr.cnes.regards.modules.catalog.services.client.ICatalogServicesClient;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
-import fr.cnes.regards.modules.entities.domain.Dataset;
+import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 
 /**
  * This controller returns aggregations of UI services and Catalog services.
@@ -83,7 +83,7 @@ public class ServicesAggregatorController {
     /**
      * Returns all services applied to all datasets plus those of the given dataset
      * @param datasetIpIds the ip ids of the {@link Dataset}s
-     * @param applicationMode the set of {@link ServiceScope}
+     * @param applicationModes the set of {@link ServiceScope}
      * @return the list of services configured for the given dataset and the given scope
      */
     @RequestMapping(method = RequestMethod.GET)

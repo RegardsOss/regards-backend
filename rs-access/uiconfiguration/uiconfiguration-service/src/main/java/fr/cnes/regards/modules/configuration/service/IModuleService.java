@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.configuration.service;
 
+import com.google.gson.JsonObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -106,4 +107,11 @@ public interface IModuleService {
      */
     void deleteModule(Long pModuleId) throws EntityNotFoundException;
 
+    /**
+     *
+     * Add inside the passed module configuration a layer for each dataset
+     *
+     * @since 3.0-SNAPSHOT
+     */
+    JsonObject addDatasetLayersInsideModuleConf(Module module, JsonObject dataset, String openSearchLink) throws EntityInvalidException;
 }

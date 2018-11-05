@@ -29,6 +29,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -39,10 +40,11 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
-import fr.cnes.regards.modules.entities.domain.AbstractEntity;
-import fr.cnes.regards.modules.entities.domain.Collection;
-import fr.cnes.regards.modules.entities.domain.DataObject;
-import fr.cnes.regards.modules.entities.domain.Dataset;
+import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
+import fr.cnes.regards.modules.dam.domain.entities.Collection;
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
+import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import fr.cnes.regards.modules.dam.domain.models.Model;
 
 /**
  * Declare static variables for tests.
@@ -58,10 +60,18 @@ public class BackendForFrontendTestUtils {
 
     public static final String OPENSEARCH_QUERY = "some:opensearchrequest";
 
+    public static final Model DATASET_MODEL;
+
+    public static final Model DATAOBJECT_MODEL;
+
+    public static final Model COLLECTION_MODEL;
+
+    public static final Model DOCUMENT_MODEL;
+
     /**
      * A dummy dataset
      */
-    public static final Dataset DATASET_0 = new Dataset(null, DEFAULT_TENANT, "dataset0");
+    public static final Dataset DATASET_0;
 
     /**
      * A dummy dataset
@@ -136,58 +146,86 @@ public class BackendForFrontendTestUtils {
     private static Gson gson = new Gson();
 
     static {
-        DATASET_1 = new Dataset(null, DEFAULT_TENANT, "dataset1");
+        DATASET_MODEL = new Model();
+        DATASET_MODEL.setType(EntityType.DATASET);
+        DATASET_MODEL.setName("datasetModel");
+    }
+
+    static {
+        DATAOBJECT_MODEL = new Model();
+        DATAOBJECT_MODEL.setType(EntityType.DATA);
+        DATAOBJECT_MODEL.setName("dataobjectModel");
+    }
+
+    static {
+        COLLECTION_MODEL = new Model();
+        COLLECTION_MODEL.setType(EntityType.COLLECTION);
+        COLLECTION_MODEL.setName("colelctiontModel");
+    }
+
+    static {
+        DOCUMENT_MODEL = new Model();
+        DOCUMENT_MODEL.setType(EntityType.DOCUMENT);
+        DOCUMENT_MODEL.setName("documentModel");
+    }
+
+    static {
+        DATASET_0 = new Dataset(DATASET_MODEL, DEFAULT_TENANT, "DS0", "dataset0");
+    }
+
+    static {
+        DATASET_1 = new Dataset(DATASET_MODEL, DEFAULT_TENANT, "DS1", "dataset1");
         DATASET_1.setTags(Sets.newHashSet(DATASET_0.getIpId().toString()));
     }
 
     static {
-        DATAOBJECT = new DataObject(null, DEFAULT_TENANT, "dataobject");
+        DATAOBJECT = new DataObject(DATAOBJECT_MODEL, DEFAULT_TENANT, "DO1", "dataobject");
         DATAOBJECT.setTags(Sets.newHashSet(DATASET_0.getIpId().toString(), "string_tag"));
     }
 
     static {
-        COLLECTION = new Collection(null, DEFAULT_TENANT, "collection");
+        COLLECTION = new Collection(COLLECTION_MODEL, DEFAULT_TENANT, "COL1", "collection");
         COLLECTION.setTags(Sets.newHashSet(DATASET_1.getIpId().toString()));
     }
 
     static {
-        DOCUMENT = new DataObject(null, DEFAULT_TENANT, "document");
+        DOCUMENT = new DataObject(DOCUMENT_MODEL, DEFAULT_TENANT, "DOC1", "document");
         DOCUMENT.setTags(Sets.newHashSet(DATASET_0.getIpId().toString(), DATASET_1.getIpId().toString()));
     }
 
     static {
-        List<AbstractEntity> entities = Lists
-                .newArrayList(BackendForFrontendTestUtils.DATAOBJECT, BackendForFrontendTestUtils.COLLECTION);
-        PagedResources<Resource<AbstractEntity>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
+        List<AbstractEntity<?>> entities = Lists.newArrayList(BackendForFrontendTestUtils.DATAOBJECT,
+                                                              BackendForFrontendTestUtils.COLLECTION);
+        PagedResources<Resource<AbstractEntity<?>>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
         JsonObject asJsonObject = (JsonObject) gson.toJsonTree(asPagedResources);
         SEARCH_ALL_RESULT = new ResponseEntity<>(asJsonObject, HttpStatus.OK);
     }
 
     static {
-        List<AbstractEntity> entities = Lists.newArrayList(BackendForFrontendTestUtils.COLLECTION);
-        PagedResources<Resource<AbstractEntity>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
+        List<AbstractEntity<?>> entities = Lists.newArrayList(BackendForFrontendTestUtils.COLLECTION);
+        PagedResources<Resource<AbstractEntity<?>>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
         JsonObject asJsonObject = (JsonObject) gson.toJsonTree(asPagedResources);
         SEARCH_COLLECTIONS_RESULT = new ResponseEntity<>(asJsonObject, HttpStatus.OK);
     }
 
     static {
-        List<AbstractEntity> entities = Lists
-                .newArrayList(BackendForFrontendTestUtils.DATASET_0, BackendForFrontendTestUtils.DATASET_1);
-        PagedResources<Resource<AbstractEntity>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
+        List<AbstractEntity<?>> entities = Lists.newArrayList(BackendForFrontendTestUtils.DATASET_0,
+                                                              BackendForFrontendTestUtils.DATASET_1);
+        PagedResources<Resource<AbstractEntity<?>>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
         JsonObject asJsonObject = (JsonObject) gson.toJsonTree(asPagedResources);
         SEARCH_DATASETS_RESULT = new ResponseEntity<>(asJsonObject, HttpStatus.OK);
     }
 
     static {
-        List<AbstractEntity> entities = Lists.newArrayList(BackendForFrontendTestUtils.DATAOBJECT);
-        PagedResources<Resource<AbstractEntity>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
+        List<AbstractEntity<?>> entities = Lists.newArrayList(BackendForFrontendTestUtils.DATAOBJECT);
+        PagedResources<Resource<AbstractEntity<?>>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
         JsonObject asJsonObject = (JsonObject) gson.toJsonTree(asPagedResources);
         SEARCH_DATAOBJECTS_RESULT = new ResponseEntity<>(asJsonObject, HttpStatus.OK);
     }
 
     static {
-        List<AbstractEntity> entities = Lists.newArrayList(BackendForFrontendTestUtils.DOCUMENT);
-        PagedResources<Resource<AbstractEntity>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
+        List<AbstractEntity<?>> entities = Lists.newArrayList(BackendForFrontendTestUtils.DOCUMENT);
+        PagedResources<Resource<AbstractEntity<?>>> asPagedResources = HateoasUtils.wrapToPagedResources(entities);
         JsonObject asJsonObject = (JsonObject) gson.toJsonTree(asPagedResources);
         SEARCH_DOCUMENTS_RESULT = new ResponseEntity<>(asJsonObject, HttpStatus.OK);
     }

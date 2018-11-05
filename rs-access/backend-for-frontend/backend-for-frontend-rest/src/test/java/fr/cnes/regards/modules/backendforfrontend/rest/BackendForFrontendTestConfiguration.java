@@ -27,7 +27,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 
 import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
-import fr.cnes.regards.modules.search.client.IJsonSearchClient;
+import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
 
 /**
  * Module-wide configuration for integration tests.
@@ -52,21 +52,19 @@ public class BackendForFrontendTestConfiguration {
     }
 
     @Bean
-    public IJsonSearchClient searchClient() {
-        IJsonSearchClient mock = Mockito.mock(IJsonSearchClient.class);
+    public ILegacySearchEngineJsonClient searchClient() {
+        ILegacySearchEngineJsonClient mock = Mockito.mock(ILegacySearchEngineJsonClient.class);
         Mockito.when(mock.searchAll(Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_ALL_RESULT);
-        Mockito.when(mock.searchAll(Mockito.any(), Mockito.any()))
-                .thenReturn(BackendForFrontendTestUtils.SEARCH_ALL_RESULT);
+        Mockito.when(mock.searchAll(Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_ALL_RESULT);
         Mockito.when(mock.searchCollections(Mockito.any()))
                 .thenReturn(BackendForFrontendTestUtils.SEARCH_COLLECTIONS_RESULT);
         Mockito.when(mock.searchDatasets(Mockito.any())).thenReturn(BackendForFrontendTestUtils.SEARCH_DATASETS_RESULT);
-        Mockito.when(mock.searchDataobjects(Mockito.any(), Mockito.any()))
+        Mockito.when(mock.searchDataObjects(Mockito.any()))
                 .thenReturn(BackendForFrontendTestUtils.SEARCH_DATAOBJECTS_RESULT);
-        Mockito.when(mock.searchDataobjectsReturnDatasets(Mockito.any(), Mockito.any()))
+        Mockito.when(mock.searchDataobjectsReturnDatasets(Mockito.any()))
                 .thenReturn(BackendForFrontendTestUtils.SEARCH_DATASETS_RESULT);
         Mockito.when(mock.searchDocuments(Mockito.any()))
                 .thenReturn(BackendForFrontendTestUtils.SEARCH_DOCUMENTS_RESULT);
-
         return mock;
     }
 }

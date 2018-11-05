@@ -18,18 +18,45 @@
  */
 package fr.cnes.regards.modules.configuration.rest;
 
+import com.google.gson.JsonObject;
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.configuration.domain.Layout;
+import fr.cnes.regards.modules.configuration.domain.Module;
+import fr.cnes.regards.modules.configuration.service.IModuleService;
+import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
+
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.data.web.SortDefault;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,29 +65,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.hateoas.LinkRels;
-import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.configuration.domain.Layout;
-import fr.cnes.regards.modules.configuration.domain.Module;
-import fr.cnes.regards.modules.configuration.service.IModuleService;
-
 /**
  * REST controller for the microservice Access
- *
  * @author Sébastien Binda
- *
  */
 @RestController
-@ModuleInfo(name = "Module", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping(ModuleController.ROOT_MAPPING)
 public class ModuleController implements IResourceController<Module> {
 
@@ -68,117 +77,145 @@ public class ModuleController implements IResourceController<Module> {
 
     public static final String MODULE_ID_MAPPING = "/{moduleId}";
 
+    public static final String MAP_CONFIG = MODULE_ID_MAPPING + "/map";
+
     @Autowired
     private IModuleService service;
 
     @Autowired
     private IResourceService resourceService;
 
+    @Autowired
+    private ILegacySearchEngineJsonClient searchClient;
+
+    @Autowired
+    private IAuthenticationResolver authenticationResolver;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Value("${zuul.prefix}")
+    private String gatewayPrefix;
+
     /**
      * Entry point to retrieve a modules for a given application id {@link Module}.
-     *
      * @return {@link Layout}
-     * @throws EntityNotFoundException
      */
     @RequestMapping(value = MODULE_ID_MAPPING, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve an IHM module for given application", role = DefaultRole.PUBLIC)
-    public HttpEntity<Resource<Module>> retrieveModule(@PathVariable("applicationId") final String pApplicationId,
-            @PathVariable("moduleId") final Long pModuleId) throws EntityNotFoundException {
-        final Module module = service.retrieveModule(pModuleId);
-        final Resource<Module> resource = toResource(module);
+    public HttpEntity<Resource<Module>> retrieveModule(@PathVariable("applicationId") String applicationId,
+            @PathVariable("moduleId") Long moduleId) throws EntityNotFoundException {
+        Module module = service.retrieveModule(moduleId);
+        Resource<Module> resource = toResource(module);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     /**
      * Entry point to retrieve all modules for a given application id {@link Module}. Query parameter active
      * [true|false]
-     *
      * @return {@link Layout}
-     * @throws EntityNotFoundException
      */
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve IHM modules for given application", role = DefaultRole.PUBLIC)
     public HttpEntity<PagedResources<Resource<Module>>> retrieveModules(
-            @PathVariable("applicationId") final String pApplicationId,
-            @RequestParam(value = "active", required = false) final String pOnlyActive,
-            @RequestParam(value = "type", required = false) final String type, final Pageable pPageable,
-            final PagedResourcesAssembler<Module> pAssembler) {
-        Boolean activeBool = null;
-        if (pOnlyActive != null) {
-            activeBool = Boolean.parseBoolean(pOnlyActive);
-        }
-        final Page<Module> modules = service.retrieveModules(pApplicationId, activeBool, type, pPageable);
-        final PagedResources<Resource<Module>> resources = toPagedResources(modules, pAssembler);
+            @PathVariable("applicationId") String applicationId,
+            @RequestParam(value = "active", required = false) String onlyActive,
+            @RequestParam(value = "type", required = false) String type,
+            @SortDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            PagedResourcesAssembler<Module> assembler) {
+        Boolean activeBool = (onlyActive != null) ? Boolean.parseBoolean(onlyActive) : null;
+        Page<Module> modules = service.retrieveModules(applicationId, activeBool, type, pageable);
+        PagedResources<Resource<Module>> resources = toPagedResources(modules, assembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
     /**
      * Entry point to save a new ihm module.
-     *
      * @return {@link Module}
-     * @throws EntityInvalidException
-     * @throws EntityNotFoundException
      */
     @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to save a new IHM module for given application",
             role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<Resource<Module>> saveModule(@PathVariable("applicationId") final String pApplicationId,
-            @Valid @RequestBody final Module pModule) throws EntityInvalidException {
+    public HttpEntity<Resource<Module>> saveModule(@PathVariable("applicationId") String applicationId,
+            @Valid @RequestBody Module module) throws EntityInvalidException {
 
-        if (!pModule.getApplicationId().equals(pApplicationId)) {
-            throw new EntityInvalidException("Invalide application identifier for new module");
+        if (!module.getApplicationId().equals(applicationId)) {
+            throw new EntityInvalidException("Invalid application identifier for new module");
         }
-        final Module module = service.saveModule(pModule);
-        final Resource<Module> resource = toResource(module);
-        return new ResponseEntity<>(resource, HttpStatus.OK);
+        return new ResponseEntity<>(toResource(service.saveModule(module)), HttpStatus.OK);
     }
 
     /**
      * Entry point to save a new ihm module.
-     *
      * @return {@link Module}
-     * @throws EntityInvalidException
-     * @throws EntityNotFoundException
      */
     @RequestMapping(value = MODULE_ID_MAPPING, method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to save a new IHM module for given application",
             role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<Resource<Module>> updateModule(@PathVariable("applicationId") final String pApplicationId,
-            @PathVariable("moduleId") final Long pModuleId, @Valid @RequestBody final Module pModule)
-            throws EntityException {
-
-        if (!pModule.getApplicationId().equals(pApplicationId)) {
-            throw new EntityInvalidException("Invalide application identifier for module update");
+    public HttpEntity<Resource<Module>> updateModule(@PathVariable("applicationId") String applicationId,
+            @PathVariable("moduleId") Long moduleId, @Valid @RequestBody Module module) throws EntityException {
+        if (!module.getApplicationId().equals(applicationId)) {
+            throw new EntityInvalidException("Invalid application identifier for module update");
         }
-
-        if (!pModule.getId().equals(pModuleId)) {
-            throw new EntityInvalidException("Invalide module identifier for module update");
+        if (!module.getId().equals(moduleId)) {
+            throw new EntityInvalidException("Invalid module identifier for module update");
         }
-        final Module module = service.updateModule(pModule);
-        final Resource<Module> resource = toResource(module);
-        return new ResponseEntity<>(resource, HttpStatus.OK);
+        return new ResponseEntity<>(toResource(service.updateModule(module)), HttpStatus.OK);
     }
 
     /**
      * Entry point to delete an ihm module.
-     *
      * @return {@link Module}
-     * @throws EntityInvalidException
-     * @throws EntityNotFoundException
      */
     @RequestMapping(value = MODULE_ID_MAPPING, method = RequestMethod.DELETE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to save a new IHM module for given application",
             role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<Resource<Void>> deleteModule(@PathVariable("applicationId") final String pApplicationId,
-            @PathVariable("moduleId") final Long pModuleId) throws EntityNotFoundException {
-        service.deleteModule(pModuleId);
+    public HttpEntity<Resource<Void>> deleteModule(@PathVariable("applicationId") String applicationId,
+            @PathVariable("moduleId") Long moduleId) throws EntityNotFoundException {
+        service.deleteModule(moduleId);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
+     * Entry point to retrieve a Mizar config for a given module id {@link Module}.
+     * It retrieves the list of dataset visible by this user and returns the corresponding Mizar configuration
+     * @return {@link JsonObject} mizar configuration
+     */
+    @RequestMapping(value = MAP_CONFIG, method = RequestMethod.GET)
+    @ResponseBody
+    @ResourceAccess(description = "Endpoint to retrieve Mizar config", role = DefaultRole.PUBLIC)
+    public HttpEntity<JsonObject> retrieveMapConfig(@PathVariable("applicationId") String applicationId,
+            @PathVariable("moduleId") Long moduleId, HttpServletRequest request)
+            throws EntityNotFoundException, EntityInvalidException, URISyntaxException, MalformedURLException {
+        // Retrieve login information for link generation
+        String queryParams;
+        if (authenticationResolver.getRole().equals(DefaultRole.PUBLIC.toString())) {
+            // Handle user not logged in
+            String tenant = runtimeTenantResolver.getTenant();
+            queryParams = "scope=" + tenant;
+        } else {
+            String token = authenticationResolver.getToken();
+            queryParams = "token=" + token;
+        }
+        // Retrieve the URI for the opensearch endpoint (with public gateway IP/Port)
+        URI uriDatasetDescriptor = HttpUtils.retrievePublicURI(request, gatewayPrefix
+                                                                       + "/rs-catalog/engines/opensearch/datasets/DATASET_ID/dataobjects/search/opensearchDescription.xml",
+                                                               queryParams);
+        final Module module = service.retrieveModule(moduleId);
+        MultiValueMap attr = new LinkedMultiValueMap();
+        ResponseEntity datasets = searchClient.searchDatasets(attr);
+        if (!HttpUtils.isSuccess(datasets.getStatusCode())) {
+            return new ResponseEntity<>(datasets.getStatusCode());
+        }
+        JsonObject dataset = (JsonObject) datasets.getBody();
+        JsonObject result = service.addDatasetLayersInsideModuleConf(module, dataset, uriDatasetDescriptor.toString());
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @Override

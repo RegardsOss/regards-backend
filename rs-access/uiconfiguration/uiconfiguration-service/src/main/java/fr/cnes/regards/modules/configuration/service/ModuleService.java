@@ -18,20 +18,10 @@
  */
 package fr.cnes.regards.modules.configuration.service;
 
-import java.io.IOException;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
 import com.google.gson.Gson;
-
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -42,13 +32,21 @@ import fr.cnes.regards.modules.configuration.domain.LayoutDefaultApplicationIds;
 import fr.cnes.regards.modules.configuration.domain.Module;
 import fr.cnes.regards.modules.configuration.domain.UIPage;
 import fr.cnes.regards.modules.configuration.service.exception.InitUIException;
+import java.io.IOException;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
 /**
- *
  * Class ModuleService
- *
+ * <p>
  * Service to manage modules entities
- *
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
@@ -72,6 +70,12 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
      */
     @Value("classpath:DefaultUserCatalogModule.json")
     private Resource defaultUserCatalogModuleResource;
+
+    /**
+     * The default configuration for project user entity description
+     */
+    @Value("classpath:DefaultUserDescriptionModule.json")
+    private Resource defaultUserDescriptionModuleResource;
 
     /**
      * The default configuration for portal menu
@@ -110,7 +114,7 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             gson.fromJson(pModule.getConf(), Object.class);
         } catch (RuntimeException e) {
             LOG.error(e.getMessage(), e);
-            throw new EntityInvalidException("Layout is not a valid json format.", e);
+            throw new EntityInvalidException("Module is not a valid json format.", e);
         }
         UIPage page = pModule.getPage();
         if ((page != null) && page.isHome()) {
@@ -127,7 +131,7 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
             gson.fromJson(pModule.getConf(), Object.class);
         } catch (RuntimeException e) {
             LOG.error(e.getMessage(), e);
-            throw new EntityInvalidException("Layout is not a valid json format.", e);
+            throw new EntityInvalidException("Module is not a valid json format.", e);
         }
         if (!repository.exists(pModule.getId())) {
             throw new EntityNotFoundException(pModule.getId(), Module.class);
@@ -148,10 +152,54 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
 
     }
 
+    @Override
+    public JsonObject addDatasetLayersInsideModuleConf(Module module, JsonObject dataset, String openSearchLink) throws EntityInvalidException {
+        final Gson gson = new Gson();
+        JsonObject moduleConfJson;
+
+        try {
+            JsonElement element = gson.fromJson(module.getConf(), JsonElement.class);
+            JsonObject rootConf = element.getAsJsonObject();
+            moduleConfJson = rootConf.getAsJsonObject("conf");
+        } catch (RuntimeException e) {
+            LOG.error(e.getMessage(), e);
+            throw new EntityInvalidException("Module is not a valid json format.", e);
+        }
+        if (!moduleConfJson.has("layers")) {
+            throw new EntityInvalidException("Module is not a valid Mizar json context file.");
+        }
+
+        JsonArray layers = new JsonArray();
+        if (!dataset.has("content")) {
+            LOG.warn("Dataset retrieved from catalog doesn't fit the expected result");
+            return moduleConfJson;
+        }
+        JsonArray ds = dataset.getAsJsonArray("content");
+        if (ds.size() < 1) {
+            LOG.warn("There is no dataset available for this user");
+            return moduleConfJson;
+        }
+        // Iterate over datasets resources
+        ds.forEach(d -> {
+            String datasetIpId = d.getAsJsonObject().get("content").getAsJsonObject().get("id").getAsString();
+            JsonObject layer = new JsonObject();
+            layer.addProperty("category", "Catalog");
+            layer.addProperty("type", "OpenSearch");
+            layer.addProperty("baseUrl", openSearchLink.replace("DATASET_ID", datasetIpId));
+            layer.addProperty("visible", false);
+            layers.add(layer);
+        });
+        //  Add to the end of the list all layers configured in the module json
+        moduleConfJson.get("layers").getAsJsonArray().forEach(layer -> {
+            layers.add(layer);
+        });
+        // save the layer list inside the module conf
+        moduleConfJson.add("layers", layers);
+        return moduleConfJson;
+    }
+
     /**
-     *
      * Set to false the defaultDynamicModule attribute of all modules for the given application id
-     *
      * @param pApplicationId
      * @since 1.0-SNAPSHOT
      */
@@ -197,6 +245,20 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
                 throw new InitUIException(e);
             }
             repository.save(catalog);
+
+            final Module description = new Module();
+            description.setActive(true);
+            description.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
+            description.setContainer("page-top-header");
+            description.setDescription("Entities description");
+            description.setType("description");
+            try {
+                description.setConf(readDefaultFileResource(defaultUserDescriptionModuleResource));
+            } catch (final IOException e) {
+                LOG.error(e.getMessage(), e);
+                throw new InitUIException(e);
+            }
+            repository.save(description);
         }
 
     }

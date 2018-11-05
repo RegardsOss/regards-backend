@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.configuration.rest;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -147,6 +148,24 @@ public class ModuleControllerIT extends AbstractRegardsTransactionalIT {
         performDefaultGet(ModuleController.ROOT_MAPPING + ModuleController.MODULE_ID_MAPPING, expectations,
                           "The previously deleted module should not exist anymore", APPLICATION_TEST,
                           moduleTest.getId().toString());
+    }
+
+    @Test
+    public void testRetrieveMapConfig() {
+        Module module = new Module();
+        module.setActive(true);
+        module.setApplicationId(APPLICATION_TEST);
+        module.setConf("{\"conf\":{\"init\":{\"category\":\"Planets\",\"type\":\"Planet\",\"name\":\"Earth\",\"coordinateSystem\":{\"geoideName\":\"CRS:84\"},\"nameResolver\":{\"zoomFov\":2,\"jsObject\":\"gw/NameResolver/DictionaryNameResolver\",\"baseUrl\":\"data/earth_resolver.json\"},\"visible\":false},\"layers\":[{\"category\":\"Other\",\"type\":\"TileWireframe\",\"name\":\"Coordinates Grid\",\"outline\":true,\"visible\":true}]}}");
+        module.setContainer("TestContainer");
+        module.setDescription("Description");
+        module.setType("Module");
+        module = repository.save(module);
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.layers.[0].type",
+                Matchers.is("OpenSearch")));
+
+        performDefaultGet(ModuleController.ROOT_MAPPING + ModuleController.MAP_CONFIG, requestBuilderCustomizer, "Should create a valid Mizar configuration context", APPLICATION_TEST, module.getId());
     }
 
 }

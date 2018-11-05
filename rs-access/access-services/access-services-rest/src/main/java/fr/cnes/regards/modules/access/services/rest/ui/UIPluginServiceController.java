@@ -36,7 +36,7 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.service.ui.IUIPluginConfigurationService;
-import fr.cnes.regards.modules.entities.domain.Dataset;
+import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 
 /**
  *
@@ -68,7 +68,7 @@ public class UIPluginServiceController implements IResourceController<UIPluginCo
     /**
      * Return all generic ui services plus those linked to passed dataset if any given
      *
-     * @param pDatasetId
+     * @param datasetId
      *            the id of the {@link Dataset}. Can be <code>null</code>.
      * @return the list of services
      */
@@ -76,14 +76,14 @@ public class UIPluginServiceController implements IResourceController<UIPluginCo
     @ResourceAccess(role = DefaultRole.PUBLIC,
             description = "Return all generic ui services plus those linked to passed dataset if any given")
     public ResponseEntity<List<Resource<UIPluginConfiguration>>> retrieveServices(
-            @RequestParam(value = "dataset_id", required = false) final String pDatasetId) {
-        final List<UIPluginConfiguration> services = service.retrieveActivePluginServices(pDatasetId, null);
+            @RequestParam(value = "dataset_id", required = false) final String datasetId) {
+        final List<UIPluginConfiguration> services = service.retrieveActivePluginServices(datasetId, null);
         return new ResponseEntity<>(toResources(services), HttpStatus.OK);
     }
 
     @Override
-    public Resource<UIPluginConfiguration> toResource(final UIPluginConfiguration pElement, final Object... pExtras) {
-        return resourceService.toResource(pElement);
+    public Resource<UIPluginConfiguration> toResource(final UIPluginConfiguration element, final Object... extras) {
+        return resourceService.toResource(element);
     }
 
 }

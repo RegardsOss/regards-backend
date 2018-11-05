@@ -25,10 +25,12 @@ import org.springframework.stereotype.Component;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.modules.plugins.domain.event.PluginConfEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.access.services.domain.event.LinkUiPluginsDatasetsEvent;
 import fr.cnes.regards.modules.access.services.domain.event.UIPluginConfigurationEvent;
 import fr.cnes.regards.modules.catalog.services.domain.event.LinkPluginsDatasetsEvent;
+import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
 
 /**
  * Module-common handler for AMQP events.
@@ -62,6 +64,28 @@ public class ServiceAggregatorClientEventHandler implements ApplicationListener<
         subscriber.subscribeTo(LinkUiPluginsDatasetsEvent.class, new LinkUiPluginsDatasetsEventHandler());
         subscriber.subscribeTo(LinkPluginsDatasetsEvent.class, new LinkPluginsDatasetsEventHandler());
         subscriber.subscribeTo(UIPluginConfigurationEvent.class, new UIPluginConfigurationEventHandler());
+        subscriber.subscribeTo(PluginConfEvent.class, new PluginConfEventHandler());
+    }
+
+    /**
+     * Handle {@link PluginConfEvent} event to clear "servicesAggregated" cache
+     *
+     * @author Xavier-Alexandre Brochard
+     */
+    private class PluginConfEventHandler implements IHandler<PluginConfEvent> {
+
+        @Override
+        public void handle(TenantWrapper<PluginConfEvent> wrapper) {
+            try {
+                runtimeTenantResolver.forceTenant(wrapper.getTenant());
+                if ((wrapper.getContent() != null)
+                        && wrapper.getContent().getPluginTypes().contains(IService.class.getName())) {
+                    serviceAggregatorClient.clearServicesAggregatedCache();
+                }
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
+        }
     }
 
     /**

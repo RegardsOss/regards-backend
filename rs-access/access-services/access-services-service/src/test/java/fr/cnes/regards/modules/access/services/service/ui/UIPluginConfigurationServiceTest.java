@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.modules.access.services.dao.ui.ILinkUIPluginsDatasetsRepository;
@@ -33,8 +34,8 @@ import fr.cnes.regards.modules.access.services.dao.ui.IUIPluginConfigurationRepo
 import fr.cnes.regards.modules.access.services.dao.ui.IUIPluginDefinitionRepository;
 import fr.cnes.regards.modules.access.services.domain.ui.LinkUIPluginsDatasets;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
-import fr.cnes.regards.modules.entities.domain.Dataset;
-import fr.cnes.regards.modules.models.domain.Model;
+import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import fr.cnes.regards.modules.dam.domain.models.Model;
 
 /**
  * Unit Test for {@link UIPluginConfigurationService}
@@ -79,7 +80,8 @@ public class UIPluginConfigurationServiceTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.access.services.service.ui.UIPluginConfigurationService#deletePluginconfiguration(fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration)}.
+     * Test method for
+     * {@link fr.cnes.regards.modules.access.services.service.ui.UIPluginConfigurationService#deletePluginconfiguration(fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration)}.
      * @throws EntityException
      */
     @Test
@@ -88,7 +90,7 @@ public class UIPluginConfigurationServiceTest {
         UIPluginConfiguration pluginConfiguration1 = new UIPluginConfiguration();
         pluginConfiguration0.setId(4334L);
         pluginConfiguration1.setId(8484L);
-        Dataset dataset = new Dataset(new Model(), "tenant", "label");
+        Dataset dataset = new Dataset(new Model(), "tenant", "providerId", "label");
         LinkUIPluginsDatasets link = new LinkUIPluginsDatasets(dataset.getIpId().toString(),
                 Lists.newArrayList(pluginConfiguration0, pluginConfiguration1));
 
@@ -107,14 +109,15 @@ public class UIPluginConfigurationServiceTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.access.services.service.ui.UIPluginConfigurationService#deletePluginconfiguration(fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration)}.
+     * Test method for
+     * {@link fr.cnes.regards.modules.access.services.service.ui.UIPluginConfigurationService#deletePluginconfiguration(fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration)}.
      * @throws EntityException
      */
     @Test
     public final void testDeletePluginconfiguration_shouldRemoveAndDeleteLink() throws EntityException {
         UIPluginConfiguration pluginConfiguration0 = new UIPluginConfiguration();
         pluginConfiguration0.setId(4334L);
-        Dataset dataset = new Dataset(new Model(), "tenant", "label");
+        Dataset dataset = new Dataset(new Model(), "tenant", "providerId", "label");
         LinkUIPluginsDatasets link = new LinkUIPluginsDatasets(dataset.getIpId().toString(),
                 Lists.newArrayList(pluginConfiguration0));
 

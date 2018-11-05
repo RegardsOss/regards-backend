@@ -1,0 +1,291 @@
+{
+  "allowTagSearch": true,
+  "DATA": {
+    "showDescription": true,
+    "showTags": true,
+    "showLinkedDocuments": true,
+    "showThumbnail": true,
+    "groups": [
+      {
+        "showTitle": true,
+        "title": {
+          "en": "Standard attributes",
+          "fr": "Attributs standards"
+        },
+        "elements": [
+          {
+            "attributes": [
+              {
+                "name": "id"
+              }
+            ],
+            "label": {
+              "en": "Internal ID",
+              "fr": "ID interne"
+            }
+          },
+          {
+            "attributes": [
+              {
+                "name": "providerId"
+              }
+            ],
+            "label": {
+              "en": "Provider ID",
+              "fr": "ID fournisseur"
+            }
+          },
+          {
+            "attributes": [
+              {
+                "name": "label"
+              }
+            ],
+            "label": {
+              "en": "Label",
+              "fr": "Libellé"
+            }
+          },
+          {
+            "attributes": [
+              {
+                "name": "model"
+              }
+            ],
+            "label": {
+              "en": "Model",
+              "fr": "Modèle"
+            }
+          },
+          {
+            "attributes": [
+              {
+                "name": "tags"
+              }
+            ],
+            "label": {
+              "en": "Tags",
+              "fr": "Mots-clefs"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "DATASET": {
+    "showDescription": true,
+    "showTags": true,
+    "showLinkedDocuments": true,
+    "showThumbnail": true,
+    "groups": [
+      {
+        "showTitle": true,
+        "title": {
+          "en": "Standard attributes",
+          "fr": "Attributs standards"
+        },
+        "elements": [
+          {
+            "attributes": [
+              {
+                "name": "id"
+              }
+            ],
+            "label": {
+              "en": "Internal ID",
+              "fr": "ID interne"
+            }
+          },
+          {
+            "attributes": [
+              {
+                "name": "providerId"
+              }
+            ],
+            "label": {
+              "en": "Provider ID",
+              "fr": "ID fournisseur"
+            }
+          },
+          {
+            "attributes": [
+              {
+                "name": "label"
+              }
+            ],
+            "label": {
+              "en": "Label",
+              "fr": "Libellé"
+            }
+          },
+          {
+            "attributes": [
+              {
+                "name": "model"
+              }
+            ],
+            "label": {
+              "en": "Model",
+              "fr": "Modèle"
+            }
+          },
+          {
+            "attributes": [
+              {
+                "name": "tags"
+              }
+            ],
+            "label": {
+              "en": "Tags",
+              "fr": "Mots-clefs"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "DOCUMENT": {
+    "showDescription": true,
+    "showTags": true,
+    "showLinkedDocuments": false,
+    "showThumbnail": true,
+    "groups": [
+      {
+        "showTitle": true,
+        "title": {
+          "en": "Standard attributes",
+          "fr": "Attributs standards"
+        },
+        "elements": [
+          {
+            "attributes": [
+              {
+                "name": "id"
+              }
+            ],
+            "label": {
+              "en": "Internal ID",
+              "fr": "ID interne"
+            }
+          },
+          {
+            "attributes": [
+              {
+                "name": "providerId"
+              }
+            ],
+            "label": {
+              "en": "Provider ID",
+              "fr": "ID fournisseur"
+            }
+          },
+          {
+            "attributes": [
+              {
+                "name": "label"
+              }
+            ],
+            "label": {
+              "en": "Label",
+              "fr": "Libellé"
+            }
+          },
+          {
+            "attributes": [
+              {
+                "name": "model"
+              }
+            ],
+            "label": {
+              "en": "Model",
+              "fr": "Modèle"
+            }
+          },
+          {
+            "attributes": [
+              {
+                "name": "tags"
+              }
+            ],
+            "label": {
+              "en": "Tags",
+              "fr": "Mots-clefs"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "COLLECTION": {
+    "showDescription": true,
+    "showTags": true,
+    "showLinkedDocuments": true,
+    "showThumbnail": true,
+    "groups": [
+      {
+        "showTitle": true,
+        "title": {
+          "en": "Standard attributes",
+          "fr": "Attributs standards"
+        },
+        "elements": [
+          {
+            "attributes": [
+              {
+                "name": "id"
+              }
+            ],
+            "label": {
+              "en": "Internal ID",
+              "fr": "ID interne"
+            }
+          },
+          {
+            "attributes": [
+              {
+                "name": "providerId"
+              }
+            ],
+            "label": {
+              "en": "Provider ID",
+              "fr": "ID fournisseur"
+            }
+          },
+          {
+            "attributes": [
+              {
+                "name": "label"
+              }
+            ],
+            "label": {
+              "en": "Label",
+              "fr": "Libellé"
+            }
+          },
+          {
+            "attributes": [
+              {
+                "name": "model"
+              }
+            ],
+            "label": {
+              "en": "Model",
+              "fr": "Modèle"
+            }
+          },
+          {
+            "attributes": [
+              {
+                "name": "tags"
+              }
+            ],
+            "label": {
+              "en": "Tags",
+              "fr": "Mots-clefs"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

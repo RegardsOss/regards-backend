@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.access.services.rest.ui;
 
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
@@ -45,11 +46,9 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
 
 /**
- *
  * Class InstanceLayoutControllerIT
  *
  * IT Tests for REST Controller
- *
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
@@ -95,9 +94,7 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
     }
 
     /**
-     *
      * Test retrieve all plugis
-     *
      * @since 1.0-SNAPSHOT
      */
     @Test
@@ -110,9 +107,7 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
     }
 
     /**
-     *
      * Test retrieve all plugins by type
-     *
      * @since 1.0-SNAPSHOT
      */
     @Test
@@ -135,7 +130,6 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
 
     /**
      * Test to retrieve one plugin
-     *
      * @since 1.0-SNAPSHOT
      */
     @Test
@@ -143,13 +137,12 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT
-                + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION, expectations,
+                                  + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION, expectations,
                           "Error getting one plugin", plugin.getId());
     }
 
     /**
      * Test to delete one plugin
-     *
      * @since 1.0-SNAPSHOT
      */
     @Test
@@ -157,19 +150,18 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performDefaultDelete(UIPluginDefinitionController.REQUEST_MAPPING_ROOT
-                + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION, expectations,
+                                     + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION, expectations,
                              "Error deleting one theme", plugin.getId());
 
         expectations.clear();
         expectations.add(status().isNotFound());
         performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT
-                + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION, expectations,
+                                  + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION, expectations,
                           "Error retrieving plugin", plugin.getId());
     }
 
     /**
      * Test to save a new theme
-     *
      * @since 1.0-SNAPSHOT
      */
     @Test
@@ -184,12 +176,16 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
         expectations.add(status().isOk());
         // 7 default plugins + 4 created during this test
         expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(11)));
-        performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT, expectations, "Error getting all plugins");
+
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectations(expectations);
+        requestBuilderCustomizer.customizeRequestParam().param("size","20");
+        performDefaultGet(UIPluginDefinitionController.REQUEST_MAPPING_ROOT, requestBuilderCustomizer,
+                          "Error getting all plugins");
     }
 
     /**
      * Test to update a plugin
-     *
      * @since 1.0-SNAPSHOT
      */
     @Test
@@ -198,8 +194,8 @@ public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactional
         final List<ResultMatcher> expectations = new ArrayList<>(1);
         expectations.add(status().isOk());
         performDefaultPut(UIPluginDefinitionController.REQUEST_MAPPING_ROOT
-                + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION, plugin, expectations,
-                          "Error saving new theme", plugin.getId());
+                                  + UIPluginDefinitionController.REQUEST_MAPPING_PLUGIN_DEFINITION, plugin,
+                          expectations, "Error saving new theme", plugin.getId());
     }
 
 }

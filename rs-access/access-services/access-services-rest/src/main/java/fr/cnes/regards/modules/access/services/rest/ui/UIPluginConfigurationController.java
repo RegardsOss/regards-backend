@@ -23,6 +23,8 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -82,48 +84,37 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
 
     /**
      * Endpoint to retrieve all {@link UIPluginConfiguration}
-     *
-     * @param pIsActive QueryParam Retrieve only the active {@link UIPluginConfiguration}
-     * @param pIsLinkedToAllEntities QueryParam Retrieve only the pluginConfigurations linked to all entities
-     * @param pPluginType The plugin type
-     * @param pAssembler Assembler to manage PagedResources.
-     * @param pPageable Pagination parameters
+     * @param isActive QueryParam Retrieve only the active {@link UIPluginConfiguration}
+     * @param isLinkedToAllEntities QueryParam Retrieve only the pluginConfigurations linked to all entities
+     * @param pluginType The plugin type
+     * @param assembler Assembler to manage PagedResources.
+     * @param pageable Pagination parameters
      * @return Page {@link UIPluginConfiguration}
-     * @throws EntityInvalidException
-     *             error occurred.
-     * @since 1.0-SNAPSHOT
+     * @throws EntityInvalidException error occurred.
      */
     @RequestMapping(value = REQUEST_PLUGIN_CONFIGURATIONS, method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve all IHM plugin configurations", role = DefaultRole.PUBLIC)
     public HttpEntity<PagedResources<Resource<UIPluginConfiguration>>> retrievePluginConfigurations(
-            @RequestParam(value = "isActive", required = false) final Boolean pIsActive,
-            @RequestParam(value = "isLinkedToAllEntities", required = false) final Boolean pIsLinkedToAllEntities,
-            @RequestParam(value = "type", required = false) final UIPluginTypesEnum pPluginType,
-            final PagedResourcesAssembler<UIPluginConfiguration> pAssembler, final Pageable pPageable)
-            throws EntityInvalidException {
+            @RequestParam(value = "isActive", required = false) final Boolean isActive,
+            @RequestParam(value = "isLinkedToAllEntities", required = false) final Boolean isLinkedToAllEntities,
+            @RequestParam(value = "type", required = false) final UIPluginTypesEnum pluginType,
+            final PagedResourcesAssembler<UIPluginConfiguration> assembler,
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
         final Page<UIPluginConfiguration> pluginConfs = service
-                .retrievePluginConfigurations(pPluginType, pIsActive, pIsLinkedToAllEntities, pPageable);
-        return new ResponseEntity<>(toPagedResources(pluginConfs, pAssembler), HttpStatus.OK);
+                .retrievePluginConfigurations(pluginType, isActive, isLinkedToAllEntities, pageable);
+        return new ResponseEntity<>(toPagedResources(pluginConfs, assembler), HttpStatus.OK);
     }
 
     /**
      * Endpoint to retrieve all {@link UIPluginConfiguration} for a given plugin
-     *
-     * @param pPluginId
-     *            Identifier of {@link UIPluginDefinition} to retrieve configurations
-     * @param pIsActive
-     *            QueryParam Retrieve only the active pluginConfiguration
-     * @param pIsLinkedToAllEntities
-     *            QueryParam Retrieve only the pluginConfigurations linked to all entities
-     * @param pAssembler
-     *            Assembler to manage PagedResources.
-     * @param pPageable
-     *            Pagination parameters
+     * @param pPluginId Identifier of {@link UIPluginDefinition} to retrieve configurations
+     * @param isActive QueryParam Retrieve only the active pluginConfiguration
+     * @param isLinkedToAllEntities QueryParam Retrieve only the pluginConfigurations linked to all entities
+     * @param assembler Assembler to manage PagedResources.
+     * @param pageable Pagination parameters
      * @return Page {@link UIPluginConfiguration}
-     * @throws EntityException
-     *             error occurred.
-     * @since 1.0-SNAPSHOT
+     * @throws EntityException error occurred.
      */
     @RequestMapping(value = REQUEST_PLUGIN_DEFINITION, method = RequestMethod.GET)
     @ResponseBody
@@ -131,98 +122,75 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
             role = DefaultRole.PUBLIC)
     public HttpEntity<PagedResources<Resource<UIPluginConfiguration>>> retrievePluginConfigurationsByPlugin(
             @PathVariable("pluginId") final Long pPluginId,
-            @RequestParam(value = "isActive", required = false) final Boolean pIsActive,
-            @RequestParam(value = "isLinkedToAllEntities", required = false) final Boolean pIsLinkedToAllEntities,
-            final PagedResourcesAssembler<UIPluginConfiguration> pAssembler, final Pageable pPageable)
-            throws EntityException {
+            @RequestParam(value = "isActive", required = false) final Boolean isActive,
+            @RequestParam(value = "isLinkedToAllEntities", required = false) final Boolean isLinkedToAllEntities,
+            final PagedResourcesAssembler<UIPluginConfiguration> assembler,
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable) throws EntityException {
         final UIPluginDefinition plugin = new UIPluginDefinition();
         plugin.setId(pPluginId);
         final Page<UIPluginConfiguration> pluginConfs = service
-                .retrievePluginConfigurations(plugin, pIsActive, pIsLinkedToAllEntities, pPageable);
-        return new ResponseEntity<>(toPagedResources(pluginConfs, pAssembler), HttpStatus.OK);
+                .retrievePluginConfigurations(plugin, isActive, isLinkedToAllEntities, pageable);
+        return new ResponseEntity<>(toPagedResources(pluginConfs, assembler), HttpStatus.OK);
     }
 
     /**
      * Endpoint to retrieve one {@link UIPluginConfiguration} by his identifier.
-     *
-     * @param pPluginConfigurationId
-     *            {@link UIPluginConfiguration} identifier
+     * @param pluginConfigurationId {@link UIPluginConfiguration} identifier
      * @return {@lunk PluginConfiguration}
-     * @throws EntityInvalidException
-     * @since 1.0-SNAPSHOT
      */
     @RequestMapping(value = REQUEST_PLUGIN_CONFIGURATION, method = RequestMethod.GET)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve an IHM plugin", role = DefaultRole.PUBLIC)
     public HttpEntity<Resource<UIPluginConfiguration>> retrievePluginConfiguration(
-            @PathVariable("pluginConfId") final Long pPluginConfigurationId) throws EntityInvalidException {
-        final UIPluginConfiguration pluginConf = service.retrievePluginconfiguration(pPluginConfigurationId);
+            @PathVariable("pluginConfId") final Long pluginConfigurationId) throws EntityInvalidException {
+        final UIPluginConfiguration pluginConf = service.retrievePluginconfiguration(pluginConfigurationId);
         return new ResponseEntity<>(toResource(pluginConf), HttpStatus.OK);
     }
 
     /**
-     *
      * Endpoint to update a {@link UIPluginConfiguration} by his identifier.
-     *
-     * @param pPluginConfigurationId
-     *            {@link UIPluginConfiguration} identifier
-     * @param {@link
-     *            UIPluginConfiguration} to update
-     * @return {@lunk PluginConfiguration}
-     * @throws EntityInvalidException
-     * @since 1.0-SNAPSHOT
+     * @param pluginConfigurationId {@link UIPluginConfiguration} identifier
+     * @param {@link UIPluginConfiguration} to update
+     * @return {@link UIPluginConfiguration}
      */
     @RequestMapping(value = REQUEST_PLUGIN_CONFIGURATION, method = RequestMethod.PUT)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to update an IHM plugin configuration", role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<Resource<UIPluginConfiguration>> updatePluginConfiguration(
-            @PathVariable("pluginConfId") final Long pPluginConfigurationId,
-            @Valid @RequestBody final UIPluginConfiguration pPluginConfiguration) throws EntityException {
-        if ((pPluginConfigurationId == null) || !pPluginConfigurationId.equals(pPluginConfiguration.getId())) {
-            throw new EntityInvalidException(String.format("Invalid entity id %s", pPluginConfigurationId));
+            @PathVariable("pluginConfId") final Long pluginConfigurationId,
+            @Valid @RequestBody final UIPluginConfiguration pluginConfiguration) throws EntityException {
+        if ((pluginConfigurationId == null) || !pluginConfigurationId.equals(pluginConfiguration.getId())) {
+            throw new EntityInvalidException(String.format("Invalid entity id %s", pluginConfigurationId));
         }
-        final UIPluginConfiguration pluginConf = service.updatePluginconfiguration(pPluginConfiguration);
+        final UIPluginConfiguration pluginConf = service.updatePluginconfiguration(pluginConfiguration);
         return new ResponseEntity<>(toResource(pluginConf), HttpStatus.OK);
     }
 
     /**
-     *
      * Endpoint to create a new {@link UIPluginConfiguration}.
-     *
-     * @param pPluginConfigurationId
-     *            {@link UIPluginConfiguration} identifier
-     * @param {@link
-     *            UIPluginConfiguration} to update
      * @return {@lunk PluginConfiguration}
-     * @throws EntityInvalidException
-     * @since 1.0-SNAPSHOT
      */
     @RequestMapping(value = REQUEST_PLUGIN_CONFIGURATIONS, method = RequestMethod.POST)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to save a new IHM plugin configuration", role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<Resource<UIPluginConfiguration>> createPluginConfiguration(
-            @Valid @RequestBody final UIPluginConfiguration pPluginConfiguration) throws EntityException {
-        final UIPluginConfiguration pluginConf = service.createPluginconfiguration(pPluginConfiguration);
+            @Valid @RequestBody final UIPluginConfiguration pluginConfiguration) throws EntityException {
+        final UIPluginConfiguration pluginConf = service.createPluginconfiguration(pluginConfiguration);
         return new ResponseEntity<>(toResource(pluginConf), HttpStatus.OK);
     }
 
     /**
-     *
      * Endpoint to delete a {@link UIPluginConfiguration}.
-     *
-     * @param pPluginConfigurationId
-     *            {@link UIPluginConfiguration} identifier to delete
+     * @param pluginConfigurationId {@link UIPluginConfiguration} identifier to delete
      * @return {@lunk PluginConfiguration}
-     * @throws EntityInvalidException
-     * @since 1.0-SNAPSHOT
      */
     @RequestMapping(value = REQUEST_PLUGIN_CONFIGURATION, method = RequestMethod.DELETE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to delete an IHM plugin configuration", role = DefaultRole.PROJECT_ADMIN)
     public HttpEntity<Resource<Void>> deletePluginConfiguration(
-            @PathVariable("pluginConfId") final Long pPluginConfigurationId) throws EntityException {
+            @PathVariable("pluginConfId") final Long pluginConfigurationId) throws EntityException {
         final UIPluginConfiguration pluginConfToDelete = new UIPluginConfiguration();
-        pluginConfToDelete.setId(pPluginConfigurationId);
+        pluginConfToDelete.setId(pluginConfigurationId);
         service.deletePluginconfiguration(pluginConfToDelete);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -242,8 +210,6 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
 
     /**
      * Convert services to resources
-     * @param pElement
-     * @return
      */
     public Resource<UIPluginConfiguration> servicesToResource(final UIPluginConfiguration pElement) {
         return resourceService.toResource(pElement);

@@ -52,8 +52,6 @@ import fr.cnes.regards.modules.configuration.service.ILayoutService;
  *
  */
 @RestController
-@ModuleInfo(name = "Layout", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping("/layouts")
 public class LayoutController implements IResourceController<Layout> {
 
