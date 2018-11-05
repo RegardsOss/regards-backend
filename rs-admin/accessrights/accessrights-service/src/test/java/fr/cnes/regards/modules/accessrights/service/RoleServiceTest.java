@@ -37,6 +37,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
@@ -222,7 +223,8 @@ public class RoleServiceTest {
         // PUBLIC cannot borrow roles
         projectUser.setRole(rolePublic);
         result = roleService.retrieveBorrowableRoles();
-        Assert.assertTrue(result.isEmpty());
+        Assert.assertEquals(1, result.size());
+        Assert.assertTrue(result.contains(rolePublic));
         // PROJECT_ADMIN can borrow all roles except instance_admin
         projectUser.setRole(roleProjectAdmin);
         result = roleService.retrieveBorrowableRoles();
@@ -298,6 +300,7 @@ public class RoleServiceTest {
 
     /**
      * Check that the system allows to create a role in a regular case.
+     * @throws EntityException
      *
      * @throws EntityAlreadyExistsException
      *             Thrown if a role with passed id already exists

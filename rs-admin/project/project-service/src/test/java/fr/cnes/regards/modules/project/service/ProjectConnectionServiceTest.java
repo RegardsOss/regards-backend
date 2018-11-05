@@ -18,6 +18,15 @@
  */
 package fr.cnes.regards.modules.project.service;
 
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.persistence.EntityManager;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,6 +36,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
+import fr.cnes.regards.framework.encryption.AESEncryptionService;
+import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -129,15 +140,18 @@ public class ProjectConnectionServiceTest {
      * @since 1.0-SNAPSHOT
      */
     @Before
-    public void init() {
+    public void init() throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
         // use a stub repository, to be able to only test the service
         IProjectRepository projectRepoStub = new ProjectRepositoryStub();
         projectService = new ProjectService(projectRepoStub, Mockito.mock(ITenantResolver.class),
-                Mockito.mock(IInstancePublisher.class), "default-project-test");
-
+                Mockito.mock(IInstancePublisher.class), "default-project-test",
+                "http://localhost/default-project-test");
+        AESEncryptionService aesEncryptionService = new AESEncryptionService();
+        aesEncryptionService
+                .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "1234567812345678"));
         projectConnectionRepoStub = new ProjectConnectionRepositoryStub();
         projectConnectionService = new ProjectConnectionService(projectRepoStub, projectConnectionRepoStub,
-                Mockito.mock(IInstancePublisher.class));
+                Mockito.mock(IInstancePublisher.class), Mockito.mock(EntityManager.class), aesEncryptionService);
 
         Project project1 = projectRepoStub
                 .save(new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_1));
@@ -160,7 +174,7 @@ public class ProjectConnectionServiceTest {
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Test creation of a new database connection for a given project and a given microservice.")
     @Test
-    public void createProjectConnection() throws ModuleException {
+    public void createProjectConnection() throws ModuleException, BadPaddingException, IllegalBlockSizeException {
 
         Project project1 = projectService.retrieveProject(PROJECT_TEST_1);
 
@@ -235,7 +249,7 @@ public class ProjectConnectionServiceTest {
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Test updating of a database connection for a given project and a given microservice.")
     @Test
-    public void updateProjectConnection() {
+    public void updateProjectConnection() throws BadPaddingException, IllegalBlockSizeException {
 
         final String updateUserName = "newUser";
         final String errorUpdate = "Error the update should be in error. The entity doest not exists.";

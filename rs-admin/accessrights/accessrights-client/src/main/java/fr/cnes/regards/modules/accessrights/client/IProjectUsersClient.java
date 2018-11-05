@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
+import static fr.cnes.regards.modules.accessrights.client.IProjectUsersClient.TARGET_NAME;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
@@ -48,10 +49,12 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
  *
  * @since 1.0-SNAPSHOT
  */
-@RestClient(name = "rs-admin")
+@RestClient(name = TARGET_NAME)
 @RequestMapping(value = "/users", produces = MediaType.APPLICATION_JSON_UTF8_VALUE,
         consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IProjectUsersClient {
+
+    String TARGET_NAME = "rs-admin";
 
     /**
      * Retrieve the {@link List} of all {@link ProjectUser}s.

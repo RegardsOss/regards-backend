@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.notification.service;
 
 import java.time.OffsetDateTime;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -30,6 +29,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -38,6 +39,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -136,27 +138,28 @@ public class NotificationService implements INotificationService, ApplicationLis
     }
 
     @Override
-    public List<Notification> retrieveNotifications() throws EntityNotFoundException {
+    public Page<Notification> retrieveNotifications(Pageable page) throws EntityNotFoundException {
         if (notificationMode == NotificationMode.MULTITENANT) {
-            return notificationRepository
-                    .findByRecipientsContaining(authenticationResolver.getUser(), authenticationResolver.getRole());
+            return notificationRepository.findByRecipientsContaining(authenticationResolver.getUser(),
+                                                                     authenticationResolver.getRole(), page);
         } else {
-            return notificationRepository.findAll();
+            return notificationRepository.findAll(page);
         }
     }
 
     @Override
-    public Notification createNotification(final NotificationDTO pDto) {
+    public Notification createNotification(final NotificationDTO dto) {
         Notification notification = new Notification();
         notification.setDate(OffsetDateTime.now());
-        notification.setMessage(pDto.getMessage());
-        notification.setTitle(pDto.getTitle());
-        notification.setSender(pDto.getSender());
+        notification.setMessage(dto.getMessage());
+        notification.setTitle(dto.getTitle());
+        notification.setSender(dto.getSender());
         notification.setStatus(NotificationStatus.UNREAD);
-        notification.setType(pDto.getType());
-        notification.setProjectUserRecipients(pDto.getProjectUserRecipients());
+        notification.setType(dto.getType());
+        notification.setMimeType(dto.getMimeType());
+        notification.setProjectUserRecipients(dto.getProjectUserRecipients());
 
-        notification.setRoleRecipients(getAllRecipientRoles(pDto.getRoleRecipients()));
+        notification.setRoleRecipients(getAllRecipientRoles(dto.getRoleRecipients()));
 
         // check the notification type and send it immediately if FATAL or ERROR
         if (notification.getType() == NotificationType.FATAL || notification.getType() == NotificationType.ERROR) {
@@ -165,8 +168,6 @@ public class NotificationService implements INotificationService, ApplicationLis
 
         // Save it in db
         notification = notificationRepository.save(notification);
-
-        // TODO Trigger NOTIFICATION event on message broker
 
         return notification;
     }
@@ -207,6 +208,13 @@ public class NotificationService implements INotificationService, ApplicationLis
     }
 
     @Override
+    public void markAllNotificationAs(NotificationStatus status) {
+        Assert.notNull(status, "Notification status is required");
+        notificationRepository.updateAllNotificationStatusByRole(status.toString(), authenticationResolver.getRole());
+        notificationRepository.updateAllNotificationStatusByUser(status.toString(), authenticationResolver.getUser());
+    }
+
+    @Override
     public void deleteNotification(final Long pId) throws EntityNotFoundException {
         if (!notificationRepository.exists(pId)) {
             throw new EntityNotFoundException(pId.toString(), Notification.class);
@@ -215,8 +223,8 @@ public class NotificationService implements INotificationService, ApplicationLis
     }
 
     @Override
-    public List<Notification> retrieveNotificationsToSend() {
-        return notificationRepository.findByStatus(NotificationStatus.UNREAD);
+    public Page<Notification> retrieveNotificationsToSend(Pageable page) {
+        return notificationRepository.findByStatus(NotificationStatus.UNREAD, page);
     }
 
     @Override
@@ -226,14 +234,14 @@ public class NotificationService implements INotificationService, ApplicationLis
                 final Stream<String> usersStream = pNotification.getProjectUserRecipients().stream()) {
 
             // Merge the two streams
-            return Stream.concat(usersStream,
-                                 rolesStream.flatMap(// Define a function mapping each role to its project users by
-                                                     // calling the roles client
-                                                     r -> HateoasUtils.retrieveAllPages(100,
-                                                                                        pageable -> retrieveRoleProjectUserList(
-                                                                                                r,
-                                                                                                pageable)).stream()
-                                                             .map(ProjectUser::getEmail))).distinct();
+            return Stream.concat(usersStream, rolesStream.flatMap(// Define a function mapping each role to its project users by
+                                                                  // calling the roles client
+                                                                  r -> HateoasUtils
+                                                                          .retrieveAllPages(100,
+                                                                                            pageable -> retrieveRoleProjectUserList(r,
+                                                                                                                                    pageable))
+                                                                          .stream().map(ProjectUser::getEmail)))
+                    .distinct();
         }
     }
 
@@ -242,9 +250,8 @@ public class NotificationService implements INotificationService, ApplicationLis
         final ResponseEntity<PagedResources<Resource<ProjectUser>>> response = projectUserClient
                 .retrieveRoleProjectUsersList(pRole, pPageable.getPageNumber(), pPageable.getPageSize());
 
-        if (!response.getStatusCode().equals(HttpStatus.OK) || (response.getBody() == null)) {
-            LOG.warn("Error retrieving projet users for role {}. Remote administration response is {}",
-                     pRole,
+        if (!response.getStatusCode().equals(HttpStatus.OK) || response.getBody() == null) {
+            LOG.warn("Error retrieving projet users for role {}. Remote administration response is {}", pRole,
                      response.getStatusCode());
         }
         return response;
@@ -252,16 +259,26 @@ public class NotificationService implements INotificationService, ApplicationLis
 
     @Override
     public void removeReceiver(String email) {
-        Set<Notification> notifications = notificationRepository.findAllByProjectUserRecipientsContaining(email);
-        notifications.forEach(notification -> notification.getProjectUserRecipients().remove(email));
-        notificationRepository.save(notifications);
+        Pageable page = new PageRequest(0, 500);
+        Page<Notification> notifications;
+        do {
+            notifications = notificationRepository.findAllByProjectUserRecipientsContaining(email, page);
+            notifications.forEach(notification -> notification.getProjectUserRecipients().remove(email));
+            notificationRepository.save(notifications);
+            page = notifications.nextPageable();
+        } while (notifications.hasNext());
     }
 
     @Override
     public void removeRoleReceiver(String role) {
-        Set<Notification> notifications = notificationRepository.findAllByRoleRecipientsContaining(role);
-        notifications.forEach(notification -> notification.getRoleRecipients().remove(role));
-        notificationRepository.save(notifications);
+        Pageable page = new PageRequest(0, 500);
+        Page<Notification> notifications;
+        do {
+            notifications = notificationRepository.findAllByRoleRecipientsContaining(role, page);
+            notifications.forEach(notification -> notification.getRoleRecipients().remove(role));
+            notificationRepository.save(notifications);
+            page = notifications.nextPageable();
+        } while (notifications.hasNext());
     }
 
     @Override
@@ -310,6 +327,22 @@ public class NotificationService implements INotificationService, ApplicationLis
                 runtimeTenantResolver.clearTenant();
                 FeignSecurityManager.reset();
             }
+        }
+    }
+
+    @Override
+    public Page<Notification> retrieveNotifications(Pageable page, NotificationStatus state)
+            throws EntityNotFoundException {
+        if (state != null) {
+            if (notificationMode == NotificationMode.MULTITENANT) {
+                return notificationRepository
+                        .findByStatusAndRecipientsContaining(state.toString(), authenticationResolver.getUser(),
+                                                             authenticationResolver.getRole(), page);
+            } else {
+                return notificationRepository.findByStatus(state, page);
+            }
+        } else {
+            return retrieveNotifications(page);
         }
     }
 }

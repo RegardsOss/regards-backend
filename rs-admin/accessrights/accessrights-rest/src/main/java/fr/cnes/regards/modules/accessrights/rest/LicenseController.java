@@ -70,7 +70,6 @@ public class LicenseController implements IResourceController<LicenseDTO> {
 
     /**
      * Retrieve if the current user has accepted the license of the given project, represented by its name.
-     * @param pProjectName
      * @return if the current user has accepted the license of the project
      * @throws EntityNotFoundException
      */
@@ -84,7 +83,6 @@ public class LicenseController implements IResourceController<LicenseDTO> {
 
     /**
      * Accept the license for the current user for the given project, represented by its name
-     * @param pProjectName
      * @return the license state
      * @throws EntityException
      */
@@ -97,6 +95,7 @@ public class LicenseController implements IResourceController<LicenseDTO> {
 
     /**
      * Reset the license for the given project, represented by its name.
+     * @return Void
      */
     @RequestMapping(method = RequestMethod.PUT, path = PATH_RESET)
     @ResourceAccess(
@@ -109,15 +108,15 @@ public class LicenseController implements IResourceController<LicenseDTO> {
 
     /**
      *
-     * @param pElement
+     * @param element
      *            element to convert
-     * @param pExtras
+     * @param extras
      *            Extra URL path parameters for links extra[0] has to be given and should be the projectName
-     * @return
+     * @return {@link LicenseDTO}
      */
     @Override
-    public Resource<LicenseDTO> toResource(LicenseDTO pElement, Object... pExtras) {
-        Resource<LicenseDTO> resource = resourceService.toResource(pElement);
+    public Resource<LicenseDTO> toResource(LicenseDTO element, Object... extras) {
+        Resource<LicenseDTO> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "retrieveLicense", LinkRels.SELF);
         resourceService.addLink(resource, this.getClass(), "acceptLicense", LinkRels.UPDATE);
         resourceService.addLink(resource, this.getClass(), "resetLicense", LinkRels.DELETE);

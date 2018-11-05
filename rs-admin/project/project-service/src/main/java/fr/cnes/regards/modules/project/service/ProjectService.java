@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.project.service;
 
-import javax.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -79,7 +78,12 @@ public class ProjectService implements IProjectService {
     /**
      * Default tenants which are to be initialized at system installation
      */
-    private Set<String> defaultTenants;
+    private final Set<String> defaultTenants;
+
+    /**
+     * Default host to access default tenants.
+     */
+    private final String defaultTenantHost;
 
     /**
      * The constructor.
@@ -88,13 +92,15 @@ public class ProjectService implements IProjectService {
      *            The JPA repository.
      */
     public ProjectService(final IProjectRepository pProjectRepository, final ITenantResolver tenantResolver,
-            IInstancePublisher instancePublisher, @Value("${regards.default.tenants}") String defaultTenants) {
+            IInstancePublisher instancePublisher, @Value("${regards.default.tenants}") String defaultTenants,
+            @Value("${regards.config.first.project.public.access}") String defaultTenantHost) {
         super();
         projectRepository = pProjectRepository;
         this.tenantResolver = tenantResolver;
         this.instancePublisher = instancePublisher;
         this.defaultTenants = Arrays.stream(defaultTenants.split(",")).map(tenant -> tenant.trim())
                 .collect(Collectors.toSet());
+        this.defaultTenantHost = defaultTenantHost;
     }
 
     @EventListener
@@ -108,6 +114,7 @@ public class ProjectService implements IProjectService {
                 Project project = new Project("", "", true, tenant);
                 project.setLabel(tenant);
                 project.setAccessible(true);
+                project.setHost(this.defaultTenantHost);
                 createProject(project);
             }
         } else {

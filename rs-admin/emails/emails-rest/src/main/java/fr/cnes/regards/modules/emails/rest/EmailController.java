@@ -43,9 +43,7 @@ import fr.cnes.regards.modules.emails.service.SimpleEmailService;
 
 /**
  * Controller defining the REST entry points of the module
- *
  * @author Xavier-Alexandre Brochard
- *
  */
 @RestController
 @ModuleInfo(name = "emails", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
@@ -73,14 +71,13 @@ public class EmailController {
 
     /**
      * Define the endpoint for retrieving the list of sent emails
-     *
      * @return A {@link List} of emails as {@link Email} wrapped in an {@link ResponseEntity}
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve all emails")
     public ResponseEntity<List<Email>> retrieveEmails() {
         if (!runtimeTenantResolver.isInstance()) {
-            final List<Email> emails = emailService.retrieveEmails();
+            List<Email> emails = emailService.retrieveEmails();
             return new ResponseEntity<>(emails, HttpStatus.OK);
         }
         // This method is only allowed with tenant.
@@ -89,15 +86,13 @@ public class EmailController {
 
     /**
      * Define the endpoint for sending an email to recipients
-     *
-     * @param pEmail
-     *            The email in a simple representation.
+     * @param pEmail The email in a simple representation.
      * @return The sent email as {@link Email} wrapped in an {@link ResponseEntity}
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.POST)
     @ResourceAccess(description = "Send an email to recipients")
-    public ResponseEntity<Void> sendEmail(@Valid @RequestBody final SimpleMailMessage pMessage) {
+    public ResponseEntity<Void> sendEmail(@Valid @RequestBody SimpleMailMessage pMessage) {
         IEmailService service = emailService;
         if (runtimeTenantResolver.isInstance()) {
             service = simpleEmailService;
@@ -108,19 +103,15 @@ public class EmailController {
 
     /**
      * Define the endpoint for retrieving an email
-     *
-     * @param pId
-     *            The email id
+     * @param id The email id
      * @return The email as a {@link Email} wrapped in an {@link ResponseEntity}
-     * @throws ModuleException
-     *             if email cannot be found
+     * @throws ModuleException if email cannot be found
      */
     @RequestMapping(value = "/{mail_id}", method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve an email")
-    public ResponseEntity<Email> retrieveEmail(@PathVariable("mail_id") final Long pId) throws ModuleException {
+    public ResponseEntity<Email> retrieveEmail(@PathVariable("mail_id") Long id) throws ModuleException {
         if (!runtimeTenantResolver.isInstance()) {
-            final Email email = emailService.retrieveEmail(pId);
-            return new ResponseEntity<>(email, HttpStatus.OK);
+            return new ResponseEntity<>(emailService.retrieveEmail(id), HttpStatus.OK);
         }
 
         // This method is only allowed with tenant.
@@ -129,33 +120,28 @@ public class EmailController {
 
     /**
      * Define the endpoint for re-sending an email
-     *
-     * @param pId
-     *            The email id
+     * @param id The email id
      * @return void
-     * @throws ModuleException
-     *             if email cannot be found
+     * @throws ModuleException if email cannot be found
      */
     @RequestMapping(value = "/{mail_id}", method = RequestMethod.PUT)
     @ResourceAccess(description = "Send again an email")
-    public void resendEmail(@PathVariable("mail_id") final Long pId) throws ModuleException {
+    public void resendEmail(@PathVariable("mail_id") Long id) throws ModuleException {
         if (!runtimeTenantResolver.isInstance()) {
-            emailService.resendEmail(pId);
+            emailService.resendEmail(id);
         }
     }
 
     /**
      * Define the endpoint for deleting an email
-     *
-     * @param pId
-     *            The email id
+     * @param id The email id
      * @return void
      */
     @RequestMapping(value = "/{mail_id}", method = RequestMethod.DELETE)
     @ResourceAccess(description = "Delete an email")
-    public void deleteEmail(@PathVariable("mail_id") final Long pId) {
+    public void deleteEmail(@PathVariable("mail_id") Long id) {
         if (!runtimeTenantResolver.isInstance()) {
-            emailService.deleteEmail(pId);
+            emailService.deleteEmail(id);
         }
     }
 

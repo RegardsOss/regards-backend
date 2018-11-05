@@ -63,7 +63,7 @@ public class AccessSettings implements IIdentifiable<Long> {
      */
     @Pattern(regexp = MANUAL_MODE + "|" + AUTO_ACCEPT_MODE, flags = Pattern.Flag.CASE_INSENSITIVE)
     @Column(name = "mode")
-    private String mode = MANUAL_MODE;
+    private String mode = AUTO_ACCEPT_MODE;
 
     //    /**
     //     * Create an access setting with empty fields

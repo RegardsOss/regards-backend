@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -38,6 +37,7 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IMetaDataRepository;
@@ -50,7 +50,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.role.RoleService;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Integration tests for ProjectUsers REST Controller.
@@ -122,9 +121,9 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Purpose("Check that the system allows to retrieve all user on a project.")
     public void getAllUsers() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(ProjectUsersController.TYPE_MAPPING, expectations, errorMessage);
+        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
+        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
+        performDefaultGet(ProjectUsersController.TYPE_MAPPING, requestBuilder, errorMessage);
     }
 
     @Test
@@ -133,22 +132,22 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     public void getUser() throws UnsupportedEncodingException {
         String apiUserEmail = ProjectUsersController.TYPE_MAPPING + "/email/{user_email}";
 
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(apiUserEmail, expectations, errorMessage, EMAIL);
+        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
+        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
+        performDefaultGet(apiUserEmail, requestBuilder, errorMessage, EMAIL);
 
-        expectations.clear();
-        expectations.add(MockMvcResultMatchers.status().isNotFound());
-        performDefaultGet(apiUserEmail, expectations, errorMessage, "user@invalid.fr");
+        requestBuilder = getNewRequestBuilderCustomizer();
+        requestBuilder.addExpectation(MockMvcResultMatchers.status().isNotFound());
+        performDefaultGet(apiUserEmail, requestBuilder, errorMessage, "user@invalid.fr");
     }
 
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_330")
     @Purpose("Check that the system allows to retrieve a user's metadata.")
     public void getUserMetaData() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(ProjectUserMetadataController.REQUEST_MAPPING_ROOT, expectations, errorMessage,
+        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
+        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
+        performDefaultGet(ProjectUserMetadataController.REQUEST_MAPPING_ROOT, requestBuilder, errorMessage,
                           projectUser.getId());
     }
 
@@ -175,10 +174,10 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         final Role borrowedRole = roleService.retrieveRole(borrowedRoleName);
 
         // Borrowing a hierarchically inferior role
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
         Assert.assertTrue(roleService.isHierarchicallyInferior(borrowedRole, roleAdmin));
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(apiUserPermissionsBorrowedRole + borrowedRoleName, expectations, errorMessage,
+        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
+        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
+        performDefaultGet(apiUserPermissionsBorrowedRole + borrowedRoleName, requestBuilder, errorMessage,
                           projectUser.getEmail());
     }
 
@@ -205,11 +204,10 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         final Role borrowedRole = roleService.retrieveRole(borrowedRoleName);
 
         // Borrowing a hierarchically superior role
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
         Assert.assertTrue(!roleService.isHierarchicallyInferior(borrowedRole, roleAdmin));
-        expectations.clear();
-        expectations.add(MockMvcResultMatchers.status().isForbidden());
-        performDefaultGet(apiUserPermissionsBorrowedRole + borrowedRoleName, expectations, errorMessage,
+        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
+        requestBuilder.addExpectation(MockMvcResultMatchers.status().isForbidden());
+        performDefaultGet(apiUserPermissionsBorrowedRole + borrowedRoleName, requestBuilder, errorMessage,
                           projectUser.getEmail());
     }
 
@@ -221,9 +219,9 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         newPermissionList.add(metaDataRepository.save(new MetaData()));
         newPermissionList.add(metaDataRepository.save(new MetaData()));
 
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultPut(ProjectUserMetadataController.REQUEST_MAPPING_ROOT, newPermissionList, expectations,
+        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
+        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
+        performDefaultPut(ProjectUserMetadataController.REQUEST_MAPPING_ROOT, newPermissionList, requestBuilder,
                           errorMessage, projectUser.getId());
     }
 
@@ -237,18 +235,18 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         newPermissionList.add(resourcesAccessRepository.save(new ResourcesAccess("desc1", "ms1", "res1", "Controller",
                 RequestMethod.DELETE, DefaultRole.ADMIN)));
 
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultPut(UserResourceController.TYPE_MAPPING, newPermissionList, expectations, errorMessage, EMAIL);
+        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
+        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
+        performDefaultPut(UserResourceController.TYPE_MAPPING, newPermissionList, requestBuilder, errorMessage, EMAIL);
     }
 
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_330")
     @Purpose("Check that the system allows to delete a user's metadata.")
     public void deleteUserMetaData() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultDelete(ProjectUserMetadataController.REQUEST_MAPPING_ROOT, expectations, errorMessage,
+        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
+        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
+        performDefaultDelete(ProjectUserMetadataController.REQUEST_MAPPING_ROOT, requestBuilder, errorMessage,
                              projectUser.getId());
     }
 
@@ -256,9 +254,9 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_230")
     @Purpose("Check that the system allows to delete a user's permissions.")
     public void deleteUserPermissions() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultDelete(UserResourceController.TYPE_MAPPING, expectations, errorMessage, projectUser.getEmail());
+        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
+        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
+        performDefaultDelete(UserResourceController.TYPE_MAPPING, requestBuilder, errorMessage, projectUser.getEmail());
     }
 
     @Test
@@ -270,14 +268,14 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         projectUser.setEmail("new@email.com");
 
         // Same id
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultPut(apiUserId, projectUser, expectations, errorMessage, projectUser.getId());
+        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
+        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
+        performDefaultPut(apiUserId, projectUser, requestBuilder, errorMessage, projectUser.getId());
 
         // Wrong id (99L)
-        expectations.clear();
-        expectations.add(MockMvcResultMatchers.status().isBadRequest());
-        performDefaultPut(apiUserId, projectUser, expectations, errorMessage, 99L);
+        requestBuilder = getNewRequestBuilderCustomizer();
+        requestBuilder.addExpectation(MockMvcResultMatchers.status().isBadRequest());
+        performDefaultPut(apiUserId, projectUser, requestBuilder, errorMessage, 99L);
     }
 
     @Test
@@ -286,9 +284,9 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     public void deleteUser() {
         String apiUserId = ProjectUsersController.TYPE_MAPPING + "/{user_id}";
 
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultDelete(apiUserId, expectations, errorMessage, projectUser.getId());
+        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
+        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
+        performDefaultDelete(apiUserId, requestBuilder, errorMessage, projectUser.getId());
     }
 
     @Test
@@ -300,10 +298,10 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
 
         String apiUserId = ProjectUsersController.TYPE_MAPPING + ProjectUsersController.USER_ID_RELATIVE_PATH;
 
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$.links.[4].rel", Matchers.is("accept")));
-        performDefaultGet(apiUserId, expectations, errorMessage, projectUser.getId());
+        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
+        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilder.addExpectation(MockMvcResultMatchers.jsonPath("$.links.[4].rel", Matchers.is("accept")));
+        performDefaultGet(apiUserId, requestBuilder, errorMessage, projectUser.getId());
     }
 
     @Test
@@ -315,10 +313,10 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
 
         String apiUserId = ProjectUsersController.TYPE_MAPPING + ProjectUsersController.USER_ID_RELATIVE_PATH;
 
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$.links.[5].rel", Matchers.is("deny")));
-        performDefaultGet(apiUserId, expectations, errorMessage, projectUser.getId());
+        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
+        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
+        requestBuilder.addExpectation(MockMvcResultMatchers.jsonPath("$.links.[5].rel", Matchers.is("deny")));
+        performDefaultGet(apiUserId, requestBuilder, errorMessage, projectUser.getId());
     }
 
     @Override

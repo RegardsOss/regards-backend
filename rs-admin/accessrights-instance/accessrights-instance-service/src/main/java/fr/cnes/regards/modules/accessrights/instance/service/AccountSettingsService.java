@@ -23,6 +23,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.instance.dao.IAccountSettingsRepository;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
 
@@ -59,13 +60,12 @@ public class AccountSettingsService implements IAccountSettingsService {
     @Override
     public AccountSettings retrieve() {
         final List<AccountSettings> settings = accountSettingsRepository.findAll();
-        final AccountSettings result;
+        AccountSettings result;
         if (!settings.isEmpty()) {
             result = settings.get(0);
         } else {
             result = new AccountSettings();
-            result.setId(0L);
-            accountSettingsRepository.save(result);
+            result = accountSettingsRepository.save(result);
         }
         return result;
     }
@@ -76,9 +76,11 @@ public class AccountSettingsService implements IAccountSettingsService {
      * @see fr.cnes.regards.modules.accessrights.service.role.IAccountSettingsService#update()
      */
     @Override
-    public AccountSettings update(final AccountSettings pAccessSettings) {
-        pAccessSettings.setId(0L);
-        return accountSettingsRepository.save(pAccessSettings);
+    public AccountSettings update(final AccountSettings accountSettings) throws EntityNotFoundException {
+        if (!accountSettingsRepository.exists(accountSettings.getId())) {
+            throw new EntityNotFoundException(accountSettings.getId().toString(), AccountSettings.class);
+        }
+        return accountSettingsRepository.save(accountSettings);
     }
 
 }

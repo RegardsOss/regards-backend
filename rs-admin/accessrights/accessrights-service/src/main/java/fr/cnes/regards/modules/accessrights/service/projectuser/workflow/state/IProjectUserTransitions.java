@@ -87,6 +87,7 @@ public interface IProjectUserTransitions {
      *
      * @param pProjectUser
      *            the project user
+     * @throws EntityException
      * @throws EntityTransitionForbiddenException
      *             when the project user is not in status ACCESS_DENIED
      */

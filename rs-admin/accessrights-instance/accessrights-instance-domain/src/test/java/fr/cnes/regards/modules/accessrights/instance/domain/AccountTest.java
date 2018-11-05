@@ -33,11 +33,6 @@ public class AccountTest {
      * Test email
      */
     private final String email = "mail";
-    //
-    // /**
-    // * Test id
-    // */
-    // private final Long id = 0L;
 
     /**
      * Test firstName
@@ -55,11 +50,6 @@ public class AccountTest {
     private final String password = "password";
 
     /**
-     * Test code
-     */
-    private final String code = "code";
-
-    /**
      * Test account
      */
     private Account accountTest;
@@ -75,80 +65,11 @@ public class AccountTest {
         accountTest = new Account(email, firstName, lastName, password);
     }
 
-    // /**
-    // * Test method for {@link Account#Account()}.
-    // */
-    // @Test
-    // public void testAccountDefault() {
-    // final Account account = new Account();
-    //
-    // Assert.assertEquals(null, account.getId());
-    // Assert.assertEquals(null, account.getEmail());
-    // Assert.assertEquals(null, account.getFirstName());
-    // Assert.assertEquals(null, account.getLastName());
-    // Assert.assertEquals(null, account.getLogin());
-    // Assert.assertEquals(null, account.getPassword());
-    // Assert.assertEquals(AccountStatus.PENDING, account.getStatus());
-    // Assert.assertEquals(null, account.getCode());
-    // }
-
-    // /**
-    // * Test method for {@link Account#Account(java.lang.String)}.
-    // */
-    // @Test
-    // public void testAccountEmail() {
-    // final Account account = new Account(email);
-    //
-    // Assert.assertEquals(email, account.getEmail());
-    // Assert.assertEquals(null, account.getFirstName());
-    // Assert.assertEquals(null, account.getLastName());
-    // Assert.assertEquals(email, account.getLogin());
-    // Assert.assertEquals(null, account.getPassword());
-    // Assert.assertEquals(AccountStatus.PENDING, account.getStatus());
-    // Assert.assertEquals(null, account.getCode());
-    // }
-
-    // /**
-    // * Test method for {@link Account#Account(java.lang.String, java.lang.String, java.lang.String,
-    // java.lang.String)}.
-    // */
-    // @Test
-    // public void testAccountWithoutLogin() {
-    // final Account account = new Account(email, firstName, lastName, password);
-    //
-    // Assert.assertEquals(email, account.getEmail());
-    // Assert.assertEquals(firstName, account.getFirstName());
-    // Assert.assertEquals(lastName, account.getLastName());
-    // Assert.assertEquals(email, account.getLogin());
-    // Assert.assertEquals(password, account.getPassword());
-    // Assert.assertEquals(AccountStatus.PENDING, account.getStatus());
-    // Assert.assertEquals(null, account.getCode());
-    // }
-
-    // /**
-    // * Test method for
-    // * {@link Account#Account(java.lang.String, java.lang.String, java.lang.String, java.lang.String,
-    // java.lang.String)}
-    // */
-    // @Test
-    // public void testAccountWithLogin() {
-    // final Account account = new Account(email, firstName, lastName, login, password);
-    //
-    // Assert.assertEquals(email, account.getEmail());
-    // Assert.assertEquals(firstName, account.getFirstName());
-    // Assert.assertEquals(lastName, account.getLastName());
-    // Assert.assertEquals(login, account.getLogin());
-    // Assert.assertEquals(password, account.getPassword());
-    // Assert.assertEquals(AccountStatus.PENDING, account.getStatus());
-    // Assert.assertEquals(null, account.getCode());
-    // }
-
     /**
      * Test method for {@link Account#Account(String, String, String, String)}.
      */
     @Test
     public void testAccountFull() {
-        // final Account account = new Account(id, email, firstName, lastName, login, password, status, code);
         final Account account = new Account(email, firstName, lastName, password);
 
         Assert.assertEquals(null, account.getId());
@@ -274,7 +195,6 @@ public class AccountTest {
      */
     @Test
     public void testEqualsObject() {
-        // Account otherAccount = new Account(id, email, firstName, lastName, login, password, status, code);
         Account otherAccount = new Account(email, "otherFirstName", "otherLastName", "otherPassword");
         Assert.assertTrue(accountTest.equals(otherAccount));
 

@@ -19,10 +19,12 @@
 package fr.cnes.regards.modules.accessrights.service.role;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -83,6 +85,10 @@ public class RoleService implements IRoleService {
      * Error message
      */
     private static final String NATIVE_ROLE_NOT_REMOVABLE = "Modifications on native roles are forbidden";
+
+    public static final String ROLE_GAINED_ACCESS = "Role {} has been granted access to these resources: {}";
+
+    public static final String ROLE_LOST_ACCESS = "Role {} does not have access to the these resources anymore: {}";
 
     /**
      * CRUD repository managing {@link Role}s. Autowired by Spring.
@@ -146,7 +152,6 @@ public class RoleService implements IRoleService {
     /**
      * Init default roles for a specified tenant
      *
-     * @param tenant tenant
      */
     @Override
     public void initDefaultRoles() {
@@ -374,7 +379,6 @@ public class RoleService implements IRoleService {
     /**
      * Check authenticated user can manage target role resource accesses.
      * @param pRole target role to manage
-     * @param silent check conditions silently (no exception thrown)
      * @throws EntityOperationForbiddenException if operation forbidden
      */
     private void canManageRole(Role pRole) throws EntityOperationForbiddenException {
@@ -494,6 +498,9 @@ public class RoleService implements IRoleService {
         // Save changes
         roleRepository.save(pRole);
         if (changed) {
+            StringJoiner sj = new StringJoiner(", ");
+            Arrays.stream(pResourcesAccesses).forEach(ra -> sj.add(ra.getVerb() + "@" + ra.getResource()));
+            LOGGER.info(ROLE_GAINED_ACCESS, pRole.getName(), sj.toString());
             publishResourceAccessEvent(pRole.getName(), pResourcesAccesses);
         }
         // Retrieve its descendants
@@ -516,6 +523,9 @@ public class RoleService implements IRoleService {
         // Save changes
         roleRepository.save(pRole);
         if (changed) {
+            StringJoiner sj = new StringJoiner(", ");
+            Arrays.stream(pResourcesAccesses).forEach(ra -> sj.add(ra.getVerb() + "@" + ra.getResource()));
+            LOGGER.info(ROLE_GAINED_ACCESS, pRole.getName(), sj.toString());
             publishResourceAccessEvent(pRole.getName(), pResourcesAccesses);
         }
         // Change parent if required
@@ -725,6 +735,9 @@ public class RoleService implements IRoleService {
             roleRepository.save(pRole);
             // publish event
             if (changed) {
+                StringJoiner sj = new StringJoiner(", ");
+                Arrays.stream(pResourcesAccesses).forEach(ra -> sj.add(ra.getVerb() + "@" + ra.getResource()));
+                LOGGER.info(ROLE_LOST_ACCESS, pRole.getName(), sj.toString());
                 publishResourceAccessEvent(pRole.getName(), pResourcesAccesses);
             }
             // Propagate
@@ -762,6 +775,9 @@ public class RoleService implements IRoleService {
         roleRepository.save(pRole);
         // publish event
         if (changed) {
+            StringJoiner sj = new StringJoiner(", ");
+            Arrays.stream(pResourcesAccesses).forEach(ra -> sj.add(ra.getVerb() + "@" + ra.getResource()));
+            LOGGER.info(ROLE_LOST_ACCESS, pRole.getName(), sj.toString());
             publishResourceAccessEvent(pRole.getName(), pResourcesAccesses);
         }
         // Change parent if required
@@ -838,9 +854,11 @@ public class RoleService implements IRoleService {
         final List<String> roleNamesAllowedToBorrow = Lists.newArrayList(DefaultRole.ADMIN.toString(),
                                                                          DefaultRole.PROJECT_ADMIN.toString());
         // It is impossible to borrow a role if your original role is not ADMIN or PROJECT_ADMIN or one of their sons
+        // To simplify client interraction we returned the actual role of the user even if this role is not borowable.
+        // The regards frontend use this role to calculate user ihm rights based on his role.
         if (!roleNamesAllowedToBorrow.contains(originalRole.getName()) && ((originalRole.getParentRole() == null)
                 || !roleNamesAllowedToBorrow.contains(originalRole.getParentRole().getName()))) {
-            return Sets.newHashSet();
+            return Sets.newHashSet(originalRole);
         }
         // get ascendants of the original Role
         if (originalRole.getParentRole() != null) {
@@ -864,7 +882,7 @@ public class RoleService implements IRoleService {
         // so if we want the descendants of REGISTERED_USER, we need to seek for role which parent is REGISTERED_USER and so on.
         Set<Role> children = roleRepository.findByParentRoleName(role.getName());
         Set<Role> descendants = Sets.newHashSet(children);
-        for(Role child: children) {
+        for (Role child : children) {
             descendants.addAll(getDescendants(child));
         }
         if (children.isEmpty()) {

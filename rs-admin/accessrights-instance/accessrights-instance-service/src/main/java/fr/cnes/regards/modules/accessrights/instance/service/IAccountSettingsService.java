@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
 
 /**
@@ -40,6 +41,7 @@ public interface IAccountSettingsService {
      * @param pSettings
      *            The {@link AccountSettings}
      * @return The updated account settings
+     * @throws EntityNotFoundException
      */
-    AccountSettings update(AccountSettings pSettings);
+    AccountSettings update(AccountSettings pSettings) throws EntityNotFoundException;
 }

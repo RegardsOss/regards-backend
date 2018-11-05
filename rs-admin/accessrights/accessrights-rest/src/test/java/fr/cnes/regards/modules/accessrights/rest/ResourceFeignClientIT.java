@@ -79,7 +79,7 @@ public class ResourceFeignClientIT extends AbstractRegardsWebIT {
 
     @Before
     public void init() {
-        jwtService.injectMockToken(DEFAULT_TENANT, DEFAULT_ROLE);
+        jwtService.injectMockToken(getDefaultTenant(), DEFAULT_ROLE);
         client = FeignClientBuilder.build(new TokenClientProvider<>(IMicroserviceResourceClient.class,
                 "http://" + serverAddress + ":" + getPort(), feignSecurityManager));
         FeignSecurityManager.asSystem();

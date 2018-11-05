@@ -18,18 +18,21 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service.workflow.state;
 
+import java.time.LocalDateTime;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.instance.service.accountunlock.IAccountUnlockTokenService;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
+import fr.cnes.regards.modules.project.service.ITenantService;
 
 /**
  * State class of the State Pattern implementing the available actions on a {@link Account} in status INACTIVE.
@@ -41,24 +44,35 @@ import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPass
 public class InactiveState extends AbstractDeletableState {
 
     /**
-     * @param projectUsersClient
-     * @param pAccountRepository
-     * @param pTenantResolver
-     * @param pRuntimeTenantResolver
-     * @param pPasswordResetTokenService
-     * @param pAccountUnlockTokenService
+     * In days. Provided by property file.
      */
-    public InactiveState(IProjectUsersClient projectUsersClient, IAccountRepository pAccountRepository,
-            ITenantResolver pTenantResolver, IRuntimeTenantResolver pRuntimeTenantResolver,
-            IPasswordResetService pPasswordResetTokenService,
-            IAccountUnlockTokenService pAccountUnlockTokenService) {
-        super(projectUsersClient, pAccountRepository, pTenantResolver, pRuntimeTenantResolver,
-              pPasswordResetTokenService, pAccountUnlockTokenService);
+    private Long accountValidityDuration;
+
+    /**
+     * @param projectUsersClient
+     * @param accountRepository
+     * @param tenantService
+     * @param runtimeTenantResolver
+     * @param passwordResetService
+     * @param accountUnlockTokenService
+     */
+    public InactiveState(IProjectUsersClient projectUsersClient, IAccountRepository accountRepository,
+            ITenantService tenantService, IRuntimeTenantResolver runtimeTenantResolver,
+            IPasswordResetService passwordResetService, IAccountUnlockTokenService accountUnlockTokenService,
+            @Value("${regards.accounts.validity.duration}") Long accountValidityDuration) {
+        super(projectUsersClient,
+              accountRepository,
+              tenantService,
+              runtimeTenantResolver,
+              passwordResetService,
+              accountUnlockTokenService);
+        this.accountValidityDuration = accountValidityDuration;
     }
 
     @Override
     public void activeAccount(final Account pAccount) throws EntityTransitionForbiddenException {
         pAccount.setStatus(AccountStatus.ACTIVE);
+        pAccount.setInvalidityDate(LocalDateTime.now().plusDays(accountValidityDuration));
         accountRepository.save(pAccount);
     }
 

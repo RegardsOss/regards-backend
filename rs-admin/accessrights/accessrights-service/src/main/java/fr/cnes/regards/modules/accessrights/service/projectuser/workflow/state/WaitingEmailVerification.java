@@ -44,6 +44,7 @@ public class WaitingEmailVerification extends AbstractDeletableState {
     /**
      * @param pProjectUserRepository
      * @param pEmailVerificationTokenService
+     * @param publisher
      */
     public WaitingEmailVerification(IProjectUserRepository pProjectUserRepository,
             IEmailVerificationTokenService pEmailVerificationTokenService, IPublisher publisher) {

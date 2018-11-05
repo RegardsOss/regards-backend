@@ -18,10 +18,11 @@
  */
 package fr.cnes.regards.modules.project.rest;
 
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,9 +43,8 @@ import fr.cnes.regards.modules.project.service.IProjectConnectionService;
 import fr.cnes.regards.modules.project.service.IProjectService;
 
 /**
- * System API for managing tenant connection lifecycle
+ * System API for managing tenant connection lifecycle. Should only be used by other microservices.
  * @author Marc Sordi
- *
  */
 @RestController
 @RequestMapping("/connections/{microservice}")
@@ -80,9 +80,7 @@ public class TenantConnectionController {
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<TenantConnection> addTenantConnection(@PathVariable String microservice,
             @Valid @RequestBody TenantConnection tenantConnection) throws ModuleException {
-
         Project project = projectService.retrieveProject(tenantConnection.getTenant());
-
         ProjectConnection projectConnection = new ProjectConnection();
         projectConnection.setDriverClassName(tenantConnection.getDriverClassName());
         projectConnection.setMicroservice(microservice);
@@ -91,7 +89,6 @@ public class TenantConnectionController {
         projectConnection.setUrl(tenantConnection.getUrl());
         projectConnection.setUserName(tenantConnection.getUserName());
         ProjectConnection connection = projectConnectionService.createStaticProjectConnection(projectConnection);
-
         return ResponseEntity.ok(connection.toTenantConnection());
     }
 
@@ -106,7 +103,6 @@ public class TenantConnectionController {
     @RequestMapping(method = RequestMethod.PUT)
     public ResponseEntity<TenantConnection> updateState(@PathVariable String microservice,
             @Valid @RequestBody TenantConnection tenantConnection) throws ModuleException {
-
         ProjectConnection connection = projectConnectionService
                 .updateState(microservice, tenantConnection.getTenant(), tenantConnection.getState(),
                              Optional.ofNullable(tenantConnection.getErrorCause()));
@@ -116,8 +112,7 @@ public class TenantConnectionController {
     @ResourceAccess(description = "List all enabled project (i.e. tenant) connections for a specified microservice",
             role = DefaultRole.INSTANCE_ADMIN)
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<TenantConnection>> getTenantConnections(@PathVariable String microservice)
-            throws ModuleException {
+    public ResponseEntity<List<TenantConnection>> getTenantConnections(@PathVariable String microservice) {
         List<ProjectConnection> projectConnections = projectConnectionService.retrieveProjectConnections(microservice);
         // Transform to tenant connection
         List<TenantConnection> tenantConnections = new ArrayList<>();
@@ -126,7 +121,6 @@ public class TenantConnectionController {
                 tenantConnections.add(projectConnection.toTenantConnection());
             }
         }
-
         return ResponseEntity.ok(tenantConnections);
     }
 }

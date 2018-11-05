@@ -71,7 +71,6 @@ public class LicenseService implements ILicenseService {
 
     /**
      * Retrieve the license state for the given project and the current user
-     * @param pProjectName
      * @return the license state
      * @throws EntityNotFoundException
      */
@@ -102,7 +101,6 @@ public class LicenseService implements ILicenseService {
 
     /**
      * Accept the license of the given project for the current user
-     * @param pProjectName
      * @return accepted license state
      * @throws EntityException
      */

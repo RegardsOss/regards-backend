@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -143,17 +144,15 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
     private void filterAndSend(final Predicate<NotificationUserSetting> pFilter) {
         // With the stream of unsent notifications
         String tenant = runtimeTenantResolver.getTenant();
-        try (Stream<Notification> stream = notificationService.retrieveNotificationsToSend().parallelStream()) {
+        try (Stream<Notification> stream = notificationService.retrieveNotificationsToSend(new PageRequest(0, 10))
+                .getContent().parallelStream()) {
             stream.forEach(notification -> {
                 runtimeTenantResolver.forceTenant(tenant);
                 // Build the list of recipients
                 String[] recipients = notificationService.findRecipients(notification)
-                        .map(projectUser -> new NotificationUserSetting(notification,
-                                                                        projectUser,
-                                                                        notificationSettingsService
-                                                                                .retrieveNotificationSettings(
-                                                                                        projectUser))).filter(pFilter)
-                        .map(n -> n.getProjectUser()).distinct().toArray(s -> new String[s]);
+                        .map(projectUser -> new NotificationUserSetting(notification, projectUser,
+                                notificationSettingsService.retrieveNotificationSettings(projectUser)))
+                        .filter(pFilter).map(n -> n.getProjectUser()).distinct().toArray(s -> new String[s]);
 
                 // Send the notification to recipients
                 sendNotification(notification, recipients);

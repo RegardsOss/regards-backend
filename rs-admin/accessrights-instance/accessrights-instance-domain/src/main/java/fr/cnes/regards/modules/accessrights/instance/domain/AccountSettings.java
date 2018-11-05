@@ -67,7 +67,7 @@ public class AccountSettings implements IIdentifiable<Long> {
      */
     @Pattern(regexp = MANUAL_MODE + "|" + AUTO_ACCEPT_MODE, flags = Pattern.Flag.CASE_INSENSITIVE)
     @Column(name = "mode", length = 16)
-    private String mode = MANUAL_MODE;
+    private String mode = AUTO_ACCEPT_MODE;
 
     @Override
     public Long getId() {

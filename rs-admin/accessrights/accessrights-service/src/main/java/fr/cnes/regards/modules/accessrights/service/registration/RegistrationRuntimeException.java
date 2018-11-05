@@ -22,6 +22,7 @@ package fr.cnes.regards.modules.accessrights.service.registration;
  * Specific runtime exception
  * @author Xavier-Alexandre Brochard
  */
+@SuppressWarnings("serial")
 public class RegistrationRuntimeException extends RuntimeException {
 
     /**

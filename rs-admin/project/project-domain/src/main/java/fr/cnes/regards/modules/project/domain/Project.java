@@ -120,6 +120,12 @@ public class Project implements IIdentifiable<Long> {
     @Column
     private String host;
 
+    @Column(name = "crs", length = 32)
+    private String crs = "WGS_84";
+
+    @Column(name = "pole_managed")
+    private Boolean isPoleToBeManaged = false;
+
     /**
      * Default constructor
      */
@@ -196,15 +202,28 @@ public class Project implements IIdentifiable<Long> {
         isPublic = pIsPublic;
     }
 
-    /**
-     * @return the licence link
-     */
     public String getLicenceLink() {
         return licenceLink;
     }
 
     public void setLicenseLink(final String pLicenceLink) {
         licenceLink = pLicenceLink;
+    }
+
+    public String getCrs() {
+        return crs;
+    }
+
+    public void setCrs(String crs) {
+        this.crs = crs;
+    }
+
+    public Boolean getPoleToBeManaged() {
+        return isPoleToBeManaged;
+    }
+
+    public void setPoleToBeManaged(Boolean poleToBeManaged) {
+        isPoleToBeManaged = poleToBeManaged;
     }
 
     @Override

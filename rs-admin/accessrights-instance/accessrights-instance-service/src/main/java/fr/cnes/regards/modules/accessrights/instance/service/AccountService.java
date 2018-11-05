@@ -18,11 +18,12 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service;
 
-import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -147,13 +148,13 @@ public class AccountService implements IAccountService {
     }
 
     /**
-     * Call after Spring sucessfully build the bean
+     * Call after Spring successfully build the bean
      */
     @PostConstruct
     public void initialize() {
         if (!this.existAccount(rootAdminUserLogin)) {
             final Account account = new Account(rootAdminUserLogin, rootAdminUserLogin, rootAdminUserLogin,
-                                                rootAdminUserPassword);
+                    rootAdminUserPassword);
             account.setStatus(AccountStatus.ACTIVE);
             account.setAuthenticationFailedCounter(0L);
             account.setExternal(false);
@@ -177,11 +178,13 @@ public class AccountService implements IAccountService {
     }
 
     @Override
-    public Account createAccount(final Account pAccount) {
-        pAccount.setId(null);
-        pAccount.setPassword(EncryptionUtils.encryptPassword(pAccount.getPassword()));
-        pAccount.setInvalidityDate(LocalDateTime.now().plusDays(accountValidityDuration));
-        return accountRepository.save(pAccount);
+    public Account createAccount(final Account account) {
+        account.setId(null);
+        if (account.getPassword() != null) {
+            account.setPassword(EncryptionUtils.encryptPassword(account.getPassword()));
+        }
+        account.setInvalidityDate(LocalDateTime.now().plusDays(accountValidityDuration));
+        return accountRepository.save(account);
     }
 
     @Override
@@ -212,9 +215,10 @@ public class AccountService implements IAccountService {
     }
 
     @Override
-    public boolean validatePassword(final String pEmail, final String pPassword) throws EntityNotFoundException {
+    public boolean validatePassword(final String email, final String password, boolean checkAccountValidity)
+            throws EntityNotFoundException {
 
-        final Optional<Account> toValidate = accountRepository.findOneByEmail(pEmail);
+        final Optional<Account> toValidate = accountRepository.findOneByEmail(email);
 
         if (!toValidate.isPresent()) {
             return false;
@@ -223,9 +227,9 @@ public class AccountService implements IAccountService {
         Account accountToValidate = toValidate.get();
 
         // Check password validity and account active status.
-        final boolean activeAccount = accountToValidate.getStatus().equals(AccountStatus.ACTIVE);
-        final boolean validPassword = accountToValidate.getPassword()
-                .equals(EncryptionUtils.encryptPassword(pPassword));
+        final boolean activeAccount = checkAccountValidity ? accountToValidate.getStatus().equals(AccountStatus.ACTIVE)
+                : true;
+        final boolean validPassword = accountToValidate.getPassword().equals(EncryptionUtils.encryptPassword(password));
 
         // If password is invalid
         if (!validPassword && !runtimeTenantResolver.isInstance()) {
@@ -248,6 +252,7 @@ public class AccountService implements IAccountService {
 
     @Override
     public boolean existAccount(final String pEmail) {
+        accountRepository.findAll();
         return accountRepository.findOneByEmail(pEmail).isPresent();
     }
 
@@ -276,6 +281,7 @@ public class AccountService implements IAccountService {
     public void changePassword(final Long pId, final String pEncryptPassword) throws EntityNotFoundException {
         final Account toChange = retrieveAccount(pId);
         toChange.setPassword(pEncryptPassword);
+        toChange.setPasswordUpdateDate(LocalDateTime.now());
         resetAuthenticationFailedCounter(toChange);
         toChange.setStatus(AccountStatus.ACTIVE);
         accountRepository.save(toChange);
@@ -299,23 +305,31 @@ public class AccountService implements IAccountService {
     @Scheduled(cron = "${regards.accounts.validity.check.cron}")
     @Override
     public void checkAccountValidity() {
-        LOG.info("Starting to check accounts for inactivity");
+        LOG.info("Start checking accounts inactivity");
         final Set<Account> toCheck = accountRepository.findAllByStatusNot(AccountStatus.INACTIVE);
+
         // Account#equals being on email, we create a fake Account with the INSTANCE_ADMIN login and we remove it from the database result.
         toCheck.remove(new Account(rootAdminUserLogin, "", "", rootAdminUserPassword));
         // lets check issues with the invalidity date
         if ((accountValidityDuration != null) && !accountValidityDuration.equals(0L)) {
             final LocalDateTime now = LocalDateTime.now();
             toCheck.stream().filter(a -> a.getInvalidityDate().isBefore(now))
-                    .peek(a -> a.setStatus(AccountStatus.INACTIVE)).peek(a -> LOG.info("Account {} set to inactive because of its account validity date", a.getEmail())).forEach(accountRepository::save);
+                    .peek(a -> a.setStatus(AccountStatus.INACTIVE))
+                    .peek(a -> LOG.info("Account {} set to {} because of its account validity date", a.getEmail(),
+                                        AccountStatus.INACTIVE))
+                    .forEach(accountRepository::save);
         }
+
         // lets check issues with the password
         if ((accountPasswordValidityDuration != null) && !accountPasswordValidityDuration.equals(0L)) {
             final LocalDateTime minValidityDate = LocalDateTime.now().minusDays(accountPasswordValidityDuration);
             // get all account that are not already locked, those already locked would not be re-locked anyway
-            toCheck.stream().filter(a -> a.getExternal().equals(false) && (a.getPasswordUpdateDate() != null) && a
-                    .getPasswordUpdateDate().isBefore(minValidityDate)).peek(a -> a.setStatus(AccountStatus.INACTIVE))
-                    .peek(a -> LOG.info("Account {} set to inactive because of its password validity date", a.getEmail()))
+            toCheck.stream()
+                    .filter(a -> a.getExternal().equals(false) && (a.getPasswordUpdateDate() != null)
+                            && a.getPasswordUpdateDate().isBefore(minValidityDate))
+                    .peek(a -> a.setStatus(AccountStatus.INACTIVE_PASSWORD))
+                    .peek(a -> LOG.info("Account {} set to {} because of its password validity date", a.getEmail(),
+                                        AccountStatus.INACTIVE_PASSWORD))
                     .forEach(accountRepository::save);
         }
     }

@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
  *
  * @author Xavier-Alexandre Brochard
  */
+@SuppressWarnings("serial")
 public class OnDenyEvent extends ApplicationEvent {
 
     /**

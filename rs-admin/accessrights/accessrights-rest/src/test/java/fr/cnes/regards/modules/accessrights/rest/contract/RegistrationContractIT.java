@@ -18,9 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.rest.contract;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -30,11 +27,11 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
@@ -61,6 +58,7 @@ public class RegistrationContractIT extends AbstractRegardsTransactionalIT {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(RegistrationContractIT.class);
 
+    @SuppressWarnings("unchecked")
     @Test
     public void requestAccess() {
 
@@ -77,12 +75,11 @@ public class RegistrationContractIT extends AbstractRegardsTransactionalIT {
         Mockito.when(accountSettingsClient.retrieveAccountSettings())
                 .thenReturn(new ResponseEntity<>(new Resource<>(accountSettings), HttpStatus.OK));
 
-        // TODO read JSON
         String accessRequest = readJsonContract("request-access.json");
 
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(MockMvcResultMatchers.status().isCreated());
-        performDefaultPost(RegistrationController.REQUEST_MAPPING_ROOT, accessRequest, expectations,
+        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
+        requestBuilder.addExpectation(MockMvcResultMatchers.status().isCreated());
+        performDefaultPost(RegistrationController.REQUEST_MAPPING_ROOT, accessRequest, requestBuilder,
                            "Access request error!");
     }
 
