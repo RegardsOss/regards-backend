@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.domain.job;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -27,7 +28,7 @@ public class RemoveAIPTagsFilters extends AIPQueryFilters {
     /**
      * store tag to remove
      */
-    private Set<String> tagsToRemove;
+    private Set<String> tagsToRemove = new HashSet<>();
 
     public Set<String> getTagsToRemove() {
         return tagsToRemove;
