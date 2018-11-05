@@ -1,30 +1,20 @@
-* **URL**:
+#### Request
+
+* **URL**
 
   `{{path}}`
 
-* **Method:**
+* **URL template**
+
+  `{{urlTemplate}}`
+
+* **Method**
 
   `{{method}}`
 
-* **Headers**:
+* **Headers**
 
   `Authorization: Bearer {token}`
-  {{#headers}}
+{{#headers}}
   `{{name}}: {{value}}`
-  {{/headers}}
-
-* **URL Params**
-
-  urlParams
-
-* **Query Params**
-
-  queryParams
-
-* **Data Params**
-
-  **Required:**
-
-```json
-  {{requestBody}}
-```
+{{/headers}}

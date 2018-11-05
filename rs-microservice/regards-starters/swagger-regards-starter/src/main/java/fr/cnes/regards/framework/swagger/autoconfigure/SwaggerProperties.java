@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.swagger.autoconfigure;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.validation.annotation.Validated;
 
 /**
  * Swagger properties
@@ -28,6 +29,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author msordi
  *
  */
+@Validated
 @ConfigurationProperties(prefix = "regards.swagger")
 public class SwaggerProperties {
 

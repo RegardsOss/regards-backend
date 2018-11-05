@@ -255,7 +255,7 @@ public class TemplateService implements ITemplateService {
         }
 
         final SimpleMailMessage message = new SimpleMailMessage();
-        message.setSubject((subject == null) ? template.getSubject() : subject);
+        message.setSubject("[Regards] " + ((subject == null) ? template.getSubject() : subject));
         message.setText(text);
         message.setTo(recipients);
         message.setFrom(noReplyAdress);

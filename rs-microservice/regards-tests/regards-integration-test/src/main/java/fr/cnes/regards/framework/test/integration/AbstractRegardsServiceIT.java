@@ -18,10 +18,12 @@
  */
 package fr.cnes.regards.framework.test.integration;
 
+import org.junit.Rule;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -29,15 +31,28 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.gson.GsonBuilder;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.DefaultDaoTestConfiguration;
 import fr.cnes.regards.framework.jpa.multitenant.test.MockAmqpConfiguration;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
+import fr.cnes.regards.framework.test.util.JUnitLogRule;
 
 /**
  * Base class to realize integration tests using JWT and MockMvc. Should hold all the configurations to be considred by
  * any of its children.
- * Don't forget to force default tenant with <pre>tenantResolver.forceTenant(DEFAULT_TENANT);</pre> in
- * <pre>@Before</pre> annotated method for example or into tests methods.
+ * Don't forget to force default tenant with
+ *
+ * <pre>
+ * tenantResolver.forceTenant(DEFAULT_TENANT);
+ * </pre>
+ *
+ * in
+ *
+ * <pre>
+ * &#64;Before
+ * </pre>
+ *
+ * annotated method for example or into tests methods.
  * <i>public</i> schema is used.
  *
  * @author svissier
@@ -46,24 +61,32 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 @SpringBootTest(classes = TestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @ContextConfiguration(classes = { DefaultTestFeignConfiguration.class, DefaultDaoTestConfiguration.class,
         MockAmqpConfiguration.class })
-@ActiveProfiles({ "default", "test" })
+@ActiveProfiles({ "default", "test", "noschedule" })
 @TestPropertySource(properties = { "regards.cloud.enabled=false" })
 public abstract class AbstractRegardsServiceIT {
 
     /**
-     * Default tenant configured in application properties
+     * @deprecated Default tenant. Use {@link #getDefaultTenant()} instead.
      */
+    @Deprecated
     protected static final String DEFAULT_TENANT = "PROJECT";
 
     /**
-     * Default user email
+     * @deprecated Default user email. Use {@link #getDefaultUserEmail()} instead.
      */
+    @Deprecated
     protected static final String DEFAULT_USER_EMAIL = "default_user@regards.fr";
 
     /**
-     * Default user role
+     * Default user role. User {@link #getDefaultRole()} instead.
      */
     protected static final String DEFAULT_ROLE = "ROLE_DEFAULT";
+
+    @Value("${regards.tenant:PROJECT}")
+    private String defaultTenant;
+
+    @Rule
+    public JUnitLogRule rule = new JUnitLogRule();
 
     /**
      * JWT service
@@ -94,7 +117,7 @@ public abstract class AbstractRegardsServiceIT {
      * @return JWT
      */
     protected String generateToken(final String pName, final String pRole) {
-        return jwtService.generateToken(DEFAULT_TENANT, pName, pRole);
+        return jwtService.generateToken(getDefaultTenant(), pName, pName, pRole);
     }
 
     /**
@@ -104,4 +127,11 @@ public abstract class AbstractRegardsServiceIT {
         return DEFAULT_ROLE;
     }
 
+    protected String getDefaultTenant() {
+        return defaultTenant;
+    }
+
+    protected String getDefaultUserEmail() {
+        return DEFAULT_USER_EMAIL;
+    }
 }

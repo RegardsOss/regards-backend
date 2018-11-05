@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.framework.modules.plugins.service;
 
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,12 +31,15 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.encryption.BlowfishEncryptionService;
+import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 
 /**
  *
@@ -55,15 +62,21 @@ public class ComplexPluginTest {
      * This method is run before all tests
      */
     @Before
-    public void init() {
+    public void init() throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         Mockito.when(runtimeTenantResolver.getTenant()).thenReturn("tenant");
 
         publisherMocked = Mockito.mock(IPublisher.class);
         // create a mock repository
         pluginConfRepositoryMocked = Mockito.mock(IPluginConfigurationRepository.class);
-        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, publisherMocked, runtimeTenantResolver);
-        pluginServiceMocked.addPluginPackage("fr.cnes.regards.framework.modules.plugins.service");
+        BlowfishEncryptionService blowfishEncryptionService = new BlowfishEncryptionService();
+        blowfishEncryptionService
+                .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "12345678"));
+        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked,
+                                                publisherMocked,
+                                                runtimeTenantResolver,
+                                                blowfishEncryptionService);
+        PluginUtils.setup();
     }
 
     @Test
@@ -84,7 +97,9 @@ public class ComplexPluginTest {
 
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = new PluginConfiguration(result,
-                "a configuration from PluginServiceUtility", ppf.getParameters(), 0);
+                                                                                 "a configuration from PluginServiceUtility",
+                                                                                 ppf.getParameters(),
+                                                                                 0);
         aPluginConfiguration.setId(pPluginConfigurationId);
 
         pluginConfs.add(aPluginConfiguration);

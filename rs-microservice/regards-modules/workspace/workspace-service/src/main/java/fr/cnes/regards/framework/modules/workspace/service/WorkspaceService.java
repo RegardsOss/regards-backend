@@ -66,6 +66,8 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
      */
     private static final Logger LOG = LoggerFactory.getLogger(WorkspaceService.class);
 
+    private static final String CRITICAL_MESSAGE_FORMAT = "Workspace \"%s\" occupation is critical. Occupation is \"%.2f%%\" which is greater than \"%d%%\" (critical threshold). Project \"%s\" is being set to maintenance mode!";
+
     /**
      * {@link IRuntimeTenantResolver} instance
      */
@@ -100,7 +102,8 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
     private Integer workspaceOccupationThreshold;
 
     /**
-     * The workspace critical occupation threshold at which point notification should be sent and projet set to maintenance
+     * The workspace critical occupation threshold at which point notification should be sent and projet set to
+     * maintenance
      */
     @Value("${regards.workspace.critical.occupation.threshold:90}")
     private Integer workspaceCriticalOccupationThreshold;
@@ -119,13 +122,12 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
 
     @Override
     public void setIntoWorkspace(InputStream is, String fileName) throws IOException {
-        //first lets check if the wroskapce occupation is not critical
+        // first lets check if the wroskapce occupation is not critical
         WorkspaceMonitoringInformation workspaceMonitoringInfo = getMonitoringInformation(getTenantWorkspace());
         if (workspaceMonitoringInfo.getOccupationRatio() > workspaceCriticalOccupationThreshold) {
-            String message = String
-                    .format("Workspace(%s) occupation is critical. Occupation is %s which is greater than %s(critical threshold). Project(%s) is being set to maintenance mode!",
-                            workspaceMonitoringInfo.getPath(), workspaceMonitoringInfo.getOccupationRatio().toString(),
-                            workspaceCriticalOccupationThreshold.toString(), runtimeTenantResolver.getTenant());
+            String message = String.format(CRITICAL_MESSAGE_FORMAT, workspaceMonitoringInfo.getPath(),
+                                           workspaceMonitoringInfo.getOccupationRatio() * 100,
+                                           workspaceCriticalOccupationThreshold, runtimeTenantResolver.getTenant());
             LOG.warn(message);
             MaintenanceManager.setMaintenance(runtimeTenantResolver.getTenant());
             notifier.sendErrorNotification(springApplicationName, message, "Workspace occupation is critical",
@@ -195,7 +197,7 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
         return Paths.get(getMicroserviceWorkspace().toString(), fileName);
     }
 
-    @Scheduled(fixedDelay = 60 * 60000, initialDelay = 60000)
+    @Scheduled(fixedDelayString = "${regards.workspace.monitoring.delay.ms:3600000}", initialDelay = 60000)
     public void monitorWorkspace() {
         for (String tenant : tenantResolver.getAllTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
@@ -208,24 +210,21 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
     public void monitor(String tenant) {
         try {
             WorkspaceMonitoringInformation workspaceMonitoringInfo = getMonitoringInformation(getTenantWorkspace());
-            if (workspaceMonitoringInfo.getOccupationRatio()*100 > workspaceCriticalOccupationThreshold) {
-                String message = String.format(
-                                               "Workspace(%s) occupation is critical. Occupation is %s which is greater than %s(critical threshold). Project(%s) is being set to maintenance mode!",
-                                               workspaceMonitoringInfo.getPath(),
-                                               workspaceMonitoringInfo.getOccupationRatio().toString(),
-                                               workspaceCriticalOccupationThreshold.toString(), tenant);
+            if ((workspaceMonitoringInfo.getOccupationRatio() * 100) > workspaceCriticalOccupationThreshold) {
+                String message = String.format(CRITICAL_MESSAGE_FORMAT, workspaceMonitoringInfo.getPath(),
+                                               workspaceMonitoringInfo.getOccupationRatio() * 100,
+                                               workspaceCriticalOccupationThreshold, tenant);
                 LOG.warn(message);
                 MaintenanceManager.setMaintenance(tenant);
                 notifier.sendErrorNotification(springApplicationName, message, "Workspace occupation is critical",
                                                DefaultRole.PROJECT_ADMIN);
                 return;
             }
-            if (workspaceMonitoringInfo.getOccupationRatio()*100 > workspaceOccupationThreshold) {
-                String message = String.format(
-                                               "Workspace(%s) starts to be busy. Occupation is %s which is greater than %s(soft threshold).",
-                                               workspaceMonitoringInfo.getPath(),
-                                               workspaceMonitoringInfo.getOccupationRatio().toString(),
-                                               workspaceOccupationThreshold.toString());
+            if ((workspaceMonitoringInfo.getOccupationRatio() * 100) > workspaceOccupationThreshold) {
+                String message = String
+                        .format("Workspace \"%s\" for project \"%s\" starts to be busy. Occupation is \"%.2f%%\" which is greater than \"%d%%\" (soft threshold).",
+                                workspaceMonitoringInfo.getPath(), tenant,
+                                workspaceMonitoringInfo.getOccupationRatio() * 100, workspaceOccupationThreshold);
                 LOG.warn(message);
                 notifier.sendWarningNotification(springApplicationName, message, "Workspace too busy",
                                                  DefaultRole.PROJECT_ADMIN);

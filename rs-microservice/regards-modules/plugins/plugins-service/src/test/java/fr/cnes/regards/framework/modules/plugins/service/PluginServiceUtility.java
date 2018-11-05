@@ -20,14 +20,15 @@ package fr.cnes.regards.framework.modules.plugins.service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.modules.plugins.ISamplePlugin;
+import fr.cnes.regards.framework.modules.plugins.SamplePlugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.plugins.ISamplePlugin;
-import fr.cnes.regards.framework.plugins.SamplePlugin;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 
 /***
@@ -111,7 +112,7 @@ public class PluginServiceUtility {
     /**
      * A {@link PluginParameter}
      */
-    protected static final List<PluginParameter> DYNAMICPARAMETERS = PluginParametersFactory.build()
+    protected static final Set<PluginParameter> DYNAMICPARAMETERS = PluginParametersFactory.build()
             .addParameter("param11", "value11").addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, 0)
             .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE)
             .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, RED, DYNAMICVALUES).getParameters();
@@ -119,7 +120,7 @@ public class PluginServiceUtility {
     /**
      * A {@link PluginParameter}
      */
-    protected static final List<PluginParameter> DYNAMICPARAMETERS_TO_UPDATE = PluginParametersFactory.build()
+    protected static final Set<PluginParameter> DYNAMICPARAMETERS_TO_UPDATE = PluginParametersFactory.build()
             .addParameter("param11", "value11").addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, 0)
             .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE)
             .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, RED, DYNAMICVALUES).getParameters();
@@ -127,7 +128,7 @@ public class PluginServiceUtility {
     /**
      * A list of {@link PluginParameter}
      */
-    protected static final List<PluginParameter> INTERFACEPARAMETERS = PluginParametersFactory.build()
+    protected static final Set<PluginParameter> INTERFACEPARAMETERS = PluginParametersFactory.build()
             .addParameter("param31", "value31").addParameter("param32", "value32").addParameter("param33", "value33")
             .addParameter("param34", "value34").addParameter("param35", "value35")
             .addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, 3)

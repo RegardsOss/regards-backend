@@ -22,7 +22,6 @@ import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import fr.cnes.regards.framework.geojson.AbstractFeature;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -93,6 +92,9 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
         this.ipType = ipType;
     }
 
+    /**
+     * Add Information package type comparison to AbstractFeature hashCode
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -101,6 +103,9 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
         return result;
     }
 
+    /**
+     * Add Information package type comparison to AbstractFeature equals
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {

@@ -20,6 +20,9 @@ public class HandledMessageDigestAlgorithmValidator implements ConstraintValidat
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         Set<String> digestAlgorithms = Security.getAlgorithms("MessageDigest");
+        if(value == null) {
+            return true;
+        }
         if(digestAlgorithms != null && digestAlgorithms.contains(value)) {
             return true;
         } else {

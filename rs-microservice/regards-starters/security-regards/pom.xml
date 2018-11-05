@@ -13,13 +13,13 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>security-regards</artifactId>
-	<version>2.0.0-RELEASE</version>
+	<version>3.0.0-RELEASE</version>
 	<description>REGARDS Security</description>
 
 	<parent>
 		<groupId>fr.cnes.regards.framework</groupId>
 		<artifactId>regards-starters</artifactId>
-		<version>2.0.0-RELEASE</version>
+		<version>3.0.0-RELEASE</version>
 	</parent>
 
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -66,10 +66,10 @@
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>amqp-regards</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-commons-regards</artifactId>
-		</dependency>
+		<!--<dependency>-->
+			<!--<groupId>fr.cnes.regards.framework</groupId>-->
+			<!--<artifactId>jpa-commons-regards</artifactId>-->
+		<!--</dependency>-->
 		<!-- JWT library -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>

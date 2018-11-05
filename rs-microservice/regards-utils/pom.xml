@@ -14,14 +14,14 @@
 
 	<groupId>fr.cnes.regards.framework</groupId>
 	<artifactId>regards-utils</artifactId>
-	<version>2.0.0-RELEASE</version>
+	<version>3.0.0-RELEASE</version>
 	<description>REGARDS core</description>
 	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-aggregator-parent</artifactId>
-		<version>2.0.0-RELEASE</version>
+		<version>3.0.0-RELEASE</version>
 		<relativePath />
 	</parent>
 
@@ -50,5 +50,7 @@
 		<module>plugin-utils</module>
 		<module>file-utils</module>
 		<module>exception-utils</module>
+        <module>encryption-standalone</module>
+		<module>spring-utils</module>
 	</modules>
 </project>

@@ -13,13 +13,13 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>gson-regards-starter</artifactId>
-	<version>2.0.0-RELEASE</version>
+	<version>3.0.0-RELEASE</version>
 	<description>REGARDS GSON starter</description>
 
 	<parent>
 		<groupId>fr.cnes.regards.framework</groupId>
 		<artifactId>regards-starters</artifactId>
-		<version>2.0.0-RELEASE</version>
+		<version>3.0.0-RELEASE</version>
 	</parent>
 
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>

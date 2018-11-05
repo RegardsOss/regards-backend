@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>regards-starters</artifactId>
+        <groupId>fr.cnes.regards.framework</groupId>
+        <version>3.0.0-RELEASE</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>fr.cnes.regards.framework</groupId>
+    <artifactId>encryption-starter</artifactId>
+    <version>3.0.0-RELEASE</version>
+    <packaging>jar</packaging>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.utils</groupId>
+            <artifactId>exception-utils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>module-regards</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework.test</groupId>
+            <artifactId>regards-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

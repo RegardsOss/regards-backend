@@ -19,8 +19,12 @@
 
 package fr.cnes.regards.framework.modules.plugins.service;
 
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,6 +32,8 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.encryption.BlowfishEncryptionService;
+import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -36,6 +42,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 
 /**
  * Unit testing of {@link PluginService}.
@@ -53,14 +60,18 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
      * This method is run before all tests
      */
     @Before
-    public void init() {
+    public void init() throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         Mockito.when(runtimeTenantResolver.getTenant()).thenReturn("tenant");
 
         // create a mock repository
         pluginConfRepositoryMocked = Mockito.mock(IPluginConfigurationRepository.class);
+        BlowfishEncryptionService blowfishEncryptionService = new BlowfishEncryptionService();
+        blowfishEncryptionService
+                .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "12345678"));
         pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, Mockito.mock(IPublisher.class),
-                runtimeTenantResolver);
+                runtimeTenantResolver, blowfishEncryptionService);
+        PluginUtils.setup();
     }
 
     /**
@@ -85,7 +96,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
                                 updatedConf.getParameters().stream().filter(p -> !p.isDynamic()).count());
 
             aPluginConfiguration.logParams();
-            final List<PluginParameter> parameters = aPluginConfiguration.getParameters();
+            final Set<PluginParameter> parameters = aPluginConfiguration.getParameters();
             for (final PluginParameter p : updatedConf.getParameters()) {
                 if (p.isDynamic()) {
                     if (!p.getDynamicsValuesAsString().isEmpty()) {
@@ -98,7 +109,6 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
                 }
             }
 
-            aPluginConfiguration.setParameters(parameters);
             updatedConf = pluginServiceMocked.updatePluginConfiguration(aPluginConfiguration);
 
             Assert.assertEquals(aPluginConfiguration.getParameters().stream().filter(p -> p.isDynamic()).count(),
@@ -108,7 +118,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
             aPluginConfiguration.logParams();
 
         } catch (ModuleException e) {
-            Assert.fail();
+            Assert.fail(e.getMessage());
         }
     }
 
@@ -134,7 +144,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
                                 updatedConf.getParameters().stream().filter(p -> !p.isDynamic()).count());
 
             aPluginConfiguration.logParams();
-            final List<PluginParameter> parameters = aPluginConfiguration.getParameters();
+            final Set<PluginParameter> parameters = aPluginConfiguration.getParameters();
             for (final PluginParameter p : updatedConf.getParameters()) {
                 if (!p.isDynamic()) {
                     parameters.remove(p);
@@ -147,7 +157,6 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
                 }
             }
 
-            aPluginConfiguration.setParameters(parameters);
             updatedConf = pluginServiceMocked.updatePluginConfiguration(aPluginConfiguration);
 
             Assert.assertEquals(aPluginConfiguration.getParameters().stream().filter(p -> p.isDynamic()).count(),

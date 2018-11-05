@@ -13,13 +13,13 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>module-regards-starter</artifactId>
-	<version>2.0.0-RELEASE</version>
+	<version>3.0.0-RELEASE</version>
 	<description>REGARDS module starter</description>
 
 	<parent>
 		<groupId>fr.cnes.regards.framework</groupId>
 		<artifactId>regards-starters</artifactId>
-		<version>2.0.0-RELEASE</version>
+		<version>3.0.0-RELEASE</version>
 	</parent>
 
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -44,9 +44,24 @@
 	</developers>
 
 	<dependencies>
+
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-xml</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.woodstox</groupId>
+			<artifactId>woodstox-core-asl</artifactId>
+			<version>4.4.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.module</groupId>
+			<artifactId>jackson-module-jaxb-annotations</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>module-regards</artifactId>
 		</dependency>
-	</dependencies>
+    </dependencies>
 </project>

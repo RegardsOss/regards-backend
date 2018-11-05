@@ -18,8 +18,7 @@
  */
 package fr.cnes.regards.framework.utils.plugins.inheritance;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -39,12 +38,12 @@ public class InheritanceTests {
     @Test
     public void test() {
 
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(BasicPlugin.FIELD_NAME_STRING, "hello!")
                 .addParameter(BasicPlugin.INHERITED_FIELD_NAME_STRING, "inherited hello!").getParameters();
 
-        IBasicPlugin plugin = PluginUtils.getPlugin(parameters, BasicPlugin.class,
-                                                    Arrays.asList(this.getClass().getPackage().getName()), null);
+        PluginUtils.setup(this.getClass().getPackage().getName());
+        IBasicPlugin plugin = PluginUtils.getPlugin(parameters, BasicPlugin.class, null);
         Assert.assertNotNull(plugin);
         plugin.doIt();
     }

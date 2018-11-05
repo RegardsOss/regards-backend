@@ -21,15 +21,16 @@ package fr.cnes.regards.framework.utils.cycle.detection;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
@@ -44,6 +45,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
  */
 @RunWith(SpringRunner.class)
 @EnableAutoConfiguration(exclude = JpaRepositoriesAutoConfiguration.class)
+@TestPropertySource(locations = "classpath:application-test.properties")
 public class CycleDetectionTest {
 
     private static final String PLUGIN_PACKAGE = "fr.cnes.regards.framework.utils.plugins";
@@ -67,15 +69,16 @@ public class CycleDetectionTest {
         /*
          * Set all parameters
          */
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePluginWithPojo.FIELD_NAME_ACTIVE, true)
                 .addParameter(SamplePluginWithPojo.FIELD_NAME_COEF, 12345)
                 .addParameter(SamplePluginWithPojo.FIELD_NAME_POJO, pojoParam)
                 .addParameter(SamplePluginWithPojo.FIELD_NAME_SUFFIX, "chris_test_1").getParameters();
 
         // instantiate plugin
+        PluginUtils.setup(PLUGIN_PACKAGE);
         SamplePluginWithPojo samplePlugin = PluginUtils.getPlugin(parameters, SamplePluginWithPojo.class,
-                                                                  Arrays.asList(PLUGIN_PACKAGE), new HashMap<>());
+                                                                  new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
@@ -127,14 +130,14 @@ public class CycleDetectionTest {
         /*
          * Set all parameters
          */
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePluginWithPojoCycleDetected.FIELD_NAME_ACTIVE, true)
                 .addParameter(SamplePluginWithPojoCycleDetected.FIELD_NAME_COEF, 12345)
                 .addParameter(SamplePluginWithPojoCycleDetected.FIELD_NAME_POJO, pojoParent).getParameters();
 
         // instantiate plugin
-        PluginUtils.getPlugin(parameters, SamplePluginWithPojoCycleDetected.class, Arrays.asList(PLUGIN_PACKAGE),
-                              new HashMap<>());
+        PluginUtils.setup(PLUGIN_PACKAGE);
+        PluginUtils.getPlugin(parameters, SamplePluginWithPojoCycleDetected.class, new HashMap<>());
 
         Assert.fail();
     }
@@ -155,15 +158,15 @@ public class CycleDetectionTest {
         /*
          * Set all parameters
          */
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePluginWithPojo.FIELD_NAME_ACTIVE, true)
                 .addParameter(SamplePluginWithPojo.FIELD_NAME_COEF, 12345)
                 .addParameter(SamplePluginWithPojo.FIELD_NAME_POJO, pojoParent)
                 .addParameter(SamplePluginWithPojo.FIELD_NAME_SUFFIX, "suffix").getParameters();
 
         // instantiate plugin
+        PluginUtils.setup(PLUGIN_PACKAGE);
         SamplePluginWithPojoWithSet samplePlugin = PluginUtils.getPlugin(parameters, SamplePluginWithPojoWithSet.class,
-                                                                         Arrays.asList(PLUGIN_PACKAGE),
                                                                          new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
@@ -219,15 +222,15 @@ public class CycleDetectionTest {
         /*
          * Set all parameters
          */
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePluginWithPojoCycleDetectedLevelThree.FIELD_NAME_ACTIVE, true)
                 .addParameter(SamplePluginWithPojoCycleDetectedLevelThree.FIELD_NAME_COEF, 12345)
                 .addParameter(SamplePluginWithPojoCycleDetectedLevelThree.FIELD_NAME_POJO, pojoGrandParent)
                 .getParameters();
 
         // instantiate plugin
-        PluginUtils.getPlugin(parameters, SamplePluginWithPojoCycleDetectedLevelThree.class,
-                              Arrays.asList(PLUGIN_PACKAGE), new HashMap<>());
+        PluginUtils.setup(PLUGIN_PACKAGE);
+        PluginUtils.getPlugin(parameters, SamplePluginWithPojoCycleDetectedLevelThree.class, new HashMap<>());
 
         Assert.fail();
     }

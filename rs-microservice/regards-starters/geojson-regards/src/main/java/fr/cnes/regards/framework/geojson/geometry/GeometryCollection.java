@@ -33,6 +33,9 @@ import fr.cnes.regards.framework.geojson.GeoJsonType;
  */
 public class GeometryCollection extends AbstractGeoJsonObject implements IGeometry {
 
+    /**
+     * AbstractGeometry&lt;?> instead of IGeometry to avoid a GeometryCollection of GeometryCollection
+     */
     private List<AbstractGeometry<?>> geometries = new ArrayList<>();
 
     public GeometryCollection() {
@@ -75,5 +78,10 @@ public class GeometryCollection extends AbstractGeoJsonObject implements IGeomet
             return false;
         }
         return true;
+    }
+
+    @Override
+    public <T> T accept(IGeometryVisitor<T> visitor) {
+        return visitor.visitGeometryCollection(this);
     }
 }

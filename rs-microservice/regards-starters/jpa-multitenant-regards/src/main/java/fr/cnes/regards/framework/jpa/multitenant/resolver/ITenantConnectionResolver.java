@@ -54,7 +54,7 @@ public interface ITenantConnectionResolver {
      *
      * @param microservice
      *            related microservice
-     * @param pTenantConnection
+     * @param tenantConnection
      *            tenant connection for specified microservice
      * @throws JpaMultitenantException
      *             implementation exception

@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.framework.oais;
 
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Embeddable;
 import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
@@ -41,11 +44,14 @@ public class Event {
      */
     private String type;
 
+    @Column
     @Type(type = "text")
     @NotBlank
     private String comment;
 
     @NotNull
+    @Column
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime date;
 
     public String getComment() {

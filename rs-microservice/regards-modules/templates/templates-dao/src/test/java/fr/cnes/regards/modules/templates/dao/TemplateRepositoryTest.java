@@ -27,7 +27,6 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTe
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.templates.domain.Template;
-import fr.cnes.regards.modules.templates.test.TemplateTestConstants;
 
 /**
  * Test class for {@link Template} DAO module
@@ -40,8 +39,10 @@ public class TemplateRepositoryTest extends AbstractDaoTransactionalTest {
     /**
      * A template with some values
      */
-    private final Template template = new Template(TemplateTestConstants.CODE, TemplateTestConstants.CONTENT,
-            TemplateTestConstants.DATA, TemplateTestConstants.SUBJECT);
+    private final Template template = new Template(TemplateTestConstants.CODE,
+                                                   TemplateTestConstants.CONTENT,
+                                                   TemplateTestConstants.DATA,
+                                                   TemplateTestConstants.SUBJECT);
 
     /**
      * The template repository

@@ -19,6 +19,10 @@
 
 package fr.cnes.regards.framework.modules.plugins.domain;
 
+import java.net.URL;
+import java.util.Collection;
+import java.util.Set;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -35,10 +39,6 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
-import java.net.URL;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.slf4j.Logger;
@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converter.SetStringCsvConverter;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
@@ -94,7 +95,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * Label to identify the configuration.
      */
-    @NotBlank(message="the label cannot be blank")
+    @NotBlank(message = "the label cannot be blank")
     @Column(name = "label", length = MAX_STRING_LENGTH)
     private String label;
 
@@ -110,7 +111,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * Priority order of the plugin.
      */
-    @NotNull(message ="the priorityOrder cannot be null")
+    @NotNull(message = "the priorityOrder cannot be null")
     @Column(nullable = false, updatable = true)
     private Integer priorityOrder = 0;
 
@@ -129,14 +130,14 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     @Column(columnDefinition = "text")
     @Convert(converter = SetStringCsvConverter.class)
-    private Set<String> interfaceNames = Sets.newHashSet();;
+    private Set<String> interfaceNames = Sets.newHashSet();
 
     /**
      * Configuration parameters of the plugin
      */
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "parent_conf_id", foreignKey = @ForeignKey(name = "fk_plg_conf_param_id"))
-    private List<PluginParameter> parameters = Lists.newArrayList();
+    private final Set<PluginParameter> parameters = Sets.newHashSet();
 
     /**
      * Icon of the plugin. It must be an URL to a svg file.
@@ -166,7 +167,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * @param label the label
      * @param parameters the list of parameters
      */
-    public PluginConfiguration(PluginMetaData metaData, String label, List<PluginParameter> parameters) {
+    public PluginConfiguration(PluginMetaData metaData, String label, Set<PluginParameter> parameters) {
         this(metaData, label, parameters, 0);
     }
 
@@ -177,34 +178,41 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * @param parameters the list of parameters
      * @param order the order
      */
-    public PluginConfiguration(PluginMetaData metaData, String label, List<PluginParameter> parameters, int order) {
+    public PluginConfiguration(PluginMetaData metaData, String label, Collection<PluginParameter> parameters,
+            int order) {
         super();
         this.setMetaData(metaData);
-        this.parameters = parameters;
+        if (parameters != null) {
+            this.parameters.addAll(parameters);
+        }
         priorityOrder = order;
         this.label = label;
+
         active = Boolean.TRUE;
     }
 
     /**
      * A constructor with {@link PluginMetaData}.
-     * @param pPluginMetaData the plugin's metadata
-     * @param pLabel the label
-     * @param pOrder the order
+     * @param metaData the plugin's metadata
+     * @param label the label
+     * @param order the order
      */
-    public PluginConfiguration(PluginMetaData pPluginMetaData, String pLabel, int pOrder) {
-        this(pPluginMetaData, pLabel, Lists.newArrayList(), pOrder);
+    public PluginConfiguration(PluginMetaData metaData, String label, int order) {
+        this(metaData, label, Lists.newArrayList(), order);
     }
 
     /**
      * Constructor initializing a new plugin configuration from an other one
+     * @param other
      */
     public PluginConfiguration(PluginConfiguration other) {
         active = other.active;
         id = other.id;
         interfaceNames = Sets.newHashSet(other.interfaceNames);
         label = other.label;
-        parameters = Lists.newArrayList(other.parameters);
+        if (other.parameters != null) {
+            parameters.addAll(other.parameters);
+        }
         pluginClassName = other.pluginClassName;
         pluginId = other.pluginId;
         priorityOrder = other.priorityOrder;
@@ -212,28 +220,35 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         iconUrl = other.iconUrl;
     }
 
-    public final void setMetaData(PluginMetaData pluginMetaData) {
-        pluginId = pluginMetaData.getPluginId();
-        version = pluginMetaData.getVersion();
-        pluginClassName = pluginMetaData.getPluginClassName();
-        interfaceNames = Sets.newHashSet(pluginMetaData.getInterfaceNames());
+    public final void setMetaData(PluginMetaData metaData) {
+        pluginId = metaData.getPluginId();
+        version = metaData.getVersion();
+        pluginClassName = metaData.getPluginClassName();
+        interfaceNames = Sets.newHashSet(metaData.getInterfaceNames());
+    }
+
+    /**
+     * Return the {@link PluginParameter} of a specific parameter
+     * @param parameterName the parameter to get the value
+     * @return {@link PluginParameter}
+     */
+    public PluginParameter getParameter(String parameterName) {
+        for (PluginParameter p : parameters) {
+            if ((p != null) && p.getName().equals(parameterName)) {
+                return p;
+            }
+        }
+        return null;
     }
 
     /**
      * Return the value of a specific parameter
-     * @param pParameterName the parameter to get the value
-     * @return the value of the parameter
+     * @param parameterName the parameter to get the value
+     * @return {@link String}
      */
-    public final String getParameterValue(String pParameterName) {
-        String value = null;
-        if (parameters != null) {
-            final Optional<PluginParameter> pluginParameter = parameters.stream()
-                    .filter(s -> s.getName().equals(pParameterName)).findFirst();
-            if (pluginParameter.isPresent()) {
-                value = pluginParameter.get().getValue();
-            }
-        }
-        return value;
+    public String getParameterValue(String parameterName) {
+        PluginParameter param;
+        return ((param = getParameter(parameterName)) == null ? null : param.getValue());
     }
 
     /**
@@ -241,50 +256,18 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * @return the stripped value (no enclosing quotes)
      */
     public String getStripParameterValue(String parameterName) {
-        String value = null;
-        if (parameters != null) {
-            Optional<PluginParameter> pluginParameter = parameters.stream()
-                    .filter(s -> s.getName().equals(parameterName)).findFirst();
-            if (pluginParameter.isPresent()) {
-                // Strip quotes using Gson
-                return pluginParameter.get().getStripParameterValue();
-            }
-        }
-        return value;
+        PluginParameter param;
+        return ((param = getParameter(parameterName)) == null ? null : param.getStripParameterValue());
     }
 
     /**
-     * Return the {@link PluginParameter} of a specific parameter
-     * @param pParameterName the parameter to get the value
-     * @return the {@link PluginParameter}
+     * Return the value of a specific {@link PluginConfiguration} parameter
+     * @param parameterName the parameter to get the value
+     * @return {@link PluginConfiguration}
      */
-    public final PluginParameter getParameter(String pParameterName) {
-        PluginParameter searchPluginParam = null;
-        if (parameters != null) {
-            final Optional<PluginParameter> pluginParameter = parameters.stream()
-                    .filter(s -> s.getName().equals(pParameterName)).findFirst();
-            if (pluginParameter.isPresent()) {
-                searchPluginParam = pluginParameter.get();
-            }
-        }
-        return searchPluginParam;
-    }
-
-    /**
-     * Return the value of a specific parameter {@link PluginConfiguration}
-     * @param pParameterName the parameter to get the value
-     * @return the value of the parameter
-     */
-    public final PluginConfiguration getParameterConfiguration(String pParameterName) {
-        PluginConfiguration value = null;
-        if (parameters != null) {
-            final Optional<PluginParameter> pluginParameter = parameters.stream()
-                    .filter(s -> s.getName().equals(pParameterName)).findFirst();
-            if (pluginParameter.isPresent()) {
-                value = pluginParameter.get().getPluginConfiguration();
-            }
-        }
-        return value;
+    public PluginConfiguration getParameterConfiguration(String parameterName) {
+        PluginParameter param;
+        return ((param = getParameter(parameterName)) == null ? null : param.getPluginConfiguration());
     }
 
     /**
@@ -332,33 +315,37 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
      * This setter <b>must</b> only be used while TESTING
+     * @param version
      */
-    public final void setVersion(String pVersion) {
-        version = pVersion;
+    public final void setVersion(String version) {
+        this.version = version;
     }
 
     public final String getPluginId() {
         return pluginId;
     }
 
-    public final void setPluginId(String pPluginId) {
-        pluginId = pPluginId;
+    public final void setPluginId(String pluginId) {
+        this.pluginId = pluginId;
     }
 
     public final Integer getPriorityOrder() {
         return priorityOrder;
     }
 
-    public final void setPriorityOrder(Integer pOrder) {
-        priorityOrder = pOrder;
+    public final void setPriorityOrder(Integer order) {
+        priorityOrder = order;
     }
 
-    public final List<PluginParameter> getParameters() {
+    public final Set<PluginParameter> getParameters() {
         return parameters;
     }
 
-    public final void setParameters(List<PluginParameter> pParameters) {
-        parameters = pParameters;
+    public final void setParameters(Set<PluginParameter> parameters) {
+        this.parameters.clear();
+        if ((parameters != null) && !parameters.isEmpty()) {
+            this.parameters.addAll(parameters);
+        }
     }
 
     public Boolean isActive() {
@@ -386,9 +373,10 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
      * Set the interface names
+     * @param interfaceNames
      */
-    public void setInterfaceNames(Set<String> pInterfaceNames) {
-        interfaceNames = pInterfaceNames;
+    public void setInterfaceNames(Set<String> interfaceNames) {
+        this.interfaceNames = interfaceNames;
     }
 
     @Override

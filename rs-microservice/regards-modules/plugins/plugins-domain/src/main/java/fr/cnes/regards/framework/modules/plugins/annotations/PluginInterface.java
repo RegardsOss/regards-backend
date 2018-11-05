@@ -43,4 +43,12 @@ public @interface PluginInterface {
      */
     String description() default "";
 
+    /**
+     *
+     * Parameter to define if the plugin can be instanciate multiple times with different configuration.
+     * If false, there should be at any time only one configuration active.
+     * default true
+     */
+    boolean allowMultipleConfigurationActive() default true;
+
 }

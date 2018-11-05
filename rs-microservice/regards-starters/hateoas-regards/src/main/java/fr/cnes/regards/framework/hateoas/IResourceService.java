@@ -19,7 +19,9 @@
 package fr.cnes.regards.framework.hateoas;
 
 import org.springframework.cglib.core.Converter;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.ResourceSupport;
 import org.springframework.util.Assert;
 
 /**
@@ -46,12 +48,14 @@ public interface IResourceService {
     }
 
     /**
-     * Add a link to a resource for a single method
+     * Utility method to add a build link to the specified {@link ResourceSupport}
+     */
+    void addLink(ResourceSupport resource, Class<?> controller, String methodName, String rel,
+            MethodParam<?>... methodParams);
+
+    /**
+     * Build a link for a single method
      *
-     * @param <T>
-     *            resource content type
-     * @param resource
-     *            resource to manage
      * @param controller
      *            controller
      * @param methodName
@@ -61,11 +65,16 @@ public interface IResourceService {
      * @param methodParams
      *            method parameters
      */
-    <T> void addLink(Resource<T> resource, Class<?> controller, String methodName, String rel,
+    Link buildLink(Class<?> controller, String methodName, String rel, MethodParam<?>... methodParams);
+
+    /**
+     * Utility method to add a build link with parameters to the specified {@link ResourceSupport}
+     */
+    <C> void addLinkWithParams(ResourceSupport resource, Class<C> controller, String methodName, String rel,
             MethodParam<?>... methodParams);
 
     /**
-     * Custom way of adding link to a resource handling request params.
+     * Custom way of building link handling request params.
      *
      * For example, an endpoint like getSomething(@RequestParam String name) mapped to: "/something" will generate a
      * link like "http://someting?name=myName"
@@ -77,12 +86,8 @@ public interface IResourceService {
      * generate a conversion error, telling that it could not find the appropriate converter, even if you defined in
      * your classpath a converter implementing Converter<ComplexEntity, String>
      *
-     * @param <T>
-     *            resource content type
      * @param <C>
      *            controller type
-     * @param resource
-     *            resource to manage
      * @param controller
      *            controller
      * @param methodName
@@ -92,6 +97,5 @@ public interface IResourceService {
      * @param methodParams
      *            method parameters
      */
-    <T, C> void addLinkWithParams(Resource<T> resource, Class<C> controller, String methodName, String rel,
-            MethodParam<?>... methodParams);
+    <C> Link buildLinkWithParams(Class<C> controller, String methodName, String rel, MethodParam<?>... methodParams);
 }

@@ -48,6 +48,8 @@ public class JWTServiceTest {
 
     private static final String TENANT = "tenant";
 
+    private static final String LOGIN = "marc.sordi@c-s.fr";
+
     private static final String EMAIL = "marc.sordi@c-s.fr";
 
     private static final String ROLE = "USER";
@@ -65,7 +67,7 @@ public class JWTServiceTest {
     public void generateJWT() {
 
         // Generate token
-        final String jwt = jwtService.generateToken(TENANT, EMAIL, ROLE);
+        final String jwt = jwtService.generateToken(TENANT, LOGIN, EMAIL, ROLE);
         LOGGER.debug(jwt);
 
         // Parse token and retrieve user information
@@ -75,7 +77,8 @@ public class JWTServiceTest {
             Assert.assertEquals(TENANT, jwtAuth.getTenant());
 
             final UserDetails user = jwtAuth.getPrincipal();
-            Assert.assertEquals(EMAIL, user.getName());
+            Assert.assertEquals(LOGIN, user.getLogin());
+            Assert.assertEquals(EMAIL, user.getEmail());
             Assert.assertEquals(ROLE, user.getRole());
         } catch (JwtException e) {
             final String message = "Error while generating JWT without group";
@@ -86,12 +89,16 @@ public class JWTServiceTest {
 
     @Test
     public void generateUserSpecificToken() throws InterruptedException, InvalidJwtException {
-        Map<String, Object> addParams = new HashMap<String, Object>() {{
-            put("toto", "titi");
-        }};
-        String token = jwtService
-                .generateToken(TENANT, EMAIL, ROLE, OffsetDateTime.now().plus(3, ChronoUnit.DAYS), addParams, "pouet",
-                               true);
+        @SuppressWarnings("serial")
+        Map<String, Object> addParams = new HashMap<String, Object>() {
+
+            {
+                put("toto", "titi");
+            }
+        };
+        String token = jwtService.generateToken(TENANT, LOGIN, EMAIL, ROLE,
+                                                OffsetDateTime.now().plus(3, ChronoUnit.DAYS), addParams, "pouet",
+                                                true);
 
         try {
             jwtService.parseToken(token, "teuop");
@@ -101,8 +108,8 @@ public class JWTServiceTest {
         Claims claims = jwtService.parseToken(token, "pouet");
         Assert.assertNotNull(claims.get("toto"));
 
-        String expiredToken = jwtService
-                .generateToken(TENANT, EMAIL, ROLE, OffsetDateTime.now(), addParams, "pouet", false);
+        String expiredToken = jwtService.generateToken(TENANT, LOGIN, EMAIL, ROLE, OffsetDateTime.now(), addParams,
+                                                       "pouet", false);
         Thread.sleep(1_000);
         try {
             claims = jwtService.parseToken(expiredToken, "pouet");

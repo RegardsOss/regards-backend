@@ -28,7 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cglib.core.Converter;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.ResourceSupport;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.access.AccessDeniedException;
@@ -72,41 +72,51 @@ public class DefaultResourceService implements IResourceService {
     }
 
     @Override
-    public <T> void addLink(final Resource<T> pResource, final Class<?> pController, final String pMethodName,
-            final String pRel, final MethodParam<?>... pMethodParams) {
+    public void addLink(ResourceSupport resource, final Class<?> controller, final String methodName, final String rel,
+            final MethodParam<?>... methodParams) {
 
-        Assert.notNull(pResource, "Resource should not be null");
-        Assert.notNull(pController, "Controller should not be null");
-        Assert.notNull(pMethodName, "Method name should not be null");
-        Assert.notNull(pRel, "Relation should not be null");
+        Assert.notNull(resource, "Resource should not be null");
+        Link link = buildLink(controller, methodName, rel, methodParams);
+        // May be null if silent error occurs
+        if (link != null) {
+            resource.add(link);
+        }
+    }
+
+    @Override
+    public Link buildLink(Class<?> controller, String methodName, String rel, MethodParam<?>... methodParams) {
+        Assert.notNull(controller, "Controller should not be null");
+        Assert.notNull(methodName, "Method name should not be null");
+        Assert.notNull(rel, "Relation should not be null");
 
         // Prepare method parameters
         Class<?>[] parameterTypes = null;
         List<Object> parameterValues = null;
-        if (pMethodParams != null) {
-            parameterTypes = new Class<?>[pMethodParams.length];
+        if (methodParams != null) {
+            parameterTypes = new Class<?>[methodParams.length];
             parameterValues = new ArrayList<>();
-            for (int i = 0; i < pMethodParams.length; i++) {
-                parameterTypes[i] = pMethodParams[i].getParameterType();
-                if (pMethodParams[i].getValue() != null) {
-                    parameterValues.add(pMethodParams[i].getValue());
+            for (int i = 0; i < methodParams.length; i++) {
+                parameterTypes[i] = methodParams[i].getParameterType();
+                if (methodParams[i].getValue() != null) {
+                    parameterValues.add(methodParams[i].getValue());
                 }
             }
         }
 
         try {
-            final Method method = getMethod(pController, pMethodName, parameterTypes);
+            final Method method = getMethod(controller, methodName, parameterTypes);
             final Link link;
             if (parameterValues != null) {
-                link = buildLink(method, pRel, parameterValues.toArray());
+                link = buildLink(method, rel, parameterValues.toArray());
             } else {
-                link = buildLink(method, pRel);
+                link = buildLink(method, rel);
             }
-            pResource.add(link);
+            return link;
         } catch (final MethodException e) {
             // Do not insert link
             LOGGER.trace("HATEOAS link skipped silently due to introspection error or access denied", e);
         }
+        return null;
     }
 
     protected Link buildLink(final Method pMethod, final String pRel, final Object... pParameterValues) {
@@ -131,41 +141,52 @@ public class DefaultResourceService implements IResourceService {
      * even if you defined in your classpath a converter implementing Converter<ComplexEntity, String>
      */
     @Override
-    public <T, C> void addLinkWithParams(final Resource<T> pResource, final Class<C> pController,
-            final String pMethodName, final String pRel, final MethodParam<?>... pMethodParams) {
+    public <C> void addLinkWithParams(ResourceSupport resource, final Class<C> controller, final String methodName,
+            final String rel, final MethodParam<?>... methodParams) {
 
-        Assert.notNull(pResource, "Resource should not be null");
-        Assert.notNull(pController, "Controller should not be null");
-        Assert.notNull(pMethodName, "Method name should not be null");
-        Assert.notNull(pRel, "Relation should not be null");
+        Assert.notNull(resource, "Resource should not be null");
+        Link link = buildLinkWithParams(controller, methodName, rel, methodParams);
+        // May be null if silent error occurs
+        if (link != null) {
+            resource.add(link);
+        }
+    }
+
+    @Override
+    public <C> Link buildLinkWithParams(Class<C> controller, String methodName, String rel,
+            MethodParam<?>... methodParams) {
+        Assert.notNull(controller, "Controller should not be null");
+        Assert.notNull(methodName, "Method name should not be null");
+        Assert.notNull(rel, "Relation should not be null");
 
         // Prepare method parameters
         Class<?>[] parameterTypes = null;
         List<Object> parameterValues = null;
-        if (pMethodParams != null) {
-            parameterTypes = new Class<?>[pMethodParams.length];
+        if (methodParams != null) {
+            parameterTypes = new Class<?>[methodParams.length];
             parameterValues = new ArrayList<>();
-            for (int i = 0; i < pMethodParams.length; i++) {
-                parameterTypes[i] = pMethodParams[i].getParameterType();
-                parameterValues.add(pMethodParams[i].getValue());
+            for (int i = 0; i < methodParams.length; i++) {
+                parameterTypes[i] = methodParams[i].getParameterType();
+                parameterValues.add(methodParams[i].getValue());
             }
         }
 
         try {
-            Method method = getMethod(pController, pMethodName, parameterTypes);
-            C proxyControllerInstance = ControllerLinkBuilder.methodOn(pController);
+            Method method = getMethod(controller, methodName, parameterTypes);
+            C proxyControllerInstance = ControllerLinkBuilder.methodOn(controller);
             Object invoke;
             if (parameterValues != null) {
                 invoke = method.invoke(proxyControllerInstance, parameterValues.toArray());
             } else {
                 invoke = method.invoke(proxyControllerInstance);
             }
-            Link link = ControllerLinkBuilder.linkTo(invoke).withRel(pRel);
-            pResource.add(link);
+            Link link = ControllerLinkBuilder.linkTo(invoke).withRel(rel);
+            return link;
         } catch (MethodException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             // Do not insert link
             LOGGER.trace("HATEOAS link skipped silently due to introspection error or access denied", e);
         }
+        return null;
     }
 
     /**

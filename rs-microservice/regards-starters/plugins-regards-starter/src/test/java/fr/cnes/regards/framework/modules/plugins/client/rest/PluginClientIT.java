@@ -64,7 +64,7 @@ public class PluginClientIT extends AbstractRegardsWebIT {
         try {
             authService.setAuthorities(DEFAULT_TENANT, IPluginClient.PLUGIN_TYPES, "Controller", RequestMethod.GET,
                                        RoleAuthority.getSysRole(""));
-            jwtService.injectToken(DEFAULT_TENANT, RoleAuthority.getSysRole(""), "");
+            jwtService.injectToken(DEFAULT_TENANT, RoleAuthority.getSysRole(""), "", "");
             final IPluginClient pluginClient = HystrixFeign.builder().contract(new SpringMvcContract())
                     .encoder(new GsonEncoder()).decoder(new ResponseEntityDecoder(new GsonDecoder()))
                     .target(new TokenClientProvider<>(IPluginClient.class, "http://" + serverAddress + ":" + getPort(),

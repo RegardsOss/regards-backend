@@ -70,12 +70,12 @@ public class InstanceDaoProperties {
     /**
      * For pooled data source, min available connections
      */
-    private Integer minPoolSize = 3;
+    private Integer minPoolSize = 1;
 
     /**
      * For pooled data source, max available connections
      */
-    private Integer maxPoolSize = 15;
+    private Integer maxPoolSize = 3;
 
     /**
      * Default test query

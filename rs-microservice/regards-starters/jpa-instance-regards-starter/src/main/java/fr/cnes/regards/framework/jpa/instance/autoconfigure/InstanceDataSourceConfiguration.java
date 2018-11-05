@@ -70,12 +70,16 @@ public class InstanceDataSourceConfiguration {
             datasource = DataSourceHelper.createEmbeddedDataSource(tenant, daoProperties.getEmbeddedPath());
 
         } else {
-            datasource = DataSourceHelper
-                    .createPooledDataSource(tenant, daoProperties.getDatasource().getUrl(),
-                                            daoProperties.getDatasource().getDriverClassName(),
-                                            daoProperties.getDatasource().getUsername(),
-                                            daoProperties.getDatasource().getPassword(), daoProperties.getMinPoolSize(),
-                                            daoProperties.getMaxPoolSize(), daoProperties.getPreferredTestQuery());
+            // this datasource does not need to be encrypted because it doesn't live in any database,
+            // just into the configuration file which is not encrypted but accesses are restricted.
+            datasource = DataSourceHelper.createPooledDataSource(tenant,
+                                                                 daoProperties.getDatasource().getUrl(),
+                                                                 daoProperties.getDatasource().getDriverClassName(),
+                                                                 daoProperties.getDatasource().getUsername(),
+                                                                 daoProperties.getDatasource().getPassword(),
+                                                                 daoProperties.getMinPoolSize(),
+                                                                 daoProperties.getMaxPoolSize(),
+                                                                 daoProperties.getPreferredTestQuery());
         }
         return datasource;
     }

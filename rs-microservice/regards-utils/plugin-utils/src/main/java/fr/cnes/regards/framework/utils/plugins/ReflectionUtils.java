@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.reflections.Reflections;
-
 /**
  *
  * Utility class used in reflections
@@ -35,16 +33,6 @@ import org.reflections.Reflections;
  * @author Christophe Mertz
  */
 public final class ReflectionUtils {
-
-    private static Reflections reflections = new Reflections("fr.cnes.regards");
-
-    public static Reflections getReflections() {
-        return reflections;
-    }
-
-    public static void setReflections(Reflections reflections) {
-        ReflectionUtils.reflections = reflections;
-    }
 
     /**
      * A private constructor
@@ -104,5 +92,4 @@ public final class ReflectionUtils {
         }
         return methods;
     }
-
 }

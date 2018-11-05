@@ -63,6 +63,11 @@ public class JWTService {
     public static final String CLAIM_SUBJECT = "sub";
 
     /**
+     * Email claim
+     */
+    public static final String CLAIM_EMAIL = "email";
+
+    /**
      * Encryption algorithm
      */
     private static final SignatureAlgorithm ALGO = SignatureAlgorithm.HS512;
@@ -91,14 +96,16 @@ public class JWTService {
 
     /**
      * Inject a generated token in the {@link SecurityContextHolder}
-     * @param pTenant tenant
-     * @param pRole Role name
-     * @param pUserName User name
+     * @param tenant tenant
+     * @param role Role name
+     * @param user User name
+     * @param email User email
      * @throws JwtException Error during token generation
      * @since 1.0-SNAPSHOT
      */
-    public void injectToken(final String pTenant, final String pRole, final String pUserName) throws JwtException {
-        final String token = generateToken(pTenant, pUserName, pRole);
+    public void injectToken(final String tenant, final String role, final String user, final String email)
+            throws JwtException {
+        final String token = generateToken(tenant, user, email, role);
         injectToken(token);
     }
 
@@ -121,11 +128,7 @@ public class JWTService {
      */
     public void injectMockToken(final String pTenant, final String pRole) {
         final JWTAuthentication jwt = new JWTAuthentication("mockJWT"); // Unparseable token
-        final UserDetails details = new UserDetails();
-        details.setTenant(pTenant);
-        details.setName("MockName");
-        details.setName("Mock@mail");
-        jwt.setUser(details);
+        jwt.setUser(new UserDetails(pTenant, "MockName", "Mock@mail", pRole));
         jwt.setRole(pRole);
         jwt.setAuthenticated(Boolean.TRUE);
         SecurityContextHolder.getContext().setAuthentication(jwt);
@@ -144,29 +147,32 @@ public class JWTService {
                     .parseClaimsJws(pAuthentication.getJwt());
             // OK, trusted JWT parsed and validated
 
-            final UserDetails user = new UserDetails();
-
             final String tenant = claims.getBody().get(CLAIM_TENANT, String.class);
             if (tenant == null) {
                 LOG.error("The tenant cannot be null");
                 throw new MissingClaimException(CLAIM_TENANT);
             }
-            user.setTenant(tenant);
 
-            final String name = claims.getBody().getSubject();
-            if (name == null) {
+            final String login = claims.getBody().getSubject();
+            if (login == null) {
                 LOG.error("The subject cannot be null");
                 throw new MissingClaimException(CLAIM_SUBJECT);
             }
-            user.setName(name);
-
-            pAuthentication.setUser(user);
 
             final String role = claims.getBody().get(CLAIM_ROLE, String.class);
             if (role == null) {
                 LOG.error("The role cannot be null");
                 throw new MissingClaimException(CLAIM_ROLE);
             }
+
+            final String email = claims.getBody().get(CLAIM_EMAIL, String.class);
+            if (email == null) {
+                LOG.error("The email cannot be null");
+                throw new MissingClaimException(CLAIM_EMAIL);
+            }
+
+            pAuthentication.setUser(new UserDetails(tenant, email, login, role));
+
             pAuthentication.setRole(role);
 
             pAuthentication.setAuthenticated(Boolean.TRUE);
@@ -186,20 +192,37 @@ public class JWTService {
      *
      * Generate a JWT handling the tenant name, the user name and its related role
      * @param tenant tenant
-     * @param pName user name
-     * @param pRole user role
+     * @param user user name
+     * @param email user email
+     * @param role user role
      * @return a Json Web Token
      */
-    public String generateToken(String tenant, String pName, String pRole) {
-        return Jwts.builder().setIssuer("regards").setClaims(generateClaims(tenant, pRole, pName)).setSubject(pName)
+    public String generateToken(String tenant, String user, String email, String role) {
+        return Jwts.builder().setIssuer("regards").setClaims(generateClaims(tenant, role, user, email)).setSubject(user)
                 .signWith(ALGO, TextCodec.BASE64.encode(secret))
                 .setExpiration(Date.from(OffsetDateTime.now().plusMinutes(validityDelay).toInstant())).compact();
+    }
+
+    /**
+     * FIXME : JWT should be completed with expiration date
+     *
+     * FIXME : JWT generate must manage RSA keys
+     *
+     * Generate a JWT handling the tenant name, the user name and its related role
+     * @param tenant tenant
+     * @param userLoginAndMail user name & mail
+     * @param role user role
+     * @return a Json Web Token
+     */
+    public String generateToken(String tenant, String userLoginAndMail, String role) {
+        return this.generateToken(tenant, userLoginAndMail, userLoginAndMail, role);
     }
 
     /**
      * Generate a token providing almost all informations
      * @param tenant tenant
      * @param user user who aked for token
+     * @param email user email
      * @param role user role
      * @param expirationDate specific expiration date
      * @param additionalParams additional parameters (user specific)
@@ -207,10 +230,11 @@ public class JWTService {
      * @param shorter if true, use a 256 bits algo instead of 512
      * @return a Json Web Token
      */
-    public String generateToken(String tenant, String user, String role, OffsetDateTime expirationDate,
+    public String generateToken(String tenant, String user, String email, String role, OffsetDateTime expirationDate,
             Map<String, Object> additionalParams, String secret, boolean shorter) {
-        return Jwts.builder().setIssuer("regards").setClaims(generateClaims(tenant, role, user, additionalParams))
-                .setSubject(user).signWith(shorter ? SHORT_ALGO : ALGO, TextCodec.BASE64.encode(secret))
+        return Jwts.builder().setIssuer("regards")
+                .setClaims(generateClaims(tenant, role, user, email, additionalParams)).setSubject(user)
+                .signWith(shorter ? SHORT_ALGO : ALGO, TextCodec.BASE64.encode(secret))
                 .setExpiration(Date.from(expirationDate.toInstant())).compact();
     }
 
@@ -218,6 +242,8 @@ public class JWTService {
      * Decode token and returns claims
      * @param token token to decode
      * @param secret secret used to generate it
+     * @throws InvalidJwtException
+     * @return parsed {@link Claims}
      */
     public Claims parseToken(String token, String secret) throws InvalidJwtException {
         try {
@@ -242,29 +268,33 @@ public class JWTService {
     /**
      * Method to generate REGARDS JWT Tokens CLAIMS
      * @param tenant tenant
-     * @param pRole user role
-     * @param pUserName user name
+     * @param role user role
+     * @param login user name
+     * @param email user email
      * @return claim map
      * @since 1.0-SNAPSHOT
      */
-    public Map<String, Object> generateClaims(final String tenant, final String pRole, final String pUserName) {
-        return generateClaims(tenant, pRole, pUserName, null);
+    public Map<String, Object> generateClaims(final String tenant, final String role, final String login,
+            final String email) {
+        return generateClaims(tenant, role, login, email, null);
     }
 
     /**
      * Method to generate REGARDS JWT Tokens CLAIMS
      * @param tenant tenant
      * @param role user role
-     * @param user user name
+     * @param login user name
+     * @param email user email
      * @param additionalParams optional additional parameters (can be null)
      * @return claim map
      */
-    public Map<String, Object> generateClaims(final String tenant, final String role, final String user,
+    public Map<String, Object> generateClaims(final String tenant, final String role, final String login, String email,
             Map<String, Object> additionalParams) {
         final Map<String, Object> claims = new HashMap<>();
         claims.put(CLAIM_TENANT, tenant);
         claims.put(CLAIM_ROLE, role);
-        claims.put(CLAIM_SUBJECT, user);
+        claims.put(CLAIM_SUBJECT, login);
+        claims.put(CLAIM_EMAIL, email);
         if (additionalParams != null) {
             claims.putAll(additionalParams);
         }

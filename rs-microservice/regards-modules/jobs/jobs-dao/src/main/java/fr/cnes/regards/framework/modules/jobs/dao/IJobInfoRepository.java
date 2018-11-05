@@ -63,6 +63,11 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
             + "and j.status.status = 'RUNNING'")
     void updateCompletion(int percentCompleted, OffsetDateTime estimatedCompletion, UUID id);
 
+    /**
+     * Count the number of jobs with provided statuses
+     */
+    Long countByClassNameAndStatusStatusIn(String className, JobStatus... statuses);
+
     Long countByStatusStatusIn(JobStatus... statuses);
 
     /**

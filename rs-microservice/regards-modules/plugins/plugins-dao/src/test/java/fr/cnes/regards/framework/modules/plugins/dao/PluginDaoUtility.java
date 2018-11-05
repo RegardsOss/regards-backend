@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.modules.plugins.dao;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,12 +47,12 @@ public class PluginDaoUtility extends AbstractDaoTest {
     /**
      * Project used for test
      */
-    protected static final  String PROJECT = "test1";
+    protected static final String PROJECT = "test1";
 
     /**
      * Version
      */
-    protected static final  String VERSION = "12345-6789-11";
+    protected static final String VERSION = "12345-6789-11";
 
     /**
      * Role used for test
@@ -81,8 +82,8 @@ public class PluginDaoUtility extends AbstractDaoTest {
     /**
      * A {@link PluginParameter}
      */
-    protected static final PluginParameter ONE_PARAMETER = PluginParametersFactory.build().addParameter("param11", "value11")
-            .getParameters().get(0);
+    protected static final PluginParameter ONE_PARAMETER = PluginParametersFactory.build()
+            .addParameter("param11", "value11").getParameters().stream().findFirst().get();
 
     /**
      * A {@link List} of values
@@ -92,7 +93,7 @@ public class PluginDaoUtility extends AbstractDaoTest {
     /**
      * A {@link List} of {@link PluginParameter}
      */
-    protected static final List<PluginParameter> LIST_PARAMETERS = PluginParametersFactory.build()
+    protected static final Set<PluginParameter> LIST_PARAMETERS = PluginParametersFactory.build()
             .addDynamicParameter("param-dyn21", RED, DYNAMICVALUES)
             .addDynamicParameter("param-dyn31", GREEN, DYNAMICVALUES).addParameter("param31", "value31")
             .addParameter("param51", "value51").addParameter("param61", "value61").getParameters();
@@ -100,7 +101,7 @@ public class PluginDaoUtility extends AbstractDaoTest {
     /**
      * A list of {@link PluginParameter}
      */
-    protected static final List<PluginParameter> INTERFACEPARAMETERS = PluginParametersFactory.build()
+    protected static final Set<PluginParameter> INTERFACEPARAMETERS = PluginParametersFactory.build()
             .addParameter("param41", "value41").addParameter("param42", "value42").addParameter("param43", "value43")
             .addParameter("param44", "value44").addParameter("param45", "value45").getParameters();
 
@@ -131,8 +132,8 @@ public class PluginDaoUtility extends AbstractDaoTest {
      * So create a new object each time we need one
      */
     public static PluginConfiguration getPlgConfWithParameters() {
-        return new PluginConfiguration(getPluginMetaData(),
-                                       "a configuration from PluginDaoUtility", INTERFACEPARAMETERS, 0);
+        return new PluginConfiguration(getPluginMetaData(), "a configuration from PluginDaoUtility",
+                INTERFACEPARAMETERS, 0);
     }
 
     /**
@@ -140,8 +141,8 @@ public class PluginDaoUtility extends AbstractDaoTest {
      * So create a new object each time we need one
      */
     public static PluginConfiguration getPlgConfWithDynamicParameter() {
-        return new PluginConfiguration(getPluginMetaData(),
-                                       "second configuration from PluginDaoUtility", LIST_PARAMETERS, 0);
+        return new PluginConfiguration(getPluginMetaData(), "second configuration from PluginDaoUtility",
+                LIST_PARAMETERS, 0);
     }
 
     protected void cleanDb() {

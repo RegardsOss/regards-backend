@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.utils.plugins.free;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -47,15 +48,15 @@ public class PluginFreeTest {
 
         // Configure as dynamic parameter
         List<String> availableValues = Arrays.asList("string1", "string2");
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addDynamicParameter(PluginWithBoolean.FIELD_NAME_STRING, "string", availableValues).getParameters();
 
         // Pass a dynamic parameter
         PluginParametersFactory dynParametersFactory = PluginParametersFactory.build();
         dynParametersFactory.addParameter(PluginWithBoolean.FIELD_NAME_STRING, "string1");
 
-        IFreePlugin plugin = PluginUtils.getPlugin(parameters, FreePluginWithString.class,
-                                                   Arrays.asList(this.getClass().getPackage().getName()), null,
+        PluginUtils.setup(this.getClass().getPackage().getName());
+        IFreePlugin plugin = PluginUtils.getPlugin(parameters, FreePluginWithString.class, null,
                                                    dynParametersFactory.asArray());
         Assert.assertNotNull(plugin);
         plugin.doIt();

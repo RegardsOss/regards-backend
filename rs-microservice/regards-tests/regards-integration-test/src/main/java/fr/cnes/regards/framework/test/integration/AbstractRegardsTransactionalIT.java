@@ -30,7 +30,7 @@ public abstract class AbstractRegardsTransactionalIT extends AbstractRegardsIT {
 
     @BeforeTransaction
     protected void beforeTransaction() {
-        injectToken(DEFAULT_TENANT, DEFAULT_ROLE);
+        injectToken(getDefaultTenant(), getDefaultRole());
     }
 
     /**

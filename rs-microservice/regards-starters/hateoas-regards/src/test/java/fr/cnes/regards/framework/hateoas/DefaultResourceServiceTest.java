@@ -18,9 +18,10 @@
  */
 package fr.cnes.regards.framework.hateoas;
 
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.validation.Valid;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -99,10 +100,7 @@ public class DefaultResourceServiceTest {
     public void init() {
         // Mock authentication
         jwtAuth = new JWTAuthentication("foo");
-        final UserDetails details = new UserDetails();
-        details.setTenant(TENANT);
-        details.setName("name");
-        jwtAuth.setUser(details);
+        jwtAuth.setUser(new UserDetails(TENANT, "name", "name", ROLE));
         jwtAuth.setRole(ROLE);
         SecurityContextHolder.getContext().setAuthentication(jwtAuth);
 

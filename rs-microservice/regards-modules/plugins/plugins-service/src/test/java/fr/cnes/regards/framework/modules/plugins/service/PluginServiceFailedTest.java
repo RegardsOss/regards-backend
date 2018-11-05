@@ -19,6 +19,10 @@
 
 package fr.cnes.regards.framework.modules.plugins.service;
 
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,17 +32,22 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.encryption.BlowfishEncryptionService;
+import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
+import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.IComplexInterfacePlugin;
+import fr.cnes.regards.framework.modules.plugins.INotInterfacePlugin;
+import fr.cnes.regards.framework.modules.plugins.ISamplePlugin;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.plugins.IComplexInterfacePlugin;
-import fr.cnes.regards.framework.plugins.INotInterfacePlugin;
-import fr.cnes.regards.framework.plugins.ISamplePlugin;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 
 /**
@@ -59,15 +68,20 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
      * This method is run before all tests
      */
     @Before
-    public void init() {
+    public void init() throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         Mockito.when(runtimeTenantResolver.getTenant()).thenReturn("tenant");
 
         // create a mock repository
         pluginConfRepositoryMocked = Mockito.mock(IPluginConfigurationRepository.class);
-        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, Mockito.mock(IPublisher.class),
-                runtimeTenantResolver);
-        pluginServiceMocked.addPluginPackage("fr.cnes.regards.framework.plugins");
+        BlowfishEncryptionService blowfishEncryptionService = new BlowfishEncryptionService();
+        blowfishEncryptionService
+                .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "12345678"));
+        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked,
+                                                Mockito.mock(IPublisher.class),
+                                                runtimeTenantResolver,
+                                                blowfishEncryptionService);
+        PluginUtils.setup();
     }
 
     /**
@@ -103,7 +117,8 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
      * @throws ModuleException throw if an error occurs
      */
     @Test(expected = EntityInvalidException.class)
-    public void saveANullPluginConfiguration() throws EntityInvalidException {
+    public void saveANullPluginConfiguration()
+            throws EntityInvalidException, EncryptionException, EntityNotFoundException {
         pluginServiceMocked.savePluginConfiguration(null);
         Assert.fail();
     }
@@ -114,7 +129,8 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
      * @throws ModuleException throw if an error occurs
      */
     @Test(expected = EntityInvalidException.class)
-    public void saveAPluginConfigurationWithoutPriorityOrder() throws EntityInvalidException {
+    public void saveAPluginConfigurationWithoutPriorityOrder()
+            throws EntityInvalidException, EncryptionException, EntityNotFoundException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setPriorityOrder(null);
         pluginServiceMocked.savePluginConfiguration(aPluginConfiguration);
@@ -127,7 +143,8 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
      * @throws ModuleException throw if an error occurs
      */
     @Test(expected = EntityInvalidException.class)
-    public void saveAPluginConfigurationWithoutVersion() throws EntityInvalidException {
+    public void saveAPluginConfigurationWithoutVersion()
+            throws EntityInvalidException, EncryptionException, EntityNotFoundException {
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
         aPluginConfiguration.setVersion("bad");
         pluginServiceMocked.savePluginConfiguration(aPluginConfiguration);

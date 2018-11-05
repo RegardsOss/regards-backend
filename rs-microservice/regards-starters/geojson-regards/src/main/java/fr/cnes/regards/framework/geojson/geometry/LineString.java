@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.geojson.geometry;
 
 import fr.cnes.regards.framework.geojson.GeoJsonType;
+import fr.cnes.regards.framework.geojson.coordinates.Positions;
 import fr.cnes.regards.framework.geojson.validator.LineStringConstraints;
 
 /**
@@ -35,5 +36,26 @@ public class LineString extends MultiPoint {
 
     public LineString() {
         super(GeoJsonType.LINESTRING);
+    }
+
+    @Override
+    public <T> T accept(IGeometryVisitor<T> visitor) {
+        return visitor.visitLineString(this);
+    }
+
+    @Override
+    public String toString() {
+        return "LINE STRING ( " + getCoordinates().toString() + " )";
+    }
+
+    /**
+     * Create a LineString from array  { { longitude, latitude }, {}, ... }
+     * <B>NOTE: the goal of this method is to ease creation/transformation/computation of geometries so no check is
+     * done concerning input values.</B>
+     */
+    public static LineString fromArray(double[][] lonLats) {
+        LineString lineString = new LineString();
+        lineString.coordinates = Positions.fromArray(lonLats);
+        return lineString;
     }
 }

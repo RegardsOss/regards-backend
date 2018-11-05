@@ -23,6 +23,7 @@ import javax.persistence.PersistenceContext;
 
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -41,9 +42,13 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 public abstract class AbstractDaoTest {
 
     /**
-     * Default tenant configured in dao.properties
+     * Default tenant. Use {@link #getDefaultTenant()} instead.
      */
+    @Deprecated
     public static final String DEFAULT_TENANT = "PROJECT";
+
+    @Value("${regards.tenant:PROJECT}")
+    private String defaultTenant;
 
     /**
      * JPA entity manager : use it to flush context to prevent false positive
@@ -56,10 +61,14 @@ public abstract class AbstractDaoTest {
     protected IRuntimeTenantResolver runtimeTenantResolver;
 
     protected void injectDefaultToken() {
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
     }
 
     protected void injectToken(String pTenant) {
         runtimeTenantResolver.forceTenant(pTenant);
+    }
+
+    protected String getDefaultTenant() {
+        return defaultTenant;
     }
 }

@@ -34,8 +34,19 @@ public class Unlocated extends AbstractGeoJsonObject implements IGeometry {
         super(GeoJsonType.UNLOCATED);
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends IGeometry> T withCrs(String crs) {
+        return (T) this;
+    }
+
     @Override
     public String toString() {
         return "Unlocated";
+    }
+
+    @Override
+    public <T> T accept(IGeometryVisitor<T> visitor) {
+        return visitor.visitUnlocated(this);
     }
 }

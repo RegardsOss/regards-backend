@@ -21,10 +21,10 @@ package fr.cnes.regards.framework.utils.plugins.plugintypes;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,11 +32,9 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.framework.utils.plugins.PluginInterfaceUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
-import fr.cnes.regards.framework.utils.plugins.ReflectionUtils;
 import fr.cnes.regards.framework.utils.plugins.basic.PluginUtilsTestConstants;
 
 /**
@@ -82,7 +80,8 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     public void loadPluginsInterface() {
         LOGGER.debug(STARTING + toString());
         // Get all the plugin interfaces
-        final List<String> pluginInterfaces = PluginInterfaceUtils.getInterfaces(PLUGIN_PACKAGES);
+        PluginUtils.setup(PLUGIN_PACKAGES);
+        Set<String> pluginInterfaces = PluginUtils.getPluginInterfaces();
         Assert.assertNotNull(pluginInterfaces);
         pluginInterfaces.stream().forEach(s -> LOGGER.info(s));
         Assert.assertTrue(pluginInterfaces.size() > 0);
@@ -96,8 +95,8 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     public void loadPluginsInterfaceEmpty() {
         LOGGER.debug(STARTING + toString());
         // Get all the plugin interfaces
-        ReflectionUtils.setReflections(new Reflections(PLUGIN_EMPTY_PACKAGE));
-        final List<String> pluginInterfaces = PluginInterfaceUtils.getInterfaces(PLUGIN_EMPTY_PACKAGE);
+        PluginUtils.setup(PLUGIN_EMPTY_PACKAGE);
+        Set<String> pluginInterfaces = PluginUtils.getPluginInterfaces();
         Assert.assertNotNull(pluginInterfaces);
         Assert.assertTrue(pluginInterfaces.isEmpty());
         LOGGER.debug(ENDING + toString());
@@ -110,8 +109,8 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     public void loadPluginsInterfaceSeveralPrefix() {
         LOGGER.debug(STARTING + toString());
         // Get all the plugin interfaces
-        ReflectionUtils.setReflections(new Reflections(PLUGIN_CURRENT_PACKAGE));
-        final List<String> pluginInterfaces = PluginInterfaceUtils.getInterfaces(Arrays.asList(PLUGIN_CURRENT_PACKAGE));
+        PluginUtils.setup(PLUGIN_CURRENT_PACKAGE);
+        Set<String> pluginInterfaces = PluginUtils.getPluginInterfaces();
         Assert.assertNotNull(pluginInterfaces);
         pluginInterfaces.stream().forEach(s -> LOGGER.info(s));
         Assert.assertTrue(pluginInterfaces.size() > 0);
@@ -125,8 +124,8 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     public void loadNoPluginsInterfaceSeveralPrefix() {
         LOGGER.debug(STARTING + toString());
         // Get all the plugin interfaces
-        ReflectionUtils.setReflections(new Reflections(PLUGIN_EMPTY_PACKAGES));
-        final List<String> pluginInterfaces = PluginInterfaceUtils.getInterfaces(PLUGIN_EMPTY_PACKAGES);
+        PluginUtils.setup(PLUGIN_EMPTY_PACKAGES);
+        Set<String> pluginInterfaces = PluginUtils.getPluginInterfaces();
         Assert.assertNotNull(pluginInterfaces);
         Assert.assertTrue(pluginInterfaces.isEmpty());
         LOGGER.debug(ENDING + toString());
@@ -141,25 +140,19 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     public void getComplexPlugin() {
         final ComplexPlugin complexPlugin;
         LOGGER.debug(STARTING + toString());
-        ReflectionUtils.setReflections(new Reflections(PLUGIN_CURRENT_PACKAGE));
-        /*
-         * Set all parameters
-         */
-        /*
-         * Get the configuration for the Plugin parameter (ie the child)
-         */
-        final List<PluginParameter> interfaceParameters = PluginParametersFactory.build()
+        PluginUtils.setup(PLUGIN_CURRENT_PACKAGE);
+
+        Set<PluginParameter> interfaceParameters = PluginParametersFactory.build()
                 .addParameter(AParameterPluginImplementation.FIELD_NAME, PluginInterfaceUtilsTest.LONG_STR_VALUE)
                 .getParameters();
-        final PluginConfiguration pluginConfigurationInterface = PluginUtils
-                .getPluginConfiguration(interfaceParameters, AParameterPluginImplementation.class,
-                                        Arrays.asList(PLUGIN_CURRENT_PACKAGE));
+        PluginConfiguration pluginConfigurationInterface = PluginUtils
+                .getPluginConfiguration(interfaceParameters, AParameterPluginImplementation.class);
         Assert.assertNotNull(pluginConfigurationInterface);
 
         /*
          * Get the configuration for the complex Plugin (ie the parent)
          */
-        final List<PluginParameter> complexParameters = PluginParametersFactory.build()
+        final Set<PluginParameter> complexParameters = PluginParametersFactory.build()
                 .addPluginConfiguration(ComplexPlugin.FIELD_NAME_PLUGIN, pluginConfigurationInterface)
                 .addParameter(ComplexPlugin.FIELD_NAME_ACTIVE, TRUE)
                 .addParameter(ComplexPlugin.FIELD_NAME_COEF, PluginInterfaceUtilsTest.CINQ).getParameters();
@@ -168,12 +161,11 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
         instantiatedPluginMap.put(pluginConfigurationInterface.getId(),
                                   PluginUtils.getPlugin(pluginConfigurationInterface,
                                                         pluginConfigurationInterface.getPluginClassName(),
-                                                        Arrays.asList(PLUGIN_CURRENT_PACKAGE), instantiatedPluginMap));
+                                                        instantiatedPluginMap));
         /*
          * Instantiate the parent plugin
          */
-        complexPlugin = PluginUtils.getPlugin(complexParameters, ComplexPlugin.class,
-                                              Arrays.asList(PLUGIN_CURRENT_PACKAGE), instantiatedPluginMap);
+        complexPlugin = PluginUtils.getPlugin(complexParameters, ComplexPlugin.class, instantiatedPluginMap);
         Assert.assertNotNull(complexPlugin);
 
         Assert.assertTrue(complexPlugin.add(PluginInterfaceUtilsTest.CINQ, PluginInterfaceUtilsTest.QUATRE) > 0);
@@ -197,13 +189,13 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
          * Set all parameters
          */
 
-        final List<PluginParameter> complexParameters = PluginParametersFactory.build()
+        final Set<PluginParameter> complexParameters = PluginParametersFactory.build()
                 .addParameter(ComplexErrorPlugin.FIELD_NAME_COEF, PluginInterfaceUtilsTest.CINQ)
                 .addParameter(ComplexErrorPlugin.FIELD_NAME_PLUGIN, "coucou").getParameters();
 
         // instantiate plugin
-        PluginUtils.getPlugin(complexParameters, ComplexErrorPlugin.class, Arrays.asList(PLUGIN_CURRENT_PACKAGE),
-                              new HashMap<>());
+        PluginUtils.setup(PLUGIN_CURRENT_PACKAGE);
+        PluginUtils.getPlugin(complexParameters, ComplexErrorPlugin.class, new HashMap<>());
     }
 
     /**
@@ -218,13 +210,13 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
          * Set all parameters
          */
 
-        final List<PluginParameter> complexParameters = PluginParametersFactory.build()
+        final Set<PluginParameter> complexParameters = PluginParametersFactory.build()
                 .addParameter(ComplexErrorPlugin.FIELD_NAME_COEF, "allo")
                 .addParameter(ComplexErrorPlugin.FIELD_NAME_PLUGIN, "lorem ipsum").getParameters();
 
         // instantiate plugin
-        PluginUtils.getPlugin(complexParameters, ComplexErrorPlugin.class, Arrays.asList(PLUGIN_CURRENT_PACKAGE),
-                              new HashMap<>());
+        PluginUtils.setup(PLUGIN_CURRENT_PACKAGE);
+        PluginUtils.getPlugin(complexParameters, ComplexErrorPlugin.class, new HashMap<>());
     }
 
 }

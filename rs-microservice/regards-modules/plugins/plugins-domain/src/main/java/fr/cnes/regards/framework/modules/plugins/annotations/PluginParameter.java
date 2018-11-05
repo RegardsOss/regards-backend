@@ -95,6 +95,14 @@ public @interface PluginParameter {
     String defaultValue() default "";
 
     /**
+     * Is the plugin parameter sensitive and should be encrypted into database?<br/>
+     * BE AWARE: only plugin parameters of type {@link String} can be sensitive.
+     *
+     * @return true if the plugin parameter is sensitive.
+     */
+    boolean sensitive() default false;
+
+    /**
      * Is the Plugin parameter is mandatory ?
      *
      * @return true if the plugin parameter is mandatory.

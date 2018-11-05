@@ -32,7 +32,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
  *
  * @author Christophe Mertz
  */
-public class PluginMetaData {
+public class PluginMetaData implements Comparable<PluginMetaData> {
 
     /**
      * The plugin class name
@@ -271,4 +271,8 @@ public class PluginMetaData {
         this.markdown = markdown;
     }
 
+    @Override
+    public int compareTo(PluginMetaData o) {
+        return this.pluginId.compareToIgnoreCase(o.pluginId);
+    }
 }

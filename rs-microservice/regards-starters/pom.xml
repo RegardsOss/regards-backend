@@ -23,7 +23,7 @@
 
 	<groupId>fr.cnes.regards.framework</groupId>
 	<artifactId>regards-starters</artifactId>
-	<version>2.0.0-RELEASE</version>
+	<version>3.0.0-RELEASE</version>
 	<description>REGARDS starters</description>
 	<packaging>pom</packaging>
 	<name>REGARDS Starters</name>
@@ -31,7 +31,7 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-parent</artifactId>
-		<version>2.0.0-RELEASE</version>
+		<version>3.0.0-RELEASE</version>
 		<relativePath />
 	</parent>
 
@@ -69,7 +69,7 @@
 		<module>jpa-multitenant-regards-starter</module>
 		<module>jpa-instance-regards</module>
 		<module>jpa-instance-regards-starter</module>
-		<module>mutitenant-regards</module>
+		<module>multitenant-regards</module>
 		<module>multitenant-regards-starter</module>
 		<module>hateoas-regards-starter</module>
 		<module>hateoas-regards</module>
@@ -80,19 +80,24 @@
 		<module>microservice-regards-test</module>
 		<module>jpa-multitenant-regards-test</module>
 		<module>plugins-regards-starter</module>
+		<module>plugins-docs</module>
 		<module>gson-regards-starter</module>
 		<module>gson-regards</module>
 		<module>feign-regards-starter</module>
 		<module>security-config</module>
 		<module>oais-starter</module>
 		<module>oais-regards</module>
+		<module>oais-docs</module>
 		<module>geojson-starter</module>
+		<module>geojson-docs</module>
 		<module>geojson-regards</module>
 		<module>microservice-core-starter</module>
 		<module>authentication-regards</module>
 		<module>authentication-regards-starter</module>
 		<module>jpa-commons-regards</module>
 		<module>jpa-data-regards</module>
+        <module>encryption-starter</module>
+		<module>microservice-logger</module>
 	</modules>
 
 	<dependencies>

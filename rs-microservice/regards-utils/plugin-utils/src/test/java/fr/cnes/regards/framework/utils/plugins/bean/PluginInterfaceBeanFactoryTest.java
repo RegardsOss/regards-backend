@@ -18,9 +18,8 @@
  */
 package fr.cnes.regards.framework.utils.plugins.bean;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -32,7 +31,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.utils.plugins.PluginInterfaceUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.basic.PluginUtilsTestConstants;
@@ -62,11 +60,12 @@ public final class PluginInterfaceBeanFactoryTest extends PluginUtilsTestConstan
         SampleBeanFactoryPlugin samplePlugin = null;
         Assert.assertNotNull(sampleBeanService);
 
-        final List<PluginParameter> parameters = PluginParametersFactory.build()
+        final Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SampleBeanFactoryPlugin.FIELD_NAME_SUFFIX, "chris_test_1").getParameters();
         // instantiate plugin
-        samplePlugin = PluginUtils.getPlugin(parameters, SampleBeanFactoryPlugin.class,
-                                             Arrays.asList("fr.cnes.regards.plugins.utils.bean"), new HashMap<>());
+
+        PluginUtils.setup("fr.cnes.regards.plugins.utils.bean");
+        samplePlugin = PluginUtils.getPlugin(parameters, SampleBeanFactoryPlugin.class, new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
         final String toulouse = "Toulouse";

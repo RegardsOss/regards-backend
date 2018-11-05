@@ -28,6 +28,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.MimeType;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.RepresentationInformation;
@@ -86,22 +87,47 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
     }
 
     /**
-     * Set <b>required</b> data object reference and information
+     * Set <b>required</b> data object properties for a data object reference<br/>
+     * Use this method to reference an external data object that will not be managed by archival storage (i.e. physical
+     * file will not be stored by the system)<br/>
      * @param dataType {@link DataType}
-     * @param filename optional filename (may be null)
+     * @param filename filename
+     * @param url external url
+     */
+    public void setDataObjectReference(DataType dataType, String filename, URL url) {
+        Assert.notNull(dataType, "Data type is required");
+        Assert.hasText(filename, "Filename is required");
+        Assert.notNull(url, "URL is required");
+
+        OAISDataObject dataObject = new OAISDataObject();
+        dataObject.setRegardsDataType(dataType);
+        dataObject.setReference(Boolean.TRUE);
+        dataObject.setUrls(Sets.newHashSet(url));
+        dataObject.setFilename(filename);
+        ci.setDataObject(dataObject);
+    }
+
+    /**
+     * Set <b>required</b> data object properties<br/>
+     * @param dataType {@link DataType}
+     * @param filename filename
      * @param algorithm checksum algorithm
      * @param checksum the checksum
-     * @param fileSize file size
+     * @param fileSize <b>optional</b> file size
      * @param urls references to the physical file
      */
-    public void setDataObject(DataType dataType, String filename, String algorithm, String checksum,
-            Long fileSize, URL... urls) {
+    public void setDataObject(DataType dataType, String filename, String algorithm, String checksum, Long fileSize,
+            URL... urls) {
         Assert.notNull(dataType, "Data type is required");
+        Assert.hasText(filename, "Filename is required");
+        Assert.hasText(algorithm, "Checksum algorithm is required");
+        Assert.hasText(checksum, "Checksum is required");
         Assert.notNull(urls, "At least one URL is required");
 
         OAISDataObject dataObject = new OAISDataObject();
         dataObject.setFilename(filename);
         dataObject.setRegardsDataType(dataType);
+        dataObject.setReference(Boolean.FALSE);
         dataObject.setUrls(Sets.newHashSet(urls));
         dataObject.setAlgorithm(algorithm);
         dataObject.setChecksum(checksum);
@@ -110,10 +136,10 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
     }
 
     /**
-     * Set <b>required</b> data object reference and information
+     * Set <b>required</b> data object properties
      * @param dataType {@link DataType}
      * @param filePath reference to the physical file
-     * @param filename optional filename (may be null)
+     * @param filename filename
      * @param algorithm checksum algorithm
      * @param checksum the checksum
      * @param fileSize file size
@@ -132,45 +158,8 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
     }
 
     /**
-     * Alias for {@link #setDataObject(DataType, String, String, String, Long, URL...)} with MD5 default checksum algorithm
-     * @param dataType {@link DataType}
-     * @param url reference to the physical file
-     * @param filename optional filename (may be null)
-     * @param checksum the checksum
-     * @param fileSize file size
-     */
-    public void setDataObject(DataType dataType, URL url, String filename, String checksum, Long fileSize) {
-        setDataObject(dataType, filename, IPBuilder.MD5_ALGORITHM, checksum, fileSize, url);
-    }
-
-    /**
-     * Alias for {@link #setDataObject(DataType, Path, String, String, String, Long)} with MD5 default checksum
-     * algorithm
-     * @param dataType {@link DataType}
-     * @param filePath reference to the physical file
-     * @param filename optional filename (may be null)
-     * @param checksum the checksum
-     * @param fileSize file size
-     */
-    public void setDataObject(DataType dataType, Path filePath, String filename, String checksum, Long fileSize) {
-        setDataObject(dataType, filePath, filename, IPBuilder.MD5_ALGORITHM, checksum, fileSize);
-    }
-
-    /**
-     * Alias for {@link ContentInformationBuilder#setDataObject(DataType, String, String, String, Long, URL...)} (no
-     * filename and no filesize)
-     * @param dataType {@link DataType}
-     * @param url reference to the physical file
-     * @param algorithm checksum algorithm
-     * @param checksum the checksum
-     */
-    public void setDataObject(DataType dataType, URL url, String algorithm, String checksum) {
-        setDataObject(dataType, null, algorithm, checksum, null, url);
-    }
-
-    /**
      * Alias for {@link ContentInformationBuilder#setDataObject(DataType, Path, String, String, String, Long)} (no
-     * filename and no filesize)
+     * file size)
      * @param dataType {@link DataType}
      * @param filePath reference to the physical file
      * @param algorithm checksum algorithm
@@ -181,19 +170,8 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
     }
 
     /**
-     * Alias for {@link ContentInformationBuilder#setDataObject(DataType, String, String, String, Long, URL...)} (no
-     * filename, no filesize and MD5 default checksum algorithm)
-     * @param dataType {@link DataType}
-     * @param url reference to the physical file
-     * @param checksum the checksum
-     */
-    public void setDataObject(DataType dataType, URL url, String checksum) {
-        setDataObject(dataType, null, IPBuilder.MD5_ALGORITHM, checksum, null, url);
-    }
-
-    /**
-     * Alias for {@link ContentInformationBuilder#setDataObject(DataType, Path, String, String, String, Long)} (no
-     * filename, no filesize and MD5 default checksum algorithm)
+     * Alias for {@link ContentInformationBuilder#setDataObject(DataType, Path, String, String, String, Long)} (no file
+     * size and MD5 default checksum algorithm)
      * @param dataType {@link DataType}
      * @param filePath reference to the physical file
      * @param checksum the checksum

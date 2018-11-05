@@ -13,13 +13,13 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>plugins-regards-starter</artifactId>
-	<version>2.0.0-RELEASE</version>
+	<version>3.0.0-RELEASE</version>
 	<description>REGARDS plugins starter</description>
 
 	<parent>
 		<groupId>fr.cnes.regards.framework</groupId>
 		<artifactId>regards-starters</artifactId>
-		<version>2.0.0-RELEASE</version>
+		<version>3.0.0-RELEASE</version>
 	</parent>
 
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -94,5 +94,20 @@
 			<artifactId>plugins-client</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>plugins-docs</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
+	
+	<build>
+		<plugins>
+			<plugin> 
+				<groupId>org.asciidoctor</groupId>
+				<artifactId>asciidoctor-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+	
 </project>

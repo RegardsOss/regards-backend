@@ -18,11 +18,12 @@
  */
 package fr.cnes.regards.framework.security.filter;
 
+import java.io.IOException;
+
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,7 +95,7 @@ public class PublicAuthenticationFilter extends OncePerRequestFilter {
         }
 
         // Generate a public token
-        String jwt = jwtService.generateToken(tenant, "public@regards.com", DefaultRole.PUBLIC.name());
+        String jwt = jwtService.generateToken(tenant, "public", "public@regards.com", DefaultRole.PUBLIC.name());
         // Add token into request header
         request.addHeader(HttpConstants.AUTHORIZATION, HttpConstants.BEARER + " " + jwt);
     }

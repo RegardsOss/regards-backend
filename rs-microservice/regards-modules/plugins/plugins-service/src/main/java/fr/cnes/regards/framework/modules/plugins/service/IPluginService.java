@@ -16,13 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package fr.cnes.regards.framework.modules.plugins.service;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
+import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -41,11 +42,18 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 public interface IPluginService {
 
     /**
-     * Return all plugin types available.
+     * Return all plugin types detected.
      *
-     * @return List<String>
+     * @return Set<String>
      */
-    List<String> getPluginTypes();
+    Set<String> getPluginTypes();
+
+    /**
+     * Return available plugin types i.e. all plugin types which at least one implementation is detected.
+     *
+     * @return available plugin types i.e. all plugin types which at least one implementation is detected.
+     */
+    Set<String> getAvailablePluginTypes();
 
     /**
      * Return all {@link PluginMetaData} available
@@ -97,8 +105,10 @@ public interface IPluginService {
      * @throws ModuleException thrown if we cannot find any PluginConfiguration corresponding to pId
      */
     @Deprecated
-    <T> T getPlugin(PluginConfiguration pluginConfiguration, final PluginParameter... dynamicPluginParameters)
-            throws ModuleException;
+    default <T> T getPlugin(PluginConfiguration pluginConfiguration, final PluginParameter... dynamicPluginParameters)
+            throws ModuleException {
+        return getPlugin(pluginConfiguration.getId(), dynamicPluginParameters);
+    }
 
     /**
      * Get the first plugin instance of a plugin type. The pReturnInterfaceType attribute indicates the PluginInterface
@@ -126,9 +136,10 @@ public interface IPluginService {
      *
      * @param pluginConfiguration the plugin configuration to saved
      * @return the saved {@link PluginConfiguration}
-     * @throws EntityInvalidException thrown if an error occurs
+     * @throws ModuleException thrown if an error occurs
      */
-    PluginConfiguration savePluginConfiguration(PluginConfiguration pluginConfiguration) throws EntityInvalidException;
+    PluginConfiguration savePluginConfiguration(PluginConfiguration pluginConfiguration)
+            throws EntityInvalidException, EncryptionException, EntityNotFoundException;
 
     /**
      * Delete a {@link PluginConfiguration}.
@@ -207,11 +218,17 @@ public interface IPluginService {
     List<PluginConfiguration> getActivePluginConfigurations(final String pPluginId);
 
     /**
+     * This method is no longer used. Package(s) to scan is define once in properties
+     * <code>regards.plugins.packages-to-scan</code>. If not define, default package is used (i.e.
+     * <code>fr.cnes.regards</code>)
      * Add a package to scan to find the plugins.
      *
      * @param pluginPackage A package name to scan to find the plugins.
      */
-    public void addPluginPackage(String pluginPackage);
+    @Deprecated
+    default public void addPluginPackage(String pluginPackage) {
+        // Nothing to do
+    }
 
     /**
      * Get {@link PluginMetaData} for a plugin of a specific plugin type.</br>
@@ -234,7 +251,7 @@ public interface IPluginService {
     PluginConfiguration getPluginConfigurationByLabel(String configurationLabel) throws EntityNotFoundException;
 
     /**
-     * Find an optional  PluginConfiguration according to its unique label
+     * Find an optional PluginConfiguration according to its unique label
      *
      * @param configurationLabel the configuration label
      * @return the plugin configuration

@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.geojson;
 
+import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,11 +34,32 @@ import java.util.Map;
  */
 public class Feature extends AbstractFeature<Map<String, Object>, String> {
 
+    /**
+     * Title field name in geojson feature
+     */
+    public static final String TITLE_FIELD = "title";
+
+    public static final String UPDATED_FIELD = "updated";
+
+    public static final String LINKS_FIELD = "links";
+
     public Feature() {
         properties = new HashMap<>();
     }
 
     public void addProperty(String key, Object value) {
         properties.put(key, value);
+    }
+
+    public void setTitle(String title) {
+        properties.put(TITLE_FIELD, title);
+    }
+
+    public void setLinks(Collection<GeoJsonLink> links) {
+        properties.put(LINKS_FIELD, links);
+    }
+
+    public void setUpdated(OffsetDateTime updated) {
+        properties.put(UPDATED_FIELD, updated);
     }
 }

@@ -25,7 +25,10 @@ import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration.Enable
 import org.springframework.boot.autoconfigure.web.WebMvcProperties;
 import org.springframework.boot.autoconfigure.web.WebMvcRegistrations;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+
+import fr.cnes.regards.framework.feign.security.FeignHandlerInterceptor;
 
 /**
  *
@@ -49,5 +52,11 @@ public class WebMvcConfiguration extends EnableWebMvcConfiguration {
     @Override
     protected RequestMappingHandlerMapping createRequestMappingHandlerMapping() {
         return new ExcludeFeignRequestMappingHandler();
+    }
+
+    @Override
+    protected void addInterceptors(InterceptorRegistry registry) {
+        super.addInterceptors(registry);
+        registry.addInterceptor(new FeignHandlerInterceptor());
     }
 }

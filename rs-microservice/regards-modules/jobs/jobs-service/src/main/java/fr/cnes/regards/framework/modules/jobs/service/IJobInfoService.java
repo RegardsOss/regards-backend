@@ -105,4 +105,11 @@ public interface IJobInfoService {
      * - terminated on error jobs several days ago
      */
     void cleanOutOfDateJobsOnTenant();
+
+    /**
+     * Return the number of job, for the current tenant, having provided statuses
+     * @param className the class name of the job
+     * @param statuses jobInfo statuses
+     */
+    Long retrieveJobsCount(String className, JobStatus... statuses);
 }

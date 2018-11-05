@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.jayway.jsonpath.JsonPath;
+
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
@@ -43,7 +44,8 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
  * @author Marc Sordi
  */
 @RegardsTransactional
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=plugin_it" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=plugin_it",
+        "regards.cipher.key-location=src/test/resources/testKey", "regards.cipher.iv=1234567812345678" })
 public class PluginControllerIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
@@ -57,8 +59,6 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     public void savePluginConfigurationTest() throws ModuleException {
-
-        pluginService.addPluginPackage(this.getClass().getPackage().getName());
 
         // Bad version plugin creation attempt
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
@@ -86,16 +86,15 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         result = performDefaultPost(PluginController.PLUGINS_PLUGINID_CONFIGS, json, customizer,
                                     "Configuration should be saved!", "ParamTestPlugin");
         resultAsString = payload(result);
-        Integer configId = JsonPath.read(resultAsString, "$.content.id");
         // Instanciate plugin
-        resolver.forceTenant(DEFAULT_TENANT);
+        resolver.forceTenant(getDefaultTenant());
         IParamTestPlugin plugin = pluginService.getFirstPluginByType(IParamTestPlugin.class);
         Assert.assertNotNull(plugin);
 
         // With dynamic parameter
         String dynValue = "toto";
-        PluginParametersFactory dynParametersFactory = PluginParametersFactory.build()
-                .addDynamicParameter("pString", dynValue);
+        PluginParametersFactory dynParametersFactory = PluginParametersFactory.build().addDynamicParameter("pString",
+                                                                                                           dynValue);
         plugin = pluginService.getFirstPluginByType(IParamTestPlugin.class, dynParametersFactory.asArray());
         Assert.assertNotNull(plugin);
 
@@ -138,7 +137,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
                           "Configuration should be saved!", "InnerParamTestPlugin", innerConfigId);
 
         // Re-instanciate plugin
-        resolver.forceTenant(DEFAULT_TENANT);
+        resolver.forceTenant(getDefaultTenant());
         plugin = pluginService.getFirstPluginByType(IParamTestPlugin.class);
         Assert.assertNotNull(plugin);
         if (plugin instanceof ParamTestPlugin) {
@@ -158,17 +157,14 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         // Update Inner Plugin with a different version (2.0.0)
         customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isUnprocessableEntity());
-        json = readJsonContract("innerConfUpdatedVersion.json")
-                .replace("\"id\":0", "\"id\":" + innerConfigId.toString());
+        json = readJsonContract("innerConfUpdatedVersion.json").replace("\"id\":0",
+                                                                        "\"id\":" + innerConfigId.toString());
         performDefaultPut(PluginController.PLUGINS_PLUGINID_CONFIGID, json, customizer,
                           "Configuration should be saved!", "InnerParamTestPlugin", innerConfigId);
     }
 
     @Test(expected = CannotInstanciatePluginException.class)
     public void instantiatePluginConfigurationTest() throws ModuleException {
-
-        pluginService.addPluginPackage(this.getClass().getPackage().getName());
-
         // Inner plugin creation with version 1.0.0
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
@@ -177,9 +173,9 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
                                                   readJsonContract("innerConf.json"), customizer,
                                                   "Configuration should be saved!", "InnerParamTestPlugin");
         String resultAsString = payload(result);
-        long innerConfigId = (Integer)JsonPath.read(resultAsString, "$.content.id");
+        long innerConfigId = (Integer) JsonPath.read(resultAsString, "$.content.id");
         // Remove from cache
-        resolver.forceTenant(DEFAULT_TENANT);
+        resolver.forceTenant(getDefaultTenant());
         pluginService.cleanPluginCache(innerConfigId);
 
         // Retrieve PLugin Configuration

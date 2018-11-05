@@ -23,14 +23,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType;
@@ -40,7 +41,6 @@ import fr.cnes.regards.framework.utils.plugins.PluginParameterUtils.PrimitiveObj
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
-import fr.cnes.regards.framework.utils.plugins.ReflectionUtils;
 
 /**
  * Unit testing of {@link PluginUtils}.
@@ -65,8 +65,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         LOGGER.debug(STARTING + toString());
 
         // Get all the plugins
-        ReflectionUtils.setReflections(new Reflections(PLUGIN_PACKAGE));
-        final Map<String, PluginMetaData> maps = PluginUtils.getPlugins(PLUGIN_PACKAGE, Arrays.asList(PLUGIN_PACKAGE));
+        PluginUtils.setup(PLUGIN_PACKAGE);
+        Map<String, PluginMetaData> maps = PluginUtils.getPlugins();
         Assert.assertNotNull(maps);
         Assert.assertTrue(maps.size() > 1);
 
@@ -88,8 +88,9 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
     @Test
     public void testMarkdownMetadata() {
-        PluginMetaData mtd = PluginUtils
-                .createPluginMetaData(SamplePlugin.class, SamplePlugin.class.getPackage().getName());
+        PluginUtils.setup(SamplePlugin.class.getPackage().getName());
+        PluginMetaData mtd = PluginUtils.createPluginMetaData(SamplePlugin.class);
+
         Assert.assertNotNull(mtd);
         Assert.assertTrue((mtd.getMarkdown() != null) && !mtd.getMarkdown().isEmpty());
         for (PluginParameterType ptype : mtd.getParameters()) {
@@ -115,14 +116,14 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         /*
          * Set all parameters
          */
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS)
                 .addParameter(SamplePlugin.FIELD_NAME_SUFFIX, "chris_test_1").getParameters();
 
         // instantiate plugin
-        samplePlugin = PluginUtils
-                .getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE), new HashMap<>());
+        PluginUtils.setup(PLUGIN_PACKAGE);
+        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
@@ -147,7 +148,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         /*
          * Set all parameters
          */
-        final List<PluginParameter> parameters = PluginParametersFactory.build()
+        final Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE)
                 .addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS)
                 .addParameter(SamplePlugin.FIELD_NAME_SUFFIX, "suffix").getParameters();
@@ -156,11 +157,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(SamplePlugin.FIELD_NAME_COEF, -1).getParameters().stream().findAny().get();
 
         // instantiate plugin
-        samplePlugin = PluginUtils.getPlugin(parameters,
-                                             SamplePlugin.class,
-                                             Arrays.asList(PLUGIN_PACKAGE),
-                                             new HashMap<>(),
-                                             aDynamicPlgParam);
+        PluginUtils.setup(PLUGIN_PACKAGE);
+        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, new HashMap<>(), aDynamicPlgParam);
 
         Assert.assertNotNull(samplePlugin);
 
@@ -181,13 +179,13 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         /*
          * Set all parameters
          */
-        final List<PluginParameter> parameters = PluginParametersFactory.build()
+        final Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE)
                 .addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS)
                 .addParameter(SamplePlugin.FIELD_NAME_SUFFIX, "a suffix").getParameters();
         // instantiate plugin
-        samplePlugin = PluginUtils
-                .getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE), new HashMap<>());
+        PluginUtils.setup(PLUGIN_PACKAGE);
+        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
@@ -211,10 +209,10 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         /*
          * Set all parameters
          */
-        final List<String> dynamicValues = Arrays
-                .asList(PluginUtilsTest.RED, PluginUtilsTest.BLUE, PluginUtilsTest.GREEN);
+        final List<String> dynamicValues = Arrays.asList(PluginUtilsTest.RED, PluginUtilsTest.BLUE,
+                                                         PluginUtilsTest.GREEN);
 
-        final List<PluginParameter> parameters = PluginParametersFactory.build()
+        final Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS)
                 .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, PluginUtilsTest.RED, dynamicValues)
@@ -225,11 +223,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .get();
 
         // instantiate plugin
-        samplePlugin = PluginUtils.getPlugin(parameters,
-                                             SamplePlugin.class,
-                                             Arrays.asList(PLUGIN_PACKAGE),
-                                             new HashMap<>(),
-                                             aDynamicPlgParam);
+        PluginUtils.setup(PLUGIN_PACKAGE);
+        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, new HashMap<>(), aDynamicPlgParam);
 
         Assert.assertNotNull(samplePlugin);
 
@@ -252,16 +247,16 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         /*
          * Set all parameters
          */
-        final List<String> dynamicValues = Arrays
-                .asList(PluginUtilsTest.RED, PluginUtilsTest.BLUE, PluginUtilsTest.GREEN);
-        final List<PluginParameter> parameters = PluginParametersFactory.build()
+        final List<String> dynamicValues = Arrays.asList(PluginUtilsTest.RED, PluginUtilsTest.BLUE,
+                                                         PluginUtilsTest.GREEN);
+        final Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS)
                 .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, PluginUtilsTest.RED, dynamicValues)
                 .getParameters();
         // instantiate plugin
-        samplePlugin = PluginUtils
-                .getPlugin(parameters, SamplePlugin.class, Arrays.asList(PLUGIN_PACKAGE), new HashMap<>());
+        PluginUtils.setup(PLUGIN_PACKAGE);
+        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
@@ -282,9 +277,9 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         /*
          * Set all parameters
          */
-        final List<String> dynamicValues = Arrays
-                .asList(PluginUtilsTest.RED, PluginUtilsTest.BLUE, PluginUtilsTest.GREEN);
-        final List<PluginParameter> parameters = PluginParametersFactory.build()
+        final List<String> dynamicValues = Arrays.asList(PluginUtilsTest.RED, PluginUtilsTest.BLUE,
+                                                         PluginUtilsTest.GREEN);
+        final Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS)
                 .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, PluginUtilsTest.RED, dynamicValues)
@@ -296,11 +291,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
                 .get();
 
         // instantiate plugin
-        PluginUtils.getPlugin(parameters,
-                              SamplePlugin.class,
-                              Arrays.asList(PLUGIN_PACKAGE),
-                              new HashMap<>(),
-                              aDynamicPlgParam);
+        PluginUtils.setup(PLUGIN_PACKAGE);
+        PluginUtils.getPlugin(parameters, SamplePlugin.class, new HashMap<>(), aDynamicPlgParam);
     }
 
     /**
@@ -313,15 +305,13 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         LOGGER.debug(STARTING + toString());
 
         // Set parameters : Missing coeff parameter
-        final List<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> parameters = PluginParametersFactory
-                .build().addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE)
+        final Set<PluginParameter> parameters = PluginParametersFactory.build()
+                .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE)
                 .addParameter(SamplePlugin.FIELD_NAME_SUFFIX, PluginUtilsTest.RED).getParameters();
 
         // instantiate plugin
-        samplePlugin = PluginUtils.getPlugin(parameters,
-                                             SamplePlugin.class,
-                                             Arrays.asList(SamplePlugin.class.getPackage().getName()),
-                                             new HashMap<>());
+        PluginUtils.setup(SamplePlugin.class.getPackage().getName());
+        samplePlugin = PluginUtils.getPlugin(parameters, SamplePlugin.class, new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
@@ -332,20 +322,17 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
     @Test(expected = PluginUtilsRuntimeException.class)
     public void getSamplePluginMissingStringParameter() {
-        SamplePlugin samplePlugin = null;
 
         LOGGER.debug(STARTING + toString());
 
         // Set parameters : Missing suffix parameter
-        final List<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> parameters = PluginParametersFactory
-                .build().addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE)
+        final Set<PluginParameter> parameters = PluginParametersFactory.build()
+                .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE)
                 .addParameter(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.CINQ).getParameters();
 
         // instantiate plugin
-        samplePlugin = PluginUtils.getPlugin(parameters,
-                                             SamplePlugin.class,
-                                             Arrays.asList("fr.cnes.regards.plugins.utils.plugintypes"),
-                                             new HashMap<>());
+        PluginUtils.setup("fr.cnes.regards.plugins.utils.plugintypes");
+        PluginUtils.getPlugin(parameters, SamplePlugin.class, new HashMap<>());
 
         // Use the plugin
         Assert.fail();
@@ -361,13 +348,14 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         /*
          * Set parameters
          */
-        final List<fr.cnes.regards.framework.modules.plugins.domain.PluginParameter> parameters = PluginParametersFactory
-                .build().addParameter(SampleErrorPlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE)
+        final Set<PluginParameter> parameters = PluginParametersFactory.build()
+                .addParameter(SampleErrorPlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SampleErrorPlugin.FIELD_NAME_SUFFIX, "chris_test_4")
                 .addParameter(SampleErrorPlugin.FIELD_NAME_COEF, PluginUtilsTest.CINQ).getParameters();
 
         // instantiate plugin
-        PluginUtils.getPlugin(parameters, SampleErrorPlugin.class, Arrays.asList(PLUGIN_PACKAGE), new HashMap<>());
+        PluginUtils.setup(PLUGIN_PACKAGE);
+        PluginUtils.getPlugin(parameters, SampleErrorPlugin.class, new HashMap<>());
     }
 
     @Test

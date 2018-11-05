@@ -42,6 +42,7 @@ import javax.validation.constraints.NotNull;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 
@@ -66,14 +67,16 @@ public class PluginParameter implements IIdentifiable<Long> {
      * Parameter name
      */
     @Column(nullable = false)
-    @NotNull(message="The plugin parameter name cannot be null")
+    @NotNull(message = "The plugin parameter name cannot be null")
     private String name;
 
     /**
      * Parameter value
      */
     @Column
-    // @Type(type = "text") - Cannot be used with a Converter and is not even used with Flyway DB tool so comment it!
+    // Comment the @Column to create database with HBM2DDL for scriptGenerator.
+    // Uncomment this line to create database with HBM2DDL for scriptGenerator.
+    // @Transient
     private PluginParameterValue value;
 
     /**
@@ -97,6 +100,10 @@ public class PluginParameter implements IIdentifiable<Long> {
     @CollectionTable(name = "t_plugin_param_dyn_value", joinColumns = @JoinColumn(name = "id"),
             foreignKey = @ForeignKey(name = "fk_plugin_param_dyn_value_param_id"))
     @Column(name = "value")
+    // Uncomment this two lines to create database with HBM2DDL for scriptGenerator.
+    // You have to remove the @Column on the previous value field too.
+    // @Type(type = "text")
+    // @Convert(disableConversion = true)
     private Set<PluginParameterValue> dynamicsValues = new HashSet<>();
 
     /**
@@ -104,6 +111,10 @@ public class PluginParameter implements IIdentifiable<Long> {
      */
     @Transient
     private boolean onlyDynamic = false;
+
+    @Transient
+    @GsonIgnore
+    private transient String decryptedValue;
 
     /**
      * Needed for deserialization
@@ -293,5 +304,13 @@ public class PluginParameter implements IIdentifiable<Long> {
 
     public void setOnlyDynamic(boolean onlyDynamic) {
         this.onlyDynamic = onlyDynamic;
+    }
+
+    public void setDecryptedValue(String decryptedValue) {
+        this.decryptedValue = decryptedValue;
+    }
+
+    public String getDecryptedValue() {
+        return decryptedValue;
     }
 }

@@ -35,6 +35,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
  * @author Marc Sordi
  */
 public class FeignSecurityManager {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(FeignSecurityManager.class);
 
     /**
@@ -93,7 +94,7 @@ public class FeignSecurityManager {
 
     private String getUsurpedToken() {
         return jwtService.generateToken(runtimeTenantResolver.getTenant(), usurpedUserHolder.get().getFirst(),
-                                        usurpedUserHolder.get().getSecond());
+                                        usurpedUserHolder.get().getFirst(), usurpedUserHolder.get().getSecond());
     }
 
     private String getUserToken() {
@@ -122,7 +123,7 @@ public class FeignSecurityManager {
         String role = RoleAuthority.getSysRole(appName);
         LOGGER.debug("Generating internal system JWT for application {}, tenant {} and role {} ", appName, tenant,
                      role);
-        return jwtService.generateToken(tenant, appName, role);
+        return jwtService.generateToken(tenant, appName, appName, role);
     }
 
     /**

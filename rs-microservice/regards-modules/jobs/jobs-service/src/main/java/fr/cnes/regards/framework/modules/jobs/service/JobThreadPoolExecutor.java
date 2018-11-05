@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.FileSystemUtils;
 
 import com.google.common.collect.BiMap;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
@@ -30,7 +31,9 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  * @author oroussel
  */
 public class JobThreadPoolExecutor extends ThreadPoolExecutor {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(JobService.class);
+
     /**
      * Only for the thread names
      */
@@ -86,7 +89,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
                 publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED));
             } catch (ExecutionException ee) {
                 t = ee.getCause();
-                LOGGER.error("Job failed", t);;
+                LOGGER.error("Job failed", t);
                 jobInfo.updateStatus(JobStatus.FAILED);
                 StringWriter sw = new StringWriter();
                 t.printStackTrace(new PrintWriter(sw));
@@ -131,6 +134,7 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
             namePrefix = "job-pool-" + poolNumber.getAndIncrement() + "-thread-";
         }
 
+        @Override
         public Thread newThread(Runnable r) {
             Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
             if (t.isDaemon()) {

@@ -15,13 +15,13 @@
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>templates</artifactId>
 	<description>Module providing template features for mailing</description>
-	<version>2.0.0-RELEASE</version>
+	<version>3.0.0-RELEASE</version>
 	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-parent</artifactId>
-		<version>2.0.0-RELEASE</version>
+		<version>3.0.0-RELEASE</version>
 		<relativePath />
 	</parent>
 
@@ -51,7 +51,6 @@
 		<module>templates-dao</module>
 		<module>templates-rest</module>
 		<module>templates-service</module>
-		<module>templates-test</module>
 	</modules>
 
 	<dependencyManagement>
@@ -81,12 +80,6 @@
 				<groupId>fr.cnes.regards.modules.templates</groupId>
 				<artifactId>templates-client</artifactId>
 				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.modules.templates</groupId>
-				<artifactId>templates-test</artifactId>
-				<version>${project.version}</version>
-				<type>test-jar</type>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
