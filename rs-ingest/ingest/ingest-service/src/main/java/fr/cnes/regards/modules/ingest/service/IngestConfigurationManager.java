@@ -19,14 +19,14 @@
 package fr.cnes.regards.modules.ingest.service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.module.manager.AbstractModuleConfigurationManager;
+import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -39,9 +39,7 @@ import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingService;
  * @author Marc Sordi
  */
 @Service
-public class IngestConfigurationManager extends AbstractModuleConfigurationManager {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(IngestConfigurationManager.class);
+public class IngestConfigurationManager extends AbstractModuleManager<Void> {
 
     @Autowired
     private IIngestProcessingService processingService;
@@ -50,19 +48,27 @@ public class IngestConfigurationManager extends AbstractModuleConfigurationManag
     private IIngestProcessingChainRepository ingestChainRepository;
 
     @Override
-    public void importConfiguration(ModuleConfiguration configuration) throws ModuleException {
+    public Set<String> importConfiguration(ModuleConfiguration configuration) {
+        Set<String> importErrors = new HashSet<>();
         for (ModuleConfigurationItem<?> item : configuration.getConfiguration()) {
             if (IngestProcessingChain.class.isAssignableFrom(item.getKey())) {
                 IngestProcessingChain ipc = item.getTypedValue();
                 if (processingService.existsChain(ipc.getName())) {
-                    LOGGER.warn("Ingest processing chain already exists with same name, skipping import of {}.",
-                                ipc.getName());
-                    // FIXME notify
+                    importErrors.add(String
+                            .format("Ingest processing chain already exists with same name, skipping import of %s.",
+                                    ipc.getName()));
                 } else {
-                    processingService.createNewChain(ipc);
+                    try {
+                        processingService.createNewChain(ipc);
+                    } catch (ModuleException e) {
+                        importErrors.add(String.format("Skipping import of IngestProcessingChain %s: %s", ipc.getName(),
+                                                       e.getMessage()));
+                        logger.error(e.getMessage(), e);
+                    }
                 }
             }
         }
+        return importErrors;
     }
 
     @Override

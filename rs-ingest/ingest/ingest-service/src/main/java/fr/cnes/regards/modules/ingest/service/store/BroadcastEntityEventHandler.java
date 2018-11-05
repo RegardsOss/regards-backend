@@ -33,12 +33,12 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.entities.domain.event.BroadcastEntityEvent;
+import fr.cnes.regards.modules.dam.domain.entities.event.BroadcastEntityEvent;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.ingest.service.ISIPService;
 
 /**
@@ -83,7 +83,10 @@ public class BroadcastEntityEventHandler
             LOGGER.info("BroadcastEntityEvent received type={}", event.getEventType());
             switch (event.getEventType()) {
                 case INDEXED:
-                    handleEntitiesIndexed(event.getIpIds(), wrapper.getTenant());
+                    handleEntitiesIndexed(event.getAipIds(), wrapper.getTenant());
+                    break;
+                case INDEX_ERROR:
+                    handleEntitiesNotIndexed(event.getAipIds(), wrapper.getTenant());
                     break;
                 case DELETE:
                 case CREATE:
@@ -107,16 +110,31 @@ public class BroadcastEntityEventHandler
             if (oAip.isPresent()) {
                 AIPEntity aip = oAip.get();
                 aipService.setAipToIndexed(aip);
-                LOGGER.info("AIP \"{}\" is now indexed.", ipId.toString());
-                // If all AIP are indexed update SIP state to STORED
+            }
+        }
+        runtimeTenantResolver.clearTenant();
+    }
+
+    /**
+     * Handle the case of entities not indexed (due to error of course)
+     * @param ipIds of all entities that cannot be indexed
+     */
+    private void handleEntitiesNotIndexed(UniformResourceName[] ipIds, String tenant) {
+        runtimeTenantResolver.forceTenant(tenant);
+        // Check if AIPs matchs ipIds
+        for (UniformResourceName ipId : ipIds) {
+            Optional<AIPEntity> oAip = aipService.searchAip(ipId);
+            if (oAip.isPresent()) {
+                AIPEntity aip = oAip.get();
+                aipService.setAipToIndexError(aip);
+                LOGGER.info("AIP \"{}\" cannot be indexed.", ipId.toString());
+                // If one AIP of current SIP is at INDEX_ERROR than update SIP state to INDEX_ERROR
                 Set<AIPEntity> sipAips = aipRepository.findBySip(aip.getSip());
-                if (sipAips.stream().allMatch(a -> SipAIPState.INDEXED.equals(a.getState()))) {
+                if (sipAips.stream().anyMatch(aipEntity -> aipEntity.getState() == SipAIPState.INDEX_ERROR)) {
                     SIPEntity sip = aip.getSip();
-                    sip.setState(SIPState.INDEXED);
+                    sip.setState(SIPState.INDEX_ERROR);
                     sipService.saveSIPEntity(sip);
-                    LOGGER.info("SIP \"{}\" is now indexed.", sip.getIpId());
-                    // AIPs are no longer usefull here we can delete them
-                    aipRepository.delete(sipAips);
+                    LOGGER.info("SIP \"{}\" cannot be indexed.", sip.getSipId());
                 }
             }
         }

@@ -29,7 +29,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -41,7 +42,7 @@ import fr.cnes.regards.modules.ingest.service.TestConfiguration;
 import fr.cnes.regards.modules.ingest.service.plugin.AIPGenerationTestPlugin;
 import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
 
-@ActiveProfiles({ "disable-scheduled-ingest" })
+@ActiveProfiles({ "disable-scheduled-ingest", "noschdule" })
 @TestPropertySource(locations = "classpath:test.properties")
 @ContextConfiguration(classes = { TestConfiguration.class })
 @RegardsTransactional
@@ -65,14 +66,14 @@ public class IngestProcessingServiceTest extends AbstractRegardsServiceTransacti
         newChain.setDescription("Ingest processing chain");
         newChain.setName("ipst_Chain1");
 
-        PluginConfiguration validation = PluginUtils
-                .getPluginConfiguration(Lists.newArrayList(), ValidationTestPlugin.class, Lists.newArrayList());
+        PluginConfiguration validation = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
+                                                                            ValidationTestPlugin.class);
         validation.setIsActive(true);
         validation.setLabel("validationPlugin_ipst");
         newChain.setValidationPlugin(validation);
 
-        PluginConfiguration generation = PluginUtils
-                .getPluginConfiguration(Lists.newArrayList(), AIPGenerationTestPlugin.class, Lists.newArrayList());
+        PluginConfiguration generation = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
+                                                                            AIPGenerationTestPlugin.class);
         generation.setIsActive(true);
         generation.setLabel("generationPlugin_ipst");
         newChain.setGenerationPlugin(generation);

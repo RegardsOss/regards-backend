@@ -39,11 +39,14 @@ public interface IAipGeneration {
     /**
      * Generate one or more {@link AIP} from passed {@link SIP}.
      * @param sip {@link SIP}
-     * @param ipId the IP_ID of the generated {@link AIP} (or radical if multiple AIPs are generated. In that case, you
+     * @param aipId the IP_ID of the generated {@link AIP} (or radical if multiple AIPs are generated. In that case, you
      *            have to use
-     *            {@link UniformResourceName#clone(UniformResourceName, Long)} to differentiate each one with a unique order.
-     * @param sipId the SIP_ID of the generated {@link AIP}
+     *            {@link UniformResourceName#clone(UniformResourceName, Long)} to differentiate each one with a unique
+     *            order.
+     * @param sipId SIP identifier
+     * @param providerId the provider id of the generated {@link AIP}
      * @return generated {@link AIP}
      */
-    List<AIP> generate(SIP sip, UniformResourceName ipId, final String sipId) throws AIPGenerationException;
+    List<AIP> generate(SIP sip, UniformResourceName aipId, UniformResourceName sipId, String providerId)
+            throws AIPGenerationException;
 }

@@ -1,0 +1,5 @@
+<#setting datetime_format='yyyy-MM-dd HH:mm:ss z'>
+    One or more SIPs could not be deleted:\n
+        <#list rejectedSips as rejectedSip>
+            \t- SIP ${rejectedSip.sipId} could not be deleted for teh following reason: ${rejectedSip.reason}.\n
+        </#list>

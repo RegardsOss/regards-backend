@@ -19,32 +19,26 @@
 package fr.cnes.regards.modules.ingest.service;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 
 import com.google.common.collect.Sets;
-import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.dao.IAIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPRepository;
 import fr.cnes.regards.modules.ingest.dao.ISIPSessionRepository;
@@ -54,7 +48,6 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
-import fr.cnes.regards.modules.storage.client.IAipClient;
 import fr.cnes.regards.modules.storage.domain.RejectedSip;
 
 /**
@@ -79,37 +72,36 @@ public class SIPService implements ISIPService {
     @Autowired
     private ISIPSessionRepository sipSessionRepository;
 
-    @Autowired
-    private IAipClient aipClient;
-
-    @Autowired
-    private Gson gson;
-
     @Override
-    public Page<SIPEntity> search(String sipId, String sessionId, String owner, OffsetDateTime from,
+    public Page<SIPEntity> search(String providerId, String sessionId, String owner, OffsetDateTime from,
             List<SIPState> state, String processing, Pageable page) {
-        return sipRepository.findAll(SIPEntitySpecifications.search(sipId, sessionId, owner, from, state, processing),
-                                     page);
+        return sipRepository
+                .findAll(SIPEntitySpecifications.search(providerId, sessionId, owner, from, state, processing), page);
     }
 
     @Override
-    public SIPEntity getSIPEntity(String ipId) throws EntityNotFoundException {
-        Optional<SIPEntity> sipEntity = sipRepository.findOneByIpId(ipId);
+    public SIPEntity getSIPEntity(UniformResourceName sipId) throws EntityNotFoundException {
+        Optional<SIPEntity> sipEntity = sipRepository.findOneBySipId(sipId.toString());
         if (sipEntity.isPresent()) {
             return sipEntity.get();
         } else {
-            throw new EntityNotFoundException(ipId, SIPEntity.class);
+            throw new EntityNotFoundException(sipEntity.toString(), SIPEntity.class);
         }
     }
 
     @Override
-    public Collection<RejectedSip> deleteSIPEntitiesByIpIds(Collection<String> ipIds) throws ModuleException {
-        return this.deleteSIPEntities(sipRepository.findByIpIdIn(ipIds));
+    public Collection<RejectedSip> deleteSIPEntitiesBySipIds(Collection<UniformResourceName> sipIds)
+            throws ModuleException {
+        List<String> sipIdsStr = new ArrayList<>();
+        if (sipIds != null) {
+            sipIds.forEach(sipId -> sipIdsStr.add(sipId.toString()));
+        }
+        return this.deleteSIPEntities(sipRepository.findBySipIdIn(sipIdsStr));
     }
 
     @Override
-    public Collection<RejectedSip> deleteSIPEntitiesForSipId(String sipId) throws ModuleException {
-        return this.deleteSIPEntities(sipRepository.findAllBySipIdOrderByVersionAsc(sipId));
+    public Collection<RejectedSip> deleteSIPEntitiesForProviderId(String providerId) throws ModuleException {
+        return this.deleteSIPEntities(sipRepository.findAllByProviderIdOrderByVersionAsc(providerId));
     }
 
     @Override
@@ -119,79 +111,44 @@ public class SIPService implements ISIPService {
 
     @Override
     public Collection<RejectedSip> deleteSIPEntities(Collection<SIPEntity> sips) throws ModuleException {
-        Set<SIPEntity> deletableSips = Sets.newHashSet();
         Set<RejectedSip> undeletableSips = Sets.newHashSet();
+        long sipDeletionCheckStart = System.currentTimeMillis();
         for (SIPEntity sip : sips) {
             if (isDeletableWithAIPs(sip)) {
-                // If SIP si not stored, we can already delete sip and associated AIPs
-                this.deleteSIPEntity(sip);
-                deletableSips.add(sip);
+                // If SIP is not stored, we can already delete sip and associated AIPs
+                if (isDeletableWithoutAips(sip)) {
+                    Set<AIPEntity> aips = aipRepository.findBySip(sip);
+                    if (!aips.isEmpty()) {
+                        aipRepository.delete(aips);
+                    }
+                    sipRepository.updateSIPEntityState(SIPState.DELETED, sip.getId());
+                } else {
+                    sipRepository.updateSIPEntityState(SIPState.TO_BE_DELETED, sip.getId());
+                }
             } else {
                 String errorMsg = String.format("SIPEntity with state %s is not deletable", sip.getState());
-                undeletableSips.add(new RejectedSip(sip.getIpId(), errorMsg));
+                undeletableSips.add(new RejectedSip(sip.getSipId().toString(), errorMsg));
                 LOGGER.error(errorMsg);
             }
         }
-        // Do delete AIPs
-        if (!deletableSips.isEmpty()) {
-            ResponseEntity<List<RejectedSip>> response = null;
-            try {
-                response = aipClient
-                        .deleteAipFromSips(deletableSips.stream().map(SIPEntity::getIpId).collect(Collectors.toSet()));
-            } catch (HttpClientErrorException e) {
-                // Feign only throws exceptions in case the response status is neither 404 or one of the 2xx,
-                // so lets catch the exception and if it not one of our API normal status rethrow it
-                if (e.getStatusCode() != HttpStatus.UNPROCESSABLE_ENTITY) {
-                    throw e;
-                }
-                // first lets get the string from the body then lets deserialize it using gson
-                @SuppressWarnings("serial")
-                TypeToken<List<RejectedSip>> bodyTypeToken = new TypeToken<List<RejectedSip>>() {
-
-                };
-                List<RejectedSip> rejectedSips = gson.fromJson(e.getResponseBodyAsString(), bodyTypeToken.getType());
-                undeletableSips.addAll(rejectedSips);
-                return undeletableSips;
-            } finally {
-                FeignSecurityManager.reset();
-            }
-            if (HttpUtils.isSuccess(response.getStatusCode())) {
-                if(response.getBody()!= null) {
-                    undeletableSips.addAll(response.getBody());
-                }
-            }
-        }
+        long sipDeletionCheckEnd = System.currentTimeMillis();
+        LOGGER.debug("Checking {} sips for deletion took {} ms", sips.size(),
+                     sipDeletionCheckEnd - sipDeletionCheckStart);
         return undeletableSips;
     }
 
     @Override
-    public Collection<SIPEntity> getAllVersions(String sipId) {
-        return sipRepository.getAllVersions(sipId);
+    public Collection<SIPEntity> getAllVersions(String providerId) {
+        return sipRepository.getAllVersions(providerId);
     }
 
     @Override
-    public Boolean isDeletable(String ipId) throws EntityNotFoundException {
-        Optional<SIPEntity> os = sipRepository.findOneByIpId(ipId);
+    public Boolean isDeletable(UniformResourceName sipId) throws EntityNotFoundException {
+        Optional<SIPEntity> os = sipRepository.findOneBySipId(sipId.toString());
         if (os.isPresent()) {
             return isDeletableWithAIPs(os.get());
         } else {
-            throw new EntityNotFoundException(ipId, SIPEntity.class);
-        }
-    }
-
-    @Override
-    public Boolean isRetryable(String ipId) throws EntityNotFoundException {
-        Optional<SIPEntity> os = sipRepository.findOneByIpId(ipId);
-        if (os.isPresent()) {
-            switch (os.get().getState()) {
-                case INVALID:
-                case AIP_GEN_ERROR:
-                    return true;
-                default:
-                    return false;
-            }
-        } else {
-            throw new EntityNotFoundException(ipId, SIPEntity.class);
+            throw new EntityNotFoundException(sipId.toString(), SIPEntity.class);
         }
     }
 
@@ -206,17 +163,6 @@ public class SIPService implements ISIPService {
         savedSip.setSession(session);
         publisher.publish(new SIPEvent(savedSip));
         return savedSip;
-    }
-
-    @Override
-    public void deleteSIPEntity(SIPEntity sip) {
-        if (isDeletableWithoutAips(sip)) {
-            Set<AIPEntity> aips = aipRepository.findBySip(sip);
-            if (!aips.isEmpty()) {
-                aipRepository.delete(aips);
-            }
-            sipRepository.updateSIPEntityState(SIPState.DELETED, sip.getId());
-        }
     }
 
     /**
@@ -235,9 +181,11 @@ public class SIPService implements ISIPService {
             case AIP_GEN_ERROR:
             case REJECTED:
             case STORED:
+            case SUBMISSION_ERROR:
             case STORE_ERROR:
             case INCOMPLETE:
             case INDEXED:
+            case INDEX_ERROR:
                 return true;
             default:
                 return false;

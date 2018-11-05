@@ -43,15 +43,11 @@ public final class SIPEntitySpecifications {
     }
 
     /**
-     * Filter on the given attributes (sessionId, owner, ingestDate and state) and return result ordered by descending ingestDate
-     * @param sesssionId
-     * @param owner
-     * @param from
-     * @param states
-     * @return
+     * Filter on the given attributes (sessionId, owner, ingestDate and state) and return result ordered by descending
+     * ingestDate
      */
-    public static Specification<SIPEntity> search(String sipId, String sesssionId, String owner, OffsetDateTime from,
-            List<SIPState> states, String processing) {
+    public static Specification<SIPEntity> search(String providerId, String sesssionId, String owner,
+            OffsetDateTime from, List<SIPState> states, String processing) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
             if (sesssionId != null) {
@@ -70,11 +66,11 @@ public final class SIPEntitySpecifications {
                 }
                 predicates.add(cb.or(statePredicates.toArray(new Predicate[statePredicates.size()])));
             }
-            if (sipId != null) {
-                if (sipId.startsWith(LIKE_CHAR) || sipId.endsWith(LIKE_CHAR)) {
-                    predicates.add(cb.like(root.get("sipId"), sipId));
+            if (providerId != null) {
+                if (providerId.startsWith(LIKE_CHAR) || providerId.endsWith(LIKE_CHAR)) {
+                    predicates.add(cb.like(root.get("providerId"), providerId));
                 } else {
-                    predicates.add(cb.equal(root.get("sipId"), sipId));
+                    predicates.add(cb.equal(root.get("providerId"), providerId));
                 }
             }
             if (processing != null) {

@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service.chain;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
@@ -66,10 +65,10 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
 import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.ingest.service.IIngestService;
 import fr.cnes.regards.modules.ingest.service.TestConfiguration;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
@@ -121,11 +120,11 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
     @Autowired
     private IJobInfoRepository jobInfoRepo;
 
-    private Long sipIdTest;
+    private Long entityIdTest;
 
     private Long sipRefIdTest;
 
-    private Long sipIdDefaultChainTest;
+    private Long entityDefaultChainTest;
 
     public static final String SIP_ID_TEST = "SIP_001";
 
@@ -136,6 +135,8 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
     public static final String DEFAULT_PROCESSING_CHAIN_TEST = "defaultProcessingChain";
 
     public static final String PROCESSING_CHAIN_TEST = "fullProcessingChain";
+
+    public static final String SESSION_ID = "sessionId";
 
     @Before
     public void init() throws ModuleException {
@@ -148,40 +149,41 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
         initDefaultProcessingChain();
 
         // Init a SIP in database with state CREATED and managed with default chain
-        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(DEFAULT_PROCESSING_CHAIN_TEST, "sessionId");
+        SIPCollectionBuilder colBuilder = new SIPCollectionBuilder(DEFAULT_PROCESSING_CHAIN_TEST, SESSION_ID);
         SIPCollection collection = colBuilder.build();
 
         SIPBuilder builder = new SIPBuilder(SIP_DEFAULT_CHAIN_ID_TEST);
         builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data1.fits"), "sdsdfm1211vd");
         builder.setSyntax("FITS(FlexibleImageTransport)",
-                          "http://www.iana.org/assignments/media-types/application/fits", MediaType
-                                  .valueOf("application/fits"));
+                          "http://www.iana.org/assignments/media-types/application/fits",
+                          MediaType.valueOf("application/fits"));
         builder.addContentInformation();
         collection.add(builder.build());
 
         Collection<SIPDto> results = ingestService.ingest(collection);
-        String ipId = results.stream().findFirst().get().getIpId();
-        Optional<SIPEntity> resultSip = sipRepository.findOneByIpId(ipId);
-        sipIdDefaultChainTest = resultSip.get().getId();
+        String sipId = results.stream().findFirst().get().getSipId();
+        Optional<SIPEntity> resultSip = sipRepository.findOneBySipId(sipId);
+        entityDefaultChainTest = resultSip.get().getId();
 
         // Init a SIP in database with state CREATED
-        colBuilder = new SIPCollectionBuilder(PROCESSING_CHAIN_TEST, "sessionId");
+        colBuilder = new SIPCollectionBuilder(PROCESSING_CHAIN_TEST, SESSION_ID);
         collection = colBuilder.build();
 
         builder = new SIPBuilder(SIP_ID_TEST);
         builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("data2.fits"), "sdsdfm1211vd");
         builder.setSyntax("FITS(FlexibleImageTransport)",
-                          "http://www.iana.org/assignments/media-types/application/fits", MediaType.valueOf("application/fits"));
+                          "http://www.iana.org/assignments/media-types/application/fits",
+                          MediaType.valueOf("application/fits"));
         builder.addContentInformation();
         collection.add(builder.build());
 
         results = ingestService.ingest(collection);
-        ipId = results.stream().findFirst().get().getIpId();
-        resultSip = sipRepository.findOneByIpId(ipId);
-        sipIdTest = resultSip.get().getId();
+        sipId = results.stream().findFirst().get().getSipId();
+        resultSip = sipRepository.findOneBySipId(sipId);
+        entityIdTest = resultSip.get().getId();
 
         // Init a SIP with reference in database with state CREATED
-        colBuilder = new SIPCollectionBuilder(PROCESSING_CHAIN_TEST, "sessionId");
+        colBuilder = new SIPCollectionBuilder(PROCESSING_CHAIN_TEST, SESSION_ID);
         collection = colBuilder.build();
 
         builder = new SIPBuilder(SIP_REF_ID_TEST);
@@ -189,8 +191,8 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
                                               "1e2d4ab665784e43243b9b07724cd483"));
         builder.setSyntax("XML", "https://en.wikipedia.org/wiki/XML", MediaType.valueOf("application/xml"));
         results = ingestService.ingest(collection);
-        ipId = results.stream().findFirst().get().getIpId();
-        resultSip = sipRepository.findOneByIpId(ipId);
+        sipId = results.stream().findFirst().get().getSipId();
+        resultSip = sipRepository.findOneBySipId(sipId);
         sipRefIdTest = resultSip.get().getId();
     }
 
@@ -247,13 +249,13 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
     public void testDefaultProcessingChain() {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(IngestProcessingJob.CHAIN_NAME_PARAMETER, DEFAULT_PROCESSING_CHAIN_TEST));
-        parameters.add(new JobParameter(IngestProcessingJob.SIP_PARAMETER, sipIdDefaultChainTest));
+        parameters.add(new JobParameter(IngestProcessingJob.SIP_PARAMETER, entityDefaultChainTest));
 
         // Simulate a full process without error
         JobInfo toTest = new JobInfo(false, 0, parameters, "owner", IngestProcessingJob.class.getName());
         runJob(toTest);
         // Assert that SIP is in AIP_CREATED state
-        SIPEntity resultSip = sipRepository.findOne(sipIdDefaultChainTest);
+        SIPEntity resultSip = sipRepository.findOne(entityDefaultChainTest);
         Assert.assertTrue("SIP should be the one generated in the test initialization.",
                           SIP_DEFAULT_CHAIN_ID_TEST.equals(resultSip.getSip().getId()));
         Assert.assertTrue("State of SIP should be AIP_CREATED After a successfull process not "
@@ -270,7 +272,7 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
     public void testProcessingChain() throws JobParameterMissingException, JobParameterInvalidException {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(IngestProcessingJob.CHAIN_NAME_PARAMETER, PROCESSING_CHAIN_TEST));
-        parameters.add(new JobParameter(IngestProcessingJob.SIP_PARAMETER, sipIdTest));
+        parameters.add(new JobParameter(IngestProcessingJob.SIP_PARAMETER, entityIdTest));
 
         // Simulate an error during PreprocessingStep
         stepErrorSimulator.setSimulateErrorForStep(PreprocessingTestPlugin.class);
@@ -282,7 +284,7 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
             LOG.info(e.getMessage());
         }
         // Assert that SIP is in INVALID state
-        SIPEntity resultSip = sipRepository.findOne(sipIdTest);
+        SIPEntity resultSip = sipRepository.findOne(entityIdTest);
         Assert.assertTrue("State of SIP should be INVALID after a error during PreprocessingTestPlugin",
                           SIPState.INVALID.equals(resultSip.getState()));
         // Assert that no AIP is generated
@@ -299,7 +301,7 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
             LOG.info(e.getMessage());
         }
         // Assert that SIP is in INVALID state
-        resultSip = sipRepository.findOne(sipIdTest);
+        resultSip = sipRepository.findOne(entityIdTest);
         Assert.assertTrue("State of SIP should be INVALID after a error during ValidationStep",
                           SIPState.INVALID.equals(resultSip.getState()));
         // Assert that no AIP is generated
@@ -316,7 +318,7 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
             LOG.info(e.getMessage());
         }
         // Assert that SIP is in AIP_GEN_ERROR state
-        resultSip = sipRepository.findOne(sipIdTest);
+        resultSip = sipRepository.findOne(entityIdTest);
         Assert.assertTrue("State of SIP should be AIP_GEN_ERROR after a error during GenerationStep",
                           SIPState.AIP_GEN_ERROR.equals(resultSip.getState()));
         // Assert that no AIP is generated
@@ -333,7 +335,7 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
             LOG.info(e.getMessage());
         }
         // Assert that SIP is in AIP_GEN_ERROR state
-        resultSip = sipRepository.findOne(sipIdTest);
+        resultSip = sipRepository.findOne(entityIdTest);
         Assert.assertTrue("State of SIP should be AIP_GEN_ERROR after a error during GenerationStep",
                           SIPState.AIP_GEN_ERROR.equals(resultSip.getState()));
         // Assert that no AIP is generated
@@ -345,7 +347,7 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
         toTest = new JobInfo(false, 1, parameters, "owner", IngestProcessingJob.class.getName());
         runJob(toTest);
         // Assert that SIP is in AIP_CREATED state
-        resultSip = sipRepository.findOne(sipIdTest);
+        resultSip = sipRepository.findOne(entityIdTest);
         Assert.assertTrue("SIP should be the one generated in the test initialization.",
                           SIP_ID_TEST.equals(resultSip.getSip().getId()));
         Assert.assertTrue("State of SIP should be AIP_CREATED After a successfull process",
@@ -355,6 +357,8 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
         Assert.assertTrue("There should be one AIP generated associated to the entry sip", aips.size() == 1);
         Assert.assertTrue("The AIP generated should be in CREATED state",
                           SipAIPState.CREATED.equals(aips.stream().findFirst().get().getState()));
+        Assert.assertEquals("AIP should contain the session ID", aips.stream().findFirst().get().getAip()
+                .getProperties().getPdi().getProvenanceInformation().getSession(), SESSION_ID);
 
     }
 
@@ -379,6 +383,8 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
         Assert.assertTrue("There should be one AIP generated associated to the entry sip", aips.size() == 1);
         Assert.assertTrue("The AIP generated should be in CREATED state",
                           SipAIPState.CREATED.equals(aips.stream().findFirst().get().getState()));
+        Assert.assertEquals("AIP should contain the session ID", aips.stream().findFirst().get().getAip()
+                .getProperties().getPdi().getProvenanceInformation().getSession(), SESSION_ID);
 
     }
 

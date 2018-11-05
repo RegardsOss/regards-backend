@@ -37,7 +37,7 @@ public class SIPDto {
     /**
      * The unique ingest IP identifier
      */
-    private String ipId;
+    private String sipId;
 
     private Integer version;
 
@@ -61,12 +61,12 @@ public class SIPDto {
         this.id = id;
     }
 
-    public String getIpId() {
-        return ipId;
+    public String getSipId() {
+        return sipId;
     }
 
-    public void setIpId(String ipId) {
-        this.ipId = ipId;
+    public void setSipId(String sipId) {
+        this.sipId = sipId;
     }
 
     public Integer getVersion() {

@@ -34,8 +34,8 @@ package fr.cnes.regards.modules.ingest.domain.entity;
  *   |        VALID
  * DELETED      |_______ AIP_GEN_ERROR
  *   |          |
- *   |      AIP_CREATED
- *   |__________|________STORE_ERROR
+ *   |      AIP_CREATED <-----|
+ *   |__________|________SUBMISSION_ERROR or STORE_ERROR
  *   |          |
  *   |        STORED
  *   |          |
@@ -81,6 +81,10 @@ public enum SIPState implements ISipState {
      */
     AIP_CREATED,
     /**
+     * AIP(s) submission to storage failed
+     */
+    SUBMISSION_ERROR,
+    /**
      * AIP(s) has been successfully stored by storage microservice
      */
     STORED,
@@ -93,9 +97,17 @@ public enum SIPState implements ISipState {
      */
     INDEXED,
     /**
+     * SIP failed to be indexed
+     */
+    INDEX_ERROR,
+    /**
      * SIP is partially stored.
      */
     INCOMPLETE,
+    /**
+     * SIP is to be DELETED
+     */
+    TO_BE_DELETED,
     /**
      * SIP deleted
      */

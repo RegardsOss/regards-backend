@@ -22,13 +22,17 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
@@ -45,19 +49,19 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
 
     /**
      * Find last ingest SIP with specified SIP ID according to ingest date
-     * @param sipId external SIP identifier
+     * @param providerId external SIP identifier
      * @return the latest registered SIP
      */
     @EntityGraph("graph.sip.entity.complete")
-    SIPEntity findTopBySipIdOrderByIngestDateDesc(String sipId);
+    SIPEntity findTopByProviderIdOrderByIngestDateDesc(String providerId);
 
     /**
-     * Find all SIP version of a sipId
-     * @param sipId SIP_ID
-     * @return all SIP versions of a sipId
+     * Find all SIP version of a provider id
+     * @param providerId provider id
+     * @return all SIP versions of this provider id
      */
     @EntityGraph("graph.sip.entity.complete")
-    Collection<SIPEntity> findAllBySipIdOrderByVersionAsc(String sipId);
+    Collection<SIPEntity> findAllByProviderIdOrderByVersionAsc(String providerId);
 
     /**
      * Find all {@link SIPEntity}s by given {@link SIPState}
@@ -68,20 +72,18 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
     Collection<SIPEntity> findAllByState(SIPState state);
 
     /**
-     * Find one {@link SIPEntity} by is unique ipId
-     * @param ipId
-     * @return
+     * Find one {@link SIPEntity} by its unique ipId
      */
     @EntityGraph("graph.sip.entity.complete")
-    Optional<SIPEntity> findOneByIpId(String ipId);
+    Optional<SIPEntity> findOneBySipId(String sipId);
 
     /**
      * Retrieve all {@link SIPEntity} for the given ipIds
-     * @param ipIds
+     * @param sipIds
      * @return {@link SIPEntity}s
      */
     @EntityGraph("graph.sip.entity.complete")
-    Collection<SIPEntity> findByIpIdIn(Collection<String> ipIds);
+    Collection<SIPEntity> findBySipIdIn(Collection<String> sipIds);
 
     /**
      * Retrieve all {@link SIPEntity} associated to the given session id.
@@ -105,9 +107,17 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
      * @param state new {@link SIPState}
      * @param id id of the {@link SIPEntity} to update
      */
-    @Modifying
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("UPDATE SIPEntity s set s.state = ?1 where s.id = ?2")
     void updateSIPEntityState(SIPState state, Long id);
+
+    /**
+     * Switch state for a given session
+     */
+    @Modifying
+    @Query("UPDATE SIPEntity s set s.state = :newState where s.state = :state AND s.session = :session")
+    void updateSIPEntityStateByStateAndSession(@Param("newState") SIPState state,
+            @Param("state") SIPState filterState, @Param("session") SIPSession session);
 
     /**
      * Count number of {@link SIPEntity} associated to a given session
@@ -131,30 +141,30 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
     Long countByChecksum(String checksum);
 
     /**
-     * Get next version of the SIP identified by sipId
-     * @param sipId SIP_ID
+     * Get next version of the SIP identified by provider id
+     * @param providerId provider id
      * @return next version
      */
-    default Integer getNextVersion(String sipId) {
-        SIPEntity latest = findTopBySipIdOrderByIngestDateDesc(sipId);
+    default Integer getNextVersion(String providerId) {
+        SIPEntity latest = findTopByProviderIdOrderByIngestDateDesc(providerId);
         return latest == null ? 1 : latest.getVersion() + 1;
     }
 
     /**
-     * Find all SIP version of a sipId
-     * @param sipId SIP_ID
-     * @return all SIP versions of a sipId
+     * Find all SIP version of a provider id
+     * @param providerId prodiver id
+     * @return all SIP versions of a provider id
      */
-    default Collection<SIPEntity> getAllVersions(String sipId) {
-        return findAllBySipIdOrderByVersionAsc(sipId);
+    default Collection<SIPEntity> getAllVersions(String providerId) {
+        return findAllByProviderIdOrderByVersionAsc(providerId);
     }
 
     /**
      * Check if SIP is already ingested based on its checksum
-     * @param checksum
-     * @return
      */
     default Boolean isAlreadyIngested(String checksum) {
         return countByChecksum(checksum) == 1;
     }
+
+    Page<SIPEntity> findPageByState(SIPState state, Pageable pageable);
 }

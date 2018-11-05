@@ -25,6 +25,7 @@ import java.util.HashMap;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -32,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.MimeType;
 import org.springframework.validation.Errors;
@@ -57,11 +59,12 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
  */
 @RunWith(SpringRunner.class)
 @EnableAutoConfiguration(exclude = { JpaRepositoriesAutoConfiguration.class })
+@TestPropertySource(properties = { "regards.cipher.iv=1234567812345678", "regards.cipher.keyLocation=src/test/resources/testKey"})
 public class SIPValidationTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPValidationTest.class);
 
-    private static final String SIP_ID = "sipId";
+    private static final String PROVIDER_ID = "providerId";
 
     @Autowired
     private Validator validator;
@@ -107,7 +110,7 @@ public class SIPValidationTest {
     public void invalidSIPReference() {
 
         SIP sip = new SIP();
-        sip.setId(SIP_ID);
+        sip.setId(PROVIDER_ID);
         sip.setIpType(EntityType.DATA);
         SIPReference ref = new SIPReference();
         sip.setRef(ref);
@@ -116,7 +119,7 @@ public class SIPValidationTest {
         if (!errors.hasErrors()) {
             Assert.fail("An empty SIP reference should be invalid");
         }
-        Assert.assertTrue(errors.getErrorCount() == 4);
+        Assert.assertEquals(3, errors.getErrorCount());
     }
 
     /**
@@ -127,7 +130,7 @@ public class SIPValidationTest {
     @Purpose("SIP validation")
     public void validSIPReference() {
 
-        SIPBuilder builder = new SIPBuilder(SIP_ID);
+        SIPBuilder builder = new SIPBuilder(PROVIDER_ID);
         SIP sip = builder.buildReference(Paths.get("sip.xml"), "abpfbfp222");
         validator.validate(sip, errors);
         if (errors.hasErrors()) {
@@ -138,13 +141,14 @@ public class SIPValidationTest {
     /**
      * Check validation on SIP passed by value. See {@link InformationPackageProperties} for constraint list.
      */
+    @Ignore("A Sip can have no data file (cf. M.Sordi, 18/09/2018)")
     @Test
     @Requirement("REGARDS_DSL_ING_PRO_140")
     @Purpose("SIP validation")
     public void invalidSIPValue() {
 
         SIP sip = new SIP();
-        sip.setId(SIP_ID);
+        sip.setId(PROVIDER_ID);
         sip.setIpType(EntityType.DATA);
         sip.setProperties(new InformationPackageProperties());
 
@@ -164,7 +168,7 @@ public class SIPValidationTest {
     @Purpose("SIP validation")
     public void validSIPValue() {
 
-        SIPBuilder sipBuilder = new SIPBuilder(SIP_ID);
+        SIPBuilder sipBuilder = new SIPBuilder(PROVIDER_ID);
 
         // Geometry
         sipBuilder.setGeometry(IGeometry.point(IGeometry.position(10.0, 10.0)));
@@ -173,9 +177,9 @@ public class SIPValidationTest {
         sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("sip.fits"),
                                                                 "abff1dffdfdf2sdsfsd");
         // Content information - data object representation information
-        sipBuilder.getContentInformationBuilder().setSyntaxAndSemantic("FITS",
-                                                                       "http://www.iana.org/assignments/media-types/application/fits",
-                                                                       MimeType.valueOf("application/fits"), "semanticDescription");
+        sipBuilder.getContentInformationBuilder()
+                .setSyntaxAndSemantic("FITS", "http://www.iana.org/assignments/media-types/application/fits",
+                                      MimeType.valueOf("application/fits"), "semanticDescription");
         // Effectively add content information to the current SIP
         sipBuilder.addContentInformation();
 

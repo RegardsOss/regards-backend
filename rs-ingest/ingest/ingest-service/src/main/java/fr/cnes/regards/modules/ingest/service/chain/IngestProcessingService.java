@@ -196,18 +196,18 @@ public class IngestProcessingService implements IIngestProcessingService {
 
     /**
      * Schedule a new {@link IngestProcessingJob} to ingest given {@link SIPEntity}
-     * @param sipIdToProcess {@link SIPEntity} to ingest
+     * @param entityIdToProcess {@link SIPEntity} to ingest
      */
-    private void scheduleIngestProcessingJob(Long sipIdToProcess, String processingChain) {
-        LOGGER.debug("Scheduling new IngestProcessingJob for SIP {} and processing chain {}", sipIdToProcess,
+    private void scheduleIngestProcessingJob(Long entityIdToProcess, String processingChain) {
+        LOGGER.debug("Scheduling new IngestProcessingJob for SIP {} and processing chain {}", entityIdToProcess,
                      processingChain);
         Set<JobParameter> jobParameters = Sets.newHashSet();
-        jobParameters.add(new JobParameter(IngestProcessingJob.SIP_PARAMETER, sipIdToProcess));
+        jobParameters.add(new JobParameter(IngestProcessingJob.SIP_PARAMETER, entityIdToProcess));
         jobParameters.add(new JobParameter(IngestProcessingJob.CHAIN_NAME_PARAMETER, processingChain));
         JobInfo jobInfo = new JobInfo(false, IngestJobPriority.INGEST_PROCESSING_JOB_PRIORITY.getPriority(),
                 jobParameters, authResolver.getUser(), IngestProcessingJob.class.getName());
         jobInfoService.createAsQueued(jobInfo);
-        sipRepository.updateSIPEntityState(SIPState.QUEUED, sipIdToProcess);
+        sipRepository.updateSIPEntityState(SIPState.QUEUED, entityIdToProcess);
     }
 
     @Override

@@ -30,7 +30,7 @@ import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
  *
  */
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.contrib" })
-@MicroserviceInfo(name = "ingest", version = "2.0-SNAPSHOT")
+@MicroserviceInfo(name = "ingest", version = "3.0.0-SNAPSHOT")
 public class Application {
 
     /**

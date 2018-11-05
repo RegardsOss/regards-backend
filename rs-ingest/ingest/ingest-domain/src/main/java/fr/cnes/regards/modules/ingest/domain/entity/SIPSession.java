@@ -18,13 +18,14 @@
  */
 package fr.cnes.regards.modules.ingest.domain.entity;
 
+import java.time.OffsetDateTime;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
-import java.time.OffsetDateTime;
 
 /**
  * Entities to group {@link SIPEntity}s. The {@link SIPSession#getLastActivationDate()}
@@ -58,6 +59,15 @@ public class SIPSession {
 
     @Transient
     private long errorSipsCount = 0;
+
+    @Transient
+    private long submissionErrorCount = 0;
+
+    @Transient
+    private long deletedSipsCount = 0;
+
+    @Transient
+    private long generationErrorCount = 0;
 
     public String getId() {
         return id;
@@ -107,6 +117,14 @@ public class SIPSession {
         this.errorSipsCount = errorSipsCount;
     }
 
+    public long getDeletedSipsCount() {
+        return deletedSipsCount;
+    }
+
+    public void setDeletedSipsCount(long deletedSipsCount) {
+        this.deletedSipsCount = deletedSipsCount;
+    }
+
     public OffsetDateTime getLastActivationDate() {
         return lastActivationDate;
     }
@@ -115,4 +133,19 @@ public class SIPSession {
         this.lastActivationDate = lastActivationDate;
     }
 
+    public long getSubmissionErrorCount() {
+        return submissionErrorCount;
+    }
+
+    public void setSubmissionErrorCount(long submissionErrorCount) {
+        this.submissionErrorCount = submissionErrorCount;
+    }
+
+    public long getGenerationErrorCount() {
+        return generationErrorCount;
+    }
+
+    public void setGenerationErrorCount(long generationErrorCount) {
+        this.generationErrorCount = generationErrorCount;
+    }
 }

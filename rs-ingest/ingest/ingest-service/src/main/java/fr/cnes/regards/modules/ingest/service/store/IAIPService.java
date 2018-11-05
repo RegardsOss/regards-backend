@@ -21,9 +21,11 @@ package fr.cnes.regards.modules.ingest.service.store;
 import java.util.Optional;
 import java.util.Set;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.storage.domain.IAipState;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
@@ -45,33 +47,36 @@ public interface IAIPService {
     void handleAipEvent(AIPEvent aipEvent);
 
     /**
-     * Set the status of the given AIP to {@link SipAIPState#STORE_ERROR}
+     * Set the status of the given AIP to given one
      */
-    void setAipInError(String ipId, IAipState storeError, String failureCause);
+    void setAipInError(UniformResourceName aipId, IAipState storeError, String failureCause, SIPState sipState);
 
     /**
      * Delete the {@link AIPEntity} by his ipId
      */
-    void deleteAip(String ipId, String sipIpId, IAipState state);
+    void deleteAip(UniformResourceName aipId, UniformResourceName sipId, IAipState state);
 
     /**
-     * Set {@link AIPEntity} state to {@link SipAIPState#STORED}
+     * Set {@link AIPEntity} state to give none
      */
-    void setAipToStored(String ipId, IAipState state);
+    void setAipToStored(UniformResourceName aipId, IAipState state);
 
     /**
      * Set {@link AIPEntity} state to {@link SipAIPState#INDEXED}
-     * @param ipId
      * @return {@link AIPEntity} updated
      */
     AIPEntity setAipToIndexed(AIPEntity aip);
 
     /**
-     * Search for a {@link AIPEntity} by his ipId
-     * @param ipId
-     * @return
+     * Set {@link AIPEntity} state to {@link SipAIPState#INDEX_ERROR}
+     * @return {@link AIPEntity} updated
      */
-    Optional<AIPEntity> searchAip(UniformResourceName ipId);
+    AIPEntity setAipToIndexError(AIPEntity aip);
+
+    /**
+     * Search for a {@link AIPEntity} by its ipId
+     */
+    Optional<AIPEntity> searchAip(UniformResourceName aipId);
 
     /**
      * Schedule storage bulk request job according to available AIPs
@@ -87,4 +92,15 @@ public interface IAIPService {
      * Get AIP to submit in {@link SipAIPState#SUBMISSION_SCHEDULED} state for specific ingest processing chain
      */
     Set<AIPEntity> findAIPToSubmit(String ingestProcessingChain);
+
+    /**
+     * Look for sips in state {@link fr.cnes.regards.modules.ingest.domain.entity.SIPState#TO_BE_DELETED} and
+     * ask to rs-storage to delete them per page of 100.
+     */
+    void askForAipsDeletion();
+
+    /**
+     * Reactivate AIP submission for AIP and its SIP in submission error
+     */
+    void retryAipSubmission(String sessionId) throws ModuleException;
 }

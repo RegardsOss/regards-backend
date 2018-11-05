@@ -21,8 +21,8 @@ package fr.cnes.regards.modules.ingest.domain.builder;
 import java.time.OffsetDateTime;
 
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
-import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.storage.domain.AIP;
 
 /**
@@ -40,7 +40,7 @@ public final class AIPEntityBuilder {
         aipEntity.setAip(aip);
         aipEntity.setState(state);
         aipEntity.setSip(sip);
-        aipEntity.setIpId(aip.getId().toString());
+        aipEntity.setAipId(aip.getId());
         aipEntity.setCreationDate(OffsetDateTime.now());
         return aipEntity;
     }

@@ -34,6 +34,8 @@
                             ],
                             "checksum": "d20f8f0fe06e98a1a3403080cb1ebeed",
                             "algorithm": "MD5",
+                            "filename": "ISO_DENS_19820416_1538.txt",
+                            "reference": false,
                             "regardsDataType": "RAWDATA"
                         },
                         "representationInformation": {
@@ -49,6 +51,8 @@
                             ],
                             "checksum": "d54f707f42e0a00c42b0a9be46e209a6",
                             "algorithm": "MD5",
+                            "filename": "iso_nete_19820416_1538C.txt",
+                            "reference": false,
                             "regardsDataType": "QUICKLOOK_MD"
                         },
                         "representationInformation": {
@@ -64,6 +68,8 @@
                             ],
                             "checksum": "9a56c4625a796476f730ddc58035df20",
                             "algorithm": "MD5",
+                            "filename": "iso_nete_19820416_1538B.txt",
+                            "reference": false,
                             "regardsDataType": "QUICKLOOK_SD"
                         },
                         "representationInformation": {

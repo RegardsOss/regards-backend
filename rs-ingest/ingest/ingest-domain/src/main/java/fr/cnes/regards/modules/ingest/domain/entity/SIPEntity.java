@@ -52,6 +52,7 @@ import org.hibernate.annotations.TypeDefs;
 import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.IngestMetadata;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
@@ -64,10 +65,10 @@ import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
  */
 @Entity
 @Table(name = "t_sip",
-        indexes = { @Index(name = "idx_sip_id", columnList = "sipId,ipId,checksum"),
+        indexes = { @Index(name = "idx_sip_id", columnList = "providerId,sipId,checksum"),
                 @Index(name = "idx_sip_processing", columnList = "processing") },
         // PostgreSQL manage both single indexes and multiple ones
-        uniqueConstraints = { @UniqueConstraint(name = "uk_sip_ipId", columnNames = "ipId"),
+        uniqueConstraints = { @UniqueConstraint(name = "uk_sip_sipId", columnNames = "sipId"),
                 @UniqueConstraint(name = "uk_sip_checksum", columnNames = "checksum") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @NamedEntityGraphs({ @NamedEntityGraph(name = "graph.sip.entity.complete",
@@ -88,27 +89,27 @@ public class SIPEntity {
     private Long id;
 
     /**
-     * The SIP identifier = the feature ID
+     * The provider identifier = the feature ID
      */
-    @NotBlank(message = "SIP ID is required")
+    @NotBlank(message = "Provider ID is required")
     @Column(length = 100)
-    private String sipId;
+    private String providerId;
 
     /**
      * The SIP internal identifier (generated URN). If two SIP are ingested with same id, this idIp will distinguish
      * them as 2 different
      * versions
      */
-    @NotBlank(message = "IP ID is required")
-    @Column(name = "ipId", length = MAX_URN_SIZE)
-    private String ipId;
+    @NotBlank(message = "SIP ID is required")
+    @Column(name = "sipId", length = MAX_URN_SIZE)
+    private String sipId;
 
     @NotBlank(message = "Owner is required")
     @Column(name = "owner", length = 128)
     private String owner;
 
     /**
-     * SIP version : this value is also reported in {@link #ipId} and must be the same
+     * SIP version : this value is also reported in {@link #sipId} and must be the same
      */
     @NotNull(message = "Version is required")
     @Min(1)
@@ -163,12 +164,20 @@ public class SIPEntity {
     @JoinColumn(name = "session", foreignKey = @ForeignKey(name = "fk_sip_session"))
     private SIPSession session;
 
-    public String getIpId() {
-        return ipId;
+    public String getSipId() {
+        return sipId;
     }
 
-    public void setIpId(String ipId) {
-        this.ipId = ipId;
+    public void setSipId(String sipId) {
+        this.sipId = sipId;
+    }
+
+    public UniformResourceName getSipIdUrn() {
+        return UniformResourceName.fromString(sipId);
+    }
+
+    public void setSipId(UniformResourceName sipId) {
+        this.sipId = sipId.toString();
     }
 
     public SIPState getState() {
@@ -211,12 +220,12 @@ public class SIPEntity {
         this.processing = processing;
     }
 
-    public String getSipId() {
-        return sipId;
+    public String getProviderId() {
+        return providerId;
     }
 
-    public void setSipId(String sipId) {
-        this.sipId = sipId;
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
     }
 
     public Long getId() {
@@ -268,8 +277,8 @@ public class SIPEntity {
      */
     public SIPDto toDto() {
         SIPDto dto = new SIPDto();
-        dto.setId(sipId);
-        dto.setIpId(ipId);
+        dto.setId(providerId);
+        dto.setSipId(sipId.toString());
         dto.setRejectionCauses(rejectionCauses);
         dto.setState(state);
         dto.setVersion(version);

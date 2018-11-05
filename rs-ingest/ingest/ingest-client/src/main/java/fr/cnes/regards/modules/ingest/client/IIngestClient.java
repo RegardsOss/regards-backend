@@ -44,5 +44,5 @@ import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
 public interface IIngestClient {
 
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
-    public ResponseEntity<Collection<SIPDto>> ingest(@Valid @RequestBody SIPCollection sips);
+    ResponseEntity<Collection<SIPDto>> ingest(@Valid @RequestBody SIPCollection sips);
 }

@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.ingest.domain;
 
 import java.nio.file.Paths;
-import java.util.Set;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,9 +29,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.DataType;
@@ -45,6 +47,7 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
  */
 @RunWith(SpringRunner.class)
 @EnableAutoConfiguration(exclude = { JpaRepositoriesAutoConfiguration.class })
+@TestPropertySource(properties = { "regards.cipher.iv=1234567812345678", "regards.cipher.keyLocation=src/test/resources/testKey"})
 public class SIPBuilderTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPBuilderTest.class);
@@ -68,8 +71,8 @@ public class SIPBuilderTest {
         SIPCollectionBuilder collectionBuilder = new SIPCollectionBuilder(processingChain, sessionId);
 
         // Create a SIP builder
-        String sipId = "SIP_001";
-        SIPBuilder sipBuilder = new SIPBuilder(sipId);
+        String providerId = "SIP_001";
+        SIPBuilder sipBuilder = new SIPBuilder(providerId);
 
         // Fill in required content information
         sipBuilder.getContentInformationBuilder().setDataObject(dataType, Paths.get(fileName), algorithm, checksum);
@@ -88,10 +91,10 @@ public class SIPBuilderTest {
         Assert.assertTrue(sips.getFeatures().get(0) instanceof SIP);
 
         SIP one = sips.getFeatures().get(0);
-        Assert.assertTrue(sipId.equals(one.getId()));
+        Assert.assertTrue(providerId.equals(one.getId()));
         Assert.assertNotNull(one.getProperties());
 
-        Set<ContentInformation> cisOne = one.getProperties().getContentInformations();
+        List<ContentInformation> cisOne = one.getProperties().getContentInformations();
         Assert.assertNotNull(cisOne);
         Assert.assertTrue(cisOne.size() == 1);
 
@@ -103,8 +106,7 @@ public class SIPBuilderTest {
         OAISDataObject dataObject = ciOne.getDataObject();
         Assert.assertEquals(dataType, dataObject.getRegardsDataType());
         Assert.assertTrue(dataObject.getUrls().stream().map(url -> url.getPath())
-                                  .filter(path -> path.equals(Paths.get(fileName).toAbsolutePath().toString()))
-                                  .findFirst().isPresent());
+                .filter(path -> path.equals(Paths.get(fileName).toAbsolutePath().toString())).findFirst().isPresent());
         Assert.assertEquals(algorithm, dataObject.getAlgorithm());
         Assert.assertEquals(checksum, dataObject.getChecksum());
     }
@@ -112,8 +114,8 @@ public class SIPBuilderTest {
     @Test
     public void createSIPByReference() {
 
-        String sipId = "refSip";
-        SIPBuilder builder = new SIPBuilder(sipId);
+        String providerId = "refSip";
+        SIPBuilder builder = new SIPBuilder(providerId);
         SIP ref = builder.buildReference(Paths.get("ref.xml"), "algo", "123456789a");
 
         String refString = gson.toJson(ref);

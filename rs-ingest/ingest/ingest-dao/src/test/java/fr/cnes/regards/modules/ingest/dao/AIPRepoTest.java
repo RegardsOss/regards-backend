@@ -52,5 +52,4 @@ public class AIPRepoTest extends AbstractDaoTransactionalTest {
         Set<AIPEntity> aips = aipRepo.findBySipProcessingAndState("DefaultProcessingChain", SipAIPState.CREATED);
         Assert.assertNotNull(aips);
     }
-
 }

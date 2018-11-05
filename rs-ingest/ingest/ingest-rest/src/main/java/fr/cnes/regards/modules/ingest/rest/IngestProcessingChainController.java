@@ -30,6 +30,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -63,7 +65,9 @@ public class IngestProcessingChainController implements IResourceController<Inge
 
     public static final String TYPE_MAPPING = "/processingchains";
 
-    public static final String NAME_PATH = "/{name}";
+    public static final String REQUEST_PARAM_NAME = "name";
+
+    public static final String NAME_PATH = "/{" + REQUEST_PARAM_NAME + "}";
 
     public static final String IMPORT_PATH = "/import";
 
@@ -84,7 +88,8 @@ public class IngestProcessingChainController implements IResourceController<Inge
     @ResourceAccess(description = "Search for IngestProcessingChain with optional criterion.")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<PagedResources<Resource<IngestProcessingChain>>> search(
-            @RequestParam(name = "name", required = false) String name, Pageable pageable,
+            @RequestParam(name = "name", required = false) String name,
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<IngestProcessingChain> pAssembler) {
         Page<IngestProcessingChain> chains = ingestProcessingService.searchChains(name, pageable);
         PagedResources<Resource<IngestProcessingChain>> resources = toPagedResources(chains, pAssembler);

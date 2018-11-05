@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.PagedResources;
@@ -51,6 +53,7 @@ import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.ingest.domain.SIPCollection;
 import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
@@ -74,11 +77,27 @@ public class SIPController implements IResourceController<SIPEntity> {
 
     public static final String TYPE_MAPPING = "/sips";
 
-    public static final String IPID_PATH = "/{ipId}";
+    public static final String REQUEST_PARAM_SIP_ID = "sipId";
+
+    public static final String SIPID_PATH = "/{" + REQUEST_PARAM_SIP_ID + "}";
 
     public static final String RETRY_PATH = "/retry";
 
     public static final String IMPORT_PATH = "/import";
+
+    public static final String REQUEST_PARAM_PROVIDER_ID = "providerId";
+
+    public static final String REQUEST_PARAM_OWNER = "owner";
+
+    public static final String REQUEST_PARAM_FROM = "from";
+
+    public static final String REQUEST_PARAM_STATE = "state";
+
+    public static final String REQUEST_PARAM_PROCESSING = "processing";
+
+    public static final String REQUEST_PARAM_SESSION_ID = "sessionId";
+
+    public static final String REQUEST_PARAM_FILE = "file";
 
     @Autowired
     private IIngestService ingestService;
@@ -118,7 +137,7 @@ public class SIPController implements IResourceController<SIPEntity> {
      */
     @ResourceAccess(description = "SIP collection submission using multipart request")
     @RequestMapping(method = RequestMethod.POST, value = IMPORT_PATH)
-    public ResponseEntity<Collection<SIPDto>> ingestFile(@RequestParam("file") MultipartFile file)
+    public ResponseEntity<Collection<SIPDto>> ingestFile(@RequestParam(name = REQUEST_PARAM_FILE) MultipartFile file)
             throws ModuleException {
         try {
             Collection<SIPDto> dtos = ingestService.ingest(file.getInputStream());
@@ -134,44 +153,50 @@ public class SIPController implements IResourceController<SIPEntity> {
     @ResourceAccess(description = "Search for SIPEntities with optional criterion.")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<PagedResources<Resource<SIPEntity>>> search(
-            @RequestParam(name = "sipId", required = false) String sipId,
-            @RequestParam(name = "owner", required = false) String owner,
-            @RequestParam(name = "from",
+            @RequestParam(name = REQUEST_PARAM_PROVIDER_ID, required = false) String providerId,
+            @RequestParam(name = REQUEST_PARAM_OWNER, required = false) String owner,
+            @RequestParam(name = REQUEST_PARAM_FROM,
                     required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
-            @RequestParam(name = "state", required = false) List<SIPState> state,
-            @RequestParam(name = "processing", required = false) String processing,
-            @RequestParam(name = "sessionId", required = false) String sessionId, Pageable pageable,
+            @RequestParam(name = REQUEST_PARAM_STATE, required = false) List<SIPState> state,
+            @RequestParam(name = REQUEST_PARAM_PROCESSING, required = false) String processing,
+            @RequestParam(name = REQUEST_PARAM_SESSION_ID, required = false) String sessionId,
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<SIPEntity> pAssembler) {
-        Page<SIPEntity> sipEntities = sipService.search(sipId, sessionId, owner, from, state, processing, pageable);
+        Page<SIPEntity> sipEntities = sipService.search(providerId, sessionId, owner, from, state, processing,
+                                                        pageable);
         PagedResources<Resource<SIPEntity>> resources = toPagedResources(sipEntities, pAssembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "Retrieve one SIP by is ipId.")
-    @RequestMapping(value = IPID_PATH, method = RequestMethod.GET)
-    public ResponseEntity<Resource<SIPEntity>> getSipEntity(@PathVariable("ipId") String ipId) throws ModuleException {
-        SIPEntity sip = sipService.getSIPEntity(ipId);
+    @ResourceAccess(description = "Retrieve one SIP by its sipId.")
+    @RequestMapping(value = SIPID_PATH, method = RequestMethod.GET)
+    public ResponseEntity<Resource<SIPEntity>> getSipEntity(@PathVariable(REQUEST_PARAM_SIP_ID) String sipId)
+            throws ModuleException {
+        SIPEntity sip = sipService.getSIPEntity(UniformResourceName.fromString(sipId));
         return new ResponseEntity<>(toResource(sip), HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "Delete one SIP by is sipId.")
+    @ResourceAccess(description = "Delete one SIP by its providerId.")
     @RequestMapping(method = RequestMethod.DELETE)
-    public ResponseEntity<Collection<RejectedSip>> deleteSipEntityBySipId(@RequestParam("sipId") String sipId)
-            throws ModuleException {
-        return new ResponseEntity<>(sipService.deleteSIPEntitiesForSipId(sipId), HttpStatus.OK);
+    public ResponseEntity<Collection<RejectedSip>> deleteSipEntityByProviderId(
+            @RequestParam("providerId") String providerId) throws ModuleException {
+        return new ResponseEntity<>(sipService.deleteSIPEntitiesForProviderId(providerId), HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "Delete one SIP by is sipId.")
-    @RequestMapping(value = IPID_PATH, method = RequestMethod.DELETE)
-    public ResponseEntity<Collection<RejectedSip>> deleteSipEntity(@PathVariable("ipId") String sipId)
+    @ResourceAccess(description = "Delete one SIP by its sipId.")
+    @RequestMapping(value = SIPID_PATH, method = RequestMethod.DELETE)
+    public ResponseEntity<Collection<RejectedSip>> deleteSipEntity(@PathVariable(REQUEST_PARAM_SIP_ID) String sipId)
             throws ModuleException {
-        return new ResponseEntity<>(sipService.deleteSIPEntitiesByIpIds(Sets.newHashSet(sipId)), HttpStatus.OK);
+        return new ResponseEntity<>(
+                sipService.deleteSIPEntitiesBySipIds(Sets.newHashSet(UniformResourceName.fromString(sipId))),
+                HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "Retry SIP ingestion by is ipId.")
-    @RequestMapping(value = IPID_PATH + RETRY_PATH, method = RequestMethod.POST)
-    public ResponseEntity<Void> retrySipEntityIngest(@PathVariable("ipId") String ipId) throws ModuleException {
-        ingestService.retryIngest(ipId);
+    @ResourceAccess(description = "Retry SIP ingestion by its sipId.")
+    @RequestMapping(value = SIPID_PATH + RETRY_PATH, method = RequestMethod.POST)
+    public ResponseEntity<Void> retrySipEntityIngest(@PathVariable(REQUEST_PARAM_SIP_ID) String sipId)
+            throws ModuleException {
+        ingestService.retryIngest(UniformResourceName.fromString(sipId));
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -206,15 +231,15 @@ public class SIPController implements IResourceController<SIPEntity> {
     public Resource<SIPEntity> toResource(SIPEntity sipEntity, Object... pExtras) {
         final Resource<SIPEntity> resource = resourceService.toResource(sipEntity);
         resourceService.addLink(resource, this.getClass(), "getSipEntity", LinkRels.SELF,
-                                MethodParamFactory.build(String.class, sipEntity.getIpId()));
+                                MethodParamFactory.build(String.class, sipEntity.getSipId().toString()));
         try {
-            if (sipService.isDeletable(sipEntity.getIpId())) {
+            if (sipService.isDeletable(sipEntity.getSipIdUrn())) {
                 resourceService.addLink(resource, this.getClass(), "deleteSipEntity", LinkRels.DELETE,
-                                        MethodParamFactory.build(String.class, sipEntity.getIpId()));
+                                        MethodParamFactory.build(String.class, sipEntity.getSipId().toString()));
             }
-            if (sipService.isRetryable(sipEntity.getIpId())) {
+            if (ingestService.isRetryable(sipEntity.getSipIdUrn())) {
                 resourceService.addLink(resource, this.getClass(), "retrySipEntityIngest", "retry",
-                                        MethodParamFactory.build(String.class, sipEntity.getIpId()));
+                                        MethodParamFactory.build(String.class, sipEntity.getSipId().toString()));
             }
         } catch (EntityNotFoundException e) {
             LOGGER.error(e.getMessage(), e);

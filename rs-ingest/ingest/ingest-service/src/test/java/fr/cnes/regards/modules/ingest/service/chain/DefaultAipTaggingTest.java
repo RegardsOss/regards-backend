@@ -24,6 +24,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -66,11 +68,10 @@ public class DefaultAipTaggingTest {
     @Test
     public void addOnlyTags() throws TagAIPException {
 
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(DefaultAIPTagging.FIELD_NAME_TAGS, TAGS).getParameters();
 
-        DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class,
-                                                         Arrays.asList(MODULE_PACKAGE), null);
+        DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class, null);
         Assert.assertNotNull(plugin);
         tag(plugin, TAGS, null);
     }
@@ -78,51 +79,52 @@ public class DefaultAipTaggingTest {
     @Test
     public void addOnlyLinks() throws TagAIPException {
 
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(DefaultAIPTagging.FIELD_NAME_LINKS, LINKS).getParameters();
 
-        DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class,
-                                                         Arrays.asList(MODULE_PACKAGE), null);
+        DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class, null);
         Assert.assertNotNull(plugin);
         tag(plugin, null, LINKS);
     }
 
     @Test
     public void addTagsAndLinks() throws TagAIPException {
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(DefaultAIPTagging.FIELD_NAME_TAGS, TAGS)
                 .addParameter(DefaultAIPTagging.FIELD_NAME_LINKS, LINKS).getParameters();
 
-        DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class,
-                                                         Arrays.asList(MODULE_PACKAGE), null);
+        DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class, null);
         Assert.assertNotNull(plugin);
         tag(plugin, TAGS, LINKS);
     }
 
     @Test(expected = PluginUtilsRuntimeException.class)
     public void addNothing() throws TagAIPException {
-        List<PluginParameter> parameters = PluginParametersFactory.build().getParameters();
+        Set<PluginParameter> parameters = PluginParametersFactory.build().getParameters();
 
-        DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class,
-                                                         Arrays.asList(MODULE_PACKAGE), null);
+        PluginUtils.setup(MODULE_PACKAGE);
+        DefaultAIPTagging plugin = PluginUtils.getPlugin(parameters, DefaultAIPTagging.class, null);
         Assert.assertNotNull(plugin);
         tag(plugin, null, null);
     }
 
     private void tag(IAipTagging plugin, List<String> tags, Map<String, String> links) throws TagAIPException {
-        String urn = "URN:AIP:DATA:PROJECT:00000011-0022-0033-0044-000000000055:V1";
-        String sipId = "sipId1";
+        String aipUrn = "URN:AIP:DATA:PROJECT:00000011-0022-0033-0044-000000000055:V1";
+        String sipUrn = "URN:SIP:DATA:PROJECT:00000011-0022-0033-0044-000000000055:V1";
+        String providerId = "providerId1";
         String filename = "test.netcdf";
         String md5 = "plifplafplouf";
-        AIPBuilder builder = new AIPBuilder(UniformResourceName.fromString(urn), sipId, EntityType.DATA);
+        String session = "session 1";
+        AIPBuilder builder = new AIPBuilder(UniformResourceName.fromString(aipUrn),
+                Optional.of(UniformResourceName.fromString(sipUrn)), providerId, EntityType.DATA, session);
         builder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, Paths.get("target", filename), md5);
         builder.addContentInformation();
         AIP single = builder.build();
 
         plugin.tag(Arrays.asList(single));
 
-        Assert.assertEquals(urn, single.getId().toString());
-        Assert.assertEquals(sipId, single.getSipId());
+        Assert.assertEquals(aipUrn, single.getId().toString());
+        Assert.assertEquals(providerId, single.getProviderId());
         ContentInformation ci = single.getProperties().getContentInformations().iterator().next();
         Assert.assertEquals(filename, ci.getDataObject().getFilename());
         Assert.assertEquals(md5, ci.getDataObject().getChecksum());

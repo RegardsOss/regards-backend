@@ -156,15 +156,15 @@ public class IngestServiceTest extends AbstractSIPTest {
     @Test
     public void ingestWithUpdate() throws ModuleException, NoSuchAlgorithmException, IOException {
 
-        String sipId = "sipToUpdate";
+        String providerId = "sipToUpdate";
         int sipNb = 3;
 
         for (int i = 1; i <= sipNb; i++) {
-            ingestNextVersion(sipId, i);
+            ingestNextVersion(providerId, i);
         }
 
         // Check sipNb SIP are stored
-        Collection<SIPEntity> sips = sipService.getAllVersions(sipId);
+        Collection<SIPEntity> sips = sipService.getAllVersions(providerId);
         Assert.assertNotNull(sips);
         Assert.assertTrue(sips.size() == sipNb);
 
@@ -178,7 +178,7 @@ public class IngestServiceTest extends AbstractSIPTest {
         // Simulate a SIP in CREATED state
         SIPEntity sip = createSIP("RETY_SIP_001", SESSION_ID, PROCESSING, "admin", 1);
         try {
-            ingestService.retryIngest(sip.getIpId());
+            ingestService.retryIngest(sip.getSipIdUrn());
             Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a running ingest");
         } catch (ModuleException e) {
             // Tothing to do
@@ -186,7 +186,7 @@ public class IngestServiceTest extends AbstractSIPTest {
         sip.setState(SIPState.QUEUED);
         sip = sipRepository.save(sip);
         try {
-            ingestService.retryIngest(sip.getIpId());
+            ingestService.retryIngest(sip.getSipIdUrn());
             Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a running ingest");
         } catch (ModuleException e) {
             // Tothing to do
@@ -195,7 +195,7 @@ public class IngestServiceTest extends AbstractSIPTest {
         sip.setState(SIPState.INCOMPLETE);
         sip = sipRepository.save(sip);
         try {
-            ingestService.retryIngest(sip.getIpId());
+            ingestService.retryIngest(sip.getSipIdUrn());
             Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a incompletly stored ingest");
         } catch (ModuleException e) {
             // Tothing to do
@@ -204,7 +204,7 @@ public class IngestServiceTest extends AbstractSIPTest {
         sip.setState(SIPState.INDEXED);
         sip = sipRepository.save(sip);
         try {
-            ingestService.retryIngest(sip.getIpId());
+            ingestService.retryIngest(sip.getSipIdUrn());
             Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a indexed ingest");
         } catch (ModuleException e) {
             // Tothing to do
@@ -213,7 +213,7 @@ public class IngestServiceTest extends AbstractSIPTest {
         sip.setState(SIPState.AIP_CREATED);
         sip = sipRepository.save(sip);
         try {
-            ingestService.retryIngest(sip.getIpId());
+            ingestService.retryIngest(sip.getSipIdUrn());
             Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a running ingest");
         } catch (ModuleException e) {
             // Tothing to do
@@ -222,7 +222,7 @@ public class IngestServiceTest extends AbstractSIPTest {
         sip.setState(SIPState.STORED);
         sip = sipRepository.save(sip);
         try {
-            ingestService.retryIngest(sip.getIpId());
+            ingestService.retryIngest(sip.getSipIdUrn());
             Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a stored ingest");
         } catch (ModuleException e) {
             // Tothing to do
@@ -231,7 +231,7 @@ public class IngestServiceTest extends AbstractSIPTest {
         sip.setState(SIPState.VALID);
         sip = sipRepository.save(sip);
         try {
-            ingestService.retryIngest(sip.getIpId());
+            ingestService.retryIngest(sip.getSipIdUrn());
             Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a running ingest");
         } catch (ModuleException e) {
             // Tothing to do
@@ -240,7 +240,7 @@ public class IngestServiceTest extends AbstractSIPTest {
         sip.setState(SIPState.STORE_ERROR);
         sip = sipRepository.save(sip);
         try {
-            ingestService.retryIngest(sip.getIpId());
+            ingestService.retryIngest(sip.getSipIdUrn());
             Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a store error ingest");
         } catch (ModuleException e) {
             // Tothing to do
@@ -249,7 +249,7 @@ public class IngestServiceTest extends AbstractSIPTest {
         sip.setState(SIPState.REJECTED);
         sip = sipRepository.save(sip);
         try {
-            ingestService.retryIngest(sip.getIpId());
+            ingestService.retryIngest(sip.getSipIdUrn());
             Assert.fail("There should an EntityLOperationForbidden exception. It is not possible to retry a rejected ingest");
         } catch (ModuleException e) {
             // Tothing to do
@@ -258,20 +258,20 @@ public class IngestServiceTest extends AbstractSIPTest {
         // Simulate a SIP in AIP_GEN_ERROR error
         sip.setState(SIPState.AIP_GEN_ERROR);
         sip = sipRepository.save(sip);
-        ingestService.retryIngest(sip.getIpId());
+        ingestService.retryIngest(sip.getSipIdUrn());
         sip = sipRepository.findOne(sip.getId());
         Assert.assertEquals(SIPState.CREATED, sip.getState());
 
         // Simulate a SIP in AIP_GEN_ERROR error
         sip.setState(SIPState.INVALID);
         sip = sipRepository.save(sip);
-        ingestService.retryIngest(sip.getIpId());
+        ingestService.retryIngest(sip.getSipIdUrn());
         sip = sipRepository.findOne(sip.getId());
         Assert.assertEquals(SIPState.CREATED, sip.getState());
 
     }
 
-    private void ingestNextVersion(String sipId, Integer version)
+    private void ingestNextVersion(String providerId, Integer version)
             throws NoSuchAlgorithmException, IOException, ModuleException {
 
         String sipFilename = "sip" + version + ".xml";
@@ -280,7 +280,7 @@ public class IngestServiceTest extends AbstractSIPTest {
                 SESSION_ID);
         SIPCollection collection = colBuilder.build();
 
-        SIPBuilder builder = new SIPBuilder(sipId);
+        SIPBuilder builder = new SIPBuilder(providerId);
         collection.add(builder.buildReference(Paths.get(sipFilename), ChecksumUtils
                 .computeHexChecksum(new ByteArrayInputStream(sipFilename.getBytes()), IngestService.MD5_ALGORITHM)));
 

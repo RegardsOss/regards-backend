@@ -20,9 +20,13 @@ package fr.cnes.regards.modules.ingest.rest;
 
 import java.time.OffsetDateTime;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.PagedResources;
@@ -43,6 +47,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
 import fr.cnes.regards.modules.ingest.service.ISIPSessionService;
+import fr.cnes.regards.modules.ingest.service.store.IAIPService;
 
 @RestController
 @RequestMapping(SIPSessionController.TYPE_MAPPING)
@@ -50,10 +55,25 @@ public class SIPSessionController implements IResourceController<SIPSession> {
 
     public static final String TYPE_MAPPING = "/sessions";
 
-    public static final String ID_PATH = "/{id}";
+    public static final String REQUEST_PARAM_ID = "id";
+
+    public static final String ID_PATH = "/{" + REQUEST_PARAM_ID + "}";
+
+    public static final String REQUEST_PARAM_FROM = "from";
+
+    public static final String REQUEST_PARAM_TO = "to";
+
+    public static final String RETRY_SUBMISSION_MAPPING = ID_PATH + "/retry/submission";
+
+    public static final String RETRY_GENERATION_MAPPING = ID_PATH + "/retry/generation";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SIPSessionController.class);
 
     @Autowired
     private ISIPSessionService sipSessionService;
+
+    @Autowired
+    private IAIPService aipService;
 
     /**
      * Service handling hypermedia resources
@@ -64,25 +84,42 @@ public class SIPSessionController implements IResourceController<SIPSession> {
     @ResourceAccess(description = "Search for SIPSession with optional criterion.")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<PagedResources<Resource<SIPSession>>> search(
-            @RequestParam(name = "id", required = false) String id,
-            @RequestParam(name = "from",
-                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
-            @RequestParam(name = "to",
-                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to,
-            Pageable pageable, PagedResourcesAssembler<SIPSession> pAssembler) {
+            @RequestParam(name = REQUEST_PARAM_ID, required = false) String id,
+            @RequestParam(name = REQUEST_PARAM_FROM, required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
+            @RequestParam(name = REQUEST_PARAM_TO, required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                    OffsetDateTime to, @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            PagedResourcesAssembler<SIPSession> pAssembler) {
         Page<SIPSession> sipSessions = sipSessionService.search(id, from, to, pageable);
         PagedResources<Resource<SIPSession>> resources = toPagedResources(sipSessions, pAssembler);
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "Delete one SIP by is ipId.")
+    @ResourceAccess(description = "Delete all SIP having that session name.")
     @RequestMapping(value = ID_PATH, method = RequestMethod.DELETE)
-    public ResponseEntity<Void> deleteSipEntityBySipId(@PathVariable("id") String id) throws ModuleException {
-        sipSessionService.deleteSIPSession(id).isEmpty();
+    public ResponseEntity<Void> deleteSipEntityBySessionId(@PathVariable("id") String id) throws ModuleException {
+        long methodStart = System.currentTimeMillis();
+        sipSessionService.deleteSIPSession(id);
+        long methodEnd = System.currentTimeMillis();
+        LOGGER.debug("Deleting session {} took {} ms", id, methodEnd - methodStart);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @ResourceAccess(description = "Delete one SIP by is ipId.")
+    @ResourceAccess(description = "Retry session AIP submission")
+    @RequestMapping(value = RETRY_SUBMISSION_MAPPING, method = RequestMethod.PUT)
+    public ResponseEntity<Void> retrySessionSubmission(@PathVariable("id") String id) throws ModuleException {
+        aipService.retryAipSubmission(id);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @ResourceAccess(description = "Retry session AIP generation")
+    @RequestMapping(value = RETRY_GENERATION_MAPPING, method = RequestMethod.PUT)
+    public ResponseEntity<Void> retrySessionGeneration(@PathVariable("id") String id) throws ModuleException {
+        sipSessionService.retryAipGeneration(id);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @ResourceAccess(description = "Get one SIP by is ipId.")
     @RequestMapping(value = ID_PATH, method = RequestMethod.GET)
     public ResponseEntity<Resource<SIPSession>> getSipSession(@PathVariable(name = "id") String id) {
         SIPSession session = sipSessionService.getSession(id, false);
@@ -94,8 +131,16 @@ public class SIPSessionController implements IResourceController<SIPSession> {
         final Resource<SIPSession> resource = resourceService.toResource(sipSession);
         resourceService.addLink(resource, this.getClass(), "getSipSession", LinkRels.SELF,
                                 MethodParamFactory.build(String.class, sipSession.getId()));
-        resourceService.addLink(resource, this.getClass(), "deleteSipEntityBySipId", LinkRels.DELETE,
+        resourceService.addLink(resource, this.getClass(), "deleteSipEntityBySessionId", LinkRels.DELETE,
                                 MethodParamFactory.build(String.class, sipSession.getId()));
+        if (sipSession.getSubmissionErrorCount() > 0) {
+            resourceService.addLink(resource, this.getClass(), "retrySessionSubmission", "retrySubmission",
+                                    MethodParamFactory.build(String.class, sipSession.getId()));
+        }
+        if(sipSession.getGenerationErrorCount() > 0) {
+            resourceService.addLink(resource, this.getClass(), "retrySessionGeneration", "retryGeneration",
+                                    MethodParamFactory.build(String.class, sipSession.getId()));
+        }
         return resource;
     }
 

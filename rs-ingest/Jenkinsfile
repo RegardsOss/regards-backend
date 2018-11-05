@@ -32,5 +32,5 @@
 @Library('regards/standardPipeline') _
 
 standardPipeline {
-    upstreamProjects = 'rs-microservice-multi-branch, rs-storage-multi-branch'
+    upstreamProjects = 'rs-microservice-multi-branch, rs-dam-multi-branch'
 }
