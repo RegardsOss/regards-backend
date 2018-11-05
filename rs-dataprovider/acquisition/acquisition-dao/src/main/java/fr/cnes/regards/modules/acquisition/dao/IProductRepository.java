@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -30,8 +30,11 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
@@ -54,99 +57,68 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
     Product findCompleteByProductName(String productName);
 
     @EntityGraph("graph.acquisition.file.complete")
-    Product findCompleteByIpId(String ipId);
+    Set<Product> findCompleteByProductNameIn(Collection<String> productNames);
 
-    Set<Product> findByState(ProductState state);
-
-    Set<Product> findByProcessingChainAndSipStateAndStateIn(AcquisitionProcessingChain processingChain,
-            ProductSIPState sipState, List<ProductState> productStates);
-
-    Set<Product> findByProcessingChain(AcquisitionProcessingChain processingChain);
-
-    /**
-     * Find {@link ProductState#COMPLETED} or{@link ProductState#FINISHED} products not already scheduled for SIP
-     * generation and for the specified acquisition chain.
-     * @param processingChain acquisition processing chain
-     * @return a set of {@link Product} to schedule
-     */
-    default Set<Product> findChainProductsToSchedule(AcquisitionProcessingChain processingChain) {
-        return findByProcessingChainAndSipStateAndStateIn(processingChain, ProductSIPState.NOT_SCHEDULED,
-                                                          Arrays.asList(ProductState.COMPLETED, ProductState.FINISHED));
-    }
+    Page<Product> findByProcessingChainOrderByIdAsc(AcquisitionProcessingChain processingChain, Pageable pageable);
 
     /**
      * Find all products according to specified filters
      *
      * @param ingestChain ingest chain
      * @param session session name
-     * @param sipState {@link ISipState}
+     * @param sipStates {@link ISipState}s
      * @param pageable page limit
      * @return a page of products with the above properties
      */
-    Page<Product> findByProcessingChainIngestChainAndSessionAndSipState(String ingestChain, String session,
-            ISipState sipState, Pageable pageable);
+    Page<Product> findByProcessingChainIngestChainAndSessionAndSipStateIn(String ingestChain, String session,
+            Collection<ISipState> sipStates, Pageable pageable);
 
     /**
      * Find all products according to specified filters (no session)
      *
      * @param ingestChain ingest chain
-     * @param sipState {@link ISipState}
+     * @param sipStates {@link ISipState}s
      * @param pageable page limit
      * @return a page of products with the above properties
      */
-    Page<Product> findByProcessingChainIngestChainAndSipState(String ingestChain, ISipState sipState,
-            Pageable pageable);
-
-    /**
-     * Find all products according to specified filters
-     *
-     * @param ingestChain ingest chain
-     * @param session session name
-     * @param sipState {@link ISipState}
-     * @param pageable page limit
-     * @return a page of products with the above properties
-     */
-    Set<Product> findByProcessingChainIngestChainAndSessionAndSipState(String ingestChain, String session,
-            ISipState sipState);
-
-    /**
-     * Find all products according to specified filters (no session)
-     *
-     * @param ingestChain ingest chain
-     * @param sipState {@link ISipState}
-     * @param pageable page limit
-     * @return a page of products with the above properties
-     */
-    Set<Product> findByProcessingChainIngestChainAndSipState(String ingestChain, ISipState sipState);
+    Page<Product> findByProcessingChainIngestChainAndSipStateInOrderByIdAsc(String ingestChain,
+            Collection<ISipState> sipStates, Pageable pageable);
 
     /**
      * Find {@link Product} by state in transaction with pessimistic read lock
      * @param sipState {@link ISipState}
+     * @param pageable
      * @return a set of products with the above properties
      */
     @Lock(LockModeType.PESSIMISTIC_READ)
-    Set<Product> findWithLockBySipState(ISipState sipState);
+    Page<Product> findWithLockBySipStateOrderByIdAsc(ISipState sipState, Pageable pageable);
 
     /**
      * Find {@link Product} by state in transaction with pessimistic read lock
      * @param processingChain {@link AcquisitionProcessingChain}
      * @param sipState {@link ISipState}
+     * @param pageable
      * @return a set of products with the above properties
      */
     @Lock(LockModeType.PESSIMISTIC_READ)
-    Set<Product> findWithLockByProcessingChainAndSipState(AcquisitionProcessingChain processingChain,
-            ProductSIPState sipState);
+    Page<Product> findWithLockByProcessingChainAndSipStateOrderByIdAsc(AcquisitionProcessingChain processingChain,
+            ProductSIPState sipState, Pageable pageable);
+
+    Page<Product> findByProcessingChainAndSipStateOrderByIdAsc(AcquisitionProcessingChain processingChain,
+            ProductSIPState sipState, Pageable pageable);
 
     /**
      * Find {@link Product} by state
      * @param sipState {@link ISipState}
+     * @param pageable
      * @return a set of products with the above properties
      */
-    Set<Product> findBySipState(ISipState sipState);
+    Page<Product> findBySipStateOrderByIdAsc(ISipState sipState, Pageable pageable);
 
     /**
      * Count number of products associated to the given {@link AcquisitionProcessingChain} and in the given state
      * @param processingChain {@link AcquisitionProcessingChain}
+     * @param productStates
      * @param states {@link ProductState}s
      * @return number of matching {@link Product}
      */
@@ -162,9 +134,36 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
             List<ISipState> productSipStates);
 
     /**
+     * Count number of generation job that is actually running
+     * @param processingChain {@link AcquisitionProcessingChain}
+     * @param productSipState {@link ISipState}s as string
+     * @return long
+     */
+    @Query(value = "select count(distinct p.sip_gen_job_info_id) from  {h-schema}t_acquisition_product p where p.processing_chain_id=?1 and p.sip_state=?2",
+            nativeQuery = true)
+    long countDistinctLastSIPGenerationJobInfoByProcessingChainAndSipState(AcquisitionProcessingChain processingChain,
+            String productSipState);
+
+    @Query(value = "select distinct p.lastSIPGenerationJobInfo from  Product p where p.processingChain=?1 and p.sipState=?2")
+    Set<JobInfo> findDistinctLastSIPGenerationJobInfoByProcessingChainAndSipStateIn(
+            AcquisitionProcessingChain processingChain, ISipState productSipState);
+
+    @Query(value = "select distinct p.lastSIPSubmissionJobInfo from  Product p where p.processingChain=?1 and p.sipState=?2")
+    Set<JobInfo> findDistinctLastSIPSubmissionJobInfoByProcessingChainAndSipStateIn(
+            AcquisitionProcessingChain processingChain, ISipState productSipState);
+
+    /**
      * Count number of {@link Product} associated to the given {@link AcquisitionProcessingChain}
      * @param chain {@link AcquisitionProcessingChain}
      * @return number of {@link Product}
      */
     long countByProcessingChain(AcquisitionProcessingChain chain);
+
+    @Modifying
+    @Query(value = "UPDATE Product p set p.sipState = ?2 where p.processingChain = ?3 and p.sipState = ?1")
+    void updateSipStates(ISipState fromStatus, ISipState toStatus, AcquisitionProcessingChain processingChain);
+
+    @Modifying
+    @Query(value = "UPDATE Product p set p.sipState = ?1 where p.productName in (?2)")
+    void updateSipStatesByProductNameIn(ISipState state, Collection<String> productNames);
 }

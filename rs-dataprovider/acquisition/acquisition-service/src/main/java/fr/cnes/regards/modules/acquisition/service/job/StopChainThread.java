@@ -66,11 +66,11 @@ public class StopChainThread extends Thread {
             LOGGER.info("Asking for processing chain jobs to stop");
             processingService.stopChainJobs(processingChainId);
 
-            LOGGER.info("Waiting timeout set to {} seconds", TIMEOUT);
-            while ((totalWaiting < TIMEOUT) && !processingService.isChainJobStoppedAndCleaned(processingChainId)) {
+            LOGGER.info("Waiting timeout set to {} milliseconds", TIMEOUT);
+            while (totalWaiting < TIMEOUT && !processingService.isChainJobStoppedAndCleaned(processingChainId)) {
                 totalWaiting += SLEEP_TIME;
                 Thread.sleep(SLEEP_TIME);
-                LOGGER.info("Waiting for the chain to stop since {} seconds", totalWaiting);
+                LOGGER.info("Waiting for the chain to stop since {} milliseconds", totalWaiting);
             }
 
             if (totalWaiting < TIMEOUT) {

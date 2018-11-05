@@ -24,8 +24,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -46,19 +48,20 @@ public class DiskScanningTest {
 
     private final Path searchDir = Paths.get("src", "test", "resources", "data", "plugins", "scan");
 
+    @Before
+    public void setup() {
+        PluginUtils.setup();
+    }
+
     @Test
     public void testDirectoryScanningWithoutGlobber() throws ModuleException {
 
         // Plugin parameters
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(GlobDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString())).getParameters();
 
-        // Plugin and plugin interface packages
-        List<String> prefixes = Arrays.asList(IScanPlugin.class.getPackage().getName(),
-                                              GlobDiskScanning.class.getPackage().getName());
-
         // Instantiate plugin
-        IScanPlugin plugin = PluginUtils.getPlugin(parameters, GlobDiskScanning.class, prefixes, new HashMap<>());
+        IScanPlugin plugin = PluginUtils.getPlugin(parameters, GlobDiskScanning.class, new HashMap<>());
         Assert.assertNotNull(plugin);
 
         // Run plugin
@@ -71,16 +74,12 @@ public class DiskScanningTest {
     public void testDirectoryScanningWithGlobber() throws ModuleException {
 
         // Plugin parameters
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(GlobDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString()))
                 .addParameter(GlobDiskScanning.FIELD_GLOB, "*_0[12].md").getParameters();
 
-        // Plugin and plugin interface packages
-        List<String> prefixes = Arrays.asList(IScanPlugin.class.getPackage().getName(),
-                                              GlobDiskScanning.class.getPackage().getName());
-
         // Instantiate plugin
-        IScanPlugin plugin = PluginUtils.getPlugin(parameters, GlobDiskScanning.class, prefixes, new HashMap<>());
+        IScanPlugin plugin = PluginUtils.getPlugin(parameters, GlobDiskScanning.class, new HashMap<>());
         Assert.assertNotNull(plugin);
 
         // Run plugin
@@ -93,15 +92,11 @@ public class DiskScanningTest {
     public void testDirectoryScanningWithoutRegex() throws ModuleException {
 
         // Plugin parameters
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(RegexDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString())).getParameters();
 
-        // Plugin and plugin interface packages
-        List<String> prefixes = Arrays.asList(IScanPlugin.class.getPackage().getName(),
-                                              RegexDiskScanning.class.getPackage().getName());
-
         // Instantiate plugin
-        IScanPlugin plugin = PluginUtils.getPlugin(parameters, RegexDiskScanning.class, prefixes, new HashMap<>());
+        IScanPlugin plugin = PluginUtils.getPlugin(parameters, RegexDiskScanning.class, new HashMap<>());
         Assert.assertNotNull(plugin);
 
         // Run plugin
@@ -114,16 +109,12 @@ public class DiskScanningTest {
     public void testDirectoryScanningWithRegex() throws ModuleException {
 
         // Plugin parameters
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(RegexDiskScanning.FIELD_DIRS, Arrays.asList(searchDir.toString()))
                 .addParameter(RegexDiskScanning.FIELD_REGEX, ".*_0[12]\\.md").getParameters();
 
-        // Plugin and plugin interface packages
-        List<String> prefixes = Arrays.asList(IScanPlugin.class.getPackage().getName(),
-                                              RegexDiskScanning.class.getPackage().getName());
-
         // Instantiate plugin
-        IScanPlugin plugin = PluginUtils.getPlugin(parameters, RegexDiskScanning.class, prefixes, new HashMap<>());
+        IScanPlugin plugin = PluginUtils.getPlugin(parameters, RegexDiskScanning.class, new HashMap<>());
         Assert.assertNotNull(plugin);
 
         // Run plugin

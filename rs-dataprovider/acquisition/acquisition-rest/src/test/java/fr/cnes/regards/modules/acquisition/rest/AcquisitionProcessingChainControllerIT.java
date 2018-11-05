@@ -22,26 +22,31 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.StringJoiner;
 
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
+import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.restdocs.payload.PayloadDocumentation;
+import org.springframework.restdocs.request.RequestDocumentation;
+import org.springframework.restdocs.snippet.Attributes;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import com.google.common.collect.Lists;
 import com.jayway.jsonpath.JsonPath;
 
-import fr.cnes.regards.framework.microservice.rest.MicroserviceConfigurationController;
+import fr.cnes.regards.framework.microservice.rest.ModuleManagerController;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -51,9 +56,6 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
-import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
-import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
-import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 
 /**
@@ -70,69 +72,146 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
-    public static AcquisitionProcessingChain getNewChain(String labelPrefix) {
+    @Test
+    @Requirement("REGARDS_DSL_ING_PRO_020")
+    @Requirement("REGARDS_DSL_ING_PRO_030")
+    @Purpose("Create a manual acquisition chain")
+    public void createChain() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
 
-        // Create a processing chain
-        AcquisitionProcessingChain processingChain = new AcquisitionProcessingChain();
-        processingChain.setLabel("Processing chain 1");
-        processingChain.setActive(Boolean.TRUE);
-        processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
-        processingChain.setIngestChain("DefaultIngestChain");
+        AcquisitionProcessingChain chain = AcquisitionTestUtils.getNewChain("post");
 
-        // Create an acquisition file info
-        AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();
-        fileInfo.setMandatory(Boolean.TRUE);
-        fileInfo.setComment("A comment");
-        fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
-        fileInfo.setDataType(DataType.RAWDATA);
+        customizer.addDocumentationSnippet(PayloadDocumentation
+                .relaxedRequestFields(Attributes.attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE)
+                        .value("Acquisition processing chain")), documentAcquisitionProcessingChain()));
 
-        List<PluginParameter> param = PluginParametersFactory.build()
-                .addParameter(GlobDiskScanning.FIELD_DIRS, new ArrayList<>()).getParameters();
-        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(param, GlobDiskScanning.class,
-                                                                            Lists.newArrayList());
-        scanPlugin.setIsActive(true);
-        scanPlugin.setLabel(labelPrefix + " : " + "Scan plugin");
-        fileInfo.setScanPlugin(scanPlugin);
+        // Create the chain
+        performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH, chain, customizer,
+                           "Chain should be created!");
+    }
 
-        processingChain.addFileInfo(fileInfo);
+    private List<FieldDescriptor> documentAcquisitionProcessingChain() {
 
-        // Validation
-        PluginConfiguration validationPlugin = PluginUtils
-                .getPluginConfiguration(Lists.newArrayList(), DefaultFileValidation.class, Lists.newArrayList());
-        validationPlugin.setIsActive(true);
-        validationPlugin.setLabel(labelPrefix + " : " + "Validation plugin");
-        processingChain.setValidationPluginConf(validationPlugin);
+        ConstrainedFields constrainedFields = new ConstrainedFields(AcquisitionProcessingChain.class);
+        List<FieldDescriptor> fields = new ArrayList<>();
 
-        // Product
-        PluginConfiguration productPlugin = PluginUtils
-                .getPluginConfiguration(Lists.newArrayList(), DefaultProductPlugin.class, Lists.newArrayList());
-        productPlugin.setIsActive(true);
-        productPlugin.setLabel(labelPrefix + " : " + "Product plugin");
-        processingChain.setProductPluginConf(productPlugin);
+        fields.add(constrainedFields.withPath("label", "Label"));
+        fields.add(constrainedFields.withPath("active", "Activation status"));
 
-        // SIP generation
-        PluginConfiguration sipGenPlugin = PluginUtils
-                .getPluginConfiguration(Lists.newArrayList(), DefaultSIPGeneration.class, Lists.newArrayList());
-        sipGenPlugin.setIsActive(true);
-        sipGenPlugin.setLabel(labelPrefix + " : " + "SIP generation plugin");
-        processingChain.setGenerateSipPluginConf(sipGenPlugin);
+        StringJoiner joiner = new StringJoiner(", ");
+        for (AcquisitionProcessingChainMode mode : AcquisitionProcessingChainMode.values()) {
+            joiner.add(mode.name());
+        }
+        fields.add(constrainedFields.withPath("mode", "mode", "Mode", "Allowed values : " + joiner.toString()));
 
-        // SIP post processing
-        // Not required
+        fields.add(constrainedFields.withPath("session", "Ingest session name for SIP submission").optional()
+                .type("String"));
+        fields.add(constrainedFields.withPath("ingestChain", "Ingest chain name for SIP submission"));
+        fields.add(constrainedFields.withPath("locked", "locked", "Internal chain processing lock", "NA").optional()
+                .type("Boolean"));
+        fields.add(constrainedFields.withPath("periodicity", "Automatic chain activation periodicity in second")
+                .optional().type("Long"));
 
-        return processingChain;
+        fields.add(constrainedFields.withPath("fileInfos[]", "Arrays of file information / TODO"));
+        fields.addAll(documentFileInfo("fileInfos[]"));
+
+        fields.add(constrainedFields.withPath("validationPluginConf", "Validation plugin configuration / TODO"));
+        fields.add(constrainedFields.withPath("productPluginConf", "Product plugin configuration / TODO"));
+        fields.add(constrainedFields.withPath("generateSipPluginConf", "Generate SIP plugin configuration / TODO"));
+        fields.add(constrainedFields
+                .withPath("postProcessSipPluginConf", "Optional SIP post processing plugin configuration / TODO")
+                .optional().type("Object"));
+        return fields;
+    }
+
+    private List<FieldDescriptor> documentFileInfo(String basePath) {
+        ConstrainedFields constrainedFields = new ConstrainedFields(AcquisitionFileInfo.class);
+        List<FieldDescriptor> fields = new ArrayList<>();
+
+        String prefix = basePath == null ? "" : basePath + ".";
+        fields.add(constrainedFields.withPath(prefix + "mandatory", "mandatory",
+                                              "True if the product must contain this file"));
+        fields.add(constrainedFields.withPath(prefix + "scanPlugin", "scanPlugin", "Scan plugin configuration / TODO"));
+        fields.add(constrainedFields
+                .withPath(prefix + "lastModificationDate", "lastModificationDate",
+                          "Most recent last modification ISO 8601 date of all scanned files")
+                .optional().type("String"));
+        fields.add(constrainedFields.withPath(prefix + "mimeType", "mimeType", "File MIME type"));
+
+        StringJoiner joiner = new StringJoiner(", ");
+        for (DataType mode : DataType.values()) {
+            joiner.add(mode.name());
+        }
+        fields.add(constrainedFields.withPath(prefix + "dataType", "dataType", "REGARDS data type",
+                                              "Allowed values : " + joiner.toString()));
+
+        fields.add(constrainedFields.withPath(prefix + "comment", "comment", "REGARDS data type").optional()
+                .type("String"));
+        return fields;
+    }
+
+    @Test
+    @Requirement("REGARDS_DSL_ING_PRO_020")
+    @Requirement("REGARDS_DSL_ING_PRO_030")
+    @Purpose("Get all acquisition chain")
+    public void getAllChains() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+
+        AcquisitionProcessingChain chain = AcquisitionTestUtils.getNewChain("one");
+        performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH, chain, customizer,
+                           "Chain should be created!");
+
+        chain = AcquisitionTestUtils.getNewChain("two");
+        performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH, chain, customizer,
+                           "Chain should be created!");
+
+        // Retrieve chains
+        customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+
+        performDefaultGet(AcquisitionProcessingChainController.TYPE_PATH, customizer, "Chains should be retrieved");
+    }
+
+    @Test
+    @Requirement("REGARDS_DSL_ING_PRO_020")
+    @Requirement("REGARDS_DSL_ING_PRO_030")
+    @Purpose("Get an acquisition chain")
+    public void getOneChain() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+
+        AcquisitionProcessingChain chain = AcquisitionTestUtils.getNewChain("first");
+        ResultActions result = performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH, chain, customizer,
+                                                  "Chain should be created!");
+
+        // Update chain
+        String resultAsString = payload(result);
+        Integer chainId = JsonPath.read(resultAsString, "$.content.id");
+
+        // Retrieve chains
+        customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        // Document path parameter
+        customizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+                .parameterWithName(AcquisitionProcessingChainController.CHAIN_PATH_PARAM)
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
+                .description("Acquisition chain identifier")));
+        performDefaultGet(AcquisitionProcessingChainController.TYPE_PATH
+                + AcquisitionProcessingChainController.CHAIN_PATH, customizer, "Chain should be retrieved", chainId);
     }
 
     @Test
     @Requirement("REGARDS_DSL_ING_PRO_020")
     @Requirement("REGARDS_DSL_ING_PRO_030")
     @Purpose("Create and update a manual acquisition chain")
-    public void createAndUpdateChain() throws ModuleException {
+    public void updateChain() throws ModuleException {
 
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
 
-        AcquisitionProcessingChain chain = getNewChain("First");
+        AcquisitionProcessingChain chain = AcquisitionTestUtils.getNewChain("update");
 
         // Create the chain
         ResultActions result = performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH, chain, customizer,
@@ -143,14 +222,65 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         Integer chainId = JsonPath.read(resultAsString, "$.content.id");
 
         // Load it
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         AcquisitionProcessingChain loadedChain = processingService.getChain(chainId.longValue());
         Assert.assertNotNull("Chain must exist", loadedChain);
 
         // Update scan plugin
-        List<PluginParameter> params = PluginParametersFactory.build().addParameter(GlobDiskScanning.FIELD_DIRS, new ArrayList<>()).getParameters();
-        PluginConfiguration scanPlugin = PluginUtils
-                .getPluginConfiguration(params, GlobDiskScanning.class, Lists.newArrayList());
+        Set<PluginParameter> params = PluginParametersFactory.build()
+                .addParameter(GlobDiskScanning.FIELD_DIRS, new ArrayList<>()).getParameters();
+        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(params, GlobDiskScanning.class);
+        scanPlugin.setIsActive(true);
+        String label = "Scan plugin update";
+        scanPlugin.setLabel(label);
+        loadedChain.getFileInfos().get(0).setScanPlugin(scanPlugin);
+
+        customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        // Document path parameter
+        customizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+                .parameterWithName(AcquisitionProcessingChainController.CHAIN_PATH_PARAM)
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_NUMBER_TYPE))
+                .description("Acquisition chain identifier")));
+
+        performDefaultPut(AcquisitionProcessingChainController.TYPE_PATH
+                + AcquisitionProcessingChainController.CHAIN_PATH, loadedChain, customizer, "Chain should be updated",
+                          loadedChain.getId());
+
+        // Load new scan plugin configuration
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        loadedChain = processingService.getChain(chainId.longValue());
+        Assert.assertEquals(label, loadedChain.getFileInfos().get(0).getScanPlugin().getLabel());
+    }
+
+    @Test
+    @Requirement("REGARDS_DSL_ING_PRO_020")
+    @Requirement("REGARDS_DSL_ING_PRO_030")
+    @Purpose("Delete a inactive manual acquisition chain")
+    public void deleteChain() throws ModuleException {
+
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+
+        AcquisitionProcessingChain chain = AcquisitionTestUtils.getNewChain("delete");
+
+        // Create the chain
+        ResultActions result = performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH, chain, customizer,
+                                                  "Chain should be created!");
+
+        // Update chain
+        String resultAsString = payload(result);
+        Integer chainId = JsonPath.read(resultAsString, "$.content.id");
+
+        // Load it
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        AcquisitionProcessingChain loadedChain = processingService.getChain(chainId.longValue());
+        Assert.assertNotNull("Chain must exist", loadedChain);
+
+        // Update scan plugin
+        Set<PluginParameter> params = PluginParametersFactory.build()
+                .addParameter(GlobDiskScanning.FIELD_DIRS, new ArrayList<>()).getParameters();
+        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(params, GlobDiskScanning.class);
         scanPlugin.setIsActive(true);
         String label = "Scan plugin update";
         scanPlugin.setLabel(label);
@@ -163,7 +293,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
                           loadedChain.getId());
 
         // Load new scan plugin configuration
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         loadedChain = processingService.getChain(chainId.longValue());
         Assert.assertEquals(label, loadedChain.getFileInfos().get(0).getScanPlugin().getLabel());
 
@@ -177,6 +307,14 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         // Change to inactive
         customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+
+        // Document path parameter
+        customizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+                .parameterWithName(AcquisitionProcessingChainController.CHAIN_PATH_PARAM)
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_NUMBER_TYPE))
+                .description("Acquisition chain identifier to update").attributes(Attributes
+                        .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Chain must be disabled."))));
+
         loadedChain.setActive(Boolean.FALSE);
         performDefaultPut(AcquisitionProcessingChainController.TYPE_PATH
                 + AcquisitionProcessingChainController.CHAIN_PATH, loadedChain, customizer, "Chain should be updated",
@@ -198,7 +336,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isUnprocessableEntity());
 
-        AcquisitionProcessingChain chain = getNewChain("AutoError");
+        AcquisitionProcessingChain chain = AcquisitionTestUtils.getNewChain("AutoError");
         chain.setMode(AcquisitionProcessingChainMode.AUTO);
 
         // Create the chain
@@ -214,7 +352,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
 
-        AcquisitionProcessingChain chain = getNewChain("Auto10s");
+        AcquisitionProcessingChain chain = AcquisitionTestUtils.getNewChain("Auto10s");
         chain.setMode(AcquisitionProcessingChainMode.AUTO);
         chain.setPeriodicity(10L);
 
@@ -242,8 +380,8 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
 
-        performDefaultGet(MicroserviceConfigurationController.TYPE_MAPPING, requestBuilderCustomizer,
-                          "Should export configuration");
+        performDefaultGet(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
+                          requestBuilderCustomizer, "Should export configuration");
     }
 
     @Test
@@ -254,8 +392,8 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
 
-        performDefaultFileUpload(MicroserviceConfigurationController.TYPE_MAPPING, filePath, requestBuilderCustomizer,
-                                 "Should be able to import configuration");
+        performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
+                                 filePath, requestBuilderCustomizer, "Should be able to import configuration");
     }
 
     @Test
@@ -264,7 +402,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
 
-        performDefaultGet(MicroserviceConfigurationController.TYPE_MAPPING
-                + MicroserviceConfigurationController.ENABLED_MAPPING, requestBuilderCustomizer, "Shoulb be enabled");
+        performDefaultGet(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_ENABLED_MAPPING,
+                          requestBuilderCustomizer, "Shoulb be enabled");
     }
 }

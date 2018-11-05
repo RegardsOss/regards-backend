@@ -47,7 +47,6 @@ public class AcquisitionProcessingChainSpecifications {
      * @param label {@link String}
      * @param locked {@link Boolean}
      * @param mode {@link AcquisitionProcessingChainMode}
-     * @return
      */
     public static Specification<AcquisitionProcessingChain> search(String label, Boolean locked,
             AcquisitionProcessingChainMode mode) {

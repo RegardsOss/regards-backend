@@ -61,6 +61,7 @@ public class ProductServiceTest extends AbstractMultitenantServiceTest {
         jobInfoService.save(info);
 
         JobEvent event = new JobEvent(info.getId(), JobEventType.FAILED);
-        productService.handleProductJobEvent(event);
+//        productService.handleAcquisitionChainJobEvent(event);
+        productService.handleSIPGenerationError(info);
     }
 }

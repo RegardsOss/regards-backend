@@ -79,7 +79,7 @@ public class IngestClientMock implements IIngestClient {
         } else {
             dto.setState(SIPState.VALID);
             dto.setId(sip.getId());
-            dto.setIpId("unique_" + sip.getId());
+            dto.setSipId("unique_" + sip.getId());
         }
 
         return dto;

@@ -21,14 +21,14 @@ package fr.cnes.regards.modules.acquisition.plugins.ssalto.chain;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Set;
 
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -39,7 +39,6 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
-import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.AbstractProductMetadataPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.ssalto.productmetadata.Spot2ProductMetadataPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
@@ -88,16 +87,13 @@ public class Spot2Doris1bProcessingChainTest extends AbstractAcquisitionChainTes
 
         // TODO invalid folder "/var/regards/data/invalid"
 
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(RegexDiskScanning.FIELD_DIRS,
                               Arrays.asList("src/test/resources/income/data" + "/spot2/doris1b_moe_cddis"))
                 .addParameter(RegexDiskScanning.FIELD_REGEX, "DORDATA_[0-9]{6}.SP2").getParameters();
 
         // Plugin and plugin interface packages
-        List<String> prefixes = Arrays.asList(IScanPlugin.class.getPackage().getName(),
-                                              RegexDiskScanning.class.getPackage().getName());
-        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(parameters, RegexDiskScanning.class,
-                                                                            prefixes);
+        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(parameters, RegexDiskScanning.class);
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan plugin");
         fileInfo.setScanPlugin(scanPlugin);
@@ -105,17 +101,17 @@ public class Spot2Doris1bProcessingChainTest extends AbstractAcquisitionChainTes
         processingChain.addFileInfo(fileInfo);
 
         // Validation
-        PluginConfiguration validationPlugin = PluginUtils
-                .getPluginConfiguration(Lists.newArrayList(), DefaultFileValidation.class, Lists.newArrayList());
+        PluginConfiguration validationPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
+                                                                                  DefaultFileValidation.class);
         validationPlugin.setIsActive(true);
         validationPlugin.setLabel("Validation plugin");
         processingChain.setValidationPluginConf(validationPlugin);
 
         // Product
-        List<PluginParameter> productParameters = PluginParametersFactory.build()
+        Set<PluginParameter> productParameters = PluginParametersFactory.build()
                 .addParameter(DefaultProductPlugin.FIELD_PREFIX, "MOE_CDDIS_").getParameters();
-        PluginConfiguration productPlugin = PluginUtils
-                .getPluginConfiguration(productParameters, DefaultProductPlugin.class, Lists.newArrayList());
+        PluginConfiguration productPlugin = PluginUtils.getPluginConfiguration(productParameters,
+                                                                               DefaultProductPlugin.class);
         productPlugin.setIsActive(true);
         productPlugin.setLabel("Product plugin");
         processingChain.setProductPluginConf(productPlugin);
@@ -123,7 +119,7 @@ public class Spot2Doris1bProcessingChainTest extends AbstractAcquisitionChainTes
         // SIP generation
         PluginConfiguration sipGenPlugin = PluginUtils.getPluginConfiguration(PluginParametersFactory.build()
                 .addParameter(AbstractProductMetadataPlugin.DATASET_SIP_ID, "DA_TC_SPOT2_DORIS1B_MOE_CDDIS")
-                .getParameters(), Spot2ProductMetadataPlugin.class, Lists.newArrayList());
+                .getParameters(), Spot2ProductMetadataPlugin.class);
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("SIP generation plugin");
         processingChain.setGenerateSipPluginConf(sipGenPlugin);
@@ -135,12 +131,12 @@ public class Spot2Doris1bProcessingChainTest extends AbstractAcquisitionChainTes
     }
 
     @Override
-    protected int getExpectedFiles() {
+    protected long getExpectedFiles() {
         return 1;
     }
 
     @Override
-    protected int getExpectedProducts() {
+    protected long getExpectedProducts() {
         return 1;
     }
 }

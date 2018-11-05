@@ -48,7 +48,7 @@ public class AcquisitionFileSpecifications {
     /**
      * Filter on the given attributes and return result ordered by descending ingestDate
      * * @param filePath {@link String}
-     * @param state {@link AcquisitionFileState}
+     * @param states {@link AcquisitionFileState}
      * @param productId {@link Long} identifier of {@link Product}
      * @param from {@link OffsetDateTime}
      * @return @return {@link Specification}<{@link AcquisitionFile}>
@@ -67,7 +67,7 @@ public class AcquisitionFileSpecifications {
             if (filePath != null) {
                 predicates.add(cb.like(root.get("filePath").as(String.class), LIKE_CHAR + filePath + LIKE_CHAR));
             }
-            if ((states != null) && !states.isEmpty()) {
+            if (states != null && !states.isEmpty()) {
                 Set<Predicate> statePredicates = Sets.newHashSet();
                 for (AcquisitionFileState state : states) {
                     statePredicates.add(cb.equal(root.get("state"), state));

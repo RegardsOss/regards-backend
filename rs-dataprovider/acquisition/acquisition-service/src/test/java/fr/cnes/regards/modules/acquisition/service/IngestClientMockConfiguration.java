@@ -23,6 +23,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import fr.cnes.regards.modules.ingest.client.IIngestClient;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
 
 /**
  * @author Marc Sordi
@@ -33,6 +34,11 @@ public class IngestClientMockConfiguration {
 
     @Bean
     public IIngestClient ingestClient() {
-        return Mockito.mock(IIngestClient.class);
+        return new IngestClientMock();
+    }
+
+    @Bean
+    public INotificationClient notificationClient() {
+        return Mockito.mock(INotificationClient.class);
     }
 }

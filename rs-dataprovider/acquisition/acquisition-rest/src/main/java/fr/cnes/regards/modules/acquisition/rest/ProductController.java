@@ -24,6 +24,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.hateoas.PagedResources;
@@ -50,9 +52,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
  * {@link Product} REST module controller
- *
  * @author Sébastien Binda
- *
  */
 @RestController
 @RequestMapping(ProductController.TYPE_PATH)
@@ -61,6 +61,20 @@ public class ProductController implements IResourceController<Product> {
     public static final String TYPE_PATH = "/products";
 
     public static final String PRODUCT_PATH = "/{productId}";
+
+    public static final String REQUEST_PARAM_STATE = "state";
+
+    public static final String REQUEST_PARAM_SIP_STATE = "sipState";
+
+    public static final String REQUEST_PARAM_PRODUCT_NAME = "productName";
+
+    public static final String REQUEST_PARAM_CHAIN_ID = "chainId";
+
+    public static final String REQUEST_PARAM_FROM = "from";
+
+    public static final String REQUEST_PARAM_SESSION = "session";
+
+    public static final String REQUEST_PARAM_NO_SESSION = "nosession";
 
     @Autowired
     private IProductService productService;
@@ -79,32 +93,28 @@ public class ProductController implements IResourceController<Product> {
      * @param session {@link String}
      * @param processingChainId {@likn Long} id of {@link AcquisitionProcessingChain}
      * @param from {@link OffsetDateTime}
-     * @param pageable
-     * @param assembler
      * @return {@link Product}s
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResourceAccess(description = "Search for products", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<PagedResources<Resource<Product>>> search(
-            @RequestParam(name = "state", required = false) List<ProductState> state,
-            @RequestParam(name = "sipState", required = false) List<ISipState> sipState,
-            @RequestParam(name = "productName", required = false) String productName,
-            @RequestParam(name = "session", required = false) String session,
-            @RequestParam(name = "chainId", required = false) Long processingChainId,
-            @RequestParam(name = "nosession", required = false) Boolean noSession,
-            @RequestParam(name = "from",
-                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
-            Pageable pageable, PagedResourcesAssembler<Product> assembler) {
-        Page<Product> products = productService.search(state, sipState, productName, session, processingChainId, from,
-                                                       noSession, pageable);
+            @RequestParam(name = REQUEST_PARAM_STATE, required = false) List<ProductState> state,
+            @RequestParam(name = REQUEST_PARAM_SIP_STATE, required = false) List<ISipState> sipState,
+            @RequestParam(name = REQUEST_PARAM_PRODUCT_NAME, required = false) String productName,
+            @RequestParam(name = REQUEST_PARAM_SESSION, required = false) String session,
+            @RequestParam(name = REQUEST_PARAM_CHAIN_ID, required = false) Long processingChainId,
+            @RequestParam(name = REQUEST_PARAM_NO_SESSION, required = false) Boolean noSession,
+            @RequestParam(name = REQUEST_PARAM_FROM, required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            PagedResourcesAssembler<Product> assembler) {
+        Page<Product> products = productService
+                .search(state, sipState, productName, session, processingChainId, from, noSession, pageable);
         return new ResponseEntity<>(toPagedResources(products, assembler), HttpStatus.OK);
     }
 
     /**
      * Retreive a {@link Product} by id
-     * @param productId
-     * @return
-     * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.GET, value = PRODUCT_PATH)
     @ResourceAccess(description = "Get a product", role = DefaultRole.PROJECT_ADMIN)

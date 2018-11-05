@@ -20,10 +20,7 @@
 package fr.cnes.regards.modules.acquisition.service.job;
 
 import java.util.Map;
-import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -32,11 +29,9 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
-import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
-import fr.cnes.regards.modules.acquisition.service.IProductService;
 
 /**
  * This class manages data driven product creation using following steps :
@@ -55,12 +50,7 @@ import fr.cnes.regards.modules.acquisition.service.IProductService;
  */
 public class ProductAcquisitionJob extends AbstractJob<Void> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ProductAcquisitionJob.class);
-
     public static final String CHAIN_PARAMETER_ID = "chain";
-
-    @Autowired
-    private IProductService productService;
 
     @Autowired
     private IAcquisitionProcessingService processingService;
@@ -85,21 +75,24 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
     public void run() {
 
         try {
-            // First step : scan and register files
-            processingService.scanAndRegisterFiles(processingChain);
-            // Second step : validate in progress files
-            processingService.validateFiles(processingChain);
-            // Third step : build products with valid files
-            processingService.buildProducts(processingChain);
-
-            // For each complete product, creates and schedules a job to generate SIP
-            Set<Product> products = productService.findChainProductsToSchedule(processingChain);
-            for (Product p : products) {
-                productService.scheduleProductSIPGeneration(p, processingChain);
+            // Trying to restart products that fail during SIP generation
+            if (processingChain.isGenerationRetryEnabled()) {
+                processingService.retrySIPGeneration(processingChain);
             }
+            // Trying to restart products that fail during SIP submission
+            if (processingChain.isSubmissionRetryEnabled()) {
+                processingService.retrySIPSubmission(processingChain);
+            }
+            // Restart interrupted jobs
+            processingService.restartInterruptedJobs(processingChain);
 
+            // Nominal process
+            // First step : scan and register files (Not interruptible at the moment)
+            processingService.scanAndRegisterFiles(processingChain);
+            // Second step : validate in progress files, build and schedule SIP generation for completed or finished products
+            processingService.manageRegisteredFiles(processingChain);
         } catch (ModuleException e) {
-            LOGGER.error("Business error", e);
+            logger.error("Business error", e);
             throw new JobRuntimeException(e);
         } finally {
             // Job is terminated ... release processing chain

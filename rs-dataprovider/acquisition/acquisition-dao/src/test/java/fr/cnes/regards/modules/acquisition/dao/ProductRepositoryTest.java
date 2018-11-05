@@ -28,6 +28,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.TestPropertySource;
 
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.acquisition.domain.Product;
@@ -55,23 +57,22 @@ public class ProductRepositoryTest extends AbstractDaoTest {
 
     @Test
     public void test() {
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         List<Product> products = productRepository.findAll();
         Assert.assertNotNull(products);
         Assert.assertTrue(!products.isEmpty());
 
         Page<Product> productByState = productRepository
-                .findByProcessingChainIngestChainAndSessionAndSipState("DefaultIngestChain", "NO_SESSION",
-                                                                       ProductSIPState.SUBMISSION_SCHEDULED,
-                                                                       new PageRequest(0, 10));
+                .findByProcessingChainIngestChainAndSessionAndSipStateIn("DefaultIngestChain", "NO_SESSION", Sets
+                        .newHashSet(ProductSIPState.SUBMISSION_SCHEDULED), new PageRequest(0, 10));
         Assert.assertNotNull(productByState);
 
     }
 
     @Test
     public void jobReportTest() {
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         AcquisitionProcessingChain chain = processingChainRepository.findCompleteById(1L);
         Assert.assertNotNull(chain);

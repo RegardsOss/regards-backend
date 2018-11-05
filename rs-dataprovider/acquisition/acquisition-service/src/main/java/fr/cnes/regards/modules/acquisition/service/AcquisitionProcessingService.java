@@ -30,16 +30,17 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -69,7 +70,6 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMonitor;
-import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
@@ -88,6 +88,14 @@ import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 public class AcquisitionProcessingService implements IAcquisitionProcessingService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AcquisitionProcessingService.class);
+
+    /**
+     * Parameter to register scanned files by group avoiding too many commits
+     */
+    private static final int ENTITY_CREATION_BEFORE_COMMIT = 1000;
+
+    @Value("${regards.acquisition.pagination.default.page.size:100}")
+    private Integer defaultPageSize;
 
     @Autowired
     private IAcquisitionProcessingChainRepository acqChainRepository;
@@ -122,9 +130,18 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     @Autowired
     private IAcquisitionProcessingService self;
 
-    @PostConstruct
-    public void init() {
-        pluginService.addPluginPackage("fr.cnes.regards.modules.acquisition");
+    /**
+     * Compute file checksum
+     * @param filePath file path
+     * @param checksumAlgorithm checksum algorithm
+     * @return checksum
+     * @throws IOException if error occurs!
+     * @throws NoSuchAlgorithmException if error occurs!
+     */
+    private static String computeMD5FileChecksum(Path filePath, String checksumAlgorithm)
+            throws IOException, NoSuchAlgorithmException {
+        InputStream inputStream = Files.newInputStream(filePath);
+        return ChecksumUtils.computeHexChecksum(inputStream, checksumAlgorithm);
     }
 
     @Override
@@ -169,7 +186,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         // Check no identifier
         if (processingChain.getId() != null) {
             throw new EntityInvalidException(
-                    String.format("New chain %s must not already have and identifier.", processingChain.getLabel()));
+                    String.format("New chain %s must not already have an identifier.", processingChain.getLabel()));
         }
 
         // Check mode
@@ -186,7 +203,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             // Check no identifier
             if (fileInfo.getId() != null) {
                 throw new EntityInvalidException(
-                        String.format("A file information must not already have and identifier."));
+                        String.format("A file information must not already have an identifier."));
             }
 
             // Prevent bad value
@@ -221,7 +238,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         // reused.
         if (pluginConfiguration.getId() != null) {
             throw new EntityInvalidException(
-                    String.format("Plugin configuration %s must not already have and identifier.",
+                    String.format("Plugin configuration %s must not already have an identifier.",
                                   pluginConfiguration.getLabel()));
         }
         return pluginService.savePluginConfiguration(pluginConfiguration);
@@ -245,11 +262,17 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
             // Check identifier
             if (fileInfo.getId() == null) {
-                throw new EntityInvalidException(String.format("A file information must already have and identifier."));
+                // New file info to create
+                // Prevent bad value
+                fileInfo.setLastModificationDate(null);
+                // Manage scan plugin conf
+                createPluginConfiguration(fileInfo.getScanPlugin());
+            } else {
+                // File info to update
+                // Manage scan plugin conf
+                existing = fileInfoRepository.findOneScanPlugin(fileInfo.getId());
+                confsToRemove.add(updatePluginConfiguration(Optional.of(fileInfo.getScanPlugin()), existing));
             }
-            // Manage scan plugin conf
-            existing = fileInfoRepository.findOneScanPlugin(fileInfo.getId());
-            confsToRemove.add(updatePluginConfiguration(Optional.of(fileInfo.getScanPlugin()), existing));
 
             // Save file info
             fileInfoRepository.save(fileInfo);
@@ -338,21 +361,31 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                                   processingChain.getLabel()));
         }
 
-        // Delete products cascading to related acquisition files
-        for (Product product : productService.findChainProducts(processingChain)) {
-            // Unlock jobs
-            if (product.getLastPostProductionJobInfo() != null) {
-                jobInfoService.unlock(product.getLastPostProductionJobInfo());
+        Page<Product> products;
+        Pageable pageable = new PageRequest(0, defaultPageSize);
+        do {
+            products = productService.findChainProducts(processingChain, pageable);
+            if (products.hasNext()) {
+                pageable = products.nextPageable();
             }
-            if (product.getLastSIPGenerationJobInfo() != null) {
-                jobInfoService.unlock(product.getLastSIPGenerationJobInfo());
-            }
-            if (product.getLastSIPSubmissionJobInfo() != null) {
-                jobInfoService.unlock(product.getLastSIPSubmissionJobInfo());
-            }
+            // Delete products cascading to related acquisition files
+            if (products.hasContent()) {
+                for (Product product : products) {
+                    // Unlock jobs
+                    if (product.getLastPostProductionJobInfo() != null) {
+                        jobInfoService.unlock(product.getLastPostProductionJobInfo());
+                    }
+                    if (product.getLastSIPGenerationJobInfo() != null) {
+                        jobInfoService.unlock(product.getLastSIPGenerationJobInfo());
+                    }
+                    if (product.getLastSIPSubmissionJobInfo() != null) {
+                        jobInfoService.unlock(product.getLastSIPSubmissionJobInfo());
+                    }
 
-            productService.delete(product);
-        }
+                    productService.delete(product);
+                }
+            }
+        } while (products.hasNext());
 
         // Delete acquisition file infos and its plugin configurations
         for (AcquisitionFileInfo afi : processingChain.getFileInfos()) {
@@ -530,15 +563,38 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 try {
                     return Files.getLastModifiedTime(file1).compareTo(Files.getLastModifiedTime(file2));
                 } catch (IOException e) {
-                    LOGGER.warn("Cannot read last modification date");
+                    LOGGER.warn("Cannot read last modification date", e);
                     return 0;
                 }
             });
-            // Register scanned files in a transaction
-            for (Path filePath : scannedFiles) {
-                self.registerFile(filePath, fileInfo);
+
+            long startTime = System.currentTimeMillis();
+            int fromIndex = 0;
+            int toIndex = ENTITY_CREATION_BEFORE_COMMIT;
+            while (toIndex <= scannedFiles.size()) {
+                long transactionStartTime = System.currentTimeMillis();
+                // Do it in one transaction
+                self.registerFiles(scannedFiles.subList(fromIndex, toIndex), fileInfo);
+                LOGGER.debug("{}/{} new file(s) registered in {} milliseconds", toIndex, scannedFiles.size(),
+                             System.currentTimeMillis() - transactionStartTime);
+                fromIndex = toIndex;
+                toIndex = toIndex + ENTITY_CREATION_BEFORE_COMMIT;
             }
+            // Do it in one transaction
+            self.registerFiles(scannedFiles.subList(fromIndex, scannedFiles.size()), fileInfo);
+
+            LOGGER.info("{} new file(s) registered in {} milliseconds", scannedFiles.size(),
+                        System.currentTimeMillis() - startTime);
         }
+
+    }
+
+    @Override
+    public int registerFiles(List<Path> filePaths, AcquisitionFileInfo info) throws ModuleException {
+        for (Path filePath : filePaths) {
+            registerFile(filePath, info);
+        }
+        return filePaths.size();
     }
 
     @Override
@@ -577,87 +633,123 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         acqFileRepository.save(scannedFile);
     }
 
-    /**
-     * Compute file checksum
-     * @param filePath file path
-     * @param checksumAlgorithm checksum algorithm
-     * @return checksum
-     * @throws IOException if error occurs!
-     * @throws NoSuchAlgorithmException if error occurs!
-     */
-    private static String computeMD5FileChecksum(Path filePath, String checksumAlgorithm)
-            throws IOException, NoSuchAlgorithmException {
-        InputStream inputStream = Files.newInputStream(filePath);
-        return ChecksumUtils.computeHexChecksum(inputStream, checksumAlgorithm);
-    }
-
     @MultitenantTransactional(propagation = Propagation.SUPPORTS)
     @Override
-    public void validateFiles(AcquisitionProcessingChain processingChain) throws ModuleException {
+    public void manageRegisteredFiles(AcquisitionProcessingChain processingChain) throws ModuleException {
+        while (!Thread.interrupted() && self.manageNewFilesByPage(processingChain)) {
+            // Works as long as there is at least one page left
+        }
+        // Just trace interruption
+        if (Thread.interrupted()) {
+            LOGGER.debug("{} thread has been interrupted", this.getClass().getName());
+        }
+    }
 
-        for (AcquisitionFileInfo fileInfo : processingChain.getFileInfos()) {
-            // Load in progress files
-            List<AcquisitionFile> inProgressFiles = acqFileRepository
-                    .findByStateAndFileInfo(AcquisitionFileState.IN_PROGRESS, fileInfo);
+    @Override
+    public boolean manageNewFilesByPage(AcquisitionProcessingChain processingChain) throws ModuleException {
 
-            // Get validation plugin
-            IValidationPlugin validationPlugin = pluginService
-                    .getPlugin(processingChain.getValidationPluginConf().getId());
-            // Apply to all files
-            for (AcquisitionFile inProgressFile : inProgressFiles) {
-                if (validationPlugin.validate(inProgressFile.getFilePath())) {
-                    inProgressFile.setState(AcquisitionFileState.VALID);
-                } else {
-                    // FIXME move invalid files? Might be delegated to validation plugin!
-                    inProgressFile.setState(AcquisitionFileState.INVALID);
-                }
+        // - Retrieve first page of new registered files
+        Page<AcquisitionFile> page = acqFileRepository
+                .findByStateAndFileInfoInOrderByAcqDateAsc(AcquisitionFileState.IN_PROGRESS,
+                                                           processingChain.getFileInfos(),
+                                                           new PageRequest(0, defaultPageSize));
+        LOGGER.debug("Managing next new {} registered files (of {})", page.getNumberOfElements(),
+                     page.getTotalElements());
+        long startTime = System.currentTimeMillis();
+
+        // Get validation plugin
+        IValidationPlugin validationPlugin = pluginService.getPlugin(processingChain.getValidationPluginConf().getId());
+        List<AcquisitionFile> validFiles = new ArrayList<>();
+        for (AcquisitionFile inProgressFile : page.getContent()) {
+            // Validate files
+            if (validationPlugin.validate(inProgressFile.getFilePath())) {
+                inProgressFile.setState(AcquisitionFileState.VALID);
+                validFiles.add(inProgressFile);
+            } else {
+                // FIXME move invalid files? Might be delegated to validation plugin!
+                inProgressFile.setState(AcquisitionFileState.INVALID);
                 acqFileRepository.save(inProgressFile);
             }
         }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Validation of {} file(s) finished with {} valid and {} invalid.", page.getNumberOfElements(),
+                         validFiles.size(), page.getNumberOfElements() - validFiles.size());
+        }
+
+        // Build and schedule products
+        Set<Product> products = productService.linkAcquisitionFilesToProducts(processingChain, validFiles);
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("{} file(s) handles, {} product(s) created or updated in {} milliseconds",
+                         page.getNumberOfElements(), products.size(), System.currentTimeMillis() - startTime);
+            // Statistics
+            int scheduledProducts = 0;
+            int notScheduledProducts = 0;
+            for (Product product : products) {
+                if (product.getSipState() == ProductSIPState.SCHEDULED) {
+                    scheduledProducts++;
+                } else {
+                    notScheduledProducts++;
+                }
+            }
+            LOGGER.debug("{} product(s) scheduled and {} not.", scheduledProducts, notScheduledProducts);
+        }
+
+        return page.hasNext();
     }
 
     @MultitenantTransactional(propagation = Propagation.SUPPORTS)
     @Override
-    public void buildProducts(AcquisitionProcessingChain processingChain) throws ModuleException {
-
-        for (AcquisitionFileInfo fileInfo : processingChain.getFileInfos()) {
-            // Load valid files
-            List<AcquisitionFile> validFiles = acqFileRepository.findByStateAndFileInfo(AcquisitionFileState.VALID,
-                                                                                        fileInfo);
-
-            // Get product plugin
-            IProductPlugin productPlugin = pluginService.getPlugin(processingChain.getProductPluginConf().getId());
-
-            // Compute product name for each valid files
-            for (AcquisitionFile validFile : validFiles) {
-                String productName = null;
-                try {
-                    productName = productPlugin.getProductName(validFile.getFilePath());
-                } catch (ModuleException e) {
-                    // Continue silently but register error in database
-                    String errorMessage = String.format("Error computing product name for file %s : %s",
-                                                        validFile.getFilePath().toString(), e.getMessage());
-                    LOGGER.error(errorMessage, e);
-                    validFile.setError(errorMessage);
-                    validFile.setState(AcquisitionFileState.ERROR);
-                    acqFileRepository.save(validFile);
-                }
-                if (productName != null) {
-                    productService.linkAcquisitionFileToProduct(processingChain.getSession().orElse(null), validFile,
-                                                                productName, processingChain);
-                }
-            }
+    public void restartInterruptedJobs(AcquisitionProcessingChain processingChain) throws ModuleException {
+        while (!Thread.interrupted() && productService.restartInterruptedJobsByPage(processingChain)) {
+            // Works as long as there is at least one page left
         }
+    }
+
+    @MultitenantTransactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public void retrySIPGeneration(AcquisitionProcessingChain processingChain) {
+        while (!Thread.interrupted() && productService.retrySIPGenerationByPage(processingChain)) {
+            // Works as long as there is at least one page left
+        }
+    }
+
+    @Override
+    public void retrySIPSubmission(AcquisitionProcessingChain processingChain) {
+        // Scheduler for SIP submission will handle automatically products in GENERATED states
+        productService.updateSipStates(processingChain, ProductSIPState.SUBMISSION_ERROR, ProductSIPState.GENERATED);
     }
 
     @Override
     public Page<AcquisitionProcessingChainMonitor> buildAcquisitionProcessingChainSummaries(String label,
-            Boolean locked, AcquisitionProcessingChainMode mode, Pageable pageable) throws ModuleException {
+            Boolean running, AcquisitionProcessingChainMode mode, Pageable pageable) throws ModuleException {
         Page<AcquisitionProcessingChain> acqChains = acqChainRepository
-                .findAll(AcquisitionProcessingChainSpecifications.search(label, locked, mode), pageable);
+                .findAll(AcquisitionProcessingChainSpecifications.search(label, running, mode), pageable);
         List<AcquisitionProcessingChainMonitor> summaries = acqChains.getContent().stream()
                 .map(this::buildAcquisitionProcessingChainSummary).collect(Collectors.toList());
         return new PageImpl<>(summaries, pageable, acqChains.getTotalElements());
+    }
+
+    @Override
+    public void handleProductAcquisitionError(JobInfo jobInfo) {
+        Long chainId = jobInfo.getParametersAsMap().get(ProductAcquisitionJob.CHAIN_PARAMETER_ID).getValue();
+        AcquisitionProcessingChain acqChain = acqChainRepository.findOne(chainId);
+        for (AcquisitionFileInfo fileInfo : acqChain.getFileInfos()) {
+            while (handleProductAcquisitionErrorByPage(fileInfo)) {
+            }
+        }
+    }
+
+    private boolean handleProductAcquisitionErrorByPage(AcquisitionFileInfo fileInfo) {
+        Page<AcquisitionFile> page = acqFileRepository
+                .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.IN_PROGRESS, fileInfo,
+                                                    new PageRequest(0, defaultPageSize));
+        for (AcquisitionFile acqFile : page) {
+            acqFile.setState(AcquisitionFileState.ERROR);
+        }
+        acqFileRepository.save(page);
+        return page.hasNext();
     }
 
     private AcquisitionProcessingChainMonitor buildAcquisitionProcessingChainSummary(AcquisitionProcessingChain chain) {
@@ -675,8 +767,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                                                                    ProductSIPState.SUBMISSION_SCHEDULED)));
 
         // Handle file summary
-        summary.setNbFileErrors(acqFileService.countByChainAndStateIn(chain,
-                                                                      Arrays.asList(AcquisitionFileState.ERROR)));
+        summary.setNbFileErrors(acqFileService
+                .countByChainAndStateIn(chain,
+                                        Arrays.asList(AcquisitionFileState.ERROR, AcquisitionFileState.INVALID)));
         summary.setNbFiles(acqFileService.countByChain(chain));
         summary.setNbFilesInProgress(acqFileService
                 .countByChainAndStateIn(chain,
@@ -688,7 +781,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             summary.setNbProductAcquisitionJob(1);
         }
         summary.setNbSIPGenerationJobs(productService
-                .countByProcessingChainAndSipStateIn(chain, Arrays.asList(ProductSIPState.SCHEDULED)));
+                .countSIPGenerationJobInfoByProcessingChainAndSipStateIn(chain, ProductSIPState.SCHEDULED));
         if (productService
                 .countByProcessingChainAndSipStateIn(chain, Arrays.asList(ProductSIPState.SUBMISSION_SCHEDULED)) > 0) {
             summary.setNbSIPSubmissionJobs(1);

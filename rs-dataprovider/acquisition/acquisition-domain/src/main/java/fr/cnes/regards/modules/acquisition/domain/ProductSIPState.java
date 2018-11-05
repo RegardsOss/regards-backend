@@ -30,12 +30,14 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  *          NOT_SCHEDULED
  *             |
  *          SCHEDULED
- *             |_______ GENERATION_ERROR
+ *             |_______ GENERATION_ERROR or SCHEDULED_INTERRUPTED
  *             |
  *          GENERATED
  *             |
  *      SUBMISSION_SCHEDULED
  *             |____________ SUBMISSION_ERROR
+ *             |
+ *         SUBMITTED
  *             |
  *       {@link SIPState}
  *
@@ -47,14 +49,18 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 public enum ProductSIPState implements ISipState {
 
     /**
-     * SIP is not yet scheduled because related product is not {@link ProductStatus#FINISHED} or
-     * {@link ProductStatus#COMPLETED}.
+     * SIP is not yet scheduled because related product is not {@link ProductState#FINISHED} or
+     * {@link ProductState#COMPLETED}.
      */
     NOT_SCHEDULED,
     /**
      * SIP generation has been scheduled as a job.
      */
     SCHEDULED,
+    /**
+     * SIP generation interrupted by user
+     */
+    SCHEDULED_INTERRUPTED,
     /**
      * SIP has been generated.
      */
@@ -70,7 +76,11 @@ public enum ProductSIPState implements ISipState {
     /**
      * An error occurs during submission job
      */
-    SUBMISSION_ERROR;
+    SUBMISSION_ERROR,
+    /**
+     * SIP submission is running or finished
+     */
+    SUBMITTED;
 
     @Override
     public String getName() {

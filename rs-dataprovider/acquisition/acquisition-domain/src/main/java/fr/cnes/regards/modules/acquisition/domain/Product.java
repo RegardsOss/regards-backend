@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.acquisition.domain;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,6 +53,7 @@ import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 import org.hibernate.validator.constraints.NotBlank;
 
+import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -123,6 +125,7 @@ public class Product {
     @Column(name = "session", length = 128)
     private String session;
 
+    @GsonIgnore
     @NotNull
     @ManyToOne
     @JoinColumn(name = "processing_chain_id", foreignKey = @ForeignKey(name = "fk_processing_chain_id"),
@@ -167,7 +170,7 @@ public class Product {
     public int hashCode() { // NOSONAR
         final int prime = 31;
         int result = 1;
-        result = (prime * result) + ((productName == null) ? 0 : productName.hashCode()); // NOSONAR
+        result = prime * result + (productName == null ? 0 : productName.hashCode()); // NOSONAR
         return result;
     }
 
@@ -207,6 +210,10 @@ public class Product {
 
     public void addAcquisitionFile(AcquisitionFile acqFile) {
         this.fileList.add(acqFile);
+    }
+
+    public void addAcquisitionFiles(Collection<AcquisitionFile> acqFiles) {
+        this.fileList.addAll(acqFiles);
     }
 
     public List<AcquisitionFile> getAcquisitionFiles() {

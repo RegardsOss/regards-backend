@@ -72,8 +72,7 @@ public class Arcad3IsoprobeDensiteSIPGenerationPlugin implements ISipGenerationP
         for (AcquisitionFile af : product.getActiveAcquisitionFiles()) {
             try {
                 sipBuilder.getContentInformationBuilder().setDataObject(af.getFileInfo().getDataType(),
-                                                                        af.getFilePath().toAbsolutePath().toUri()
-                                                                                .toURL(),
+                                                                        af.getFilePath().toAbsolutePath(),
                                                                         af.getChecksumAlgorithm(), af.getChecksum());
                 sipBuilder.getContentInformationBuilder().setSyntax(af.getFileInfo().getMimeType());
                 sipBuilder.addContentInformation();
@@ -82,7 +81,7 @@ public class Arcad3IsoprobeDensiteSIPGenerationPlugin implements ISipGenerationP
                 if (DataType.RAWDATA.equals(af.getFileInfo().getDataType())) {
                     Path rawData = af.getFilePath();
                     List<String> lines = Files.readAllLines(rawData);
-                    LOGGER.debug("First line : " + lines.get(0));
+                    LOGGER.trace("First line : " + lines.get(0));
                     String startDate, stopDate;
 
                     // Extract start date from first line
@@ -117,7 +116,7 @@ public class Arcad3IsoprobeDensiteSIPGenerationPlugin implements ISipGenerationP
         }
 
         // Add tags
-        if ((tags != null) && !tags.isEmpty()) {
+        if (tags != null && !tags.isEmpty()) {
             sipBuilder.addTags(tags.toArray(new String[tags.size()]));
         }
 

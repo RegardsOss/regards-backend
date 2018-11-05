@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.acquisition.service;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -28,7 +29,6 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
@@ -66,6 +66,12 @@ public interface IProductService {
     Product retrieve(String productName) throws ModuleException;
 
     /**
+     * Retrieve a collection of product by names
+     * @param productNames list of all product names
+     */
+    Set<Product> retrieve(Collection<String> productNames) throws ModuleException;
+
+    /**
      * Delete one specified {@link Product}
      * @param id {@link Product}
      */
@@ -78,31 +84,22 @@ public interface IProductService {
     void delete(Product product);
 
     /**
-     * @return list of {@link ProductState#FINISHED} or {@link ProductState#COMPLETED} products for specified
-     *         acquisition chain <b>not already scheduled</b>.
-     */
-    Set<Product> findChainProductsToSchedule(AcquisitionProcessingChain chain);
-
-    /**
-     * @return list of all products related to specified
+     * @return page of products related to specified
      *         acquisition chain.
      */
-    Set<Product> findChainProducts(AcquisitionProcessingChain chain);
+    Page<Product> findChainProducts(AcquisitionProcessingChain chain, Pageable pageable);
 
     /**
-     * Schedule {@link Product} SIP generation
-     * @param product product for which SIP generation has to be scheduled
+     * Schedule {@link Product} SIP generations
+     * @param products products for which SIP generation has to be scheduled
      * @param chain related chain reference
-     * @return scheduled {@link JobInfo}
      */
-    JobInfo scheduleProductSIPGeneration(Product product, AcquisitionProcessingChain chain);
-
-    Set<Product> findByStatus(ProductState status);
+    JobInfo scheduleProductSIPGenerations(Set<Product> products, AcquisitionProcessingChain chain);
 
     /**
      * Count number of products associated to the given {@link AcquisitionProcessingChain} and in the given state
      * @param processingChain {@link AcquisitionProcessingChain}
-     * @param states {@link ProductState}s
+     * @param productStates {@link ProductState}s
      * @return number of matching {@link Product}
      */
     long countByChainAndStateIn(AcquisitionProcessingChain processingChain, List<ProductState> productStates);
@@ -110,15 +107,23 @@ public interface IProductService {
     /**
      * Count number of products associated to the given {@link AcquisitionProcessingChain} and in the given state
      * @param processingChain {@link AcquisitionProcessingChain}
-     * @param states {@link ProductState}s
+     * @param productSipStates {@link ProductState}s
      * @return number of matching {@link Product}
      */
     long countByProcessingChainAndSipStateIn(AcquisitionProcessingChain processingChain,
             List<ISipState> productSipStates);
 
     /**
-     * Get the {@link Product} corresponding to the productName and calculate the {@link ProductState}.<br>
-     * If it does not exists, create this {@link Product}. Create or update the product in database.
+     * Count number of generation job that is actually running
+     * @param processingChain {@link AcquisitionProcessingChain}
+     * @param productSipState {@link ISipState}s
+     */
+    long countSIPGenerationJobInfoByProcessingChainAndSipStateIn(AcquisitionProcessingChain processingChain,
+            ISipState productSipState);
+
+    /**
+     * Link acquired files to theirs products creating or updating them.<br/>
+     * If product is completed or finished, a SIP generation job is scheduled.
      *
      * @param session the current session
      * @param acqFile the {@link AcquisitionFile} to add to the {@link Product}
@@ -126,8 +131,8 @@ public interface IProductService {
      * @param processingChain the related {@link AcquisitionProcessingChain}
      * @return the existing {@link Product} corresponding to the product name
      */
-    Product linkAcquisitionFileToProduct(String session, AcquisitionFile acqFile, String productName,
-            AcquisitionProcessingChain processingChain) throws ModuleException;
+    Set<Product> linkAcquisitionFilesToProducts(AcquisitionProcessingChain processingChain,
+            List<AcquisitionFile> validFiles) throws ModuleException;
 
     /**
      * @param ingestChain ingest processing chain name
@@ -143,14 +148,14 @@ public interface IProductService {
     void scheduleProductSIPSubmission();
 
     /**
-     * Handle product SIP submission failure
+     * Handle product {@link SIPSubmissionJob} failure
      */
-    void handleProductJobEvent(JobEvent jobEvent);
+    void handleSIPSubmissiontError(JobInfo jobInfo);
 
     /**
-     * Retry product SIP submission for resetting product SIP state to {@link ProductSIPState#GENERATED}
+     * Handle product {@link fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob} failure
      */
-    void retryProductSIPSubmission();
+    void handleSIPGenerationError(JobInfo jobInfo);
 
     /**
      * Handle a SIP event
@@ -181,9 +186,6 @@ public interface IProductService {
 
     /**
      * Search for a {@link Product} by his name
-     * @param productName
-     * @return
-     * @throws ModuleException
      */
     Optional<Product> searchProduct(String productName) throws ModuleException;
 
@@ -203,4 +205,23 @@ public interface IProductService {
      */
     boolean isProductJobStoppedAndCleaned(AcquisitionProcessingChain processingChain) throws ModuleException;
 
+    /**
+     * Restart SIP generation jobs for interrupted product processes
+     */
+    boolean restartInterruptedJobsByPage(AcquisitionProcessingChain processingChain);
+
+    /**
+     * Retry SIP generation jobs for products in {@link ProductSIPState#GENERATION_ERROR}
+     */
+    boolean retrySIPGenerationByPage(AcquisitionProcessingChain processingChain);
+
+    /**
+     * Change sip states by acquisition chain
+     */
+    void updateSipStates(AcquisitionProcessingChain processingChain, ISipState fromStatus, ISipState toStatus);
+
+    /**
+     * Update a list of products by their names
+     */
+    void updateSipStatesByProductNameIn(ISipState state, Set<String> productNames);
 }

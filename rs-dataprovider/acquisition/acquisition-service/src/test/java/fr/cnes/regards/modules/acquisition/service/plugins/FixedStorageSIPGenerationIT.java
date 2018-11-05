@@ -18,13 +18,12 @@
  */
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
-import java.net.MalformedURLException;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
@@ -54,26 +53,18 @@ public class FixedStorageSIPGenerationIT extends AbstractMultitenantServiceTest 
     @Autowired
     private IPluginService pluginService;
 
-    @Before
-    public void init() throws ModuleException, MalformedURLException {
-        pluginService.addPluginPackage(FixedStorageSIPGeneration.class.getPackage().getName());
-    }
-
     @Test
     public void testPlugin() throws ModuleException {
 
         // Init plugin conf
-        PluginMetaData plugin = PluginUtils
-                .createPluginMetaData(FixedStorageSIPGeneration.class,
-                                      FixedStorageSIPGeneration.class.getPackage().getName(),
-                                      FixedStorageSIPGeneration.class.getPackage().getName());
+        PluginMetaData plugin = PluginUtils.createPluginMetaData(FixedStorageSIPGeneration.class);
 
         Map<String, String> mapping = Maps.newHashMap();
         mapping.put("plugin1", "dir1");
         mapping.put("plugin2", "dir2");
         mapping.put("plugin3", "dir3");
         mapping.put("plugin4", "");
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(FixedStorageSIPGeneration.PLUGINID_STORAGEDIR_MAP, mapping).getParameters();
         PluginConfiguration pluginConf = pluginService
                 .savePluginConfiguration(new PluginConfiguration(plugin, "sipGenerationPlugin", parameters));

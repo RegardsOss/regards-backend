@@ -70,7 +70,7 @@ public class RegexDiskScanning implements IScanPlugin {
     public List<Path> scan(Optional<OffsetDateTime> lastModificationDate) throws ModuleException {
 
         // Init filter
-        filter = file -> (Pattern.compile(regex).matcher(file.getFileName().toString()).matches());
+        filter = file -> Pattern.compile(regex).matcher(file.getFileName().toString()).matches();
 
         List<Path> scannedFiles = new ArrayList<>();
 
@@ -86,6 +86,7 @@ public class RegexDiskScanning implements IScanPlugin {
     }
 
     private List<Path> scanDirectory(Path dirPath, Optional<OffsetDateTime> lastModificationDate) {
+        long startTime = System.currentTimeMillis();
         List<Path> scannedFiles = new ArrayList<>();
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dirPath, filter)) {
@@ -106,6 +107,8 @@ public class RegexDiskScanning implements IScanPlugin {
             throw new PluginUtilsRuntimeException("Scanning failure", x);
         }
 
+        LOGGER.info("{} new file(s) scanned inside the directory {} in {} milliseconds", scannedFiles.size(), dirPath,
+                    System.currentTimeMillis() - startTime);
         return scannedFiles;
     }
 

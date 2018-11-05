@@ -19,9 +19,11 @@
 package fr.cnes.regards.modules.acquisition.service.job;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -31,6 +33,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
@@ -42,10 +45,12 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.modules.acquisition.domain.Product;
+import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.service.IProductService;
 import fr.cnes.regards.modules.ingest.client.IIngestClient;
 import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
 import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
  * This job manages SIP submission (i.e. INGEST bulk request) for a specified session and chain.
@@ -87,7 +92,7 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        LOGGER.debug("Processing SIP submission for ingest chain \"{}\" and session \"{}\"", ingestChain, session);
+        logger.debug("Processing SIP submission for ingest chain \"{}\" and session \"{}\"", ingestChain, session);
         runByPage();
     }
 
@@ -97,14 +102,25 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
      */
     private void runByPage() {
 
+        if (Thread.interrupted()) {
+            return;
+        }
+
         // Retrieve all products to submit by ingest chain, session page
         // Page size is limited by the property "bulkRequestLimit"
         Page<Product> products = productService.findProductsToSubmit(ingestChain, session);
 
         if (products.getNumberOfElements() > 0) {
 
-            LOGGER.info("Ingest chain {} - session {} : processing {} products of {}", ingestChain, session,
+            long startTime = System.currentTimeMillis();
+            logger.info("Ingest chain {} - session {} : processing {} products of {}", ingestChain, session,
                         products.getNumberOfElements(), products.getTotalElements());
+
+            // Switching states
+            Set<String> productNames = new HashSet<>();
+            products.forEach(p -> productNames.add(p.getProductName()));
+            productService.updateSipStatesByProductNameIn(ProductSIPState.SUBMITTED, productNames);
+
             // Create SIP collection
             SIPCollectionBuilder sipCollectionBuilder = new SIPCollectionBuilder(ingestChain, session.orElse(null));
             products.getContent().forEach(p -> sipCollectionBuilder.add(p.getSip()));
@@ -116,7 +132,7 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
                 ResponseEntity<Collection<SIPDto>> response = ingestClient.ingest(sipCollectionBuilder.build());
                 // Handle response
                 handleResponse(response.getStatusCode(), response.getBody(), products.getContent());
-            } catch (HttpClientErrorException e) {
+            } catch (HttpClientErrorException | HttpServerErrorException e) {
                 // Handle non 2xx or 404 status code
                 Collection<SIPDto> dtos = null;
                 if (e.getStatusCode() == HttpStatus.UNPROCESSABLE_ENTITY) {
@@ -130,6 +146,10 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
                 // Disable system call if necessary after client request(s)
                 FeignSecurityManager.reset();
             }
+
+            logger.info("Ingest chain {} - session {} : {} products of {} processed in {} milliseconds", ingestChain,
+                        session, products.getNumberOfElements(), products.getTotalElements(),
+                        System.currentTimeMillis() - startTime);
         }
 
         // Continue if remaining page
@@ -147,34 +167,39 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
     private void handleResponse(HttpStatus status, Collection<SIPDto> response, List<Product> products) {
         switch (status) {
             case CREATED:
+                // Nothing to do, let state in SUBMITTED
+                LOGGER.debug("{} products submitted successfully", products.size());
+                break;
             case PARTIAL_CONTENT:
             case UNPROCESSABLE_ENTITY:
                 // Convert product list to map
                 Map<String, Product> productMap = products.stream()
                         .collect(Collectors.toMap(p -> p.getSip().getId(), p -> p));
-                // Process all SIP to update all products!
+
+                // Process only REJECTED SIP
                 for (SIPDto dto : response) {
-                    Product product = productMap.get(dto.getId());
-                    product.setSipState(dto.getState());
-                    product.setIpId(dto.getIpId()); // May be null
-                    if ((dto.getRejectionCauses() != null) && !dto.getRejectionCauses().isEmpty()) {
-                        StringBuffer error = new StringBuffer();
-                        for (String cause : dto.getRejectionCauses()) {
-                            error.append(cause);
-                            if (!cause.endsWith(DOT)) {
-                                error.append(DOT);
+                    if (dto.getState() == SIPState.REJECTED) {
+                        Product product = productMap.get(dto.getId());
+                        product.setSipState(dto.getState());
+                        if ((dto.getRejectionCauses() != null) && !dto.getRejectionCauses().isEmpty()) {
+                            StringBuffer error = new StringBuffer();
+                            for (String cause : dto.getRejectionCauses()) {
+                                error.append(cause);
+                                if (!cause.endsWith(DOT)) {
+                                    error.append(DOT);
+                                }
+                                error.append(SPACE);
                             }
-                            error.append(SPACE);
+                            product.setError(error.toString());
                         }
-                        product.setError(error.toString());
+                        productService.save(product);
                     }
-                    productService.save(product);
                 }
                 break;
             default:
                 String message = String.format("SIP submission failure for ingest chain \"%s\" and session \"%s\"",
                                                ingestChain, session);
-                LOGGER.error(message);
+                logger.error(message);
                 throw new JobRuntimeException(message);
         }
     }
