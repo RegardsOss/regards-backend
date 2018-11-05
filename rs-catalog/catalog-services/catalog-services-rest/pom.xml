@@ -25,7 +25,6 @@
 	<artifactId>catalog-services-rest</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Catalog Services REST</name>
 	<description>Controller layer of the Catalog Services module</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
@@ -51,7 +50,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>catalog-services</artifactId>
-		<version>2.0.0-RELEASE</version>
+		<version>3.0.0-RELEASE</version>
 	</parent>
 
 	<dependencies>
@@ -76,8 +75,12 @@
 			<artifactId>plugins-regards-starter</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.entities</groupId>
-			<artifactId>entities-domain</artifactId>
+			<groupId>fr.cnes.regards.modules.dam</groupId>
+			<artifactId>dam-domain</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>geojson-starter</artifactId>
 		</dependency>
 		<!-- Test -->
 		<dependency>

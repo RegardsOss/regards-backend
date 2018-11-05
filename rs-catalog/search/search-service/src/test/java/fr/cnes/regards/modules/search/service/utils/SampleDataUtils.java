@@ -19,10 +19,10 @@
 package fr.cnes.regards.modules.search.service.utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import org.mockito.Mockito;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -37,20 +37,26 @@ import org.springframework.http.ResponseEntity;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
+import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.dataaccess.client.IUserClient;
-import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
-import fr.cnes.regards.modules.entities.domain.*;
+import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
+import fr.cnes.regards.modules.dam.client.models.IAttributeModelClient;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
+import fr.cnes.regards.modules.dam.domain.entities.AbstractEntity;
+import fr.cnes.regards.modules.dam.domain.entities.Collection;
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
+import fr.cnes.regards.modules.dam.domain.entities.Dataset;
+import fr.cnes.regards.modules.dam.domain.entities.Document;
+import fr.cnes.regards.modules.dam.domain.models.Model;
+import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
+import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModelBuilder;
+import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeType;
+import fr.cnes.regards.modules.dam.domain.models.attributes.Fragment;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
 import fr.cnes.regards.modules.indexer.domain.facet.FacetType;
-import fr.cnes.regards.modules.models.client.IAttributeModelClient;
-import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.models.domain.attributes.AttributeModelBuilder;
-import fr.cnes.regards.modules.models.domain.attributes.AttributeType;
-import fr.cnes.regards.modules.models.domain.attributes.Fragment;
-import fr.cnes.regards.modules.search.domain.SearchType;
 import fr.cnes.regards.modules.search.domain.Terms;
 
 /**
@@ -202,9 +208,8 @@ public class SampleDataUtils {
     /**
      * Dummy OpenSearch request
      */
-    public static final String QUERY =
-            INTEGER_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.PROPERTIES) + ":(2 AND 3) OR "
-                    + STRING_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.PROPERTIES) + ":hello";
+    public static final String QUERY = INTEGER_ATTRIBUTE_MODEL.getJsonPath() + ":(2 AND 3) OR "
+            + STRING_ATTRIBUTE_MODEL.getJsonPath() + ":hello";
 
     /**
      * A query with no "groups" term
@@ -214,9 +219,8 @@ public class SampleDataUtils {
     /**
      * A query with a term "groups"
      */
-    public static final String QUERY_WITH_GROUPS =
-            INTEGER_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.PROPERTIES) + ":(2 AND 3) OR " + Terms.GROUPS
-                    + ":admin";
+    public static final String QUERY_WITH_GROUPS = INTEGER_ATTRIBUTE_MODEL.getJsonPath() + ":(2 AND 3) OR "
+            + Terms.GROUPS + ":admin";
 
     /**
      * A dummy assembler for collections
@@ -253,20 +257,26 @@ public class SampleDataUtils {
      */
     public static final Collection COLLECTION = new Collection();
 
+    public static final Model DATAOBJET_MODEL = Model.build("dataObjectModel", "dataObjectModel", EntityType.DATA);
+
+    public static final Model DATASET_MODEL = Model.build("dataSetModel", "dataSetModel", EntityType.DATASET);
+
+    public static final Model DOCUMENT_MODEL = Model.build("docModel", "docModel", EntityType.DOCUMENT);
+
     /**
      * A dummy dataobject
      */
-    public static final DataObject DATAOBJECT = new DataObject();
+    public static final DataObject DATAOBJECT = new DataObject(DATAOBJET_MODEL, "tenant", "DO1", "DO1");
 
     /**
      * A dummy dataset
      */
-    public static final Dataset DATASET = new Dataset();
+    public static final Dataset DATASET = new Dataset(DATASET_MODEL, "tenant", "DS1", "DS1");
 
     /**
      * A dummy document
      */
-    public static final Document DOCUMENT = new Document();
+    public static final Document DOCUMENT = new Document(DOCUMENT_MODEL, "tenant", "DOC1", "DOC1");
 
     /**
      * A dummy list of facets
@@ -277,7 +287,7 @@ public class SampleDataUtils {
     /**
      * A dummy list of facets
      */
-    public static final String[] QUERY_FACETS = { "integer", "string" };
+    public static final List<String> QUERY_FACETS = Arrays.asList("integer", "string");
 
     /**
      * A dummy page of dataobjects
@@ -288,7 +298,7 @@ public class SampleDataUtils {
      * A dummy page of dataobjects
      */
     public static final FacetPage<DataObject> FACET_PAGE_DATAOBJECT = new FacetPage<>(Lists.newArrayList(DATAOBJECT),
-                                                                                      Sets.newHashSet());
+            Sets.newHashSet());
 
     /**
      * A dummy page of dataobjects
@@ -321,7 +331,7 @@ public class SampleDataUtils {
      * Define a criterion with a nested criterion of name "target" (this must be detected and properly handled)
      */
     public static final ICriterion CRITERION_WITH_NESTED_TARGET_FIELD = ICriterion
-            .or(ICriterion.eq("target", SearchType.DATASET.toString()), ICriterion.eq("field", "value"));
+            .or(ICriterion.eq("target", "DATASET"), ICriterion.eq("field", "value"));
 
     /**
      * Define a criterion with a nested criterion of name "dataset" (this must be detected and properly handled)

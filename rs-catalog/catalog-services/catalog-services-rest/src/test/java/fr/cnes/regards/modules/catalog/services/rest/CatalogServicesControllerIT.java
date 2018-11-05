@@ -26,10 +26,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
@@ -74,6 +75,7 @@ import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDataset
 /**
  * @author Sylvain Vissiere-Guerinet
  */
+@DirtiesContext
 @TestPropertySource(locations = "classpath:test.properties")
 @ContextConfiguration(classes = { CatalogServicesITConfiguration.class })
 @MultitenantTransactional
@@ -106,7 +108,8 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
 
     @Before
     public void init() throws ModuleException {
-        List<PluginParameter> parameters = PluginParametersFactory.build().addDynamicParameter("para", "never used")
+        LOG.info("--------------------> Initialization <-------------------------------------");
+        Set<PluginParameter> parameters = PluginParametersFactory.build().addDynamicParameter("para", "never used")
                 .getParameters();
         final PluginMetaData metaData = new PluginMetaData();
         metaData.setPluginId("tata");
@@ -117,18 +120,25 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         metaData.setPluginClassName(TestService.class.getName());
         // Create two plugin services linked to the same dataset
         // 1. first one
-        conf = new PluginConfiguration(metaData, "testConf", parameters);
-        pluginService.addPluginPackage(TestService.class.getPackage().getName());
-        conf = pluginService.savePluginConfiguration(conf);
+        if (!pluginService.findPluginConfigurationByLabel("testConf").isPresent()) {
+            conf = new PluginConfiguration(metaData, "testConf", parameters);
+            conf = pluginService.savePluginConfiguration(conf);
+        } else {
+            LOG.warn("----------------------------------> Conf already exists for initialization");
+        }
         // 2. second one
-        parameters = PluginParametersFactory.build().addDynamicParameter(SampleServicePlugin.RESPONSE_TYPE_PARAMETER,
-                                                                         SampleServicePlugin.RESPONSE_TYPE_JSON)
-                .getParameters();
-        samplePlgConf = new PluginConfiguration(
-                PluginUtils.createPluginMetaData(SampleServicePlugin.class,
-                                                 Arrays.asList(SampleServicePlugin.class.getPackage().getName())),
-                PLUGIN_CONF_LABEL_1, parameters);
-        pluginService.savePluginConfiguration(samplePlgConf);
+        if (!pluginService.findPluginConfigurationByLabel(PLUGIN_CONF_LABEL_1).isPresent()) {
+            parameters = PluginParametersFactory.build()
+                    .addDynamicParameter(SampleServicePlugin.RESPONSE_TYPE_PARAMETER,
+                                         SampleServicePlugin.RESPONSE_TYPE_JSON)
+                    .getParameters();
+            samplePlgConf = new PluginConfiguration(PluginUtils.createPluginMetaData(SampleServicePlugin.class),
+                    PLUGIN_CONF_LABEL_1, parameters);
+            pluginService.savePluginConfiguration(samplePlgConf);
+        } else {
+            LOG.warn("----------------------------------> Conf already exists for initialization {}",
+                     PLUGIN_CONF_LABEL_1);
+        }
 
         // Create a plugin service linked to an other dataset
         final PluginMetaData metaData2 = new PluginMetaData();
@@ -143,9 +153,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
                                                                          SampleServicePlugin.RESPONSE_TYPE_JSON)
                 .getParameters();
         PluginConfiguration samplePlgConf2 = new PluginConfiguration(
-                PluginUtils.createPluginMetaData(SampleServicePlugin.class,
-                                                 Arrays.asList(SampleServicePlugin.class.getPackage().getName())),
-                PLUGIN_CONF_LABEL_2, parameters);
+                PluginUtils.createPluginMetaData(SampleServicePlugin.class), PLUGIN_CONF_LABEL_2, parameters);
         pluginService.savePluginConfiguration(samplePlgConf2);
 
         linkService.updateLink(DATA_SET_NAME,
@@ -154,6 +162,7 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         linkService
                 .updateLink(DATA_SET_NAME_2,
                             new LinkPluginsDatasets(DATA_SET_NAME_2, Sets.newHashSet(samplePlgConf2, samplePlgConf)));
+        LOG.info("--------------------> Initialization Done <-------------------------------------");
     }
 
     @Test
@@ -187,51 +196,6 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
     @Test
     public void retrieveServices_shouldHaveMeta() {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        //
-        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[0].content.pluginId",
-        //                                                                               Matchers.is("tata")));
-        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-        //                .jsonPath(JSON_PATH_ROOT + "[0].content.applicationModes", Matchers.containsInAnyOrder("MANY", "ONE")));
-        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-        //                .jsonPath(JSON_PATH_ROOT + "[0].content.entityTypes", Matchers.contains("DATA")));
-        //
-        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[1].content.pluginId",
-        //                                                                               Matchers.is("aSampleServicePlugin")));
-        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-        //                .jsonPath(JSON_PATH_ROOT + "[1].content.applicationModes", Matchers.containsInAnyOrder("MANY", "ONE")));
-        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-        //                .jsonPath(JSON_PATH_ROOT + "[1].content.entityTypes", Matchers.contains(EntityType.DATA.toString())));
-        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[1].content.label",
-        //                                                                               Matchers.is(PLUGIN_CONF_LABEL_1)));
-        //
-        //        // Retrieve plugin services for first dataset. Should be two services as linked in init method
-        //        requestBuilderCustomizer.customizeRequestParam()
-        //                .param(CatalogServicesController.DATASET_IDS_QUERY_PARAM, DATA_SET_NAME)
-        //                .param("service_scope", ServiceScope.ONE.toString());
-        //        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
-        //        performDefaultGet(CatalogServicesController.PATH_SERVICES, requestBuilderCustomizer,
-        //                          "There should be plugin configurations augmented with meta data");
-        //
-        //        // Retrieve plugin services for second dataset. Should be two services as linked in init method
-        //        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        //
-        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[0].content.label",
-        //                                                                               Matchers.is(PLUGIN_CONF_LABEL_2)));
-        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-        //                .jsonPath(JSON_PATH_ROOT + "[0].content.applicationModes", Matchers.containsInAnyOrder("MANY", "ONE")));
-        //        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-        //                .jsonPath(JSON_PATH_ROOT + "[0].content.entityTypes", Matchers.contains(EntityType.DATA.toString())));
-        //        requestBuilderCustomizer.customizeRequestParam()
-        //                .param(CatalogServicesController.DATASET_IDS_QUERY_PARAM, DATA_SET_NAME_2)
-        //                .param("service_scope", ServiceScope.ONE.toString());
-        //        requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
-        //        performDefaultGet(CatalogServicesController.PATH_SERVICES, requestBuilderCustomizer,
-        //                          "There should be plugin configurations augmented with meta data");
-
         // Retrieve plugin services for both datasets. Should be only the common one between the two datasets.
         requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
@@ -239,6 +203,8 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
 
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + "[0].content.label",
                                                                                Matchers.is(PLUGIN_CONF_LABEL_1)));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
+                .jsonPath(JSON_PATH_ROOT + "[0].content.pluginId", Matchers.is(SampleServicePlugin.PLUGIN_ID)));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
                 .jsonPath(JSON_PATH_ROOT + "[0].content.applicationModes", Matchers.containsInAnyOrder("MANY", "ONE")));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
@@ -249,7 +215,6 @@ public class CatalogServicesControllerIT extends AbstractRegardsTransactionalIT 
         requestBuilderCustomizer.customizeHeaders().putAll(getHeadersToApply());
         performDefaultGet(CatalogServicesController.PATH_SERVICES, requestBuilderCustomizer,
                           "There should be plugin configurations augmented with meta data");
-
     }
 
     @Test

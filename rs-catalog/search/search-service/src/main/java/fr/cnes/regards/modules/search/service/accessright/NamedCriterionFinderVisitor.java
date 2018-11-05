@@ -27,6 +27,7 @@ import com.google.common.collect.Lists;
 import fr.cnes.regards.modules.indexer.domain.IMapping;
 import fr.cnes.regards.modules.indexer.domain.criterion.AbstractMultiCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.BooleanMatchCriterion;
+import fr.cnes.regards.modules.indexer.domain.criterion.BoundaryBoxCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.CircleCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.DateMatchCriterion;
 import fr.cnes.regards.modules.indexer.domain.criterion.DateRangeCriterion;
@@ -135,17 +136,22 @@ public class NamedCriterionFinderVisitor implements ICriterionVisitor<Collection
 
     @Override
     public Collection<ICriterion> visitPolygonCriterion(PolygonCriterion criterion) {
-        return searchedName.equals(IMapping.GEOMETRY) ? Lists.newArrayList(criterion) : new ArrayList<>();
+        return searchedName.equals(IMapping.GEO_SHAPE_ATTRIBUTE) ? Lists.newArrayList(criterion) : new ArrayList<>();
     }
 
     @Override
     public Collection<ICriterion> visitCircleCriterion(CircleCriterion criterion) {
-        return searchedName.equals(IMapping.GEOMETRY) ? Lists.newArrayList(criterion) : new ArrayList<>();
+        return searchedName.equals(IMapping.GEO_SHAPE_ATTRIBUTE) ? Lists.newArrayList(criterion) : new ArrayList<>();
     }
 
     @Override
     public Collection<ICriterion> visitFieldExistsCriterion(FieldExistsCriterion criterion) {
         return searchedName.equals(criterion.getName()) ? Lists.newArrayList(criterion) : new ArrayList<>();
+    }
+
+    @Override
+    public Collection<ICriterion> visitBoundaryBoxCriterion(BoundaryBoxCriterion criterion) {
+        return searchedName.equals(IMapping.GEO_SHAPE_ATTRIBUTE) ? Lists.newArrayList(criterion) : new ArrayList<>();
     }
 
 }

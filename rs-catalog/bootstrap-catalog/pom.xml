@@ -23,10 +23,9 @@
 
 	<groupId>fr.cnes.regards.microservices.catalog</groupId>
 	<artifactId>bootstrap-catalog</artifactId>
-	<version>2.0.0-RELEASE</version>
+	<version>3.0.0-RELEASE</version>
 	<packaging>jar</packaging>
 	
-	<name>Boostrap Catalog</name>
 	<description>Boots the Catalog microservice</description>
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
@@ -52,13 +51,13 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-boot-parent</artifactId>
-		<version>2.0.0-RELEASE</version>
+		<version>3.0.0-RELEASE</version>
 		<relativePath></relativePath>
 	</parent>
 
 	<properties>
 		<fr.cnes.regards.docker.image.name>rs-catalog</fr.cnes.regards.docker.image.name>
-		<docker.entryPoint>["./wait-for-it.sh", "rs_config:9031", "-t", "0", "--", "./wait-for-it.sh", "rs_registry:9032", "-t", "0", "--","./wait-for-it.sh", "rs_admin:9033", "-t", "0", "--","./wait-for-it.sh", "rs_dam:9035", "-t", "0", "--", "./start.sh","${project.build.finalName}.${project.packaging}","-Xmx1g"]</docker.entryPoint>
+		<docker.entryPoint>["./wait-for-it.sh", "rs-config:9031", "-t", "0", "--", "./wait-for-it.sh", "rs-registry:9032", "-t", "0", "--","./wait-for-it.sh", "rs-admin:9033", "-t", "0", "--","./wait-for-it.sh", "rs-dam:9035", "-t", "0", "--", "./start.sh","${project.build.finalName}.${project.packaging}","-Xmx1g"]</docker.entryPoint>
 	</properties>
 
 	<dependencies>

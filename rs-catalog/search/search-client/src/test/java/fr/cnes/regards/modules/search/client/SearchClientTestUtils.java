@@ -30,13 +30,12 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
-import fr.cnes.regards.modules.dataaccess.client.IUserClient;
-import fr.cnes.regards.modules.dataaccess.domain.accessgroup.AccessGroup;
-import fr.cnes.regards.modules.entities.domain.StaticProperties;
-import fr.cnes.regards.modules.models.domain.attributes.AttributeModel;
-import fr.cnes.regards.modules.models.domain.attributes.AttributeModelBuilder;
-import fr.cnes.regards.modules.models.domain.attributes.AttributeType;
-import fr.cnes.regards.modules.models.domain.attributes.Fragment;
+import fr.cnes.regards.modules.dam.client.dataaccess.IUserClient;
+import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
+import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModel;
+import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeModelBuilder;
+import fr.cnes.regards.modules.dam.domain.models.attributes.AttributeType;
+import fr.cnes.regards.modules.dam.domain.models.attributes.Fragment;
 
 /**
  *
@@ -94,9 +93,8 @@ public class SearchClientTestUtils {
      * A dummy list of facets
      */
     public static final List<String> FACETS = Lists
-            .newArrayList(INTEGER_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.PROPERTIES), STRING_ATTRIBUTE_NAME,
-                          DATE_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.PROPERTIES),
-                          EXTRA_ATTRIBUTE_MODEL.buildJsonPath(StaticProperties.PROPERTIES));
+            .newArrayList(INTEGER_ATTRIBUTE_MODEL.getJsonPath(), STRING_ATTRIBUTE_NAME,
+                          DATE_ATTRIBUTE_MODEL.getJsonPath(), EXTRA_ATTRIBUTE_MODEL.getJsonPath());
 
     /**
      * The dummy list of facets as array

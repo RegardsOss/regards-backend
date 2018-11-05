@@ -30,14 +30,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.dataaccess.client.IAccessRightClient;
-import fr.cnes.regards.modules.entities.domain.DataObject;
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
 import fr.cnes.regards.modules.indexer.domain.SimpleSearchKey;
 import fr.cnes.regards.modules.indexer.domain.criterion.ICriterion;
@@ -46,13 +47,13 @@ import fr.cnes.regards.modules.indexer.service.ISearchService;
 import fr.cnes.regards.modules.indexer.service.Searches;
 import fr.cnes.regards.modules.opensearch.service.OpenSearchService;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
+import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownParameter;
 import fr.cnes.regards.modules.search.service.accessright.AccessRightFilterException;
 import fr.cnes.regards.modules.search.service.accessright.IAccessRightFilter;
 import fr.cnes.regards.modules.search.service.utils.SampleDataUtils;
 
 /**
  * Unit test for {@link CatalogSearchService}.
- *
  * @author Xavier-Alexandre Brochard
  */
 public class CatalogSearchServiceTest {
@@ -71,6 +72,11 @@ public class CatalogSearchServiceTest {
      * Facet converter
      */
     private IFacetConverter facetConverter;
+
+    /**
+     * Facet converter
+     */
+    private IPageableConverter pageableConverter;
 
     /**
      * Adds user group and data access filters
@@ -93,7 +99,7 @@ public class CatalogSearchServiceTest {
     private IResourceService resourceService;
 
     @Before
-    public void setUp() throws AccessRightFilterException {
+    public void setUp() throws AccessRightFilterException, OpenSearchUnknownParameter {
         // Declare mocks
         openSearchService = Mockito.mock(OpenSearchService.class);
         accessRightFilter = Mockito.mock(IAccessRightFilter.class);
@@ -101,8 +107,11 @@ public class CatalogSearchServiceTest {
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         resourceService = Mockito.mock(IResourceService.class);
         facetConverter = Mockito.mock(IFacetConverter.class);
+        pageableConverter = Mockito.mock(IPageableConverter.class);
 
-        Mockito.when(facetConverter.convert(SampleDataUtils.QUERY_FACETS)).thenReturn(SampleDataUtils.FACETS);
+        Mockito.when(facetConverter.convert(SampleDataUtils.QUERY_FACETS, new HashMap<>()))
+                .thenReturn(SampleDataUtils.FACETS);
+        Mockito.when(pageableConverter.convert(SampleDataUtils.PAGEABLE)).thenReturn(SampleDataUtils.PAGEABLE);
 
         // Globally mock what's mockable yet
         Mockito.when(accessRightFilter.addAccessRights(Mockito.any()))
@@ -113,25 +122,24 @@ public class CatalogSearchServiceTest {
 
         // Instanciate the tested class
         catalogSearchService = new CatalogSearchService(searchService, openSearchService, accessRightFilter,
-                facetConverter);
+                facetConverter, pageableConverter);
     }
 
     /**
      * Test the main search method
-     *
-     * @throws SearchException
-     * @throws OpenSearchParseException
-     * @throws UnsupportedEncodingException
+     * @throws OpenSearchUnknownParameter
      */
     @SuppressWarnings("unchecked")
     @Test
     @Requirement("REGARDS_DSL_DAM_ARC_810")
-    public void doSearch_shouldPerformASimpleSearch()
-            throws SearchException, OpenSearchParseException, UnsupportedEncodingException {
+    public void doSearchShouldPerformASimpleSearch()
+            throws SearchException, OpenSearchParseException, UnsupportedEncodingException, OpenSearchUnknownParameter {
         // Prepare test
-        SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(SampleDataUtils.TENANT, EntityType.DATA);
-        Map<String, String> q = new HashMap<>();
-        q.put("q=", URLEncoder.encode(SampleDataUtils.QUERY, "UTF-8"));
+        SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(EntityType.DATA);
+        searchKey.setSearchIndex(SampleDataUtils.TENANT);
+        MultiValueMap<String, String> q = new LinkedMultiValueMap<>();
+        q.add("q=", URLEncoder.encode(SampleDataUtils.QUERY, "UTF-8"));
+
         PagedResourcesAssembler<DataObject> assembler = SampleDataUtils.ASSEMBLER_DATAOBJECT;
         Pageable pageable = SampleDataUtils.PAGEABLE;
 
@@ -156,19 +164,19 @@ public class CatalogSearchServiceTest {
 
     /**
      * Le système doit permettre de désactiver la gestion des facettes pour des questions de performance.
-     *
-     * @throws SearchException
-     * @throws OpenSearchParseException
+     * @throws OpenSearchUnknownParameter
      */
     @SuppressWarnings("unchecked")
     @Test
     @Purpose("Le système doit permettre de désactiver la gestion des facettes pour des questions de performance.")
     @Requirement("REGARDS_DSL_DAM_CAT_620")
-    public void doSearch_withNoFacet() throws SearchException, OpenSearchParseException {
+    public void doSearchWithNoFacet() throws SearchException, OpenSearchParseException, OpenSearchUnknownParameter {
         // Prepare test
-        SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(SampleDataUtils.TENANT, EntityType.DATA);
-        Map<String, String> q = new HashMap<>();
-        q.put("q=", "whatever");
+        SimpleSearchKey<DataObject> searchKey = Searches.onSingleEntity(EntityType.DATA);
+        searchKey.setSearchIndex(SampleDataUtils.TENANT);
+        MultiValueMap<String, String> q = new LinkedMultiValueMap<>();
+        q.add("q=", "whatever");
+
         Map<String, FacetType> facets = new HashMap<>();
         PagedResourcesAssembler<DataObject> assembler = SampleDataUtils.ASSEMBLER_DATAOBJECT;
         Pageable pageable = SampleDataUtils.PAGEABLE;

@@ -1,0 +1,102 @@
+{
+  "microservice": "rs-catalog",
+  "modules": [
+    {
+      "module": {
+        "id": "search",
+        "name": "Search Module",
+        "description": "Module handling anything to do with searching entities and rights",
+        "version": "3.0.0",
+        "author": "CSSI",
+        "legalOwner": "CNES",
+        "documentation": "https://github.com/RegardsOss"
+      },
+      "configuration": [
+        {
+          "key": "fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration",
+          "value": {
+            "label": "Legacy search protocol",
+            "configuration": {
+              "pluginId": "legacy",
+              "label": "Legacy search engine",
+              "version": "1.0.0",
+              "priorityOrder": 1,
+              "active": true,
+              "pluginClassName": "fr.cnes.regards.modules.search.rest.engine.plugin.legacy.LegacySearchEngine",
+              "interfaceNames": [
+                "fr.cnes.regards.modules.search.domain.plugin.ISearchEngine"
+              ],
+              "parameters": []
+            }
+          }
+        },
+        {
+          "key": "fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration",
+          "value": {
+            "label": "Open search protocol",
+            "configuration": {
+              "pluginId": "opensearch",
+              "label": "Open search engine",
+              "version": "1.0.0",
+              "priorityOrder": 1,
+              "active": true,
+              "pluginClassName": "fr.cnes.regards.modules.search.rest.engine.plugin.opensearch.OpenSearchEngine",
+              "interfaceNames": [
+                "fr.cnes.regards.modules.search.domain.plugin.ISearchEngine"
+              ],
+              "parameters": [
+                {
+                  "name": "engineConfiguration",
+                  "value": {
+                    "searchTitle": "Open search",
+                    "searchDescription": "Open search",
+                    "contact": "regards@c-s.fr",
+                    "shortName": "Open search",
+                    "longName": "Open search"
+                  },
+                  "dynamic": false,
+                  "dynamicsValues": [],
+                  "onlyDynamic": false
+                },
+                {
+                  "name": "timeExtension",
+                  "value": {
+                    "activated": true
+                  },
+                  "dynamic": false,
+                  "dynamicsValues": [],
+                  "onlyDynamic": false
+                },
+                {
+                  "name": "regardsExtension",
+                  "value": {
+                    "activated": true
+                  },
+                  "dynamic": false,
+                  "dynamicsValues": [],
+                  "onlyDynamic": false
+                },
+                {
+                  "name": "mediaExtension",
+                  "value": {
+                    "activated": true
+                  },
+                  "dynamic": false,
+                  "dynamicsValues": [],
+                  "onlyDynamic": false
+                },
+                {
+                  "name": "parametersConfiguration",
+                  "value": [],
+                  "dynamic": false,
+                  "dynamicsValues": [],
+                  "onlyDynamic": false
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

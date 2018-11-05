@@ -44,7 +44,7 @@ import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFact
  *
  * @author Christophe Mertz
  */
-@Plugin(description = "Sample plugin test", id = "aSampleServicePlugin", version = "0.0.1",
+@Plugin(description = "Sample plugin test", id = SampleServicePlugin.PLUGIN_ID, version = "0.0.1",
         author = "REGARDS Dream Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 @CatalogServicePlugin(applicationModes = { ServiceScope.ONE, ServiceScope.MANY }, entityTypes = { EntityType.DATA })
@@ -54,6 +54,8 @@ public class SampleServicePlugin extends AbstractCatalogServicePlugin implements
      * Class logger
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(SampleServicePlugin.class);
+
+    public static final String PLUGIN_ID = "aSampleServicePlugin";
 
     /**
      * Name of the response type parameter
@@ -123,39 +125,50 @@ public class SampleServicePlugin extends AbstractCatalogServicePlugin implements
      * @return {@link ResponseEntity}
      */
     private ResponseEntity<StreamingResponseBody> apply(String pResultValue, HttpServletResponse response) {
+        ResponseEntity<StreamingResponseBody> streamResponse = null;
         ResponseObject resp = new ResponseObject(pResultValue);
         switch (responseType) {
             case RESPONSE_TYPE_JSON:
-                return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
-                                                                          resp);
+                LOGGER.info("[Sample plugin] Applying for JSON format response");
+                streamResponse = CatalogPluginResponseFactory
+                        .createSuccessResponse(response, CatalogPluginResponseType.JSON, resp);
+                break;
             case RESPONSE_TYPE_XML:
-                return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.XML,
-                                                                          resp);
+                LOGGER.info("[Sample plugin] Applying for XML format response");
+                streamResponse = CatalogPluginResponseFactory
+                        .createSuccessResponse(response, CatalogPluginResponseType.XML, resp);
+                break;
             case RESPONSE_TYPE_IMG:
+                LOGGER.info("[Sample plugin] Applying for IMG format response");
                 InputStreamResource resource = new InputStreamResource(
                         this.getClass().getClassLoader().getResourceAsStream("LogoCnes.png"));
                 try {
-                    return CatalogPluginResponseFactory
+                    streamResponse = CatalogPluginResponseFactory
                             .createSuccessResponseFromInputStream(response, CatalogPluginResponseType.FILE_IMG_PNG,
                                                                   resource.getInputStream(), "LogoCnes.png");
                 } catch (IOException e) {
                     LOGGER.error("Error sending file", e);
-                    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                    streamResponse = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
                 }
+                break;
             case RESPONSE_TYPE_OTHER:
+                LOGGER.info("[Sample plugin] Applying for Other format response");
                 InputStreamResource resourceDownload = new InputStreamResource(
                         this.getClass().getClassLoader().getResourceAsStream("result.other"));
                 try {
-                    return CatalogPluginResponseFactory
+                    streamResponse = CatalogPluginResponseFactory
                             .createSuccessResponseFromInputStream(response, CatalogPluginResponseType.FILE_DOWNLOAD,
                                                                   resourceDownload.getInputStream(), "result.other");
                 } catch (IOException e) {
                     LOGGER.error("Error sending file", e);
-                    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                    streamResponse = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
                 }
-
+                break;
             default:
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                streamResponse = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                break;
         }
+        LOGGER.info("[Sample plugin] Response {}", streamResponse.getStatusCodeValue());
+        return streamResponse;
     }
 }

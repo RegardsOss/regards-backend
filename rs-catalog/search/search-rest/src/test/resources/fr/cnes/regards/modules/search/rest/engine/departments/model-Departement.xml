@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model>
+    <name>Departement</name>
+    <description>Départements francais</description>
+    <type>DATA</type>
+    <attribute alterable="true" optional="false">
+        <label>Code</label>
+        <name>Code</name>
+        <description>Code</description>
+        <type unit="unitless">STRING</type>
+    </attribute>
+    <attribute alterable="true" optional="false">
+        <label>Name</label>
+        <name>Name</name>
+        <description>Name</description>
+        <type unit="unitless">STRING</type>
+    </attribute>
+    <attribute alterable="true" optional="false">
+        <label>File size</label>
+        <name>FileSize</name>
+        <description>File size</description>
+        <type unit="octets">LONG</type>
+    </attribute>
+</model>

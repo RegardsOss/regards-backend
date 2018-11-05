@@ -41,14 +41,14 @@ public class SearchControllerAdvice {
     /**
      * Exception handler returning the code 400 when an error occurs while processing an OpenSearch request.<br>
      *
-     * @param pException {@link SearchException}
+     * @param exception {@link SearchException}
      * @return {@link ResponseEntity}
      */
     @ExceptionHandler(SearchException.class)
-    public ResponseEntity<ServerErrorResponse> searchException(final SearchException pException) {
-        String message = pException.getMessage();
-        if (pException.getCause() != null) {
-            message += ". Cause: " + pException.getCause().getMessage();
+    public ResponseEntity<ServerErrorResponse> searchException(final SearchException exception) {
+        String message = exception.getMessage();
+        if (exception.getCause() != null) {
+            message += ". Cause: " + exception.getCause().getMessage();
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(message));
     }

@@ -28,6 +28,8 @@ import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
@@ -60,6 +62,8 @@ import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDataset
 @Service
 @MultitenantTransactional
 public class ServiceManager implements IServiceManager {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceManager.class);
 
     /**
      * The service managing plugins
@@ -135,6 +139,8 @@ public class ServiceManager implements IServiceManager {
     public ResponseEntity<StreamingResponseBody> apply(final Long pPluginConfigurationId,
             final ServicePluginParameters pServicePluginParameters, HttpServletResponse response)
             throws ModuleException {
+
+        LOGGER.info("Applying plugin service {}", pPluginConfigurationId);
         final PluginConfiguration conf = pluginService.getPluginConfiguration(pPluginConfigurationId);
         // is it a Service configuration?
         if (!conf.getInterfaceNames().contains(IService.class.getName())) {
@@ -153,6 +159,7 @@ public class ServiceManager implements IServiceManager {
         IService toExecute = (IService) pluginService
                 .getPlugin(pPluginConfigurationId,
                            factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
+        LOGGER.info("Applying plugin service {}", toExecute.getClass().getName());
         return toExecute.apply(pServicePluginParameters, response);
 
     }

@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 
-import fr.cnes.regards.modules.entities.domain.DataObject;
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
 
 /**
