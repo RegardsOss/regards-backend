@@ -22,12 +22,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.util.Pair;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
@@ -42,11 +44,16 @@ import fr.cnes.regards.modules.storage.domain.AipDataFiles;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
+import fr.cnes.regards.modules.storage.domain.RejectedSip;
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
+import fr.cnes.regards.modules.storage.domain.job.AIPQueryFilters;
+import fr.cnes.regards.modules.storage.domain.job.AddAIPTagsFilters;
+import fr.cnes.regards.modules.storage.domain.job.RemoveAIPTagsFilters;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
-import fr.cnes.regards.modules.storage.service.job.UpdateDataFilesJob;
+import fr.cnes.regards.modules.storage.service.job.StoreDataFilesJob;
 
 /**
  * Service Interface to handle {@link AIP} entities.
@@ -58,34 +65,37 @@ public interface IAIPService {
 
     /**
      * Save AIP and publish event if requested
+     * @param aip
+     * @param publish
+     * @return {@link AIP}
      */
     AIP save(AIP aip, boolean publish);
 
     /**
      * Synchronous method for validating and storing an AIP collection submitted through Rest API.<br/>
      * All heavy work will be done asynchronously.
+     * @param aips
+     * @return {@link RejectedAip}s
+     * @throws ModuleException
      */
     List<RejectedAip> validateAndStore(AIPCollection aips) throws ModuleException;
 
     /**
-     * Asynchronously makes the heavy work of storing AIP following these steps :
+     * Asynchronusly makes the heavy work of storing AIP metadata.<ul>
+     * <li>1. Search for all AIP ready to store their metadata (all DataFile are in STORED state).</li>
+     * <li>2. Schedule a unique job perf IDataStorage configuration to store all AIP metadata files found.</li>
      * <ul>
-     * <li>Extract data files from {@link AIP}</li>
-     * <li>Dispatch them on {@link IDataStorage} plugins through the single active {@link IAllocationStrategy}
-     * plugin</li>
-     * <li>Prepare and schedule storage jobs for data files</li>
-     * </ul>
+     * <br/>
+     * NOTE : We do not schedule StoreJob for each AIP found, to avoid multiple access to IDataStorage.
+     *
+     * @return number of AIP metadata scheduled for storage
      */
-    void store() throws ModuleException;
-
-    /**
-     * Asynchronusly makes the heavy work of storing AIP metadata.
-     */
-    void storeMetadata();
+    long storeMetadata();
 
     /**
      * Schedule asynchronous jobs to handle failed storage of existing {@link AIP}.<br/>
      * @param aipIpIds collection of aip ip ids to try to store back
+     * @throws ModuleException
      */
     void storeRetry(Set<String> aipIpIds) throws ModuleException;
 
@@ -95,7 +105,7 @@ public interface IAIPService {
      * <li>Aip is known in the system</li>
      * </ul>
      * @param aipIpIds
-     * @return
+     * @return  {@link RejectedAip}s
      */
     List<RejectedAip> applyRetryChecks(Set<String> aipIpIds);
 
@@ -108,6 +118,7 @@ public interface IAIPService {
      *            available and
      *            files lifetime in cache.
      * @return checksums of files that are already available
+     * @throws ModuleException
      */
     AvailabilityResponse loadFiles(AvailabilityRequest availabilityRequest) throws ModuleException;
 
@@ -117,11 +128,15 @@ public interface IAIPService {
      * @param pState {@link AIPState} State of AIP wanted
      * @param pFrom {@link OffsetDateTime} start date of AIP to retrieve
      * @param pTo {@link OffsetDateTime} stop date of AIP to retrieve
-     * @param pPageable {@link Pageable} Pagination information
+     * @param tags
+     * @param sessionId
+     * @param providerId
+     * @param pageable {@link Pageable} Pagination information
      * @return {@link AIP}s corresponding to parameters given.
+     * @throws ModuleException
      */
-    Page<AIP> retrieveAIPs(AIPState pState, OffsetDateTime pFrom, OffsetDateTime pTo, Pageable pPageable)
-            throws ModuleException;
+    Page<AIP> retrieveAIPs(AIPState pState, OffsetDateTime pFrom, OffsetDateTime pTo, List<String> tags,
+            String sessionId, String providerId, Pageable pageable) throws ModuleException;
 
     /**
      * Retrieve pages of AIP with files public information filtered according to the parameters
@@ -136,12 +151,21 @@ public interface IAIPService {
             Pageable pageable);
 
     /**
-     * Retrieve the files metadata associated to an aip
+     * Retrieve the public files metadata associated to an aip
      * @param pIpId
      * @return the files metadata
+     * @throws ModuleException
      * @throws EntityNotFoundException
      */
     Set<OAISDataObject> retrieveAIPFiles(UniformResourceName pIpId) throws ModuleException;
+
+    /**
+     * Retrieve storage data files metadata associated to an aip
+     * @param pIpId
+     * @return the files metadata
+     * @throws ModuleException
+     */
+    Set<StorageDataFile> retrieveAIPDataFiles(UniformResourceName pIpId) throws ModuleException;
 
     /**
      * Retrieve the versions of an aip
@@ -155,7 +179,8 @@ public interface IAIPService {
      * @param pAipId
      * @param pChecksum
      * @return the input stream to the file and its metadata, null if the file is not stored online or in cache
-     * @throw EntityNotFoundException if the request {@link StorageDataFile} does not exists.
+     * @throws ModuleException
+     * @throws IOException
      */
     Pair<StorageDataFile, InputStream> getAIPDataFile(String pAipId, String pChecksum)
             throws ModuleException, IOException;
@@ -178,17 +203,18 @@ public interface IAIPService {
     /**
      * Retrieve all aips that are tagged by the given tag
      * @param tag
+     * @param page
      * @return tagged aips
      */
-    Set<AIP> retrieveAipsByTag(String tag);
+    Page<AIP> retrieveAipsByTag(String tag, Pageable page);
 
     /**
-     * Retrieve an aip thanks to its ip id
-     * @param ipId
+     * Retrieve an aip thanks to its aip id
+     * @param aipId
      * @return the aip
      * @throws EntityNotFoundException
      */
-    AIP retrieveAip(String ipId) throws EntityNotFoundException;
+    AIP retrieveAip(String aipId) throws EntityNotFoundException;
 
     /**
      * Update PDI and descriptive information of an aip according to updated. To add/remove ContentInformation,
@@ -196,80 +222,177 @@ public interface IAIPService {
      * new aip with a different version and use storeAndCreate method.
      * @param ipId information package identifier of the aip
      * @param updated object containing changes
+     * @param updateMessage the message saved inside the AIP
      * @return aip stored into the system after changes have been propagated
      * @throws EntityNotFoundException if no aip with ipId as identifier can be found
      * @throws EntityInconsistentIdentifierException if ipId and updated ipId are different
      * @throws EntityOperationForbiddenException if aip in the system is not in the right state
      */
-    AIP updateAip(String ipId, AIP updated)
+    Optional<AIP> updateAip(String ipId, AIP updated, String updateMessage)
             throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException;
 
     /**
-     * Updates all AIP metadta to update.
-     */
-    void updateAipMetadata();
-
-    /**
      * Remove an aip from the system. Its file are deleted if and only if no other aip point to them.
+     * @param ipId
      * @return not suppressible files because they are in state
      *         {@link fr.cnes.regards.modules.storage.domain.database.DataFileState#PENDING}
+     * @throws ModuleException
      */
     Set<StorageDataFile> deleteAip(String ipId) throws ModuleException;
 
     /**
-     * Remove {@link AIP}s associated the given sip, through its ip id
-     * @param sipIpId
+     * Remove an aip from the system. Its file are deleted if and only if no other aip point to them.
+     * @param aip
+     * @return not suppressible files because they are in state
+     *         {@link fr.cnes.regards.modules.storage.domain.database.DataFileState#PENDING}
+     * @throws ModuleException
      */
-    Set<StorageDataFile> deleteAipFromSip(String sipIpId) throws ModuleException;
+    Set<StorageDataFile> deleteAip(AIP aip) throws ModuleException;
+
+    /**
+     * Schedule deletion of datafiles marked for deletion
+     * @return number of scheduled aip to delete
+     */
+    Long doDelete();
+
+    /**
+     * Remove {@link AIP}s associated the given sip, through its ip id
+     * @param sipId
+     * @return {@link StorageDataFile}s
+     * @throws ModuleException
+     */
+    Set<StorageDataFile> deleteAipFromSip(UniformResourceName sipId) throws ModuleException;
 
     /**
      * Add tags to the specified aip, through its ip id
      * @param ipId
      * @param tagsToAdd
+     * @throws EntityException
      */
-    void addTags(String ipId, Set<String> tagsToAdd)
+    void addTags(String ipId, Set<String> tagsToAdd) throws EntityException;
+
+    /**
+     * Add tags to the specified AIP entity, using the entity
+     * @param toUpdate
+     * @param tagsToAdd
+     * @throws EntityNotFoundException
+     * @throws EntityInconsistentIdentifierException
+     * @throws EntityOperationForbiddenException
+     */
+    void addTags(AIP toUpdate, Set<String> tagsToAdd)
             throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException;
+
+    /**
+     * Add tags to several AIPs, using query filters
+     * This method returns before tags are updated, as this method just launch a job
+     * @param filters REST query
+     * @return true on success
+     */
+    boolean addTagsByQuery(AddAIPTagsFilters filters);
 
     /**
      * Removes tags from a specified aip, through its ip id
      * @param ipId
      * @param tagsToRemove
+     * @throws EntityException
      */
-    void removeTags(String ipId, Set<String> tagsToRemove)
-            throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException;
+    void removeTags(String ipId, Set<String> tagsToRemove) throws EntityException;
+
+    /**
+     * Remove a list of tags to the provided AIP
+     * @param toUpdate
+     * @param tagsToRemove
+     * @throws EntityException
+     */
+    void removeTags(AIP toUpdate, Set<String> tagsToRemove) throws EntityException;
+
+    /**
+     * Remove a set of tags from several AIPS, using query filters
+     * This method returns before tags are updated, as this method just launch a job
+     * @param request the request object
+     * @return true on success
+     */
+    boolean removeTagsByQuery(RemoveAIPTagsFilters request);
+
+    /**
+     * Retrieve one {@link AIPSession} by id.
+     * This method returns the AIPSession store in the DAO, so there is no stats computed. See getSessionWithStats for
+     * sesion for stats
+     * @param sessionId {@link String}
+     * @param createIfNotExists if true, the session with sessionId is created is it does not exists.
+     * @return {@link AIPSession}
+     */
+    AIPSession getSession(String sessionId, Boolean createIfNotExists);
+
+    /**
+     * Retrieve one {@link AIPSession} by id, and compute its stats.
+     * @param sessionId {@link String}
+     * @return {@link AIPSession}
+     */
+    AIPSession getSessionWithStats(String sessionId);
+
+    /**
+     * Retrieve all {@link AIPSession} that match provided filters
+     * @param id
+     * @param from
+     * @param to
+     * @param pageable
+     * @return {@link AIPSession}s
+     */
+    Page<AIPSession> searchSessions(String id, OffsetDateTime from, OffsetDateTime to, Pageable pageable);
+
+    /**
+     * Delete several {@link AIP}s using query filters
+     * This method returns before AIPs are deleted, as this method just launch a job
+     * @param request
+     */
+    void deleteAIPsByQuery(AIPQueryFilters request);
+
+    List<RejectedSip> deleteAipFromSips(Set<String> sipIds) throws ModuleException;
+
+    /**
+     * Retrieve all tags used by a set of AIPS, using query filters or a list of AIP id
+     * @param filters REST query
+     * @return Tags
+     */
+    List<String> retrieveAIPTagsByQuery(AIPQueryFilters filters);
 
     ///////////////////////////////////////////////////////////////////////////////////////////
     ////////////////// These methods should only be called by IAIPServices
     ///////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Schedule new {@link UpdateDataFilesJob}s for all {@link StorageDataFile} of AIP metadata files given
+     * Schedule new {@link StoreDataFilesJob}s for all {@link StorageDataFile} of AIP metadata files given
      * and set there state to STORING_METADATA.
      * @param metadataToStore List of {@link StorageDataFile} of new AIP metadata files mapped to old ones.
      */
     void scheduleStorageMetadata(Set<StorageDataFile> metadataToStore);
 
     /**
-     * Schedule the storage of metadata update
-     * @param metadataToUpdate
-     */
-    void scheduleStorageMetadataUpdate(Set<UpdatableMetadataFile> metadataToUpdate);
-
-    /**
-     * Prepare the aip metadata of already stored aip that has been updated
-     * @return the new and old aip metadata associated data file
-     */
-    Set<UpdatableMetadataFile> prepareUpdatedAIP();
-
-    /**
-     * Prepare the aip metadata that are not yet stored
-     * @return data files to store
-     */
-    Set<StorageDataFile> prepareNotFullyStored();
-
-    /**
      * Handle physical deletion of AIPs for each entity in state DELETED and associated to no other
      * StorageDataFile. This state is reached when all locations of all DataObject are deleted for an AIP metadata.
+     * @return number of elements deleted or scheduled for deletion
      */
-    void removeDeletedAIPMetadatas();
+    int removeDeletedAIPMetadatas();
+
+    /**
+     * Schedule storage for the given page of AIP data following these steps :
+     * <ul>
+     * <li>Extract data files from {@link AIP}</li>
+     * <li>Dispatch them on {@link IDataStorage} plugins through the single active {@link IAllocationStrategy}
+     * plugin</li>
+     * <li>Prepare and schedule storage jobs for data files</li>
+     * </ul>
+     * @param page
+     * @return page of sheduled AIP data.
+     * @throws ModuleException
+     */
+    Page<AIP> storePage(Pageable page) throws ModuleException;
+
+    /**
+     * Run pending update requests.
+     * @return number of aip update scheduled.
+     * @throws ModuleException
+     */
+    int handleUpdateRequests() throws ModuleException;
 }

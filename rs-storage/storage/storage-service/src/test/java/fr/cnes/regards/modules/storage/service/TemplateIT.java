@@ -1,14 +1,33 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.storage.service;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -21,6 +40,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -45,14 +67,13 @@ import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
+import fr.cnes.regards.modules.storage.dao.IAIPSessionRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
-import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
-import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
-import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.WorkingSubsetWrapper;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultAllocationStrategyPlugin;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
@@ -67,14 +88,19 @@ import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
  * @author Sylvain VISSIERE-GUERINET
  */
 @ContextConfiguration(classes = { TestConfig.class, TemplateIT.Config.class })
-@TestPropertySource(locations = "classpath:test.properties")
+@TestPropertySource(
+        properties = { "spring.jpa.properties.hibernate.default_schema=storage_test", "regards.amqp.enabled=true" },
+        locations = { "classpath:storage.properties" })
 @RegardsTransactional
-@ActiveProfiles({ "testAmqp", "disableStorageTasks" })
+@ActiveProfiles({ "testAmqp", "disableStorageTasks", "noschdule" })
+@DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE, classMode = ClassMode.BEFORE_CLASS)
 public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
 
     private static final String DATA_STORAGE_CONF_LABEL = "DataStorage_TemplateIT";
 
     private static final String ALLO_CONF_LABEL = "Allo_TemplateIT";
+
+    private static final String SESSION = "Session 1";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TemplateIT.class);
 
@@ -97,18 +123,19 @@ public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
     private IAIPDao aipDao;
 
     @Autowired
+    private IAIPSessionRepository aipSessionRepo;
+
+    @Autowired
     private IDataFileDao dataFileDao;
 
     @Test
     public void testNotSubsetted() throws ModuleException, MalformedURLException {
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+
         Map<String, Object> dataMap = new HashMap<>();
-        PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class,
-                                                                      IDataStorage.class.getPackage().getName(),
-                                                                      IOnlineDataStorage.class.getPackage().getName());
-        URL baseStorageLocation = new URL("file", "",
-                Paths.get("target/AIPServiceIT/Local2").toFile().getAbsolutePath());
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
+        URL baseStorageLocation = new URL("file", "", Paths.get("target/TemplateIT/Local2").toFile().getAbsolutePath());
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000L)
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION, false).getParameters();
@@ -117,10 +144,17 @@ public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
         dataStorageConf.setIsActive(true);
         PrioritizedDataStorage prioritizedDataStorage = prioritizedDataStorageService.create(dataStorageConf);
 
-        //lets simulate as in the code, so lets create a workingSubsetWrapper full of rejected data files
+        // lets simulate as in the code, so lets create a workingSubsetWrapper full of rejected data files
         WorkingSubsetWrapper<LocalWorkingSubset> workingSubsetWrapper = new WorkingSubsetWrapper<>();
-        AIP aip = aipDao.save(getAIP());
-        Set<StorageDataFile> dataFiles = StorageDataFile.extractDataFiles(aip);
+
+        aipSessionRepo.deleteAll();
+        AIPSession aipSession = new AIPSession();
+        aipSession.setId(SESSION);
+        aipSession.setLastActivationDate(OffsetDateTime.now());
+        aipSession = aipSessionRepo.save(aipSession);
+
+        AIP aip = aipDao.save(getAIP(), aipSession);
+        Set<StorageDataFile> dataFiles = StorageDataFile.extractDataFiles(aip, aipSession);
         dataFiles = Sets.newHashSet(dataFileDao.save(dataFiles));
         Iterator<StorageDataFile> dataFilesIter = dataFiles.iterator();
         int i = 0;
@@ -141,16 +175,21 @@ public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
 
     @Test
     public void testNotDispatched() throws ModuleException, MalformedURLException {
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         Map<String, Object> dataMap = new HashMap<>();
-        PluginMetaData AlloMeta = PluginUtils.createPluginMetaData(DefaultAllocationStrategyPlugin.class,
-                                                                   IAllocationStrategy.class.getPackage().getName());
+        PluginMetaData AlloMeta = PluginUtils.createPluginMetaData(DefaultAllocationStrategyPlugin.class);
         PluginConfiguration alloConf = new PluginConfiguration(AlloMeta, ALLO_CONF_LABEL, new ArrayList<>(), 0);
         alloConf.setIsActive(true);
         alloConf = pluginService.savePluginConfiguration(alloConf);
 
-        AIP aip = aipDao.save(getAIP());
-        Set<StorageDataFile> dataFiles = StorageDataFile.extractDataFiles(aip);
+        aipSessionRepo.deleteAll();
+        AIPSession aipSession = new AIPSession();
+        aipSession.setId(SESSION);
+        aipSession.setLastActivationDate(OffsetDateTime.now());
+        aipSession = aipSessionRepo.save(aipSession);
+
+        AIP aip = aipDao.save(getAIP(), aipSession);
+        Set<StorageDataFile> dataFiles = StorageDataFile.extractDataFiles(aip, aipSession);
         dataFiles = Sets.newHashSet(dataFileDao.save(dataFiles));
         dataMap.put("dataFiles", dataFiles);
         dataMap.put("allocationStrategy", alloConf);
@@ -165,12 +204,14 @@ public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
 
     private AIP getAIP() throws MalformedURLException {
 
-        AIPBuilder aipBuilder = new AIPBuilder(
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT, UUID.randomUUID(), 1),
-                null, EntityType.DATA);
+        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP, EntityType.DATA, getDefaultTenant(),
+                UUID.randomUUID(), 1);
+        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, getDefaultTenant(),
+                sipId.getEntityId(), 1);
+        AIPBuilder aipBuilder = new AIPBuilder(aipId, Optional.of(sipId), "providerId", EntityType.DATA, SESSION);
 
-        String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
-        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5",
+        Path path = Paths.get("src", "test", "resources", "data.txt");
+        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, path, "MD5",
                                                                 "de89a907d33a9716d11765582102b2e0");
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", MimeType.valueOf("text/plain"));
         aipBuilder.addContentInformation();

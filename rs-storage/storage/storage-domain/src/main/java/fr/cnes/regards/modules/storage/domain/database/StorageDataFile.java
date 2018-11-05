@@ -1,5 +1,9 @@
 package fr.cnes.regards.modules.storage.domain.database;
 
+import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -21,18 +25,16 @@ import javax.persistence.NamedSubgraph;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.Min;
-import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.springframework.util.MimeType;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
+
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.jpa.converter.SetStringCsvConverter;
 import fr.cnes.regards.framework.jpa.converter.SetURLCsvConverter;
+import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.DataType;
@@ -46,9 +48,10 @@ import fr.cnes.regards.modules.storage.domain.AIP;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Entity
-@Table(name = "t_data_file", indexes = { @Index(name = "idx_data_file_checksum", columnList = "checksum"),
-        @Index(name = "idx_data_file_state", columnList = "state"),
-        @Index(name = "idx_data_file_aip", columnList = "aip_ip_id") })
+@Table(name = "t_data_file",
+        indexes = { @Index(name = "idx_data_file_checksum", columnList = "checksum"),
+                @Index(name = "idx_data_file_state", columnList = "state"),
+                @Index(name = "idx_data_file_aip", columnList = "aip_ip_id") })
 // @formatter:off
 @NamedEntityGraph(name = "graph.datafile.full", attributeNodes = { @NamedAttributeNode("aipEntity"),
         @NamedAttributeNode(value = "prioritizedDataStorages", subgraph = "graph.datafile.prioritizedDataStorages") },
@@ -65,7 +68,8 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 public class StorageDataFile {
 
     /**
-     * length used as the checksum column definition. Why 128? it allows to use sha-512. That should limit issues with checksum length for a few years
+     * length used as the checksum column definition. Why 128? it allows to use sha-512. That should limit issues with
+     * checksum length for a few years
      */
     public static final int CHECKSUM_MAX_LENGTH = 128;
 
@@ -109,14 +113,14 @@ public class StorageDataFile {
     /**
      * Data type
      */
-    @Column
+    @Column(name = "data_type")
     @Enumerated(EnumType.STRING)
     private DataType dataType;
 
     /**
      * File size
      */
-    @Column
+    @Column(name = "file_size")
     private Long fileSize;
 
     /**
@@ -129,7 +133,7 @@ public class StorageDataFile {
     /**
      * File mime type
      */
-    @Column(nullable = false)
+    @Column(nullable = false, name = "mime_type")
     @Convert(converter = MimeTypeConverter.class)
     private MimeType mimeType;
 
@@ -143,25 +147,25 @@ public class StorageDataFile {
      * Directory to use for storage. Can be null.
      * This parameter should be set by the IAllocationStrategy plugin during storage dispatch.
      */
-    @Column
+    @Column(name = "storage_directory")
     private String storageDirectory;
 
     /**
      * Data storage plugin configuration used to store the file
      */
     @ManyToMany
-    @JoinTable(name = "ta_data_file_plugin_conf", joinColumns = @JoinColumn(name = "data_file_id",
-            foreignKey = @ForeignKey(name = "fk_data_file_plugin_conf_data_file")),
+    @JoinTable(name = "ta_data_file_plugin_conf",
+            joinColumns = @JoinColumn(name = "data_file_id",
+                    foreignKey = @ForeignKey(name = "fk_data_file_plugin_conf_data_file")),
             inverseJoinColumns = @JoinColumn(name = "data_storage_conf_id",
                     foreignKey = @ForeignKey(name = "fk_plugin_conf_data_file_plugin_conf")))
-    private Set<PrioritizedDataStorage> prioritizedDataStorages = new HashSet<>();
+    private final Set<PrioritizedDataStorage> prioritizedDataStorages = new HashSet<>();
 
     /**
      * Reversed mapping compared to reality. This is because it is easier to work like this.
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "aip_ip_id", foreignKey = @ForeignKey(name = "fk_aip_data_file"))
-    @GsonIgnore
     private AIPEntity aipEntity;
 
     /**
@@ -174,6 +178,7 @@ public class StorageDataFile {
     /**
      * Default constructor
      */
+    @SuppressWarnings("unused")
     private StorageDataFile() {
         // serialization
     }
@@ -184,16 +189,9 @@ public class StorageDataFile {
      * @param mimeType
      * @param aip
      */
-    public StorageDataFile(OAISDataObject file, MimeType mimeType, AIP aip) {
-        this(file.getUrls(),
-             file.getChecksum(),
-             file.getAlgorithm(),
-             file.getRegardsDataType(),
-             file.getFileSize(),
-             mimeType,
-             aip,
-             null,
-             null);
+    public StorageDataFile(OAISDataObject file, MimeType mimeType, AIPEntity aipEntity, AIPSession aipSession) {
+        this(file.getUrls(), file.getChecksum(), file.getAlgorithm(), file.getRegardsDataType(), file.getFileSize(),
+             mimeType, aipEntity, aipSession, null, null);
         String name = file.getFilename();
         if (Strings.isNullOrEmpty(name)) {
             String[] pathParts = file.getUrls().iterator().next().getPath().split("/");
@@ -214,14 +212,14 @@ public class StorageDataFile {
      * @param name
      */
     public StorageDataFile(Set<URL> urls, String checksum, String algorithm, DataType type, Long fileSize,
-            MimeType mimeType, AIP aip, String name, String storageDirectory) {
+            MimeType mimeType, AIPEntity aipEntity, AIPSession aipSession, String name, String storageDirectory) {
         this.urls = urls;
         this.checksum = checksum;
         this.algorithm = algorithm;
         this.dataType = type;
         this.fileSize = fileSize;
         this.mimeType = mimeType;
-        this.aipEntity = new AIPEntity(aip);
+        this.aipEntity = aipEntity;
         this.name = name;
         this.storageDirectory = storageDirectory;
     }
@@ -231,12 +229,20 @@ public class StorageDataFile {
      * @param aip
      * @return extracted data files
      */
-    public static Set<StorageDataFile> extractDataFiles(AIP aip) {
+    public static Set<StorageDataFile> extractDataFiles(AIP aip, AIPSession aipSession) {
+        return extractDataFilesForExistingAIP(aip, new AIPEntity(aip, aipSession), aipSession);
+    }
+
+    public static Set<StorageDataFile> extractDataFilesForExistingAIP(AIP aip, AIPEntity aipEntity,
+            AIPSession aipSession) {
         Set<StorageDataFile> dataFiles = Sets.newHashSet();
         for (ContentInformation ci : aip.getProperties().getContentInformations()) {
             OAISDataObject file = ci.getDataObject();
-            MimeType mimeType = ci.getRepresentationInformation().getSyntax().getMimeType();
-            dataFiles.add(new StorageDataFile(file, mimeType, aip));
+            if ((file != null) && !file.isReference()) {
+                // Only non reference data object is managed by storage
+                MimeType mimeType = ci.getRepresentationInformation().getSyntax().getMimeType();
+                dataFiles.add(new StorageDataFile(file, mimeType, aipEntity, aipSession));
+            }
         }
         return dataFiles;
     }
@@ -420,8 +426,8 @@ public class StorageDataFile {
      * Set the associated aip
      * @param aip
      */
-    public void setAip(AIP aip) {
-        this.aipEntity = new AIPEntity(aip);
+    public void setAip(AIP aip, AIPSession aipSession) {
+        this.aipEntity = new AIPEntity(aip, aipSession);
     }
 
     public Integer getHeight() {
@@ -473,7 +479,9 @@ public class StorageDataFile {
     }
 
     public void setNotYetStoredBy(Long notYetStoredBy) {
-        this.notYetStoredBy = notYetStoredBy;
+        if (notYetStoredBy != null) {
+            this.notYetStoredBy = notYetStoredBy;
+        }
     }
 
     public String getStorageDirectory() {
@@ -517,18 +525,15 @@ public class StorageDataFile {
     }
 
     public void increaseNotYetStoredBy() {
-        if (notYetStoredBy == null) {
-            notYetStoredBy = 1L;
-        } else {
-            notYetStoredBy++;
-        }
+        notYetStoredBy++;
     }
 
-    public void decreaseNotYetStoredBy() {
-        if (notYetStoredBy == null) {
-            notYetStoredBy = -1L;
-        } else {
+    public void decreaseNotYetStoredBy() throws EntityOperationForbiddenException {
+        if (notYetStoredBy > 0L) {
             notYetStoredBy--;
+        } else {
+            throw new EntityOperationForbiddenException(
+                    String.format("Forbidden decrease <notYetStoredBy> for dataFile %s - %s", this.id, this.name));
         }
     }
 
@@ -541,6 +546,8 @@ public class StorageDataFile {
     }
 
     public void addFailureCause(String failureCause) {
-        this.failureCauses.add(failureCause);
+        if (failureCause != null) {
+            this.failureCauses.add(failureCause);
+        }
     }
 }

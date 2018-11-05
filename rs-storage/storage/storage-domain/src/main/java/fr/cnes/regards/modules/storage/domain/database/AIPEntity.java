@@ -1,32 +1,30 @@
 package fr.cnes.regards.modules.storage.domain.database;
 
 import java.time.OffsetDateTime;
-import java.util.Set;
 
-import javax.persistence.CollectionTable;
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
+import javax.persistence.Convert;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
-import javax.persistence.NamedAttributeNode;
-import javax.persistence.NamedEntityGraph;
+import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
 
-import com.google.common.collect.Sets;
-
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -37,24 +35,22 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
  * Metadata of an AIP metadata.
  * It was not necessary to map all the AIP structure into the database so we just mapped some metadata and added the
  * whole AIP as a json field.
- *
  * @author Sylvain VISSIERE-GUERINET
  */
 @Entity
 @Table(name = "t_aip",
-        indexes = { @Index(name = "idx_aip_ip_id", columnList = "ip_id"),
+        indexes = { @Index(name = "idx_aip_ip_id", columnList = "aip_id"),
                 @Index(name = "idx_aip_state", columnList = "state"),
-                @Index(name = "idx_aip_submission_date", columnList = "submissionDate"),
+                @Index(name = "idx_aip_submission_date", columnList = "submission_date"),
                 @Index(name = "idx_aip_last_event_date", columnList = "date") },
-        uniqueConstraints = { @UniqueConstraint(name = "uk_aip_ipId", columnNames = "ip_id") })
+        uniqueConstraints = { @UniqueConstraint(name = "uk_aip_ipId", columnNames = "aip_id") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
-@NamedEntityGraph(name = "graph.aip.tags", attributeNodes = { @NamedAttributeNode("tags") })
 public class AIPEntity {
 
     /**
      * Max urn size
      */
-    private static final int MAX_URN_SIZE = 128;
+    public static final int MAX_URN_SIZE = 128;
 
     /**
      * The id
@@ -68,8 +64,8 @@ public class AIPEntity {
      * private Id for the application, it's a {@link UniformResourceName} but due to the need of retrieving all AIP's
      * version(which is in {@link UniformResourceName}) it's mapped to a String, validated as a URN
      */
-    @Column(name = "ip_id", length = MAX_URN_SIZE)
-    private String ipId;
+    @Column(name = "aip_id", length = MAX_URN_SIZE)
+    private String aipId;
 
     /**
      * The aip sip id
@@ -78,17 +74,15 @@ public class AIPEntity {
     private String sipId;
 
     /**
-     * The aip metadata tags
+     * Provider id
      */
-    @ElementCollection
-    @CollectionTable(name = "t_aip_tag", joinColumns = @JoinColumn(name = "aip_id"),
-            foreignKey = @javax.persistence.ForeignKey(name = "fk_aip_tag_aip_id"))
-    private Set<String> tags;
+    @Column(name = "provider_id", length = 100)
+    private String providerId;
 
     /**
-     * State of this AIP
+     * AIP state
      */
-    @Column
+    @Column(length = 32)
     @Enumerated(EnumType.STRING)
     private AIPState state;
 
@@ -106,7 +100,8 @@ public class AIPEntity {
     /**
      * Submission Date into REGARDS
      */
-    @Column
+    @Column(name = "submission_date")
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime submissionDate;
 
     /**
@@ -117,6 +112,14 @@ public class AIPEntity {
     private AIP aip;
 
     /**
+     * The REGARDS session identifier used while creating this entity
+     */
+    @NotNull(message = "Session is required")
+    @ManyToOne
+    @JoinColumn(name = "session", foreignKey = @ForeignKey(name = "fk_aip_session"))
+    private AIPSession session;
+
+    /**
      * Default constructor
      */
     public AIPEntity() {
@@ -125,15 +128,17 @@ public class AIPEntity {
     /**
      * Constructor initializing the aip entity from an actual aip
      * @param aip
+     * @param aipSession
      */
-    public AIPEntity(AIP aip) {
-        this.ipId = aip.getId().toString();
-        this.sipId = aip.getSipId();
-        this.tags = Sets.newHashSet(aip.getTags());
+    public AIPEntity(AIP aip, AIPSession aipSession) {
+        this.aipId = aip.getId().toString();
+        this.sipId = aip.getSipId().orElse(null);
+        this.providerId = aip.getProviderId();
         this.state = aip.getState();
         this.lastEvent = aip.getLastEvent();
         this.submissionDate = aip.getSubmissionEvent().getDate();
         this.aip = aip;
+        this.session = aipSession;
     }
 
     /**
@@ -154,16 +159,24 @@ public class AIPEntity {
     /**
      * @return the ip id
      */
-    public String getIpId() {
-        return ipId;
+    public String getAipId() {
+        return aipId;
+    }
+
+    public UniformResourceName getAipIdUrn() {
+        return UniformResourceName.fromString(aipId);
     }
 
     /**
      * Set the ip id
-     * @param ipId
+     * @param aipId
      */
-    public void setIpId(String ipId) {
-        this.ipId = ipId;
+    public void setAipId(String aipId) {
+        this.aipId = aipId;
+    }
+
+    public void setAipId(UniformResourceName aipId) {
+        this.aipId = aipId.toString();
     }
 
     /**
@@ -171,6 +184,10 @@ public class AIPEntity {
      */
     public String getSipId() {
         return sipId;
+    }
+
+    public UniformResourceName getSipIdUrn() {
+        return UniformResourceName.fromString(sipId);
     }
 
     /**
@@ -181,19 +198,8 @@ public class AIPEntity {
         this.sipId = sipId;
     }
 
-    /**
-     * @return the tags
-     */
-    public Set<String> getTags() {
-        return tags;
-    }
-
-    /**
-     * Set the tags
-     * @param tags
-     */
-    public void setTags(Set<String> tags) {
-        this.tags = tags;
+    public void setSipId(UniformResourceName sipId) {
+        this.sipId = sipId.toString();
     }
 
     /**
@@ -249,6 +255,21 @@ public class AIPEntity {
     }
 
     /**
+     * @return the session identifier
+     */
+    public AIPSession getSession() {
+        return session;
+    }
+
+    /**
+     * set the session identifier
+     * @param session session id
+     */
+    public void setSession(AIPSession session) {
+        this.session = session;
+    }
+
+    /**
      * Set the aip
      * @param aip
      */
@@ -267,12 +288,12 @@ public class AIPEntity {
 
         AIPEntity that = (AIPEntity) o;
 
-        return ipId != null ? ipId.equals(that.ipId) : that.ipId == null;
+        return aipId != null ? aipId.equals(that.aipId) : that.aipId == null;
     }
 
     @Override
     public int hashCode() {
-        return ipId != null ? ipId.hashCode() : 0;
+        return aipId != null ? aipId.hashCode() : 0;
     }
 
     public boolean isRetry() {
@@ -281,5 +302,13 @@ public class AIPEntity {
 
     public void setRetry(boolean retry) {
         this.retry = retry;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
     }
 }

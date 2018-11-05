@@ -18,30 +18,33 @@
  */
 package fr.cnes.regards.modules.storage.domain;
 
-import javax.annotation.Nullable;
+import java.util.Optional;
 
 import fr.cnes.regards.framework.oais.builder.IPBuilder;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 
 /**
- *
  * AIP Builder. Used to create AIP.
  * @author Marc Sordi
- *
  */
 public class AIPBuilder extends IPBuilder<AIP> {
 
     /**
      * Init AIP builder
-     * @param ipId required information package identifier
-     * @param sipId SIP identifier (may be null)
-     * @param entityType
+     * @param aipId required archival information package identifier
+     * @param sipId optional submission information package identifier (may be null!)
+     * @param providerId required provider id
+     * @param entityType entity type
+     * @param session acquisition session
      */
-    public AIPBuilder(UniformResourceName ipId, @Nullable String sipId, EntityType entityType) {
+    public AIPBuilder(UniformResourceName aipId, Optional<UniformResourceName> sipId, String providerId,
+            EntityType entityType, String session) {
         super(AIP.class, entityType);
-        ip.setId(ipId);
-        ip.setSipId(sipId);
+        ip.setId(aipId);
+        ip.setSipId(sipId.orElse(null));
+        ip.setProviderId(providerId);
+        getPDIBuilder().setSession(session);
     }
 
     /**

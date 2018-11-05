@@ -66,7 +66,7 @@ public interface IAipClient {
     /**
      * Controller path for bulk aip requests deletion
      */
-    public static final String AIP_BULK_DELETE = "/bulkdelete";
+    String AIP_BULK_DELETE = "/bulkdelete";
 
     /**
      * Client path for indexing
@@ -106,22 +106,22 @@ public interface IAipClient {
     /**
      * Client path using aip ip id and file checksum as path variable
      */
-    String DOWLOAD_AIP_FILE = "/{ip_id}/files/{checksum}";
+    String DOWNLOAD_AIP_FILE = "/{ip_id}/files/{checksum}";
 
     /**
      * Retrieve a page of aip metadata according to the given parameters
-     * @param pState state the aips should be in
-     * @param pFrom date after which the aip should have been added to the system
-     * @param pTo date before which the aip should have been added to the system
-     * @param pPage page number
+     * @param state state the aips should be in
+     * @param from date after which the aip should have been added to the system
+     * @param to date before which the aip should have been added to the system
+     * @param page page number
      * @param pSize page size
      * @return page of aip metadata respecting the constrains
      */
     @RequestMapping(method = RequestMethod.GET)
     ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(
-            @RequestParam(name = "state", required = false) AIPState pState,
-            @RequestParam(name = "from", required = false) OffsetDateTime pFrom,
-            @RequestParam(name = "to", required = false) OffsetDateTime pTo, @RequestParam("page") int pPage,
+            @RequestParam(name = "state", required = false) AIPState state,
+            @RequestParam(name = "from", required = false) OffsetDateTime from,
+            @RequestParam(name = "to", required = false) OffsetDateTime to, @RequestParam("page") int page,
             @RequestParam("size") int pSize);
 
     /**
@@ -141,7 +141,7 @@ public interface IAipClient {
      * Same than {@link IAipClient#storeRetryUnit(String)} but for a bunch of aips
      */
     @RequestMapping(method = RequestMethod.POST, value = RETRY_STORE_PATH)
-    ResponseEntity<List<RejectedAip>> storeRetry(@RequestBody @Valid Set<String> aipIpIds);
+    ResponseEntity<List<RejectedAip>> storeRetry(@RequestBody @Valid Set<String> aipIds);
 
     /**
      * Allows to ask for the storage of an aip which has failed
@@ -155,24 +155,27 @@ public interface IAipClient {
      * @return list of sip for which we could not delete the linked aips
      */
     @RequestMapping(value = AIP_BULK_DELETE, method = RequestMethod.POST)
-    public ResponseEntity<List<RejectedSip>> deleteAipFromSips(@RequestBody Set<String> sipIpIds);
+    ResponseEntity<List<RejectedSip>> deleteAipFromSips(@RequestBody Set<String> sipIds);
+
+    /**
+     * Delete an aip, represented by its ip id
+     */
+    @RequestMapping(value = ID_PATH, method = RequestMethod.DELETE)
+    ResponseEntity<String> deleteAip(@PathVariable(name = "ip_id") String ipId);
 
     /**
      * Retrieve the meta data of files associated to an aip, represented by its ip id
      * @return list of files meta data associated to an aip
      */
     @RequestMapping(value = OBJECT_LINK_PATH, method = RequestMethod.GET)
-    ResponseEntity<List<OAISDataObject>> retrieveAIPFiles(@PathVariable("ip_id") @Valid String pIpId);
+    ResponseEntity<List<OAISDataObject>> retrieveAIPFiles(@PathVariable("ip_id") @Valid String ipId);
 
     /**
-     * Retrieve a page of the different versions of an aip, represented by its ip id
-     * @param pPage page number
-     * @param pSize page size
-     * @return list of ip ids of the different versions of an aip
+     * Retrieve all versions of an aip, represented by its ip id
+     * @return list of all ip ids versions of an aip
      */
     @RequestMapping(value = HISTORY_PATH, method = RequestMethod.GET)
-    ResponseEntity<List<String>> retrieveAIPVersionHistory(@PathVariable("ip_id") @Valid UniformResourceName pIpId,
-            @RequestParam("page") int pPage, @RequestParam("size") int pSize);
+    ResponseEntity<List<String>> retrieveAIPVersionHistory(@PathVariable("ip_id") @Valid UniformResourceName ipId);
 
     /**
      * Request that files are made available for downloading
@@ -181,7 +184,15 @@ public interface IAipClient {
     @RequestMapping(path = PREPARE_DATA_FILES, method = RequestMethod.POST)
     ResponseEntity<AvailabilityResponse> makeFilesAvailable(@RequestBody AvailabilityRequest availabilityRequest);
 
-    @RequestMapping(path = DOWLOAD_AIP_FILE, method = RequestMethod.GET,
+    @RequestMapping(path = DOWNLOAD_AIP_FILE, method = RequestMethod.GET,
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     Response downloadFile(@PathVariable("ip_id") String aipId, @PathVariable("checksum") String checksum);
+
+    /**
+     * Update an aip, represented by its ip id, thanks to the provided pojo
+     * @return updated aip
+     */
+    @RequestMapping(value = ID_PATH, method = RequestMethod.PUT,
+            consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
+    ResponseEntity<Void> updateAip(@PathVariable(name = "ip_id") String ipId, @RequestBody @Valid AIP updated);
 }

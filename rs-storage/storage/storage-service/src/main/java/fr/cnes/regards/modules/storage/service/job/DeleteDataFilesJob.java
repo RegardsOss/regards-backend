@@ -27,7 +27,7 @@ public class DeleteDataFilesJob extends AbstractStoreFilesJob {
     protected void doRun(Map<String, JobParameter> parameterMap) {
         Long confIdToUse = parameterMap.get(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME).getValue();
         try {
-            IDataStorage storagePlugin = pluginService.getPlugin(confIdToUse);
+            IDataStorage<IWorkingSubset> storagePlugin = pluginService.getPlugin(confIdToUse);
             // now that we have the plugin instance, lets retrieve the aip from the job parameters and ask the plugin to do the deletion
             IWorkingSubset workingSubset = parameterMap.get(WORKING_SUB_SET_PARAMETER_NAME).getValue();
             try {
@@ -35,7 +35,8 @@ public class DeleteDataFilesJob extends AbstractStoreFilesJob {
             } catch (IllegalStateException e) {
                 throw new IllegalStateException(
                         String.format("Could not delete data for plugin configuration with label: %s",
-                                      pluginService.getPluginConfiguration(confIdToUse).getLabel()), e);
+                                      pluginService.getPluginConfiguration(confIdToUse).getLabel()),
+                        e);
             }
         } catch (ModuleException e) {
             //throwing new runtime allows us to make the job fail.

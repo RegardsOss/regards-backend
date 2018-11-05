@@ -28,6 +28,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.StringJoiner;
 
@@ -40,6 +42,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.utils.file.DownloadUtils;
@@ -48,6 +51,7 @@ import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IProgressManager;
+import fr.cnes.regards.modules.storage.domain.plugin.PluginConfUpdatable;
 import fr.cnes.regards.modules.storage.domain.plugin.WorkingSubsetWrapper;
 
 /**
@@ -174,8 +178,7 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
             return;
         }
         //check if file is already at the right place or not. Unless we are instructed not to(for updates for example)
-        if (!replaceMode && (data.getUrls().stream().map(url -> Paths.get(url.getPath()))
-                .filter(path -> Paths.get(fullPathToFile).equals(path)).count() != 0)) {
+        if (!replaceMode && Files.exists(Paths.get(fullPathToFile))) {
             Long fileSize = Paths.get(fullPathToFile).toFile().length();
             data.setFileSize(fileSize);
             //if it is, there is nothing to move/copy, we just need to say to the system that the file is stored successfully
@@ -196,7 +199,7 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
                         .format("Error trying to retrieve file(checksum: %s). We could not find any accessible url(Actual urls: %s)",
                                 data.getChecksum(), stringedUrls.toString());
                 LOG.error(errorMsg);
-                progressManager.storageFailed(data, Optional.of(new URL(fullPathToFile)), errorMsg);
+                progressManager.storageFailed(data, Optional.of(new URL("file", "", fullPathToFile)), errorMsg);
                 return;
             }
             boolean downloadOk = DownloadUtils.downloadAndCheckChecksum(sourceUrl, Paths.get(fullPathToFile),
@@ -271,5 +274,28 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
     @Override
     public InputStream retrieve(StorageDataFile data) throws IOException {
         return Files.newInputStream(Paths.get(getStorageLocation(data)));
+    }
+
+    @Override
+    public PluginConfUpdatable allowConfigurationUpdate(PluginConfiguration newConfiguration,
+            PluginConfiguration currentConfiguration, boolean filesAlreadyStored) {
+        // Only the baseStorageDirectory cannot be changed if files are already stored
+        String currentLocation = currentConfiguration.getParameterValue(BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME);
+        String newLocation = newConfiguration.getParameterValue(BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME);
+        if (filesAlreadyStored && !currentLocation.equals(newLocation)) {
+            return PluginConfUpdatable.preventUpdate(String
+                    .format("Files are already stored in the base location %s. You can't modify this parameter. Maybe you want to create a new configuration for the %s location?",
+                            currentLocation, newLocation));
+        } else {
+            return PluginConfUpdatable.allowUpdate();
+        }
+
+    }
+
+    @Override
+    public Map<String, Object> getDiagnosticInfo() {
+        Map<String, Object> diagInfo = new HashMap<>();
+        diagInfo.put("Plugin Id", "Local");
+        return diagInfo;
     }
 }

@@ -16,8 +16,34 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
+package fr.cnes.regards.modules.storage.domain.plugin;
+
+import java.util.Collection;
+import java.util.Set;
+
+import com.google.common.collect.Sets;
+
+import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
+
 /**
- * @author Sylvain Vissiere-Guerinet
- *
+ * Default implementation for simple file workingsubsets.
+ * @author Sébastien Binda
  */
-package fr.cnes.regards.modules.storage.dao;
+public class DefaultWorkingSubset implements IWorkingSubset {
+
+    /**
+     * Raw {@link StorageDataFile}s associate
+     */
+    private final Set<StorageDataFile> datafiles = Sets.newHashSet();
+
+    public DefaultWorkingSubset(Collection<StorageDataFile> dataFiles) {
+        super();
+        this.datafiles.addAll(dataFiles);
+    }
+
+    @Override
+    public Set<StorageDataFile> getDataFiles() {
+        return datafiles;
+    }
+
+}

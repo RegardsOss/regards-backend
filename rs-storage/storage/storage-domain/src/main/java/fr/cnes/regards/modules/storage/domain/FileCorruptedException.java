@@ -7,6 +7,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
  *
  * @author Sylvain VISSIERE-GUERINET
  */
+@SuppressWarnings("serial")
 public class FileCorruptedException extends ModuleException {
 
     /**

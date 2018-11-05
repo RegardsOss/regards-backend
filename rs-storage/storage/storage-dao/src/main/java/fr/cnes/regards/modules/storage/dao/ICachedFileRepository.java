@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import fr.cnes.regards.modules.storage.domain.database.CachedFile;
@@ -68,21 +70,28 @@ public interface ICachedFileRepository extends JpaRepository<CachedFile, Long> {
      * @param pQueued {@link CachedFileState}
      * @return {@link Set}<{@link CachedFile}
      */
-    Set<CachedFile> findAllByState(CachedFileState pQueued);
+    Page<CachedFile> findAllByState(CachedFileState pQueued, Pageable pageable);
+
+    /**
+     * Count number of {@link CachedFile} for the given {@link CachedFileState}
+     * @param pQueued
+     * @return
+     */
+    Long countByState(CachedFileState pQueued);
 
     /**
      * Retrieve all {@link CachedFile}s for the given {@link CachedFileState} ordered by last request date
      * @param pQueued
      * @return {@link Set}<{@link CachedFile}
      */
-    Set<CachedFile> findByStateOrderByLastRequestDateAsc(CachedFileState pQueued);
+    Page<CachedFile> findByStateOrderByLastRequestDateAsc(CachedFileState pQueued, Pageable pageable);
 
     /**
      * Retrieve all {@link CachedFile}s for the given {@link CachedFileState} ordered by last request date
      * @param pQueued
      * @return {@link Set}<{@link CachedFile}
      */
-    Set<CachedFile> findByStateOrderByLastRequestDateDesc(CachedFileState pQueued);
+    Page<CachedFile> findByStateOrderByLastRequestDateDesc(CachedFileState pQueued, Pageable pageable);
 
     /**
      * Retrieve all {@link CachedFile}s for the given {@link CachedFileState} and {@link OffsetDateTime} last request date before the given one
@@ -90,13 +99,13 @@ public interface ICachedFileRepository extends JpaRepository<CachedFile, Long> {
      * @param pQueued
      * @return {@link Set}<{@link CachedFile}
      */
-    Set<CachedFile> findByStateAndLastRequestDateBeforeOrderByLastRequestDateAsc(CachedFileState pQueued,
-            OffsetDateTime pLastRequestDate);
+    Page<CachedFile> findByStateAndLastRequestDateBeforeOrderByLastRequestDateAsc(CachedFileState pQueued,
+            OffsetDateTime pLastRequestDate, Pageable pageable);
 
     /**
      * Retrieve all {@link CachedFile}s with expiration date before the given {@link OffsetDateTime}
      * @param pEpirationDate {@link OffsetDateTime}
      * @return {@link Set}<{@link CachedFile}
      */
-    Set<CachedFile> findByExpirationBefore(OffsetDateTime pEpirationDate);
+    Page<CachedFile> findByExpirationBefore(OffsetDateTime pEpirationDate, Pageable pageable);
 }

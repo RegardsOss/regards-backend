@@ -1,11 +1,16 @@
 package fr.cnes.regards.modules.storage.dao;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Sets;
@@ -53,6 +58,25 @@ public class DataFileDao implements IDataFileDao {
         } else {
             return Sets.newHashSet();
         }
+    }
+
+    @Override
+    public long findAllByStateAndAipSession(DataFileState stored, String session) {
+        return repository.countByStateAndAipEntitySessionId(stored, session);
+    }
+
+    @Override
+    public Page<StorageDataFile> findAllByState(DataFileState state, Pageable page) {
+        return repository.findAllByState(state, page);
+    }
+
+    @Override
+    public Page<StorageDataFile> findPageByState(DataFileState state, Pageable pageable) {
+        // first lets get the storageDataFile without any join(no graph)
+        Page<Long> ids = repository.findIdPageByState(state, pageable);
+        Set<StorageDataFile> pageContent = repository.findAllDistinctByIdIn(ids.getContent());
+        return new PageImpl<>(pageContent.stream().collect(Collectors.toList()),
+                new PageRequest(ids.getNumber(), ids.getSize()), ids.getTotalElements());
     }
 
     @Override
@@ -108,12 +132,12 @@ public class DataFileDao implements IDataFileDao {
     }
 
     @Override
-    public Optional<StorageDataFile> findByAipAndType(AIP aip, DataType dataType) {
+    public Set<StorageDataFile> findByAipAndType(AIP aip, DataType dataType) {
         Optional<AIPEntity> aipDatabase = getAipDataBase(aip);
         if (aipDatabase.isPresent()) {
             return repository.findByAipEntityAndDataType(aipDatabase.get(), dataType);
         } else {
-            return Optional.empty();
+            return Sets.newHashSet();
         }
     }
 
@@ -138,6 +162,15 @@ public class DataFileDao implements IDataFileDao {
     }
 
     @Override
+    public Page<StorageDataFile> findPageByChecksumIn(Set<String> checksums, Pageable pageable) {
+        // first lets get the storageDataFile without any join(no graph)
+        Page<Long> ids = repository.findIdPageByChecksumIn(checksums, pageable);
+        List<StorageDataFile> pageContent = repository.findAllDistinctByIdIn(ids.getContent()).stream()
+                .collect(Collectors.toList());
+        return new PageImpl<>(pageContent, new PageRequest(ids.getNumber(), ids.getSize()), ids.getTotalElements());
+    }
+
+    @Override
     public void remove(StorageDataFile data) {
         repository.delete(data.getId());
     }
@@ -147,16 +180,48 @@ public class DataFileDao implements IDataFileDao {
         return repository.getMonitoringAggregation();
     }
 
+    @Override
+    public long countByChecksumAndStorageDirectory(String checksum, String storageDirectory) {
+        if (storageDirectory != null) {
+            return repository.countByChecksumAndStorageDirectory(checksum, storageDirectory);
+        }
+        return repository.countByChecksum(checksum);
+    }
+
+    @Override
+    public long countByAip(AIP aip) {
+        Optional<AIPEntity> fromDbOpt = getAipDataBase(aip);
+        if (fromDbOpt.isPresent()) {
+            return repository.countByAipEntity(fromDbOpt.get());
+        } else {
+            return 0;
+        }
+    }
+
     private Optional<AIPEntity> getAipDataBase(AIP aip) {
-        return aipRepo.findOneByIpId(aip.getId().toString());
+        return aipRepo.findOneByAipId(aip.getId().toString());
     }
 
     private Collection<AIPEntity> findAipsDataBase(Collection<AIP> aips) {
-        return aipRepo.findAllByIpIdIn(aips.stream().map(aip -> aip.getId().toString()).collect(Collectors.toSet()));
+        return aipRepo.findAllByAipIdIn(aips.stream().map(aip -> aip.getId().toString()).collect(Collectors.toSet()));
     }
 
-
     private Optional<AIPEntity> getAipDataBase(StorageDataFile dataFile) {
-        return aipRepo.findOneByIpId(dataFile.getAipEntity().getIpId());
+        return aipRepo.findOneByAipId(dataFile.getAipEntity().getAipId());
+    }
+
+    @Override
+    public long countByAipAndStateNotIn(AIP aip, Collection<DataFileState> dataFilesStates) {
+        Optional<AIPEntity> fromDbOpt = getAipDataBase(aip);
+        if (fromDbOpt.isPresent()) {
+            return repository.countByAipEntityAndStateNotIn(fromDbOpt.get(), dataFilesStates);
+        } else {
+            return 0;
+        }
+    }
+
+    @Override
+    public long findAllByAipSession(String id) {
+        return repository.countByAipEntitySessionId(id);
     }
 }

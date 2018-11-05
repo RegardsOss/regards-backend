@@ -1,9 +1,12 @@
 <#setting datetime_format='yyyy-MM-dd HH:mm:ss z'>
-    <h1>REGARDS - Some file were not handled by a data storage</h1>
-    <div>
+    <b>REGARDS - Some file were not handled by a data storage</b><br/>
+    <p>
         One or more files could not be handled by their data storage:<br/>
+        <ul>
         <#list dataFilesMap as dataFile, reason>
-            - File (urls:<#list dataFile.urls as dataFileUrl> ${dataFileUrl}</#list>) associated to aip ${dataFile.aipEntity.id} could not be handled by this data
-            storage ${dataStorage.label}<#if reason??>, for the following reason: ${reason}</#if>.<br/>
+            <li>File (urls:<#list dataFile.urls as dataFileUrl> ${dataFileUrl}</#list>) associated
+                to aip ${dataFile.aipEntity.id} could not be handled by this data storage ${dataStorage.label}<#if reason??>,
+                    for the following reason: ${reason}</#if>.</li>
         </#list>
-    </div>
+        </ul>
+    </p>

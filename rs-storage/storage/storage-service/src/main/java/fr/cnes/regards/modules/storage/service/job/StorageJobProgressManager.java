@@ -102,8 +102,8 @@ public class StorageJobProgressManager implements IProgressManager {
 
     @Override
     public void storageSucceed(StorageDataFile dataFile, URL storedUrl, Long storedFileSize) {
-        LOG.debug("[STORAGE SUCCESS] - PluginConf id : {} - Store success for file {} in {} (checksum: {}).",
-                  storageConfId, dataFile.getName(), storedUrl.toString(), dataFile.getChecksum());
+        LOG.debug("[STORAGE SUCCESS] - PluginConf id : {} - Store success for file {} (id={})in {} (checksum: {}).",
+                  storageConfId, dataFile.getName(), dataFile.getId(), storedUrl.toString(), dataFile.getChecksum());
         dataFile.setFileSize(storedFileSize);
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.STORE,
                 StorageEventType.SUCCESSFULL, storageConfId, storedUrl);
@@ -138,6 +138,7 @@ public class StorageJobProgressManager implements IProgressManager {
                   storageConfId, dataFile.getName(), failedUrl.orElse(null), dataFile.getChecksum(), failureCause);
         DataStorageEvent dataStorageEvent = new DataStorageEvent(dataFile, StorageAction.DELETION,
                 StorageEventType.FAILED, storageConfId, failedUrl.orElse(null));
+        dataStorageEvent.setFailureCause(failureCause);
         handledDataFile.add(dataFile);
         job.advanceCompletion();
         failureCauses.add(failureCause);

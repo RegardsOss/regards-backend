@@ -18,11 +18,9 @@ public class RejectedSip {
 
     /**
      * Constructor setting the parameters as attributes
-     * @param sipIpId
-     * @param reason
      */
-    public RejectedSip(String sipIpId, String reason) {
-        this.sipId = sipIpId;
+    public RejectedSip(String sipId, String reason) {
+        this.sipId = sipId;
         this.reason = reason;
     }
 
@@ -61,7 +59,7 @@ public class RejectedSip {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
         }
 

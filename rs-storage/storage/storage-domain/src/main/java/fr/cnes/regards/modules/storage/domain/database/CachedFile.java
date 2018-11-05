@@ -1,6 +1,8 @@
 package fr.cnes.regards.modules.storage.domain.database;
 
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -38,13 +40,13 @@ public class CachedFile {
      * The cached file checksum
      */
     @NotNull
-    @Column
+    @Column(length = 128)
     private String checksum;
 
     /**
      * the cached file size
      */
-    @Column
+    @Column(name = "file_size")
     private Long fileSize;
 
     /**
@@ -57,12 +59,14 @@ public class CachedFile {
      * expiration date of the file into the cache
      */
     @Column
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime expiration;
 
     /**
      * Date of the last request to make the file available.
      */
-    @Column
+    @Column(name = "last_request_date")
+    @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime lastRequestDate;
 
     /**
@@ -75,7 +79,7 @@ public class CachedFile {
     /**
      * Causes why a file could not be set into the cache
      */
-    @Column(length = 512)
+    @Column(length = 512, name = "failure_cause")
     private String failureCause;
 
     /**

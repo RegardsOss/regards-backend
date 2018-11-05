@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.domain.plugin;
 
-import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;

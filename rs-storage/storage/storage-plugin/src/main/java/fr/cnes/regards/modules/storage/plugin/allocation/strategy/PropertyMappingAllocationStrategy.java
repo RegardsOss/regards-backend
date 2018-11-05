@@ -32,7 +32,6 @@ import com.google.common.collect.Multimap;
 import com.google.gson.Gson;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
@@ -40,15 +39,18 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
+import fr.cnes.regards.modules.storage.domain.plugin.DispatchErrors;
 import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 
 /**
- * Allocation strategy that map a given property value to a {@link IDataStorage}
+ * Allocation strategy that map a given property value to a {@link IDataStorage}.
  * @author Sylvain VISSIERE-GUERINET
  */
-@Plugin(author = "REGARDS Team", description = "Allocation Strategy plugin that map a property value to a data storage",
+@Plugin(author = "REGARDS Team",
+        description = "Allocation Strategy plugin that map a property value to a data storage. "
+                + "In case the property is not set or the value is not mapped, it can be dispatched to a default datastorage.",
         id = "PropertyMappingAllocationStrategy", version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3",
         owner = "CNES", url = "https://regardsoss.github.io/")
 public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
@@ -65,10 +67,14 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
 
     public static final String QUICKLOOK_DATA_STORAGE_CONFIGURATION_ID = "Quicklook_data_storage_configuration_id";
 
+    public static final String DEFAULT_DATA_STORAGE_CONFIGURATION_ID = "Default_data_storage_configuration_id";
+
     /**
      * Class logger
      */
     private static final Logger LOG = LoggerFactory.getLogger(PropertyMappingAllocationStrategy.class);
+
+    private static final String STORAGE_DIRECTORY = "Storage_directory";
 
     /**
      * {@link Gson} instance
@@ -100,6 +106,14 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
             label = "Quicklook data storage configuration id")
     private Long quicklookDataStorageConfigurationId;
 
+    @PluginParameter(name = DEFAULT_DATA_STORAGE_CONFIGURATION_ID,
+            description = "Data storage to use if there is no other property value match",
+            label = "Default data storage configuration id", optional = true)
+    private Long defaultDataStorageConfId;
+
+    @PluginParameter(name = STORAGE_DIRECTORY, label = "Storage directory for plugin that requires it", optional = true)
+    private String storageDirectory;
+
     /**
      * Plugin init method
      */
@@ -118,35 +132,53 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
     }
 
     @Override
-    public Multimap<Long, StorageDataFile> dispatch(Collection<StorageDataFile> dataFilesToHandle) {
+    public Multimap<Long, StorageDataFile> dispatch(Collection<StorageDataFile> dataFilesToHandle,
+            DispatchErrors errors) {
         Multimap<Long, StorageDataFile> dispatch = HashMultimap.create();
         // First lets construct a map, which is way better to manipulate
-        Map<String, Long> valueConfIdMap = propertyDataStorageMappings.stream().collect(Collectors
-                .toMap(PropertyDataStorageMapping::getPropertyValue, PropertyDataStorageMapping::getDataStorageConfId));
+        Map<String, Long> valueConfIdMap = propertyDataStorageMappings.stream().collect(Collectors.toMap(
+                PropertyDataStorageMapping::getPropertyValue,
+                PropertyDataStorageMapping::getDataStorageConfId));
         for (StorageDataFile dataFile : dataFilesToHandle) {
+            if (storageDirectory != null) {
+                dataFile.setStorageDirectory(storageDirectory);
+            }
             // now lets extract the property value from the AIP
             if (dataFile.isOnlineMandatory()) {
                 //This allocation strategy only allows files to be stored into 1 DataStorage
-                dataFile.increaseNotYetStoredBy();
                 dispatch.put(quicklookDataStorageConfigurationId, dataFile);
             } else {
                 try {
                     String propertyValue = JsonPath.read(gson.toJson(dataFile.getAip()), propertyPath);
                     Long chosenOne = valueConfIdMap.get(propertyValue);
                     if (chosenOne == null) {
-                        LOG.error(String.format(
-                                                "File(urls: %s) could not be associated to any data storage the allocation strategy do not have any mapping for the value of the property.",
-                                                dataFile.getUrls()));
+                        // in case the value is unknown, lets set it into the default
+                        if (defaultDataStorageConfId != null) {
+                            dispatch.put(defaultDataStorageConfId, dataFile);
+                        } else {
+                            String failureCause = String.format(
+                                    "File(urls: %s) could not be associated to any data storage the allocation strategy do not have any mapping for the value of the property.",
+                                    dataFile.getUrls());
+                            LOG.error(failureCause);
+                            errors.addDispatchError(dataFile, failureCause);
+                        }
                     } else {
                         //This allocation strategy only allows files to be stored into 1 DataStorage
-                        dataFile.increaseNotYetStoredBy();
                         dispatch.put(chosenOne, dataFile);
                     }
                 } catch (PathNotFoundException e) {
-                    LOG.error(String.format(
-                                            "File(url: %s) could not be associated to any data storage because the aip associated(ipId: %s) do not have the following property: %s",
-                                            dataFile.getUrls(), dataFile.getAip().getId(), propertyPath),
-                              e);
+                    // in case the property is not present, lets set it into the default too.
+                    if (defaultDataStorageConfId != null) {
+                        dispatch.put(defaultDataStorageConfId, dataFile);
+                    } else {
+                        String failureCause = String.format(
+                                "File(url: %s) could not be associated to any data storage because the aip associated(ipId: %s) do not have the following property: %s",
+                                dataFile.getUrls(),
+                                dataFile.getAip().getId(),
+                                propertyPath);
+                        LOG.error(failureCause, e);
+                        errors.addDispatchError(dataFile, failureCause);
+                    }
                 }
             }
         }

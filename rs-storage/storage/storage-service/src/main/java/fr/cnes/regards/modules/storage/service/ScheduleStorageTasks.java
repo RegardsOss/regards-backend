@@ -21,7 +21,11 @@ package fr.cnes.regards.modules.storage.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -36,7 +40,17 @@ import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
 /**
  * Enable storage task schedulers.
- *
+ * This component run multiple scheduled and periodically executed methods :
+ * <ul>
+ * <li>Cache purge: {@link #cleanCache()}</li>
+ * <li>Handle queued file: {@link #restoreToCache()}</li>
+ * <li>AIP data deletion: {@link #deleteData()}</li>
+ * <li>AIP metadata file deletion: {@link #deleteMetadata()}</li>
+ * <li>Data storage monitoring: {@link #monitorDataStorages()}</li>
+ * <li>AIP data storage: {@link #store()}</li>
+ * <li>AIP metadata storage: {@link #storeMetadata()}</li>
+ * <li>AIP metadata updates: {@link #handleUpdateRequests()}</li>
+ * </ul>
  * @author Marc Sordi
  * @author Sylvain Vissiere-Guerinet
  *
@@ -63,16 +77,26 @@ public class ScheduleStorageTasks {
     @Autowired
     private IDataStorageService dataStorageService;
 
-    @Scheduled(fixedDelayString = "${regards.storage.store.delay:60000}", initialDelay = 10000)
+    /**
+     * Number of created AIPs processed on each iteration by project
+     */
+    @Value("${regards.storage.aips.iteration.limit:100}")
+    private Integer aipIterationLimit;
+
+    @Scheduled(fixedDelayString = "${regards.storage.store.delay:30000}", initialDelay = 10000)
     public void store() throws ModuleException {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                aipService.store();
+                long count = 0;
+                long startTime = System.currentTimeMillis();
+                Page<AIP> createdAips = aipService
+                        .storePage(new PageRequest(0, aipIterationLimit, Direction.ASC, "id"));
+                count = count + createdAips.getNumberOfElements();
+                LOGGER.trace("AIP data scheduled in {}ms for {} aips", System.currentTimeMillis() - startTime, count);
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
-
         }
     }
 
@@ -81,36 +105,15 @@ public class ScheduleStorageTasks {
      * looking for all associated {@link StorageDataFile} states. An {@link AIP} is STORED
      * when all his {@link StorageDataFile}s are STORED.
      */
-    @Scheduled(fixedDelayString = "${regards.storage.check.aip.metadata.delay:60000}")
+    @Scheduled(fixedDelayString = "${regards.storage.check.aip.metadata.delay:30000}")
     public void storeMetadata() {
-        LOGGER.debug(" ------------------------> Update AIP storage informations - START<---------------------------- ");
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            aipService.storeMetadata();
-        }
-        LOGGER.debug(" ------------------------> Update AIP storage informations - END <---------------------------- ");
-    }
-
-    /*
-     * Non javadoc, but explanatory: due to settings only interfaces are proxyfied by spring, so we need to use a self
-     * reference on the interface to profit from transaction management from spring. This is a self reference because
-     * AIPService is annotated @Service with default component scope which is "spring' SINGLETON
-     */
-    @Scheduled(fixedDelayString = "${regards.storage.update.aip.metadata.delay:7200000}") // 2 hours
-    public void updateAlreadyStoredMetadata() {
-        // Then lets get AIP that should be stored again after an update
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
-            runtimeTenantResolver.forceTenant(tenant);
-            LOGGER.debug(String.format("[METADATA UPDATE DAEMON] Starting to prepare update jobs for tenant %s",
-                                       tenant));
-            aipService.updateAipMetadata();
-            LOGGER.debug(String.format("[METADATA UPDATE DAEMON] Update jobs for tenant %s have been scheduled",
-                                       tenant));
-            LOGGER.debug(String.format("[METADATA DELETION DAEMON] Starting to prepare deletion jobs for tenant %s",
-                                       tenant));
-            aipService.removeDeletedAIPMetadatas();
-            LOGGER.debug(String.format("[METADATA DELETION DAEMON] Deletion jobs for tenant %s have been scheduled",
-                                       tenant));
+            long startTime = System.currentTimeMillis();
+            long nbScheduled = aipService.storeMetadata();
+            LOGGER.trace("AIP metadata scheduled in {}ms for {} aips", System.currentTimeMillis() - startTime,
+                         nbScheduled);
+            runtimeTenantResolver.clearTenant();
         }
     }
 
@@ -121,11 +124,26 @@ public class ScheduleStorageTasks {
     public void deleteMetadata() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            LOGGER.debug(String.format("[METADATA DELETION DAEMON] Starting to prepare deletion jobs for tenant %s",
-                                       tenant));
-            aipService.removeDeletedAIPMetadatas();
-            LOGGER.debug(String.format("[METADATA DELETION DAEMON] Deletion jobs for tenant %s have been scheduled",
-                                       tenant));
+            long startTime = System.currentTimeMillis();
+            int nbDeleted = aipService.removeDeletedAIPMetadatas();
+            LOGGER.trace("AIP metadata delete scheduled in {}ms for {} aips", System.currentTimeMillis() - startTime,
+                         nbDeleted);
+            runtimeTenantResolver.clearTenant();
+        }
+    }
+
+    /**
+     * Periodicaly delete AIPs data in status TO_BE_DELETED. Delete physical file and reference in database.
+     */
+    @Scheduled(fixedDelayString = "${regards.storage.delete.aip.data.delay:120000}") // 2 minutes
+    public void deleteData() {
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            long startTime = System.currentTimeMillis();
+            Long nbScheduled = aipService.doDelete();
+            LOGGER.trace("AIP data delete scheduled in {}ms for {} aips", System.currentTimeMillis() - startTime,
+                         nbScheduled);
+            runtimeTenantResolver.clearTenant();
         }
     }
 
@@ -137,9 +155,9 @@ public class ScheduleStorageTasks {
     public void cleanCache() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            LOGGER.debug(" -----------------> Clean cache for tenant {} START <-----------------------", tenant);
-            cachedFileService.purge();
-            LOGGER.debug(" -----------------> Clean cache for tenant {} END <-----------------------", tenant);
+            long startTime = System.currentTimeMillis();
+            int nbPurged = cachedFileService.purge();
+            LOGGER.trace("Cache clean done in {}ms for {} files", System.currentTimeMillis() - startTime, nbPurged);
             runtimeTenantResolver.clearTenant();
         }
     }
@@ -152,11 +170,10 @@ public class ScheduleStorageTasks {
     public void restoreToCache() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
-            LOGGER.debug(" -----------------> Handle queued cache restoration files for tenant {} START <-----------------------",
-                         tenant);
-            cachedFileService.restoreQueued();
-            LOGGER.debug(" -----------------> Handle queued cache restoration files for tenant {} END <-----------------------",
-                         tenant);
+            long startTime = System.currentTimeMillis();
+            int nbScheduled = cachedFileService.restoreQueued();
+            LOGGER.trace("Cache restoration done in {}ms for {} files", System.currentTimeMillis() - startTime,
+                         nbScheduled);
             runtimeTenantResolver.clearTenant();
         }
     }
@@ -166,7 +183,21 @@ public class ScheduleStorageTasks {
     public void monitorDataStorages() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             runtimeTenantResolver.forceTenant(tenant);
+            long startTime = System.currentTimeMillis();
             dataStorageService.monitorDataStorages();
+            LOGGER.trace("Data storages monitoring done in {}ms", System.currentTimeMillis() - startTime);
+            runtimeTenantResolver.clearTenant();
+        }
+    }
+
+    @Scheduled(fixedRateString = "${regards.storage.update.aips.rate.ms:30000}", initialDelay = 60 * 1000)
+    public void handleUpdateRequests() throws ModuleException {
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            long startTime = System.currentTimeMillis();
+            int nbRequestsHandled = aipService.handleUpdateRequests();
+            LOGGER.trace("Handle pending update requests done in {}ms for {} aips.",
+                         System.currentTimeMillis() - startTime, nbRequestsHandled);
             runtimeTenantResolver.clearTenant();
         }
     }

@@ -45,3 +45,5 @@ Thumbs.db
 ######################
 
 deliver_brutaly\.sh
+
+deliver_brutaly_vm-pre-prod\.sh

@@ -116,8 +116,6 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
     /**
      * Check that the given job parameters contains required parameters and that they are valid.
      *
-     * @return a map which keys are the job parameter name and its value the job parameter. This map contains no entry
-     *         if there is no parameter provided.
      * @throws JobParameterMissingException
      * @throws JobParameterInvalidException
      */

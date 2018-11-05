@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.storage.domain;
 
+import java.util.Optional;
+
+import org.hibernate.validator.constraints.NotBlank;
+
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -33,6 +37,12 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 public class AIP extends AbstractInformationPackage<UniformResourceName> {
 
     /**
+     * Provider id
+     */
+    @NotBlank(message = "Provider identifier is required")
+    private String providerId;
+
+    /**
      * SIP ID
      */
     private String sipId;
@@ -40,7 +50,6 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
     /**
      * State determined through different storage steps
      */
-    @GsonIgnore
     private AIPState state;
 
     @GsonIgnore
@@ -71,8 +80,15 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
     /**
      * @return the sip id
      */
-    public String getSipId() {
-        return sipId;
+    public Optional<String> getSipId() {
+        return Optional.ofNullable(sipId);
+    }
+
+    public Optional<UniformResourceName> getSipIdUrn() {
+        if (sipId == null) {
+            return Optional.empty();
+        }
+        return Optional.of(UniformResourceName.fromString(sipId));
     }
 
     /**
@@ -83,11 +99,50 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
         this.sipId = sipId;
     }
 
+    public void setSipId(UniformResourceName sipId) {
+        if (sipId != null) {
+            this.sipId = sipId.toString();
+        } else {
+            this.sipId = null;
+        }
+    }
+
     public boolean isRetry() {
         return retry;
     }
 
     public void setRetry(boolean retry) {
         this.retry = retry;
+    }
+
+    /**
+     * @return the session identifier linked to this AIP
+     */
+    public String getSession() {
+        return this.getProperties().getPdi().getProvenanceInformation().getSession();
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if ((o == null) || (getClass() != o.getClass())) {
+            return false;
+        }
+        return super.equals(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }

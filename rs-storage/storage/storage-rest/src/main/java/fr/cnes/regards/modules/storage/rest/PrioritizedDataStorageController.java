@@ -1,7 +1,26 @@
+/*
+ * Copyright 2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.storage.rest;
 
-import javax.validation.Valid;
 import java.util.List;
+
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
@@ -57,9 +76,9 @@ public class PrioritizedDataStorageController implements IResourceController<Pri
     @ResourceAccess(description = "create a prioritized data storage thanks to the wrapped plugin configuration")
     public ResponseEntity<Resource<PrioritizedDataStorage>> createPrioritizedDataStorage(
             @Valid @RequestBody PrioritizedDataStorage toBeCreated) throws ModuleException {
-        return new ResponseEntity<>(toResource(prioritizedDataStorageService
-                                                       .create(toBeCreated.getDataStorageConfiguration())),
-                                    HttpStatus.CREATED);
+        return new ResponseEntity<>(
+                toResource(prioritizedDataStorageService.create(toBeCreated.getDataStorageConfiguration())),
+                HttpStatus.CREATED);
     }
 
     @RequestMapping(method = RequestMethod.GET, path = ID_PATH)
@@ -105,45 +124,26 @@ public class PrioritizedDataStorageController implements IResourceController<Pri
     public Resource<PrioritizedDataStorage> toResource(PrioritizedDataStorage prioritizedDataStorage,
             Object... extras) {
         Resource<PrioritizedDataStorage> resource = new Resource<>(prioritizedDataStorage);
-        resourceService.addLink(resource,
-                                this.getClass(),
-                                "retrievePrioritizedDataStorages",
-                                LinkRels.LIST,
+        resourceService.addLink(resource, this.getClass(), "retrievePrioritizedDataStorages", LinkRels.LIST,
                                 MethodParamFactory.build(DataStorageType.class));
-        resourceService.addLink(resource,
-                                this.getClass(),
-                                "createPrioritizedDataStorage",
-                                LinkRels.CREATE,
+        resourceService.addLink(resource, this.getClass(), "createPrioritizedDataStorage", LinkRels.CREATE,
                                 MethodParamFactory.build(PrioritizedDataStorage.class));
-        resourceService.addLink(resource,
-                                this.getClass(),
-                                "retrievePrioritizedDataStorage",
-                                LinkRels.SELF,
+        resourceService.addLink(resource, this.getClass(), "retrievePrioritizedDataStorage", LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, prioritizedDataStorage.getId()));
-        resourceService.addLink(resource,
-                                this.getClass(),
-                                "deletePrioritizedDataStorage",
-                                LinkRels.DELETE,
-                                MethodParamFactory.build(Long.class, prioritizedDataStorage.getId()));
-        resourceService.addLink(resource,
-                                this.getClass(),
-                                "updatePrioritizedDataStorage",
-                                LinkRels.UPDATE,
+        resourceService.addLink(resource, this.getClass(), "updatePrioritizedDataStorage", LinkRels.UPDATE,
                                 MethodParamFactory.build(Long.class, prioritizedDataStorage.getId()),
                                 MethodParamFactory.build(PrioritizedDataStorage.class));
+        if (prioritizedDataStorageService.canDelete(prioritizedDataStorage)) {
+            resourceService.addLink(resource, this.getClass(), "deletePrioritizedDataStorage", LinkRels.DELETE,
+                                    MethodParamFactory.build(Long.class, prioritizedDataStorage.getId()));
+        }
         if (!prioritizedDataStorage.getPriority().equals(PrioritizedDataStorage.HIGHEST_PRIORITY)) {
-            resourceService.addLink(resource,
-                                    this.getClass(),
-                                    "increaseDataStoragePriority",
-                                    "up",
+            resourceService.addLink(resource, this.getClass(), "increaseDataStoragePriority", "up",
                                     MethodParamFactory.build(Long.class, prioritizedDataStorage.getId()));
         }
         if (!prioritizedDataStorage.getPriority()
                 .equals(prioritizedDataStorageService.getLowestPriority(prioritizedDataStorage.getDataStorageType()))) {
-            resourceService.addLink(resource,
-                                    this.getClass(),
-                                    "decreaseDataStoragePriority",
-                                    "down",
+            resourceService.addLink(resource, this.getClass(), "decreaseDataStoragePriority", "down",
                                     MethodParamFactory.build(Long.class, prioritizedDataStorage.getId()));
         }
         return resource;

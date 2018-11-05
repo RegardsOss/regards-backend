@@ -31,14 +31,16 @@ import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
  * @author Sylvain Vissiere-Guerinet
  *
  */
-@PluginInterface(description = "Interface for all AllocationStrategy plugin")
+@PluginInterface(description = "Interface for all AllocationStrategy plugin", allowMultipleConfigurationActive = false)
 @FunctionalInterface
 public interface IAllocationStrategy {
 
     /**
      * Given some DataFiles, dispatch them to the right DataStorage
      * @param dataFilesToHandle
+     * @param {@link DispatchErrors} errors during files dispatch. If an error occured during dispatch this object allows to specify the failure cause.
      * @return Multimap associating DataFiles to their respecting IDataStorage
      */
-    Multimap<Long, StorageDataFile> dispatch(Collection<StorageDataFile> dataFilesToHandle);
+    Multimap<Long, StorageDataFile> dispatch(Collection<StorageDataFile> dataFilesToHandle,
+            DispatchErrors dispatchErrors);
 }

@@ -21,21 +21,19 @@ package fr.cnes.regards.modules.storage.domain;
 /**
  * Represent the state of an AIP.
  * State transition from top to bottom unless indicated otherwise.
- * 
+ *
  * <pre>
- *              VALID
- *                |
- *             PENDING
- *             /     \
- *            /       \
- *           /         \
- *          /           \
- * STORAGE_ERROR -> STORING_METADATA
- *        |                 |     |^
- *        |                 |     |
- *        |                 |  UPDATED
- *        |                 |  /^
- *        |              STORED
+ *              VALID <------------------
+ *                |                     |
+ *             PENDING                  |
+ *             /     \                  |
+ *            /       \                 |
+ *           /  WRITING_METADATA        |
+ *          /           \               |
+ * STORAGE_ERROR <- STORING_METADATA    |
+ *        |                 |           |
+ *        |                 |           |
+ *        |              STORED----------
  *        |              /
  *        |             /
  *        |            /
@@ -47,7 +45,7 @@ package fr.cnes.regards.modules.storage.domain;
  *        |      /
  *        DELETED
  * </pre>
- * 
+ *
  * @author Sylvain Vissiere-Guerinet
  *
  */
@@ -61,6 +59,10 @@ public enum AIPState implements IAipState {
      */
     PENDING,
     /**
+     * Metadata has been scheduled to be written
+     */
+    WRITING_METADATA,
+    /**
      * Metadata storage has been scheduled
      */
     STORING_METADATA,
@@ -72,7 +74,6 @@ public enum AIPState implements IAipState {
      * Data or metadata storage has encountered a problem
      */
     STORAGE_ERROR,
-    UPDATED,
     /**
      * AIP has been logically deleted
      */

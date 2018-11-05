@@ -66,8 +66,9 @@ import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.domain.AIP;
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
-import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IProgressManager;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalWorkingSubset;
@@ -84,6 +85,8 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
 
     private static final String LOCAL_STORAGE_LABEL = "LocalDataStorageIT";
 
+    private static final String SESSION = "SESSION 1";
+
     @Autowired
     private IPluginService pluginService;
 
@@ -99,22 +102,18 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
 
     @BeforeTransaction
     public void setTenant() {
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
     }
 
     @Before
     public void init() throws IOException, ModuleException, URISyntaxException {
-        pluginService.addPluginPackage(LocalDataStorage.class.getPackage().getName());
-        pluginService.addPluginPackage(IDataStorage.class.getPackage().getName());
         baseStorageLocation = new URL("file", "", System.getProperty("user.dir") + "/target/LocalDataStorageIT");
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000L).getParameters();
         // new plugin conf for LocalDataStorage storage into target/LocalDataStorageIT
-        PluginMetaData localStorageMeta = PluginUtils
-                .createPluginMetaData(LocalDataStorage.class, LocalDataStorage.class.getPackage().getName(),
-                                      IDataStorage.class.getPackage().getName());
+        PluginMetaData localStorageMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
         localStorageConf = new PluginConfiguration(localStorageMeta, LOCAL_STORAGE_LABEL, parameters);
         localStorageConf = pluginService.savePluginConfiguration(localStorageConf);
     }
@@ -176,29 +175,32 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
     public void testStore() throws ModuleException, IOException {
         IProgressManager progressManager = Mockito.mock(IProgressManager.class);
         AIP aip = getAipFromFile();
+        AIPSession aipSession = new AIPSession();
+        aipSession.setId(SESSION);
+        aipSession.setLastActivationDate(OffsetDateTime.now());
         aip.addEvent(EventType.SUBMISSION.name(), "just for fun", OffsetDateTime.now());
         LocalDataStorage storagePlugin = pluginService.getPlugin(localStorageConf.getId());
         // valid file to get a call to progressManager.storageSucceed
         StorageDataFile validDF = new StorageDataFile(
                 Sets.newHashSet(new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data.txt")),
-                "538b3f98063b77e50f78b51f1a6acd8c", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip,
-                "data.txt", null);
+                "538b3f98063b77e50f78b51f1a6acd8c", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"),
+                new AIPEntity(aip, aipSession), aipSession, "data.txt", null);
         // valid file to get a call to progressManager.storageSucceed
         StorageDataFile validDFWithProvidedDirectory = new StorageDataFile(
                 Sets.newHashSet(new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data2.txt")),
-                "36fc2e44e266cd50f1f9dbc5b9767138", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip,
-                "data2.txt", "/provided/directory");
+                "36fc2e44e266cd50f1f9dbc5b9767138", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"),
+                new AIPEntity(aip, aipSession), aipSession, "data2.txt", "/provided/directory");
         // file that does not exist to get a call to progressManager.storageFailed
         StorageDataFile ghostDF = new StorageDataFile(
                 Sets.newHashSet(new URL("file", "",
                         System.getProperty("user.dir") + "/src/test/resources/data_do_not_exist.txt")),
-                "unknown", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip, "data_do_not_exist.txt",
-                null);
+                "unknown", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), new AIPEntity(aip, aipSession),
+                aipSession, "data_do_not_exist.txt", null);
         // invalid checksum to check call to progressManager.storageFailed
         StorageDataFile invalidDF = new StorageDataFile(
                 Sets.newHashSet(new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data.txt")),
-                "01234567890123456789012345678901", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), aip,
-                "data.txt", null);
+                "01234567890123456789012345678901", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"),
+                new AIPEntity(aip, aipSession), aipSession, "data.txt", null);
         Set<StorageDataFile> dataFiles = Sets.newHashSet(validDF, validDFWithProvidedDirectory, ghostDF, invalidDF);
         LocalWorkingSubset workingSubSet = new LocalWorkingSubset(dataFiles);
         storagePlugin.store(workingSubSet, false, progressManager);

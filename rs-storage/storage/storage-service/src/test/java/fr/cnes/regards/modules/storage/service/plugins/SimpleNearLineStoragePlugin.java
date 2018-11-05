@@ -24,6 +24,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -34,10 +35,12 @@ import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.DataStorageAccessModeEnum;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IProgressManager;
+import fr.cnes.regards.modules.storage.domain.plugin.PluginConfUpdatable;
 import fr.cnes.regards.modules.storage.domain.plugin.WorkingSubsetWrapper;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalWorkingSubset;
 
@@ -98,5 +101,16 @@ public class SimpleNearLineStoragePlugin implements INearlineDataStorage<LocalWo
             }
 
         }
+    }
+
+    @Override
+    public PluginConfUpdatable allowConfigurationUpdate(PluginConfiguration newConfiguration,
+            PluginConfiguration currentConfiguration, boolean filesAlreadyStored) {
+        return PluginConfUpdatable.allowUpdate();
+    }
+
+    @Override
+    public Map<String, Object> getDiagnosticInfo() {
+        return null;
     }
 }

@@ -18,27 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.time.OffsetDateTime;
-import java.util.Random;
-import java.util.Set;
-import java.util.UUID;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.util.MimeType;
-
-import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.EventType;
@@ -53,18 +32,48 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.OffsetDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+import java.util.UUID;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.MimeType;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=projectdb", "spring.application.name=storage", "spring.jmx.enabled=false" })
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=projectdb",
+        "spring.application.name=storage", "spring.jpa.properties.hibernate.show_sql=true" })
+@ContextConfiguration(classes = DAOTestConfiguration.class)
 public class DaoIT extends AbstractDaoTransactionalTest {
 
+    @SuppressWarnings("unused")
     private static final Logger LOG = LoggerFactory.getLogger(DaoIT.class);
 
     @Autowired
     private IAIPEntityRepository repo;
+
+    @Autowired
+    private IAIPSessionRepository aipSessionRepo;
+
+    @Autowired
+    private ICustomizedAIPEntityRepository customAIPEntityRepo;
 
     private IAIPDao dao;
 
@@ -98,17 +107,24 @@ public class DaoIT extends AbstractDaoTransactionalTest {
      */
     private AIP aip5;
 
+    private static final String SESSION = "SESSION_1";
+
     @Before
     public void init() throws NoSuchAlgorithmException, MalformedURLException {
         repo.deleteAll();
-        dao = new AIPDao(repo);
+        aipSessionRepo.deleteAll();
+        dao = new AIPDao(repo, customAIPEntityRepo);
+        AIPSession aipSession = new AIPSession();
+        aipSession.setId(SESSION);
+        aipSession.setLastActivationDate(OffsetDateTime.now());
+        aipSession = aipSessionRepo.save(aipSession);
         aip1 = generateRandomAIP();
         aip1.setState(AIPState.VALID);
         aip1.getProperties().getPdi().getTags().add("aip");
         aip1.getProperties().getPdi().getTags().add("aip1");
         setSubmissionDate(aip1, OffsetDateTime.now().minusMinutes(10));
         aip1.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(10));
-        aip1 = dao.save(aip1);
+        aip1 = dao.save(aip1, aipSession);
         aip12 = pseudoClone(aip1);
         UniformResourceName version2 = UniformResourceName.fromString(aip12.getId().toString());
         version2.setVersion(2);
@@ -116,52 +132,56 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         aip12.getProperties().getPdi().getTags().add("aip");
         aip12.getProperties().getPdi().getTags().add("aip1");
         aip12.getProperties().getPdi().getTags().add("aip12");
-        aip12 = dao.save(aip12);
+        aip12 = dao.save(aip12, aipSession);
         aip2 = generateRandomAIP();
         aip2.setState(AIPState.PENDING);
         setSubmissionDate(aip2, OffsetDateTime.now().minusMinutes(20));
         aip2.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(20));
         aip2.getProperties().getPdi().getTags().add("aip");
-        aip2 = dao.save(aip2);
+        aip2 = dao.save(aip2, aipSession);
         aip3 = generateRandomAIP();
         aip3.setState(AIPState.DELETED);
         setSubmissionDate(aip3, OffsetDateTime.now().minusMinutes(30));
         aip3.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(30));
         aip3.getProperties().getPdi().getTags().add("aip");
-        aip3 = dao.save(aip3);
+        aip3 = dao.save(aip3, aipSession);
         aip4 = generateRandomAIP();
         aip4.setState(AIPState.STORAGE_ERROR);
         setSubmissionDate(aip4, OffsetDateTime.now().minusMinutes(40));
         aip4.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(40));
         aip4.getProperties().getPdi().getTags().add("aip");
-        aip4 = dao.save(aip4);
+        aip4 = dao.save(aip4, aipSession);
         aip5 = generateRandomAIP();
         aip5.setState(AIPState.STORED);
         setSubmissionDate(aip5, OffsetDateTime.now().minusMinutes(50));
         aip5.getLastEvent().setDate(OffsetDateTime.now().minusMinutes(50));
         aip5.getProperties().getPdi().getTags().add("aip");
-        aip5 = dao.save(aip5);
+        aip5 = dao.save(aip5, aipSession);
     }
 
-    public AIP pseudoClone(AIP src) {
+    public AIP pseudoClone(AIP aip) {
 
-        AIPBuilder aipBuilder = new AIPBuilder(src.getId(), src.getSipId(), src.getIpType());
+        AIPBuilder aipBuilder = new AIPBuilder(aip.getId(), aip.getSipIdUrn(), aip.getProviderId(), aip.getIpType(),
+                SESSION);
 
-        AIP clone = aipBuilder.build(src.getProperties());
-        clone.setState(src.getState());
+        AIP clone = aipBuilder.build(aip.getProperties());
+        clone.setState(aip.getState());
         return clone;
     }
 
     public AIP generateRandomAIP() throws NoSuchAlgorithmException, MalformedURLException {
 
-        UniformResourceName ipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.COLLECTION, "tenant",
+        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP, EntityType.COLLECTION, "tenant",
                 UUID.randomUUID(), 1);
-        String sipId = String.valueOf(generateRandomString(new Random(), 40));
+        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.COLLECTION, "tenant",
+                sipId.getEntityId(), 1);
+
+        String providerId = String.valueOf(generateRandomString(new Random(), 40));
 
         // Init AIP builder
-        AIPBuilder aipBuilder = new AIPBuilder(ipId, sipId, EntityType.DATA);
+        AIPBuilder aipBuilder = new AIPBuilder(aipId, Optional.of(sipId), providerId, EntityType.DATA, SESSION);
 
-        return aipBuilder.build(generateRandomInformationPackageProperties(ipId));
+        return aipBuilder.build(generateRandomInformationPackageProperties(aipId));
     }
 
     public InformationPackageProperties generateRandomInformationPackageProperties(UniformResourceName ipId)
@@ -193,11 +213,12 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         Random random = new Random();
         int listSize = random.nextInt(listMaxSize) + 1;
         for (int i = 0; i < listSize; i++) {
-            ippBuilder.getContentInformationBuilder().setDataObject(DataType.OTHER, null, "SHA1",
-                                                                    sha1("blahblah"),
-                                                                    new Long((new Random()).nextInt(10000000)), new URL("ftp://bla"));
+            ippBuilder.getContentInformationBuilder().setDataObject(DataType.OTHER, "bla", "SHA1", sha1("blahblah"),
+                                                                    new Long((new Random()).nextInt(10000000)),
+                                                                    new URL("ftp://bla"));
             ippBuilder.getContentInformationBuilder().setSyntaxAndSemantic("NAME", "SYNTAX_DESCRIPTION",
-                                                                           MimeType.valueOf("application/name"), "DESCRIPTION");
+                                                                           MimeType.valueOf("application/name"),
+                                                                           "DESCRIPTION");
             ippBuilder.addContentInformation();
         }
     }
@@ -248,6 +269,7 @@ public class DaoIT extends AbstractDaoTransactionalTest {
 
     @Test
     public void testFindByState() {
+
         Page<AIP> result = dao.findAllByState(AIPState.DELETED, new PageRequest(0, 10));
         Assert.assertFalse(result.getContent().contains(aip1));
         Assert.assertFalse(result.getContent().contains(aip2));
@@ -285,232 +307,12 @@ public class DaoIT extends AbstractDaoTransactionalTest {
     }
 
     @Test
-    public void testFindBySubmissionDateAfter() {
-        Page<AIP> result = dao.findAllBySubmissionDateAfter(aip5.getSubmissionEvent().getDate().minusNanos(1),
-                                                            new PageRequest(0, 10));
-        Assert.assertTrue(result.getContent().contains(aip1));
-        Assert.assertTrue(result.getContent().contains(aip2));
-        Assert.assertTrue(result.getContent().contains(aip3));
-        Assert.assertTrue(result.getContent().contains(aip4));
-        Assert.assertTrue(result.getContent().contains(aip5));
-
-        result = dao.findAllBySubmissionDateAfter(aip4.getSubmissionEvent().getDate().minusNanos(1),
-                                                  new PageRequest(0, 10));
-        Assert.assertTrue(result.getContent().contains(aip1));
-        Assert.assertTrue(result.getContent().contains(aip2));
-        Assert.assertTrue(result.getContent().contains(aip3));
-        Assert.assertTrue(result.getContent().contains(aip4));
-        Assert.assertFalse(result.getContent().contains(aip5));
-
-        result = dao.findAllBySubmissionDateAfter(aip3.getSubmissionEvent().getDate().minusNanos(1),
-                                                  new PageRequest(0, 10));
-        Assert.assertTrue(result.getContent().contains(aip1));
-        Assert.assertTrue(result.getContent().contains(aip2));
-        Assert.assertTrue(result.getContent().contains(aip3));
-        Assert.assertFalse(result.getContent().contains(aip4));
-        Assert.assertFalse(result.getContent().contains(aip5));
-
-        result = dao.findAllBySubmissionDateAfter(aip2.getSubmissionEvent().getDate().minusNanos(1),
-                                                  new PageRequest(0, 10));
-        Assert.assertTrue(result.getContent().contains(aip1));
-        Assert.assertTrue(result.getContent().contains(aip2));
-        Assert.assertFalse(result.getContent().contains(aip3));
-        Assert.assertFalse(result.getContent().contains(aip4));
-        Assert.assertFalse(result.getContent().contains(aip5));
-
-        result = dao.findAllBySubmissionDateAfter(aip1.getSubmissionEvent().getDate().minusNanos(1),
-                                                  new PageRequest(0, 10));
-        Assert.assertTrue(result.getContent().contains(aip1));
-        Assert.assertFalse(result.getContent().contains(aip2));
-        Assert.assertFalse(result.getContent().contains(aip3));
-        Assert.assertFalse(result.getContent().contains(aip4));
-        Assert.assertFalse(result.getContent().contains(aip5));
-    }
-
-    @Test
-    public void testFindByLastEventDateBefore() {
-        Page<AIP> result = dao.findAllByLastEventDateBefore(aip1.getLastEvent().getDate().plusSeconds(1),
-                                                            new PageRequest(0, 10));
-        Assert.assertTrue(result.getContent().contains(aip1));
-        Assert.assertTrue(result.getContent().contains(aip2));
-        Assert.assertTrue(result.getContent().contains(aip3));
-        Assert.assertTrue(result.getContent().contains(aip4));
-        Assert.assertTrue(result.getContent().contains(aip5));
-
-        result = dao.findAllByLastEventDateBefore(aip2.getLastEvent().getDate().plusSeconds(1), new PageRequest(0, 10));
-        Assert.assertFalse(result.getContent().contains(aip1));
-        Assert.assertTrue(result.getContent().contains(aip2));
-        Assert.assertTrue(result.getContent().contains(aip3));
-        Assert.assertTrue(result.getContent().contains(aip4));
-        Assert.assertTrue(result.getContent().contains(aip5));
-
-        result = dao.findAllByLastEventDateBefore(aip3.getLastEvent().getDate().plusSeconds(1), new PageRequest(0, 10));
-        Assert.assertFalse(result.getContent().contains(aip1));
-        Assert.assertFalse(result.getContent().contains(aip2));
-        Assert.assertTrue(result.getContent().contains(aip3));
-        Assert.assertTrue(result.getContent().contains(aip4));
-        Assert.assertTrue(result.getContent().contains(aip5));
-
-        result = dao.findAllByLastEventDateBefore(aip4.getLastEvent().getDate().plusSeconds(1), new PageRequest(0, 10));
-        Assert.assertFalse(result.getContent().contains(aip1));
-        Assert.assertFalse(result.getContent().contains(aip2));
-        Assert.assertFalse(result.getContent().contains(aip3));
-        Assert.assertTrue(result.getContent().contains(aip4));
-        Assert.assertTrue(result.getContent().contains(aip5));
-
-        result = dao.findAllByLastEventDateBefore(aip5.getLastEvent().getDate().plusSeconds(1), new PageRequest(0, 10));
-        Assert.assertFalse(result.getContent().contains(aip1));
-        Assert.assertFalse(result.getContent().contains(aip2));
-        Assert.assertFalse(result.getContent().contains(aip3));
-        Assert.assertFalse(result.getContent().contains(aip4));
-        Assert.assertTrue(result.getContent().contains(aip5));
-    }
-
-    @Test
-    public void testFindAllByStateAndLastEventDateBefore() {
-        Page<AIP> result = dao.findAllByStateAndLastEventDateBefore(aip1.getState(),
-                                                                    aip1.getLastEvent().getDate().plusSeconds(1),
-                                                                    new PageRequest(0, 10));
-        Assert.assertTrue(result.getContent().contains(aip1));
-        Assert.assertFalse(result.getContent().contains(aip2));
-        Assert.assertFalse(result.getContent().contains(aip3));
-        Assert.assertFalse(result.getContent().contains(aip4));
-        Assert.assertFalse(result.getContent().contains(aip5));
-
-        result = dao.findAllByStateAndLastEventDateBefore(aip2.getState(), aip1.getLastEvent().getDate().plusSeconds(1),
-                                                          new PageRequest(0, 10));
-        Assert.assertFalse(result.getContent().contains(aip1));
-        Assert.assertTrue(result.getContent().contains(aip2));
-        Assert.assertFalse(result.getContent().contains(aip3));
-        Assert.assertFalse(result.getContent().contains(aip4));
-        Assert.assertFalse(result.getContent().contains(aip5));
-
-    }
-
-    @Test
-    public void testFindAllBySubmissionDateAfterAndLastEventDateBefore() {
-        Page<AIP> result = dao.findAllBySubmissionDateAfterAndLastEventDateBefore(aip1.getSubmissionEvent().getDate()
-                .minusNanos(1), aip1.getLastEvent().getDate().plusSeconds(1), new PageRequest(0, 10));
-        Assert.assertTrue(result.getContent().contains(aip1));
-        Assert.assertFalse(result.getContent().contains(aip2));
-        Assert.assertFalse(result.getContent().contains(aip3));
-        Assert.assertFalse(result.getContent().contains(aip4));
-        Assert.assertFalse(result.getContent().contains(aip5));
-
-        result = dao.findAllBySubmissionDateAfterAndLastEventDateBefore(aip2.getSubmissionEvent().getDate()
-                .minusNanos(1), aip1.getLastEvent().getDate().plusSeconds(1), new PageRequest(0, 10));
-        Assert.assertTrue(result.getContent().contains(aip1));
-        Assert.assertTrue(result.getContent().contains(aip2));
-        Assert.assertFalse(result.getContent().contains(aip3));
-        Assert.assertFalse(result.getContent().contains(aip4));
-        Assert.assertFalse(result.getContent().contains(aip5));
-    }
-
-    @Test
-    public void testFindAllByStateAndSubmissionDateAfter() {
-        Page<AIP> result = dao.findAllByStateAndSubmissionDateAfter(aip1.getState(),
-                                                                    aip1.getSubmissionEvent().getDate().minusNanos(1),
-                                                                    new PageRequest(0, 10));
-        Assert.assertTrue(result.getContent().contains(aip1));
-        Assert.assertFalse(result.getContent().contains(aip2));
-        Assert.assertFalse(result.getContent().contains(aip3));
-        Assert.assertFalse(result.getContent().contains(aip4));
-        Assert.assertFalse(result.getContent().contains(aip5));
-
-        result = dao.findAllByStateAndSubmissionDateAfter(aip2.getState(),
-                                                          aip1.getSubmissionEvent().getDate().minusNanos(1),
-                                                          new PageRequest(0, 10));
-        Assert.assertFalse(result.getContent().contains(aip1));
-        Assert.assertFalse(result.getContent().contains(aip2));
-        Assert.assertFalse(result.getContent().contains(aip3));
-        Assert.assertFalse(result.getContent().contains(aip4));
-        Assert.assertFalse(result.getContent().contains(aip5));
-    }
-
-    @Test
-    public void testFindAllByStateAndSubmissionDateAfterAndLastEventDateBefore() {
-        Page<AIP> result = dao.findAllByStateAndSubmissionDateAfterAndLastEventDateBefore(aip1.getState(), aip1
-                .getSubmissionEvent().getDate().minusNanos(1), aip1.getLastEvent().getDate().plusSeconds(1),
-                                                                                          new PageRequest(0, 10));
-        Assert.assertTrue(result.getContent().contains(aip1));
-        Assert.assertFalse(result.getContent().contains(aip2));
-        Assert.assertFalse(result.getContent().contains(aip3));
-        Assert.assertFalse(result.getContent().contains(aip4));
-        Assert.assertFalse(result.getContent().contains(aip5));
-
-        result = dao.findAllByStateAndSubmissionDateAfterAndLastEventDateBefore(aip2.getState(), aip1
-                .getSubmissionEvent().getDate().minusNanos(1), aip1.getLastEvent().getDate().plusSeconds(1),
-                                                                                new PageRequest(0, 10));
-        Assert.assertFalse(result.getContent().contains(aip1));
-        Assert.assertFalse(result.getContent().contains(aip2));
-        Assert.assertFalse(result.getContent().contains(aip3));
-        Assert.assertFalse(result.getContent().contains(aip4));
-        Assert.assertFalse(result.getContent().contains(aip5));
-    }
-
-    @Test
     @Requirement("REGARDS_DSL_STO_AIP_050")
     @Purpose("System keeps track of all versions of aips")
     public void testFindAllByIpIdStartingWith() {
         String ipIdWithoutVersion = aip1.getId().toString();
         ipIdWithoutVersion = ipIdWithoutVersion.substring(0, ipIdWithoutVersion.indexOf(":V"));
-        Set<AIP> aips = dao.findAllByIpIdStartingWith(ipIdWithoutVersion);
-        Assert.assertTrue(aips.contains(aip1));
-        Assert.assertTrue(aips.contains(aip12));
-        Assert.assertFalse(aips.contains(aip2));
-        Assert.assertFalse(aips.contains(aip3));
-        Assert.assertFalse(aips.contains(aip4));
-        Assert.assertFalse(aips.contains(aip5));
-    }
-
-    @Test
-    public void testFindAllByTags() {
-        //aips have been generated with there own ipId as tag(except for aip12 which is tagged by aip1 ipId), lets retrieve them according to there ipId
-        Set<AIP> aips = dao.findAllByTags(aip1.getId().toString());
-        Assert.assertTrue(aips.contains(aip1));
-        Assert.assertTrue(aips.contains(aip12));
-        Assert.assertFalse(aips.contains(aip2));
-        Assert.assertFalse(aips.contains(aip3));
-        Assert.assertFalse(aips.contains(aip4));
-        Assert.assertFalse(aips.contains(aip5));
-
-        aips = dao.findAllByTags(aip2.getId().toString());
-        Assert.assertFalse(aips.contains(aip1));
-        Assert.assertFalse(aips.contains(aip12));
-        Assert.assertTrue(aips.contains(aip2));
-        Assert.assertFalse(aips.contains(aip3));
-        Assert.assertFalse(aips.contains(aip4));
-        Assert.assertFalse(aips.contains(aip5));
-
-        aips = dao.findAllByTags(aip3.getId().toString());
-        Assert.assertFalse(aips.contains(aip1));
-        Assert.assertFalse(aips.contains(aip12));
-        Assert.assertFalse(aips.contains(aip2));
-        Assert.assertTrue(aips.contains(aip3));
-        Assert.assertFalse(aips.contains(aip4));
-        Assert.assertFalse(aips.contains(aip5));
-
-        aips = dao.findAllByTags(aip4.getId().toString());
-        Assert.assertFalse(aips.contains(aip1));
-        Assert.assertFalse(aips.contains(aip12));
-        Assert.assertFalse(aips.contains(aip2));
-        Assert.assertFalse(aips.contains(aip3));
-        Assert.assertTrue(aips.contains(aip4));
-        Assert.assertFalse(aips.contains(aip5));
-
-        aips = dao.findAllByTags(aip5.getId().toString());
-        Assert.assertFalse(aips.contains(aip1));
-        Assert.assertFalse(aips.contains(aip12));
-        Assert.assertFalse(aips.contains(aip2));
-        Assert.assertFalse(aips.contains(aip3));
-        Assert.assertFalse(aips.contains(aip4));
-        Assert.assertTrue(aips.contains(aip5));
-    }
-
-    @Test
-    public void testFindAllByStateAndTagsInAndLastEventDateAfter() {
-        Page<AIP> aips = dao.findAllByStateAndTagsInAndLastEventDateAfter(AIPState.VALID, Sets.newHashSet("aip", "aip1"), aip1.getLastEvent().getDate().minusHours(1),
-                                                         new PageRequest(0, 10));
+        Page<AIP> aips = dao.findAllByIpIdStartingWith(ipIdWithoutVersion, new PageRequest(0, 100));
         Assert.assertTrue(aips.getContent().contains(aip1));
         Assert.assertTrue(aips.getContent().contains(aip12));
         Assert.assertFalse(aips.getContent().contains(aip2));
@@ -519,4 +321,120 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         Assert.assertFalse(aips.getContent().contains(aip5));
     }
 
+    @Test
+    public void testFindAllByTags() {
+        // aips have been generated with there own ipId as tag(except for aip12 which is tagged by aip1 ipId), lets
+        // retrieve them according to there ipId
+        Page<AIP> aips = dao.findAllByTag(aip1.getId().toString(), new PageRequest(0, 100));
+        Assert.assertTrue(aips.getContent().contains(aip1));
+        Assert.assertTrue(aips.getContent().contains(aip12));
+        Assert.assertFalse(aips.getContent().contains(aip2));
+        Assert.assertFalse(aips.getContent().contains(aip3));
+        Assert.assertFalse(aips.getContent().contains(aip4));
+        Assert.assertFalse(aips.getContent().contains(aip5));
+
+        aips = dao.findAllByTag(aip2.getId().toString(), new PageRequest(0, 100));
+        Assert.assertFalse(aips.getContent().contains(aip1));
+        Assert.assertFalse(aips.getContent().contains(aip12));
+        Assert.assertTrue(aips.getContent().contains(aip2));
+        Assert.assertFalse(aips.getContent().contains(aip3));
+        Assert.assertFalse(aips.getContent().contains(aip4));
+        Assert.assertFalse(aips.getContent().contains(aip5));
+
+        aips = dao.findAllByTag(aip3.getId().toString(), new PageRequest(0, 100));
+        Assert.assertFalse(aips.getContent().contains(aip1));
+        Assert.assertFalse(aips.getContent().contains(aip12));
+        Assert.assertFalse(aips.getContent().contains(aip2));
+        Assert.assertTrue(aips.getContent().contains(aip3));
+        Assert.assertFalse(aips.getContent().contains(aip4));
+        Assert.assertFalse(aips.getContent().contains(aip5));
+
+        aips = dao.findAllByTag(aip4.getId().toString(), new PageRequest(0, 100));
+        Assert.assertFalse(aips.getContent().contains(aip1));
+        Assert.assertFalse(aips.getContent().contains(aip12));
+        Assert.assertFalse(aips.getContent().contains(aip2));
+        Assert.assertFalse(aips.getContent().contains(aip3));
+        Assert.assertTrue(aips.getContent().contains(aip4));
+        Assert.assertFalse(aips.getContent().contains(aip5));
+
+        aips = dao.findAllByTag(aip5.getId().toString(), new PageRequest(0, 100));
+        Assert.assertFalse(aips.getContent().contains(aip1));
+        Assert.assertFalse(aips.getContent().contains(aip12));
+        Assert.assertFalse(aips.getContent().contains(aip2));
+        Assert.assertFalse(aips.getContent().contains(aip3));
+        Assert.assertFalse(aips.getContent().contains(aip4));
+        Assert.assertTrue(aips.getContent().contains(aip5));
+    }
+
+    @Test
+    public void testCustomQueryAtLeastOneTag() {
+        List<String> tags = Arrays.asList("aip", "aip1", "aip12");
+
+        Page<AIP> aips = dao.findAll(
+                // test at least one tag
+                AIPQueryGenerator.searchAIPContainingAtLeastOneTag(null, null, null, tags,
+                    null, null,null, null),
+                new PageRequest(0, 100)
+        );
+        Assert.assertTrue(aips.getContent().contains(aip1));
+        Assert.assertTrue(aips.getContent().contains(aip12));
+        Assert.assertTrue(aips.getContent().contains(aip2));
+        Assert.assertTrue(aips.getContent().contains(aip3));
+        Assert.assertTrue(aips.getContent().contains(aip4));
+        Assert.assertTrue(aips.getContent().contains(aip5));
+    }
+
+    @Test
+    public void testCustomQueryAtLeastOneTag2() {
+        List<String> tags = Arrays.asList("aip", "aip1", "aip12");
+
+        Page<AIP> aips = dao.findAll(
+                // test at least one tag
+                AIPQueryGenerator.searchAIPContainingAtLeastOneTag(AIPState.STORED, null, null, tags,
+                        null , null,null, null),
+                new PageRequest(0, 100)
+        );
+        Assert.assertFalse(aips.getContent().contains(aip1));
+        Assert.assertFalse(aips.getContent().contains(aip12));
+        Assert.assertFalse(aips.getContent().contains(aip2));
+        Assert.assertFalse(aips.getContent().contains(aip3));
+        Assert.assertFalse(aips.getContent().contains(aip4));
+        Assert.assertTrue(aips.getContent().contains(aip5));
+    }
+
+
+    @Test
+    public void testCustomQueryContainingAllTags() {
+        List<String> tags = Arrays.asList("aip", "aip1");
+
+        Page<AIP> aips = dao.findAll(
+                // test at least one tag
+                AIPQueryGenerator.searchAIPContainingAllTags(AIPState.VALID, null, null, tags,
+                        null , null,null, null),
+                new PageRequest(0, 100)
+        );
+        Assert.assertTrue(aips.getContent().contains(aip1));
+        Assert.assertTrue(aips.getContent().contains(aip12));
+        Assert.assertFalse(aips.getContent().contains(aip2));
+        Assert.assertFalse(aips.getContent().contains(aip3));
+        Assert.assertFalse(aips.getContent().contains(aip4));
+    }
+
+    @Test
+    public void testCustomQueryGetTags() {
+        List<String> tags = Arrays.asList("aip");
+
+        List<String> aips = dao.findAllByCustomQuery(
+            // test at least one tag
+            AIPQueryGenerator.searchAipTagsUsingSQL(AIPState.VALID, null, null, tags,
+                    null, null, null,
+                    null)
+        );
+
+        Assert.assertTrue(aips.containsAll(aip1.getTags()));
+        Assert.assertTrue(aips.containsAll(aip12.getTags()));
+        Assert.assertFalse(aips.containsAll(aip2.getTags()));
+        Assert.assertFalse(aips.containsAll(aip3.getTags()));
+        Assert.assertFalse(aips.containsAll(aip4.getTags()));
+    }
 }

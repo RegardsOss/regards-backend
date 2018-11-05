@@ -4,6 +4,9 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
@@ -24,6 +27,17 @@ public interface IDataFileDao {
      * @return data files which state is the given one and which are associated to the provided aip
      */
     Set<StorageDataFile> findAllByStateAndAip(DataFileState stored, AIP aip);
+
+    long findAllByStateAndAipSession(DataFileState stored, String session);
+
+    /**
+     * Find all data files which state is the given one
+     * @param state
+     * @return data files which state is the given one
+     */
+    Page<StorageDataFile> findAllByState(DataFileState state, Pageable pageable);
+
+    Page<StorageDataFile> findPageByState(DataFileState state, Pageable pageable);
 
     /**
      * Find all data files which state is the provided one and that are associated to at least one of the provided aips
@@ -67,7 +81,7 @@ public interface IDataFileDao {
      * @param dataType
      * @return the data file wrapped into an optional to avoid nulls
      */
-    Optional<StorageDataFile> findByAipAndType(AIP aip, DataType dataType);
+    Set<StorageDataFile> findByAipAndType(AIP aip, DataType dataType);
 
     /**
      * Remove all data files from the database
@@ -90,6 +104,8 @@ public interface IDataFileDao {
      */
     Set<StorageDataFile> findAllByChecksumIn(Set<String> checksums);
 
+    Page<StorageDataFile> findPageByChecksumIn(Set<String> checksums, Pageable pageable);
+
     /**
      * Remove a data file from the database
      * @param data
@@ -101,4 +117,12 @@ public interface IDataFileDao {
      * @return the monitoring aggregation
      */
     Collection<MonitoringAggregation> getMonitoringAggregation();
+
+    long countByChecksumAndStorageDirectory(String checksum, String storageDirectory);
+
+    long countByAip(AIP aip);
+
+    long countByAipAndStateNotIn(AIP aip, Collection<DataFileState> dataFilesStates);
+
+    long findAllByAipSession(String id);
 }

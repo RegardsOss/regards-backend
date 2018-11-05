@@ -23,12 +23,14 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -62,11 +64,10 @@ import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
-import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
-import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
-import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
-import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
+import fr.cnes.regards.modules.storage.domain.plugin.DispatchErrors;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.AIPMiscAllocationStrategyPlugin;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.PluginConfigurationIdentifiersWrapper;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
@@ -93,6 +94,8 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
 
     private StorageDataFile dataFile2;
 
+    private static final String SESSION = "Session 1";
+
     @Before
     public void init() throws ModuleException, MalformedURLException {
         initPlugins();
@@ -100,11 +103,7 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
     }
 
     private PluginConfiguration initNearLinePluginConf(String pluginLabel) throws ModuleException {
-        PluginMetaData nearlineMeta = PluginUtils
-                .createPluginMetaData(NearlineDataStorageTestPlugin.class,
-                                      NearlineDataStorageTestPlugin.class.getPackage().getName(),
-                                      IDataStorage.class.getPackage().getName(),
-                                      INearlineDataStorage.class.getPackage().getName());
+        PluginMetaData nearlineMeta = PluginUtils.createPluginMetaData(NearlineDataStorageTestPlugin.class);
         return pluginService.savePluginConfiguration(new PluginConfiguration(nearlineMeta, pluginLabel, null));
     }
 
@@ -112,13 +111,10 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
             throws ModuleException, IOException, URISyntaxException {
         URL baseStorageLocation = new URL("file", "", System.getProperty("user.dir") + "/target/LocalDataStorageIT");
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000L).getParameters();
-        PluginMetaData localDataStorageMeta = PluginUtils
-                .createPluginMetaData(LocalDataStorage.class, IDataStorage.class.getPackage().getName(),
-                                      IOnlineDataStorage.class.getPackage().getName(),
-                                      LocalDataStorage.class.getPackage().getName());
+        PluginMetaData localDataStorageMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
         PluginConfiguration localStorageConf = new PluginConfiguration(localDataStorageMeta, label, parameters);
         return pluginService.savePluginConfiguration(localStorageConf);
     }
@@ -126,11 +122,8 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
     private PluginConfiguration initAllocation(String label, Map<String, PluginConfigurationIdentifiersWrapper> mapping)
             throws ModuleException {
         // lets get a allocation
-        PluginMetaData allocation = PluginUtils
-                .createPluginMetaData(AIPMiscAllocationStrategyPlugin.class,
-                                      AIPMiscAllocationStrategyPlugin.class.getPackage().getName(),
-                                      AIPMiscAllocationStrategyPlugin.class.getPackage().getName());
-        List<PluginParameter> parameters = PluginParametersFactory.build()
+        PluginMetaData allocation = PluginUtils.createPluginMetaData(AIPMiscAllocationStrategyPlugin.class);
+        Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(AIPMiscAllocationStrategyPlugin.MAP_PLUGINID_PLUGINCONFID_PARAMETER, mapping)
                 .getParameters();
         return pluginService.savePluginConfiguration(new PluginConfiguration(allocation, label, parameters));
@@ -139,22 +132,32 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
     private void initDataFiles() throws MalformedURLException {
         dataFiles = Sets.newHashSet();
         AIP aip = getAIP();
+
+        AIPSession aipSession = new AIPSession();
+        aipSession.setId(SESSION);
+        aipSession.setLastActivationDate(OffsetDateTime.now());
+
         dataFile1 = new StorageDataFile(Sets.newHashSet(new URL("file", "", "fichier1.json")), "checksum", "MD5",
-                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aip, "fichier1", null);
+                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, new AIPEntity(aip, aipSession), aipSession,
+                "fichier1", null);
         dataFiles.add(dataFile1);
         dataFile2 = new StorageDataFile(Sets.newHashSet(new URL("file", "", "fichier2.json")), "checksum2", "MD5",
-                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, aip, "fichier2", null);
+                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, new AIPEntity(aip, aipSession), aipSession,
+                "fichier2", null);
         dataFiles.add(dataFile2);
     }
 
     private AIP getAIP() throws MalformedURLException {
 
-        AIPBuilder aipBuilder = new AIPBuilder(
-                new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, DEFAULT_TENANT, UUID.randomUUID(), 1),
-                null, EntityType.DATA);
+        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP, EntityType.DATA, getDefaultTenant(),
+                UUID.randomUUID(), 1);
+        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, getDefaultTenant(),
+                sipId.getEntityId(), 1);
 
-        String path = System.getProperty("user.dir") + "/src/test/resources/data.txt";
-        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, new URL("file", "", path), "MD5",
+        AIPBuilder aipBuilder = new AIPBuilder(aipId, Optional.of(sipId), "providerId", EntityType.DATA, SESSION);
+
+        Path path = Paths.get(System.getProperty("user.dir"), "/src/test/resources/data.txt");
+        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, path, "MD5",
                                                                 "de89a907d33a9716d11765582102b2e0");
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", MimeType.valueOf("text/plain"));
         aipBuilder.addContentInformation();
@@ -169,12 +172,6 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
     }
 
     protected void initPlugins() throws ModuleException, MalformedURLException {
-        pluginService.addPluginPackage(IAllocationStrategy.class.getPackage().getName());
-        pluginService.addPluginPackage(AIPMiscAllocationStrategyPlugin.class.getPackage().getName());
-        pluginService.addPluginPackage(IDataStorage.class.getPackage().getName());
-        pluginService.addPluginPackage(INearlineDataStorage.class.getPackage().getName());
-        pluginService.addPluginPackage(NearlineDataStorageTestPlugin.class.getPackage().getName());
-        pluginService.addPluginPackage(LocalDataStorage.class.getPackage().getName());
     }
 
     /**
@@ -201,7 +198,7 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
         PluginConfiguration allocationStrategyConf = initAllocation("allocation", mapping);
 
         AIPMiscAllocationStrategyPlugin allocationStrategy = pluginService.getPlugin(allocationStrategyConf.getId());
-        Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles);
+        Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles, new DispatchErrors());
         Assert.assertTrue(result.containsEntry(nearConf1.getId(), dataFile1));
         Assert.assertFalse(result.containsKey(nearConf2.getId()));
         Assert.assertTrue(result.containsEntry(localConf1.getId(), dataFile1));
@@ -214,7 +211,8 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
      * Test nominal use case.
      * - Multiple storage defined in each AIP into the misc.storage properties
      * - FromSIPAllocationStrategyPlugin configured to select one configuration for the one plugin type
-     * - As no plugin configuration identifier is defined for the scond plugin type, the dataFiles are not dispatch to be store with it.
+     * - As no plugin configuration identifier is defined for the scond plugin type, the dataFiles are not dispatch to
+     * be store with it.
      * @throws ModuleException
      * @throws IOException
      * @throws URISyntaxException
@@ -235,7 +233,7 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
         PluginConfiguration allocationStrategyConf = initAllocation("allocation", mapping);
 
         AIPMiscAllocationStrategyPlugin allocationStrategy = pluginService.getPlugin(allocationStrategyConf.getId());
-        Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles);
+        Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles, new DispatchErrors());
         Assert.assertTrue(result.containsEntry(nearConf1.getId(), dataFile1));
         Assert.assertTrue(result.containsEntry(nearConf1.getId(), dataFile2));
         Assert.assertFalse(result.containsKey(nearConf2.getId()));
@@ -247,7 +245,8 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
      * Test nominal use case.
      * - Multiple storage defined in each AIP into the misc.storage properties
      * - FromSIPAllocationStrategyPlugin not configured
-     * - As there is only one configuration for each plugin type, each file is dispatched to be stored using the only one configuration.
+     * - As there is only one configuration for each plugin type, each file is dispatched to be stored using the only
+     * one configuration.
      * @throws ModuleException
      * @throws IOException
      * @throws URISyntaxException
@@ -262,7 +261,7 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
         PluginConfiguration allocationStrategyConf = initAllocation("allocation", null);
 
         AIPMiscAllocationStrategyPlugin allocationStrategy = pluginService.getPlugin(allocationStrategyConf.getId());
-        Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles);
+        Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles, new DispatchErrors());
         Assert.assertTrue(result.containsEntry(nearConf1.getId(), dataFile1));
         Assert.assertTrue(result.containsEntry(localConf1.getId(), dataFile1));
         Assert.assertTrue(result.containsEntry(nearConf1.getId(), dataFile2));
@@ -287,7 +286,7 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
         PluginConfiguration allocationStrategyConf = initAllocation("allocation", null);
 
         AIPMiscAllocationStrategyPlugin allocationStrategy = pluginService.getPlugin(allocationStrategyConf.getId());
-        Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles);
+        Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles, new DispatchErrors());
         Assert.assertFalse(result.containsKey(nearConf1.getId()));
         Assert.assertFalse(result.containsKey(nearConf2.getId()));
         Assert.assertTrue(result.containsEntry(localConf.getId(), dataFile1));
@@ -313,7 +312,7 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
         PluginConfiguration allocationStrategyConf = initAllocation("allocation", null);
 
         AIPMiscAllocationStrategyPlugin allocationStrategy = pluginService.getPlugin(allocationStrategyConf.getId());
-        Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles);
+        Multimap<Long, StorageDataFile> result = allocationStrategy.dispatch(dataFiles, new DispatchErrors());
         Assert.assertTrue(result.isEmpty());
     }
 }

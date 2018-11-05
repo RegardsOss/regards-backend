@@ -1,23 +1,39 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.storage.dao;
-
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /**
  * DAO to access {@link AIP} entities by requesting {@link AIPEntity}.
  * The {@link AIP} are built from the {@link AIPEntity} with json deserialization.
- *
  * @author Sylvain VISSIERE-GUERINET
  * @author Sébastien Binda
  */
@@ -26,16 +42,16 @@ public interface IAIPDao {
     /**
      * Create or update an {@link AIP}
      * @param toSave {@link AIP}
+     * @param aipSession {@link AIPSession} related AIPSession to this AIP
      * @return saved {@link AIP}
      */
-    AIP save(AIP toSave);
+    AIP save(AIP toSave, AIPSession aipSession);
 
     /**
-     * Retrieve all existing {@link AIP}s.
-     * @param pageable {@link Pageable} pagination parameters.
-     * @return {@link AIP}s
+     * Update specific state and retry field of existing aip.
+     * @param aip
      */
-    Page<AIP> findAll(Pageable pageable);
+    void updateAIPStateAndRetry(AIP aip);
 
     /**
      * Retrieve all existing {@link AIP}s with given {@link AIPState} state.
@@ -46,112 +62,26 @@ public interface IAIPDao {
     Page<AIP> findAllByState(AIPState state, Pageable pageable);
 
     /**
-     * Find {@link AIP} by state in transaction with pessimistic read lock
-     * @return a set of products with the above properties
-     */
-    Page<AIP> findAllWithLockByState(AIPState state, Pageable pageable);
-
-    /**
-     * Retrieve all existing {@link AIP}s with submission date after the given {@link OffsetDateTime}
-     * @param submissionAfter {@link OffsetDateTime} submission date.
-     * @param pageable {@link Pageable} pagination parameters.
-     * @return {@link AIP}s
-     */
-    Page<AIP> findAllBySubmissionDateAfter(OffsetDateTime submissionAfter, Pageable pageable);
-
-    /**
-     * Retrieve all existing {@link AIP}s with last event date before the given {@link OffsetDateTime}
-     * @param lastEventBefore {@link OffsetDateTime} last event date.
-     * @param pageable {@link Pageable} pagination parameters.
-     * @return {@link AIP}s
-     */
-    Page<AIP> findAllByLastEventDateBefore(OffsetDateTime lastEventBefore, Pageable pageable);
-
-    /**
-     * Retrieve all existing {@link AIP}s with last event date before the given {@link OffsetDateTime} and
-     * with given {@link AIPState} state.
-     * @param state {@link AIPState} state requested.
-     * @param lastEventBefore {@link OffsetDateTime} last event date.
-     * @param pageable {@link Pageable} pagination parameters.
-     * @return {@link AIP}s
-     */
-    Page<AIP> findAllByStateAndLastEventDateBefore(AIPState state, OffsetDateTime lastEventBefore, Pageable pageable);
-
-    /**
-     * Retrieve all existing {@link AIP}s with submission date after the given {@link OffsetDateTime},
-     * last event date before the given {@link OffsetDateTime} and with given {@link AIPState} state.
-     * @param state {@link AIPState} state requested.
-     * @param submissionAfter {@link OffsetDateTime} submission date.
-     * @param lastEventBefore {@link OffsetDateTime} last event date.
-     * @param pageable {@link Pageable} pagination parameters.
-     * @return {@link AIP}s
-     */
-    Page<AIP> findAllByStateAndSubmissionDateAfterAndLastEventDateBefore(AIPState state, OffsetDateTime submissionAfter,
-            OffsetDateTime lastEventBefore, Pageable pageable);
-
-    /**
-     * Retrieve all existing {@link AIP}s with submission date after the given {@link OffsetDateTime} and
-     * with given {@link AIPState} state.
-     * @param state {@link AIPState} state requested.
-     * @param submissionAfter {@link OffsetDateTime} submission date.
-     * @param pageable {@link Pageable} pagination parameters.
-     * @return {@link AIP}s
-     */
-    Page<AIP> findAllByStateAndSubmissionDateAfter(AIPState state, OffsetDateTime submissionAfter, Pageable pageable);
-
-    /**
-     * Retrieve all existing {@link AIP}s with submission date after the given {@link OffsetDateTime}
-     * and last event date before the given {@link OffsetDateTime}.
-     * @param submissionAfter {@link OffsetDateTime} submission date.
-     * @param lastEventBefore {@link OffsetDateTime} last event date.
-     * @param pageable {@link Pageable} pagination parameters.
-     * @return {@link AIP}s
-     */
-    Page<AIP> findAllBySubmissionDateAfterAndLastEventDateBefore(OffsetDateTime submissionAfter,
-            OffsetDateTime lastEventBefore, Pageable pageable);
-
-    /**
-     * Retrieve a page of aip which state is the one provided and contains at least one of the provided tags and which
-     * last event occurred after the given date
-     * @param state
-     * @param tags
-     * @param fromLastUpdateDate
-     * @param pageable
-     * @return a page of aip which state is the one provided and contains at least one of the provided tags and which
-     *         last event occurred after the given date
-     */
-    Page<AIP> findAllByStateAndTagsInAndLastEventDateAfter(AIPState state, Set<String> tags,
-            OffsetDateTime fromLastUpdateDate, Pageable pageable);
-
-    /**
-     * Retrieve a page of aip which state is the one provided and contains at least one of the provided tags
-     * @param state
-     * @param tags
-     * @param pageable
-     * @return a page of aip which state is the one provided and contains at least one of the provided tags
-     */
-    Page<AIP> findAllByStateAndTagsIn(AIPState state, Set<String> tags, Pageable pageable);
-
-    /**
      * Retrieve all existing {@link AIP}s with given starting ipId {@link String}
-     * @param ipIdWithoutVersion starting ipId {@link String}
+     * @param aipIdWithoutVersion starting aipId {@link String}
+     * @param page
      * @return {@link AIP}s
      */
-    Set<AIP> findAllByIpIdStartingWith(String ipIdWithoutVersion);
+    Page<AIP> findAllByIpIdStartingWith(String aipIdWithoutVersion, Pageable page);
 
     /**
      * Retrieve all aips which state is the one given
      * @param state
      * @return aips which state is the requested one
      */
-    Set<AIP> findAllByStateService(AIPState state);
+    Page<AIP> findAllByStateService(AIPState state, Pageable page);
 
     /**
      * Retrieve a single aip according to its ip id
-     * @param ipId
+     * @param aipId
      * @return an optional wrapping the aip to avoid nulls
      */
-    Optional<AIP> findOneByIpId(String ipId);
+    Optional<AIP> findOneByAipId(String aipId);
 
     /**
      * Delete all aips from the database
@@ -163,7 +93,7 @@ public interface IAIPDao {
      * @param states
      * @return aips which state is one of the requested
      */
-    Set<AIP> findAllByStateInService(AIPState... states);
+    Page<AIP> findAllByStateInService(Collection<AIPState> states, Pageable page);
 
     /**
      * Remove the given aip from the database
@@ -173,29 +103,62 @@ public interface IAIPDao {
 
     /**
      * Retrieve all aip which ip id is one of the provided ones
-     * @param ipIds
+     * @param aipIds
      * @return aips which ip id is one of the requested
      */
-    Set<AIP> findAllByIpIdIn(Collection<String> ipIds);
-
-    /**
-     * Retrieve all existing IpId from given list
-     */
-    Stream<UniformResourceName> findUrnsByIpIdIn(Collection<String> ipIds);
+    Set<AIP> findAllByAipIdIn(Collection<String> aipIds);
 
     /**
      * Retrieve all aips which are tagged with the given tag
      * @param tag
      * @return aip tagged by tag
      */
-    Set<AIP> findAllByTags(String tag);
+    Page<AIP> findAllByTag(String tag, Pageable page);
 
     /**
      * Retrieve all aips which sip ip id is the given one
-     * @param sipIpId
+     * @param sipId
      * @return aips which sip ip id matches
      */
-    Set<AIP> findAllBySipId(String sipIpId);
+    Set<AIP> findAllBySipId(String sipId);
 
-    Page<AIP> findAllByStateAndLastEventDateAfter(AIPState state, OffsetDateTime fromLastUpdateDate, Pageable pageable);
+
+    /**
+     * Allow to make a research
+     * @param query A SQL query
+     * @param pageable
+     * @return
+     */
+    Page<AIP> findAll(String query, Pageable pageable);
+
+    /**
+     * Count number of {@link AIP} associated to a given session
+     * @param sessionId
+     * @return number of {@link AIP}
+     */
+    long countBySessionId(String sessionId);
+
+    /**
+     * Count number of {@link AIP} associated to a given session and in a specific given {@link AIPState}
+     * @param sessionId session id
+     * @return number of {@link AIP}
+     */
+    long countBySessionIdAndStateIn(String sessionId, Collection<AIPState> states);
+
+    /**
+     * Allows to execute some SQL and return a list of string.
+     * Used to retrieve entities tags
+     * @param query SQL query
+     * @return list of string
+     */
+    List<String> findAllByCustomQuery(String query);
+
+    /**
+     * Retrieve all existing IpId from given list
+     */
+    Stream<UniformResourceName> findUrnsByAipIdIn(Collection<String> aipIds);
+
+    Set<AIP> findAllBySipIdIn(Collection<String> sipIds);
+
+    Page<AIP> findPageBySipIdIn(Collection<String> sipIds, Pageable page);
 }
