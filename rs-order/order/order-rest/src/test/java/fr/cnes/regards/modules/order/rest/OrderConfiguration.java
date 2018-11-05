@@ -33,16 +33,18 @@ import org.springframework.http.ResponseEntity;
 
 import feign.Response;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.modules.dam.client.models.IAttributeModelClient;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
-import fr.cnes.regards.modules.models.client.IAttributeModelClient;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
-import fr.cnes.regards.modules.search.client.ISearchClient;
+import fr.cnes.regards.modules.search.client.IComplexSearchClient;
+import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
 import fr.cnes.regards.modules.storage.client.IAipClient;
 
 /**
  * @author oroussel
+ * @author Sébastien Binda
  */
 @Configuration
 @ComponentScan
@@ -61,12 +63,19 @@ public class OrderConfiguration {
     }
 
     @Bean
-    public ISearchClient searchClient() {
-        ISearchClient searchClient = Mockito.mock(ISearchClient.class);
+    public IComplexSearchClient searchClient() {
+        IComplexSearchClient searchClient = Mockito.mock(IComplexSearchClient.class);
         DocFilesSummary summary = new DocFilesSummary();
-        Mockito.when(searchClient.computeDatasetsSummary(Mockito.anyMap(), Mockito.anyString(), Mockito.anyVararg()))
-                .thenReturn(ResponseEntity.ok(summary));
+        summary.addDocumentsCount(0l);
+        summary.addFilesCount(0l);
+        summary.addFilesSize(0l);
+        Mockito.when(searchClient.computeDatasetsSummary(Mockito.any())).thenReturn(ResponseEntity.ok(summary));
         return searchClient;
+    }
+
+    @Bean
+    public ILegacySearchEngineClient legacyClient() {
+        return Mockito.mock(ILegacySearchEngineClient.class);
     }
 
     @Bean
@@ -80,17 +89,16 @@ public class OrderConfiguration {
             }
             return null;
         };
-        return (IAipClient) Proxy
-                .newProxyInstance(IAipClient.class.getClassLoader(), new Class<?>[] { IAipClient.class }, handler);
+        return (IAipClient) Proxy.newProxyInstance(IAipClient.class.getClassLoader(),
+                                                   new Class<?>[] { IAipClient.class }, handler);
     }
 
     private class AipClientProxy {
 
         @SuppressWarnings("deprecation")
         public Response downloadFile(String aipId, String checksum) {
-            return Response
-                    .create(200, "ignore", Collections.emptyMap(), getClass().getResourceAsStream("/files/" + checksum),
-                            1000);
+            return Response.create(200, "ignore", Collections.emptyMap(),
+                                   getClass().getResourceAsStream("/files/" + checksum), 1000);
         }
     }
 

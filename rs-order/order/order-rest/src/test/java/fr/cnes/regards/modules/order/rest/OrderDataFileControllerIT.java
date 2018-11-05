@@ -1,3 +1,21 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.order.rest;
 
 import java.io.ByteArrayInputStream;
@@ -8,8 +26,6 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -21,17 +37,18 @@ import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
+
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
@@ -41,17 +58,14 @@ import fr.cnes.regards.modules.order.domain.FileState;
 import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.Order;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
-import fr.cnes.regards.modules.storage.client.IAipClient;
 
 /**
  * @author oroussel
+ * @author Sébastien Binda
  */
 @ContextConfiguration(classes = OrderConfiguration.class)
 @DirtiesContext
 public class OrderDataFileControllerIT extends AbstractRegardsIT {
-
-    @Autowired
-    private JWTService jwtService;
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
@@ -62,23 +76,29 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
     @Autowired
     private IOrderDataFileRepository dataFileRepository;
 
-    @Autowired
-    private IAipClient aipClient;
-
     private static final String USER = "raphael@mechoui.fr";
 
     public static final UniformResourceName DS1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DO1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     @Before
     public void init() {
-        tenantResolver.forceTenant(DEFAULT_TENANT);
+        tenantResolver.forceTenant(getDefaultTenant());
 
         orderRepository.deleteAll();
         dataFileRepository.deleteAll();
+    }
+
+    @Test
+    public void testDownloadFileFailed() {
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isNotFound());
+
+        performDefaultGet(OrderDataFileController.ORDERS_FILES_DATA_FILE_ID, customizer, "Should return result",
+                          6465465);
     }
 
     @Test
@@ -104,14 +124,16 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
         files1Task.setOrderId(order.getId());
         OrderDataFile dataFile1 = new OrderDataFile();
         dataFile1.setUrl("file:///test/files/file1.txt");
-        dataFile1.setName(testFile.getName());
+        dataFile1.setFilename(testFile.getName());
         dataFile1.setIpId(DO1_IP_ID);
         dataFile1.setOnline(true);
+        dataFile1.setReference(false);
         // Use filename as checksum (same as OrderControllerIT)
-        dataFile1.setChecksum(dataFile1.getName());
+        dataFile1.setChecksum(dataFile1.getFilename());
         dataFile1.setOrderId(order.getId());
-        dataFile1.setSize(testFile.length());
+        dataFile1.setFilesize(testFile.length());
         dataFile1.setMimeType(MediaType.TEXT_PLAIN);
+        dataFile1.setDataType(DataType.RAWDATA);
         dataFileRepository.save(dataFile1);
         files1Task.addFile(dataFile1);
         ds1Task.addReliantTask(files1Task);
@@ -119,15 +141,15 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
         order = orderRepository.save(order);
         ds1Task = order.getDatasetTasks().first();
 
-        List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
+        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
+        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
 
         File resultFile;
         int count = 0;
         do {
             count++;
             ResultActions resultActions = performDefaultGet(OrderDataFileController.ORDERS_FILES_DATA_FILE_ID,
-                                                            expectations, "Should return result", dataFile1.getId());
+                                                            customizer, "Should return result", dataFile1.getId());
 
             assertMediaType(resultActions, MediaType.TEXT_PLAIN);
             resultFile = File.createTempFile("ORDER", "");
@@ -144,7 +166,7 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
         } while ((resultFile.length() == 0) && (count < 4));
         Assert.assertTrue(Files.equal(testFile, resultFile));
 
-        tenantResolver.forceTenant(DEFAULT_TENANT); // ?
+        tenantResolver.forceTenant(getDefaultTenant()); // ?
 
         Optional<OrderDataFile> dataFileOpt = dataFileRepository
                 .findFirstByChecksumAndIpIdAndOrderId(dataFile1.getChecksum(), DO1_IP_ID, order.getId());

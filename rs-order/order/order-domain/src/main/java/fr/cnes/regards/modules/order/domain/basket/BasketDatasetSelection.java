@@ -1,4 +1,25 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.order.domain.basket;
+
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -11,17 +32,15 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.hibernate.annotations.SortNatural;
-import org.hibernate.annotations.Type;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 
 /**
  * A grouped items by dataset selection from a basket
  * @author oroussel
+ * @author Sébastien Binda
  */
 @Entity
 @Table(name = "t_basket_dataset")
@@ -38,13 +57,6 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
     @Column(name = "dataset_label", length = 128, nullable = false)
     private String datasetLabel;
 
-    /**
-     * Selection request = OR (all BasketDatedItemSelection selection requests)
-     */
-    @Column(name = "opensearch_request")
-    @Type(type = "text")
-    private String openSearchRequest;
-
     @Column(name = "objects_count")
     private int objectsCount = 0;
 
@@ -58,7 +70,7 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
     @CollectionTable(name = "t_basket_ds_item", joinColumns = @JoinColumn(name = "basket_dataset_id"),
             foreignKey = @ForeignKey(name = "fk_items_selection"))
     @SortNatural
-    private SortedSet<BasketDatedItemsSelection> itemsSelections = new TreeSet<>();
+    private final SortedSet<BasketDatedItemsSelection> itemsSelections = new TreeSet<>();
 
     @Override
     public Long getId() {
@@ -83,14 +95,6 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
 
     public void setDatasetLabel(String datasetLabel) {
         this.datasetLabel = datasetLabel;
-    }
-
-    public String getOpenSearchRequest() {
-        return openSearchRequest;
-    }
-
-    public void setOpenSearchRequest(String openSearchRequest) {
-        this.openSearchRequest = openSearchRequest;
     }
 
     public int getObjectsCount() {
@@ -139,7 +143,7 @@ public class BasketDatasetSelection implements IIdentifiable<Long>, Comparable<B
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
         }
 

@@ -27,12 +27,14 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
  * @author oroussel
  */
 public class ExpirationDateJobParameter extends JobParameter {
+
     public static final String NAME = "expirationDate";
 
     public ExpirationDateJobParameter(OffsetDateTime value) {
         super(NAME, value);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public OffsetDateTime getValue() {
         return super.getValue();
@@ -44,6 +46,8 @@ public class ExpirationDateJobParameter extends JobParameter {
 
     /**
      * Check if given JobParameter is compatible with ExpirationDateJobParameter ie same name
+     * @param param
+     * @return {@link Boolean}
      */
     public static boolean isCompatible(JobParameter param) {
         return param.getName().equals(NAME);

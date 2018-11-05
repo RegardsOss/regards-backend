@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.order.service.job;
 
-import java.time.OffsetDateTime;
-
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 
 /**
@@ -27,12 +25,14 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
  * @author oroussel
  */
 public class UserJobParameter extends JobParameter {
+
     public static final String NAME = "user";
 
     public UserJobParameter(String value) {
         super(NAME, value);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public String getValue() {
         return super.getValue();
@@ -44,6 +44,8 @@ public class UserJobParameter extends JobParameter {
 
     /**
      * Check if given JobParameter is compatible with UserJobParameter ie same name
+     * @param param
+     * @return {@link Boolean}
      */
     public static boolean isCompatible(JobParameter param) {
         return param.getName().equals(NAME);

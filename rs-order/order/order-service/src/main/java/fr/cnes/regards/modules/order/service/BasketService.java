@@ -1,23 +1,41 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.order.service;
 
-import javax.persistence.EntityNotFoundException;
 import java.time.OffsetDateTime;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import javax.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.entities.domain.Dataset;
+import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSubSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
 import fr.cnes.regards.modules.indexer.domain.summary.FilesSummary;
@@ -25,13 +43,19 @@ import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
+import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.basket.DataTypeSelection;
 import fr.cnes.regards.modules.order.domain.exception.EmptyBasketException;
 import fr.cnes.regards.modules.order.domain.exception.EmptySelectionException;
-import fr.cnes.regards.modules.search.client.ISearchClient;
+import fr.cnes.regards.modules.search.client.IComplexSearchClient;
+import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
+import fr.cnes.regards.modules.search.domain.ComplexSearchRequest;
+import fr.cnes.regards.modules.search.domain.SearchRequest;
+import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
 
 /**
  * @author oroussel
+ * @author Sébastien Binda
  */
 @Service
 @MultitenantTransactional
@@ -41,7 +65,10 @@ public class BasketService implements IBasketService {
     private IBasketRepository repos;
 
     @Autowired
-    private ISearchClient searchClient;
+    private IComplexSearchClient complexSearchClient;
+
+    @Autowired
+    private ILegacySearchEngineClient searchClient;
 
     @Autowired
     private IAuthenticationResolver authResolver;
@@ -75,26 +102,17 @@ public class BasketService implements IBasketService {
     }
 
     @Override
-    public Basket addSelection(Long basketId, String datasetIpId, String inOpenSearchRequest)
-            throws EmptySelectionException {
+    public Basket addSelection(Long basketId, BasketSelectionRequest selectionRequest) throws EmptySelectionException {
         Basket basket = repos.findOneById(basketId);
         if (basket == null) {
             throw new EntityNotFoundException("Basket with id " + basketId + " doesn't exist");
         }
-        // Add current date on search request
-        OffsetDateTime now = OffsetDateTime.now();
-        String nowStr = OffsetDateTimeAdapter.format(now);
-        String openSearchRequest = Strings.nullToEmpty(inOpenSearchRequest);
-        if (!openSearchRequest.isEmpty()) {
-            openSearchRequest = "(" + openSearchRequest + ") AND ";
-        }
-        openSearchRequest += "creationDate:[* TO " + nowStr + "]";
-        // Compute summary for this selection
-        Map<String, String> queryMap = new ImmutableMap.Builder<String, String>().put("q", openSearchRequest).build();
+
         try {
             FeignSecurityManager.asUser(authResolver.getUser(), authResolver.getRole());
-            DocFilesSummary summary = searchClient
-                    .computeDatasetsSummary(queryMap, datasetIpId, DataTypeSelection.ALL.getFileTypes()).getBody();
+            // Retrieve summary for all datasets matching the search request from the new selection to add.
+            DocFilesSummary summary = complexSearchClient
+                    .computeDatasetsSummary(buildSearchRequest(selectionRequest, 0, 1)).getBody();
             // If global summary contains no files => EmptySelection
             if (summary.getFilesCount() == 0l) {
                 throw new EmptySelectionException();
@@ -104,30 +122,35 @@ public class BasketService implements IBasketService {
                     .collect(Collectors.toMap(BasketDatasetSelection::getDatasetIpid, Function.identity()));
             // Parsing results
             for (Map.Entry<String, DocFilesSubSummary> entry : summary.getSubSummariesMap().entrySet()) {
+                // For each dataset of the returned sumary, update the already existing BasketDatasetSelection of the user basket.
+                // Or, if no one exists yet, create a new one.
+                String datasetIpId = entry.getKey();
                 DocFilesSubSummary subSummary = entry.getValue();
                 if (subSummary.getFilesCount() == 0l) {
+                    // No results for the current dataset.
                     continue;
                 }
                 // Try to retrieve current dataset selection
-                BasketDatasetSelection datasetSelection = basketDsSelectionMap.get(entry.getKey());
+                BasketDatasetSelection datasetSelection = basketDsSelectionMap.get(datasetIpId);
                 // Manage basket dataset selection
                 if (datasetSelection == null) {
-                    Dataset dataset = searchClient.getDataset(UniformResourceName.fromString(entry.getKey())).getBody()
-                            .getContent();
+                    // There is no existing BasketDatasetSelection for the current datasetIpId so create a new one
+                    // Retrieve global information about the new dataset
+                    EntityFeature feature = searchClient.getDataset(UniformResourceName.fromString(datasetIpId),
+                                                                    SearchEngineMappings.getJsonHeaders())
+                            .getBody().getContent();
                     datasetSelection = new BasketDatasetSelection();
-                    datasetSelection.setDatasetIpid(entry.getKey());
-                    datasetSelection.setDatasetLabel(dataset.getLabel());
-                    datasetSelection.setOpenSearchRequest("(" + openSearchRequest + ")");
+                    datasetSelection.setDatasetIpid(datasetIpId);
+                    datasetSelection.setDatasetLabel(feature.getLabel());
+                    // Add the newly created dataset to the current basket.
                     basket.getDatasetSelections().add(datasetSelection);
-                } else { // update dataset opensearch request
-                    datasetSelection.setOpenSearchRequest(
-                            "(" + datasetSelection.getOpenSearchRequest() + " OR (" + openSearchRequest + "))");
                 }
-                // Create dated items selection
-                BasketDatedItemsSelection itemsSelection = createItemsSelection(openSearchRequest, now, subSummary);
+                // Create item selection for each dataset
+                BasketDatedItemsSelection itemsSelection = createItemsSelection(selectionRequest, subSummary);
 
                 // Add items selection to dataset selection
                 datasetSelection.getItemsSelections().add(itemsSelection);
+
                 // Update DatasetSelection (summary)
                 computeSummaryAndUpdateDatasetSelection(datasetSelection);
             }
@@ -139,7 +162,7 @@ public class BasketService implements IBasketService {
 
     @Override
     public Basket removeDatasetSelection(Basket basket, Long datasetId) {
-        for (Iterator<BasketDatasetSelection> i = basket.getDatasetSelections().iterator(); i.hasNext(); ) {
+        for (Iterator<BasketDatasetSelection> i = basket.getDatasetSelections().iterator(); i.hasNext();) {
             if (i.next().getId().equals(datasetId)) {
                 i.remove();
                 repos.save(basket);
@@ -151,31 +174,21 @@ public class BasketService implements IBasketService {
 
     @Override
     public Basket removeDatedItemsSelection(Basket basket, Long datasetId, OffsetDateTime itemsSelectionDate) {
-        for (Iterator<BasketDatasetSelection> j = basket.getDatasetSelections().iterator(); j.hasNext(); ) {
+        for (Iterator<BasketDatasetSelection> j = basket.getDatasetSelections().iterator(); j.hasNext();) {
             BasketDatasetSelection dsSelection = j.next();
             if (dsSelection.getId().equals(datasetId)) {
                 // Search for item selections to remove
                 for (Iterator<BasketDatedItemsSelection> i = dsSelection.getItemsSelections().iterator(); i
-                        .hasNext(); ) {
-                    if (i.next().getDate().equals(itemsSelectionDate)) {
+                        .hasNext();) {
+                    if (i.next().getSelectionRequest().getSelectionDate().equals(itemsSelectionDate)) {
                         i.remove();
                         break;
                     }
                 }
                 // Must recompute dataset opensearch request from its associated dated items selections
-                switch (dsSelection.getItemsSelections().size()) {
-                    case 0:
-                        // must delete dsSelection (no more dated items selections => no more datasetSelection)
-                        j.remove();
-                        break;
-                    case 1: // only one dated items selection :
-                        dsSelection.setOpenSearchRequest(
-                                "(" + dsSelection.getItemsSelections().iterator().next().getOpenSearchRequest() + ")");
-                        break;
-                    default: // more than one dated items selections
-                        dsSelection.setOpenSearchRequest(dsSelection.getItemsSelections().stream()
-                                                                 .map(BasketDatedItemsSelection::getOpenSearchRequest)
-                                                                 .collect(Collectors.joining(") OR (", "((", "))")));
+                if (dsSelection.getItemsSelections().isEmpty()) {
+                    // must delete dsSelection (no more dated items selections => no more datasetSelection)
+                    j.remove();
                 }
                 computeSummaryAndUpdateDatasetSelection(dsSelection);
                 repos.save(basket);
@@ -187,47 +200,76 @@ public class BasketService implements IBasketService {
 
     /**
      * Create dated items selection
-     * @param openSearchRequest opensearch request from which this selection is created
-     * @param now date of selection
+     * @param selectionRequest opensearch request from which this selection is created
      * @param subSummary dataset  selection (sub-)summary
      * @return dated items selection (what else ?)
      */
-    private BasketDatedItemsSelection createItemsSelection(String openSearchRequest, OffsetDateTime now,
+    private BasketDatedItemsSelection createItemsSelection(BasketSelectionRequest selectionRequest,
             DocFilesSubSummary subSummary) {
         // Create a new basket dated items selection
         BasketDatedItemsSelection itemsSelection = new BasketDatedItemsSelection();
-        itemsSelection.setDate(now);
-        itemsSelection.setOpenSearchRequest(openSearchRequest);
+        itemsSelection.setSelectionRequest(selectionRequest);
         itemsSelection.setObjectsCount((int) subSummary.getDocumentsCount());
         int filesCount = 0;
         long filesSize = 0;
-        for (String fileType : DataTypeSelection.ALL.getFileTypes()) {
-            FilesSummary filesSummary = subSummary.getFileTypesSummaryMap().get(fileType);
+        for (DataType fileType : DataTypeSelection.ALL.getFileTypes()) {
+            FilesSummary filesSummary = subSummary.getFileTypesSummaryMap().get(fileType.toString());
             filesCount += filesSummary.getFilesCount();
             filesSize += filesSummary.getFilesSize();
         }
         itemsSelection.setFilesCount(filesCount);
         itemsSelection.setFilesSize(filesSize);
+        itemsSelection.setDate(selectionRequest.getSelectionDate());
         return itemsSelection;
     }
 
     /**
-     * (Re-)compute summary on a dataset selection
+     * (Re-)compute summary on a dataset selection.
+     * (Re-) run search on given dataset with all combined items requests.
      */
     private void computeSummaryAndUpdateDatasetSelection(BasketDatasetSelection datasetSelection) {
-        // Compute summary on dataset selection, need to recompute because of fileTypes differences between
-        // previous call to computeDatasetSummary or because of opensearch request on dataset selection that is
-        // a "OR" between previous one and new item selection
-        Map<String, String> dsQueryMap = new ImmutableMap.Builder<String, String>()
-                .put("q", datasetSelection.getOpenSearchRequest()).build();
-        DocFilesSummary curDsSelectionSummary = searchClient
-                .computeDatasetsSummary(dsQueryMap, datasetSelection.getDatasetIpid(),
-                                        DataTypeSelection.ALL.getFileTypes()).getBody();
+
+        DocFilesSummary curDsSelectionSummary = complexSearchClient
+                .computeDatasetsSummary(buildSearchRequest(datasetSelection, 0, 1)).getBody();
         // Take into account only asked datasetIpId (sub-)summary
         DocFilesSubSummary curDsSelectionSubSummary = curDsSelectionSummary.getSubSummariesMap()
                 .get(datasetSelection.getDatasetIpid());
-        datasetSelection.setObjectsCount((int) curDsSelectionSubSummary.getDocumentsCount());
-        datasetSelection.setFilesCount((int) curDsSelectionSubSummary.getFilesCount());
-        datasetSelection.setFilesSize(curDsSelectionSubSummary.getFilesSize());
+        // Occurs only in tests
+        if (curDsSelectionSubSummary == null) {
+            datasetSelection.setObjectsCount(0);
+            datasetSelection.setFilesCount(0);
+            datasetSelection.setFilesSize(0);
+        } else {
+            datasetSelection.setObjectsCount((int) curDsSelectionSubSummary.getDocumentsCount());
+            datasetSelection.setFilesCount((int) curDsSelectionSubSummary.getFilesCount());
+            datasetSelection.setFilesSize(curDsSelectionSubSummary.getFilesSize());
+        }
+    }
+
+    public static ComplexSearchRequest buildSearchRequest(BasketSelectionRequest bascketSelectionRequest, int page,
+            int size) {
+        ComplexSearchRequest complexReq = new ComplexSearchRequest(DataTypeSelection.ALL.getFileTypes(), page, size);
+        complexReq.getRequests()
+                .add(new SearchRequest(bascketSelectionRequest.getEngineType(), bascketSelectionRequest.getDatasetUrn(),
+                        bascketSelectionRequest.getSearchParameters(), bascketSelectionRequest.getEntityIdsToInclude(),
+                        bascketSelectionRequest.getEntityIdsToExclude(), bascketSelectionRequest.getSelectionDate()));
+        return complexReq;
+
+    }
+
+    public static ComplexSearchRequest buildSearchRequest(BasketDatasetSelection datasetSelection, int page, int size) {
+        ComplexSearchRequest request = new ComplexSearchRequest(DataTypeSelection.ALL.getFileTypes(), page, size);
+        datasetSelection.getItemsSelections().forEach(selectionItem -> {
+            // If selected dataset is not defined in the item selection request, use the one from the datasetSelection.
+            String datasetUrn = Optional.ofNullable(selectionItem.getSelectionRequest().getDatasetUrn())
+                    .orElse(datasetSelection.getDatasetIpid());
+            request.getRequests()
+                    .add(new SearchRequest(selectionItem.getSelectionRequest().getEngineType(), datasetUrn,
+                            selectionItem.getSelectionRequest().getSearchParameters(),
+                            selectionItem.getSelectionRequest().getEntityIdsToInclude(),
+                            selectionItem.getSelectionRequest().getEntityIdsToExclude(),
+                            selectionItem.getSelectionRequest().getSelectionDate()));
+        });
+        return request;
     }
 }

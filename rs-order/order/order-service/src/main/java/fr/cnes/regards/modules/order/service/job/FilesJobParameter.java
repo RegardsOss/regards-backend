@@ -8,12 +8,14 @@ import fr.cnes.regards.modules.order.domain.OrderDataFile;
  * @author oroussel
  */
 public class FilesJobParameter extends JobParameter {
+
     public static final String NAME = "files";
 
     public FilesJobParameter(OrderDataFile[] value) {
         super(NAME, value);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public OrderDataFile[] getValue() {
         return super.getValue();
@@ -25,6 +27,8 @@ public class FilesJobParameter extends JobParameter {
 
     /**
      * Check if given JobParameter is compatible with FilesJobParameter ie same name
+     * @param param
+     * @return {@link Boolean}
      */
     public static boolean isCompatible(JobParameter param) {
         return param.getName().equals(NAME);

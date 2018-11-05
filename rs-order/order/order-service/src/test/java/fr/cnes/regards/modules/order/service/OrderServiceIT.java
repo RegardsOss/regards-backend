@@ -1,6 +1,23 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.order.service;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -33,11 +50,15 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MimeType;
+import org.springframework.util.MultiValueMap;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
+import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -60,13 +81,13 @@ import fr.cnes.regards.modules.order.domain.OrderStatus;
 import fr.cnes.regards.modules.order.domain.basket.Basket;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatasetSelection;
 import fr.cnes.regards.modules.order.domain.basket.BasketDatedItemsSelection;
+import fr.cnes.regards.modules.order.domain.basket.BasketSelectionRequest;
 import fr.cnes.regards.modules.order.domain.exception.CannotPauseOrderException;
 import fr.cnes.regards.modules.order.domain.exception.CannotResumeOrderException;
 import fr.cnes.regards.modules.order.service.job.FilesJobParameter;
 import fr.cnes.regards.modules.order.test.ServiceConfiguration;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
-import fr.cnes.regards.modules.templates.service.TemplateService;
 
 /**
  * @author oroussel
@@ -111,26 +132,23 @@ public class OrderServiceIT {
     private IEmailClient emailClient;
 
     @Autowired
-    private TemplateService templateService;
-
-    @Autowired
     private INotificationClient notificationClient;
-
-    private static TemplateService staticTemplateService;
 
     private static final String USER_EMAIL = "leo.mieulet@margoulin.com";
 
+    private static SimpleMailMessage mailMessage;
+
     public static final UniformResourceName DS1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DS2_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DO1_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     public static final UniformResourceName DO2_IP_ID = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA,
-                                                                                "ORDER", UUID.randomUUID(), 1);
+            "ORDER", UUID.randomUUID(), 1);
 
     @Before
     public void init() {
@@ -154,8 +172,27 @@ public class OrderServiceIT {
         dataFileRepos.deleteAll();
 
         jobInfoRepos.deleteAll();
+    }
 
-        staticTemplateService = templateService;
+    private BasketSelectionRequest createBasketSelectionRequest(String query) {
+        BasketSelectionRequest request = new BasketSelectionRequest();
+        request.setEngineType("engine");
+        MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
+        parameters.add("q", query);
+        request.setSearchParameters(parameters);
+        return request;
+    }
+
+    private BasketDatedItemsSelection createDatasetItemSelection(long filesSize, int filesCount, int objectsCount,
+            String query) {
+
+        BasketDatedItemsSelection item = new BasketDatedItemsSelection();
+        item.setFilesSize(filesSize);
+        item.setFilesCount(filesCount);
+        item.setObjectsCount(objectsCount);
+        item.setDate(OffsetDateTime.now());
+        item.setSelectionRequest(createBasketSelectionRequest(query));
+        return item;
     }
 
     // Reactivate this if you test template
@@ -170,24 +207,14 @@ public class OrderServiceIT {
         basket.setOwner(USER_EMAIL);
 
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
-        dsSelection.setOpenSearchRequest("someone:something");
         dsSelection.setDatasetLabel("DS1");
         dsSelection.setDatasetIpid(DS1_IP_ID.toString());
         dsSelection.setFilesSize(1_000_000l);
         dsSelection.setFilesCount(1);
         dsSelection.setObjectsCount(1);
-
-        BasketDatedItemsSelection itemsSelection = new BasketDatedItemsSelection();
-        itemsSelection.setFilesSize(1_000_001l);
-        itemsSelection.setFilesCount(1);
-        itemsSelection.setObjectsCount(1);
-        itemsSelection.setOpenSearchRequest("someone:something");
-        itemsSelection.setDate(OffsetDateTime.now());
-        dsSelection.addItemsSelection(itemsSelection);
+        dsSelection.addItemsSelection(createDatasetItemSelection(1_000_001l, 1, 1, "someone:something"));
         basket.addDatasetSelection(dsSelection);
-
         basket = basketRepos.save(basket);
-
         Order order = orderService.createOrder(basket, "http://perdu.com");
         Assert.assertNotNull(order);
     }
@@ -204,10 +231,10 @@ public class OrderServiceIT {
         DatasetTask ds1OrderTask = new DatasetTask();
         ds1OrderTask.setDatasetIpid(DS1_IP_ID.toString());
         ds1OrderTask.setDatasetLabel("DS1");
-        ds1OrderTask.setOpenSearchRequest("all:ds1");
         ds1OrderTask.setFilesCount(1);
         ds1OrderTask.setFilesSize(1_000_000l);
         ds1OrderTask.setObjectsCount(1);
+        ds1OrderTask.addSelectionRequest(createBasketSelectionRequest("all:ds1"));
         order.addDatasetOrderTask(ds1OrderTask);
 
         // DS1 files sub order tasks
@@ -215,9 +242,12 @@ public class OrderServiceIT {
         ds1SubOrder1Task.setOwner(USER_EMAIL);
         DataFile dataFile1 = new DataFile();
         dataFile1.setUri(new URI("staff://toto/titi/tutu"));
+        dataFile1.setDataType(DataType.RAWDATA);
+        dataFile1.setMimeType(MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM.toString()));
         dataFile1.setOnline(true);
-        dataFile1.setSize(1_000_000l);
-        dataFile1.setName("tutu");
+        dataFile1.setFilesize(1_000_000l);
+        dataFile1.setFilename("tutu");
+        dataFile1.setReference(false);
         OrderDataFile df1 = new OrderDataFile(dataFile1, DO1_IP_ID, order.getId());
         // dataFile is ONLINE, its state will be AVAILABLE after asking Storage
         df1.setState(FileState.AVAILABLE);
@@ -228,8 +258,11 @@ public class OrderServiceIT {
         DataFile dataFile2 = new DataFile();
         dataFile2.setUri(new URI("staff://toto2/titi2/tutu2"));
         dataFile2.setOnline(false);
-        dataFile2.setSize(1l);
-        dataFile2.setName("tutu2");
+        dataFile2.setFilesize(1l);
+        dataFile2.setFilename("tutu2");
+        dataFile2.setReference(false);
+        dataFile2.setMimeType(MimeType.valueOf(MediaType.APPLICATION_OCTET_STREAM.toString()));
+        dataFile2.setDataType(DataType.RAWDATA);
         OrderDataFile df2 = new OrderDataFile(dataFile2, DO2_IP_ID, order.getId());
         dataFileRepos.save(df2);
         ds1SubOrder1Task.addFile(df2);
@@ -278,7 +311,7 @@ public class OrderServiceIT {
         dsSelection.setObjectsCount(3);
         dsSelection.setFilesCount(12);
         dsSelection.setFilesSize(3_000_171l);
-        dsSelection.setOpenSearchRequest("ALL");
+        dsSelection.addItemsSelection(createDatasetItemSelection(3_000_171l, 12, 3, "ALL"));
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
 
@@ -317,7 +350,7 @@ public class OrderServiceIT {
         dsSelection.setObjectsCount(3);
         dsSelection.setFilesCount(12);
         dsSelection.setFilesSize(3_000_171l);
-        dsSelection.setOpenSearchRequest("ALL");
+        dsSelection.addItemsSelection(createDatasetItemSelection(3_000_171l, 12, 3, "ALL"));
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
 
@@ -336,8 +369,7 @@ public class OrderServiceIT {
 
     @Test
     @Ignore
-    public void testPauseResume()
-            throws InterruptedException, CannotResumeOrderException, CannotPauseOrderException {
+    public void testPauseResume() throws InterruptedException, CannotResumeOrderException, CannotPauseOrderException {
 
         Basket basket = new Basket("tulavu@qui.fr");
         BasketDatasetSelection dsSelection = new BasketDatasetSelection();
@@ -346,7 +378,7 @@ public class OrderServiceIT {
         dsSelection.setObjectsCount(3);
         dsSelection.setFilesCount(12);
         dsSelection.setFilesSize(3_000_171l);
-        dsSelection.setOpenSearchRequest("ALL");
+        dsSelection.addItemsSelection(createDatasetItemSelection(3_000_171l, 12, 3, "ALL"));
         basket.addDatasetSelection(dsSelection);
         basketRepos.save(basket);
 
@@ -362,7 +394,7 @@ public class OrderServiceIT {
         Set<JobInfo> jobInfos = order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
                 .map(FilesTask::getJobInfo).collect(Collectors.toSet());
         Assert.assertTrue(jobInfos.stream().map(jobInfo -> jobInfo.getStatus().getStatus())
-                                  .allMatch(JobStatus::isFinished));
+                .allMatch(JobStatus::isFinished));
         // Sometime, pause/resume has been asked toolate (and so percent is at 100 %)
         Assert.assertTrue(order.getPercentCompleted() <= 100);
 
@@ -402,7 +434,7 @@ public class OrderServiceIT {
         jobInfos = order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
                 .map(FilesTask::getJobInfo).collect(Collectors.toSet());
         Assert.assertTrue(jobInfos.stream().map(jobInfo -> jobInfo.getStatus().getStatus())
-                                  .allMatch(status -> status == JobStatus.SUCCEEDED));
+                .allMatch(status -> status == JobStatus.SUCCEEDED));
 
         Assert.assertTrue(order.getPercentCompleted() == 100);
     }
@@ -443,7 +475,7 @@ public class OrderServiceIT {
         order.setStatus(OrderStatus.DONE);
         orderRepos.save(order);
 
-//        orderService.sendPeriodicNotifications();
+        //        orderService.sendPeriodicNotifications();
 
         // F%$king test which functions when thez want
         if (mailMessage != null) {
@@ -451,32 +483,14 @@ public class OrderServiceIT {
             Assert.assertEquals(order.getOwner(), mailMessage.getTo()[0]);
             // Check that email text has been interpreted before being sent
             SimpleDateFormat sdf = new SimpleDateFormat("d MMM yyyy HH:mm:ss z");
-            Assert.assertTrue(mailMessage.getText().contains(sdf.format(Date.from(order.getExpirationDate().toInstant()))));
-            Assert.assertTrue(mailMessage.getText().contains(sdf.format(Date.from(order.getCreationDate().toInstant()))));
+            Assert.assertTrue(mailMessage.getText()
+                    .contains(sdf.format(Date.from(order.getExpirationDate().toInstant()))));
+            Assert.assertTrue(mailMessage.getText()
+                    .contains(sdf.format(Date.from(order.getCreationDate().toInstant()))));
 
             Assert.assertFalse(mailMessage.getText().contains("${order}"));
         }
 
     }
 
-    private static SimpleMailMessage mailMessage;
-
-    private OrderDataFile createOrderDataFile(Order order, UniformResourceName aipId, String filename, boolean online)
-            throws URISyntaxException {
-        OrderDataFile dataFile1 = new OrderDataFile();
-        dataFile1.setUrl("file:///test/files/" + filename);
-        dataFile1.setName(filename);
-        dataFile1.setIpId(aipId);
-        if (online) {
-            dataFile1.setOnline(true);
-        } else {
-            dataFile1.setOnline(false);
-            dataFile1.setState(FileState.AVAILABLE);
-        }
-        dataFile1.setChecksum(filename);
-        dataFile1.setSize(new File("src/test/resources/files/", filename).length());
-        dataFile1.setOrderId(order.getId());
-        dataFile1.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
-        return dataFile1;
-    }
 }

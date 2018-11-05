@@ -1,11 +1,30 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.order.rest;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +45,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import com.google.common.base.Strings;
+import com.google.common.net.HttpHeaders;
+
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
@@ -169,7 +190,7 @@ public class OrderController implements IResourceController<OrderDto> {
     @ResourceAccess(description = "Generate a CSV file with all orders", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(method = RequestMethod.GET, path = ADMIN_ROOT_PATH + CSV, produces = "text/csv")
     public void generateCsv(HttpServletResponse response) throws IOException {
-        response.addHeader("Content-disposition", "attachment;filename=orders.csv");
+        response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=orders.csv");
         response.setContentType("text/csv");
         orderService.writeAllOrdersInCsv(new BufferedWriter(response.getWriter()));
     }
@@ -192,7 +213,7 @@ public class OrderController implements IResourceController<OrderDto> {
         if (order == null) {
             throw new EntityNotFoundException(orderId.toString(), Order.class);
         }
-        response.addHeader("Content-disposition",
+        response.addHeader(HttpHeaders.CONTENT_DISPOSITION,
                            "attachment;filename=order_" + orderId + "_" + OffsetDateTime.now().toString() + ".zip");
         response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
         List<OrderDataFile> availableFiles = new ArrayList<>(dataFileService.findAllAvailables(orderId));
@@ -244,8 +265,9 @@ public class OrderController implements IResourceController<OrderDto> {
      */
     private ResponseEntity<StreamingResponseBody> createMetalinkDownloadResponse(@PathVariable("orderId") Long orderId,
             HttpServletResponse response) {
-        response.addHeader("Content-disposition",
-                           "attachment;filename=order_" + OffsetDateTime.now().toString() + ".metalink");
+        response.addHeader(HttpHeaders.CONTENT_DISPOSITION,
+                           "attachment;filename=order_" + orderId + "_" + OffsetDateTime.now().toString()
+                                   + ".metalink");
         response.setContentType("application/metalink+xml");
 
         // Stream the response
@@ -260,6 +282,13 @@ public class OrderController implements IResourceController<OrderDto> {
     public static class OrderRequest {
 
         private String onSuccessUrl;
+
+        public OrderRequest() {
+        }
+
+        public OrderRequest(String onSuccessUrl) {
+            this.onSuccessUrl = onSuccessUrl;
+        }
 
         public String getOnSuccessUrl() {
             return onSuccessUrl;

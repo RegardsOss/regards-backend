@@ -1,16 +1,32 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.order.rest;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -24,14 +40,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-import org.springframework.web.util.UriUtils;
 
-import com.google.common.base.Preconditions;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
@@ -52,7 +65,7 @@ import io.jsonwebtoken.MalformedJwtException;
 @RequestMapping("")
 public class OrderDataFileController implements IResourceController<OrderDataFile> {
 
-    public static final String ORDERS_AIPS_AIP_ID_FILES_CHECKSUM = "/orders/aips/{aipId}/files/{checksum}";
+    public static final String ORDERS_AIPS_AIP_ID_FILES_ID = "/orders/aips/{aipId}/files/{dataFileId}";
 
     public static final String ORDERS_FILES_DATA_FILE_ID = "/orders/files/{dataFileId}";
 
@@ -82,8 +95,11 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
         int cpt = 0;
         List<OrderDataFile> dataFiles = new ArrayList<>();
         for (FilesTask filesTask : dsTask.getReliantTasks()) {
+            // Sort by filename before managinf pagination
+            List<OrderDataFile> sortedDataFiles = new ArrayList<>(filesTask.getFiles());
+            sortedDataFiles.sort(Comparator.comparing(OrderDataFile::getFilename));
             for (OrderDataFile dataFile : filesTask.getFiles()) {
-                if ((cpt >= pageRequest.getOffset()) && (cpt < pageRequest.getOffset() + pageRequest.getPageSize())) {
+                if ((cpt >= pageRequest.getOffset()) && (cpt < (pageRequest.getOffset() + pageRequest.getPageSize()))) {
                     dataFiles.add(dataFile);
                 }
                 cpt++;
@@ -98,34 +114,43 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
             HttpServletResponse response) throws NoSuchElementException {
         // Throws a NoSuchElementException if not found
         OrderDataFile dataFile = dataFileService.load(dataFileId);
-        response.addHeader("Content-disposition", "attachment;filename=" + dataFile.getName());
-        response.setContentType(dataFile.getMimeType().toString());
+        // External files haven't necessarily a file name (but they have an URL)
+        String filename = (dataFile.getFilename() != null) ? dataFile.getFilename()
+                : dataFile.getUrl().substring(dataFile.getUrl().lastIndexOf('/') + 1);
+        response.addHeader("Content-disposition", "attachment;filename=" + filename);
+        if (dataFile.getMimeType() != null) {
+            response.setContentType(dataFile.getMimeType().toString());
+        }
 
         return new ResponseEntity<>(os -> dataFileService.downloadFile(dataFile, os), HttpStatus.OK);
     }
 
     @ResourceAccess(description = "Download a file that is part of an order granted by token",
             role = DefaultRole.PUBLIC)
-    @RequestMapping(method = RequestMethod.GET, path = ORDERS_AIPS_AIP_ID_FILES_CHECKSUM)
+    @RequestMapping(method = RequestMethod.GET, path = ORDERS_AIPS_AIP_ID_FILES_ID)
     public ResponseEntity<StreamingResponseBody> publicDownloadFile(@PathVariable("aipId") String aipId,
-            @PathVariable("checksum") String checksum, @RequestParam(name = IOrderService.ORDER_TOKEN) String token,
-            HttpServletResponse response) throws NoSuchElementException, IOException {
+            @PathVariable("dataFileId") Long dataFileId, @RequestParam(name = IOrderService.ORDER_TOKEN) String token,
+            HttpServletResponse response) throws NoSuchElementException {
         OrderDataFile dataFile;
         String user;
         String role;
         try {
             Claims claims = jwtService.parseToken(token, secret);
-            Long orderId = Long.parseLong(claims.get(IOrderService.ORDER_ID_KEY, String.class));
+            Long.parseLong(claims.get(IOrderService.ORDER_ID_KEY, String.class));
             user = claims.get(JWTService.CLAIM_SUBJECT).toString();
             role = claims.get(JWTService.CLAIM_ROLE).toString();
             // Throws a NoSuchElementException if not found
-            dataFile = dataFileService.find(orderId, decodeUrn(aipId), checksum);
+            dataFile = dataFileService.load(dataFileId);
         } catch (InvalidJwtException | MalformedJwtException e) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        response.addHeader("Content-disposition", "attachment;filename=" + dataFile.getName());
-        response.setContentType(dataFile.getMimeType().toString());
+        String filename = (dataFile.getFilename() != null) ? dataFile.getFilename()
+                : dataFile.getUrl().substring(dataFile.getUrl().lastIndexOf('/') + 1);
+        response.addHeader("Content-disposition", "attachment;filename=" + filename);
+        if (dataFile.getMimeType() != null) {
+            response.setContentType(dataFile.getMimeType().toString());
+        }
 
         switch (dataFile.getState()) {
             case PENDING:
@@ -145,10 +170,6 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
                     }
                 }, HttpStatus.OK);
         }
-    }
-
-    private static UniformResourceName decodeUrn(String aipId) throws UnsupportedEncodingException {
-        return UniformResourceName.fromString(UriUtils.decode(aipId, Charset.defaultCharset().name()));
     }
 
     @Override

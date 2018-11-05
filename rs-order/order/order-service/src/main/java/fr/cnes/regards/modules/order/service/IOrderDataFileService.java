@@ -1,3 +1,21 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.order.service;
 
 import java.io.IOException;
@@ -18,19 +36,24 @@ public interface IOrderDataFileService {
 
     /**
      * Simply save OrderDataFile in database, no more action is done. This method is to be used at sub-orders creation.
+     * @param dataFiles
+     * @return {@link OrderDataFile}s
      */
     Iterable<OrderDataFile> create(Iterable<OrderDataFile> dataFiles);
 
     /**
      * Save given OrderDataFile, search for associated files task, update its end state then update associated order
      * waiting for user flag
+     * @param dataFile
+     * @return {@link OrderDataFile}
      */
     OrderDataFile save(OrderDataFile dataFile);
-
 
     /**
      * Save given OrderDataFiles, search for associated files task, update them end state then update associated order
      * waiting for user flag
+     * @param dataFiles
+     * @return {@link OrderDataFile}s
      */
     Iterable<OrderDataFile> save(Iterable<OrderDataFile> dataFiles);
 
@@ -41,20 +64,24 @@ public interface IOrderDataFileService {
     /**
      * Find all OrderDataFile with state AVAILABLE associated to given order
      * @param orderId id of order
+     * @return {@link OrderDataFile}s
      */
     List<OrderDataFile> findAllAvailables(Long orderId);
 
     /**
      * Find all OrderDataFile of given order
      * @param orderId if of order
+     * @return {@link OrderDataFile}s
      */
     List<OrderDataFile> findAll(Long orderId);
 
     /**
      * Copy asked file from storage to HttpServletResponse
+     * @param dataFile
+     * @param os
+     * @throws IOException
      */
-    void downloadFile(OrderDataFile dataFile, OutputStream os)
-            throws IOException;
+    void downloadFile(OrderDataFile dataFile, OutputStream os) throws IOException;
 
     /**
      * Search all current orders (ie not finished), compute and update completion values (percentCompleted and files in
@@ -68,6 +95,7 @@ public interface IOrderDataFileService {
 
     /**
      * Remove all data files from an order
+     * @param orderId
      */
     void removeAll(Long orderId);
 }

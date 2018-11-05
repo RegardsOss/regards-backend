@@ -1,4 +1,25 @@
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.order.domain;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.persistence.Column;
 import javax.persistence.ColumnResult;
@@ -17,14 +38,13 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.SqlResultSetMapping;
 import javax.persistence.SqlResultSetMappings;
 import javax.persistence.Table;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 import org.hibernate.annotations.Type;
 import org.springframework.util.MimeType;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
+import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.oais.urn.converters.UrnConverter;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
@@ -37,40 +57,37 @@ import fr.cnes.regards.modules.indexer.domain.DataFile;
 @Table(name = "t_data_file",
         indexes = @Index(name = "data_file_idx", columnList = "checksum, order_id, state, data_objects_ip_id"))
 @NamedNativeQueries({
-        @NamedNativeQuery(query = "SELECT o.*, sum(df.size) as size FROM {h-schema}t_data_file df, {h-schema}t_order o "
-                + "WHERE df.order_id = o.id AND df.size is not NULL AND "
-                + "o.id IN (SELECT id FROM {h-schema}t_order WHERE ?1 <= expiration_date AND "
-                + "status in ('RUNNING', 'PAUSED')) "
-                + "GROUP BY o.id ORDER BY o.id",
-                resultSetMapping = "sumMapping",
-                name = "selectSumSizesByOrderId"),
+        @NamedNativeQuery(
+                query = "SELECT o.*, sum(df.size) as size FROM {h-schema}t_data_file df, {h-schema}t_order o "
+                        + "WHERE df.order_id = o.id AND df.size is not NULL AND "
+                        + "o.id IN (SELECT id FROM {h-schema}t_order WHERE ?1 <= expiration_date AND "
+                        + "status in ('RUNNING', 'PAUSED')) " + "GROUP BY o.id ORDER BY o.id",
+                resultSetMapping = "sumMapping", name = "selectSumSizesByOrderId"),
         @NamedNativeQuery(
                 query = "SELECT o.*, sum(df.size) as size FROM {h-schema}t_data_file df, {h-schema}t_order o WHERE "
-                + "df.order_id = o.id AND df.size is not NULL AND "
-                + "o.id IN (SELECT id FROM {h-schema}t_order WHERE ?1 <= expiration_date AND "
-                + "status in ('RUNNING', 'PAUSED')) "
-                + "AND df.state IN (?2) GROUP BY o.id ORDER BY o.id",
+                        + "df.order_id = o.id AND df.size is not NULL AND "
+                        + "o.id IN (SELECT id FROM {h-schema}t_order WHERE ?1 <= expiration_date AND "
+                        + "status in ('RUNNING', 'PAUSED')) " + "AND df.state IN (?2) GROUP BY o.id ORDER BY o.id",
                 resultSetMapping = "sumMapping", name = "selectSumSizesByOrderIdAndStates"),
-        @NamedNativeQuery(
+        @NamedNativeQuery( // WARNING : this request is used to count files in error (except DOWNLOAD_ERROR) so
+                // only internal files are concerned => df.size must not be null
                 query = "SELECT o.*, count(df.*) as count FROM {h-schema}t_data_file df, {h-schema}t_order o WHERE "
-                + "df.order_id = o.id AND df.size is not NULL AND "
-                + "o.id IN (SELECT id FROM {h-schema}t_order WHERE ?1 <= expiration_date AND "
-                + "status in ('RUNNING', 'PAUSED')) "
-                + "AND df.state IN (?2) GROUP BY o.id ORDER BY o.id",
+                        + "df.order_id = o.id AND df.size is not NULL AND "
+                        + "o.id IN (SELECT id FROM {h-schema}t_order WHERE ?1 <= expiration_date AND "
+                        + "status in ('RUNNING', 'PAUSED')) " + "AND df.state IN (?2) GROUP BY o.id ORDER BY o.id",
                 resultSetMapping = "countMapping", name = "selectCountFilesByOrderIdAndStates"),
-        @NamedNativeQuery(
+        @NamedNativeQuery( // WARNING : this request permits to count all available files EVEN  external files which
+                // haven't a size (but are tagged as reference)
                 query = "SELECT o.*, count(df.*) as count FROM {h-schema}t_data_file df, {h-schema}t_order o WHERE "
-                + "df.order_id = o.id AND df.size is not NULL AND "
-                + "o.id IN (SELECT id FROM {h-schema}t_order WHERE ?1 <= expiration_date) "
-                + "AND df.state IN (?2) GROUP BY o.id ORDER BY o.id",
-                resultSetMapping = "countMapping", name = "selectCountFilesByOrderIdAndStates4AllOrders")
-        })
+                        + "df.order_id = o.id AND (df.size is not NULL OR (df.size is NULL AND df.reference is TRUE)) AND "
+                        + "o.id IN (SELECT id FROM {h-schema}t_order WHERE ?1 <= expiration_date) "
+                        + "AND df.state IN (?2) GROUP BY o.id ORDER BY o.id",
+                resultSetMapping = "countMapping", name = "selectCountFilesByOrderIdAndStates4AllOrders") })
 @SqlResultSetMappings({
         @SqlResultSetMapping(name = "sumMapping", columns = @ColumnResult(name = "size", type = Long.class),
-                             entities = @EntityResult(entityClass = Order.class)),
+                entities = @EntityResult(entityClass = Order.class)),
         @SqlResultSetMapping(name = "countMapping", columns = @ColumnResult(name = "count", type = Long.class),
-                entities = @EntityResult(entityClass = Order.class))
-})
+                entities = @EntityResult(entityClass = Order.class)) })
 public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
 
     private Long id;
@@ -98,15 +115,17 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
     }
 
     public OrderDataFile(DataFile dataFile, UniformResourceName ipId, Long orderId) {
-        setName(dataFile.getName());
-        setSize(dataFile.getSize());
+        setFilename(dataFile.getFilename());
+        setFilesize(dataFile.getFilesize());
         setUri(dataFile.getUri());
         setChecksum(dataFile.getChecksum());
         setDigestAlgorithm(dataFile.getDigestAlgorithm());
         setMimeType(dataFile.getMimeType());
+        setReference(dataFile.isReference());
+        setDataType(dataFile.getDataType());
         state = FileState.PENDING;
-        setOnline(dataFile.getOnline());
-        this.ipId= ipId;
+        setOnline(dataFile.isOnline());
+        this.ipId = ipId;
         this.orderId = orderId;
     }
 
@@ -157,8 +176,8 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
 
     @Override
     @Column(name = "size")
-    public Long getSize() {
-        return super.getSize();
+    public Long getFilesize() {
+        return super.getFilesize();
     }
 
     @Override
@@ -170,14 +189,14 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
 
     @Override
     @Column(name = "name", length = 255)
-    public String getName() {
-        return super.getName();
+    public String getFilename() {
+        return super.getFilename();
     }
 
     @Override
     @Column(name = "online")
     public Boolean getOnline() {
-        return super.getOnline();
+        return super.isOnline();
     }
 
     @Column(name = "order_id") // No foreign key
@@ -189,6 +208,19 @@ public class OrderDataFile extends DataFile implements IIdentifiable<Long> {
     @Type(type = "text")
     public String getDownloadError() {
         return downloadError;
+    }
+
+    @Override
+    @Column(name = "data_type")
+    @Enumerated(EnumType.STRING)
+    public DataType getDataType() {
+        return super.getDataType();
+    }
+
+    @Override
+    @Column(name = "reference")
+    public Boolean isReference() {
+        return super.isReference();
     }
 
     public void setOrderId(Long orderId) {
