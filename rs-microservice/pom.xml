@@ -17,9 +17,6 @@
 	<version>3.0.0-RELEASE</version>
 	<packaging>pom</packaging>
 
-	<name>REGARDS Core</name>
-	<description>Common part of every REGARDS microservice</description>
-
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-aggregator-parent</artifactId>

@@ -13,9 +13,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>jpa-multitenant-regards-starter</artifactId>
-	<name>JPA Multitenant REGARDS Starter</name>
-	<description>Provides autoconfiguration for JPA at multi-tenant level as a Spring Boot like starter</description> 
-		
+	<description>REGARDS Swagger starter</description>
+
 	<parent>
 		<groupId>fr.cnes.regards.framework</groupId>
 		<artifactId>regards-starters</artifactId>

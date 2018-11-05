@@ -26,9 +26,6 @@
 	<version>${version}</version>
 	<packaging>pom</packaging>
 
-	<name>Hello World Module</name>
-	<description>Module saying "Hello!" to the world</description>
-
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-parent</artifactId>

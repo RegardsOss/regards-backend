@@ -13,9 +13,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>microservice-regards</artifactId>
-	<name>Microservice REGARDS</name>
-	<description>Common tools for managing microservices</description> 
-	
+	<description>REGARDS microservice</description>
+
 	<parent>
 		<groupId>fr.cnes.regards.framework</groupId>
 		<artifactId>regards-starters</artifactId>

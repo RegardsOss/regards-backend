@@ -13,9 +13,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>amqp-monitoring-regards-starter</artifactId>
-	<name>AMQP Monitoring REGARDS Starter</name>
-	<description>Spring Boot starter for configuration the AMQP monitoring features</description> 
-	
+	<description>REGARDS AMQP monitoring starter</description>
+
 	<parent>
 		<groupId>fr.cnes.regards.framework</groupId>
 		<artifactId>regards-starters</artifactId>

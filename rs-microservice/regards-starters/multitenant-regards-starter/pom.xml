@@ -13,9 +13,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>multitenant-regards-starter</artifactId>
-	<name>Multitenant REGARDS Starter</name>
-	<description>Provides autoconfiguration for Multitenant REGARDS module as a Spring Boot like starter</description> 
-	
+	<description>REGARDS multitenant starter</description>
+
 	<parent>
 		<groupId>fr.cnes.regards.framework</groupId>
 		<artifactId>regards-starters</artifactId>

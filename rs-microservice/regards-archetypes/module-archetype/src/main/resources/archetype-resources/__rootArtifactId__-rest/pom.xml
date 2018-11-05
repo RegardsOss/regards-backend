@@ -25,9 +25,6 @@
 	<artifactId>${artifactId}</artifactId>
 	<packaging>jar</packaging>
 
-	<name>${rootArtifactId} REST</name>
-	<description>Controller layer of the ${rootArtifactId} module</description>
-
 	<parent>
 		<groupId>${groupId}</groupId>
 		<artifactId>${rootArtifactId}</artifactId>
