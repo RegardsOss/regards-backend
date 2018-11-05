@@ -23,7 +23,7 @@
 
 	<groupId>fr.cnes.regards.cloud</groupId>
 	<artifactId>bootstrap-registry</artifactId>
-	<version>2.0.0-RELEASE</version>
+	<version>3.0.0-RELEASE</version>
 	<description>REGARDS Cloud - Registry</description>
 	<packaging>jar</packaging>
 
@@ -52,7 +52,7 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-boot-parent</artifactId>
-		<version>2.0.0-RELEASE</version>
+		<version>3.0.0-RELEASE</version>
 		<relativePath></relativePath>
 	</parent>
 
@@ -61,7 +61,7 @@
 		<sonar.language>java</sonar.language>
 		<sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
 		<fr.cnes.regards.docker.image.name>rs-registry</fr.cnes.regards.docker.image.name>
-		<docker.entryPoint>["./wait-for-it.sh", "rs_config:9031", "-t", "0", "--", "java", "-Xmx128m","-Djava.security.egd=file:/dev/./urandom","-agentlib:jdwp=transport=dt_socket,address=10500,server=y,suspend=n", "-jar","/${project.build.finalName}.${project.packaging}"]</docker.entryPoint>
+		<docker.entryPoint>["./wait-for-it.sh", "rs-config:9031", "-t", "0", "--", "java", "-Xmx128m","-Djava.security.egd=file:/dev/./urandom","-agentlib:jdwp=transport=dt_socket,address=10500,server=y,suspend=n", "-jar","/${project.build.finalName}.${project.packaging}"]</docker.entryPoint>
 	</properties>
 
 	<dependencies>
@@ -80,6 +80,10 @@
 		<dependency>
 			<groupId>org.aspectj</groupId>
 			<artifactId>aspectjweaver</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>microservice-logger</artifactId>
 		</dependency>
 
 		<!-- Tests -->

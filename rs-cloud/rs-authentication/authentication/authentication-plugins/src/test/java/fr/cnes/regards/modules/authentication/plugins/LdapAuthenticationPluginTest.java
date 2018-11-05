@@ -20,9 +20,9 @@ package fr.cnes.regards.modules.authentication.plugins;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.directory.api.ldap.model.entry.Attribute;
 import org.apache.directory.api.ldap.model.entry.Entry;
@@ -74,23 +74,23 @@ public class LdapAuthenticationPluginTest {
     @BeforeClass
     public static void init() {
 
+        PluginUtils.setup();
+
         /*
          * Set all parameters
          */
-        final List<PluginParameter> parameters = PluginParametersFactory.build()
+        final Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_HOST, "test")
                 .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_PORT, "8080")
                 .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_CN, "ou=people,ou=commun")
                 .addParameter(LdapAuthenticationPlugin.PARAM_LDAP_USER_EMAIL_ATTTRIBUTE, "email").getParameters();
         try {
             // instantiate plugin
-            plugin = PluginUtils.getPlugin(parameters, LdapAuthenticationPlugin.class, Arrays
-                    .asList("fr.cnes.regards.cloud.gateway.authentication.plugins.impl.kerberos"), new HashMap<>());
+            plugin = PluginUtils.getPlugin(parameters, LdapAuthenticationPlugin.class, new HashMap<>());
             Assert.assertNotNull(plugin);
         } catch (final PluginUtilsRuntimeException e) {
             Assert.fail();
         }
-
     }
 
     /**

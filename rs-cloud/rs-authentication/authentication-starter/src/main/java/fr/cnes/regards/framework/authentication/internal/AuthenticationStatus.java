@@ -23,6 +23,7 @@ package fr.cnes.regards.framework.authentication.internal;
  * Enumeration for authentication plugins status.
  *
  * @author Sébastien Binda
+ * @author Christophe Mertz
  *
  */
 public enum AuthenticationStatus {
@@ -46,6 +47,11 @@ public enum AuthenticationStatus {
      * Account inactive
      */
     ACCOUNT_INACTIVE,
+    
+    /**
+     * Account inactive password out of date
+     */
+    ACCOUNT_INACTIVE_PASSWORD,
 
     /**
      * Password locked.

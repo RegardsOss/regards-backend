@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.authentication.internal;
 
+import java.lang.reflect.Type;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
@@ -35,13 +37,29 @@ import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 public class Oauth2DefaultTokenMessageConverter extends MappingJackson2HttpMessageConverter {
 
     @Override
-    public boolean canWrite(final Class<?> pClazz, final MediaType pMedia) {
-        boolean result = false;
+    public boolean canWrite(Class<?> clazz, MediaType mediaType) {
         // Only user Jackson for Oauth2 Token.
-        if (DefaultOAuth2AccessToken.class.equals(pClazz)) {
-            result = super.canWrite(pClazz, pMedia);
+        if (DefaultOAuth2AccessToken.class.equals(clazz)) {
+            return super.canWrite(clazz, mediaType);
         }
-        return result;
+        return false;
     }
 
+    @Override
+    public boolean canRead(Class<?> clazz, MediaType mediaType) {
+        // Only user Jackson for Oauth2 Token.
+        if (DefaultOAuth2AccessToken.class.equals(clazz)) {
+            return super.canRead(clazz, mediaType);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean canRead(Type type, Class<?> contextClass, MediaType mediaType) {
+        // Only user Jackson for Oauth2 Token.
+        if (DefaultOAuth2AccessToken.class.getTypeName().equals(type.getTypeName())) {
+            return super.canRead(type, contextClass, mediaType);
+        }
+        return false;
+    }
 }

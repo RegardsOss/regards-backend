@@ -21,25 +21,7 @@
 
 	<include resource="fr/cnes/regards/framework/logbackappender/defaults.xml" />
 
-	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-		<encoder>
-			<pattern>${CONSOLE_LOG_PATTERN}</pattern>
-		</encoder>
-	</appender>
-
-	<appender name="SYSLOG" class="ch.qos.logback.classic.net.SyslogAppender">
-		<syslogHost>localhost</syslogHost>
-		<facility>LOCAL0</facility>
-		<suffixPattern>${SYSLOG_PATTERN}</suffixPattern>
-		<port>514</port>
-	</appender>
-
-	<appender name="SYSLOG-SECU" class="ch.qos.logback.classic.net.SyslogAppender">
-		<syslogHost>localhost</syslogHost>
-		<facility>LOCAL1</facility>
-		<suffixPattern>${SYSLOG_SECURITY_PATTERN}</suffixPattern>
-		<port>514</port>
-	</appender>
+	<include resource="fr/cnes/regards/framework/logbackappender/syslog.xml" />
 
 	<appender name="regardsAmqpAppender"
 		class="ch.qos.logback.ext.spring.DelegatingLogbackAppender">
@@ -48,7 +30,7 @@
 			<level>INFO</level>
 		</filter>
 	</appender>
-	
+
 	<!-- Log the user request authentication -->
 	<logger name="fr.cnes.regards.framework.authentication" level="INFO">
 		<appender-ref ref="SYSLOG-SECU" />
@@ -66,7 +48,7 @@
 	<logger name="fr.cnes.regards" level="INFO" additivity="true">
 		<appender-ref ref="regardsAmqpAppender" />
 	</logger>
-	
+
 	<root level="info">
 		<appender-ref ref="STDOUT" />
 		<appender-ref ref="SYSLOG" />

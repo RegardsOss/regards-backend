@@ -127,6 +127,7 @@ public class Oauth2AutoConfiguration {
     /**
      *
      * Mvc specific configuration for Oauth2 endpoints
+     * @param pEndpoints
      *
      * @return ICustomWebSecurityConfiguration
      * @since 1.0-SNAPSHOT

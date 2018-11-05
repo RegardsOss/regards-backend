@@ -20,10 +20,6 @@ package fr.cnes.regards.modules.authentication.service;
 
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +35,6 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
-import fr.cnes.regards.modules.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.modules.authentication.plugins.IServiceProviderPlugin;
 import fr.cnes.regards.modules.authentication.plugins.domain.ExternalAuthenticationInformations;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
@@ -57,11 +52,6 @@ import fr.cnes.regards.modules.project.domain.Project;
  */
 @Service
 public class ExternalAuthenticationPluginService implements IExternalAuthenticationPluginsService {
-
-    /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(ExternalAuthenticationPluginService.class);
 
     /**
      * Plugins service manager
@@ -98,11 +88,6 @@ public class ExternalAuthenticationPluginService implements IExternalAuthenticat
         jwtService = pJwtService;
         projectsClient = pProjectsClient;
         projectUsersClient = pProjectUsersClient;
-    }
-
-    @PostConstruct
-    public void addPluginPackage() {
-        pluginService.addPluginPackage(IAuthenticationPlugin.class.getPackage().getName());
     }
 
     @Override
@@ -155,16 +140,16 @@ public class ExternalAuthenticationPluginService implements IExternalAuthenticat
 
                 // Get informations about the user from the regards internal accounts.
                 final ResponseEntity<Resource<ProjectUser>> userResponse = projectUsersClient
-                        .retrieveProjectUserByEmail(userDetails.getName());
+                        .retrieveProjectUserByEmail(userDetails.getEmail());
 
                 if (userResponse.getStatusCode().equals(HttpStatus.OK)
                         && (userResponse.getBody().getContent() != null)) {
-                    jwtService.generateToken(pAuthInformations.getProject(),
+                    jwtService.generateToken(pAuthInformations.getProject(), pAuthInformations.getUserName(),
                                              userResponse.getBody().getContent().getEmail(),
                                              userResponse.getBody().getContent().getRole().getName());
                 } else {
                     throw new BadCredentialsException(
-                            String.format("User %s does not have access to project %s", userDetails.getName(),
+                            String.format("User %s does not have access to project %s", userDetails.getLogin(),
                                           pAuthInformations.getProject()));
                 }
             }

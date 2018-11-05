@@ -52,11 +52,6 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
      */
     private static List<ProjectUser> users = new ArrayList<>();
 
-    /**
-     * Id generator count
-     */
-    private static long idCount = 0;
-
     @Override
     public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveProjectUserList(final int pPage,
             final int pSize) {
