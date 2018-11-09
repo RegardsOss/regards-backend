@@ -33,6 +33,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
@@ -131,7 +132,7 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
                 ResponseEntity<Collection<SIPDto>> response = ingestClient.ingest(sipCollectionBuilder.build());
                 // Handle response
                 handleResponse(response.getStatusCode(), response.getBody(), products.getContent());
-            } catch (HttpClientErrorException e) {
+            } catch (HttpClientErrorException | HttpServerErrorException e) {
                 // Handle non 2xx or 404 status code
                 Collection<SIPDto> dtos = null;
                 if (e.getStatusCode() == HttpStatus.UNPROCESSABLE_ENTITY) {
@@ -180,7 +181,7 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
                     if (dto.getState() == SIPState.REJECTED) {
                         Product product = productMap.get(dto.getId());
                         product.setSipState(dto.getState());
-                        if (dto.getRejectionCauses() != null && !dto.getRejectionCauses().isEmpty()) {
+                        if ((dto.getRejectionCauses() != null) && !dto.getRejectionCauses().isEmpty()) {
                             StringBuffer error = new StringBuffer();
                             for (String cause : dto.getRejectionCauses()) {
                                 error.append(cause);

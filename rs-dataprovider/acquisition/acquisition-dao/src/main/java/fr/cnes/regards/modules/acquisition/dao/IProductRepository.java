@@ -66,27 +66,28 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
      *
      * @param ingestChain ingest chain
      * @param session session name
-     * @param sipState {@link ISipState}
+     * @param sipStates {@link ISipState}s
      * @param pageable page limit
      * @return a page of products with the above properties
      */
-    Page<Product> findByProcessingChainIngestChainAndSessionAndSipState(String ingestChain, String session,
-            ISipState sipState, Pageable pageable);
+    Page<Product> findByProcessingChainIngestChainAndSessionAndSipStateIn(String ingestChain, String session,
+            Collection<ISipState> sipStates, Pageable pageable);
 
     /**
      * Find all products according to specified filters (no session)
      *
      * @param ingestChain ingest chain
-     * @param sipState {@link ISipState}
+     * @param sipStates {@link ISipState}s
      * @param pageable page limit
      * @return a page of products with the above properties
      */
-    Page<Product> findByProcessingChainIngestChainAndSipStateOrderByIdAsc(String ingestChain, ISipState sipState,
-            Pageable pageable);
+    Page<Product> findByProcessingChainIngestChainAndSipStateInOrderByIdAsc(String ingestChain,
+            Collection<ISipState> sipStates, Pageable pageable);
 
     /**
      * Find {@link Product} by state in transaction with pessimistic read lock
      * @param sipState {@link ISipState}
+     * @param pageable
      * @return a set of products with the above properties
      */
     @Lock(LockModeType.PESSIMISTIC_READ)
@@ -96,6 +97,7 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
      * Find {@link Product} by state in transaction with pessimistic read lock
      * @param processingChain {@link AcquisitionProcessingChain}
      * @param sipState {@link ISipState}
+     * @param pageable
      * @return a set of products with the above properties
      */
     @Lock(LockModeType.PESSIMISTIC_READ)
@@ -108,6 +110,7 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
     /**
      * Find {@link Product} by state
      * @param sipState {@link ISipState}
+     * @param pageable
      * @return a set of products with the above properties
      */
     Page<Product> findBySipStateOrderByIdAsc(ISipState sipState, Pageable pageable);
@@ -115,6 +118,7 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
     /**
      * Count number of products associated to the given {@link AcquisitionProcessingChain} and in the given state
      * @param processingChain {@link AcquisitionProcessingChain}
+     * @param productStates
      * @param states {@link ProductState}s
      * @return number of matching {@link Product}
      */
@@ -133,6 +137,7 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
      * Count number of generation job that is actually running
      * @param processingChain {@link AcquisitionProcessingChain}
      * @param productSipState {@link ISipState}s as string
+     * @return long
      */
     @Query(value = "select count(distinct p.sip_gen_job_info_id) from  {h-schema}t_acquisition_product p where p.processing_chain_id=?1 and p.sip_state=?2",
             nativeQuery = true)

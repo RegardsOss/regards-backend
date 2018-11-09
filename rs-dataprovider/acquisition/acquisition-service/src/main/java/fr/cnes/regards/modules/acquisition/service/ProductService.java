@@ -248,7 +248,7 @@ public class ProductService implements IProductService {
 
             try {
                 String productName = productPlugin.getProductName(validFile.getFilePath());
-                if (productName != null && !productName.isEmpty()) {
+                if ((productName != null) && !productName.isEmpty()) {
                     productNames.add(productName);
                     validFilesByProductName.put(productName, validFile);
                 } else {
@@ -296,9 +296,9 @@ public class ProductService implements IProductService {
             fulfillProduct(validFilesByProductName.get(productName), currentProduct, processingChain);
 
             // Store for scheduling
-            if (currentProduct.getSipState() == ProductSIPState.NOT_SCHEDULED
-                    && (currentProduct.getState() == ProductState.COMPLETED
-                            || currentProduct.getState() == ProductState.FINISHED)) {
+            if ((currentProduct.getSipState() == ProductSIPState.NOT_SCHEDULED)
+                    && ((currentProduct.getState() == ProductState.COMPLETED)
+                            || (currentProduct.getState() == ProductState.FINISHED))) {
                 LOGGER.trace("Product {} is candidate for SIP generation", currentProduct.getProductName());
                 productsToSchedule.add(currentProduct);
             }
@@ -350,13 +350,12 @@ public class ProductService implements IProductService {
     public Page<Product> findProductsToSubmit(String ingestChain, Optional<String> session) {
 
         if (session.isPresent()) {
-            return productRepository.findByProcessingChainIngestChainAndSessionAndSipState(ingestChain, session
-                    .get(), ProductSIPState.SUBMISSION_SCHEDULED, new PageRequest(0, bulkRequestLimit));
-        } else {
             return productRepository
-                    .findByProcessingChainIngestChainAndSipStateOrderByIdAsc(ingestChain,
-                                                                             ProductSIPState.SUBMISSION_SCHEDULED,
-                                                                             new PageRequest(0, bulkRequestLimit));
+                    .findByProcessingChainIngestChainAndSessionAndSipStateIn(ingestChain, session.get(), Sets
+                            .newHashSet(ProductSIPState.SUBMISSION_SCHEDULED), new PageRequest(0, bulkRequestLimit));
+        } else {
+            return productRepository.findByProcessingChainIngestChainAndSipStateInOrderByIdAsc(ingestChain, Sets
+                    .newHashSet(ProductSIPState.SUBMISSION_SCHEDULED), new PageRequest(0, bulkRequestLimit));
         }
     }
 
@@ -509,14 +508,14 @@ public class ProductService implements IProductService {
         do {
             if (session == null) {
                 products = productRepository
-                        .findByProcessingChainIngestChainAndSipStateOrderByIdAsc(ingestChain,
-                                                                                 ProductSIPState.SUBMISSION_SCHEDULED,
-                                                                                 new PageRequest(0, defaultPageSize));
+                        .findByProcessingChainIngestChainAndSipStateInOrderByIdAsc(ingestChain, Sets
+                                .newHashSet(ProductSIPState.SUBMITTED, ProductSIPState.SUBMISSION_SCHEDULED),
+                                                                                   new PageRequest(0, defaultPageSize));
             } else {
                 products = productRepository
-                        .findByProcessingChainIngestChainAndSessionAndSipState(ingestChain, session,
-                                                                               ProductSIPState.SUBMISSION_SCHEDULED,
-                                                                               new PageRequest(0, defaultPageSize));
+                        .findByProcessingChainIngestChainAndSessionAndSipStateIn(ingestChain, session, Sets
+                                .newHashSet(ProductSIPState.SUBMITTED, ProductSIPState.SUBMISSION_SCHEDULED),
+                                                                                 new PageRequest(0, defaultPageSize));
             }
             if (products.hasContent()) {
                 for (Product product : products) {
