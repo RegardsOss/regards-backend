@@ -60,8 +60,7 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
         } else {
             throw new EntityInvalidException(String.format(
                     "Given plugin configuration(label: %s) is not a configuration for an online or nearline data storage (respectfully %s or %s)!",
-                    dataStorageConf.getLabel(),
-                    IOnlineDataStorage.class.getName(),
+                    dataStorageConf.getLabel(), IOnlineDataStorage.class.getName(),
                     INearlineDataStorage.class.getName()));
         }
         Long actualLowestPriority = getLowestPriority(dataStorageType);
@@ -150,19 +149,20 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
         }
 
         PluginConfUpdatable updatable = null;
+        boolean oldConfActive = oldOne.getDataStorageConfiguration().isActive();
 
-        if (oldOne.getDataStorageConfiguration().isActive()) {
+        if (oldConfActive) {
             // Count number of files stored by the plugin configuration
             Long nbfilesAlreadyStored = storageDataFileRepository.countByPrioritizedDataStoragesId(id);
 
             // Ask plugin if the update is allowed
             IDataStorage<?> plugin = pluginService.getPlugin(oldOne.getDataStorageConfiguration().getId());
             updatable = plugin.allowConfigurationUpdate(updated.getDataStorageConfiguration(),
-                                                        oldOne.getDataStorageConfiguration(),
-                                                        nbfilesAlreadyStored > 0);
+                                                        oldOne.getDataStorageConfiguration(), nbfilesAlreadyStored > 0);
         }
 
-        if (!oldOne.getDataStorageConfiguration().isActive() || updatable.isUpdateAllowed()) {
+        // if oldConfActive is true, updatable cannot be null
+        if (!oldConfActive || updatable.isUpdateAllowed()) {
             PluginConfiguration updatedConf = pluginService
                     .updatePluginConfiguration(updated.getDataStorageConfiguration());
             oldOne.setDataStorageConfiguration(updatedConf);
