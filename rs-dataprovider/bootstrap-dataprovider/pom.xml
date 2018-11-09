@@ -82,10 +82,6 @@
 			<groupId>fr.cnes.regards.modules.acquisition</groupId>
 			<artifactId>acquisition-rest</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.acquisition</groupId>
-			<artifactId>acquisition-plugins-ssalto</artifactId>
-		</dependency>
 	</dependencies>
 
 	<profiles>
