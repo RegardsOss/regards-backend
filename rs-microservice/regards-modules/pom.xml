@@ -14,14 +14,14 @@
 
     <groupId>fr.cnes.regards.framework</groupId>
     <artifactId>regards-modules</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>4.0.0-SNAPSHOT</version>
     <description>REGARDS framework modules</description>
     <packaging>pom</packaging>
 
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-aggregator-parent</artifactId>
-        <version>3.0.0-SNAPSHOT</version>
+        <version>4.0.0-SNAPSHOT</version>
         <relativePath/>
     </parent>
 
