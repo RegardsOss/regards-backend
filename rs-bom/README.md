@@ -8,7 +8,7 @@ For now, this version has not yet been tested under operational conditions and i
 
 Build relies on :
 * Maven 3+
-* OpenJDK 8
+* OpenJDK 8 
 
 ## Build
 
