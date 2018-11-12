@@ -25,6 +25,7 @@ import java.util.List;
 
 import fr.cnes.regards.framework.geojson.AbstractFeature;
 import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.oais.validator.DataWithRawdata;
 
 /**
  *
@@ -33,6 +34,7 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
  * @author Marc Sordi
  * @author Sylvain Vissiere-Guerinet
  */
+@DataWithRawdata
 public abstract class AbstractInformationPackage<ID> extends AbstractFeature<InformationPackageProperties, ID> {
 
     @NotNull(message = "Information package type is required")
