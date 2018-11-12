@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 
@@ -38,7 +39,6 @@ import fr.cnes.regards.modules.ingest.domain.SIP;
 /**
  * This plugin allows to generate SIP by reading it into the content of the file to acquire.
  * @author Sébastien Binda
- *
  */
 @Plugin(id = "ReadSIPFromFile", version = "1.0.0-SNAPSHOT",
         description = "Read the SIP to generate from the file content.", author = "REGARDS Team",
@@ -55,11 +55,10 @@ public class GeoJsonSIPGeneration implements ISipGenerationPlugin {
         }
         AcquisitionFile file = product.getAcquisitionFiles().get(0);
         Path sipFile = file.getFilePath();
-        try {
-            JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(sipFile.toFile())));
+        try (JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(sipFile.toFile())))) {
             SIP sip = gson.fromJson(reader, SIP.class);
             return sip;
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             throw new ModuleException(e);
         }
     }
