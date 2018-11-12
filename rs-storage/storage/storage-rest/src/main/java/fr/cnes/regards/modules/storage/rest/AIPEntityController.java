@@ -80,16 +80,19 @@ public class AIPEntityController implements IResourceController<AIPEntity> {
     public ResponseEntity<PagedResources<Resource<AIPEntity>>> retrieveAIPEntities(@PathVariable("sip_id") String sipId,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<AIPEntity> pagedResourcesAssembler) {
-        return new ResponseEntity<>(
-                toPagedResources(aipEntityService.retrieveBySip(sipId, pageable), pagedResourcesAssembler),
-                HttpStatus.OK);
+        return new ResponseEntity<>(toPagedResources(aipEntityService.retrieveBySip(sipId, pageable),
+                                                     pagedResourcesAssembler), HttpStatus.OK);
     }
 
     @Override
     public Resource<AIPEntity> toResource(AIPEntity pElement, Object... pExtras) {
         Resource<AIPEntity> resource = new Resource<>(pElement);
-        resourceService.addLink(resource, this.getClass(), "retrieveAIPEntities", LinkRels.LIST,
-                                MethodParamFactory.build(String.class), MethodParamFactory.build(Pageable.class),
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "retrieveAIPEntities",
+                                LinkRels.LIST,
+                                MethodParamFactory.build(String.class, pElement.getSipId()),
+                                MethodParamFactory.build(Pageable.class),
                                 MethodParamFactory.build(PagedResourcesAssembler.class));
         return resource;
     }
