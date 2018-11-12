@@ -263,7 +263,7 @@ public class ProductService implements IProductService {
 
             try {
                 String productName = productPlugin.getProductName(validFile.getFilePath());
-                if (productName != null && !productName.isEmpty()) {
+                if ((productName != null) && !productName.isEmpty()) {
                     productNames.add(productName);
                     validFilesByProductName.put(productName, validFile);
                 } else {
@@ -311,9 +311,9 @@ public class ProductService implements IProductService {
             fulfillProduct(validFilesByProductName.get(productName), currentProduct, processingChain);
 
             // Store for scheduling
-            if (currentProduct.getSipState() == ProductSIPState.NOT_SCHEDULED
-                    && (currentProduct.getState() == ProductState.COMPLETED
-                            || currentProduct.getState() == ProductState.FINISHED)) {
+            if ((currentProduct.getSipState() == ProductSIPState.NOT_SCHEDULED)
+                    && ((currentProduct.getState() == ProductState.COMPLETED)
+                            || (currentProduct.getState() == ProductState.FINISHED))) {
                 LOGGER.trace("Product {} is candidate for SIP generation", currentProduct.getProductName());
                 productsToSchedule.add(currentProduct);
             }

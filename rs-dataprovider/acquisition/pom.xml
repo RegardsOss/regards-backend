@@ -23,7 +23,7 @@
 
 	<groupId>fr.cnes.regards.modules</groupId>
 	<artifactId>acquisition</artifactId>
-	<version>3.0.0-SNAPSHOT</version>
+	<version>4.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<description>Module detecting data files, extracting meta data from them and generating SIP from them in order to passing them to ingest.</description>
@@ -51,7 +51,7 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-parent</artifactId>
-		<version>3.0.0-SNAPSHOT</version>
+		<version>4.0.0-SNAPSHOT</version>
 		<relativePath />
 	</parent>
 
@@ -91,9 +91,7 @@
 		<module>acquisition-dao</module>
 		<module>acquisition-rest</module>
 		<module>acquisition-service</module>
-		<module>acquisition-plugins-ssalto</module>
 		<module>acquisition-plugins</module>
-		<module>acquisition-cdpp-plugins</module>
     </modules>
 
 </project>
