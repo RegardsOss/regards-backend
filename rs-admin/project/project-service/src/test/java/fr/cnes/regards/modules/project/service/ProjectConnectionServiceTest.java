@@ -47,10 +47,10 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
-import fr.cnes.regards.modules.project.dao.stub.ProjectConnectionRepositoryStub;
-import fr.cnes.regards.modules.project.dao.stub.ProjectRepositoryStub;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
+import fr.cnes.regards.modules.project.service.stub.ProjectConnectionRepositoryStub;
+import fr.cnes.regards.modules.project.service.stub.ProjectRepositoryStub;
 
 /**
  *

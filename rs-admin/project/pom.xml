@@ -41,7 +41,6 @@
 		<module>project-domain</module>
 		<module>project-rest</module>
 		<module>project-service</module>
-		<module>project-test</module>
 	</modules>
 
 	<dependencyManagement>
