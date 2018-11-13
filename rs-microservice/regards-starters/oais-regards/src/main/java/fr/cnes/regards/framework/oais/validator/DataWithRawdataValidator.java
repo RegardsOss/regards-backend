@@ -27,9 +27,13 @@ public class DataWithRawdataValidator implements ConstraintValidator<DataWithRaw
         if (value.getIpType() == EntityType.DATA) {
             // lets see if there is at least one file representing a RAWDATA
             boolean hasRawData = false;
-            Iterator<OAISDataObject> oaisDataObjectIterator = ((InformationPackageProperties) value.getProperties())
-                    .getContentInformations().stream().map(ci -> ci.getDataObject()).collect(Collectors.toList())
-                    .iterator();
+            InformationPackageProperties properties = ((InformationPackageProperties) value.getProperties());
+            if (properties == null) {
+                // because of SIP which are references
+                return true;
+            }
+            Iterator<OAISDataObject> oaisDataObjectIterator = properties.getContentInformations().stream()
+                    .map(ci -> ci.getDataObject()).collect(Collectors.toList()).iterator();
             while (!hasRawData && oaisDataObjectIterator.hasNext()) {
                 OAISDataObject oaisDataObject = oaisDataObjectIterator.next();
                 if (oaisDataObject.getRegardsDataType() == DataType.RAWDATA) {
