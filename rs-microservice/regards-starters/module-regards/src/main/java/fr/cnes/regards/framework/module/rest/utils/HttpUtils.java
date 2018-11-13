@@ -91,7 +91,14 @@ public final class HttpUtils {
         // Check if the header with the port is provided
         String portHeader = request.getHeader(HttpHeaders.X_FORWARDED_PORT);
         if (portHeader != null && !portHeader.isEmpty()) {
-            port = Integer.parseInt(portHeader);
+            if (portHeader.contains(",")) {
+                // If there is a comma inside the value, we need to take the first one
+                //  which is the public gateway port
+                String[] ports = portHeader.split(",");
+                port = Integer.parseInt(ports[0]);
+            } else {
+                port = Integer.parseInt(portHeader);
+            }
         }
 
         // Check if the protocol is provided
