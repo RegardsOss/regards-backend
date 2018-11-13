@@ -92,12 +92,13 @@ public abstract class AbstractModuleManager<S> implements IModuleManager<S> {
     }
 
     /**
-     * Import is applicable if module info id and version are equivalent.
+     * Import is applicable if module info id and version are equivalent.<br/>
+     * This implementation may be override to handle configuration breaking changes between configuration.
+     *
      */
     @Override
     public boolean isApplicable(ModuleConfiguration configuration) {
-        return info.getId().equals(configuration.getModule().getId())
-                && info.getVersion().equals(configuration.getModule().getVersion());
+        return info.getId().equals(configuration.getModule().getId());
     }
 
     @Override
