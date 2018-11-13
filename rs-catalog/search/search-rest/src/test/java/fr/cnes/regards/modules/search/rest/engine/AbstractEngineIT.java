@@ -501,4 +501,15 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
     protected <T> T getAstroObject(String label) {
         return (T) astroObjects.get(label);
     }
+
+    /**
+     * Enclose string in quotes
+     */
+    protected String protect(String value) {
+        String protect = "\"";
+        if (value.startsWith(protect)) {
+            return value;
+        }
+        return String.format("%s%s%s", protect, value, protect);
+    }
 }

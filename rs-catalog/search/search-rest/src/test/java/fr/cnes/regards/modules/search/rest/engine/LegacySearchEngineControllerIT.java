@@ -259,7 +259,7 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         addCommontMatchers(customizer);
         customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(1)));
-        addSearchTermQuery(customizer, STAR_SYSTEM, SOLAR_SYSTEM);
+        addSearchTermQuery(customizer, STAR_SYSTEM, protect(SOLAR_SYSTEM));
         ResultActions result = performDefaultGet(SearchEngineMappings.TYPE_MAPPING
                 + SearchEngineMappings.SEARCH_DATASETS_MAPPING, customizer, "Search all error", ENGINE_TYPE);
 

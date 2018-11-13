@@ -80,7 +80,7 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
         request.getRequests()
                 .add(createSearchRequest(LegacySearchEngine.PLUGIN_ID,
                                          astroObjects.get(SOLAR_SYSTEM).getIpId().toString(), "q",
-                                         String.format("%s:%s", PLANET_TYPE, PLANET_TYPE_GAS_GIANT)));
+                                         String.format("%s:%s", PLANET_TYPE, protect(PLANET_TYPE_GAS_GIANT))));
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         // Should be 2 for the legacy request on planet type
@@ -95,7 +95,7 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
                 .add(createSearchRequest(LegacySearchEngine.PLUGIN_ID,
                                          "URN:AIP:" + EntityType.DATASET.toString() + ":PROJECT:" + UUID.randomUUID()
                                                  + ":V2",
-                                         "q", String.format("%s:%s", PLANET_TYPE, PLANET_TYPE_GAS_GIANT)));
+                                         "q", String.format("%s:%s", PLANET_TYPE, protect(PLANET_TYPE_GAS_GIANT))));
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         // No entity matching the given dataset
@@ -109,7 +109,7 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
         request.getRequests()
                 .add(createSearchRequest(LegacySearchEngine.PLUGIN_ID,
                                          astroObjects.get(SOLAR_SYSTEM).getIpId().toString(), "q",
-                                         String.format("%s:%s", PLANET_TYPE, PLANET_TYPE_GAS_GIANT),
+                                         String.format("%s:%s", PLANET_TYPE, protect(PLANET_TYPE_GAS_GIANT)),
                                          OffsetDateTime.now().minusDays(20), null));
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
@@ -123,7 +123,7 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
         request.getRequests()
                 .add(createSearchRequest(LegacySearchEngine.PLUGIN_ID,
                                          astroObjects.get(SOLAR_SYSTEM).getIpId().toString(), "q",
-                                         String.format("%s:%s", PLANET_TYPE, PLANET_TYPE_GAS_GIANT)));
+                                         String.format("%s:%s", PLANET_TYPE, protect(PLANET_TYPE_GAS_GIANT))));
         request.getRequests().add(createSearchRequest(OpenSearchEngine.ENGINE_ID, null, PLANET, MERCURY));
         RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isOk());
@@ -138,7 +138,7 @@ public class ComplexSeachControllerIT extends AbstractEngineIT {
         ComplexSearchRequest request = new ComplexSearchRequest(Lists.newArrayList(DataType.values()));
         request.getRequests()
                 .add(createSearchRequest(LegacySearchEngine.PLUGIN_ID, null, "q",
-                                         String.format("%s:%s", PLANET_TYPE, PLANET_TYPE_GAS_GIANT),
+                                         String.format("%s:%s", PLANET_TYPE, protect(PLANET_TYPE_GAS_GIANT)),
                                          OffsetDateTime.now(),
                                          Lists.newArrayList(astroObjects.get(JUPITER).getIpId().toString())));
         request.getRequests()
