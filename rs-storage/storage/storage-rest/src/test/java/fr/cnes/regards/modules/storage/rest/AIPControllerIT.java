@@ -82,7 +82,9 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isUnprocessableEntity());
         requestBuilderCustomizer.customizeHeaders().putAll(getHeaders());
         // perform request
-        performDefaultPost(AIPController.AIP_PATH, new AIPCollection(aip), requestBuilderCustomizer,
+        performDefaultPost(AIPController.AIP_PATH,
+                           new AIPCollection(aip),
+                           requestBuilderCustomizer,
                            "AIP storage should have been schedule properly");
     }
 
@@ -93,7 +95,9 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
         requestBuilderCustomizer.customizeHeaders().putAll(getHeaders());
         // perform request
-        performDefaultPost(AIPController.AIP_PATH, new AIPCollection(aip), requestBuilderCustomizer,
+        performDefaultPost(AIPController.AIP_PATH,
+                           new AIPCollection(aip),
+                           requestBuilderCustomizer,
                            "AIP storage should have been schedule properly");
     }
 
@@ -106,7 +110,9 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isUnprocessableEntity());
         requestBuilderCustomizer.customizeHeaders().putAll(getHeaders());
         // perform request
-        performDefaultPost(AIPController.AIP_PATH, new AIPCollection(aip), requestBuilderCustomizer,
+        performDefaultPost(AIPController.AIP_PATH,
+                           new AIPCollection(aip),
+                           requestBuilderCustomizer,
                            "Same AIP cannot be stored twice");
     }
 
@@ -121,7 +127,9 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         AIP aip2 = getAIP();
 
         // perform request
-        performDefaultPost(AIPController.AIP_PATH, new AIPCollection(aip, aip2), requestBuilderCustomizer,
+        performDefaultPost(AIPController.AIP_PATH,
+                           new AIPCollection(aip, aip2),
+                           requestBuilderCustomizer,
                            "Success should be partial, aip cannot be re stored but aip2 can be stored");
     }
 
@@ -146,12 +154,17 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         Set<String> dataFilesChecksum = dataFiles.stream().map(df -> df.getChecksum()).collect(Collectors.toSet());
         // ask for availability
         AvailabilityRequest availabilityRequest = new AvailabilityRequest(OffsetDateTime.now().plusDays(2),
-                dataFilesChecksum.toArray(new String[dataFilesChecksum.size()]));
+                                                                          dataFilesChecksum
+                                                                                  .toArray(new String[dataFilesChecksum
+                                                                                          .size()]));
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content()
-                .json(gson.toJson(new AvailabilityResponse(Sets.newHashSet(), dataFiles, Sets.newHashSet()))));
-        performDefaultPost(AIPController.AIP_PATH + AIPController.PREPARE_DATA_FILES, availabilityRequest,
+                                                        .json(gson.toJson(new AvailabilityResponse(Sets.newHashSet(),
+                                                                                                   dataFiles,
+                                                                                                   Sets.newHashSet()))));
+        performDefaultPost(AIPController.AIP_PATH + AIPController.PREPARE_DATA_FILES,
+                           availabilityRequest,
                            requestBuilderCustomizer,
                            "data should already be available as they are in an online data storage");
     }
@@ -179,9 +192,9 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         // first we expect that the aip has a DELETION event in its history
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                .jsonPath("$.properties.pdi.provenanceInformation.history[*].type",
-                          IsCollectionContaining.hasItem(EventType.DELETION.name())));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(
+                "$.properties.pdi.provenanceInformation.history[*].type",
+                IsCollectionContaining.hasItem(EventType.DELETION.name())));
         // now we expect that those events does have a date
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
                 .jsonPath("$.properties.pdi.provenanceInformation.history[?(@.type == \"" + EventType.DELETION.name()
@@ -197,8 +210,10 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         testStore();
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultPost(AIPController.AIP_PATH + AIPController.AIP_BULK, Sets.newHashSet(aip.getId().toString()),
-                           requestBuilderCustomizer, "we should have the aips");
+        performDefaultPost(AIPController.AIP_PATH + AIPController.AIP_BULK,
+                           Sets.newHashSet(aip.getId().toString()),
+                           requestBuilderCustomizer,
+                           "we should have the aips");
     }
 
     @Test
