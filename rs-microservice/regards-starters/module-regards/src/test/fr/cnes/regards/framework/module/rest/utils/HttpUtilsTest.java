@@ -11,23 +11,27 @@ import org.springframework.mock.web.MockHttpServletRequest;
 public class HttpUtilsTest {
 
     @Test
-    public void testRetrievePublicURIWithMultipleForwardedPort() throws MalformedURLException, URISyntaxException {
+    public void testRetrievePublicURIWithMultipleForward() throws MalformedURLException, URISyntaxException {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader(HttpHeaders.X_FORWARDED_PORT, "443,8080,9936");
+        request.addHeader(HttpHeaders.X_FORWARDED_PROTO, "https,http");
 
         URI uri = HttpUtils.retrievePublicURI(request, "/some/endpoint", "aQueryParam");
 
         Assert.assertEquals(443, uri.getPort());
+        Assert.assertEquals("https", uri.getScheme());
     }
 
 
     @Test
-    public void testRetrievePublicURIWithOneForwardedPort() throws MalformedURLException, URISyntaxException {
+    public void testRetrievePublicURIWithOneForward() throws MalformedURLException, URISyntaxException {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader(HttpHeaders.X_FORWARDED_PORT, "443");
+        request.addHeader(HttpHeaders.X_FORWARDED_PROTO, "https");
 
         URI uri = HttpUtils.retrievePublicURI(request, "/some/endpoint", "aQueryParam");
 
         Assert.assertEquals(443, uri.getPort());
+        Assert.assertEquals("https", uri.getScheme());
     }
 }

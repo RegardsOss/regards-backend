@@ -106,7 +106,15 @@ public final class HttpUtils {
         String protoHeader = request.getHeader(HttpHeaders.X_FORWARDED_PROTO);
 
         if (protoHeader != null && !protoHeader.isEmpty()) {
-            scheme = protoHeader;
+
+            if (protoHeader.contains(",")) {
+                // If there is a comma inside the value, we need to take the first one
+                //  which is the public gateway protocol
+                String[] protos = protoHeader.split(",");
+                scheme = protos[0];
+            } else {
+                scheme = protoHeader;
+            }
         } else if (sslHeader != null && sslHeader.equalsIgnoreCase("on")) {
             scheme = "https";
         }
