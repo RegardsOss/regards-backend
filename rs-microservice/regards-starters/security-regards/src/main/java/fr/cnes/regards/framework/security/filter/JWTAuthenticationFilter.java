@@ -67,27 +67,27 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
-            final FilterChain pFilterChain) throws ServletException, IOException {
+    protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response,
+            final FilterChain filterChain) throws ServletException, IOException {
 
         // Retrieve authentication header
-        String jwt = pRequest.getHeader(HttpConstants.AUTHORIZATION);
+        String jwt = request.getHeader(HttpConstants.AUTHORIZATION);
         if (jwt == null) {
             // Authorize OPTIONS request
-            if (CorsFilter.OPTIONS_REQUEST_TYPE.equals(pRequest.getMethod())) {
-                CorsFilter.allowCorsRequest(pRequest, pResponse, pFilterChain);
+            if (CorsFilter.OPTIONS_REQUEST_TYPE.equals(request.getMethod())) {
+                CorsFilter.allowCorsRequest(request, response, filterChain);
             } else {
-                final String message = "[REGARDS JWT FILTER] Missing authentication token on {}@{} from {}";
+                final String message = String.format("[REGARDS JWT FILTER] Missing authentication token on %s@%s", request.getServletPath(), request.getMethod());
                 LOGGER.error(message);
-                pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
+                response.sendError(HttpStatus.UNAUTHORIZED.value(), message);
             }
         } else {
 
             // Extract JWT from retrieved header
             if (!jwt.startsWith(HttpConstants.BEARER)) {
-                final String message = "[REGARDS JWT FILTER] Invalid authentication token on {}@{} from {}";
+                final String message = String.format("[REGARDS JWT FILTER] Invalid authentication token on %s@%s", request.getServletPath(), request.getMethod());
                 LOGGER.error(message);
-                pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
+                response.sendError(HttpStatus.UNAUTHORIZED.value(), message);
             } else {
                 jwt = jwt.substring(HttpConstants.BEARER.length()).trim();
 
@@ -106,7 +106,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                 LOGGER.debug("[REGARDS JWT FILTER] Access granted");
 
                 // Continue the filtering chain
-                pFilterChain.doFilter(pRequest, pResponse);
+                filterChain.doFilter(request, response);
             }
         }
     }
