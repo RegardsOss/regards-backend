@@ -54,11 +54,6 @@ import fr.cnes.regards.modules.storage.service.IDataStorageService;
 public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
 
     /**
-     * Class logger
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(DeleteAIPsJob.class);
-
-    /**
      * Job parameter name for the AIP User request id to use
      */
     public static final String FILTER_PARAMETER_NAME = "query";
@@ -114,7 +109,7 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
                         entityFailed.add(aip.getId().toString());
                     }
                     // Exception thrown while removing AIP
-                    LOGGER.error(e.getMessage(), e);
+                    logger.error(e.getMessage(), e);
                     nbError.incrementAndGet();
                 }
             });

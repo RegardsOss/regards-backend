@@ -58,11 +58,6 @@ import fr.cnes.regards.modules.storage.service.IDataStorageService;
 public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
 
     /**
-     * Class logger
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(UpdateAIPsTagJob.class);
-
-    /**
      * Job parameter name for the AIP User request id to use
      */
     public static final String FILTER_PARAMETER_NAME = "query";
@@ -130,7 +125,7 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
                     }
                     nbError.incrementAndGet();
                     // Exception thrown while updating tag list on AIP
-                    LOGGER.error(e.getMessage(), e);
+                    logger.error(e.getMessage(), e);
                 }
             });
         } while (aipsPage.hasNext());

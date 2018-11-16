@@ -587,7 +587,7 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public Page<AipDataFiles> retrieveAipDataFiles(AIPState state, Set<String> tags, OffsetDateTime fromLastUpdateDate,
+    public Page<AipDataFiles> retrieveAIPDataFiles(AIPState state, Set<String> tags, OffsetDateTime fromLastUpdateDate,
             Pageable pageable) {
         // first lets get the page of aips
         // we have two cases: there is a date or not
