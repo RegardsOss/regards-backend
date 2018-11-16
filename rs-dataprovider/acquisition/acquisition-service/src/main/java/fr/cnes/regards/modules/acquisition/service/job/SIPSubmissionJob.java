@@ -60,8 +60,6 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  */
 public class SIPSubmissionJob extends AbstractJob<Void> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SIPSubmissionJob.class);
-
     public static final String INGEST_CHAIN_PARAMETER = "chain";
 
     public static final String SESSION_PARAMETER = "session";
@@ -98,7 +96,6 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
 
     /**
      * Make a SIP submission by page
-     * @param common SIP submission job report
      */
     private void runByPage() {
 
@@ -168,7 +165,7 @@ public class SIPSubmissionJob extends AbstractJob<Void> {
         switch (status) {
             case CREATED:
                 // Nothing to do, let state in SUBMITTED
-                LOGGER.debug("{} products submitted successfully", products.size());
+                logger.debug("{} products submitted successfully", products.size());
                 break;
             case PARTIAL_CONTENT:
             case UNPROCESSABLE_ENTITY:
