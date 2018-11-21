@@ -167,12 +167,12 @@
         <com.icegreen.greenmail-spring.version>1.5.2</com.icegreen.greenmail-spring.version>
         <javax.mail.mail.version>1.4.7</javax.mail.mail.version>
         <org.freemarker.freemarker.version>2.3.25-incubating</org.freemarker.freemarker.version>
-        <org.elasticsearch.version>5.6.8</org.elasticsearch.version>
+        <org.elasticsearch.version>6.5.0</org.elasticsearch.version>
         <!-- Specify version to avoid incompatibility between elasticsearch and
             spring bring ones -->
         <io.netty.version>4.1.6.Final</io.netty.version>
-        <com.vividsolutions.jts.version>1.14.0</com.vividsolutions.jts.version>
-        <org.locationtech.spatial4j.version>0.6</org.locationtech.spatial4j.version>
+        <org.locationtech.jts.version>1.16.0</org.locationtech.jts.version>
+        <org.locationtech.spatial4j.version>0.7</org.locationtech.spatial4j.version>
         <com.google.guava.version>21.0</com.google.guava.version>
         <com.mchange.c3p0.version>0.9.5.2</com.mchange.c3p0.version>
         <org.mockftpserver.version>2.7.1</org.mockftpserver.version>
@@ -1266,9 +1266,9 @@
 
 
             <dependency>
-                <groupId>com.vividsolutions</groupId>
+                <groupId>org.locationtech.jts</groupId>
                 <artifactId>jts-core</artifactId>
-                <version>${com.vividsolutions.jts.version}</version>
+                <version>${org.locationtech.jts.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.locationtech.spatial4j</groupId>
