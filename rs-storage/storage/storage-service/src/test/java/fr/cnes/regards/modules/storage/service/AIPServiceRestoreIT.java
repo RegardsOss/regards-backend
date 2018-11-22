@@ -66,6 +66,7 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
@@ -348,7 +349,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
-    public void testRetrieveDistinctSotageDataFiles() throws MalformedURLException {
+    public void testRetrieveDistinctSotageDataFiles() throws MalformedURLException, EntityNotFoundException {
         fillNearlineDataFileDb(50L, 3, "dataFile");
         Set<String> checksums = nearlineFiles.stream().map(f -> f.getChecksum()).collect(Collectors.toSet());
         Page<Long> ids = repository.findIdPageByChecksumIn(checksums, new PageRequest(0, 500));
@@ -596,7 +597,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     @Requirements({ @Requirement("REGARDS_DSL_STO_ARC_450") })
-    public void cleanCacheDeleteExpiredFilesTest() throws InterruptedException, IOException {
+    public void cleanCacheDeleteExpiredFilesTest() throws InterruptedException, IOException, EntityNotFoundException {
         LOG.info("Start test testCleanCacheDeleteExpiredFiles ...");
         Long fileSize = (this.cacheSizeLimitKo * 1024) / 2;
         AIP aip = fillNearlineDataFileDb(fileSize, 3, "dataFile");
@@ -646,7 +647,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     @Requirements({ @Requirement("REGARDS_DSL_STO_ARC_450") })
-    public void cleanCacheDeleteOlderFilesTest() throws InterruptedException, IOException {
+    public void cleanCacheDeleteOlderFilesTest() throws InterruptedException, IOException, EntityNotFoundException {
         LOG.info("Start test testCleanCacheDeleteOlderFiles ...");
         // Simulate each file size as the cache is full with 4 files and fill it.
         Long fileSize = (this.cacheSizeLimitKo * 1024) / 4;
@@ -910,7 +911,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
      * @param fileSize
      * @throws MalformedURLException
      */
-    private void fillOnlineDataFileDb(Long fileSize) throws MalformedURLException {
+    private void fillOnlineDataFileDb(Long fileSize) throws MalformedURLException, EntityNotFoundException {
         AIP aip = getAIP();
         AIPSession aipSession = aipService.getSession(aip.getSession(), true);
         aipDao.save(aip, aipSession);
@@ -943,7 +944,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
      * @param fileSize
      * @throws MalformedURLException
      */
-    private void fillOnlineNNearlineDataFileDb(Long fileSize) throws MalformedURLException {
+    private void fillOnlineNNearlineDataFileDb(Long fileSize) throws MalformedURLException, EntityNotFoundException {
         AIP aip = getAIP();
         AIPSession aipSession = aipService.getSession(aip.getSession(), true);
         aipDao.save(aip, aipSession);
@@ -981,7 +982,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
      * @throws MalformedURLException
      */
     private AIP fillNearlineDataFileDb(Long fileSize, int nbFilesToFill, String checksumPrefix)
-            throws MalformedURLException {
+            throws MalformedURLException, EntityNotFoundException {
         AIP aip = getAIP();
         AIPSession aipSession = aipService.getSession(aip.getSession(), true);
         aipDao.save(aip, aipSession);

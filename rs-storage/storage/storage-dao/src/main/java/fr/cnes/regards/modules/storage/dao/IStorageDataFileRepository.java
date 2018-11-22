@@ -150,4 +150,7 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
     long countByStateAndAipEntitySessionId(DataFileState stored, String session);
 
     long countByAipEntitySessionId(String id);
+
+    @EntityGraph(value = "graph.datafile.full")
+    Set<StorageDataFile> findAllByAipIpIdIn(Collection<String> ipIds);
 }

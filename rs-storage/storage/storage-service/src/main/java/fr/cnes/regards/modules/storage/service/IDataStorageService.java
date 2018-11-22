@@ -52,15 +52,6 @@ public interface IDataStorageService {
     void handleDeletionAction(StorageEventType type, DataStorageEvent event);
 
     /**
-     * Use the notification module in admin to create a notification for admins
-     * @param title
-     * @param message
-     * @param type
-     * @param mimeType
-     */
-    void notifyAdmins(String title, String message, NotificationType type, MimeType mimeType);
-
-    /**
      * Method called when a SUCCESSFULL {@link DataStorageEvent} {@link StorageAction#DELETION} event is received.
      * @param dataFileDeleted {@link StorageDataFile} deleted.
      * @param deletedUrl

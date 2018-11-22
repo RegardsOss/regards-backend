@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.storage.service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -250,6 +251,16 @@ public interface IAIPService {
     Set<StorageDataFile> deleteAip(AIP aip) throws ModuleException;
 
     /**
+     * Remove given AIPs files from given data storage
+     */
+    void deleteFilesFromDataStorage(Collection<String> ipId, Long dataStorageId);
+
+    /**
+     * Remove from given data storage filtered AIPs files
+     */
+    void deleteFilesFromDataStorageByQuery(AIPQueryFilters filters, Long dataStorageId);
+
+    /**
      * Schedule deletion of datafiles marked for deletion
      * @return number of scheduled aip to delete
      */
@@ -321,15 +332,16 @@ public interface IAIPService {
      * @param sessionId {@link String}
      * @param createIfNotExists if true, the session with sessionId is created is it does not exists.
      * @return {@link AIPSession}
+     * @throws EntityNotFoundException if session cannot be found AND parameter createIfNotExists is false
      */
-    AIPSession getSession(String sessionId, Boolean createIfNotExists);
+    AIPSession getSession(String sessionId, Boolean createIfNotExists) throws EntityNotFoundException;
 
     /**
      * Retrieve one {@link AIPSession} by id, and compute its stats.
      * @param sessionId {@link String}
      * @return {@link AIPSession}
      */
-    AIPSession getSessionWithStats(String sessionId);
+    AIPSession getSessionWithStats(String sessionId) throws EntityNotFoundException;
 
     /**
      * Retrieve all {@link AIPSession} that match provided filters

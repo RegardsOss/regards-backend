@@ -39,6 +39,7 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
@@ -95,7 +96,8 @@ public class AIPSessionController implements IResourceController<AIPSession> {
      */
     @ResourceAccess(description = "Get one session using its name.")
     @RequestMapping(value = ID_PATH, method = RequestMethod.GET)
-    public ResponseEntity<Resource<AIPSession>> getAipSession(@PathVariable(name = "id") String id) {
+    public ResponseEntity<Resource<AIPSession>> getAipSession(@PathVariable(name = "id") String id)
+            throws EntityNotFoundException {
         AIPSession session = aipService.getSessionWithStats(id);
         return new ResponseEntity<>(toResource(session), HttpStatus.OK);
     }

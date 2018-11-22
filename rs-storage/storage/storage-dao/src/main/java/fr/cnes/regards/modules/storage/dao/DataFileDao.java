@@ -224,4 +224,9 @@ public class DataFileDao implements IDataFileDao {
     public long findAllByAipSession(String id) {
         return repository.countByAipEntitySessionId(id);
     }
+
+    @Override
+    public Set<StorageDataFile> findAllByAipIpIdIn(Collection<String> ipIds) {
+        return repository.findAllByAipIpIdIn(ipIds);
+    }
 }

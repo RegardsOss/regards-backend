@@ -1,0 +1,12 @@
+<#setting datetime_format='yyyy-MM-dd HH:mm:ss z'>
+    <b>REGARDS - Some files could not be deleted from data storage ${dataStorage}</b><br/>
+    <p>
+        One or more files could not be handled by their data storage:<br/>
+        <ul>
+        <#list dataFilesMap as dataFile, reason>
+            <li>File (urls:<#list dataFile.urls as dataFileUrl> ${dataFileUrl}</#list>) associated
+                to aip ${dataFile.aipEntity.id} could not be deleted <#if reason??>,
+                    for the following reason: ${reason}</#if>.</li>
+        </#list>
+        </ul>
+    </p>

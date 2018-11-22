@@ -29,12 +29,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.MimeType;
-import org.springframework.util.MimeTypeUtils;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
-
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -42,7 +42,10 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.notification.domain.NotificationType;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
@@ -52,7 +55,6 @@ import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.service.IAIPService;
-import fr.cnes.regards.modules.storage.service.IDataStorageService;
 
 /**
  * Job to handle AIP metadata files write in temporary directory.
@@ -81,8 +83,14 @@ public class WriteAIPMetadataJob extends AbstractJob<Void> {
     @Autowired
     private IAIPService aipService;
 
+    /**
+     * Spring application name ~= microservice type
+     */
+    @Value("${spring.application.name}")
+    private String applicationName;
+
     @Autowired
-    private IDataStorageService dataStorageService;
+    private INotificationClient notificationClient;
 
     private Set<String> aipIds;
 
@@ -111,11 +119,19 @@ public class WriteAIPMetadataJob extends AbstractJob<Void> {
                         aipService.save(aip, true);
                     }
                 } catch (EntityNotFoundException e1) {
-                    String message = String
-                            .format("Unable to write metadata file for AIP fully stored %s. The AIP does not exists anymore.",
-                                    aipId);
-                    dataStorageService.notifyAdmins("Storage error", message, NotificationType.ERROR,
-                                                    MimeTypeUtils.TEXT_PLAIN);
+                    String message = String.format(
+                            "Unable to write metadata file for AIP fully stored %s. The AIP does not exists anymore.",
+                            aipId);
+                    FeignSecurityManager.asSystem();
+                    try {
+                        notificationClient.notifyRoles(message,
+                                                       "Storage error",
+                                                       applicationName,
+                                                       NotificationType.ERROR,
+                                                       DefaultRole.ADMIN);
+                    } finally {
+                        FeignSecurityManager.reset();
+                    }
                 }
             }
 
@@ -143,28 +159,38 @@ public class WriteAIPMetadataJob extends AbstractJob<Void> {
         String toWrite = gson.toJson(aip);
         String checksum = ChecksumUtils.getHexChecksum(md5.digest(toWrite.getBytes(StandardCharsets.UTF_8)));
         String metadataName = checksum + JSON_FILE_EXT;
-        workspaceService.setIntoWorkspace(new ByteArrayInputStream(toWrite.getBytes(StandardCharsets.UTF_8)),
-                                          metadataName);
+        workspaceService
+                .setIntoWorkspace(new ByteArrayInputStream(toWrite.getBytes(StandardCharsets.UTF_8)), metadataName);
         try (InputStream is = workspaceService.retrieveFromWorkspace(metadataName)) {
             String fileChecksum = ChecksumUtils.computeHexChecksum(is, checksumAlgorithm);
             if (fileChecksum.equals(checksum)) {
-                URL urlToMetadata = new URL("file", "localhost",
-                        workspaceService.getFilePath(metadataName).toAbsolutePath().toString());
+                URL urlToMetadata = new URL("file",
+                                            "localhost",
+                                            workspaceService.getFilePath(metadataName).toAbsolutePath().toString());
                 AIPSession aipSession = aipService.getSession(aip.getSession(), false);
-                metadataAipFile = new StorageDataFile(Sets.newHashSet(urlToMetadata), checksum, checksumAlgorithm,
-                        DataType.AIP, urlToMetadata.openConnection().getContentLengthLong(),
-                        new MimeType("application", "json"), new AIPEntity(aip, aipSession), aipSession,
-                        aip.getId().toString() + JSON_FILE_EXT, null);
+                metadataAipFile = new StorageDataFile(Sets.newHashSet(urlToMetadata),
+                                                      checksum,
+                                                      checksumAlgorithm,
+                                                      DataType.AIP,
+                                                      urlToMetadata.openConnection().getContentLengthLong(),
+                                                      new MimeType("application", "json"),
+                                                      new AIPEntity(aip, aipSession),
+                                                      aipSession,
+                                                      aip.getId().toString() + JSON_FILE_EXT,
+                                                      null);
                 metadataAipFile.setState(DataFileState.PENDING);
             } else {
                 workspaceService.removeFromWorkspace(metadataName);
-                logger.error(String
-                        .format("Storage of AIP metadata(%s) into workspace(%s) failed. Computed checksum once stored does not "
-                                + "match expected one", aip.getId().toString(),
-                                workspaceService.getMicroserviceWorkspace()));
-                throw new FileCorruptedException(String
-                        .format("File has been corrupted during storage into workspace. Checksums before(%s) and after (%s) are"
-                                + " different", checksum, fileChecksum));
+                logger.error(String.format(
+                        "Storage of AIP metadata(%s) into workspace(%s) failed. Computed checksum once stored does not "
+                                + "match expected one",
+                        aip.getId().toString(),
+                        workspaceService.getMicroserviceWorkspace()));
+                throw new FileCorruptedException(String.format(
+                        "File has been corrupted during storage into workspace. Checksums before(%s) and after (%s) are"
+                                + " different",
+                        checksum,
+                        fileChecksum));
             }
         } catch (NoSuchAlgorithmException e) {
             // Delete written file
@@ -172,6 +198,12 @@ public class WriteAIPMetadataJob extends AbstractJob<Void> {
             workspaceService.removeFromWorkspace(metadataName);
             // this exception should never be thrown as it comes from the same algorithm then at the beginning
             throw new IOException(e);
+        } catch (EntityNotFoundException e) {
+            // Delete written file
+            logger.error(e.getMessage(), e);
+            workspaceService.removeFromWorkspace(metadataName);
+            // this exception should never be thrown because is alreayd created and so is the session
+            throw new RsRuntimeException(e);
         }
         return metadataAipFile;
     }
