@@ -72,12 +72,12 @@ public class CustomPolymorphicTypeAdapterFactory extends PolymorphicTypeAdapterF
     }
 
     @Override
-    protected JsonElement beforeRead(JsonElement pJsonElement, String pDiscriminator, Class<?> pSubType) {
-        if (pSubType == ObjectProperty.class) {
-            addNamespaceToChildren(pJsonElement, pDiscriminator);
+    protected JsonElement beforeRead(JsonElement jsonElement, String discriminator, Class<?> subType) {
+        if (subType == ObjectProperty.class) {
+            addNamespaceToChildren(jsonElement, discriminator);
         }
-        removeParentNamespace(pJsonElement);
-        return pJsonElement;
+        removeParentNamespace(jsonElement);
+        return jsonElement;
     }
 
     /**
