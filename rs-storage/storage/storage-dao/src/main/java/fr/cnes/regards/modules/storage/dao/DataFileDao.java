@@ -227,6 +227,6 @@ public class DataFileDao implements IDataFileDao {
 
     @Override
     public Set<StorageDataFile> findAllByAipIpIdIn(Collection<String> ipIds) {
-        return repository.findAllByAipIpIdIn(ipIds);
+        return repository.findAllByAipEntityAipIdIn(ipIds);
     }
 }
