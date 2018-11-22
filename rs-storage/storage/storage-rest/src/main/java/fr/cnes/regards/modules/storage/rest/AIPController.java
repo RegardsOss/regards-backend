@@ -283,7 +283,7 @@ public class AIPController implements IResourceController<AIP> {
             fromLastUpdate = OffsetDateTimeAdapter.parse(fromLastUpdateDate);
         }
         Set<String> tags = inTags == null ? Collections.emptySet() : inTags;
-        Page<AipDataFiles> page = aipService.retrieveAipDataFiles(state, tags, fromLastUpdate, pageable);
+        Page<AipDataFiles> page = aipService.retrieveAIPDataFiles(state, tags, fromLastUpdate, pageable);
         List<AipDataFiles> content = page.getContent();
         // Now that we have our data files, lets compute their public URL
         // First lets get the public hostname from rs-admin-instance

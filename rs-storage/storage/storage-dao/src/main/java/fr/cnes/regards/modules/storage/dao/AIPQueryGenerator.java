@@ -130,7 +130,7 @@ public class AIPQueryGenerator {
     }
 
     private static String createQuery(Set<String> predicates) {
-        StringBuilder request = new StringBuilder("SELECT * FROM {h-schema}t_aip ");;
+        StringBuilder request = new StringBuilder("SELECT * FROM {h-schema}t_aip ");
         if (!predicates.isEmpty()) {
             request.append("WHERE ");
             Joiner.on(" AND ").appendTo(request, predicates);

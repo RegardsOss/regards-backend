@@ -148,7 +148,7 @@ public interface IAIPService {
      * @param pageable
      * @return {@link AIP}s corresponding to parameters given.
      */
-    Page<AipDataFiles> retrieveAipDataFiles(AIPState state, Set<String> tags, OffsetDateTime fromLastUpdateDate,
+    Page<AipDataFiles> retrieveAIPDataFiles(AIPState state, Set<String> tags, OffsetDateTime fromLastUpdateDate,
             Pageable pageable);
 
     /**
