@@ -42,6 +42,7 @@ import javax.validation.constraints.NotNull;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
@@ -242,6 +243,23 @@ public class PluginParameter implements IIdentifiable<Long> {
             value = tmp;
         }
         return value;
+    }
+
+    /**
+     * Export current {@link PluginParameter} by removing all internal identifier and decrypting all crypted values.
+     * @return {@link PluginParameter}
+     */
+    public PluginParameter export() {
+        PluginParameter exported = new PluginParameter();
+        exported.setDecryptedValue(this.getDecryptedValue());
+        exported.setValue(this.getDecryptedValue());
+        exported.setIsDynamic(this.isDynamic());
+        exported.setName(this.getName());
+        exported.setOnlyDynamic(this.isOnlyDynamic());
+        if (this.getPluginConfiguration() != null) {
+            exported.setPluginConfiguration(this.getPluginConfiguration().export());
+        }
+        return exported;
     }
 
     @Override
