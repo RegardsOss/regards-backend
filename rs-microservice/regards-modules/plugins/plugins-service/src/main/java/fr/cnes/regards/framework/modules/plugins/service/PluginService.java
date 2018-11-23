@@ -739,7 +739,7 @@ public class PluginService implements IPluginService {
                     .ifPresent(pt -> {
                         if (pt.isSensible()) {
                             try {
-                                exported.setValue(encryptionService.decrypt(param.getValue()));
+                                exported.setValue(encryptionService.decrypt(param.getStripParameterValue()));
                             } catch (EncryptionException e) {
                                 // Nothing to do
                                 LOGGER.warn("Error decrypting sensitive parameter {}:{}. Cause : {}.",
