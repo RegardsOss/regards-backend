@@ -187,9 +187,6 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
             esRepository.deleteIndex(index);
         }
         esRepository.createIndex(index);
-        String[] types = Arrays.stream(EntityType.values()).map(EntityType::toString)
-                .toArray(length -> new String[length]);
-        esRepository.setGeometryMapping(index, types);
     }
 
     protected void prepareProject() {
