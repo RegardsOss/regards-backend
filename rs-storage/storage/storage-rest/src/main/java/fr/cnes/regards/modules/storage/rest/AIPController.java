@@ -538,12 +538,12 @@ public class AIPController implements IResourceController<AIP> {
         return new ResponseEntity<>(aipTags, HttpStatus.OK);
     }
 
-    @RequestMapping(value = TAG_SEARCH_PATH, method = RequestMethod.POST) // FIXME: change path
-    @ResourceAccess(description = "allow to search tags used by aips")
-    public ResponseEntity<Void> deleteAIPFilesOnDataStorage(@RequestBody AIPQueryFilters request, Long dataStorageId) {
-        aipService.deleteFilesFromDataStorageByQuery(request, dataStorageId);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
+//    @RequestMapping(value = TAG_SEARCH_PATH, method = RequestMethod.POST) // FIXME: change path
+//    @ResourceAccess(description = "allow to search tags used by aips")
+//    public ResponseEntity<Void> deleteAIPFilesOnDataStorage(@RequestBody AIPQueryFilters request, Long dataStorageId) {
+//        aipService.deleteFilesFromDataStorageByQuery(request, dataStorageId);
+//        return new ResponseEntity<>(HttpStatus.OK);
+//    }
 
     /**
      * Retrieve all aips which are tagged by the provided tag
