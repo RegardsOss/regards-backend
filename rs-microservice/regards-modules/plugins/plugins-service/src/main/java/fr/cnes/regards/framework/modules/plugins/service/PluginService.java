@@ -19,6 +19,7 @@
 
 package fr.cnes.regards.framework.modules.plugins.service;
 
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,8 +34,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,7 +41,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Lists;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.encryption.IEncryptionService;
 import fr.cnes.regards.framework.encryption.exception.EncryptionException;
@@ -740,7 +738,7 @@ public class PluginService implements IPluginService {
                         if (pt.isSensible()) {
                             try {
                                 exported.setValue(encryptionService.decrypt(param.getStripParameterValue()));
-                            } catch (EncryptionException e) {
+                            } catch (EncryptionException e) { // NOSONAR (only message is usable, not need to log e
                                 // Nothing to do
                                 LOGGER.warn("Error decrypting sensitive parameter {}:{}. Cause : {}.",
                                             pluginConf.getPluginId(), param.getName(), e.getMessage());
