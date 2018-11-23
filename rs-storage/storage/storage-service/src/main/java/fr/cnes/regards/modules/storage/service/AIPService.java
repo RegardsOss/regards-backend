@@ -1298,8 +1298,8 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public void deleteFilesFromDataStorage(Collection<String> ipId, Long dataStorageId) {
-        Set<StorageDataFile> filesToDelete = dataFileDao.findAllByAipIpIdIn(ipId);
+    public Map<StorageDataFile, String> deleteFilesFromDataStorage(Collection<String> ipIds, Long dataStorageId) {
+        Set<StorageDataFile> filesToDelete = dataFileDao.findAllByAipIpIdIn(ipIds);
         // for all these files, lets check if there is still at lease one data storage that references it
         Map<StorageDataFile, String> undeletableFileCauseMap = new HashMap<>();
         PrioritizedDataStorage dataStorage = null;
@@ -1308,20 +1308,37 @@ public class AIPService implements IAIPService {
             for (StorageDataFile fileToDelete : filesToDelete) {
                 if (!fileToDelete.getPrioritizedDataStorages().contains(dataStorage)) {
                     undeletableFileCauseMap.put(fileToDelete,
-                                                String.format("File %s for AIP %s is not handled by Data storage %s",
+                                                String.format("File %s from AIP %s is not handled by Data storage %s",
                                                               fileToDelete.getChecksum(),
                                                               fileToDelete.getAipEntity().getAipId(),
                                                               dataStorage.getDataStorageConfiguration().getLabel()));
                 } else if (fileToDelete.getPrioritizedDataStorages().size() == 1) {
                     undeletableFileCauseMap.put(fileToDelete,
-                                                String.format("Data storage %s is the last one for file %s for AIP %s. "
-                                                                      + "Removal from last data storage is forbidden.",
-                                                              dataStorageId,
-                                                              fileToDelete.getChecksum(),
-                                                              ipId));
+                                                String.format(
+                                                        "Data storage %s is the last one for file %s from AIP %s. "
+                                                                + "Removal from last data storage is forbidden.",
+                                                        dataStorage.getDataStorageConfiguration().getLabel(),
+                                                        fileToDelete.getChecksum(),
+                                                        fileToDelete.getAipEntity().getAipId()));
                 }
             }
             filesToDelete.removeAll(undeletableFileCauseMap.keySet());
+            // now, lets handle files that have to be ONLINE
+            Set<StorageDataFile> onlineMandatoryFiles = filesToDelete.stream().filter(sdf -> sdf.isOnlineMandatory())
+                    .collect(Collectors.toSet());
+            for (StorageDataFile onlineMandatoryFile : onlineMandatoryFiles) {
+                if (onlineMandatoryFile.getPrioritizedDataStorages().stream()
+                        .filter(pds -> pds.getDataStorageType() == DataStorageType.ONLINE).count() == 1) {
+                    undeletableFileCauseMap.put(onlineMandatoryFile,
+                                                String.format(
+                                                        "Data storage %s is the last ONLINE one for file %s from AIP %s. "
+                                                                + "Removal from last ONLINE data storage is forbidden on %s.",
+                                                        dataStorage.getDataStorageConfiguration().getLabel(),
+                                                        onlineMandatoryFile.getChecksum(),
+                                                        onlineMandatoryFile.getAipEntity().getAipId(),
+                                                        dataStorage.getDataStorageType()));
+                }
+            }
             // to avoid concurrency issues, lets remove that data storage from the file right now
 
             final PrioritizedDataStorage finalDataStorage = dataStorage; // thanks to lambda restriction
@@ -1332,9 +1349,10 @@ public class AIPService implements IAIPService {
         } catch (ModuleException e) {
             filesToDelete.forEach(sdf -> undeletableFileCauseMap.put(sdf,
                                                                      String.format(
-                                                                             "Data Storage %s does not exist anymore. We could not delete file %s",
+                                                                             "Data Storage %s does not exist anymore. We could not delete file %s from AIP %s",
                                                                              dataStorageId,
-                                                                             sdf.getName())));
+                                                                             sdf.getName(),
+                                                                             sdf.getAipEntity().getAipId())));
         }
         // now that everything has been schedule, lets create a notification for all undeletables
         // lets prepare the notification message
@@ -1352,6 +1370,7 @@ public class AIPService implements IAIPService {
                      email.getText(),
                      NotificationType.WARNING,
                      MimeTypeUtils.TEXT_HTML);
+        return undeletableFileCauseMap;
     }
 
     @Override

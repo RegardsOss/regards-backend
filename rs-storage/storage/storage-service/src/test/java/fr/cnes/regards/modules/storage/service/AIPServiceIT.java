@@ -31,6 +31,7 @@ import java.time.OffsetDateTime;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -62,7 +63,6 @@ import org.springframework.util.MimeType;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -138,6 +138,8 @@ public class AIPServiceIT extends AbstractRegardsIT {
 
     private static final String CHECKSUM = "de89a907d33a9716d11765582102b2e0";
 
+    private final MockEventHandler mockEventHandler = new MockEventHandler();
+
     @Autowired
     private Gson gson;
 
@@ -191,8 +193,6 @@ public class AIPServiceIT extends AbstractRegardsIT {
 
     private URL baseStorage2Location;
 
-    private final MockEventHandler mockEventHandler = new MockEventHandler();
-
     private PluginConfiguration dsConfWithDeleteDisabled;
 
     @Before
@@ -244,8 +244,10 @@ public class AIPServiceIT extends AbstractRegardsIT {
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000L)
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorage1Location.toString())
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION, true).getParameters();
-        PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, DATA_STORAGE_1_CONF_LABEL,
-                parameters, 0);
+        PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta,
+                                                                      DATA_STORAGE_1_CONF_LABEL,
+                                                                      parameters,
+                                                                      0);
         dataStorageConf.setIsActive(true);
         PrioritizedDataStorage pds = prioritizedDataStorageService.create(dataStorageConf);
 
@@ -268,8 +270,10 @@ public class AIPServiceIT extends AbstractRegardsIT {
         Set<PluginParameter> allocationParameter = PluginParametersFactory.build()
                 .addParameter(DefaultMultipleAllocationStrategy.DATA_STORAGE_IDS_PARAMETER_NAME, dataStorageIds)
                 .getParameters();
-        PluginConfiguration allocationConfiguration = new PluginConfiguration(allocationMeta, ALLOCATION_CONF_LABEL,
-                allocationParameter, 0);
+        PluginConfiguration allocationConfiguration = new PluginConfiguration(allocationMeta,
+                                                                              ALLOCATION_CONF_LABEL,
+                                                                              allocationParameter,
+                                                                              0);
         allocationConfiguration.setIsActive(true);
         pluginService.savePluginConfiguration(allocationConfiguration);
 
@@ -291,8 +295,9 @@ public class AIPServiceIT extends AbstractRegardsIT {
             LOG.info("-----------------------------");
             jobs.stream().forEach(f -> LOG.info("JOB -> {}", f.getStatus().getStatus()));
             LOG.info("#############################");
-            nbUnsucceedJobs = jobs.stream().filter(f -> !f.getStatus().getStatus().equals(JobStatus.SUCCEEDED)
-                    && !f.getStatus().getStatus().equals(JobStatus.FAILED)).count();
+            nbUnsucceedJobs = jobs.stream()
+                    .filter(f -> !f.getStatus().getStatus().equals(JobStatus.SUCCEEDED) && !f.getStatus().getStatus()
+                            .equals(JobStatus.FAILED)).count();
         } while (jobs.isEmpty() || (nbUnsucceedJobs > 0));
         // Wait for events handled.
         Thread.sleep(2000);
@@ -397,7 +402,7 @@ public class AIPServiceIT extends AbstractRegardsIT {
                 .get(baseStorage2Location.getPath(), dataFile.getChecksum().substring(0, 3), dataFile.getChecksum())
                 .toString();
         Assert.assertTrue(dataFile.getUrls().stream().map(url -> url.getPath()).collect(Collectors.toSet())
-                .containsAll(Sets.newHashSet(storedLocation1, storedLocation2)));
+                                  .containsAll(Sets.newHashSet(storedLocation1, storedLocation2)));
         // same for the aips
         StorageDataFile aip = dataFiles.stream().filter(df -> df.getDataType().equals(DataType.AIP)).findFirst().get();
         Assert.assertTrue("stored metadata should have only 2 urls", dataFile.getUrls().size() == 2);
@@ -406,7 +411,7 @@ public class AIPServiceIT extends AbstractRegardsIT {
         storedLocation2 = Paths
                 .get(baseStorage2Location.getPath(), aip.getChecksum().substring(0, 3), aip.getChecksum()).toString();
         Assert.assertTrue(aip.getUrls().stream().map(url -> url.getPath()).collect(Collectors.toSet())
-                .containsAll(Sets.newHashSet(storedLocation1, storedLocation2)));
+                                  .containsAll(Sets.newHashSet(storedLocation1, storedLocation2)));
     }
 
     @Test
@@ -414,13 +419,16 @@ public class AIPServiceIT extends AbstractRegardsIT {
         // first lets change the data location to be sure it fails
         aip.getProperties().getContentInformations()
                 .toArray(new ContentInformation[aip.getProperties().getContentInformations().size()])[0].getDataObject()
-                        .setUrls(Sets.newHashSet(new URL("file", "", Paths
-                                .get("src/test/resources/data_that_does_not_exists.txt").toFile().getAbsolutePath())));
+                .setUrls(Sets.newHashSet(new URL("file",
+                                                 "",
+                                                 Paths.get("src/test/resources/data_that_does_not_exists.txt").toFile()
+                                                         .getAbsolutePath())));
         storeAIP(aip, true);
 
         // Wait for error event
         Set<AIPEvent> events = waitForEventsReceived(AIPState.STORAGE_ERROR, 2);
-        Assert.assertEquals("There should be two error events. One per storage location (multistorage).", 2,
+        Assert.assertEquals("There should be two error events. One per storage location (multistorage).",
+                            2,
                             events.size());
         Optional<AIP> aipFromDB = aipDao.findOneByAipId(aip.getId().toString());
         Assert.assertEquals(AIPState.STORAGE_ERROR, aipFromDB.get().getState());
@@ -455,7 +463,8 @@ public class AIPServiceIT extends AbstractRegardsIT {
 
             // Check state of AIP
             Optional<AIP> aipFromDB = aipDao.findOneByAipId(aip.getId().toString());
-            Assert.assertNotEquals("Test failed because storage didn't failed! It succeeded!", AIPState.STORED,
+            Assert.assertNotEquals("Test failed because storage didn't failed! It succeeded!",
+                                   AIPState.STORED,
                                    aipFromDB.get().getState());
             Assert.assertEquals(AIPState.STORAGE_ERROR, aipFromDB.get().getState());
             Set<StorageDataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
@@ -552,14 +561,16 @@ public class AIPServiceIT extends AbstractRegardsIT {
         // - AIP should be in VALID state. Ready to be handled by storage process (StorePage -> StoreMeta)
         // - Only last update request should be saved in db. This request will be handled by update scheduler.
         Optional<AIP> runningAip = aipDao.findOneByAipId(aip.getId().toString());
-        Assert.assertEquals("After an update request the AIP should be in VALID state", AIPState.VALID.toString(),
+        Assert.assertEquals("After an update request the AIP should be in VALID state",
+                            AIPState.VALID.toString(),
                             runningAip.get().getState().toString());
         Assert.assertEquals("There should be only one AIP update request in db", 1, aipUpdateRepo.count());
 
         // Run update scheduler to check that the request cannot be handled yet cause the AIP is still not in STORED state.
         aipService.handleUpdateRequests();
         runningAip = aipDao.findOneByAipId(aip.getId().toString());
-        Assert.assertEquals("After an update request the AIP should be in VALID state", AIPState.VALID.toString(),
+        Assert.assertEquals("After an update request the AIP should be in VALID state",
+                            AIPState.VALID.toString(),
                             runningAip.get().getState().toString());
         Assert.assertEquals("There should be only one AIP update request in db", 1, aipUpdateRepo.count());
 
@@ -571,7 +582,8 @@ public class AIPServiceIT extends AbstractRegardsIT {
         mockEventHandler.clear();
 
         runningAip = aipDao.findOneByAipId(aip.getId().toString());
-        Assert.assertEquals("After storage process the AIP should be in STORED state", AIPState.STORED.toString(),
+        Assert.assertEquals("After storage process the AIP should be in STORED state",
+                            AIPState.STORED.toString(),
                             runningAip.get().getState().toString());
         Assert.assertEquals("There should be only one AIP update request in db", 1, aipUpdateRepo.count());
 
@@ -585,7 +597,8 @@ public class AIPServiceIT extends AbstractRegardsIT {
         LOG.info("==================> 11. Process second Update AIP Request");
         aipService.handleUpdateRequests();
         runningAip = aipDao.findOneByAipId(aip.getId().toString());
-        Assert.assertEquals("After an update request the AIP should be in VALID state", AIPState.VALID.toString(),
+        Assert.assertEquals("After an update request the AIP should be in VALID state",
+                            AIPState.VALID.toString(),
                             runningAip.get().getState().toString());
         Assert.assertEquals("There should be no more AIP update request in db.", 0, aipUpdateRepo.count());
 
@@ -625,8 +638,9 @@ public class AIPServiceIT extends AbstractRegardsIT {
             // As only one of the two storage system allow deletion, only one file should be deleted on disk
             if (df.getDataType().equals(DataType.AIP)) {
                 for (URL fileLocation : df.getUrls()) {
-                    Assert.assertTrue("AIP metadata should be on disk. As a datafile cannot be deleted metadata should never be deleted.",
-                                      Files.exists(Paths.get(fileLocation.toURI())));
+                    Assert.assertTrue(
+                            "AIP metadata should be on disk. As a datafile cannot be deleted metadata should never be deleted.",
+                            Files.exists(Paths.get(fileLocation.toURI())));
                 }
             } else {
                 for (URL fileLocation : df.getUrls()) {
@@ -658,7 +672,8 @@ public class AIPServiceIT extends AbstractRegardsIT {
         Set<StorageDataFile> aipFiles = dataFileDao.findAllByAip(aip);
         Assert.assertEquals(0, aipService.deleteAip(aipIpId).size());
         AIP deleted = aipService.retrieveAip(aipIpId);
-        Optional<Event> deletionEventOpt = deleted.getHistory().stream().filter(evt->evt.getType().equals(EventType.DELETION.toString())).findAny();
+        Optional<Event> deletionEventOpt = deleted.getHistory().stream()
+                .filter(evt -> evt.getType().equals(EventType.DELETION.toString())).findAny();
         Assert.assertTrue("Deletion event should be present into AIP history", deletionEventOpt.isPresent());
         Assert.assertNotNull("Deletion event date should not be null", deletionEventOpt.get().getDate());
         aipService.doDelete();
@@ -683,9 +698,61 @@ public class AIPServiceIT extends AbstractRegardsIT {
     }
 
     @Test
+    public void testDeleteFileFromSingleDS() throws InterruptedException, ModuleException {
+        createSuccessTest();
+        Map<StorageDataFile, String> undeletableFileCauseMap = aipService
+                .deleteFilesFromDataStorage(Sets.newHashSet(aip.getId().toString()),
+                                            pluginService.getPluginConfigurationByLabel(DATA_STORAGE_1_CONF_LABEL)
+                                                    .getId());
+        Assert.assertEquals("All data file should be deletable from first data storage",
+                            0,
+                            undeletableFileCauseMap.size());
+        AIP dbAIP = aipDao.findOneByAipId(aip.getId().toString()).get();
+        Assert.assertEquals("AIP should be in state STORED", AIPState.STORED, dbAIP.getState());
+        // once the job has finished, file should be deleted from data storage 1 and not 2, aip should be in state STORED,
+        // data files should be in state STORED too
+        waitForJobsFinished();
+        dbAIP = aipDao.findOneByAipId(aip.getId().toString()).get();
+        Assert.assertEquals("AIP should be in state STORED", AIPState.STORED, dbAIP.getState());
+        Optional<Event> deletionEventOpt = dbAIP.getHistory().stream()
+                .filter(evt -> evt.getType().equals(EventType.DELETION.toString())).findAny();
+        Assert.assertTrue("Deletion event should be present into AIP history", deletionEventOpt.isPresent());
+        Assert.assertNotNull("Deletion event date should not be null", deletionEventOpt.get().getDate());
+        Set<StorageDataFile> dataFiles = dataFileDao.findAllByAip(dbAIP);
+        for (StorageDataFile dataFile : dataFiles) {
+            Assert.assertEquals("Data file should have only 1 url", 1, dataFile.getUrls().size());
+            Assert.assertEquals("Data file should be stored by only one data storage",
+                                1,
+                                dataFile.getPrioritizedDataStorages().size());
+            Path storedLocation1 = Paths.get(baseStorage1Location.getPath(),
+                                             dataFile.getChecksum().substring(0, 3),
+                                             dataFile.getChecksum());
+            Assert.assertTrue("Data file should not be stored in data storage 1 anymore",
+                              !storedLocation1.toFile().exists());
+        }
+
+    }
+
+    /**
+     * Tries to remove files from last data storage.
+     */
+    @Test
+    public void testDeleteFileFromSingleDSFail() throws InterruptedException, ModuleException {
+        createSuccessTest();
+        // lets remove it from the first
+        testDeleteFileFromSingleDS();
+        Map<StorageDataFile, String> undeletableFileCauseMap = aipService
+                .deleteFilesFromDataStorage(Sets.newHashSet(aip.getId().toString()),
+                                            pluginService.getPluginConfigurationByLabel(DATA_STORAGE_2_CONF_LABEL)
+                                                    .getId());
+        Assert.assertEquals("None of the data file(2: metadata and data) should be deletable", 2, undeletableFileCauseMap.size());
+    }
+
+    @Test
     public void searchSession() throws ModuleException, InterruptedException {
         createSuccessTest();
-        Page<AIPSession> sessions = aipService.searchSessions(SESSION, OffsetDateTime.now().minusDays(1L),
+        Page<AIPSession> sessions = aipService.searchSessions(SESSION,
+                                                              OffsetDateTime.now().minusDays(1L),
                                                               OffsetDateTime.now().plusDays(1L),
                                                               new PageRequest(0, 100));
         Assert.assertEquals(1, sessions.getTotalElements());
@@ -705,8 +772,11 @@ public class AIPServiceIT extends AbstractRegardsIT {
         pluginService.updatePluginConfiguration(dsConfWithDeleteDisabled);
 
         // store a first AIP
-        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP, EntityType.COLLECTION,
-                getDefaultTenant(), UUID.randomUUID(), 1);
+        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP,
+                                                            EntityType.COLLECTION,
+                                                            getDefaultTenant(),
+                                                            UUID.randomUUID(),
+                                                            1);
         aip.setSipId(sipId);
         storeAIP(aip, true);
         String aipIpId = aip.getId().toString();
@@ -785,8 +855,9 @@ public class AIPServiceIT extends AbstractRegardsIT {
 
     @Test
     @Requirement("REGARDS_DSL_STO_AIP_210")
-    public void testUpdatePDI() throws MalformedURLException, EntityNotFoundException,
-            EntityOperationForbiddenException, EntityInconsistentIdentifierException {
+    public void testUpdatePDI()
+            throws MalformedURLException, EntityNotFoundException, EntityOperationForbiddenException,
+            EntityInconsistentIdentifierException {
         AIP aip = getAIP();
         aip.setState(AIPState.STORED);
         AIPSession aipSession = aipService.getSession(aip.getSession(), true);
@@ -797,16 +868,23 @@ public class AIPServiceIT extends AbstractRegardsIT {
         updated.addEvent(EventType.UPDATE.name(), "lets test update", OffsetDateTime.now());
         AIP preUpdateAIP = updated.build();
         AIP updatedAip = aipService.updateAip(aip.getId().toString(), preUpdateAIP, "Test update AIP").get();
-        Assert.assertEquals("new history size should be oldhistorysize + 2", oldHistorySize + 2,
+        Assert.assertEquals("new history size should be oldhistorysize + 2",
+                            oldHistorySize + 2,
                             updatedAip.getHistory().size());
     }
 
     private AIP getAIP() throws MalformedURLException {
 
-        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP, EntityType.DATA, getDefaultTenant(),
-                UUID.randomUUID(), 1);
-        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, getDefaultTenant(),
-                sipId.getEntityId(), 1);
+        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP,
+                                                            EntityType.DATA,
+                                                            getDefaultTenant(),
+                                                            UUID.randomUUID(),
+                                                            1);
+        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP,
+                                                            EntityType.DATA,
+                                                            getDefaultTenant(),
+                                                            sipId.getEntityId(),
+                                                            1);
         AIPBuilder aipBuilder = new AIPBuilder(aipId, Optional.of(sipId), "providerId", EntityType.DATA, SESSION);
 
         Path path = Paths.get("src", "test", "resources", "data.txt");
@@ -815,8 +893,8 @@ public class AIPServiceIT extends AbstractRegardsIT {
         aipBuilder.addContentInformation();
         aipBuilder.getPDIBuilder().setAccessRightInformation("public");
         aipBuilder.getPDIBuilder().setFacility("CS");
-        aipBuilder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event",
-                                                                 OffsetDateTime.now());
+        aipBuilder.getPDIBuilder()
+                .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event", OffsetDateTime.now());
         aipBuilder.addTags("tag");
 
         return aipBuilder.build();

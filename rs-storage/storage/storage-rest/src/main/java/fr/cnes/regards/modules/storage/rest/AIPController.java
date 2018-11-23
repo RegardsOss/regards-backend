@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.rest;
 
+import javax.validation.Valid;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -28,8 +29,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
-
-import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +59,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
@@ -92,6 +90,7 @@ import fr.cnes.regards.modules.storage.domain.RejectedSip;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.job.AIPQueryFilters;
 import fr.cnes.regards.modules.storage.domain.job.AddAIPTagsFilters;
+import fr.cnes.regards.modules.storage.domain.job.DataStorageRemovalAIPFilters;
 import fr.cnes.regards.modules.storage.domain.job.RemoveAIPTagsFilters;
 import fr.cnes.regards.modules.storage.service.IAIPService;
 
@@ -247,11 +246,10 @@ public class AIPController implements IResourceController<AIP> {
     @ResourceAccess(description = "send a page of aips")
     public ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(
             @RequestParam(name = "state", required = false) AIPState state,
-            @RequestParam(name = "from",
-                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
-            @RequestParam(name = "to",
-                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to,
-            @RequestParam(name = "tags", required = false) List<String> tags,
+            @RequestParam(name = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                    OffsetDateTime from,
+            @RequestParam(name = "to", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                    OffsetDateTime to, @RequestParam(name = "tags", required = false) List<String> tags,
             @RequestParam(name = "providerId", required = false) String providerId,
             @RequestParam(name = "session", required = false) String session,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
@@ -298,8 +296,11 @@ public class AIPController implements IResourceController<AIP> {
             }
         }
         // small hack to be used thanks to GSON which does not know how to deserialize Page or PageImpl
-        PagedResources<AipDataFiles> aipDataFiles = new PagedResources<>(content, new PagedResources.PageMetadata(
-                page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages()));
+        PagedResources<AipDataFiles> aipDataFiles = new PagedResources<>(content,
+                                                                         new PagedResources.PageMetadata(page.getSize(),
+                                                                                                         page.getNumber(),
+                                                                                                         page.getTotalElements(),
+                                                                                                         page.getTotalPages()));
         return new ResponseEntity<>(aipDataFiles, HttpStatus.OK);
     }
 
@@ -422,8 +423,8 @@ public class AIPController implements IResourceController<AIP> {
     @ResponseBody
     @ResourceAccess(description = "allow to request download availability for given files and return already "
             + "available files", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<AvailabilityResponse> makeFilesAvailable(@Valid @RequestBody AvailabilityRequest availabilityRequest)
-            throws ModuleException {
+    public ResponseEntity<AvailabilityResponse> makeFilesAvailable(
+            @Valid @RequestBody AvailabilityRequest availabilityRequest) throws ModuleException {
         return ResponseEntity.ok(aipService.loadFiles(availabilityRequest));
     }
 
@@ -499,7 +500,7 @@ public class AIPController implements IResourceController<AIP> {
      * Remove tags from a given aip, represented by its ip id
      * @param ipId
      * @param toRemoveTags
-     * @return  Void
+     * @return Void
      * @throws EntityException
      */
     @RequestMapping(value = TAG_PATH, method = RequestMethod.DELETE)
@@ -539,12 +540,14 @@ public class AIPController implements IResourceController<AIP> {
         return new ResponseEntity<>(aipTags, HttpStatus.OK);
     }
 
-//    @RequestMapping(value = TAG_SEARCH_PATH, method = RequestMethod.POST) // FIXME: change path
-//    @ResourceAccess(description = "allow to search tags used by aips")
-//    public ResponseEntity<Void> deleteAIPFilesOnDataStorage(@RequestBody AIPQueryFilters request, Long dataStorageId) {
-//        aipService.deleteFilesFromDataStorageByQuery(request, dataStorageId);
-//        return new ResponseEntity<>(HttpStatus.OK);
-//    }
+    @RequestMapping(value = "/files/delete", method = RequestMethod.POST) // FIXME: change path
+    @ResourceAccess(description = "allow to remove aips files from given data storages")
+    public ResponseEntity<Void> deleteAIPFilesOnDataStorage(@Valid @RequestBody DataStorageRemovalAIPFilters request) {
+        for (Long dataStorageId : request.getDataStorageIds()) {
+            aipService.deleteFilesFromDataStorageByQuery(request, dataStorageId);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
     /**
      * Retrieve all aips which are tagged by the provided tag
@@ -595,8 +598,8 @@ public class AIPController implements IResourceController<AIP> {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
             StringJoiner sj = new StringJoiner(", ",
-                    "This aip could not be deleted because at least one of his files has not be handle by the storage process: ",
-                    ".");
+                                               "This aip could not be deleted because at least one of his files has not be handle by the storage process: ",
+                                               ".");
             notSuppressible.stream().map(StorageDataFile::getAipEntity)
                     .forEach(aipEntity -> sj.add(aipEntity.getAipId()));
             return new ResponseEntity<>(sj.toString(), HttpStatus.CONFLICT);
@@ -655,21 +658,35 @@ public class AIPController implements IResourceController<AIP> {
     @Override
     public Resource<AIP> toResource(AIP element, Object... extras) {
         Resource<AIP> resource = resourceService.toResource(element);
-        resourceService.addLink(resource, this.getClass(), "retrieveAIPs", LinkRels.LIST,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "retrieveAIPs",
+                                LinkRels.LIST,
                                 MethodParamFactory.build(AIPState.class),
                                 MethodParamFactory.build(OffsetDateTime.class),
-                                MethodParamFactory.build(OffsetDateTime.class), MethodParamFactory.build(List.class),
-                                MethodParamFactory.build(String.class), MethodParamFactory.build(String.class),
+                                MethodParamFactory.build(OffsetDateTime.class),
+                                MethodParamFactory.build(List.class),
+                                MethodParamFactory.build(String.class),
+                                MethodParamFactory.build(String.class),
                                 MethodParamFactory.build(Pageable.class),
                                 MethodParamFactory.build(PagedResourcesAssembler.class));
-        resourceService.addLink(resource, this.getClass(), "retrieveAip", LinkRels.SELF,
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "retrieveAip",
+                                LinkRels.SELF,
                                 MethodParamFactory.build(String.class, element.getId().toString()));
         if (AIPState.STORAGE_ERROR.equals(element.getState())) {
-            resourceService.addLink(resource, this.getClass(), "storeRetryUnit", "retry",
+            resourceService.addLink(resource,
+                                    this.getClass(),
+                                    "storeRetryUnit",
+                                    "retry",
                                     MethodParamFactory.build(String.class, element.getId().toString()));
         }
-        resourceService.addLink(resource, this.getClass(), "deleteAip", "delete",
-                                    MethodParamFactory.build(String.class, element.getId().toString()));
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "deleteAip",
+                                "delete",
+                                MethodParamFactory.build(String.class, element.getId().toString()));
         return resource;
     }
 
@@ -682,9 +699,9 @@ public class AIPController implements IResourceController<AIP> {
             throws MalformedURLException {
         // Lets reconstruct the public url of rs-storage
         // now lets add it the gateway prefix and the microservice name and the endpoint path to it
-        String sb = projectHost + "/" + gatewayPrefix + "/" + microserviceName + AIP_PATH
-                + DOWNLOAD_AIP_FILE.replaceAll("\\{" + AIP_ID_PATH_PARAM + "\\}", owningAip.getId().toString())
-                        .replaceAll("\\{checksum\\}", dataFile.getChecksum());
+        String sb = projectHost + "/" + gatewayPrefix + "/" + microserviceName + AIP_PATH + DOWNLOAD_AIP_FILE
+                .replaceAll("\\{" + AIP_ID_PATH_PARAM + "\\}", owningAip.getId().toString())
+                .replaceAll("\\{checksum\\}", dataFile.getChecksum());
         URL downloadUrl = new URL(sb);
         dataFile.setUrl(downloadUrl);
     }

@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -253,7 +254,7 @@ public interface IAIPService {
     /**
      * Remove given AIPs files from given data storage
      */
-    void deleteFilesFromDataStorage(Collection<String> ipId, Long dataStorageId);
+    Map<StorageDataFile, String> deleteFilesFromDataStorage(Collection<String> ipId, Long dataStorageId);
 
     /**
      * Remove from given data storage filtered AIPs files
