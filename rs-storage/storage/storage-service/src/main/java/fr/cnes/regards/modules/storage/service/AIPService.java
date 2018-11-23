@@ -599,12 +599,11 @@ public class AIPService implements IAIPService {
         if (!getSecurityDelegationPlugin().hasAccessToListFeature()) {
             throw new EntityOperationForbiddenException("Only Admins can access this feature.");
         }
-        AIPSession aipSession = getSession(session, false);
         return aipDao.findAll(AIPQueryGenerator.searchAIPContainingAllTags(state,
                                                                            from,
                                                                            to,
                                                                            tags,
-                                                                           aipSession,
+                                                                           session,
                                                                            providerId,
                                                                            null,
                                                                            null), pageable);
@@ -1700,20 +1699,14 @@ public class AIPService implements IAIPService {
 
     @Override
     public List<String> retrieveAIPTagsByQuery(AIPQueryFilters request) {
-        try {
-            AIPSession aipSession = getSession(request.getSession(), false);
-
-            return aipDao.findAllByCustomQuery(AIPQueryGenerator.searchAipTagsUsingSQL(request.getState(),
-                                                                                       request.getFrom(),
-                                                                                       request.getTo(),
-                                                                                       request.getTags(),
-                                                                                       aipSession,
-                                                                                       request.getProviderId(),
-                                                                                       request.getAipIds(),
-                                                                                       request.getAipIdsExcluded()));
-        } catch (EntityNotFoundException e) {
-            return new ArrayList<>();
-        }
+        return aipDao.findAllByCustomQuery(AIPQueryGenerator.searchAipTagsUsingSQL(request.getState(),
+                                                                                   request.getFrom(),
+                                                                                   request.getTo(),
+                                                                                   request.getTags(),
+                                                                                   request.getSession(),
+                                                                                   request.getProviderId(),
+                                                                                   request.getAipIds(),
+                                                                                   request.getAipIdsExcluded()));
     }
 
     @Override

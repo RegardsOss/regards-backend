@@ -356,6 +356,7 @@ public class AIPController implements IResourceController<AIP> {
      */
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
     @ResourceAccess(description = "validate and store the specified AIPs")
+    // Do not user @Valid on this endpoint as aip validation is done by hand
     public ResponseEntity<List<RejectedAip>> store(@RequestBody AIPCollection aips) throws ModuleException {
         int originalAipNb = aips.getFeatures().size();
 
@@ -421,7 +422,7 @@ public class AIPController implements IResourceController<AIP> {
     @ResponseBody
     @ResourceAccess(description = "allow to request download availability for given files and return already "
             + "available files", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<AvailabilityResponse> makeFilesAvailable(@RequestBody AvailabilityRequest availabilityRequest)
+    public ResponseEntity<AvailabilityResponse> makeFilesAvailable(@Valid @RequestBody AvailabilityRequest availabilityRequest)
             throws ModuleException {
         return ResponseEntity.ok(aipService.loadFiles(availabilityRequest));
     }
@@ -486,7 +487,7 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(value = TAG_MANAGEMENT_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "allow to add multiple tags to several aips")
     @ResponseBody
-    public ResponseEntity<Void> addTagsByQuery(@RequestBody AddAIPTagsFilters request) {
+    public ResponseEntity<Void> addTagsByQuery(@Valid @RequestBody AddAIPTagsFilters request) {
         boolean succeed = aipService.addTagsByQuery(request);
         if (succeed) {
             return new ResponseEntity<>(HttpStatus.OK);
@@ -518,7 +519,7 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(value = TAG_DELETION_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "allow to remove multiple tags to several aips")
     @ResponseBody
-    public ResponseEntity<Void> removeTagsByQuery(@RequestBody RemoveAIPTagsFilters request) {
+    public ResponseEntity<Void> removeTagsByQuery(@Valid @RequestBody RemoveAIPTagsFilters request) {
         boolean succeed = aipService.removeTagsByQuery(request);
         if (succeed) {
             return new ResponseEntity<>(HttpStatus.OK);
@@ -533,7 +534,7 @@ public class AIPController implements IResourceController<AIP> {
      */
     @RequestMapping(value = TAG_SEARCH_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "allow to search tags used by aips")
-    public ResponseEntity<List<String>> retrieveAIPTags(@RequestBody AIPQueryFilters request) {
+    public ResponseEntity<List<String>> retrieveAIPTags(@Valid @RequestBody AIPQueryFilters request) {
         List<String> aipTags = aipService.retrieveAIPTagsByQuery(request);
         return new ResponseEntity<>(aipTags, HttpStatus.OK);
     }

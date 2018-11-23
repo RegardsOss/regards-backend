@@ -202,7 +202,7 @@ public class WriteAIPMetadataJob extends AbstractJob<Void> {
             // Delete written file
             logger.error(e.getMessage(), e);
             workspaceService.removeFromWorkspace(metadataName);
-            // this exception should never be thrown because is alreayd created and so is the session
+            // this exception should never be thrown because is already created and so is the session
             throw new RsRuntimeException(e);
         }
         return metadataAipFile;

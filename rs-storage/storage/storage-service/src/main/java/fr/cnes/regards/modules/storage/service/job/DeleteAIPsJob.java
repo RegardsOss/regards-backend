@@ -30,7 +30,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -42,7 +41,6 @@ import fr.cnes.regards.modules.notification.domain.NotificationType;
 import fr.cnes.regards.modules.storage.dao.AIPQueryGenerator;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.job.AIPQueryFilters;
 import fr.cnes.regards.modules.storage.domain.job.RemovedAipsInfos;
 import fr.cnes.regards.modules.storage.service.IAIPService;
@@ -92,45 +90,38 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
     @Override
     public void run() {
         AIPQueryFilters tagFilter = parameters.get(FILTER_PARAMETER_NAME).getValue();
-        AIPSession aipSession = null;
-        try {
-            aipSession = aipService.getSession(tagFilter.getSession(), false);
-            Pageable pageRequest = new PageRequest(0, aipIterationLimit, Direction.ASC, "id");
-            Page<AIP> aipsPage;
-            nbError = new AtomicInteger(0);
-            nbEntityRemoved = new AtomicInteger(0);
-            entityFailed = new ArrayList<>();
-            do {
-                aipsPage = aipDao.findAll(AIPQueryGenerator.searchAIPContainingAllTags(tagFilter.getState(),
-                                                                                       tagFilter.getFrom(),
-                                                                                       tagFilter.getTo(),
-                                                                                       tagFilter.getTags(),
-                                                                                       aipSession,
-                                                                                       tagFilter.getProviderId(),
-                                                                                       tagFilter.getAipIds(),
-                                                                                       tagFilter.getAipIdsExcluded()),
-                                          pageRequest);
-                aipsPage.forEach(aip -> {
-                    try {
-                        aipService.deleteAip(aip);
-                        nbEntityRemoved.incrementAndGet();
-                    } catch (ModuleException e) {
-                        // save first 100 AIP id in error
-                        if (entityFailed.size() < 100) {
-                            entityFailed.add(aip.getId().toString());
-                        }
-                        // Exception thrown while removing AIP
-                        logger.error(e.getMessage(), e);
-                        nbError.incrementAndGet();
+        Pageable pageRequest = new PageRequest(0, aipIterationLimit, Direction.ASC, "id");
+        Page<AIP> aipsPage;
+        nbError = new AtomicInteger(0);
+        nbEntityRemoved = new AtomicInteger(0);
+        entityFailed = new ArrayList<>();
+        do {
+            aipsPage = aipDao.findAll(AIPQueryGenerator.searchAIPContainingAllTags(tagFilter.getState(),
+                                                                                   tagFilter.getFrom(),
+                                                                                   tagFilter.getTo(),
+                                                                                   tagFilter.getTags(),
+                                                                                   tagFilter.getSession(),
+                                                                                   tagFilter.getProviderId(),
+                                                                                   tagFilter.getAipIds(),
+                                                                                   tagFilter.getAipIdsExcluded()),
+                                      pageRequest);
+            aipsPage.forEach(aip -> {
+                try {
+                    aipService.deleteAip(aip);
+                    nbEntityRemoved.incrementAndGet();
+                } catch (ModuleException e) {
+                    // save first 100 AIP id in error
+                    if (entityFailed.size() < 100) {
+                        entityFailed.add(aip.getId().toString());
                     }
-                });
-                pageRequest = aipsPage.nextPageable();
-            } while (aipsPage.hasNext());
-            nbEntity = aipsPage.getTotalElements();
-        } catch (EntityNotFoundException e) {
-            logger.debug(String.format("AIPSession %s could not be found so there is nothing to delete",
-                                       tagFilter.getSession()), e);
-        }
+                    // Exception thrown while removing AIP
+                    logger.error(e.getMessage(), e);
+                    nbError.incrementAndGet();
+                }
+            });
+            pageRequest = aipsPage.nextPageable();
+        } while (aipsPage.hasNext());
+        nbEntity = aipsPage.getTotalElements();
         RemovedAipsInfos infos = new RemovedAipsInfos(nbError, nbEntityRemoved);
         this.setResult(infos);
         handleErrors();

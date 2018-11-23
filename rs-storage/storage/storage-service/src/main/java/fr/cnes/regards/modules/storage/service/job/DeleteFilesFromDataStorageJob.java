@@ -10,7 +10,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -18,7 +17,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.modules.storage.dao.AIPQueryGenerator;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.job.AIPQueryFilters;
 import fr.cnes.regards.modules.storage.service.IAIPService;
 
@@ -50,32 +48,24 @@ public class DeleteFilesFromDataStorageJob extends AbstractJob<Void> {
     @Override
     public void run() {
         AIPQueryFilters filters = parameters.get(FILTER_PARAMETER_NAME).getValue();
-        AIPSession aipSession = null;
-        try {
-            aipSession = aipService.getSession(filters.getSession(), false);
+        Pageable pageRequest = new PageRequest(0, aipIterationLimit, Sort.Direction.ASC, "id");
+        do {
+            aipsPage = aipDao.findAll(AIPQueryGenerator.searchAIPContainingAllTags(filters.getState(),
+                                                                                   filters.getFrom(),
+                                                                                   filters.getTo(),
+                                                                                   filters.getTags(),
+                                                                                   filters.getSession(),
+                                                                                   filters.getProviderId(),
+                                                                                   filters.getAipIds(),
+                                                                                   filters.getAipIdsExcluded()),
+                                      pageRequest);
 
-            Pageable pageRequest = new PageRequest(0, aipIterationLimit, Sort.Direction.ASC, "id");
-            do {
-                aipsPage = aipDao.findAll(AIPQueryGenerator.searchAIPContainingAllTags(filters.getState(),
-                                                                                       filters.getFrom(),
-                                                                                       filters.getTo(),
-                                                                                       filters.getTags(),
-                                                                                       aipSession,
-                                                                                       filters.getProviderId(),
-                                                                                       filters.getAipIds(),
-                                                                                       filters.getAipIdsExcluded()),
-                                          pageRequest);
-
-                aipService.deleteFilesFromDataStorage(aipsPage.getContent().stream().map(aip -> aip.getId().toString())
-                                                              .collect(Collectors.toSet()),
-                                                      parameters.get(DATA_STORAGE_ID_PARAMETER_NAME).getValue());
-                advanceCompletion();
-                pageRequest = aipsPage.nextPageable();
-            } while (aipsPage.hasNext());
-        } catch (EntityNotFoundException e) {
-            logger.debug(String.format("AIPSession %s could not be found so there is nothing to delete",
-                                       filters.getSession()), e);
-        }
+            aipService.deleteFilesFromDataStorage(aipsPage.getContent().stream().map(aip -> aip.getId().toString())
+                                                          .collect(Collectors.toSet()),
+                                                  parameters.get(DATA_STORAGE_ID_PARAMETER_NAME).getValue());
+            advanceCompletion();
+            pageRequest = aipsPage.nextPageable();
+        } while (aipsPage.hasNext());
     }
 
     @Override
