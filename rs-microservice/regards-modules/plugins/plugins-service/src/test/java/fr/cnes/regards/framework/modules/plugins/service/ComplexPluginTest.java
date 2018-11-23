@@ -60,6 +60,9 @@ public class ComplexPluginTest {
 
     /**
      * This method is run before all tests
+     * @throws InvalidAlgorithmParameterException
+     * @throws InvalidKeyException
+     * @throws IOException
      */
     @Before
     public void init() throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
@@ -72,10 +75,8 @@ public class ComplexPluginTest {
         BlowfishEncryptionService blowfishEncryptionService = new BlowfishEncryptionService();
         blowfishEncryptionService
                 .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "12345678"));
-        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked,
-                                                publisherMocked,
-                                                runtimeTenantResolver,
-                                                blowfishEncryptionService);
+        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, publisherMocked, runtimeTenantResolver,
+                blowfishEncryptionService);
         PluginUtils.setup();
     }
 
@@ -97,9 +98,7 @@ public class ComplexPluginTest {
 
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = new PluginConfiguration(result,
-                                                                                 "a configuration from PluginServiceUtility",
-                                                                                 ppf.getParameters(),
-                                                                                 0);
+                "a configuration from PluginServiceUtility", ppf.getParameters(), 0);
         aPluginConfiguration.setId(pPluginConfigurationId);
 
         pluginConfs.add(aPluginConfiguration);

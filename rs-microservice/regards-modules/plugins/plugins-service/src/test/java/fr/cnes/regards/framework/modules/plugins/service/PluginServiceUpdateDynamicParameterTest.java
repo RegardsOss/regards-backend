@@ -58,6 +58,9 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
 
     /**
      * This method is run before all tests
+     * @throws InvalidAlgorithmParameterException
+     * @throws InvalidKeyException
+     * @throws IOException
      */
     @Before
     public void init() throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {

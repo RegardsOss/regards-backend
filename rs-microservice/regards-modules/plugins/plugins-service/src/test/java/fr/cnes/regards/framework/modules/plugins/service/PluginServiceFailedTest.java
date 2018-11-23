@@ -66,6 +66,9 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
     /**
      * This method is run before all tests
+     * @throws InvalidAlgorithmParameterException
+     * @throws InvalidKeyException
+     * @throws IOException
      */
     @Before
     public void init() throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
@@ -77,10 +80,8 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
         BlowfishEncryptionService blowfishEncryptionService = new BlowfishEncryptionService();
         blowfishEncryptionService
                 .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "12345678"));
-        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked,
-                                                Mockito.mock(IPublisher.class),
-                                                runtimeTenantResolver,
-                                                blowfishEncryptionService);
+        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, Mockito.mock(IPublisher.class),
+                runtimeTenantResolver, blowfishEncryptionService);
         PluginUtils.setup();
     }
 
@@ -113,8 +114,9 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
     /**
      * Save a null {@link PluginConfiguration}.
-     *
-     * @throws ModuleException throw if an error occurs
+     * @throws EntityInvalidException
+     * @throws EncryptionException
+     * @throws EntityNotFoundException
      */
     @Test(expected = EntityInvalidException.class)
     public void saveANullPluginConfiguration()
@@ -125,8 +127,10 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
     /**
      * Save a {@link PluginConfiguration} without priorityOrder attribute.
+     * @throws EntityInvalidException
+     * @throws EncryptionException
+     * @throws EntityNotFoundException
      *
-     * @throws ModuleException throw if an error occurs
      */
     @Test(expected = EntityInvalidException.class)
     public void saveAPluginConfigurationWithoutPriorityOrder()
@@ -139,8 +143,10 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
 
     /**
      * Save a {@link PluginConfiguration} without priorityOrder attribute.
+     * @throws EntityInvalidException
+     * @throws EncryptionException
+     * @throws EntityNotFoundException
      *
-     * @throws ModuleException throw if an error occurs
      */
     @Test(expected = EntityInvalidException.class)
     public void saveAPluginConfigurationWithoutVersion()
@@ -245,9 +251,6 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
                 .thenReturn(pluginConfs);
         Mockito.when(pluginConfRepositoryMocked.findOne(bPluginConfiguration.getId())).thenReturn(null);
 
-        pluginServiceMocked.addPluginPackage("fr.cnes.regards.plugins.utils");
-        pluginServiceMocked.addPluginPackage("fr.cnes.regards.framework.plugins.utils");
-        pluginServiceMocked.addPluginPackage("fr.cnes.regards.framework.modules.plugins.utils");
         pluginServiceMocked.getFirstPluginByType(IComplexInterfacePlugin.class);
 
         Assert.fail();

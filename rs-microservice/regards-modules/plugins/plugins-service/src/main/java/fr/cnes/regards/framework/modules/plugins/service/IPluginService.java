@@ -136,7 +136,9 @@ public interface IPluginService {
      *
      * @param pluginConfiguration the plugin configuration to saved
      * @return the saved {@link PluginConfiguration}
-     * @throws ModuleException thrown if an error occurs
+     * @throws EntityInvalidException
+     * @throws EncryptionException
+     * @throws EntityNotFoundException
      */
     PluginConfiguration savePluginConfiguration(PluginConfiguration pluginConfiguration)
             throws EntityInvalidException, EncryptionException, EntityNotFoundException;
@@ -145,7 +147,6 @@ public interface IPluginService {
      * Delete a {@link PluginConfiguration}.
      *
      * @param confId a specific configuration
-     * @return
      * @throws ModuleException Entity to delete does not exist
      */
     void deletePluginConfiguration(Long confId) throws ModuleException;
@@ -164,12 +165,14 @@ public interface IPluginService {
      *
      * @param id a plugin identifier
      * @return a specific configuration
-     * @throws ModuleException thrown if we cannot find any PluginConfiguration corresponding to pId
+     * @throws EntityNotFoundException thrown if we cannot find any PluginConfiguration corresponding to pId
      */
     PluginConfiguration getPluginConfiguration(Long id) throws EntityNotFoundException;
 
     /**
      * Load a PluginConfiguration with all its relations
+     * @param id {@link Long}
+     * @return  {@link PluginConfiguration}
      */
     PluginConfiguration loadPluginConfiguration(Long id);
 
@@ -215,7 +218,7 @@ public interface IPluginService {
      * @param pluginId a specific plugin Id
      * @return all the active {@link PluginConfiguration} for a specific plugin Id
      */
-    List<PluginConfiguration> getActivePluginConfigurations(final String pPluginId);
+    List<PluginConfiguration> getActivePluginConfigurations(final String pluginId);
 
     /**
      * This method is no longer used. Package(s) to scan is define once in properties
@@ -268,7 +271,7 @@ public interface IPluginService {
     /**
      * Check if plugin is cached (resolving tenant internally)
      * @param confId configuration identifier
-     * @return
+     * @return {@link boolean}
      */
     boolean isPluginCached(Long confId);
 
