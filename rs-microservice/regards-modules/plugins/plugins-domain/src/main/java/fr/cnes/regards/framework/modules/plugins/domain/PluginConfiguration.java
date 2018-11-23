@@ -22,7 +22,6 @@ package fr.cnes.regards.framework.modules.plugins.domain;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -300,30 +299,6 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         if (!pParam.getDynamicsValuesAsString().isEmpty()) {
             pParam.getDynamicsValuesAsString().forEach(v -> LOGGER.info("     --> val=" + v));
         }
-    }
-
-    /**
-     * Export current {@link PluginConfiguration} by removing all internal identifier and decrypting all crypted values.
-     * @return {@link PluginConfiguration}
-     */
-    public PluginConfiguration export() {
-        PluginConfiguration exportedConf = new PluginConfiguration();
-
-        // Handle default parameters
-        exportedConf.setIsActive(false);
-        exportedConf.setIconUrl(this.getIconUrl());
-        exportedConf.setInterfaceNames(this.getInterfaceNames());
-        exportedConf.setLabel(this.getLabel());
-        exportedConf.setPluginClassName(this.getPluginClassName());
-        exportedConf.setPluginId(this.getPluginId());
-        exportedConf.setPriorityOrder(this.getPriorityOrder());
-        exportedConf.setVersion(this.getVersion());
-
-        // Handle plugin parameters
-        exportedConf
-                .setParameters(this.getParameters().stream().map(PluginParameter::export).collect(Collectors.toSet()));
-
-        return exportedConf;
     }
 
     public final String getLabel() {

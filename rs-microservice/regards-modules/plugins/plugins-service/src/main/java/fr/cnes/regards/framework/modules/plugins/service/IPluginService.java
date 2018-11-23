@@ -306,4 +306,11 @@ public interface IPluginService {
      *             an error is trhown
      */
     PluginConfiguration getPluginConfiguration(String pluginId, Class<?> interfacePluginType) throws ModuleException;
+
+    /**
+     * Export {@link PluginConfiguration} by removing all internal identifier and decrypting all crypted values.
+     * @param pluginConf {@link PluginConfiguration} to export
+     * @return exported {@link PluginConfiguration}
+     */
+    PluginConfiguration exportConfiguration(PluginConfiguration pluginConf);
 }

@@ -715,6 +715,52 @@ public class PluginService implements IPluginService {
         }
     }
 
+    @Override
+    public PluginConfiguration exportConfiguration(PluginConfiguration pluginConf) {
+
+        PluginConfiguration exportedConf = new PluginConfiguration();
+        PluginMetaData pluginMeta = PluginUtils.getPlugins().get(pluginConf.getPluginId());
+
+        // Handle default parameters
+        exportedConf.setIsActive(false);
+        exportedConf.setIconUrl(pluginConf.getIconUrl());
+        exportedConf.setInterfaceNames(pluginConf.getInterfaceNames());
+        exportedConf.setLabel(pluginConf.getLabel());
+        exportedConf.setPluginClassName(pluginConf.getPluginClassName());
+        exportedConf.setPluginId(pluginConf.getPluginId());
+        exportedConf.setPriorityOrder(pluginConf.getPriorityOrder());
+        exportedConf.setVersion(pluginConf.getVersion());
+
+        // Handle parameters
+        for (PluginParameter param : pluginConf.getParameters()) {
+            PluginParameter exported = new PluginParameter();
+            exported.setValue(param.getValue());
+            pluginMeta.getParameters().stream().filter(pt -> pt.getName().equals(param.getName())).findFirst()
+                    .ifPresent(pt -> {
+                        if (pt.isSensible()) {
+                            try {
+                                exported.setValue(encryptionService.decrypt(param.getValue()));
+                            } catch (EncryptionException e) {
+                                // Nothing to do
+                                LOGGER.warn("Error decrypting sensitive parameter {}:{}. Cause : {}.",
+                                            pluginConf.getPluginId(), param.getName(), e.getMessage());
+                            }
+                        }
+                    });
+
+            exported.setIsDynamic(param.isDynamic());
+            exported.setName(param.getName());
+            exported.setOnlyDynamic(param.isOnlyDynamic());
+            if (param.getPluginConfiguration() != null) {
+                exported.setPluginConfiguration(exportConfiguration(param.getPluginConfiguration()));
+            }
+            exportedConf.getParameters().add(exported);
+        }
+
+        return exportedConf;
+
+    }
+
     /**
      * Return a {@link PluginConfiguration} for a pluginId
      * @param pluginId the pluginid to search

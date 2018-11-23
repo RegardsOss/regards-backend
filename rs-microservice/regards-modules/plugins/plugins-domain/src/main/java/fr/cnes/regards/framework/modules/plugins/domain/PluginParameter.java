@@ -245,23 +245,6 @@ public class PluginParameter implements IIdentifiable<Long> {
         return value;
     }
 
-    /**
-     * Export current {@link PluginParameter} by removing all internal identifier and decrypting all crypted values.
-     * @return {@link PluginParameter}
-     */
-    public PluginParameter export() {
-        PluginParameter exported = new PluginParameter();
-        exported.setDecryptedValue(this.getDecryptedValue());
-        exported.setValue(this.getDecryptedValue());
-        exported.setIsDynamic(this.isDynamic());
-        exported.setName(this.getName());
-        exported.setOnlyDynamic(this.isOnlyDynamic());
-        if (this.getPluginConfiguration() != null) {
-            exported.setPluginConfiguration(this.getPluginConfiguration().export());
-        }
-        return exported;
-    }
-
     @Override
     public int hashCode() {
         final int prime = 31;
