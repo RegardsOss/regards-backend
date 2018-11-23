@@ -35,6 +35,7 @@ import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
 import fr.cnes.regards.modules.dam.client.models.IAttributeModelClient;
 import fr.cnes.regards.modules.dam.client.models.IModelAttrAssocClient;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
+import fr.cnes.regards.modules.indexer.dao.spatial.ProjectGeoSettings;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
@@ -108,5 +109,10 @@ public class SearchClientITConfiguration {
     @Bean
     public IModelAttrAssocClient modelAttrAssocClient() {
         return Mockito.mock(IModelAttrAssocClient.class);
+    }
+
+    @Bean
+    public ProjectGeoSettings projectGeoSettings() {
+        return Mockito.mock(ProjectGeoSettings.class);
     }
 }
