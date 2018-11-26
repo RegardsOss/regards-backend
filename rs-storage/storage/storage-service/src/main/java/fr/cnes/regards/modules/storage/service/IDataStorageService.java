@@ -6,10 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.util.MimeType;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.notification.domain.NotificationType;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.domain.event.StorageAction;
@@ -52,21 +49,14 @@ public interface IDataStorageService {
     void handleDeletionAction(StorageEventType type, DataStorageEvent event);
 
     /**
-     * Use the notification module in admin to create a notification for admins
-     * @param title
-     * @param message
-     * @param type
-     * @param mimeType
-     */
-    void notifyAdmins(String title, String message, NotificationType type, MimeType mimeType);
-
-    /**
      * Method called when a SUCCESSFULL {@link DataStorageEvent} {@link StorageAction#DELETION} event is received.
      * @param dataFileDeleted {@link StorageDataFile} deleted.
      * @param deletedUrl
      * @param checksumOfDeletedFile {@link String} checksum of the deleted {@link StorageDataFile}
+     * @param dataStorageConfId
      */
-    void handleDeletionSuccess(StorageDataFile dataFileDeleted, URL deletedUrl, String checksumOfDeletedFile);
+    void handleDeletionSuccess(StorageDataFile dataFileDeleted, URL deletedUrl, String checksumOfDeletedFile,
+            Long dataStorageConfId);
 
     /**
      * Handle {@link DataStorageEvent} events for {@link StorageAction#STORE} type.

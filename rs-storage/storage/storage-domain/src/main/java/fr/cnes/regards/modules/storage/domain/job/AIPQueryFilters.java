@@ -72,7 +72,6 @@ public class AIPQueryFilters {
     /**
      * Regards session id
      */
-    @NotNull
     private String session;
 
     public AIPQueryFilters() {

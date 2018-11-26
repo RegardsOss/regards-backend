@@ -40,6 +40,7 @@ import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.job.AIPQueryFilters;
 import fr.cnes.regards.modules.storage.domain.job.AddAIPTagsFilters;
+import fr.cnes.regards.modules.storage.domain.job.DataStorageRemovalAIPFilters;
 import fr.cnes.regards.modules.storage.domain.job.RemoveAIPTagsFilters;
 import java.net.MalformedURLException;
 import java.time.OffsetDateTime;
@@ -237,6 +238,28 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
 
         performDefaultGet(AIPController.AIP_PATH + AIPController.TAG, requestBuilderCustomizer,
                           "we should have the aips", aip.getId().toString(), "tag");
+    }
+
+    @Test
+    public void testDeleteFilesFromSingleDS() throws MalformedURLException, InterruptedException {
+        testStore();
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        int wait = 0;
+        // lets wait for this AIP to be stored
+        while ((aipDao.findOneByAipId(aip.getId().toString()).get().getState() != AIPState.STORED)
+                && (wait < MAX_WAIT)) {
+            Thread.sleep(1000);
+            wait += 1000;
+        }
+        Assert.assertTrue("AIP was not fully stored in time: " + wait, wait < MAX_WAIT);
+        DataStorageRemovalAIPFilters requestParam = new DataStorageRemovalAIPFilters();
+        Long dataStorageId = pluginRepo.findOneByLabel(DATA_STORAGE_CONF_LABEL).getId();
+        requestParam.getDataStorageIds().add(dataStorageId);
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
+        performDefaultPost(AIPController.AIP_PATH + AIPController.FILES_DELETE_PATH, requestParam,
+                           requestBuilderCustomizer, "There should be any error on REST call as return value is"
+                                   + " not conditional.");
     }
 
     @Test

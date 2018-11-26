@@ -48,7 +48,7 @@ public class AIPQueryGenerator {
      * @param tags must be present in the AIP
      */
     public static String searchAIPContainingAllTags(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags,
-            AIPSession session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded) {
+            String session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded) {
         Set<String> predicates = generatePredicates(state, from, to, session, providerId, aipIds, aipIdsExcluded);
         if (tags != null && !tags.isEmpty()) {
             predicates.add(getConjunctionTagPredicate(tags));
@@ -63,7 +63,7 @@ public class AIPQueryGenerator {
      * @param tags At least one provided tag will be present in the AIP
      */
     public static String searchAIPContainingAtLeastOneTag(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags,
-            AIPSession session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded) {
+            String session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded) {
         Set<String> predicates = generatePredicates(state, from, to, session, providerId, aipIds, aipIdsExcluded);
         if (tags != null && !tags.isEmpty()) {
             predicates.add(getDisjunctionTagPredicate(tags));
@@ -76,7 +76,7 @@ public class AIPQueryGenerator {
      * Return an SQL query that retrieve all tags used by a set of entities
      */
     public static String searchAipTagsUsingSQL(AIPState state, OffsetDateTime from, OffsetDateTime to,
-            List<String> tags, AIPSession session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded) {
+            List<String> tags, String session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded) {
         StringBuilder request = new StringBuilder(
                 "SELECT distinct jsonb_array_elements_text(json_aip#>'{properties,pdi,contextInformation,tags}') "
                         + "FROM {h-schema}t_aip ");
@@ -93,7 +93,7 @@ public class AIPQueryGenerator {
     }
 
     private static Set<String> generatePredicates(AIPState state, OffsetDateTime from, OffsetDateTime to,
-            AIPSession session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded) {
+            String session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded) {
         Set<String> predicates = Sets.newHashSet();
         if (state != null) {
             predicates.add("(state = '" + state.getName() + "')");
@@ -107,7 +107,7 @@ public class AIPQueryGenerator {
             predicates.add("(date < '" + time.toString() + "')");
         }
         if (session != null) {
-            predicates.add("(session = '" + session.getId() + "')");
+            predicates.add("(session = '" + session + "')");
         }
         if (aipIds != null && !aipIds.isEmpty()) {
             Set<String> aipIncludedPredicates = Sets.newHashSet();
