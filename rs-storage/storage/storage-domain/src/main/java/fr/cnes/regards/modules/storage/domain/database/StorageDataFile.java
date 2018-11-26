@@ -93,6 +93,13 @@ public class StorageDataFile {
     private Set<URL> urls;
 
     /**
+     * File origin urls
+     */
+    @Column(columnDefinition = "text", name = "origin_urls")
+    @Convert(converter = SetURLCsvConverter.class)
+    private Set<URL> originUrls;
+
+    /**
      * File name
      */
     @Column
@@ -549,5 +556,13 @@ public class StorageDataFile {
         if (failureCause != null) {
             this.failureCauses.add(failureCause);
         }
+    }
+
+    public Set<URL> getOriginUrls() {
+        return originUrls;
+    }
+
+    public void setOriginUrls(Set<URL> originUrls) {
+        this.originUrls = originUrls;
     }
 }
