@@ -66,6 +66,7 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
@@ -348,7 +349,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
-    public void testRetrieveDistinctSotageDataFiles() throws MalformedURLException {
+    public void testRetrieveDistinctSotageDataFiles() throws MalformedURLException, EntityNotFoundException {
         fillNearlineDataFileDb(50L, 3, "dataFile");
         Set<String> checksums = nearlineFiles.stream().map(f -> f.getChecksum()).collect(Collectors.toSet());
         Page<Long> ids = repository.findIdPageByChecksumIn(checksums, new PageRequest(0, 500));
@@ -596,7 +597,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     @Requirements({ @Requirement("REGARDS_DSL_STO_ARC_450") })
-    public void cleanCacheDeleteExpiredFilesTest() throws InterruptedException, IOException {
+    public void cleanCacheDeleteExpiredFilesTest() throws InterruptedException, IOException, EntityNotFoundException {
         LOG.info("Start test testCleanCacheDeleteExpiredFiles ...");
         Long fileSize = (this.cacheSizeLimitKo * 1024) / 2;
         AIP aip = fillNearlineDataFileDb(fileSize, 3, "dataFile");
@@ -646,7 +647,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     @Requirements({ @Requirement("REGARDS_DSL_STO_ARC_450") })
-    public void cleanCacheDeleteOlderFilesTest() throws InterruptedException, IOException {
+    public void cleanCacheDeleteOlderFilesTest() throws InterruptedException, IOException, EntityNotFoundException {
         LOG.info("Start test testCleanCacheDeleteOlderFiles ...");
         // Simulate each file size as the cache is full with 4 files and fill it.
         Long fileSize = (this.cacheSizeLimitKo * 1024) / 4;
@@ -887,7 +888,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         // First create StorageDataFile
         StorageDataFile df = new StorageDataFile(Sets.newHashSet(new URL("file://test/" + fileName)), checksum, "MD5",
                 DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession),
-                aipSession, fileName, null);
+                fileName, null);
         df.addDataStorageUsed(nearlineDataStorageConf);
         dataFileDao.save(df);
         // Then create cached file associated
@@ -910,26 +911,26 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
      * @param fileSize
      * @throws MalformedURLException
      */
-    private void fillOnlineDataFileDb(Long fileSize) throws MalformedURLException {
+    private void fillOnlineDataFileDb(Long fileSize) throws MalformedURLException, EntityNotFoundException {
         AIP aip = getAIP();
         AIPSession aipSession = aipService.getSession(aip.getSession(), true);
         aipDao.save(aip, aipSession);
         Set<StorageDataFile> datafiles = Sets.newHashSet();
         URL url = new URL(Paths.get(baseStorageLocation.toString(), "file1.test").toString());
         StorageDataFile df = new StorageDataFile(Sets.newHashSet(url), "1", "MD5", DataType.RAWDATA, fileSize,
-                MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), aipSession, "file1.test", null);
+                MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), "file1.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(onlineNoRetrieveDataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file2.test").toString());
         df = new StorageDataFile(Sets.newHashSet(url), "2", "MD5", DataType.RAWDATA, fileSize,
-                MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), aipSession, "file2.test", null);
+                MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), "file2.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(onlineNoRetrieveDataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file3.test").toString());
         df = new StorageDataFile(Sets.newHashSet(url), "3", "MD5", DataType.RAWDATA, fileSize,
-                MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), aipSession, "file3.test", null);
+                MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), "file3.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(onlineNoRetrieveDataStorageConf);
         datafiles.add(df);
@@ -943,7 +944,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
      * @param fileSize
      * @throws MalformedURLException
      */
-    private void fillOnlineNNearlineDataFileDb(Long fileSize) throws MalformedURLException {
+    private void fillOnlineNNearlineDataFileDb(Long fileSize) throws MalformedURLException, EntityNotFoundException {
         AIP aip = getAIP();
         AIPSession aipSession = aipService.getSession(aip.getSession(), true);
         aipDao.save(aip, aipSession);
@@ -951,7 +952,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         URL url = new URL(Paths.get(baseStorageLocation.toString(), "file1.test").toString());
         URL urlNearline = new URL("file://PLOP/Node/file1.test");
         StorageDataFile df = new StorageDataFile(Sets.newHashSet(url, urlNearline), "1", "MD5", DataType.RAWDATA,
-                fileSize, MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), aipSession,
+                fileSize, MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession),
                 "file1.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(nearlineDataStorageConf);
@@ -959,14 +960,14 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         url = new URL(Paths.get(baseStorageLocation.toString(), "file2.test").toString());
         urlNearline = new URL("file://PLOP/Node/file2.test");
         df = new StorageDataFile(Sets.newHashSet(url, urlNearline), "2", "MD5", DataType.RAWDATA, fileSize,
-                MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), aipSession, "file2.test", null);
+                MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), "file2.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(nearlineDataStorageConf);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file3.test").toString());
         urlNearline = new URL("file://PLOP/Node/file3.test");
         df = new StorageDataFile(Sets.newHashSet(url, urlNearline), "3", "MD5", DataType.RAWDATA, fileSize,
-                MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), aipSession, "file3.test", null);
+                MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), "file3.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(nearlineDataStorageConf);
         datafiles.add(df);
@@ -981,7 +982,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
      * @throws MalformedURLException
      */
     private AIP fillNearlineDataFileDb(Long fileSize, int nbFilesToFill, String checksumPrefix)
-            throws MalformedURLException {
+            throws MalformedURLException, EntityNotFoundException {
         AIP aip = getAIP();
         AIPSession aipSession = aipService.getSession(aip.getSession(), true);
         aipDao.save(aip, aipSession);
@@ -991,7 +992,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
             URL url = Paths.get("src/test/resources/income/" + fileName).toUri().toURL();
             StorageDataFile df = new StorageDataFile(Sets.newHashSet(url), String.format("%s%d", checksumPrefix, i + 1),
                     "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"),
-                    new AIPEntity(aip, aipSession), aipSession, fileName, null);
+                    new AIPEntity(aip, aipSession), fileName, null);
             df.addDataStorageUsed(nearlineDataStorageConf);
             df.addDataStorageUsed(nearlineNoRetrieveDataStorageConf);
             datafiles.add(df);
