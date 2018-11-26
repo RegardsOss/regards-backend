@@ -194,6 +194,8 @@ public class AIPController implements IResourceController<AIP> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPController.class);
 
+    public static final String FILES_DELETE_PATH = "/files/delete";
+
     /**
      * {@link IResourceService} instance
      */
@@ -540,13 +542,13 @@ public class AIPController implements IResourceController<AIP> {
         return new ResponseEntity<>(aipTags, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/files/delete", method = RequestMethod.POST) // FIXME: change path
+    @RequestMapping(value = FILES_DELETE_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "allow to remove aips files from given data storages")
     public ResponseEntity<Void> deleteAIPFilesOnDataStorage(@Valid @RequestBody DataStorageRemovalAIPFilters request) {
         for (Long dataStorageId : request.getDataStorageIds()) {
             aipService.deleteFilesFromDataStorageByQuery(request, dataStorageId);
         }
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /**

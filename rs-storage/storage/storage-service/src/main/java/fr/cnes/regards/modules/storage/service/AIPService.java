@@ -1349,7 +1349,8 @@ public class AIPService implements IAIPService {
         } catch (ModuleException e) {
             filesToDelete.forEach(sdf -> undeletableFileCauseMap.put(sdf,
                                                                      String.format(
-                                                                             "Data Storage %s does not exist anymore. We could not delete file %s from AIP %s",
+                                                                             "Data Storage %s does not exist anymore. "
+                                                                                     + "We could not delete file %s from AIP %s",
                                                                              dataStorageId,
                                                                              sdf.getName(),
                                                                              sdf.getAipEntity().getAipId())));
@@ -1370,6 +1371,8 @@ public class AIPService implements IAIPService {
                      email.getText(),
                      NotificationType.WARNING,
                      MimeTypeUtils.TEXT_HTML);
+        // now that we are done with pure removal logic, lets create an update request for the AIPs to write changes
+        // made to DataFiles.
         return undeletableFileCauseMap;
     }
 
