@@ -228,10 +228,9 @@ public interface IAIPService {
      * @return aip stored into the system after changes have been propagated
      * @throws EntityNotFoundException if no aip with ipId as identifier can be found
      * @throws EntityInconsistentIdentifierException if ipId and updated ipId are different
-     * @throws EntityOperationForbiddenException if aip in the system is not in the right state
      */
     Optional<AIP> updateAip(String ipId, AIP updated, String updateMessage)
-            throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException;
+            throws EntityNotFoundException, EntityInconsistentIdentifierException;
 
     /**
      * Remove an aip from the system. Its file are deleted if and only if no other aip point to them.

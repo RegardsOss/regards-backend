@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
+import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -36,9 +37,9 @@ import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.EventType;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.notification.domain.NotificationType;
-import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -308,16 +309,17 @@ public class DataStorageService implements IDataStorageService {
     public void handleDeletionAction(StorageEventType type, DataStorageEvent event) {
         // Check that the given StorageDataFile id is associated to an existing StorageDataFile from db.
         Optional<StorageDataFile> data = dataFileDao.findLockedOneById(event.getDataFileId());
+        Long dataStorageConfId = event.getStorageConfId();
         if (data.isPresent()) {
             switch (type) {
                 case SUCCESSFULL:
-                    handleDeletionSuccess(data.get(), event.getHandledUrl(), event.getChecksum());
+                    handleDeletionSuccess(data.get(), event.getHandledUrl(), event.getChecksum(), dataStorageConfId);
                     break;
                 case FAILED:
                 default:
                     PluginConfiguration storageConf = null;
                     try {
-                        storageConf = pluginService.getPluginConfiguration(event.getStorageConfId());
+                        storageConf = pluginService.getPluginConfiguration(dataStorageConfId);
                     } catch (EntityNotFoundException e) {
                         LOGGER.error(e.getMessage(), e);
                     }
@@ -344,21 +346,20 @@ public class DataStorageService implements IDataStorageService {
     }
 
     @Override
-    public void handleDeletionSuccess(StorageDataFile dataFileDeleted, URL deletedUrl, String checksumOfDeletedFile) {
+    public void handleDeletionSuccess(StorageDataFile dataFileDeleted, URL deletedUrl, String checksumOfDeletedFile,
+            Long dataStorageConfId) {
         // Get the associated AIP of the deleted StorageDataFile from db
         Optional<AIP> optionalAssociatedAIP = aipDao.findOneByAipId(dataFileDeleted.getAip().getId().toString());
         // Verify that deleted file checksum match StorageDataFile checksum
         if (optionalAssociatedAIP.isPresent() && dataFileDeleted.getChecksum().equals(checksumOfDeletedFile)) {
             AIP associatedAIP = optionalAssociatedAIP.get();
             // 1. Remove deleted file location from AIP.
-            removeDeletedUrlFromDataFile(dataFileDeleted, deletedUrl, associatedAIP);
+            removeDeletedUrlFromDataFile(dataFileDeleted, deletedUrl, associatedAIP, dataStorageConfId);
             if (DataType.AIP.equals(dataFileDeleted.getDataType()) && (!associatedAIP.getState()
                     .equals(AIPState.DELETED))) {
                 // Do not delete the dataFileDeleted from db. At this time in db the file is the new one that has
-                // been
-                // stored previously to replace the deleted one. This is a special case for AIP metadata file
-                // because,
-                // at any time we want to ensure that there is only one StorageDataFile of AIP type for a given AIP.
+                // been stored previously to replace the deleted one. This is a special case for AIP metadata file
+                // because, at any time we want to ensure that there is only one StorageDataFile of AIP type for a given AIP.
                 LOGGER.info("[DELETE FILE SUCCESS] AIP metadata file replaced.",
                             dataFileDeleted.getAip().getId().toString());
                 associatedAIP.addEvent(EventType.UPDATE.name(), METADATA_UPDATED_SUCCESSFULLY);
@@ -377,8 +378,10 @@ public class DataStorageService implements IDataStorageService {
      * @param dataFileDeleted {@link StorageDataFile}
      * @param urlToRemove location deleted.
      * @param associatedAIP {@link AIP} associated to the given {@link StorageDataFile}
+     * @param dataStorageConfId
      */
-    private void removeDeletedUrlFromDataFile(StorageDataFile dataFileDeleted, URL urlToRemove, AIP associatedAIP) {
+    private void removeDeletedUrlFromDataFile(StorageDataFile dataFileDeleted, URL urlToRemove, AIP associatedAIP,
+            Long dataStorageConfId) {
 
         // If dataFile to delete contains given url to remove, remove URL from it and update associated AIP to add
         // URL remove event.
@@ -395,6 +398,43 @@ public class DataStorageService implements IDataStorageService {
             LOGGER.info(message);
             aipService.save(associatedAIP, false);
             dataFileDeleted.getUrls().remove(urlToRemove);
+            // lets handle partial deletion specificity
+            if (dataFileDeleted.getState() == DataFileState.PARTIAL_DELETION_PENDING) {
+                try {
+                    dataFileDeleted.decreaseNotYetDeletedBy();
+                } catch (EntityOperationForbiddenException e) {
+                    // in case it is deleted from 1 more data storage than expected it is not blocking as aip will be
+                    // updated to take that into account.
+                    LOGGER.error(String.format(
+                            "Data file %s has been successfuly deleted one more time than expected from IDataStorage"
+                                    + " plugin configuration (id: %s).",
+                            dataFileDeleted.getId(),
+                            dataStorageConfId), e);
+                }
+                // if there is no more partial deletion, lets set the state back to stored
+                if (dataFileDeleted.getNotYetDeletedBy() == 0) {
+                    dataFileDeleted.setState(DataFileState.STORED);
+                    // if there is no more datafile being partially deleted for this AIP, lets update it so information
+                    // stored on other data storages reflects the partial deletion.
+                    if (dataFileDao.countByAipAndByState(associatedAIP, DataFileState.PARTIAL_DELETION_PENDING) == 0) {
+                        try {
+                            aipService.updateAip(associatedAIP.getId().toString(),
+                                                 associatedAIP,
+                                                 "Deletion of files on specific data storages is done.");
+                        } catch (EntityNotFoundException | EntityInconsistentIdentifierException e) {
+                            Optional<String> oSipId = associatedAIP.getSipId();
+                            String msg = String
+                                    .format("AIP (ipId: %s, sipId: %s, providerId: %s, state: %s) could not be updated after "
+                                                    + "partial deletion because it has been deleted somewhere else.",
+                                            associatedAIP.getId().toString(),
+                                            oSipId.isPresent() ? oSipId.get() : "undefinied",
+                                            associatedAIP.getProviderId());
+                            LOGGER.error(msg, e);
+                            throw new RsRuntimeException(msg, e);
+                        }
+                    }
+                }
+            }
             dataFileDao.save(dataFileDeleted);
         } else if (urlToRemove != null) {
             LOGGER.warn("Removed URL {} is not associated to the StorageDataFile to delete {}",

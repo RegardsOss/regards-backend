@@ -165,7 +165,7 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
         aipSession.setId(aip.getSession());
 
         df = new StorageDataFile(Sets.newHashSet(source), "de89a907d33a9716d11765582102b2e0", "MD5", DataType.OTHER, 0L,
-                new MimeType("text", "plain"), new AIPEntity(aip, aipSession), aipSession, "data.txt", null);
+                new MimeType("text", "plain"), new AIPEntity(aip, aipSession), "data.txt", null);
         workingSubset = new LocalWorkingSubset(Sets.newHashSet(df));
         // now that we have some parameters, lets storeAndCreate the job
         parameters = Sets.newHashSet();
@@ -194,7 +194,7 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
         aipSession.setId(aip.getSession());
 
         StorageDataFile df = new StorageDataFile(Sets.newHashSet(source), "540e72d5ac22f25c70d9c72b9b36fb96", "MD5",
-                DataType.QUICKLOOK_SD, 0L, new MimeType("image", "png"), new AIPEntity(aip, aipSession), aipSession,
+                DataType.QUICKLOOK_SD, 0L, new MimeType("image", "png"), new AIPEntity(aip, aipSession),
                 "quicklook.png", null);
         IWorkingSubset workingSubset = new LocalWorkingSubset(Sets.newHashSet(df));
 

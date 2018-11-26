@@ -127,4 +127,6 @@ public interface IDataFileDao {
     long findAllByAipSession(String id);
 
     Set<StorageDataFile> findAllByAipIpIdIn(Collection<String> ipId);
+
+    long countByAipAndByState(AIP aip, DataFileState dataFileState);
 }

@@ -1075,7 +1075,7 @@ public class AIPService implements IAIPService {
 
     @Override
     public Optional<AIP> updateAip(String ipId, AIP newAip, String updateMessage)
-            throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException {
+            throws EntityNotFoundException, EntityInconsistentIdentifierException {
         Optional<AIP> oAipToUpdate = aipDao.findOneByAipId(ipId);
         // first lets check for issues
         if (!oAipToUpdate.isPresent()) {
@@ -1340,9 +1340,11 @@ public class AIPService implements IAIPService {
                 }
             }
             // to avoid concurrency issues, lets remove that data storage from the file right now
-
             final PrioritizedDataStorage finalDataStorage = dataStorage; // thanks to lambda restriction
-            filesToDelete.forEach(sdf -> sdf.getPrioritizedDataStorages().remove(finalDataStorage));
+            filesToDelete.forEach(sdf -> {
+                sdf.increaseNotYetDeletedBy();
+                sdf.getPrioritizedDataStorages().remove(finalDataStorage);
+            });
             dataFileDao.save(filesToDelete);
             // now, lets plan a job to delete those files
             scheduleFileDeletion(filesToDelete, dataStorageId);
@@ -1429,7 +1431,7 @@ public class AIPService implements IAIPService {
 
     @Override
     public void addTags(AIP toUpdate, Set<String> tagsToAdd)
-            throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException {
+            throws EntityNotFoundException, EntityInconsistentIdentifierException {
         AIPBuilder updateBuilder = new AIPBuilder(toUpdate);
         updateBuilder.addTags(tagsToAdd.toArray(new String[tagsToAdd.size()]));
         toUpdate = updateBuilder.build();
@@ -1446,7 +1448,7 @@ public class AIPService implements IAIPService {
 
     @Override
     public void removeTags(AIP toUpdate, Set<String> tagsToRemove)
-            throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException {
+            throws EntityNotFoundException, EntityInconsistentIdentifierException {
         AIPBuilder updateBuilder = new AIPBuilder(toUpdate);
         updateBuilder.removeTags(tagsToRemove.toArray(new String[tagsToRemove.size()]));
         toUpdate = updateBuilder.build();
@@ -1806,8 +1808,7 @@ public class AIPService implements IAIPService {
         if (!aipEntity.isPresent()) {
             throw new EntityNotFoundException(aipToUpdate.getId().toString(), AIPEntity.class);
         }
-        Set<StorageDataFile> newDataFiles = StorageDataFile
-                .extractDataFilesForExistingAIP(newAip, aipEntity.get(), getSession(newAip.getSession(), false));
+        Set<StorageDataFile> newDataFiles = StorageDataFile.extractDataFilesForExistingAIP(newAip, aipEntity.get());
         Set<StorageDataFile> toDelete = Sets.newHashSet();
         toDelete.addAll(existingFiles);
         for (StorageDataFile newFile : newDataFiles) {

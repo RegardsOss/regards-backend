@@ -175,7 +175,6 @@ public class WriteAIPMetadataJob extends AbstractJob<Void> {
                                                       urlToMetadata.openConnection().getContentLengthLong(),
                                                       new MimeType("application", "json"),
                                                       new AIPEntity(aip, aipSession),
-                                                      aipSession,
                                                       aip.getId().toString() + JSON_FILE_EXT,
                                                       null);
                 metadataAipFile.setState(DataFileState.PENDING);

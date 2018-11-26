@@ -118,19 +118,19 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
         builder.getPDIBuilder().addAdditionalProvenanceInformation("property", PROPERTY_VALUE);
         propertyDataFile = new StorageDataFile(Sets.newHashSet(new URL("file", "", "truc.json")), "checksum", "MD5",
                 DataType.OTHER, 666L, MediaType.APPLICATION_JSON, new AIPEntity(aipWithProperty, aipSession),
-                aipSession, "truc", null);
+                                               "truc", null);
         dataFiles.add(propertyDataFile);
         AIP aipWithoutProperty = getAIP();
         otherDataFile = new StorageDataFile(Sets.newHashSet(new URL("file", "", "local.json")), "checksum2", "MD5",
                 DataType.OTHER, 666L, MediaType.APPLICATION_JSON, new AIPEntity(aipWithoutProperty, aipSession),
-                aipSession, "local", null);
+                 "local", null);
         dataFiles.add(otherDataFile);
         AIP aipWithPropertyWrongVal = getAIP();
         builder = new AIPBuilder(aipWithPropertyWrongVal);
         builder.getPDIBuilder().addAdditionalProvenanceInformation("property", PROPERTY_VALUE + 3);
         propertyWrongValDataFile = new StorageDataFile(Sets.newHashSet(new URL("file", "", "truc.json")), "checksum3",
                 "MD5", DataType.OTHER, 666L, MediaType.APPLICATION_JSON,
-                new AIPEntity(aipWithPropertyWrongVal, aipSession), aipSession, "truc", null);
+                new AIPEntity(aipWithPropertyWrongVal, aipSession), "truc", null);
         dataFiles.add(propertyWrongValDataFile);
     }
 

@@ -65,7 +65,7 @@ public class StorageDataFileControllerIT extends AbstractAIPControllerIT {
         file.setRegardsDataType(DataType.RAWDATA);
         file.setAlgorithm("toto");
         MimeType mimetype = new MimeType("png");
-        StorageDataFile ds = new StorageDataFile(file, mimetype, new AIPEntity(aipWaiting1, aipSession), aipSession);
+        StorageDataFile ds = new StorageDataFile(file, mimetype, new AIPEntity(aipWaiting1, aipSession));
         ds.setUrls(new HashSet<>());
         dao.save(ds);
 

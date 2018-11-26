@@ -66,7 +66,6 @@ import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -707,6 +706,11 @@ public class AIPServiceIT extends AbstractRegardsIT {
         Assert.assertEquals("All data file should be deletable from first data storage",
                             0,
                             undeletableFileCauseMap.size());
+        for (StorageDataFile sdf : dataFileDao.findAllByAip(aip)) {
+            Assert.assertEquals("Data files should be waiting to be deleted from 1 archive",
+                                (Long) 1L,
+                                sdf.getNotYetDeletedBy());
+        }
         AIP dbAIP = aipDao.findOneByAipId(aip.getId().toString()).get();
         Assert.assertEquals("AIP should be in state STORED", AIPState.STORED, dbAIP.getState());
         // once the job has finished, file should be deleted from data storage 1 and not 2, aip should be in state STORED,
@@ -720,10 +724,14 @@ public class AIPServiceIT extends AbstractRegardsIT {
         Assert.assertNotNull("Deletion event date should not be null", deletionEventOpt.get().getDate());
         Set<StorageDataFile> dataFiles = dataFileDao.findAllByAip(dbAIP);
         for (StorageDataFile dataFile : dataFiles) {
+            Assert.assertEquals("Data file should have been deleted from all archive it should have been",
+                                (Long) 0L,
+                                dataFile.getNotYetDeletedBy());
             Assert.assertEquals("Data file should have only 1 url", 1, dataFile.getUrls().size());
             Assert.assertEquals("Data file should be stored by only one data storage",
                                 1,
                                 dataFile.getPrioritizedDataStorages().size());
+            Assert.assertEquals("Data file should be in state STORED", DataFileState.STORED, dataFile.getState());
             Path storedLocation1 = Paths.get(baseStorage1Location.getPath(),
                                              dataFile.getChecksum().substring(0, 3),
                                              dataFile.getChecksum());
@@ -745,7 +753,31 @@ public class AIPServiceIT extends AbstractRegardsIT {
                 .deleteFilesFromDataStorage(Sets.newHashSet(aip.getId().toString()),
                                             pluginService.getPluginConfigurationByLabel(DATA_STORAGE_2_CONF_LABEL)
                                                     .getId());
-        Assert.assertEquals("None of the data file(2: metadata and data) should be deletable", 2, undeletableFileCauseMap.size());
+        Assert.assertEquals("None of the data file(2: metadata and data) should be deletable",
+                            2,
+                            undeletableFileCauseMap.size());
+        // check that everything is as before i.e: All StorageDataFiles are in state STORED,
+        // have 1 url(2 urls after createSuccessTest - 1 after testDeleteFileFromSingleDS()), are stored on 2 locations
+        // and AIP is in state stored
+        AIP dbAIP = aipDao.findOneByAipId(aip.getId().toString()).get();
+        Assert.assertEquals("AIP should be in state STORED", AIPState.STORED, dbAIP.getState());
+        Set<StorageDataFile> dataFiles = dataFileDao.findAllByAip(dbAIP);
+        for (StorageDataFile dataFile : dataFiles) {
+            Assert.assertEquals(
+                    "Data file are undeletable so they should not have been marked to be deleted by any archive",
+                    (Long) 0L,
+                    dataFile.getNotYetDeletedBy());
+            Assert.assertEquals("Data file should have only 1 url", 1, dataFile.getUrls().size());
+            Assert.assertEquals("Data file should be stored by only one data storage",
+                                1,
+                                dataFile.getPrioritizedDataStorages().size());
+            Assert.assertEquals("Data file should be in state STORED", DataFileState.STORED, dataFile.getState());
+            Path storedLocation1 = Paths.get(baseStorage1Location.getPath(),
+                                             dataFile.getChecksum().substring(0, 3),
+                                             dataFile.getChecksum());
+            Assert.assertTrue("Data file should not be stored in data storage 1 anymore",
+                              !storedLocation1.toFile().exists());
+        }
     }
 
     @Test
@@ -856,8 +888,7 @@ public class AIPServiceIT extends AbstractRegardsIT {
     @Test
     @Requirement("REGARDS_DSL_STO_AIP_210")
     public void testUpdatePDI()
-            throws MalformedURLException, EntityNotFoundException, EntityOperationForbiddenException,
-            EntityInconsistentIdentifierException {
+            throws MalformedURLException, EntityNotFoundException, EntityInconsistentIdentifierException {
         AIP aip = getAIP();
         aip.setState(AIPState.STORED);
         AIPSession aipSession = aipService.getSession(aip.getSession(), true);
