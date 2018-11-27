@@ -586,4 +586,8 @@ public class StorageDataFile {
     public void setOriginUrls(Set<URL> originUrls) {
         this.originUrls = originUrls;
     }
+
+    public void resetNotYetStoredBy() {
+        notYetStoredBy = 0L;
+    }
 }
