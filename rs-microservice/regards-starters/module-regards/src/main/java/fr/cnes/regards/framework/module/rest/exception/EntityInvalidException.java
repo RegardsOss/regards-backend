@@ -23,12 +23,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- *
  * Exception indicating an entity is invalid
- *
  * @author CS
  * @author Sylvain Vissiere-Guerinet
- * @since 1.0-SNAPSHOT
  */
 @SuppressWarnings("serial")
 public class EntityInvalidException extends EntityException {
@@ -40,7 +37,6 @@ public class EntityInvalidException extends EntityException {
 
     /**
      * Constructor setting the exception message
-     * @param message
      */
     public EntityInvalidException(final String message) {
         super(message);

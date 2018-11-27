@@ -27,9 +27,7 @@ import fr.cnes.regards.framework.geojson.validator.LineStringConstraints;
  * GeoJson LineString representation
  * <br/>
  * LineString MUST be an array of <b>two or more positions</b>.<br/>
- *
  * @author Marc Sordi
- *
  */
 @LineStringConstraints
 public class LineString extends MultiPoint {

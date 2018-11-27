@@ -70,8 +70,6 @@ public class CompressionFacade {
         strategy = new CompressionContext();
     }
 
-
-
     /**
      * Compression d'une liste de fichiers
      * @param fileList une liste contenant les fichiers a compresser (classe File)

@@ -27,9 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- *
  * Utility class used in reflections
- *
  * @author Christophe Mertz
  */
 public final class ReflectionUtils {
@@ -42,11 +40,8 @@ public final class ReflectionUtils {
     }
 
     /**
-     *
      * Make a field accessible
-     *
-     * @param field
-     *            the field to check
+     * @param field the field to check
      */
     public static void makeAccessible(Field field) {
         if ((!Modifier.isPublic(field.getModifiers()) || !Modifier.isPublic(field.getDeclaringClass().getModifiers())
@@ -56,11 +51,8 @@ public final class ReflectionUtils {
     }
 
     /**
-     *
      * Make a method accessible
-     *
-     * @param method
-     *            the field to check
+     * @param method the field to check
      */
     public static void makeAccessible(Method method) {
         if ((!Modifier.isPublic(method.getModifiers()) || !Modifier.isPublic(method.getDeclaringClass().getModifiers())

@@ -25,9 +25,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
  * Test with primitive
- *
  * @author Marc Sordi
- *
  */
 @Plugin(author = "REGARDS Team", description = "Plugin with string", id = "FreePluginWithString", version = "1.0.0",
         contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES", url = "https://regardsoss.github.io/")

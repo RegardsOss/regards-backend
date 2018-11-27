@@ -40,7 +40,6 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 
 /**
  * Unit testing of {@link PluginUtils}.
- *
  * @author Christophe Mertz
  */
 @RunWith(SpringRunner.class)
@@ -77,8 +76,8 @@ public class CycleDetectionTest {
 
         // instantiate plugin
         PluginUtils.setup(PLUGIN_PACKAGE);
-        SamplePluginWithPojo samplePlugin = PluginUtils.getPlugin(parameters, SamplePluginWithPojo.class,
-                                                                  new HashMap<>());
+        SamplePluginWithPojo samplePlugin = PluginUtils
+                .getPlugin(parameters, SamplePluginWithPojo.class, new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
@@ -87,9 +86,8 @@ public class CycleDetectionTest {
          */
         Assert.assertEquals(samplePlugin.getPojo().getValue(), pojoParam.getValue());
         Assert.assertEquals(samplePlugin.getPojo().getValues().size(), values.size());
-        Assert.assertEquals(OffsetDateTime.parse(samplePlugin.getPojo().getDate(),
-                                                 DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                            ofdt);
+        Assert.assertEquals(
+                OffsetDateTime.parse(samplePlugin.getPojo().getDate(), DateTimeFormatter.ISO_OFFSET_DATE_TIME), ofdt);
     }
 
     @Test(expected = PluginUtilsRuntimeException.class)
@@ -166,8 +164,8 @@ public class CycleDetectionTest {
 
         // instantiate plugin
         PluginUtils.setup(PLUGIN_PACKAGE);
-        SamplePluginWithPojoWithSet samplePlugin = PluginUtils.getPlugin(parameters, SamplePluginWithPojoWithSet.class,
-                                                                         new HashMap<>());
+        SamplePluginWithPojoWithSet samplePlugin = PluginUtils
+                .getPlugin(parameters, SamplePluginWithPojoWithSet.class, new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 

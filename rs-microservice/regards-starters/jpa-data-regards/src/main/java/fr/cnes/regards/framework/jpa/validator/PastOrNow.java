@@ -29,7 +29,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @Retention(RUNTIME)
 @Target({ FIELD, METHOD, PARAMETER, ANNOTATION_TYPE })

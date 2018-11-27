@@ -32,13 +32,10 @@ import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 
 /**
- *
  * {@link Subscriber} uses {@link ITenantResolver} to resolve tenants in multitenant context. On listener will be
  * created for each tenant.
- *
  * @author svissier
  * @author Marc Sordi
- *
  */
 public class Subscriber extends AbstractSubscriber implements ISubscriber {
 

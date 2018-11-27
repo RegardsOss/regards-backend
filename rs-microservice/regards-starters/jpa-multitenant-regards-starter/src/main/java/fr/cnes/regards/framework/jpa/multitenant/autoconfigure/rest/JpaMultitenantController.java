@@ -43,11 +43,8 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**
- *
  * Manage data source connection for Multitenant starter
- *
  * @author Marc Sordi
- *
  */
 @RestController
 @ConditionalOnProperty(prefix = "regards.jpa", name = "multitenant.enabled", matchIfMissing = true)
@@ -102,10 +99,10 @@ public class JpaMultitenantController {
             GenericResponseBody body = new GenericResponseBody();
             try {
                 body.getProperties().put("num_connections", Integer.valueOf(pds.getNumConnectionsDefaultUser()));
-                body.getProperties().put("num_busy_connections",
-                                         Integer.valueOf(pds.getNumBusyConnectionsDefaultUser()));
-                body.getProperties().put("num_idle_connections",
-                                         Integer.valueOf(pds.getNumIdleConnectionsDefaultUser()));
+                body.getProperties()
+                        .put("num_busy_connections", Integer.valueOf(pds.getNumBusyConnectionsDefaultUser()));
+                body.getProperties()
+                        .put("num_idle_connections", Integer.valueOf(pds.getNumIdleConnectionsDefaultUser()));
                 return ResponseEntity.ok(body);
             } catch (SQLException e) {
                 LOGGER.error("Status check fail", e);

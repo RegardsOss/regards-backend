@@ -45,7 +45,6 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 
-
 /**
  * Store Job Information
  * @author oroussel

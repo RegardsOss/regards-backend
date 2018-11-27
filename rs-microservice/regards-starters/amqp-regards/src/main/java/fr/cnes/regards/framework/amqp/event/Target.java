@@ -20,9 +20,7 @@ package fr.cnes.regards.framework.amqp.event;
 
 /**
  * See {@link Event} for usage.
- *
  * @author Marc Sordi
- *
  */
 public enum Target {
 

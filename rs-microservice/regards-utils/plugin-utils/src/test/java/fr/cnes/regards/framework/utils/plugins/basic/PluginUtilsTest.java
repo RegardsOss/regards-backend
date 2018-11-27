@@ -44,7 +44,6 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 
 /**
  * Unit testing of {@link PluginUtils}.
- *
  * @author Christophe Mertz
  */
 public class PluginUtilsTest extends PluginUtilsTestConstants {
@@ -209,8 +208,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         /*
          * Set all parameters
          */
-        final List<String> dynamicValues = Arrays.asList(PluginUtilsTest.RED, PluginUtilsTest.BLUE,
-                                                         PluginUtilsTest.GREEN);
+        final List<String> dynamicValues = Arrays
+                .asList(PluginUtilsTest.RED, PluginUtilsTest.BLUE, PluginUtilsTest.GREEN);
 
         final Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE)
@@ -247,8 +246,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         /*
          * Set all parameters
          */
-        final List<String> dynamicValues = Arrays.asList(PluginUtilsTest.RED, PluginUtilsTest.BLUE,
-                                                         PluginUtilsTest.GREEN);
+        final List<String> dynamicValues = Arrays
+                .asList(PluginUtilsTest.RED, PluginUtilsTest.BLUE, PluginUtilsTest.GREEN);
         final Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS)
@@ -277,8 +276,8 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         /*
          * Set all parameters
          */
-        final List<String> dynamicValues = Arrays.asList(PluginUtilsTest.RED, PluginUtilsTest.BLUE,
-                                                         PluginUtilsTest.GREEN);
+        final List<String> dynamicValues = Arrays
+                .asList(PluginUtilsTest.RED, PluginUtilsTest.BLUE, PluginUtilsTest.GREEN);
         final Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, PluginUtilsTest.TRUE)
                 .addParameter(SamplePlugin.FIELD_NAME_COEF, PluginUtilsTest.TROIS)

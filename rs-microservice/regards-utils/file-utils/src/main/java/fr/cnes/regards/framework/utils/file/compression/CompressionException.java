@@ -19,7 +19,6 @@
 package fr.cnes.regards.framework.utils.file.compression;
 
 /**
- *
  * Cette classe designe l'exception que peut lever le paquetage de Compression. Elle doit etre traitee par le module ou
  * l'application appelant.
  */
@@ -39,9 +38,7 @@ public class CompressionException extends Exception {
 
     /**
      * Constructeur de copie.
-     *
-     * @param pException
-     *            L'exception a copier.
+     * @param pException L'exception a copier.
      */
     public CompressionException(Throwable pException) {
         super(pException);
@@ -49,11 +46,8 @@ public class CompressionException extends Exception {
 
     /**
      * Constructeur de copie permettant d'ajouter un message.
-     *
-     * @param pMessage
-     *            Le message a ajouter
-     * @param pException
-     *            L'exception a copier.
+     * @param pMessage Le message a ajouter
+     * @param pException L'exception a copier.
      */
     public CompressionException(String pMessage, Throwable pException) {
         super(pMessage, pException);
@@ -61,9 +55,7 @@ public class CompressionException extends Exception {
 
     /**
      * Constructeur.
-     *
-     * @param pMessage
-     *            Le message textuel a afficher, permettant d'ajouter de la semantique a l'erreur.
+     * @param pMessage Le message textuel a afficher, permettant d'ajouter de la semantique a l'erreur.
      */
     public CompressionException(String pMessage) {
         super(pMessage);

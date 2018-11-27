@@ -91,7 +91,6 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
     /**
      * Reject a job because workspace has thrown an IOException
      * @param e thrown exception while setting workspace
-     * @throws JobWorkspaceException
      */
     protected void handleWorkspaceException(IOException e) throws JobWorkspaceException {
         logger.error("Cannot set workspace", e);

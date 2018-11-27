@@ -23,10 +23,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- *
  * This class represents a database module
  * @author Marc Sordi
- *
  */
 public class DatabaseModule {
 

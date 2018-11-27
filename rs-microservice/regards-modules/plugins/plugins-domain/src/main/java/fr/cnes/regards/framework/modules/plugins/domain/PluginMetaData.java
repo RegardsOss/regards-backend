@@ -29,7 +29,6 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 
 /**
  * Plugin meta-data representation
- *
  * @author Christophe Mertz
  */
 public class PluginMetaData implements Comparable<PluginMetaData> {
@@ -96,7 +95,6 @@ public class PluginMetaData implements Comparable<PluginMetaData> {
 
     /**
      * Constructor initializing a plugin metadata from a plugin annotation
-     * @param plugin
      */
     public PluginMetaData(Plugin plugin) {
         author = plugin.author();
@@ -144,7 +142,6 @@ public class PluginMetaData implements Comparable<PluginMetaData> {
 
     /**
      * Set the interface names
-     * @param pInterfaceNames
      */
     public void setInterfaceNames(Set<String> pInterfaceNames) {
         interfaceNames = pInterfaceNames;
@@ -183,7 +180,6 @@ public class PluginMetaData implements Comparable<PluginMetaData> {
 
     /**
      * Set the url
-     * @param pUrl
      */
     public void setUrl(String pUrl) {
         url = pUrl;
@@ -198,7 +194,6 @@ public class PluginMetaData implements Comparable<PluginMetaData> {
 
     /**
      * Set the contact
-     * @param pContact
      */
     public void setContact(String pContact) {
         contact = pContact;
@@ -213,7 +208,6 @@ public class PluginMetaData implements Comparable<PluginMetaData> {
 
     /**
      * Set the owner
-     * @param pOwner
      */
     public void setOwner(String pOwner) {
         owner = pOwner;
@@ -228,7 +222,6 @@ public class PluginMetaData implements Comparable<PluginMetaData> {
 
     /**
      * Set the licence
-     * @param pLicence
      */
     public void setLicence(String pLicence) {
         licence = pLicence;
@@ -243,7 +236,6 @@ public class PluginMetaData implements Comparable<PluginMetaData> {
 
     /**
      * Set the plugin parameter types
-     * @param pParameters
      */
     public void setParameters(List<PluginParameterType> pParameters) {
         if (pParameters == null) {

@@ -36,9 +36,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 /**
  * This filter allows to inject a public token before JWT authentication filter if no JWT is found and a tenant is
  * specified in request parameters.
- *
  * @author Marc Sordi
- *
  */
 public class PublicAuthenticationFilter extends OncePerRequestFilter {
 
@@ -81,11 +79,8 @@ public class PublicAuthenticationFilter extends OncePerRequestFilter {
 
     /**
      * Add an authorization header for public request
-     *
-     * @param tenant
-     *            tenant
-     * @param request
-     *            request
+     * @param tenant tenant
+     * @param request request
      */
     private void addPublicAuthorizationHeader(String tenant, CustomHttpServletRequest request) {
         if (tenant == null) {

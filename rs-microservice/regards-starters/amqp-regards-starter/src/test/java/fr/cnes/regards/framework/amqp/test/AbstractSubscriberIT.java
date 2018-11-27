@@ -50,7 +50,6 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 /**
  * Common subscriber tests for {@link VirtualHostMode#SINGLE} and {@link VirtualHostMode#MULTI} modes
  * @author Marc Sordi
- *
  */
 public abstract class AbstractSubscriberIT {
 
@@ -80,7 +79,6 @@ public abstract class AbstractSubscriberIT {
      * <pre>
      * E ----------------> H
      * </pre>
-     *
      */
     @Requirement("REGARDS_DSL_CMP_ARC_030")
     @Requirement("REGARDS_DSL_CMP_ARC_160")
@@ -88,6 +86,7 @@ public abstract class AbstractSubscriberIT {
     @Test
     public void publishInfo() {
         AbstractInfoReceiver infoSubscriber = new AbstractInfoReceiver() {
+
         };
         subscriber.subscribeTo(Info.class, infoSubscriber, true);
         publisher.publish(new Info());
@@ -109,6 +108,7 @@ public abstract class AbstractSubscriberIT {
     }
 
     private class MicroserviceReceiver extends AbstractReceiver<MicroserviceInfo> {
+
     }
 
     /**
@@ -124,10 +124,12 @@ public abstract class AbstractSubscriberIT {
     @Test
     public void publishInfoMultipleReceiver() {
         AbstractInfoReceiver subscriberOne = new AbstractInfoReceiver() {
+
         };
         subscriber.subscribeTo(Info.class, subscriberOne, true);
 
         AbstractInfoReceiver subscriberTwo = new AbstractInfoReceiver() {
+
         };
         subscriber.subscribeTo(Info.class, subscriberTwo, true);
 
@@ -149,10 +151,12 @@ public abstract class AbstractSubscriberIT {
     @Test
     public void publishInfoSingleTarget() {
         AbstractReceiver<UnicastInfo> handler1 = new AbstractReceiver<UnicastInfo>() {
+
         };
         subscriber.subscribeTo(UnicastInfo.class, handler1, true);
 
         AbstractReceiver<UnicastInfo> handler2 = new AbstractReceiver<UnicastInfo>() {
+
         };
         subscriber.subscribeTo(UnicastInfo.class, handler2, true);
 
@@ -188,6 +192,7 @@ public abstract class AbstractSubscriberIT {
     }
 
     private class Receiver extends AbstractReceiver<Info> {
+
     }
 
     @Test
@@ -226,8 +231,10 @@ public abstract class AbstractSubscriberIT {
     }
 
     private class SingleReceiverA extends AbstractReceiver<OnePerMicroserviceInfo> {
+
     }
 
     private class SingleReceiverB extends AbstractReceiver<OnePerMicroserviceInfo> {
+
     }
 }

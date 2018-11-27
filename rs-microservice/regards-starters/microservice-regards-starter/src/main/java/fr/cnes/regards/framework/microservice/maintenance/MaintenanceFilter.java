@@ -38,7 +38,6 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  * @author Sylvain Vissiere-Guerinet
  * @author Christophe Mertz
  * @author Marc Sordi
- *
  */
 public class MaintenanceFilter extends OncePerRequestFilter {
 
@@ -68,10 +67,10 @@ public class MaintenanceFilter extends OncePerRequestFilter {
             pFilterChain.doFilter(pRequest, pResponse);
         } else {
             // Only authorize to disable maintenance mode
-            if (!((pRequest.getRequestURI() != null)
-                    && pRequest.getRequestURI().contains(MaintenanceController.MAINTENANCE_URL)
-                    && pRequest.getRequestURI().contains(MaintenanceController.DISABLE))
-                    && MaintenanceManager.getMaintenance(resolver.getTenant())) {
+            if (!((pRequest.getRequestURI() != null) && pRequest.getRequestURI()
+                    .contains(MaintenanceController.MAINTENANCE_URL) && pRequest.getRequestURI()
+                    .contains(MaintenanceController.DISABLE)) && MaintenanceManager
+                    .getMaintenance(resolver.getTenant())) {
 
                 String message = String.format("Tenant %s in maintenance!", resolver.getTenant());
                 LOGGER.error(message);

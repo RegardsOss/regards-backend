@@ -49,13 +49,10 @@ import fr.cnes.regards.framework.security.filter.RequestLogFilter;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
 /**
- *
  * Web security auto configuration
- *
  * @author msordi
  * @author Sylvain Vissiere-Guerinet
  * @author Christophe Mertz
- *
  */
 @Configuration
 @EnableWebSecurity

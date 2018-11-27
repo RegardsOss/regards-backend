@@ -30,7 +30,6 @@ import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
 
 /**
  * @author Marc Sordi
- *
  */
 @SuppressWarnings("rawtypes")
 public class CustomPolymorphicTypeAdapterFactory extends PolymorphicTypeAdapterFactory<AbstractProperty> {
@@ -82,11 +81,8 @@ public class CustomPolymorphicTypeAdapterFactory extends PolymorphicTypeAdapterF
 
     /**
      * Add namespace to {@link JsonElement} children of {@link ObjectAttribute}
-     *
-     * @param pJsonElement
-     *            {@link JsonElement}
-     * @param pDiscriminator
-     *            discriminator value
+     * @param pJsonElement {@link JsonElement}
+     * @param pDiscriminator discriminator value
      */
     protected void addNamespaceToChildren(JsonElement pJsonElement, String pDiscriminator) {
 
@@ -112,11 +108,8 @@ public class CustomPolymorphicTypeAdapterFactory extends PolymorphicTypeAdapterF
 
     /**
      * Add namespace to {@link JsonElement} child
-     *
-     * @param pJsonElement
-     *            {@link JsonElement}
-     * @param pDiscriminator
-     *            discriminator value
+     * @param pJsonElement {@link JsonElement}
+     * @param pDiscriminator discriminator value
      */
     protected void addNamespaceToChild(JsonElement pJsonElement, String pDiscriminator) {
 
@@ -144,9 +137,7 @@ public class CustomPolymorphicTypeAdapterFactory extends PolymorphicTypeAdapterF
 
     /**
      * Remove namespace from {@link JsonElement}
-     *
-     * @param pJsonElement
-     *            target {@link JsonElement}
+     * @param pJsonElement target {@link JsonElement}
      */
     protected void removeParentNamespace(JsonElement pJsonElement) {
 
@@ -187,8 +178,8 @@ public class CustomPolymorphicTypeAdapterFactory extends PolymorphicTypeAdapterF
     }
 
     private IllegalArgumentException missingFieldException(JsonElement pJsonElement, String pFieldName) {
-        String errorMessage = String.format("JSON element %s must contains a %s field", pJsonElement.toString(),
-                                            pFieldName);
+        String errorMessage = String
+                .format("JSON element %s must contains a %s field", pJsonElement.toString(), pFieldName);
         LOGGER.error(errorMessage);
         return new IllegalArgumentException(errorMessage);
     }

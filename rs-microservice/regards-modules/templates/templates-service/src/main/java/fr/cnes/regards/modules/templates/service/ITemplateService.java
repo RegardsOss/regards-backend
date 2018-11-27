@@ -86,8 +86,8 @@ public interface ITemplateService {
      * @return the mail
      * @throws EntityNotFoundException when a {@link Template} of given <code>code</code> could not be found
      */
-    SimpleMailMessage writeToEmail(String templateCode, String subject, Map<String, ? extends Object> dataModel, String... recipients)
-            throws EntityNotFoundException;
+    SimpleMailMessage writeToEmail(String templateCode, String subject, Map<String, ? extends Object> dataModel,
+            String... recipients) throws EntityNotFoundException;
 
     /**
      * Write email with default subject
@@ -97,8 +97,8 @@ public interface ITemplateService {
      * @return the mail
      * @throws EntityNotFoundException when a {@link Template} of given <code>code</code> could not be found
      */
-    default SimpleMailMessage writeToEmail(String templateCode, Map<String, ? extends Object> dataModel, String... recipients)
-            throws EntityNotFoundException {
+    default SimpleMailMessage writeToEmail(String templateCode, Map<String, ? extends Object> dataModel,
+            String... recipients) throws EntityNotFoundException {
         return writeToEmail(templateCode, null, dataModel, recipients);
     }
 

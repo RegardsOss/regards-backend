@@ -22,7 +22,6 @@ import java.io.IOException;
 
 /**
  * @author svissier
- *
  */
 public class DefaultApplicationManager implements IApplicationManager {
 

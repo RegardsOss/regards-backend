@@ -41,11 +41,11 @@ import org.flywaydb.core.internal.util.scanner.Scanner;
 import org.hibernate.cfg.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
+
+import com.google.common.base.Preconditions;
 
 /**
  * @author Marc Sordi
- *
  */
 public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper {
 
@@ -68,7 +68,6 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
      * Base module script directory.<br/>
      * Example :<br/>
      * If path is <code>scripts</code>, module scripts will be scanned in <code>scripts/{moduleName}/*.sql</code>
-     *
      */
     private String scriptLocationPath = "scripts";
 
@@ -84,9 +83,9 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
      */
     public void migrate(DataSource dataSource, String schema, String moduleName) {
 
-        Assert.notNull(dataSource);
-        Assert.notNull(schema);
-        Assert.notNull(moduleName);
+        Preconditions.checkNotNull(dataSource);
+        Preconditions.checkNotNull(schema);
+        Preconditions.checkNotNull(moduleName);
 
         LOGGER.debug("Migrating datasource with schema {} for module {}", schema, moduleName);
 
@@ -114,16 +113,17 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
      */
     public void migrate(DataSource dataSource, String schema) {
 
-        Assert.notNull(dataSource);
-        Assert.notNull(schema, "Flyway migration tool requires a database schema");
+        Preconditions.checkNotNull(dataSource);
+        Preconditions.checkNotNull(schema, "Flyway migration tool requires a database schema");
 
         // Use flyway scanner to be consistent
         Scanner scanner = new Scanner(classLoader);
         // Scan all resources without considering modules
         Resource[] resources = scanner.scanForResources(new Location(scriptLocationPath), "", SQL_MIGRATION_SUFFIX);
         // Manage resource pattern
-        Pattern resourcePattern = Pattern.compile("^" + scriptLocationPath + File.separator + "(.*)" + File.separator
-                + ".*\\" + SQL_MIGRATION_SUFFIX + "$");
+        Pattern resourcePattern = Pattern.compile(
+                "^" + scriptLocationPath + File.separator + "(.*)" + File.separator + ".*\\" + SQL_MIGRATION_SUFFIX
+                        + "$");
         // Retrieve all modules
         Set<String> modules = new HashSet<>();
         for (Resource resource : resources) {
@@ -144,7 +144,6 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
 
     /**
      * Build database module tree and sort all module by priority
-     *
      * @param modules list of modules to consider
      * @return a list of modules ordered according to its dependencies
      */
@@ -203,8 +202,8 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
     private Properties getModuleProperties(String module) {
         Properties ppties = new Properties();
 
-        try (InputStream input = classLoader.getResourceAsStream(scriptLocationPath + File.separator + module
-                + File.separator + "dbmodule.properties")) {
+        try (InputStream input = classLoader.getResourceAsStream(
+                scriptLocationPath + File.separator + module + File.separator + "dbmodule.properties")) {
             if (input == null) {
                 LOGGER.info("No module property found for module \"{}\"", module);
             } else {

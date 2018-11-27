@@ -35,7 +35,6 @@ import fr.cnes.regards.framework.security.utils.HttpConstants;
 /**
  * Allow to customize the request done thanks to {@link MockMvc}.
  * Methods "performXX" are considered terminal and so applies coherence controls on the customizations.
- *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class RequestBuilderCustomizer {
@@ -103,7 +102,6 @@ public class RequestBuilderCustomizer {
 
     /**
      * Constructor setting the parameter as attribute
-     * @param gsonBuilder
      */
     public RequestBuilderCustomizer(GsonBuilder gsonBuilder) {
         this.gsonBuilder = gsonBuilder;
@@ -171,7 +169,7 @@ public class RequestBuilderCustomizer {
 
     /**
      * @return {@link MockHttpServletRequestBuilder} customized with RequestBuilderCustomizer#headers or default ones if
-     *         none has been specified
+     * none has been specified
      */
     private MockHttpServletRequestBuilder getRequestBuilder(String authToken, HttpMethod method, Object content,
             String urlTemplate, Object... urlVariables) {
@@ -183,13 +181,13 @@ public class RequestBuilderCustomizer {
 
     /**
      * @return {@link MockHttpServletRequestBuilder} customized with RequestBuilderCustomizer#headers or default ones if
-     *         none has been specified
+     * none has been specified
      */
     protected MockHttpServletRequestBuilder getRequestBuilder(String authToken, HttpMethod httpMethod,
             String urlTemplate, Object... urlVars) {
         checkCustomizationCoherence(httpMethod);
-        MockHttpServletRequestBuilder requestBuilder = RestDocumentationRequestBuilders.request(httpMethod, urlTemplate,
-                                                                                                urlVars);
+        MockHttpServletRequestBuilder requestBuilder = RestDocumentationRequestBuilders
+                .request(httpMethod, urlTemplate, urlVars);
         addSecurityHeader(requestBuilder, authToken);
 
         requestBuilder.headers(getHeaders());
@@ -198,7 +196,6 @@ public class RequestBuilderCustomizer {
     }
 
     /**
-     * @param object
      * @return jsonified object using GSON
      */
     protected String gson(Object object) {
@@ -212,9 +209,20 @@ public class RequestBuilderCustomizer {
     /**
      * Grants access to the {@link RequestParamBuilder} used to add request parameters to the request
      * @return requestParamBuilder for further customization
+     * @deprecated this method is only used to call {@link RequestParamBuilder#param(String, String...)} on it, prefer
+     * use {@link #addParameter(String, String...)} instead
      */
+    @Deprecated
     public RequestParamBuilder customizeRequestParam() {
         return requestParamBuilder;
+    }
+
+    /**
+     * Add name/values request parameter to the request
+     */
+    public RequestBuilderCustomizer addParameter(String name, String... values) {
+        requestParamBuilder.param(name, values);
+        return this;
     }
 
     /**
@@ -227,19 +235,30 @@ public class RequestBuilderCustomizer {
 
     /**
      * Add a whole list of ResultMatcher to be matched. Mainly here for easier refactor. We strongly advise to use
-     * {@link RequestBuilderCustomizer#addExpectation(ResultMatcher)}.
+     * {@link RequestBuilderCustomizer#expect(ResultMatcher)}.
      * @param matchers list of matcher to be matched after by the server response
+     * @deprecated use {@link #expect(ResultMatcher)} on each ResultMatcher (haven't you strongly advised yet ?)
      */
+    @Deprecated
     public void addExpectations(List<ResultMatcher> matchers) {
         expectations.addAll(matchers);
     }
 
     /**
-     * Add {@link ResultMatcher} to the already present matchers
-     * @param matcher
+     * Add a ResultMatcher to be matched.
      */
-    public void addExpectation(ResultMatcher matcher) {
+    public RequestBuilderCustomizer expect(ResultMatcher matcher) {
         expectations.add(matcher);
+        return this;
+    }
+
+    /**
+     * Add {@link ResultMatcher} to the already present matchers
+     * @deprecated use {@link #expect(ResultMatcher)} instead (it uses fluent API)
+     */
+    @Deprecated
+    public void addExpectation(ResultMatcher matcher) {
+        expect(matcher);
     }
 
     /**
@@ -252,8 +271,9 @@ public class RequestBuilderCustomizer {
      * <br/>
      * @param snippet documentation snippet to be added.
      */
-    public void addDocumentationSnippet(Snippet snippet) {
+    public RequestBuilderCustomizer addDocumentationSnippet(Snippet snippet) {
         documentationSnippets.add(snippet);
+        return this;
     }
 
     /**
@@ -281,14 +301,15 @@ public class RequestBuilderCustomizer {
                 request = request.andExpect(matcher);
             }
             if (!skipDocumentation) {
-                request.andDo(MockMvcRestDocumentation
-                        .document("{ClassName}/{methodName}",
-                                  Preprocessors.preprocessRequest(Preprocessors.prettyPrint(),
-                                                                  Preprocessors.removeHeaders("Authorization", "Host",
-                                                                                              "Content-Length")),
-                                  Preprocessors.preprocessResponse(Preprocessors.prettyPrint(),
-                                                                   Preprocessors.removeHeaders("Content-Length")),
-                                  documentationSnippets.toArray(new Snippet[documentationSnippets.size()])));
+                request.andDo(MockMvcRestDocumentation.document("{ClassName}/{methodName}", Preprocessors
+                                                                        .preprocessRequest(Preprocessors.prettyPrint(),
+                                                                                           Preprocessors.removeHeaders("Authorization", "Host", "Content-Length")),
+                                                                Preprocessors
+                                                                        .preprocessResponse(Preprocessors.prettyPrint(),
+                                                                                            Preprocessors.removeHeaders(
+                                                                                                    "Content-Length")),
+                                                                documentationSnippets.toArray(
+                                                                        new Snippet[documentationSnippets.size()])));
             }
             return request;
             // CHECKSTYLE:OFF
@@ -347,7 +368,6 @@ public class RequestBuilderCustomizer {
 
     /**
      * Check if the request customizer is coherent towards the multiple options used
-     * @param httpMethod
      */
     protected void checkCustomizationCoherence(HttpMethod httpMethod) {
         // constraints are only on DELETE, PUT and POST, for now, as they cannot have request parameters
@@ -356,7 +376,8 @@ public class RequestBuilderCustomizer {
             case PUT:
             case POST:
                 if (!requestParamBuilder.getParameters().isEmpty()) {
-                    throw new IllegalStateException(String.format("Method %s cannot have request parameters", httpMethod));
+                    throw new IllegalStateException(
+                            String.format("Method %s cannot have request parameters", httpMethod));
                 }
                 break;
             default:
@@ -366,8 +387,6 @@ public class RequestBuilderCustomizer {
 
     /**
      * Add the authorization header to the request
-     * @param requestBuilder
-     * @param authToken
      */
     protected void addSecurityHeader(MockHttpServletRequestBuilder requestBuilder, String authToken) {
         requestBuilder.header(HttpConstants.AUTHORIZATION, HttpConstants.BEARER + " " + authToken);

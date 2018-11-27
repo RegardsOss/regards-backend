@@ -25,11 +25,8 @@ import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 
 /**
- *
  * {@link InstancePublisher} uses a fixed tenant to publish instance events.
- *
  * @author Marc Sordi
- *
  */
 public class InstancePublisher extends AbstractPublisher implements IInstancePublisher {
 

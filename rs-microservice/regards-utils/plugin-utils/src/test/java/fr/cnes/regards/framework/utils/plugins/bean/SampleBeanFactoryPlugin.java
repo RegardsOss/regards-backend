@@ -28,7 +28,6 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
  * SampleBeanFactoryPlugin
- *
  * @author Christophe Mertz
  */
 @Plugin(description = "Sample plugin test", id = "aSamplePlugin", version = "0.0.1", author = "REGARDS Team",

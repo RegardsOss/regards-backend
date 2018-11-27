@@ -42,7 +42,6 @@ import fr.cnes.regards.modules.maintenancetest.rest.TestController;
 /**
  * @author Sylvain Vissiere-Guerinet
  * @author Christophe Mertz
- *
  */
 @EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
 public class MaintenanceControllerIT extends AbstractRegardsIT {

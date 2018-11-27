@@ -168,7 +168,7 @@ public class TemplateService implements ITemplateService {
     }
 
     private void checkAndSaveIfNecessary(Template template) {
-        if ((template != null) && !templateRepository.findOneByCode(template.getCode()).isPresent()) {
+        if ((template != null) && !templateRepository.findByCode(template.getCode()).isPresent()) {
             templateRepository.save(template);
         }
     }
@@ -187,7 +187,7 @@ public class TemplateService implements ITemplateService {
 
     @Override
     public Template findById(final Long id) throws EntityNotFoundException {
-        final Optional<Template> template = Optional.ofNullable(templateRepository.findOne(id));
+        final Optional<Template> template = templateRepository.findById(id);
         return template.orElseThrow(() -> new EntityNotFoundException(id, Template.class));
     }
 
@@ -206,10 +206,10 @@ public class TemplateService implements ITemplateService {
 
     @Override
     public void delete(final Long id) throws EntityNotFoundException {
-        if (!templateRepository.exists(id)) {
+        if (!templateRepository.existsById(id)) {
             throw new EntityNotFoundException(id, Template.class);
         }
-        templateRepository.delete(id);
+        templateRepository.deleteById(id);
     }
 
     @Override
@@ -235,7 +235,7 @@ public class TemplateService implements ITemplateService {
     public SimpleMailMessage writeToEmail(String templateCode, String subject, Map<String, ? extends Object> dataModel,
             String... recipients) throws EntityNotFoundException {
         // Retrieve the template of given code
-        Template template = templateRepository.findOneByCode(templateCode)
+        Template template = templateRepository.findByCode(templateCode)
                 .orElseThrow(() -> new EntityNotFoundException(templateCode, Template.class));
 
         // Add the template (regards template POJO) to the loader

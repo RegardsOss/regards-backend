@@ -22,12 +22,9 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 /**
- *
  * OAIS content information
- *
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
- *
  */
 public class ContentInformation {
 

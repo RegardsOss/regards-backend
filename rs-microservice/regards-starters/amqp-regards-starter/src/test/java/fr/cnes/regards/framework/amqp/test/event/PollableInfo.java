@@ -23,10 +23,8 @@ import fr.cnes.regards.framework.amqp.event.IPollable;
 import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
- *
  * {@link IPollable} information event
  * @author Marc Sordi
- *
  */
 @Event(target = Target.ALL)
 public class PollableInfo extends AbstractEvent implements IPollable {

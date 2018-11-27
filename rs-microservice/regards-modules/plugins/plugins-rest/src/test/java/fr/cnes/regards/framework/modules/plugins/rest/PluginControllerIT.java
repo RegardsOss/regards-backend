@@ -93,8 +93,8 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
 
         // With dynamic parameter
         String dynValue = "toto";
-        PluginParametersFactory dynParametersFactory = PluginParametersFactory.build().addDynamicParameter("pString",
-                                                                                                           dynValue);
+        PluginParametersFactory dynParametersFactory = PluginParametersFactory.build()
+                .addDynamicParameter("pString", dynValue);
         plugin = pluginService.getFirstPluginByType(IParamTestPlugin.class, dynParametersFactory.asArray());
         Assert.assertNotNull(plugin);
 
@@ -157,8 +157,8 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         // Update Inner Plugin with a different version (2.0.0)
         customizer = getNewRequestBuilderCustomizer();
         customizer.addExpectation(MockMvcResultMatchers.status().isUnprocessableEntity());
-        json = readJsonContract("innerConfUpdatedVersion.json").replace("\"id\":0",
-                                                                        "\"id\":" + innerConfigId.toString());
+        json = readJsonContract("innerConfUpdatedVersion.json")
+                .replace("\"id\":0", "\"id\":" + innerConfigId.toString());
         performDefaultPut(PluginController.PLUGINS_PLUGINID_CONFIGID, json, customizer,
                           "Configuration should be saved!", "InnerParamTestPlugin", innerConfigId);
     }

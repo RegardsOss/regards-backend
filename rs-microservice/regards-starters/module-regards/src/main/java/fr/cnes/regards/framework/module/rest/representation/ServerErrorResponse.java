@@ -26,9 +26,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Server error response representation
- *
  * @author Marc Sordi
- *
  */
 public class ServerErrorResponse {
 

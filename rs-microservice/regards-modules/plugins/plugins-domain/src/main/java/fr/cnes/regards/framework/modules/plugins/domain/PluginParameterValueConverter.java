@@ -23,9 +23,7 @@ import javax.persistence.Converter;
 
 /**
  * Converter for plugin parameter value.
- *
  * @author Marc Sordi
- *
  */
 @Converter(autoApply = true)
 public class PluginParameterValueConverter implements AttributeConverter<PluginParameterValue, String> {

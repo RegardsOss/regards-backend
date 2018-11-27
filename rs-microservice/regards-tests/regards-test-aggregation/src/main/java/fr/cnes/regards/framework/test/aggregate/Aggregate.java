@@ -29,9 +29,7 @@ import fr.cnes.regards.framework.test.report.exception.ReportException;
 
 /**
  * Launch report aggregation
- *
  * @author Marc Sordi
- *
  */
 public class Aggregate {
 

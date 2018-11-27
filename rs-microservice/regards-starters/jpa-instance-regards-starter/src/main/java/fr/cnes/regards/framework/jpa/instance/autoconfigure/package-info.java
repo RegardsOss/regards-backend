@@ -17,10 +17,7 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- *
  * Package for JPA multitenant configuration
- *
  * @author msordi
- *
  */
 package fr.cnes.regards.framework.jpa.instance.autoconfigure;

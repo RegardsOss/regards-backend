@@ -30,7 +30,6 @@ import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
 
 /**
  * {@link Link} adapter
- *
  * @author Marc Sordi
  */
 @GsonTypeAdapter(adapted = Link.class)

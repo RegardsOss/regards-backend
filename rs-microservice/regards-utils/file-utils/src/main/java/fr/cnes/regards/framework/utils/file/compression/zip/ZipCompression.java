@@ -159,8 +159,8 @@ public class ZipCompression extends AbstractRunnableCompression {
                             pCompressManager.setPercentage(percentage);
                         }
                     } catch (IOException e) {
-                        logger.error("Error copying file " + fileNow.getPath() + "to zip file " + compressedFile
-                                .getPath());
+                        logger.error(
+                                "Error copying file " + fileNow.getPath() + "to zip file " + compressedFile.getPath());
                         throw e;
                     }
                 }

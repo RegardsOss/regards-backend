@@ -26,7 +26,6 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 public class RegardsOaisUrnValidator implements ConstraintValidator<RegardsOaisUrn, UniformResourceName> {
 
@@ -37,8 +36,8 @@ public class RegardsOaisUrnValidator implements ConstraintValidator<RegardsOaisU
 
     @Override
     public boolean isValid(UniformResourceName pValue, ConstraintValidatorContext pContext) {
-        return (pValue == null) || !(pValue.getOaisIdentifier().equals(OAISIdentifier.SIP)
-                && ((pValue.getOrder() != null) || (pValue.getRevision() != null)));
+        return (pValue == null) || !(pValue.getOaisIdentifier().equals(OAISIdentifier.SIP) && (
+                (pValue.getOrder() != null) || (pValue.getRevision() != null)));
     }
 
 }

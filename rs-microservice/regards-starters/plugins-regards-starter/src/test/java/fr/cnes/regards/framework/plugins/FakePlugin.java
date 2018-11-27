@@ -27,7 +27,6 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
  * SamplePlugin
- *
  * @author Christophe Mertz
  */
 @Plugin(description = "Sample plugin test", id = "aFakePlugin", version = "12345-6789-11", author = "REGARDS Team",
@@ -88,7 +87,7 @@ public class FakePlugin implements ISamplePlugin {
     @PluginInit
     private void aInit() {
         LOGGER.info("Init method call : " + this.getClass().getName() + "suffixe:" + suffix + "|active:" + isActive
-                + "|coeff:" + coef);
+                            + "|coeff:" + coef);
     }
 
 }

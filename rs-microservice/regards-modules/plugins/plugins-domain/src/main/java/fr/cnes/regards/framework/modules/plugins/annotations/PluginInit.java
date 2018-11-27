@@ -25,14 +25,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- *
  * This annotation can be used to initialize a plugin. It must be used on a no-arg method. The method is called after
  * parameter injection.
- *
  * @author Christophe Mertz
  */
 @Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface PluginInit {
+
 }

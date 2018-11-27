@@ -22,9 +22,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
  * Example class for plugins instanciation test
- *
  * @author sbinda
- *
  */
 @PluginInterface(description = "hello sample plugin interface")
 public interface ITestPlugin {

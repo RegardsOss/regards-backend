@@ -28,7 +28,6 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
  * @author Marc Sordi
- *
  */
 @Plugin(author = "REGARDS Team", description = "Plugin with String map parameters", id = "PluginWithStringMap",
         version = "1.0.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",

@@ -23,7 +23,6 @@ import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
 
 /**
  * @author Marc Sordi
- *
  */
 @GsonTypeAdapterFactory
 public class AnimalAdapterFactory5 extends PolymorphicTypeAdapterFactory<Animal> {

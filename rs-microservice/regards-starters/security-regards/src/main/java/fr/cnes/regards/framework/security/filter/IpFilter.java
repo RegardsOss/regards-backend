@@ -42,13 +42,10 @@ import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 
 /**
- *
  * Class IPFilter
  *
  * Spring MVC request filter by IP
- *
  * @author sbinda
- * @since 1.0-SNAPSHOT
  */
 public class IpFilter extends OncePerRequestFilter {
 
@@ -63,12 +60,8 @@ public class IpFilter extends OncePerRequestFilter {
     private final MethodAuthorizationService methodAuthService;
 
     /**
-     *
      * Constructor
-     *
-     * @param pAuthoritiesProvider
-     *            {@link IAuthoritiesProvider}
-     * @since 1.0-SNAPSHOT
+     * @param pAuthoritiesProvider {@link IAuthoritiesProvider}
      */
     public IpFilter(final MethodAuthorizationService pMethodAuthService) {
         super();
@@ -88,10 +81,11 @@ public class IpFilter extends OncePerRequestFilter {
 
         try {
             if (!roles.isEmpty()) {
-                final List<String> authorizedAddresses = retrieveRoleAuthorizedAddresses(roles, authentication.getTenant());
+                final List<String> authorizedAddresses = retrieveRoleAuthorizedAddresses(roles,
+                                                                                         authentication.getTenant());
                 if (!checkAccessByAddress(authorizedAddresses, pRequest.getRemoteAddr())) {
-                    final String message = String.format("[REGARDS IP FILTER] - %s - Authorization denied",
-                                                         pRequest.getRemoteAddr());
+                    final String message = String
+                            .format("[REGARDS IP FILTER] - %s - Authorization denied", pRequest.getRemoteAddr());
                     LOG.error(message);
                     pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
                 } else {
@@ -112,23 +106,18 @@ public class IpFilter extends OncePerRequestFilter {
     }
 
     /**
-     *
      * Retrieve authorized addresses for the given roles.
-     *
-     * @param pRoles
-     *            roles
+     * @param pRoles roles
      * @return authorized addresses
-     * @throws SecurityException
-     *             Error retrieving role informations
-     * @since 1.0-SNAPSHOT
+     * @throws SecurityException Error retrieving role informations
      */
     private List<String> retrieveRoleAuthorizedAddresses(final Collection<RoleAuthority> pRoles, final String pTenant)
             throws SecurityException {
         final List<String> authorizedAddresses = new ArrayList<>();
         for (final RoleAuthority role : pRoles) {
             // Role is a sys role then there is no ip limitation
-            if (!RoleAuthority.isSysRole(role.getAuthority())
-                    && !RoleAuthority.isInstanceAdminRole(role.getAuthority())) {
+            if (!RoleAuthority.isSysRole(role.getAuthority()) && !RoleAuthority
+                    .isInstanceAdminRole(role.getAuthority())) {
                 final Optional<RoleAuthority> roleAuth = methodAuthService
                         .getRoleAuthority(RoleAuthority.getRoleName(role.getAuthority()), pTenant);
                 roleAuth.ifPresent(r -> authorizedAddresses.addAll(r.getAuthorizedIpAdresses()));
@@ -138,15 +127,10 @@ public class IpFilter extends OncePerRequestFilter {
     }
 
     /**
-     *
      * Check if the user adress match ones of the role authorized addresses.
-     *
-     * @param pAuthorizedAddress
-     *            Role authorized addresses
-     * @param pUserAdress
-     *            user address
+     * @param pAuthorizedAddress Role authorized addresses
+     * @param pUserAdress user address
      * @return [true|false]
-     * @since 1.0-SNAPSHOT
      */
     private boolean checkAccessByAddress(final List<String> pAuthorizedAddress, final String pUserAdress) {
         boolean accessAuthorized = false;

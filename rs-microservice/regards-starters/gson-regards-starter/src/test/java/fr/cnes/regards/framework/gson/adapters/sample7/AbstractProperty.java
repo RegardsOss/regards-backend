@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.gson.adapters.sample7;
 
 /**
  * @author Marc Sordi
- *
  */
 public abstract class AbstractProperty<T> implements IProperty<T> {
 

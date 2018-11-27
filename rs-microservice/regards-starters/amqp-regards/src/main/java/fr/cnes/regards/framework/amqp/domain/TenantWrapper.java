@@ -58,8 +58,6 @@ public class TenantWrapper<T> implements Cloneable {
 
     /**
      * Constructor setting the wrapper content and tenant and initializing the publishing date
-     * @param pContent
-     * @param pTenant
      */
     public TenantWrapper(T pContent, String pTenant) {
         content = pContent;
@@ -77,7 +75,6 @@ public class TenantWrapper<T> implements Cloneable {
 
     /**
      * Set the wrapper content
-     * @param pContent
      */
     public void setContent(T pContent) {
         content = pContent;
@@ -92,7 +89,6 @@ public class TenantWrapper<T> implements Cloneable {
 
     /**
      * Set the tenant
-     * @param pTenant
      */
     public void setTenant(String pTenant) {
         tenant = pTenant;
@@ -117,7 +113,7 @@ public class TenantWrapper<T> implements Cloneable {
     @Override
     public TenantWrapper<T> clone() {
         try {
-            return (TenantWrapper<T>)super.clone();
+            return (TenantWrapper<T>) super.clone();
         } catch (CloneNotSupportedException e) {
             throw new RsRuntimeException(e);
         }

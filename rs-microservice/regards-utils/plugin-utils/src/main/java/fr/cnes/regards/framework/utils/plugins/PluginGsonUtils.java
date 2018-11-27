@@ -27,9 +27,7 @@ import fr.cnes.regards.framework.gson.GsonCustomizer;
 /**
  * Utility class to manage a single Gson instance for plugin configuration management.<br/>
  * Allows Gson to be customized statically mostly for test purpose.
- *
  * @author Marc Sordi
- *
  */
 public final class PluginGsonUtils {
 

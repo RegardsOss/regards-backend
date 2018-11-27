@@ -27,11 +27,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 /**
- *
  * Module auto configuration
- *
  * @author Marc Sordi
- *
  */
 @Configuration
 @ConditionalOnWebApplication

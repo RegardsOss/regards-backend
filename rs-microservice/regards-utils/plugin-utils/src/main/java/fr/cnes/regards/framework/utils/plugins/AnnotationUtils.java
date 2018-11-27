@@ -27,9 +27,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Utils for plugin annotations
- *
  * @author Marc Sordi
- *
  */
 public final class AnnotationUtils {
 

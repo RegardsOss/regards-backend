@@ -25,12 +25,9 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
- *
  * Spring component used by Hibernate to determine the tenant to use during the datasource connection creation.
- *
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT.
+ * .
  */
 public class CurrentTenantIdentifierResolverImpl implements CurrentTenantIdentifierResolver {
 

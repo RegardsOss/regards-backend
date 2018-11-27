@@ -18,8 +18,6 @@ public class TemplatePathSubject {
 
     /**
      * Constructor setting the parameters as attribute
-     * @param templatePath
-     * @param emailSubject
      */
     public TemplatePathSubject(String templatePath, String emailSubject) {
         this.templatePath = templatePath;
@@ -35,7 +33,6 @@ public class TemplatePathSubject {
 
     /**
      * Set the template path
-     * @param templatePath
      */
     public void setTemplatePath(String templatePath) {
         this.templatePath = templatePath;
@@ -50,7 +47,6 @@ public class TemplatePathSubject {
 
     /**
      * Set the subject of the email
-     * @param emailSubject
      */
     public void setEmailSubject(String emailSubject) {
         this.emailSubject = emailSubject;

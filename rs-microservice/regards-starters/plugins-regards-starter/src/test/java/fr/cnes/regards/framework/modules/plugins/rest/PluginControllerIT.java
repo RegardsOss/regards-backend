@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.framework.modules.plugins.rest;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -43,7 +41,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.geojson.PluginConfigurationFieldDescriptors;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -59,10 +56,10 @@ import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Test class for REST endpoints to manage plugin entities.
- *
  * @author Christophe Mertz
  * @author Sébastien Binda
  */
@@ -70,9 +67,6 @@ import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 @MultitenantTransactional
 public class PluginControllerIT extends AbstractRegardsTransactionalIT {
 
-    /**
-     * Class logger
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginControllerIT.class);
 
     private static final String VERSION = "12345-6789-11";
@@ -102,7 +96,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
 
     @Before
     public void init() {
-        tenantResolver.forceTenant(DEFAULT_TENANT);
+        tenantResolver.forceTenant(getDefaultTenant());
 
         pluginParameters = PluginParametersFactory.build()
                 .addDynamicParameter("param31", "value31", Arrays.asList("red", "green", "blue"))
@@ -126,7 +120,11 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
 
         manageDefaultSecurity(PluginController.PLUGINS_CACHE, RequestMethod.DELETE);
 
-        token = generateToken(DEFAULT_USER_EMAIL, DEFAULT_ROLE);
+        token = generateToken(getDefaultUserEmail(), DEFAULT_ROLE);
+    }
+
+    private String manageDefaultSecurity(String urlPath, RequestMethod method) {
+        return manageSecurity(getDefaultTenant(), urlPath, method, getDefaultUserEmail(), getDefaultRole());
     }
 
     @Test
@@ -186,8 +184,8 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addExpectation(status().isOk());
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                .jsonPath(JSON_PATH_STAR, Matchers.hasSize(pluginService.getPluginTypes().size())));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_STAR, Matchers.hasSize(
+                pluginService.getPluginTypes().size())));
 
         performGet(PluginController.PLUGIN_TYPES, token, requestBuilderCustomizer, "unable to load all plugin types");
     }
@@ -205,10 +203,10 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         // expectations.add(MockMvcResultMatchers.jsonPath("$..content.pluginId", Matchers.hasToString(PLUGIN_ID)));
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.jsonPath("$..content.active", Matchers.hasToString("[true]")));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                .jsonPath("$..content.parameters[?(@.name == 'param31')].dynamic", Matchers.hasToString("[true]")));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                .jsonPath("$..content.parameters[?(@.name == 'param32')].dynamic", Matchers.hasToString("[false]")));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(
+                "$..content.parameters[?(@.name == 'param31')].dynamic", Matchers.hasToString("[true]")));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(
+                "$..content.parameters[?(@.name == 'param32')].dynamic", Matchers.hasToString("[false]")));
 
         performGet(PluginController.PLUGINS_PLUGINID_CONFIGS, token, requestBuilderCustomizer,
                    "unable to load all plugin configuration of a specific plugin id",
@@ -226,10 +224,10 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
                 .addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.jsonPath("$..content.active", Matchers.hasToString("[true]")));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                .jsonPath("$..content.parameters[?(@.name == 'param31')].dynamic", Matchers.hasToString("[true]")));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                .jsonPath("$..content.parameters[?(@.name == 'param32')].dynamic", Matchers.hasToString("[false]")));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(
+                "$..content.parameters[?(@.name == 'param31')].dynamic", Matchers.hasToString("[true]")));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(
+                "$..content.parameters[?(@.name == 'param32')].dynamic", Matchers.hasToString("[false]")));
 
         performGet(PluginController.PLUGINS_CONFIGID, token, requestBuilderCustomizer,
                    "unable to load a plugin configuration", aPluginConfiguration.getId());
@@ -269,8 +267,9 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addExpectation(status().isOk());
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                .jsonPath("$.[0].content.pluginId", Matchers.hasToString(aPluginConfiguration.getPluginId())));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.[0].content.pluginId",
+                                                                               Matchers.hasToString(aPluginConfiguration
+                                                                                                            .getPluginId())));
         requestBuilderCustomizer.customizeRequestParam().param("pluginType", ISamplePlugin.class.getCanonicalName());
 
         performGet(PluginController.PLUGINS_CONFIGS, token, requestBuilderCustomizer,
@@ -326,20 +325,24 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         requestBuilderCustomizer.addExpectation(status().isOk());
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                .jsonPath("$.content.pluginId", Matchers.hasToString(aPluginConfiguration.getPluginId())));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.pluginId",
+                                                                               Matchers.hasToString(aPluginConfiguration
+                                                                                                            .getPluginId())));
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.jsonPath("$.content.version", Matchers.hasToString(VERSION)));
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.jsonPath("$.content.active", Matchers.hasToString(TRUE)));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                .jsonPath("$.content.parameters[?(@.name == 'param31')].dynamic", Matchers.hasToString("[true]")));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                .jsonPath("$.content.parameters[?(@.name == 'param32')].dynamic", Matchers.hasToString("[false]")));
-        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation
-                .pathParameters(RequestDocumentation.parameterWithName(PluginController.REQUEST_PARAM_PLUGIN_ID)
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(
+                "$.content.parameters[?(@.name == 'param31')].dynamic", Matchers.hasToString("[true]")));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(
+                "$.content.parameters[?(@.name == 'param32')].dynamic", Matchers.hasToString("[false]")));
+        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.pathParameters(
+                RequestDocumentation.parameterWithName(PluginController.REQUEST_PARAM_PLUGIN_ID)
                         .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
-                        .description("Plugin identifier"), RequestDocumentation.parameterWithName(PluginController.REQUEST_PARAM_CONFIG_ID).attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_NUMBER_TYPE)).description("Plugin configuration identifier")));
+                        .description("Plugin identifier"),
+                RequestDocumentation.parameterWithName(PluginController.REQUEST_PARAM_CONFIG_ID)
+                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_NUMBER_TYPE))
+                        .description("Plugin configuration identifier")));
 
         documentPluginConfRequestBody(requestBuilderCustomizer, true);
 
@@ -377,7 +380,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void updateUnknownPluginConfigurationError() {
         final PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
-                pluginParameters, 0);
+                                                                                 pluginParameters, 0);
         aPluginConfiguration.setId(133L);
 
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
@@ -394,23 +397,24 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("When a HTTP request POST is successed, the HTTP return code is 201")
     public void savePluginConfiguration() throws MalformedURLException {
         final PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), LABEL,
-                pluginParameters, 0);
+                                                                                 pluginParameters, 0);
         aPluginConfiguration.setIconUrl(new URL("http://google.fr/svg/logo.svg"));
 
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(status().isCreated());
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                .jsonPath("$.content.pluginId", Matchers.hasToString(aPluginConfiguration.getPluginId())));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.pluginId",
+                                                                               Matchers.hasToString(aPluginConfiguration
+                                                                                                            .getPluginId())));
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.jsonPath("$.content.version", Matchers.hasToString(VERSION)));
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.jsonPath("$.content.active", Matchers.hasToString(TRUE)));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                .jsonPath("$.content.parameters[?(@.name == 'param31')].dynamic", Matchers.hasToString("[true]")));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                .jsonPath("$.content.parameters[?(@.name == 'param32')].dynamic", Matchers.hasToString("[false]")));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(
+                "$.content.parameters[?(@.name == 'param31')].dynamic", Matchers.hasToString("[true]")));
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(
+                "$.content.parameters[?(@.name == 'param32')].dynamic", Matchers.hasToString("[false]")));
 
         documentPluginConfRequestBody(requestBuilderCustomizer, false);
 
@@ -419,15 +423,17 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     private void documentPluginConfRequestBody(RequestBuilderCustomizer requestBuilderCustomizer, boolean update) {
-        List<FieldDescriptor> lfd = new ArrayList<FieldDescriptor>();
-
         PluginConfigurationFieldDescriptors pluginConfDescriptors = new PluginConfigurationFieldDescriptors();
-        lfd.addAll(pluginConfDescriptors.build(update));
+        List<FieldDescriptor> lfd = new ArrayList<>(pluginConfDescriptors.build(update));
 
-        requestBuilderCustomizer.addDocumentationSnippet(PayloadDocumentation
-                .relaxedRequestFields(Attributes
-                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE).value("Plugin configuration")),
-                                      lfd.toArray(new FieldDescriptor[lfd.size()])));
+        requestBuilderCustomizer.addDocumentationSnippet(PayloadDocumentation.relaxedRequestFields(Attributes
+                                                                                                           .attributes(
+                                                                                                                   Attributes
+                                                                                                                           .key(RequestBuilderCustomizer.PARAM_TITLE)
+                                                                                                                           .value("Plugin configuration")),
+                                                                                                   lfd.toArray(
+                                                                                                           new FieldDescriptor[lfd
+                                                                                                                   .size()])));
     }
 
     @Test
@@ -452,10 +458,13 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(status().isNoContent());
 
-        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation
-                .pathParameters(RequestDocumentation.parameterWithName(PluginController.REQUEST_PARAM_PLUGIN_ID)
+        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.pathParameters(
+                RequestDocumentation.parameterWithName(PluginController.REQUEST_PARAM_PLUGIN_ID)
                         .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
-                        .description("Plugin identifier"), RequestDocumentation.parameterWithName(PluginController.REQUEST_PARAM_CONFIG_ID).attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_NUMBER_TYPE)).description("Plugin configuration identifier")));
+                        .description("Plugin identifier"),
+                RequestDocumentation.parameterWithName(PluginController.REQUEST_PARAM_CONFIG_ID)
+                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_NUMBER_TYPE))
+                        .description("Plugin configuration identifier")));
 
         performDelete(PluginController.PLUGINS_PLUGINID_CONFIGID, token, requestBuilderCustomizer,
                       "unable to delete a plugin configuration", aPluginConfiguration.getPluginId(),
@@ -493,7 +502,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
     // Add a PluginConfiguration with the PluginService
     private PluginConfiguration createPluginConfiguration(String label) throws ModuleException, MalformedURLException {
         PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), label,
-                pluginParameters, 0);
+                                                                           pluginParameters, 0);
         aPluginConfiguration.setIconUrl(new URL("http://google.fr/svg/logo.svg"));
         return pluginService.savePluginConfiguration(aPluginConfiguration);
     }

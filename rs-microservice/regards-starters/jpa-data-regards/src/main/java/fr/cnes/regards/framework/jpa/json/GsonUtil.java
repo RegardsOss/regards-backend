@@ -28,11 +28,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
 
 /**
- *
  * Utility class allowing us to serialize and deserialize object to and from JSON
  *
  * inspired from @Vlad Mihalcea JacksonUtil class
- *
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
  */

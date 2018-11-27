@@ -32,8 +32,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.cloud.netflix.feign.EnableFeignClients;
-import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,7 +48,6 @@ import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 
 /**
  * @author Marc Sordi
- *
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = FeignClientTests.Application.class, webEnvironment = WebEnvironment.DEFINED_PORT,
@@ -109,7 +108,7 @@ public class FeignClientTests {
     }
 
     /**
-     * Test {@link FeignClient} are discovered properly
+     * Test {@link org.springframework.cloud.openfeign.FeignClient} are discovered properly
      */
     @Test
     public void testAnnnotations() {

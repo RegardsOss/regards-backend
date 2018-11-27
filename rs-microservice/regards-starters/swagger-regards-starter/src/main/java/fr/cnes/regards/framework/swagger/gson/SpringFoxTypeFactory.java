@@ -30,9 +30,7 @@ import springfox.documentation.spring.web.json.Json;
 
 /**
  * SpringFox factory
- *
  * @author Marc Sordi
- *
  */
 public class SpringFoxTypeFactory implements TypeAdapterFactory {
 

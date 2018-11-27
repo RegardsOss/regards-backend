@@ -25,15 +25,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Single virtual host tests
- *
  * @author Marc Sordi
- *
  */
 @RunWith(SpringRunner.class)
 @EnableAutoConfiguration
-@TestPropertySource(
-        properties = { "regards.amqp.management.mode=SINGLE", "regards.tenants=PROJECT, PROJECT1",
-                "regards.tenant=PROJECT", "regards.amqp.internal.transaction=true" },
-        locations = "classpath:amqp.properties")
+@TestPropertySource(properties = { "regards.amqp.management.mode=SINGLE", "regards.tenants=PROJECT, PROJECT1",
+        "regards.tenant=PROJECT", "regards.amqp.internal.transaction=true" }, locations = "classpath:amqp.properties")
 public class SingleVhostPollerIT extends AbstractPollerIT {
+
 }

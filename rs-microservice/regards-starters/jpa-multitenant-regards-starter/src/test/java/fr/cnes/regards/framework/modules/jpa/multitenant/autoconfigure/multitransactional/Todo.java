@@ -29,9 +29,7 @@ import javax.persistence.Table;
 
 /**
  * Basic pojo to test transaction synchronization
- *
  * @author Marc Sordi
- *
  */
 @Entity
 @Table(name = "t_todo")

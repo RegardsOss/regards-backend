@@ -21,9 +21,9 @@ package fr.cnes.regards.framework.feign.autoconfigure;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration.EnableWebMvcConfiguration;
-import org.springframework.boot.autoconfigure.web.WebMvcProperties;
-import org.springframework.boot.autoconfigure.web.WebMvcRegistrations;
+import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.servlet.WebMvcProperties;
+import org.springframework.boot.autoconfigure.web.servlet.WebMvcRegistrations;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
@@ -31,17 +31,14 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import fr.cnes.regards.framework.feign.security.FeignHandlerInterceptor;
 
 /**
- *
  * Class WebMvcConfiguration
  *
  * Update Spring Web Mvc configuration to ignore RequestMapping on FeignClient implementations.
- *
  * @author CS
- * @since 1.0-SNAPSHOT
  */
 @Configuration
 @ConditionalOnWebApplication
-public class WebMvcConfiguration extends EnableWebMvcConfiguration {
+public class WebMvcConfiguration extends WebMvcAutoConfiguration.EnableWebMvcConfiguration {
 
     public WebMvcConfiguration(final ObjectProvider<WebMvcProperties> pMvcPropertiesProvider,
             final ObjectProvider<WebMvcRegistrations> pMvcRegistrationsProvider,

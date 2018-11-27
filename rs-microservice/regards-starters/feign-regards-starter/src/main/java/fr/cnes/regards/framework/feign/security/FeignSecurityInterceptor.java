@@ -24,9 +24,7 @@ import fr.cnes.regards.framework.security.utils.HttpConstants;
 
 /**
  * This class inject token in the {@link RequestTemplate}
- *
  * @author Marc Sordi
- *
  */
 public class FeignSecurityInterceptor implements RequestInterceptor {
 

@@ -26,9 +26,7 @@ import fr.cnes.regards.framework.geojson.GeoJsonType;
 /**
  * RFC 7946 -August 2016<br/>
  * GeoJson geometry common representation
- *
  * @author Marc Sordi
- *
  */
 public abstract class AbstractGeometry<T> extends AbstractGeoJsonObject implements IGeometry {
 
@@ -66,8 +64,7 @@ public abstract class AbstractGeometry<T> extends AbstractGeoJsonObject implemen
         if (getClass() != obj.getClass()) {
             return false;
         }
-        @SuppressWarnings("rawtypes")
-        AbstractGeometry other = (AbstractGeometry) obj;
+        @SuppressWarnings("rawtypes") AbstractGeometry other = (AbstractGeometry) obj;
         if (coordinates == null) {
             if (other.coordinates != null) {
                 return false;

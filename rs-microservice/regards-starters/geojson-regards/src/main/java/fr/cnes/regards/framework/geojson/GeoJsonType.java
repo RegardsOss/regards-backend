@@ -21,9 +21,7 @@ package fr.cnes.regards.framework.geojson;
 /**
  * RFC 7946 -August 2016<br/>
  * All availble GeoJson types
- *
  * @author Marc Sordi
- *
  */
 public enum GeoJsonType {
 

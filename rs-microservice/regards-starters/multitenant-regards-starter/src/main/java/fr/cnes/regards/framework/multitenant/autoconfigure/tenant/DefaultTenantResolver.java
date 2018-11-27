@@ -28,9 +28,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 
 /**
  * Resolve tenant base on configuration properties
- *
  * @author msordi
- *
  */
 public class DefaultTenantResolver implements ITenantResolver {
 

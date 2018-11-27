@@ -27,7 +27,6 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
  * SampleErrorPlugin
- *
  * @author Christophe Mertz
  */
 @Plugin(description = "Sample plugin test", id = "aSampleErrorPlugin", version = "0.0.1", author = "REGARDS Team",
@@ -85,7 +84,7 @@ public class SampleErrorPlugin implements ISamplePlugin {
     @PluginInit
     private void aInit() {
         LOGGER.info("Init method call : " + this.getClass().getName() + "suffixe:" + suffix + "|active:" + isActive
-                + "|coeff:" + coef);
+                            + "|coeff:" + coef);
         throw new IllegalArgumentException();
     }
 

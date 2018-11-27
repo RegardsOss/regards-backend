@@ -20,13 +20,11 @@ import com.google.common.io.ByteStreams;
  */
 public final class DownloadUtils {
 
-    private DownloadUtils() {}
+    private DownloadUtils() {
+    }
 
     /**
      * Get an InputStream on a source URL with no proxy used
-     * @param source
-     * @return
-     * @throws IOException
      */
     public static InputStream getInputStream(URL source) throws IOException {
         return getInputStreamThroughProxy(source, Proxy.NO_PROXY);
@@ -49,24 +47,17 @@ public final class DownloadUtils {
     }
 
     /**
-     *
      * Download from the source and write it onto the file system at the destination provided.
      * Use the provided checksumAlgorithm to calculate the checksum at the end for further verification
-     *
-     * @param source
-     * @param destination
-     * @param checksumAlgorithm
-     * @param proxy
      * @return checksum, computed using the provided algorithm, of the file created at destination
-     * @throws IOException
-     * @throws NoSuchAlgorithmException
      */
     public static String downloadThroughProxy(URL source, Path destination, String checksumAlgorithm, Proxy proxy,
             Integer pConnectTimeout) throws NoSuchAlgorithmException, IOException {
-        try(OutputStream os = Files.newOutputStream(destination, StandardOpenOption.CREATE);
-        InputStream sourceStream = DownloadUtils.getInputStreamThroughProxy(source, proxy, pConnectTimeout);
-        // lets compute the checksum during the copy!
-        DigestInputStream dis = new DigestInputStream(sourceStream, MessageDigest.getInstance(checksumAlgorithm))) {
+        try (OutputStream os = Files.newOutputStream(destination, StandardOpenOption.CREATE);
+                InputStream sourceStream = DownloadUtils.getInputStreamThroughProxy(source, proxy, pConnectTimeout);
+                // lets compute the checksum during the copy!
+                DigestInputStream dis = new DigestInputStream(sourceStream,
+                                                              MessageDigest.getInstance(checksumAlgorithm))) {
             ByteStreams.copy(dis, os);
             return ChecksumUtils.getHexChecksum(dis.getMessageDigest().digest());
         }
@@ -92,15 +83,7 @@ public final class DownloadUtils {
     /**
      * Download a source to the provided destination using the provided proxy.
      * Checks if the checksum computed thanks to checksumAlgorithm match to the expected checksum
-     *
-     * @param source
-     * @param destination
-     * @param checksumAlgorithm
-     * @param expectedChecksum
-     * @param proxy
      * @return checksum.equals(expectedChecksum)
-     * @throws IOException
-     * @throws NoSuchAlgorithmException
      */
     public static boolean downloadAndCheckChecksum(URL source, Path destination, String checksumAlgorithm,
             String expectedChecksum, Proxy proxy, Integer pConnectionTimeout)
@@ -124,13 +107,8 @@ public final class DownloadUtils {
     }
 
     /**
-    *
-    * @param source
-    * @param proxy
-    * @param pConnectTimeout Sets a specified timeout value, in milliseconds, to be used when opening a communications link to the resource referenced by this URLConnection
-    * @return
-    * @throws IOException
-    */
+     * @param pConnectTimeout Sets a specified timeout value, in milliseconds, to be used when opening a communications link to the resource referenced by this URLConnection
+     */
     public static InputStream getInputStreamThroughProxy(URL source, Proxy proxy, Integer pConnectTimeout)
             throws IOException {
         URLConnection connection = source.openConnection(proxy);

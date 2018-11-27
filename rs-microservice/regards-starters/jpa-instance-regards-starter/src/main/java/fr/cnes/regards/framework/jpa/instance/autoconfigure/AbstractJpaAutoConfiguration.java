@@ -36,6 +36,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateProperties;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateSettings;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
@@ -58,13 +60,10 @@ import fr.cnes.regards.framework.jpa.utils.IDatasourceSchemaHelper;
 import fr.cnes.regards.framework.jpa.utils.MigrationTool;
 
 /**
- *
  * Class AbstractJpaAutoConfiguration
  *
  * Configuration class to define hibernate/jpa instance database strategy
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 public abstract class AbstractJpaAutoConfiguration {
 
@@ -107,6 +106,9 @@ public abstract class AbstractJpaAutoConfiguration {
     @Autowired
     private JpaProperties jpaProperties;
 
+    @Autowired
+    private HibernateProperties hb8Properties;
+
     /**
      * Instance datasource
      */
@@ -122,7 +124,6 @@ public abstract class AbstractJpaAutoConfiguration {
 
     /**
      * Constructor. Check for classpath errors.
-     * @throws MultiDataBasesException
      */
     public AbstractJpaAutoConfiguration() throws MultiDataBasesException {
         DaoUtils.checkClassPath(DaoUtils.ROOT_PACKAGE);
@@ -140,7 +141,6 @@ public abstract class AbstractJpaAutoConfiguration {
     /**
      * Use schema helper to migrate database schema.
      * {@link IDatasourceSchemaHelper#migrate()} is called immediatly after bean creation on instance datasource.
-     *
      * @return {@link IDatasourceSchemaHelper}
      * @throws JpaException if error occurs!
      */
@@ -151,7 +151,7 @@ public abstract class AbstractJpaAutoConfiguration {
 
         if (MigrationTool.HBM2DDL.equals(daoProperties.getMigrationTool())) {
             Hbm2ddlDatasourceSchemaHelper helper = new Hbm2ddlDatasourceSchemaHelper(hibernateProperties,
-                    getEntityAnnotationScan(), null);
+                                                                                     getEntityAnnotationScan(), null);
             helper.setDataSource(instanceDataSource);
             // Set output file, may be null.
             helper.setOutputFile(daoProperties.getOutputFile());
@@ -164,14 +164,9 @@ public abstract class AbstractJpaAutoConfiguration {
     }
 
     /**
-     *
      * Create TransactionManager for instance datasource
-     *
-     * @param pBuilder
-     *            EntityManagerFactoryBuilder
      * @return PlatformTransactionManager
      * @throws JpaException if error occurs
-     * @since 1.0-SNAPSHOT
      */
     @Bean(name = InstanceDaoProperties.INSTANCE_TRANSACTION_MANAGER)
     public PlatformTransactionManager instanceJpaTransactionManager() throws JpaException {
@@ -209,9 +204,6 @@ public abstract class AbstractJpaAutoConfiguration {
     /**
      * this bean allow us to set <b>our</b> instance of Gson, customized for the serialization of any data as jsonb into
      * the database
-     *
-     * @param pGson
-     * @return
      */
     @Bean
     public Void setGsonIntoGsonUtil(final Gson pGson) {
@@ -223,7 +215,6 @@ public abstract class AbstractJpaAutoConfiguration {
 
     /**
      * Compute database properties
-     *
      * @return database properties
      * @throws JpaException if error occurs!
      */
@@ -234,8 +225,9 @@ public abstract class AbstractJpaAutoConfiguration {
         // Schema must be retrieved here if managed with property :
         // spring.jpa.properties.hibernate.default_schema
         // Before retrieving hibernate properties, set ddl auto to avoid the need of a datasource
-        jpaProperties.getHibernate().setDdlAuto("none");
-        dbProperties.putAll(jpaProperties.getHibernateProperties(null));
+        hb8Properties.setDdlAuto("none");
+        dbProperties.putAll(hb8Properties.determineHibernateProperties(jpaProperties.getProperties(),
+                                                                       new HibernateSettings()));
         // Remove hbm2ddl as schema update is done programmatically
         dbProperties.remove(Environment.HBM2DDL_AUTO);
 

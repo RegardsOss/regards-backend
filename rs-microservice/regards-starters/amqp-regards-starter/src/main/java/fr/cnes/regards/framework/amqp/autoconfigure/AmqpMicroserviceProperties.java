@@ -25,9 +25,7 @@ import org.springframework.validation.annotation.Validated;
 
 /**
  * class regrouping properties about the microservice
- *
  * @author svissier
- *
  */
 @Validated
 @ConfigurationProperties(prefix = "regards.amqp.microservice")
@@ -54,7 +52,6 @@ public class AmqpMicroserviceProperties {
 
     /**
      * Set the microservice type identifier
-     * @param pTypeIdentifier
      */
     public void setTypeIdentifier(String pTypeIdentifier) {
         typeIdentifier = pTypeIdentifier;

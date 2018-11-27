@@ -96,7 +96,7 @@ public class JobInfoService implements IJobInfoService {
 
     @Override
     public JobInfo retrieveJob(UUID id) {
-        return jobInfoRepository.findById(id);
+        return jobInfoRepository.findCompleteById(id);
     }
 
     @Override
@@ -140,8 +140,8 @@ public class JobInfoService implements IJobInfoService {
     public void updateJobInfosCompletion(Iterable<JobInfo> jobInfos) {
         for (JobInfo jobInfo : jobInfos) {
             JobStatusInfo status = jobInfo.getStatus();
-            jobInfoRepository.updateCompletion(status.getPercentCompleted(), status.getEstimatedCompletion(),
-                                               jobInfo.getId());
+            jobInfoRepository
+                    .updateCompletion(status.getPercentCompleted(), status.getEstimatedCompletion(), jobInfo.getId());
         }
     }
 
@@ -166,7 +166,7 @@ public class JobInfoService implements IJobInfoService {
         // Add failed or aborted jobs since configured retention days
         jobs.addAll(jobInfoRepository.findFailedOrAbortedJobsSince(failedJobsRetentionDays));
         // Remove all these jobs
-        jobInfoRepository.delete(jobs);
+        jobInfoRepository.deleteAll(jobs);
     }
 
     @Override

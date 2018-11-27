@@ -27,12 +27,9 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**
  * REGARDS authority
- *
  * @author Marc Sordi
  * @author Sébastien Binda
  * @author Sylvain Vissiere-Guerinet
- * @since 1.0-SNAPSHOT
- *
  */
 public class RoleAuthority implements GrantedAuthority {
 
@@ -63,12 +60,8 @@ public class RoleAuthority implements GrantedAuthority {
     private List<String> authorizedIpAdresses = new ArrayList<>();
 
     /**
-     *
      * Constructor
-     *
-     * @param pRoleName
-     *            The role name
-     * @since 1.0-SNAPSHOT
+     * @param pRoleName The role name
      */
     public RoleAuthority(final String pRoleName) {
         if (!pRoleName.startsWith(ROLE_PREFIX)) {
@@ -79,13 +72,9 @@ public class RoleAuthority implements GrantedAuthority {
     }
 
     /**
-     *
      * Remove Authority ROLE_ prefix to get real role name
-     *
-     * @param pRoleAuthorityName
-     *            Authority role name with ROLE_PREFIX
+     * @param pRoleAuthorityName Authority role name with ROLE_PREFIX
      * @return role name
-     * @since 1.0-SNAPSHOT
      */
     public static String getRoleName(final String pRoleAuthorityName) {
         String roleName = pRoleAuthorityName;
@@ -96,13 +85,9 @@ public class RoleAuthority implements GrantedAuthority {
     }
 
     /**
-     *
      * Add Authority PREFIX to given Role name if necessary
-     *
-     * @param pRoleName
-     *            The role name
+     * @param pRoleName The role name
      * @return RoleAuthority
-     * @since 1.0-SNAPSHOT
      */
     public static String getRoleAuthority(final String pRoleName) {
         if (pRoleName.startsWith(ROLE_PREFIX)) {
@@ -112,27 +97,19 @@ public class RoleAuthority implements GrantedAuthority {
     }
 
     /**
-     *
      * Retrieve the SYS ROLE for the current microservice. SYS ROLE is a specific role that permit access to all
      * administration endpoints.
-     *
-     * @param pMicroserviceName
-     *            the current microservice name
+     * @param pMicroserviceName the current microservice name
      * @return SYS Role name
-     * @since 1.0-SNAPSHOT
      */
     public static String getSysRole(final String pMicroserviceName) {
         return ROLE_PREFIX + SYS_ROLE_PREFIX + pMicroserviceName;
     }
 
     /**
-     *
      * Is the given role a system role ?
-     *
-     * @param pRoleName
-     *            The role name
+     * @param pRoleName The role name
      * @return [true|false]
-     * @since 1.0-SNAPSHOT
      */
     public static boolean isSysRole(final String pRoleName) {
         boolean isSysRole = false;
@@ -143,13 +120,9 @@ public class RoleAuthority implements GrantedAuthority {
     }
 
     /**
-     *
      * Is the given role the virtual instance admin role ?
-     *
-     * @param pRoleName
-     *            The role name
+     * @param pRoleName The role name
      * @return [true|false]
-     * @since 1.0-SNAPSHOT
      */
     public static boolean isInstanceAdminRole(final String pRoleName) {
         boolean isInstanceAdminRole = false;
@@ -160,13 +133,9 @@ public class RoleAuthority implements GrantedAuthority {
     }
 
     /**
-     *
      * Is the given role the virtual project admin role ?
-     *
-     * @param pRoleName
-     *            The role name
+     * @param pRoleName The role name
      * @return [true|false]
-     * @since 1.0-SNAPSHOT
      */
     public static boolean isProjectAdminRole(final String pRoleName) {
         return getRoleAuthority(pRoleName).equals(getRoleAuthority(DefaultRole.PROJECT_ADMIN.toString()));

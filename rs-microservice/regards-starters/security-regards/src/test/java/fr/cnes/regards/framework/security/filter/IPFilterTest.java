@@ -47,13 +47,10 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
- *
  * Class IPFilterTest
  *
  * IP Filter tests
- *
  * @author sbinda
- * @since 1.0-SNAPSHOT
  */
 public class IPFilterTest {
 
@@ -83,13 +80,8 @@ public class IPFilterTest {
     private static final String TENANT_NAME = "tenant";
 
     /**
-     *
      * Check security filter with ip adress for endpoints accesses
-     *
-     * @throws SecurityException
-     *             test error
-     *
-     * @since 1.0-SNAPSHOT
+     * @throws SecurityException test error
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Check security filter with ip adress for endpoints accesses")
@@ -144,13 +136,8 @@ public class IPFilterTest {
     }
 
     /**
-     *
      * Check security filter with ip adress for endpoints accesses
-     *
-     * @throws SecurityException
-     *             test error
-     *
-     * @since 1.0-SNAPSHOT
+     * @throws SecurityException test error
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Check security filter with subdomain ip adress for endpoints accesses")

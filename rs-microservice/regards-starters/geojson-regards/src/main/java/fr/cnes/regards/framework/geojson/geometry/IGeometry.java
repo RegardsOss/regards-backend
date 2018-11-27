@@ -45,11 +45,10 @@ public interface IGeometry {
 
     default <T extends IGeometry> T withCrs(String crs) {
         this.setCrs(crs);
-        return (T)this;
+        return (T) this;
     }
 
     <R> R accept(IGeometryVisitor<R> visitor);
-
 
     /**
      * Define a GeoJson without geometry
@@ -279,7 +278,8 @@ public interface IGeometry {
     /**
      * Create a new {@link LineString} geometry.<br/>
      * As parameters are doubles instead of Doubles, int values can also be used.<br/>
-     * Intent of this method is principaly to be used for tests     */
+     * Intent of this method is principaly to be used for tests
+     */
     static LineString lineString(double... lonLats) {
         Preconditions.checkNotNull(lonLats);
         Preconditions.checkArgument(lonLats.length > 2);

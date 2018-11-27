@@ -25,9 +25,7 @@ import fr.cnes.regards.framework.geojson.geometry.LineString;
 
 /**
  * Validate {@link LineString} structure
- *
  * @author Marc Sordi
- *
  */
 public class LineStringValidator implements ConstraintValidator<LineStringConstraints, LineString> {
 

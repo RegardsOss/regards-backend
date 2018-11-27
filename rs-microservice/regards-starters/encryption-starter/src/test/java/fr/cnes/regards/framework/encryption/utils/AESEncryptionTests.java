@@ -16,7 +16,6 @@ import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 
 /**
  * Some basic tests
- *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class AESEncryptionTests {
@@ -26,7 +25,8 @@ public class AESEncryptionTests {
     @Before
     public void init() throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
         aesEncryptionService = new AESEncryptionService();
-        aesEncryptionService.init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "1234567812345678"));
+        aesEncryptionService
+                .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "1234567812345678"));
     }
 
     @Test

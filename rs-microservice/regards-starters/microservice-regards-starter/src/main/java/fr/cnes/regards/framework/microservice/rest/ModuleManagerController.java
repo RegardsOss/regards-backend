@@ -66,7 +66,6 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 
 /**
  * Module manager controller
- *
  * @author Marc Sordi
  */
 @RestController
@@ -230,7 +229,8 @@ public class ModuleManagerController {
     @ResourceAccess(description = "allows to known if the microservice is ready to work")
     public ResponseEntity<ModuleReadinessReport<?>> isReady() {
         ModuleReadinessReport<Object> microserviceReadiness = new ModuleReadinessReport<Object>(Boolean.TRUE,
-                Lists.newArrayList(), null);
+                                                                                                Lists.newArrayList(),
+                                                                                                null);
         if (managers != null && !managers.isEmpty()) {
             for (IModuleManager<?> manager : managers) {
                 if (manager.isReadyImplemented()) {

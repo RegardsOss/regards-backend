@@ -29,7 +29,6 @@ import fr.cnes.regards.framework.utils.plugins.generics.IPluginWithGenerics;
 
 /**
  * @author Marc Sordi
- *
  */
 @Plugin(author = "REGARDS Team", description = "Plugin with String map parameters", id = "PluginWithCyclicPojoMap",
         version = "1.0.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",

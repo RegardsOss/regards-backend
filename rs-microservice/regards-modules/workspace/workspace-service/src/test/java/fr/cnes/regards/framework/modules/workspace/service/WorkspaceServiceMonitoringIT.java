@@ -51,10 +51,10 @@ public class WorkspaceServiceMonitoringIT extends AbstractRegardsServiceIT {
     @Requirement("REGARDS_DSL_ING_CMP_030")
     public void testMonitor() {
         IWorkspaceNotifier spiedNotifier = Mockito.spy(notifier);
-        workspaceService.monitor(DEFAULT_TENANT);
+        workspaceService.monitor(getDefaultTenant());
         Mockito.verify(spiedNotifier, Mockito.times(1))
                 .sendErrorNotification(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
-        Assert.assertTrue(MaintenanceManager.getMaintenance(DEFAULT_TENANT));
+        Assert.assertTrue(MaintenanceManager.getMaintenance(getDefaultTenant()));
     }
 
     @After

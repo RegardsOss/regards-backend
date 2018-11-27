@@ -18,9 +18,7 @@
  */
 
 /**
- *
  * Class GsonIgnore
- *
  * @author Christophe Mertz
  */
 package fr.cnes.regards.framework.gson.annotation;
@@ -34,9 +32,7 @@ import fr.cnes.regards.framework.gson.strategy.GsonViewIgnoreExclusionStrategy;
 
 /**
  * Mark a field to be ignore by GSON if {@link GsonViewIgnoreExclusionStrategy} is declared in the GSON instance
- *
  * @author Marc Sordi
- *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD })

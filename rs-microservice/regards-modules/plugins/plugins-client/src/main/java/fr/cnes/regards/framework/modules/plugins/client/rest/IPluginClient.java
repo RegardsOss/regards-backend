@@ -37,10 +37,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 
 /**
- *
  * @author Sylvain Vissiere-Guerinet
- *
- * @since 1.0-SNAPSHOT
  */
 @RequestMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IPluginClient {
@@ -82,12 +79,8 @@ public interface IPluginClient {
 
     /**
      * Get all the plugins identifies by the annotation {@link Plugin}.
-     *
-     * @param pPluginType
-     *            a type of plugin
-     *
+     * @param pPluginType a type of plugin
      * @return a {@link List} of {@link PluginMetaData}
-     *
      */
     @RequestMapping(value = PLUGINS, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
@@ -96,7 +89,6 @@ public interface IPluginClient {
 
     /**
      * Get the interface identified with the annotation {@link PluginInterface}.
-     *
      * @return a {@link List} of interface annotated with {@link PluginInterface}
      */
     @RequestMapping(value = PLUGIN_TYPES, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -105,10 +97,7 @@ public interface IPluginClient {
 
     /**
      * Get all the metadata of a specified plugin.
-     *
-     * @param pPluginId
-     *            a plugin identifier
-     *
+     * @param pPluginId a plugin identifier
      * @return a {@link List} of {@link PluginParameter}
      */
     @RequestMapping(value = PLUGINS_PLUGINID, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -118,10 +107,7 @@ public interface IPluginClient {
 
     /**
      * Get all the {@link PluginConfiguration} of a specified plugin.
-     *
-     * @param pPluginId
-     *            a plugin identifier
-     *
+     * @param pPluginId a plugin identifier
      * @return a {@link List} of {@link PluginConfiguration}
      */
     @RequestMapping(value = PLUGINS_PLUGINID_CONFIGS, method = RequestMethod.GET,
@@ -133,12 +119,9 @@ public interface IPluginClient {
     /**
      * Get all the {@link PluginConfiguration} for a specific plugin type.</br>
      * If any specific plugin type is defined, get all the {@link PluginConfiguration}.
-     *
-     * @param pPluginType
-     *            an interface name, that implements {@link PluginInterface}.<br>
-     *            This parameter is optional.
+     * @param pPluginType an interface name, that implements {@link PluginInterface}.<br>
+     * This parameter is optional.
      * @return a {@link List} of {@link PluginConfiguration}
-     *
      */
     @RequestMapping(value = PLUGINS_CONFIGS, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
@@ -147,12 +130,8 @@ public interface IPluginClient {
 
     /**
      * Create a new {@link PluginConfiguration}.
-     *
-     * @param pPluginConfiguration
-     *            a {@link PluginConfiguration}
-     *
+     * @param pPluginConfiguration a {@link PluginConfiguration}
      * @return the {@link PluginConfiguration] created
-     *
      */
     @RequestMapping(value = PLUGINS_PLUGINID_CONFIGS, method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -162,13 +141,8 @@ public interface IPluginClient {
 
     /**
      * Get the {@link PluginConfiguration} of a specified plugin.
-     *
-     * @param pPluginId
-     *            a plugin identifier
-     *
-     * @param pConfigId
-     *            a plugin configuration identifier
-     *
+     * @param pPluginId a plugin identifier
+     * @param pConfigId a plugin configuration identifier
      * @return the {@link PluginConfiguration} of the plugin
      */
     @RequestMapping(value = PLUGINS_PLUGINID_CONFIGID, method = RequestMethod.GET,
@@ -179,10 +153,7 @@ public interface IPluginClient {
 
     /**
      * Get the {@link PluginConfiguration} of a specified plugin.
-     *
-     * @param pConfigId
-     *            a plugin configuration identifier
-     *
+     * @param pConfigId a plugin configuration identifier
      * @return the {@link PluginConfiguration} of the plugin
      */
     @RequestMapping(value = PLUGINS_CONFIGID, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -192,18 +163,10 @@ public interface IPluginClient {
 
     /**
      * Update a {@link PluginConfiguration} of a specified plugin.
-     *
-     * @param pPluginId
-     *            a plugin identifier
-     *
-     * @param pConfigId
-     *            a plugin configuration identifier
-     *
-     * @param pPluginConfiguration
-     *            a {@link PluginConfiguration}
-     *
+     * @param pPluginId a plugin identifier
+     * @param pConfigId a plugin configuration identifier
+     * @param pPluginConfiguration a {@link PluginConfiguration}
      * @return the {@link PluginConfiguration} of the plugin.
-     *
      */
     @RequestMapping(value = PLUGINS_PLUGINID_CONFIGID, method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -214,15 +177,9 @@ public interface IPluginClient {
 
     /**
      * Delete a {@link PluginConfiguration}.
-     *
-     * @param pPluginId
-     *            a plugin identifier
-     *
-     * @param pConfigId
-     *            a plugin configuration identifier
-     *
+     * @param pPluginId a plugin identifier
+     * @param pConfigId a plugin configuration identifier
      * @return void
-     *
      */
     @RequestMapping(value = PLUGINS_PLUGINID_CONFIGID, method = RequestMethod.DELETE,
             produces = MediaType.APPLICATION_JSON_VALUE)

@@ -29,13 +29,10 @@ import javax.persistence.Table;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 
 /**
- *
  * Class Project
  *
  * JPA Project Entity. For instance database.
- *
  * @author CS
- * @since 1.0-SNAPSHOT
  */
 @Entity
 @Table(name = "t_project")
@@ -58,46 +55,32 @@ public class TestProject {
     private String name;
 
     /**
-     *
      * Getter
-     *
      * @return Project identifier
-     * @since 1.0-SNAPSHOT
      */
     public Long getId() {
         return id;
     }
 
     /**
-     *
      * Setter
-     *
-     * @param pId
-     *            Project identifier
-     * @since 1.0-SNAPSHOT
+     * @param pId Project identifier
      */
     public void setId(Long pId) {
         id = pId;
     }
 
     /**
-     *
      * Getter
-     *
      * @return Project name
-     * @since 1.0-SNAPSHOT
      */
     public String getName() {
         return name;
     }
 
     /**
-     *
      * Setter
-     *
-     * @param pName
-     *            Project name
-     * @since 1.0-SNAPSHOT
+     * @param pName Project name
      */
     public void setName(String pName) {
         name = pName;

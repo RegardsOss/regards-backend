@@ -27,13 +27,10 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 /**
- *
  * Class Company
  *
  * JPA Company Entity. For projects multitenancy databases.
- *
  * @author CS
- * @since 1.0-SNAPSHOT
  */
 @Entity
 @Table(name = "t_company")
@@ -55,22 +52,15 @@ public class Company {
     private String name;
 
     /**
-     *
      * Constructor
-     *
-     * @since 1.0-SNAPSHOT
      */
     public Company() {
 
     }
 
     /**
-     *
      * Constructor
-     *
-     * @param pName
-     *            Company name
-     * @since 1.0-SNAPSHOT
+     * @param pName Company name
      */
     public Company(String pName) {
         super();
@@ -78,9 +68,7 @@ public class Company {
     }
 
     /**
-     *
      * Getter
-     *
      * @return Company identifier
      * @since 1.0-SNPASHOT
      */
@@ -89,21 +77,15 @@ public class Company {
     }
 
     /**
-     *
      * Setter
-     *
-     * @param pId
-     *            Company identifier
-     * @since 1.0-SNAPSHOT
+     * @param pId Company identifier
      */
     public void setId(Long pId) {
         id = pId;
     }
 
     /**
-     *
      * Getter
-     *
      * @return Company name
      * @since 1.0-SNPASHOT
      */
@@ -112,12 +94,8 @@ public class Company {
     }
 
     /**
-     *
      * Setter
-     *
-     * @param pName
-     *            Company name
-     * @since 1.0-SNAPSHOT
+     * @param pName Company name
      */
     public void setName(String pName) {
         name = pName;

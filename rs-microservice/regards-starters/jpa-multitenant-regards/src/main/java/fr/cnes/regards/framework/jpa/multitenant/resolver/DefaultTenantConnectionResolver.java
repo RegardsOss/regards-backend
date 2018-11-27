@@ -30,14 +30,11 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
 
 /**
- *
  * Class DefaultTenantConnectionResolver
  *
  * Default resolver. Return empty list
- *
  * @author Sébastien Binda
  * @author Marc Sordi
- * @since 1.0-SNAPSHOT
  */
 public class DefaultTenantConnectionResolver implements ITenantConnectionResolver {
 

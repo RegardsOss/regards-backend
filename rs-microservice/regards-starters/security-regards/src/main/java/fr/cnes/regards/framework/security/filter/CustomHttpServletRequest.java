@@ -25,9 +25,7 @@ import java.util.Map;
 
 /**
  * This class allows to inject public authentication header dynamically.
- *
  * @author Marc Sordi
- *
  */
 public class CustomHttpServletRequest extends HttpServletRequestWrapper {
 

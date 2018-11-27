@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.framework.modules.jobs.rest;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import org.hamcrest.Matchers;
@@ -33,7 +31,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -45,9 +42,7 @@ import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- *
  * @author Christophe Mertz
- *
  */
 @EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
 @ContextConfiguration(classes = { JobControllerTestConfiguration.class })
@@ -69,20 +64,22 @@ public class JobControllerIT extends AbstractRegardsIT {
 
     @Before
     public void init() {
+        manageSecurity(getDefaultTenant(), JobController.JOBS, RequestMethod.GET, getDefaultUserEmail(),
+                       getDefaultRole());
+        manageSecurity(getDefaultTenant(), JobController.JOBS + "/{jobId}", RequestMethod.GET, getDefaultUserEmail(),
+                       getDefaultRole());
+        manageSecurity(getDefaultTenant(), JobController.JOBS + "/{jobId}/results", RequestMethod.GET,
+                       getDefaultUserEmail(), getDefaultRole());
 
-        manageDefaultSecurity(JobController.JOBS, RequestMethod.GET);
-        manageDefaultSecurity(JobController.JOBS + "/{jobId}", RequestMethod.GET);
-        manageDefaultSecurity(JobController.JOBS + "/{jobId}/results", RequestMethod.GET);
-
-        token = generateToken(DEFAULT_USER_EMAIL, DEFAULT_ROLE);
+        token = generateToken(getDefaultUserEmail(), DEFAULT_ROLE);
     }
 
     @Test
     public void getAllJobs() {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(status().isOk());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_STAR,
-                                                        Matchers.hasSize(jobInfoService.retrieveJobs().size())));
+        requestBuilderCustomizer.addExpectation(
+                MockMvcResultMatchers.jsonPath(JSON_PATH_STAR, Matchers.hasSize(jobInfoService.retrieveJobs().size())));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.*.links", Matchers.notNullValue()));
 
         performGet(JobController.JOBS, token, requestBuilderCustomizer, "unable to load all jobs");
@@ -91,53 +88,36 @@ public class JobControllerIT extends AbstractRegardsIT {
     @Test
     public void getOneJob() {
         final JobInfo aJob = jobInfoService.retrieveJobs().get(0);
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(status().isOk());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".id",
-                                                        Matchers.hasToString(aJob.getId().toString())));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".owner",
-                                                        Matchers.hasToString(aJob.getOwner())));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".priority",
-                                                        Matchers.hasToString(String.format("%s", aJob.getPriority()))));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".className",
-                                                        Matchers.hasToString(aJob.getClassName())));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".status.status",
-                                                        Matchers.hasToString(aJob.getStatus().getStatus().name())));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_LINKS, Matchers.notNullValue()));
+        RequestBuilderCustomizer customizer = customizer().expect(status().isOk())
+                .expect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .expect(MockMvcResultMatchers
+                                .jsonPath(JSON_PATH_CONTENT + ".id", Matchers.hasToString(aJob.getId().toString())))
+                .expect(MockMvcResultMatchers
+                                .jsonPath(JSON_PATH_CONTENT + ".owner", Matchers.hasToString(aJob.getOwner())))
+                .expect(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".priority",
+                                                       Matchers.hasToString(String.format("%s", aJob.getPriority()))))
+                .expect(MockMvcResultMatchers
+                                .jsonPath(JSON_PATH_CONTENT + ".className", Matchers.hasToString(aJob.getClassName())))
+                .expect(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".status.status",
+                                                       Matchers.hasToString(aJob.getStatus().getStatus().name())))
+                .expect(MockMvcResultMatchers.jsonPath(JSON_PATH_LINKS, Matchers.notNullValue()));
 
-        performGet(JobController.JOBS + "/{jobId}", token, requestBuilderCustomizer,
+        performGet(JobController.JOBS + "/{jobId}", token, customizer,
                    String.format("unable to load the job <%s>", aJob.getId()), aJob.getId());
     }
 
-//    @Test
-//    public void getJobResults() {
-//        final List<ResultMatcher> expectations = new ArrayList<>();
-//        final JobInfo aJob = jobInfoService.retrieveJobs().get(0);
-//        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-//        requestBuilderCustomizer.addExpectation(status().isOk());
-//        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT, hasSize(aJob.getResults().size())));
-//        performGet(JobController.JOBS + "/{jobId}/results", token, requestBuilderCustomizer,
-//                   String.format("unable to get job's result <%s>", aJob.getId()), aJob.getId());
-//    }
-
     @Test
     public void getJobsState() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(status().isOk());
-
-        performDefaultGet(JobController.JOBS + "/state/{state}", expectations,
+        performDefaultGet(JobController.JOBS + "/state/{state}", customizer().expect(status().isOk()),
                           String.format("unable to get jobs with status  <%s>", JobStatus.RUNNING), JobStatus.RUNNING);
     }
 
     @Test
     public void deleteAJob() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
         final UUID jobId = jobInfoService.retrieveJobs().get(0).getId();
-        expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$.links", Matchers.notNullValue()));
 
-        performDefaultDelete(JobController.JOBS + "/{jobId}", expectations,
+        performDefaultDelete(JobController.JOBS + "/{jobId}", customizer().expect(status().isOk())
+                                     .expect(MockMvcResultMatchers.jsonPath("$.links", Matchers.notNullValue())),
                              String.format("unable to stop the job <%s>", jobId), jobId);
     }
 

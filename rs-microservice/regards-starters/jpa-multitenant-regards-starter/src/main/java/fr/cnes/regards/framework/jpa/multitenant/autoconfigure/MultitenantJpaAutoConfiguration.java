@@ -69,12 +69,9 @@ import fr.cnes.regards.framework.jpa.utils.IDatasourceSchemaHelper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
- *
  * Configuration class to define hibernate/jpa multitenancy databases strategy
- *
  * @author Sébastien Binda
  * @author Sylvain Vissiere-Guerinet
- * @since 1.0-SNAPSHOT
  */
 @Configuration
 @EnableJpaRepositories(
@@ -129,12 +126,7 @@ public class MultitenantJpaAutoConfiguration {
     private EntityManagerFactoryBuilder builder;
 
     /**
-     *
      * Constructor. Check for classpath errors.
-     *
-     * @throws MultiDataBasesException
-     *
-     * @since 1.0-SNAPSHOT
      */
     public MultitenantJpaAutoConfiguration() throws MultiDataBasesException {
         DaoUtils.checkClassPath(DaoUtils.ROOT_PACKAGE);
@@ -142,7 +134,6 @@ public class MultitenantJpaAutoConfiguration {
 
     /**
      * This bean is not used at the moment but prevent flyway auto configuration in a single point
-     * @return
      */
     @Bean
     @ConditionalOnMissingBean
@@ -151,11 +142,8 @@ public class MultitenantJpaAutoConfiguration {
     }
 
     /**
-     *
      * Create the tenant resolver. Select the tenant when a connection is needed.
-     *
      * @return {@link CurrentTenantIdentifierResolverImpl}
-     * @since 1.0-SNAPSHOT
      */
     @Bean
     public CurrentTenantIdentifierResolver currentTenantIdentifierResolver(
@@ -165,11 +153,8 @@ public class MultitenantJpaAutoConfiguration {
     }
 
     /**
-     *
      * Create the connection provider. Used to select datasource for a given tenant
-     *
      * @return {@link DataSourceBasedMultiTenantConnectionProviderImpl}
-     * @since 1.0-SNAPSHOT
      */
     @Bean
     public AbstractDataSourceBasedMultiTenantConnectionProviderImpl connectionProvider() {
@@ -178,9 +163,7 @@ public class MultitenantJpaAutoConfiguration {
 
     /**
      * Create Transaction manager for multitenancy projects datasources
-     *
      * @return {@link PlatformTransactionManager}
-     * @throws JpaMultitenantException
      */
     @Bean(name = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
     public PlatformTransactionManager multitenantsJpaTransactionManager() throws JpaMultitenantException {
@@ -191,16 +174,14 @@ public class MultitenantJpaAutoConfiguration {
 
     /**
      * Create EntityManagerFactory for multitenancy datasources
-     *
      * @return {@link LocalContainerEntityManagerFactoryBean}
-     * @throws JpaMultitenantException
      */
     @Bean(name = "multitenantsEntityManagerFactory")
     public LocalContainerEntityManagerFactoryBean multitenantsEntityManagerFactory() throws JpaMultitenantException {
         // Use the first dataSource configuration to init the entityManagerFactory
         if (dataSources.isEmpty()) {
             throw new ApplicationContextException("No datasource defined. JPA is not able to start."
-                    + " You should define a datasource in the application.properties of the current microservice");
+                                                          + " You should define a datasource in the application.properties of the current microservice");
         }
         final DataSource defaultDataSource = dataSources.values().iterator().next();
 
@@ -221,11 +202,8 @@ public class MultitenantJpaAutoConfiguration {
     }
 
     /**
-     *
      * Create a default TenantConnection resolver if none defined.
-     *
      * @return ITenantConnectionResolver
-     * @since 1.0-SNAPSHOT
      */
     @Bean
     @ConditionalOnMissingBean
@@ -236,9 +214,6 @@ public class MultitenantJpaAutoConfiguration {
     /**
      * this bean allow us to set <b>our</b> instance of Gson, customized for the serialization of any data as jsonb into
      * the database
-     *
-     * @param pGson
-     * @return
      */
     @Bean
     public Void setGsonIntoGsonUtil(Gson pGson) {

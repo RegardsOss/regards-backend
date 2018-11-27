@@ -1,9 +1,11 @@
 package fr.cnes.regards.framework.module.rest.utils;
 
 import com.google.common.net.HttpHeaders;
+
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -21,7 +23,6 @@ public class HttpUtilsTest {
         Assert.assertEquals(443, uri.getPort());
         Assert.assertEquals("https", uri.getScheme());
     }
-
 
     @Test
     public void testRetrievePublicURIWithOneForward() throws MalformedURLException, URISyntaxException {

@@ -2,7 +2,7 @@ package fr.cnes.regards.framework.modules.jobs.client;
 
 import java.util.List;
 
-import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;

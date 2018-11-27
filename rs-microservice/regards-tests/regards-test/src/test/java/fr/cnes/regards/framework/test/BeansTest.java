@@ -1,4 +1,5 @@
 package fr.cnes.regards.framework.test;
+
 import org.junit.Assert;
 import org.junit.Test;
 

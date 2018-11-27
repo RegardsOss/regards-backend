@@ -36,13 +36,10 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
- *
  * Class JpaUtilsTest
  *
  * Test JPA common utils
- *
  * @author CS
- * @since 1.0-SNAPSHOT
  */
 public class JpaUtilsTest {
 
@@ -52,14 +49,12 @@ public class JpaUtilsTest {
     private final static Logger LOG = LoggerFactory.getLogger(JpaUtilsTest.class);
 
     /**
-     *
      * Check for classapth validity when there is instance database entities and multitenant database entities in the
      * same classpath
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
-    @Purpose("Check for classpath validity when there is instance database entities and multitenant database entities in the same classpath with a Repository class")
+    @Purpose(
+            "Check for classpath validity when there is instance database entities and multitenant database entities in the same classpath with a Repository class")
     @Test
     public void test() {
 
@@ -94,14 +89,9 @@ public class JpaUtilsTest {
     }
 
     /**
-     *
      * Check for embedded HSQLDB database creation
-     *
-     * @throws IOException
-     *             Connection error.
-     * @throws SQLException
-     *             Creation error.
-     * @since 1.0-SNAPSHOT
+     * @throws IOException  Connection error.
+     * @throws SQLException Creation error.
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Check for embedded HSQLDB database creation")

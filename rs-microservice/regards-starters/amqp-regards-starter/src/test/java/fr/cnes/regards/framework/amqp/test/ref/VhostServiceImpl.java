@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Gary Russell
- *
  */
 public class VhostServiceImpl implements Service {
 

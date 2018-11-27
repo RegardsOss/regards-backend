@@ -95,8 +95,8 @@ public class PluginController implements IResourceController<PluginConfiguration
     /**
      * REST mapping resource : /plugins/{pluginId}/config/{configId}
      */
-    public static final String PLUGINS_PLUGINID_CONFIGID = PLUGINS_PLUGINID_CONFIGS + "/{" + REQUEST_PARAM_CONFIG_ID
-            + "}";
+    public static final String PLUGINS_PLUGINID_CONFIGID =
+            PLUGINS_PLUGINID_CONFIGS + "/{" + REQUEST_PARAM_CONFIG_ID + "}";
 
     /**
      * REST mapping resource : /plugins/configs/{configId}
@@ -215,7 +215,7 @@ public class PluginController implements IResourceController<PluginConfiguration
      * Get all the {@link PluginConfiguration} for a specific plugin type.</br>
      * If any specific plugin type is defined, get all the {@link PluginConfiguration}.
      * @param pluginType an interface name, that implements {@link PluginInterface}.<br>
-     *            This parameter is optional.
+     * This parameter is optional.
      * @return a {@link List} of {@link PluginConfiguration}
      * @throws EntityNotFoundException the specific plugin type name is unknown
      */
@@ -255,7 +255,7 @@ public class PluginController implements IResourceController<PluginConfiguration
             @Valid @RequestBody PluginConfiguration pluginConf) throws ModuleException {
         try {
             return new ResponseEntity<>(toResource(pluginService.savePluginConfiguration(pluginConf)),
-                    HttpStatus.CREATED);
+                                        HttpStatus.CREATED);
         } catch (final ModuleException e) {
             LOGGER.error("Cannot create the plugin configuration : <" + pluginConf.getPluginId() + ">", e);
             throw e;
@@ -308,7 +308,7 @@ public class PluginController implements IResourceController<PluginConfiguration
 
         if (!pluginId.equals(pluginConf.getPluginId())) {
             LOGGER.error("The plugin configuration is incoherent with the requests param : plugin id= <" + pluginId
-                    + ">- config id= <" + configId + ">");
+                                 + ">- config id= <" + configId + ">");
             throw new EntityNotFoundException(pluginId, PluginConfiguration.class);
         }
 

@@ -58,9 +58,6 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
 
     /**
      * This method is run before all tests
-     * @throws InvalidAlgorithmParameterException
-     * @throws InvalidKeyException
-     * @throws IOException
      */
     @Before
     public void init() throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
@@ -73,7 +70,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
         blowfishEncryptionService
                 .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "12345678"));
         pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, Mockito.mock(IPublisher.class),
-                runtimeTenantResolver, blowfishEncryptionService);
+                                                runtimeTenantResolver, blowfishEncryptionService);
         PluginUtils.setup();
     }
 
@@ -87,7 +84,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParametersToUpdate();
         aPluginConfiguration.setId(AN_ID);
         try {
-            Mockito.when(pluginConfRepositoryMocked.findById(aPluginConfiguration.getId()))
+            Mockito.when(pluginConfRepositoryMocked.findCompleteById(aPluginConfiguration.getId()))
                     .thenReturn(aPluginConfiguration);
             Mockito.when(pluginConfRepositoryMocked.save(aPluginConfiguration)).thenReturn(aPluginConfiguration);
 
@@ -135,7 +132,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParametersToUpdate();
         aPluginConfiguration.setId(AN_ID);
         try {
-            Mockito.when(pluginConfRepositoryMocked.findById(aPluginConfiguration.getId()))
+            Mockito.when(pluginConfRepositoryMocked.findCompleteById(aPluginConfiguration.getId()))
                     .thenReturn(aPluginConfiguration);
             Mockito.when(pluginConfRepositoryMocked.save(aPluginConfiguration)).thenReturn(aPluginConfiguration);
 
@@ -152,9 +149,9 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
                 if (!p.isDynamic()) {
                     parameters.remove(p);
                     // Update
-                    PluginParametersFactory
-                            .updateParameter(p, "one", true,
-                                             Arrays.asList("one", "two", "three", "four", "five", "six"));
+                    PluginParametersFactory.updateParameter(p, "one", true,
+                                                            Arrays.asList("one", "two", "three", "four", "five",
+                                                                          "six"));
                     parameters.add(p);
                     break;
                 }

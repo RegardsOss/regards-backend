@@ -32,9 +32,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  * Default configuration test
- *
  * @author Marc Sordi
- *
  */
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)

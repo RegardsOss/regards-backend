@@ -34,7 +34,6 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
 /**
  * @author msordi
- *
  */
 public class MethodSecurityAutoConfigurationTest {
 
@@ -51,10 +50,7 @@ public class MethodSecurityAutoConfigurationTest {
     }
 
     /**
-     *
      * Check for security autoconfigure
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Test
     public void testMethodConfiguration() {

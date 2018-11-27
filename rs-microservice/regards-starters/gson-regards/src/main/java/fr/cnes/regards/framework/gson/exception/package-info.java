@@ -17,10 +17,7 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- *
  * GSON util exceptions
- * 
  * @author Marc Sordi
- *
  */
 package fr.cnes.regards.framework.gson.exception;

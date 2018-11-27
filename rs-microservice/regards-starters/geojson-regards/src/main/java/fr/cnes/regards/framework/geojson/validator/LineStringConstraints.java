@@ -30,9 +30,7 @@ import fr.cnes.regards.framework.geojson.geometry.LineString;
 
 /**
  * {@link LineString} validation annotation
- *
  * @author Marc Sordi
- *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE })

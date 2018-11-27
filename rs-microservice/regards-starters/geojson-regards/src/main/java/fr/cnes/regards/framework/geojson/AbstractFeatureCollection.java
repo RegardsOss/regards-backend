@@ -28,11 +28,8 @@ import java.util.List;
  * GeoJson base feature collection representation
  *
  * This is the base class for implementing GeoJson feature collection. Extend it to create your own.
- *
  * @param <F> represents feature type
- *
  * @author Marc Sordi
- *
  */
 public abstract class AbstractFeatureCollection<F extends AbstractFeature<?, ?>> extends AbstractGeoJsonObject {
 
@@ -74,8 +71,7 @@ public abstract class AbstractFeatureCollection<F extends AbstractFeature<?, ?>>
         if (getClass() != obj.getClass()) {
             return false;
         }
-        @SuppressWarnings("rawtypes")
-        AbstractFeatureCollection other = (AbstractFeatureCollection) obj;
+        @SuppressWarnings("rawtypes") AbstractFeatureCollection other = (AbstractFeatureCollection) obj;
         return features.equals(other.features);
     }
 }

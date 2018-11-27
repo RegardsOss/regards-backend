@@ -24,9 +24,7 @@ import fr.cnes.regards.framework.geojson.GeoJsonType;
 /**
  * Not in RFC 7946 -August 2016<br/>
  * GeoJson unlocated feature representation
- *
  * @author Marc Sordi
- *
  */
 public class Unlocated extends AbstractGeoJsonObject implements IGeometry {
 

@@ -33,9 +33,7 @@ import com.google.gson.stream.JsonWriter;
 
 /**
  * Automatic (de)serializer for configuration POJO. Only non generic POJOs are accepted!
- *
  * @author Marc Sordi
- *
  */
 @SuppressWarnings("rawtypes")
 public class ModuleConfigurationItemAdapter extends TypeAdapter<ModuleConfigurationItem> {

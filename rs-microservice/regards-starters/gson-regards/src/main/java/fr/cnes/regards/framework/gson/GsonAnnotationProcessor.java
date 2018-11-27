@@ -37,9 +37,7 @@ import fr.cnes.regards.framework.gson.utils.GSONUtils;
 
 /**
  * Dynamic custom Gson annotation processor
- *
  * @author Marc Sordi
- *
  */
 public final class GsonAnnotationProcessor {
 
@@ -52,7 +50,6 @@ public final class GsonAnnotationProcessor {
      * Process all object annotated with {@link Gsonable} to dynamically create
      * {@link PolymorphicTypeAdapterFactory}.<br/>
      * Process all {@link GsonTypeAdapterFactory} and {@link GsonTypeAdapter} to register this factories.
-     *
      * @param pBuilder {@link GsonBuilder}
      * @param pPrefix base package to scan
      */
@@ -64,11 +61,8 @@ public final class GsonAnnotationProcessor {
 
     /**
      * Process all object annotated with {@link Gsonable} to dynamically create {@link PolymorphicTypeAdapterFactory}.
-     *
-     * @param pBuilder
-     *            {@link GsonBuilder}
-     * @param pPrefix
-     *            base package to scan
+     * @param pBuilder {@link GsonBuilder}
+     * @param pPrefix base package to scan
      */
     public static void processGsonable(GsonBuilder pBuilder, String pPrefix) {
         GSONUtils.assertNotNull(pBuilder, "GSON builder is required");
@@ -115,13 +109,9 @@ public final class GsonAnnotationProcessor {
 
     /**
      * Register all sub types of the base type
-     *
-     * @param pReflections
-     *            scanner
-     * @param pTypeAdapterFactory
-     *            current factory
-     * @param pBaseType
-     *            base hierarchy type
+     * @param pReflections scanner
+     * @param pTypeAdapterFactory current factory
+     * @param pBaseType base hierarchy type
      * @return true if sub types are registered else false
      */
     private static boolean registerSubtypes(Reflections pReflections,
@@ -156,11 +146,8 @@ public final class GsonAnnotationProcessor {
     /**
      * Process all object annotated with {@link GsonTypeAdapterFactory} to dynamically register
      * {@link TypeAdapterFactory}.
-     *
-     * @param pBuilder
-     *            {@link GsonBuilder}
-     * @param pPrefix
-     *            base package to scan
+     * @param pBuilder {@link GsonBuilder}
+     * @param pPrefix base package to scan
      */
     public static void processGsonAdapterFactory(GsonBuilder pBuilder, String pPrefix) {
 
@@ -197,11 +184,8 @@ public final class GsonAnnotationProcessor {
     /**
      * Process all object annotated with {@link GsonTypeAdapterFactory} to dynamically register
      * {@link TypeAdapterFactory}.
-     *
-     * @param pBuilder
-     *            {@link GsonBuilder}
-     * @param pPrefix
-     *            base package to scan
+     * @param pBuilder {@link GsonBuilder}
+     * @param pPrefix base package to scan
      */
     public static void processGsonAdapter(GsonBuilder pBuilder, String pPrefix) {
 
@@ -213,8 +197,8 @@ public final class GsonAnnotationProcessor {
             for (Class<?> factoryType : factoryTypes) {
 
                 if (!TypeAdapter.class.isAssignableFrom(factoryType)) {
-                    final String errorMessage = String.format("Factory %s must be an implementation of %s", factoryType,
-                                                              TypeAdapter.class);
+                    final String errorMessage = String
+                            .format("Factory %s must be an implementation of %s", factoryType, TypeAdapter.class);
                     LOGGER.error(errorMessage);
                     throw new IllegalArgumentException(errorMessage);
                 }

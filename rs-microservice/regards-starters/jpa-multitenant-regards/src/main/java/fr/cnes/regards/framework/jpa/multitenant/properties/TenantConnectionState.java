@@ -19,10 +19,8 @@
 package fr.cnes.regards.framework.jpa.multitenant.properties;
 
 /**
- *
  * {@link TenantConnection} state
  * @author Marc Sordi
- *
  */
 public enum TenantConnectionState {
 

@@ -30,9 +30,7 @@ import fr.cnes.regards.framework.gson.annotation.Gsonable;
 
 /**
  * Test with {@link Gsonable} annotation with default behaviour and {@link GsonAnnotationProcessor} processing.
- *
  * @author Marc Sordi
- *
  */
 public class AdapterTest {
 

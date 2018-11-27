@@ -133,7 +133,7 @@ public class PluginDaoUtility extends AbstractDaoTest {
      */
     public static PluginConfiguration getPlgConfWithParameters() {
         return new PluginConfiguration(getPluginMetaData(), "a configuration from PluginDaoUtility",
-                INTERFACEPARAMETERS, 0);
+                                       INTERFACEPARAMETERS, 0);
     }
 
     /**
@@ -142,7 +142,7 @@ public class PluginDaoUtility extends AbstractDaoTest {
      */
     public static PluginConfiguration getPlgConfWithDynamicParameter() {
         return new PluginConfiguration(getPluginMetaData(), "second configuration from PluginDaoUtility",
-                LIST_PARAMETERS, 0);
+                                       LIST_PARAMETERS, 0);
     }
 
     protected void cleanDb() {
@@ -163,8 +163,9 @@ public class PluginDaoUtility extends AbstractDaoTest {
 
     protected void displayParams() {
         LOGGER.info("=====> parameter");
-        paramRepository.findAll().forEach(p -> LOGGER.info("name=" + p.getName() + "-value=" + p.getValue()
-                + "-nb dyns=" + p.getDynamicsValuesAsString().size()));
+        paramRepository.findAll().forEach(p -> LOGGER
+                .info("name=" + p.getName() + "-value=" + p.getValue() + "-nb dyns=" + p.getDynamicsValuesAsString()
+                        .size()));
         for (PluginParameter pP : paramRepository.findAll()) {
             if ((pP.getDynamicsValues() != null) && !pP.getDynamicsValues().isEmpty()) {
                 pP.getDynamicsValues().forEach(p -> LOGGER.info("-value=" + p.getValue()));

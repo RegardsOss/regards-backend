@@ -35,12 +35,9 @@ import fr.cnes.regards.framework.geojson.geometry.Unlocated;
  * GeoJson base feature representation<br/>
  *
  * This is the base class for implementing GeoJson feature. Extend it to create your own.
- *
  * @param <P> wrapper for properties
  * @param <ID> is an optional Feature identifier of type {@link String} or {@link Number}
- *
  * @author Marc Sordi
- *
  */
 public abstract class AbstractFeature<P, ID> extends AbstractGeoJsonObject {
 
@@ -128,8 +125,7 @@ public abstract class AbstractFeature<P, ID> extends AbstractGeoJsonObject {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        @SuppressWarnings("rawtypes")
-        AbstractFeature other = (AbstractFeature) obj;
+        @SuppressWarnings("rawtypes") AbstractFeature other = (AbstractFeature) obj;
         if (id == null) {
             if (other.id != null) {
                 return false;

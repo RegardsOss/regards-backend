@@ -36,7 +36,6 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @RestControllerAdvice(annotations = RestController.class)
 @Order(Ordered.LOWEST_PRECEDENCE)
@@ -55,9 +54,7 @@ public class MaintenanceExceptionManager {
 
     /**
      * Exception handler catching {@link MaintenanceException} that are not already handled
-     *
-     * @param pException
-     *            exception thrown
+     * @param pException exception thrown
      * @return response
      */
     @ExceptionHandler(MaintenanceException.class)
@@ -70,9 +67,7 @@ public class MaintenanceExceptionManager {
 
     /**
      * Exception handler catching any exception that are not already handled
-     *
-     * @param throwable
-     *            exception thrown
+     * @param throwable exception thrown
      * @return response
      */
     @ExceptionHandler(Throwable.class)

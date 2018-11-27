@@ -29,9 +29,7 @@ import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 
 /**
- *
  * This class authorizes access to all endpoints for instance administrator.
- *
  * @author Sébastien Binda
  * @author Marc Sordi
  */
@@ -47,8 +45,8 @@ public class InstanceAdminAccessVoter implements IInstanceAdminAccessVoter {
         final JWTAuthentication authentication = (JWTAuthentication) pAuthentication;
 
         // If authenticated user is the instance admin user allow all.
-        @SuppressWarnings("unchecked")
-        final List<RoleAuthority> roles = (List<RoleAuthority>) authentication.getAuthorities();
+        @SuppressWarnings("unchecked") final List<RoleAuthority> roles = (List<RoleAuthority>) authentication
+                .getAuthorities();
         if (RoleAuthority.isInstanceAdminRole(roles.get(0).getAuthority())) {
             access = ACCESS_GRANTED;
         }

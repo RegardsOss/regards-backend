@@ -25,9 +25,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 
 /**
  * Retrieve user and role according to security context
- *
  * @author Marc Sordi
- *
  */
 public class SecureRuntimeAuthenticationResolver implements IAuthenticationResolver {
 

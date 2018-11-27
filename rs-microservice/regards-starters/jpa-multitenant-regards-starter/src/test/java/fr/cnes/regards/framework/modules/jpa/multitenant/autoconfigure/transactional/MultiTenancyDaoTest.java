@@ -40,13 +40,10 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
- *
  * Class MultiTenancyDaoTest
  *
  * Unit tests for multitenancy DAO
- *
  * @author CS
- * @since 1.0-SNAPSHOT
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { MultiTenancyDaoTestConfiguration.class })
@@ -88,10 +85,9 @@ public class MultiTenancyDaoTest {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
-     *
      * Unit test to check that the spring JPA multitenancy context is loaded successfully
      *
-     * @since 1.0-SNAPSHOTS
+     * S
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Unit test to check that the spring JPA multitenancy context is loaded successfully")
@@ -101,13 +97,7 @@ public class MultiTenancyDaoTest {
     }
 
     /**
-     *
      * Unit test to check JPA foreign keys management
-     *
-     * @throws MissingClaimException
-     * @throws InvalidJwtException
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Unit test to check JPA foreign keys management")
@@ -122,13 +112,7 @@ public class MultiTenancyDaoTest {
     }
 
     /**
-     *
      * Unit test to check JPA uses the good tenant through the tenant resolver
-     *
-     * @throws MissingClaimException
-     * @throws InvalidJwtException
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Unit test to check that JPA uses the good tenant through the tenant resolver")
@@ -156,8 +140,9 @@ public class MultiTenancyDaoTest {
         // Check results
         Iterable<User> list = userRepository.findAll();
         list.forEach(user -> results.add(user));
-        Assert.assertTrue("Error, there must be 2 elements in the database associated to the tenant test1 not "
-                + results.size(), results.size() == 2);
+        Assert.assertTrue(
+                "Error, there must be 2 elements in the database associated to the tenant test1 not " + results.size(),
+                results.size() == 2);
 
         // Set tenant to project 2
         runtimeTenantResolver.forceTenant(TENANT_TEST_2);
@@ -166,8 +151,9 @@ public class MultiTenancyDaoTest {
         list = userRepository.findAll();
         results.clear();
         list.forEach(user -> results.add(user));
-        Assert.assertTrue("Error, there must be no element in the database associated to the tenant test2 ("
-                + results.size() + ")", results.size() == 0);
+        Assert.assertTrue(
+                "Error, there must be no element in the database associated to the tenant test2 (" + results.size()
+                        + ")", results.size() == 0);
 
         newUser = userRepository.save(newUser);
         LOG.info("id=" + newUser.getId());
@@ -176,8 +162,9 @@ public class MultiTenancyDaoTest {
         list = userRepository.findAll();
         results.clear();
         list.forEach(user -> results.add(user));
-        Assert.assertTrue("Error, there must be 1 elements in the database associated to the tenant test2 + not "
-                + results.size(), results.size() == 1);
+        Assert.assertTrue(
+                "Error, there must be 1 elements in the database associated to the tenant test2 + not " + results
+                        .size(), results.size() == 1);
 
         // Set tenant to an non existing project
         runtimeTenantResolver.forceTenant(TENANT_INVALID);

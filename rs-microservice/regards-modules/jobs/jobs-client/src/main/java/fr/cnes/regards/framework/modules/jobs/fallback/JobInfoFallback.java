@@ -33,7 +33,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
  * Hystrix fallback for Feign {@link JobInfoClient}. This default implementation is executed when the circuit is open or
  * there is an error.<br>
  * To enable this fallback, set the fallback attribute to this class name in {@link JobInfoClient}.
- *
  */
 @Component
 public class JobInfoFallback implements JobInfoClient {

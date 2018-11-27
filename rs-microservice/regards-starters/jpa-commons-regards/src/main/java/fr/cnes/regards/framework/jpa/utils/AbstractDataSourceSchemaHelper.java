@@ -25,10 +25,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
  * Common helper features
  * @author Marc Sordi
- *
  */
 public abstract class AbstractDataSourceSchemaHelper implements IDatasourceSchemaHelper {
 

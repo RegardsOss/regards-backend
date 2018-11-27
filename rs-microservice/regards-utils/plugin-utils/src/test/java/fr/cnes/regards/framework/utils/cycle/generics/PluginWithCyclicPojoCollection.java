@@ -28,7 +28,6 @@ import fr.cnes.regards.framework.utils.plugins.generics.IPluginWithGenerics;
 
 /**
  * @author Marc Sordi
- *
  */
 @Plugin(author = "REGARDS Team", description = "Plugin with POJO collection parameter",
         id = "PluginWithCyclicPojoCollection", version = "1.0.0", contact = "regards@c-s.fr", licence = "GPLv3",

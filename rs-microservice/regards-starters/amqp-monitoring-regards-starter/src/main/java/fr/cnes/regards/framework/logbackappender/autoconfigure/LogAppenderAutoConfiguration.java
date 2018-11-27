@@ -41,13 +41,11 @@ import fr.cnes.regards.framework.logbackappender.domain.MonitoringLogEvent;
  * <li>a bean with name <code>regardsAmqpAppender</code> used in logback.xml to defined a {@link RegardsAmqpAppender}
  * <li>a bean of type {@link IMonitoringLogEvent} to subscribe to the {@link LogEvent} published by
  * {@link RegardsAmqpAppender}
- * 
  * @author Christophe Mertz
- *
  */
 @Configuration
 public class LogAppenderAutoConfiguration {
-    
+
     /**
      * Class logger
      */
@@ -55,11 +53,8 @@ public class LogAppenderAutoConfiguration {
 
     /**
      * This method regardsAmqpAppender has the same name as the appender defined in logback.xml
-     * 
-     * @param ctx
-     *            the {@link LoggerContext}
-     * @param publisher
-     *            the {@link Publisher} used to send log message
+     * @param ctx the {@link LoggerContext}
+     * @param publisher the {@link Publisher} used to send log message
      * @return a {@link RegardsAmqpAppender}
      */
     @Bean(initMethod = "start", destroyMethod = "stop")
@@ -83,11 +78,8 @@ public class LogAppenderAutoConfiguration {
 
     /**
      * This bean is used to subscribe to {@link LogEvent} from all known tenants.
-     * 
-     * @param subscriber
-     *            The {@link Subscriber}
-     * @param logEvenHandler
-     *            The bean of type {@link ILogEventHandler} used to handle the {@link LogEvent}
+     * @param subscriber The {@link Subscriber}
+     * @param logEvenHandler The bean of type {@link ILogEventHandler} used to handle the {@link LogEvent}
      * @return a bean of type {@link IMonitoringLogEvent}
      */
     @Bean

@@ -19,19 +19,15 @@
 package fr.cnes.regards.framework.module.rest.exception;
 
 /**
- *
  * Exception indicating a conflict occurred with an existing entity
- *
  * @author Marc Sordi
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @SuppressWarnings("serial")
 public class EntityAlreadyExistsException extends EntityException {
 
     /**
      * Constructor setting exception message
-     * @param message
      */
     public EntityAlreadyExistsException(String message) {
         super(message);

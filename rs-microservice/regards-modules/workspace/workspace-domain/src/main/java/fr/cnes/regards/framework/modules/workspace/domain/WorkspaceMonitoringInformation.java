@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.modules.workspace.domain;
 
 /**
  * POJO containing monitoring information on the workspace
- *
  * @author Sylvain Vissiere-Guerinet
  */
 public class WorkspaceMonitoringInformation {
@@ -62,14 +61,9 @@ public class WorkspaceMonitoringInformation {
 
     /**
      * Contructor setting the given attributes from the parameters
-     * @param storagePhysicalId
-     * @param totalSpace
-     * @param usedSpace
-     * @param freeSpace
-     * @param path
      */
-    public WorkspaceMonitoringInformation(String storagePhysicalId, Long totalSpace, Long usedSpace,
-            Long freeSpace, String path) {
+    public WorkspaceMonitoringInformation(String storagePhysicalId, Long totalSpace, Long usedSpace, Long freeSpace,
+            String path) {
         this.storagePhysicalId = storagePhysicalId;
         this.totalSpace = totalSpace + BYTES_UNIT;
         this.usedSpace = usedSpace + BYTES_UNIT;
@@ -87,7 +81,6 @@ public class WorkspaceMonitoringInformation {
 
     /**
      * Set the storage physical id
-     * @param storagePhysicalId
      */
     public void setStoragePhysicalId(String storagePhysicalId) {
         this.storagePhysicalId = storagePhysicalId;
@@ -102,7 +95,6 @@ public class WorkspaceMonitoringInformation {
 
     /**
      * Set the total space
-     * @param totalSpace
      */
     public void setTotalSpace(String totalSpace) {
         this.totalSpace = totalSpace;
@@ -117,7 +109,6 @@ public class WorkspaceMonitoringInformation {
 
     /**
      * Set the used space
-     * @param usedSpace
      */
     public void setUsedSpace(String usedSpace) {
         this.usedSpace = usedSpace;
@@ -132,7 +123,6 @@ public class WorkspaceMonitoringInformation {
 
     /**
      * Set the free space
-     * @param freeSpace
      */
     public void setFreeSpace(String freeSpace) {
         this.freeSpace = freeSpace;
@@ -147,7 +137,6 @@ public class WorkspaceMonitoringInformation {
 
     /**
      * Set the occupation ratio
-     * @param occupationRatio
      */
     public void setOccupationRatio(Double occupationRatio) {
         this.occupationRatio = occupationRatio;
@@ -162,7 +151,6 @@ public class WorkspaceMonitoringInformation {
 
     /**
      * Set the path
-     * @param path
      */
     public void setPath(String path) {
         this.path = path;

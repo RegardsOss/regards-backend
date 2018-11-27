@@ -24,9 +24,7 @@ import java.util.Set;
 
 /**
  * Test class to test complex class plugin parameter type.
- *
  * @author sbinda
- *
  */
 public class TestPojo {
 
@@ -108,33 +106,44 @@ public class TestPojo {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         TestPojo other = (TestPojo) obj;
         if (date == null) {
-            if (other.date != null)
+            if (other.date != null) {
                 return false;
-        } else if (!date.equals(other.date))
+            }
+        } else if (!date.equals(other.date)) {
             return false;
+        }
         if (intValues == null) {
-            if (other.intValues != null)
+            if (other.intValues != null) {
                 return false;
-        } else if (!intValues.equals(other.intValues))
+            }
+        } else if (!intValues.equals(other.intValues)) {
             return false;
+        }
         if (value == null) {
-            if (other.value != null)
+            if (other.value != null) {
                 return false;
-        } else if (!value.equals(other.value))
+            }
+        } else if (!value.equals(other.value)) {
             return false;
+        }
         if (values == null) {
-            if (other.values != null)
+            if (other.values != null) {
                 return false;
-        } else if (!values.equals(other.values))
+            }
+        } else if (!values.equals(other.values)) {
             return false;
+        }
         return true;
     }
 

@@ -48,6 +48,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 @DirtiesContext
 @Ignore
 public class MultiJobServiceTest {
+
     @Autowired
     private IJobInfoService jobInfoService;
 

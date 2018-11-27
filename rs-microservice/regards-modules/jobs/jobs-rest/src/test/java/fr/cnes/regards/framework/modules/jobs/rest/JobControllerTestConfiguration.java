@@ -9,9 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 /**
- *
  * @author Christophe Mertz
- *
  */
 
 @Configuration
@@ -21,4 +19,5 @@ import org.springframework.context.annotation.PropertySource;
 // FIXME do it in the future JOB starter
 @ComponentScan(basePackages = { "fr.cnes.regards.framework.modules.jobs" })
 public class JobControllerTestConfiguration {
+
 }

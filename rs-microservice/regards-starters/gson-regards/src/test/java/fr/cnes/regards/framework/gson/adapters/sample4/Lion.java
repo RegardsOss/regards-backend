@@ -22,7 +22,6 @@ import fr.cnes.regards.framework.gson.annotation.GsonDiscriminator;
 
 /**
  * @author Marc Sordi
- *
  */
 @GsonDiscriminator("lion")
 public class Lion extends Animal {

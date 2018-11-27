@@ -31,9 +31,7 @@ import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 
 /**
  * Minimal test service to test transaction synchronization between data source and message
- *
  * @author Marc Sordi
- *
  */
 @Service
 public class TodoService implements ITodoService {

@@ -121,8 +121,7 @@ public class JobController implements IResourceController<JobInfo> {
      */
     @ResourceAccess(description = "Stop a job", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(value = "/{jobId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> stopJob(@PathVariable("jobId") final UUID jobInfoId)
-            throws EntityNotFoundException {
+    public ResponseEntity<Void> stopJob(@PathVariable("jobId") final UUID jobInfoId) throws EntityNotFoundException {
         jobInfoService.stopJob(jobInfoId);
         return ResponseEntity.ok(null);
     }
@@ -139,9 +138,9 @@ public class JobController implements IResourceController<JobInfo> {
             throws EntityNotFoundException {
         final JobInfo jobInfo = jobInfoService.retrieveJob(jobInfoId);
         List<Resource<JobResult>> resources = null;
-//        if (jobInfo.getResults() != null) {
-//            resources = jobInfo.getResults().stream().map(u -> new Resource<>(u)).collect(Collectors.toList());
-//        }
+        //        if (jobInfo.getResults() != null) {
+        //            resources = jobInfo.getResults().stream().map(u -> new Resource<>(u)).collect(Collectors.toList());
+        //        }
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
 

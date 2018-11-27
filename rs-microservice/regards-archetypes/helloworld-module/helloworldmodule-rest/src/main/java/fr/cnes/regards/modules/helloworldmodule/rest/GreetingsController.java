@@ -38,14 +38,13 @@ import fr.cnes.regards.modules.helloworldmodule.service.GreetingsService;
 
 /**
  * REST module controller
- * 
- * TODO Description
-  * 
-* @author TODO
  *
+ * TODO Description
+ * @author TODO
  */
 @RestController
-@ModuleInfo(name="helloworldmodule-rest", version="1.0.0-SNAPSHOT", author="REGARDS", legalOwner="CS", documentation="http://test")
+@ModuleInfo(name = "helloworldmodule-rest", version = "1.0.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
+        documentation = "http://test")
 @RequestMapping("/api")
 public class GreetingsController implements IResourceController<Greeting> {
 

@@ -29,12 +29,9 @@ import fr.cnes.regards.framework.jpa.multitenant.exception.InvalidDataSourceTena
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 
 /**
- *
  * Multitenancy Database Connection Provider. By default only one connection is available. The one defined in the
  * DataSourceConfig class.
- *
  * @author CS
- * @since 1.0-SNAPSHOT
  */
 @SuppressWarnings("serial")
 public class DataSourceBasedMultiTenantConnectionProviderImpl
@@ -70,10 +67,10 @@ public class DataSourceBasedMultiTenantConnectionProviderImpl
         DataSource tenantDataSource = dataSources.get(pTenantIdentifier);
         if (tenantDataSource == null) {
             String message = String.format("No data source found for tenant %s.\nActual defined datasources : %s.\n"
-                                          + "If wanted tenant is 'default' and at least another one has been defined, "
-                                          + "a transactional method may have been executed before multitenancy is set.\n"
-                                          + "Check if this method really need a transaction (haven't you implemented "
-                                          + "an onApplicationEvent() method recently fortuitously you prank ?)",
+                                                   + "If wanted tenant is 'default' and at least another one has been defined, "
+                                                   + "a transactional method may have been executed before multitenancy is set.\n"
+                                                   + "Check if this method really need a transaction (haven't you implemented "
+                                                   + "an onApplicationEvent() method recently fortuitously you prank ?)",
                                            pTenantIdentifier, dataSources.keySet().toString());
 
             InvalidDataSourceTenant e = new InvalidDataSourceTenant(message);

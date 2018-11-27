@@ -8,6 +8,7 @@ import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
  * @author oroussel
  */
 public class SpringJob extends AbstractNoParamJob<Void> {
+
     @Autowired
     private IJobInfoRepository repository;
 

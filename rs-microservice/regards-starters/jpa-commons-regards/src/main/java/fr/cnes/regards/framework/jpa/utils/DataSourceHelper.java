@@ -31,13 +31,10 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 import com.mchange.v2.c3p0.DataSources;
 
 /**
- *
  * Class DataSourceHelper
  *
  * Helper to manipulate JPA Regards Datasources
- *
  * @author CS
- * @since 1.0-SNAPSHOT
  */
 public final class DataSourceHelper {
 
@@ -81,14 +78,10 @@ public final class DataSourceHelper {
     }
 
     /**
-     *
      * Create an embedded data source. This method should not be used in production in favor of
      * {@link DataSourceHelper#createPooledDataSource(String, String, String, String, String, Integer, Integer, String)}
-     *
-     * @param pTenant
-     *            Project name
-     * @param pEmbeddedPath
-     *            path for database files.
+     * @param pTenant Project name
+     * @param pEmbeddedPath path for database files.
      * @return an HSQLDB embedded data source
      */
     public static DataSource createEmbeddedDataSource(final String pTenant, final String pEmbeddedPath) {
@@ -99,10 +92,7 @@ public final class DataSourceHelper {
                                     + DataSourceHelper.EMBEDDED_URL_SEPARATOR
                                     + DataSourceHelper.EMBEDDED_URL_BASE_NAME);
 
-        LOGGER.info("\n{}\nCreating an EMBEDDED datasource for tenant {} with path {}\n{}",
-                    HR,
-                    pTenant,
-                    pEmbeddedPath,
+        LOGGER.info("\n{}\nCreating an EMBEDDED datasource for tenant {} with path {}\n{}", HR, pTenant, pEmbeddedPath,
                     HR);
 
         return dmDataSource;
@@ -110,25 +100,15 @@ public final class DataSourceHelper {
 
     /**
      * Create a pooled {@link DataSource} using {@link ComboPooledDataSource}.
-     *
-     * @param pTenant
-     *            related tenant, only useful for login purpose
-     * @param pUrl
-     *            data source URL
-     * @param pDriverClassName
-     *            data source driver
-     * @param pUserName
-     *            the user to used for the database connection
-     * @param pPassword
-     *            the user's password to used for the database connection
-     * @param pMinPoolSize
-     *            Minimum number of Connections a pool will maintain at any given time.
-     * @param pMaxPoolSize
-     *            Maximum number of Connections a pool will maintain at any given time.
-     * @param pPreferredTestQuery
-     *            preferred test query
-     * @throws PropertyVetoException
-     *             See {@link PropertyVetoException}
+     * @param pTenant related tenant, only useful for login purpose
+     * @param pUrl data source URL
+     * @param pDriverClassName data source driver
+     * @param pUserName the user to used for the database connection
+     * @param pPassword the user's password to used for the database connection
+     * @param pMinPoolSize Minimum number of Connections a pool will maintain at any given time.
+     * @param pMaxPoolSize Maximum number of Connections a pool will maintain at any given time.
+     * @param pPreferredTestQuery preferred test query
+     * @throws PropertyVetoException See {@link PropertyVetoException}
      */
     public static DataSource createPooledDataSource(final String pTenant, final String pUrl,
             final String pDriverClassName, final String pUserName, final String pPassword, Integer pMinPoolSize,
@@ -142,7 +122,7 @@ public final class DataSourceHelper {
         cpds.setDriverClass(pDriverClassName);
         cpds.setPreferredTestQuery(pPreferredTestQuery);
         //FIXME: pollute logs way too fast, waiting on insights
-//        cpds.setConnectionCustomizerClassName(LoggingConnectionCustomizer.class.getName());
+        //        cpds.setConnectionCustomizerClassName(LoggingConnectionCustomizer.class.getName());
         LOGGER.info("\n{}\nCreating a POOLED datasource for tenant {} with url {}\n{}", HR, pTenant, pUrl, HR);
 
         return cpds;
@@ -150,7 +130,6 @@ public final class DataSourceHelper {
 
     /**
      * Test connection
-     *
      * @param dataSource data source to test
      * @param destroyOnFail if true, destroy datasource if connection test fails.
      * @throws SQLException if connection fails

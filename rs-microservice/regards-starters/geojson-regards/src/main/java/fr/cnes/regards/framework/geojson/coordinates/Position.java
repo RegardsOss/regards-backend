@@ -23,9 +23,7 @@ import java.util.Optional;
 /**
  * RFC 7946 -August 2016<br/>
  * GeoJson geometry position representation
- *
  * @author Marc Sordi
- *
  */
 public class Position {
 

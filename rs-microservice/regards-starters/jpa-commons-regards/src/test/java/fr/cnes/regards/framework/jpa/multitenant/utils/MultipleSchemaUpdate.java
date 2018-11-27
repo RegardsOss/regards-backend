@@ -48,11 +48,8 @@ import fr.cnes.regards.framework.jpa.utils.Hbm2ddlDatasourceSchemaHelper;
 import fr.cnes.regards.framework.modules.person.Person;
 
 /**
- *
  * Test updating multiple schema. Just run migration tools
- *
  * @author Marc Sordi
- *
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource("/multipleSchema.properties")
@@ -87,8 +84,8 @@ public class MultipleSchemaUpdate {
 
     @Before
     public void setup() throws PropertyVetoException {
-        dataSource = DataSourceHelper.createPooledDataSource("testperson", url, driver, userName, password, 5, 20,
-                                                             "SELECT 1");
+        dataSource = DataSourceHelper
+                .createPooledDataSource("testperson", url, driver, userName, password, 5, 20, "SELECT 1");
 
         // Set hibernate properties
         hibernateProperties = new HashMap<>();
@@ -116,7 +113,7 @@ public class MultipleSchemaUpdate {
     public void testWithHbm2ddl() throws JpaException {
 
         Hbm2ddlDatasourceSchemaHelper schemaHelper = new Hbm2ddlDatasourceSchemaHelper(hibernateProperties,
-                Entity.class, null);
+                                                                                       Entity.class, null);
 
         schemaHelper.migrate(dataSource, Person.class.getPackage().getName(), "hbm2ddl1");
         schemaHelper.migrate(dataSource, Person.class.getPackage().getName(), "hbm2ddl2");
@@ -151,7 +148,6 @@ public class MultipleSchemaUpdate {
         DatabaseModule models = new DatabaseModule("models", plugins);
         DatabaseModule entities = new DatabaseModule("entities", plugins, models);
         DatabaseModule dataAccess = new DatabaseModule("dataAccess", plugins, entities);
-
 
         List<DatabaseModule> modules = new ArrayList<>();
         modules.add(models);

@@ -44,9 +44,7 @@ import fr.cnes.regards.framework.geojson.geometry.Unlocated;
 
 /**
  * Test GeoJson geometry (de)serialization
- *
  * @author Marc Sordi
- *
  */
 @RunWith(SpringRunner.class)
 @EnableAutoConfiguration
@@ -151,8 +149,8 @@ public class GeometryTest {
         // Write
         Feature feature = new Feature();
 
-        Positions lineStringCoordinates = IGeometry.toLineStringCoordinates(IGeometry.position(-170.0, 25.25),
-                                                                            IGeometry.position(70.0, 10.10));
+        Positions lineStringCoordinates = IGeometry
+                .toLineStringCoordinates(IGeometry.position(-170.0, 25.25), IGeometry.position(70.0, 10.10));
         LineString geometry = IGeometry.lineString(lineStringCoordinates);
         feature.setGeometry(geometry);
 
@@ -184,11 +182,11 @@ public class GeometryTest {
         // Write
         Feature feature = new Feature();
 
-        Positions lineStringCoordinates1 = IGeometry.toLineStringCoordinates(IGeometry.position(-170.0, 25.25),
-                                                                             IGeometry.position(70.0, 10.10));
+        Positions lineStringCoordinates1 = IGeometry
+                .toLineStringCoordinates(IGeometry.position(-170.0, 25.25), IGeometry.position(70.0, 10.10));
 
-        Positions lineStringCoordinates2 = IGeometry.toLineStringCoordinates(IGeometry.position(-90.0, 90.0),
-                                                                             IGeometry.position(33.33, 77.77));
+        Positions lineStringCoordinates2 = IGeometry
+                .toLineStringCoordinates(IGeometry.position(-90.0, 90.0), IGeometry.position(33.33, 77.77));
 
         MultiLineString geometry = IGeometry.multiLineString(lineStringCoordinates1, lineStringCoordinates2);
 
@@ -307,9 +305,17 @@ public class GeometryTest {
         // Write
         Feature feature = new Feature();
 
-        GeometryCollection geometry = IGeometry
-                .geometryCollection(IGeometry.point(IGeometry.position(0.0, 10.0)), IGeometry.lineString(IGeometry
-                        .toLineStringCoordinates(IGeometry.position(10.0, 13.0), IGeometry.position(25.0, 39.0))));
+        GeometryCollection geometry = IGeometry.geometryCollection(IGeometry.point(IGeometry.position(0.0, 10.0)),
+                                                                   IGeometry.lineString(IGeometry
+                                                                                                .toLineStringCoordinates(
+                                                                                                        IGeometry
+                                                                                                                .position(
+                                                                                                                        10.0,
+                                                                                                                        13.0),
+                                                                                                        IGeometry
+                                                                                                                .position(
+                                                                                                                        25.0,
+                                                                                                                        39.0))));
 
         feature.setGeometry(geometry);
 

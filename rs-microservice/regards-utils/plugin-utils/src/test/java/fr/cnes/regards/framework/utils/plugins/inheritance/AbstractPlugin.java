@@ -26,7 +26,6 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
  * @author Marc Sordi
- *
  */
 public abstract class AbstractPlugin implements IBasicPlugin {
 

@@ -28,7 +28,6 @@ import fr.cnes.regards.framework.utils.plugins.basic.ISamplePlugin;
 
 /**
  * SamplePlugin
- *
  * @author Christophe Mertz
  */
 @Plugin(description = "Sample plugin test", id = "SamplePluginWithPojoCycleDetectedLevelThree", version = "0.0.1",
@@ -95,7 +94,7 @@ public class SamplePluginWithPojoCycleDetectedLevelThree implements ISamplePlugi
     @PluginInit
     private void aInit() {
         LOGGER.info("Init method call : " + this.getClass().getName() + "suffixe:" + suffix + "|active:" + isActive
-                + "|coeff:" + coef);
+                            + "|coeff:" + coef);
     }
 
     public TestPojoGrandParent getPojo() {

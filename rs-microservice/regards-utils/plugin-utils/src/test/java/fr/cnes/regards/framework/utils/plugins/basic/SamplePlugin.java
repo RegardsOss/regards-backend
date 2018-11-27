@@ -27,7 +27,6 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
  * SamplePlugin
- *
  * @author Christophe Mertz
  */
 @Plugin(description = "Sample plugin test", markdown = "suffix.md", id = "aSamplePlugin", version = "0.0.1",
@@ -90,7 +89,7 @@ public class SamplePlugin implements ISamplePlugin {
     @PluginInit
     private void aInit() {
         LOGGER.info("Init method call : " + this.getClass().getName() + "suffixe:" + suffix + "|active:" + isActive
-                + "|coeff:" + coef);
+                            + "|coeff:" + coef);
     }
 
 }

@@ -32,9 +32,7 @@ import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 
 /**
  * Test GeoJson feature (de)serialization
- *
  * @author Marc Sordi
- *
  */
 @RunWith(SpringRunner.class)
 @EnableAutoConfiguration

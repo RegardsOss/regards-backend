@@ -43,9 +43,7 @@ import fr.cnes.regards.framework.security.utils.endpoint.ISystemAccessVoter;
  *
  * {@link EnableGlobalMethodSecurity#proxyTargetClass()} is required to manage controller interface in SPRING MVC
  * controllers.
- *
  * @author CS SI
- *
  */
 @Configuration
 @ConditionalOnWebApplication

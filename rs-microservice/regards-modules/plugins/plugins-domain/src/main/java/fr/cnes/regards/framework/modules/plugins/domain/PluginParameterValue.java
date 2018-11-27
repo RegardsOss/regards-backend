@@ -22,9 +22,7 @@ import javax.persistence.Convert;
 
 /**
  * This class represents a parameter value. It is only used to attach specific converter and adapter.
- *
  * @author Marc Sordi
- *
  */
 @Convert(converter = PluginParameterValueConverter.class)
 public class PluginParameterValue {

@@ -23,7 +23,6 @@ import java.nio.charset.Charset;
 import java.util.List;
 
 /**
- *
  * Class AbstractRunnableCompression
  *
  * Cette classe permet de rendre asynchrone la compression.
@@ -33,15 +32,12 @@ public abstract class AbstractRunnableCompression implements ICompression {
     /**
      * Méthode permettant de lancer la compression de manière synchrone ou asychrone en précisant l'encodage de la
      * compression
-     *
+     * @return CompressManager
      * @parameter pFileList : Liste des fichiers a compresser
      * @parameter pCompressedFile : Nom du fichier archive sans extension
      * @parameter pRootDirectory : Répertoire root des fichiers a archiver
      * @parameter pFlatArchive : Archivage a plat ou non
      * @parameter pCharset : Type d'encodage
-     *
-     * @return CompressManager
-     * @throws CompressionException
      */
     @Override
     public CompressManager compress(List<File> pFileList, File pCompressedFile, File pRootDirectory,
@@ -56,15 +52,12 @@ public abstract class AbstractRunnableCompression implements ICompression {
 
     /**
      * Méthode permettant de lancer la compression de manière synchrone ou asychrone.
-     *
+     * @return CompressManager
      * @parameter pFileList : Liste des fichiers a compresser
      * @parameter pCompressedFile : Nom du fichier archive sans extension
      * @parameter pRootDirectory : Répertoire root des fichiers a archiver
      * @parameter pFlatArchive : Archivage a plat ou non
      * @parameter pCharset : Type d'encodage
-     *
-     * @return CompressManager
-     * @throws CompressionException
      */
     @Override
     public CompressManager compress(List<File> pFileList, File pCompressedFile, File pRootDirectory,
@@ -79,21 +72,18 @@ public abstract class AbstractRunnableCompression implements ICompression {
 
     /**
      * Methode permettant de lancer la compression de manière asynchrone dans un thread.
-     *
+     * @return CompressManager
      * @parameter pFileList : Liste des fichiers a compresser
      * @parameter pCompressedFile : Nom du fichier archive sans extension
      * @parameter pRootDirectory : Répertoire root des fichiers a archiver
      * @parameter pFlatArchive : Archivage a plat ou non
      * @parameter pCharset : Type d'encodage
-     *
-     * @return CompressManager
-     * @throws CompressionException
      */
     private CompressManager runThreadCompress(List<File> pFileList, File pCompressedFile, File pRootDirectory,
             boolean pFlatArchive, Charset pCharset) throws CompressionException {
 
         CompressionRunImpl impl = new CompressionRunImpl(this, pFileList, pCompressedFile, pRootDirectory, pFlatArchive,
-                pCharset);
+                                                         pCharset);
         Thread thread = new Thread(impl);
         thread.start();
 
@@ -102,17 +92,13 @@ public abstract class AbstractRunnableCompression implements ICompression {
 
     /**
      * Méthode permettant de lancer la compression de manière synchrone
-     *
+     * @return void
      * @parameter pFileList : Liste des fichiers a compresser
      * @parameter pCompressedFile : Nom du fichier archive sans extension
      * @parameter pRootDirectory : Répertoire root des fichiers a archiver
      * @parameter pFlatArchive : Archivage a plat ou non
      * @parameter pCharset : Type d'encodage
      * @parameter pCompressManager : Gestionnaire de compression
-     *
-     * @return void
-     * @throws CompressionException
-     *
      */
     public void compress(List<File> pFileList, File pCompressedFile, File pRootDirectory, boolean pFlatArchive,
             Charset pCharset, CompressManager pCompressManager) throws CompressionException {
@@ -120,17 +106,8 @@ public abstract class AbstractRunnableCompression implements ICompression {
     }
 
     /**
-     *
      * Méthode permettant de réaliser la compression
-     *
-     * @param pFileList
-     * @param pCompressedFile
-     * @param pRootDirectory
-     * @param pFlatArchive
-     * @param pCharset
-     * @param pCompressManager
      * @return CompressManager
-     * @throws CompressionException
      */
     protected abstract CompressManager runCompress(List<File> pFileList, File pCompressedFile, File pRootDirectory,
             boolean pFlatArchive, Charset pCharset, CompressManager pCompressManager) throws CompressionException;

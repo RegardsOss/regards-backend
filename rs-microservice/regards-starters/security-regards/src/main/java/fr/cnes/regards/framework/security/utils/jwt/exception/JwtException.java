@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.security.utils.jwt.exception;
 
 /**
  * @author svissier
- *
  */
 public class JwtException extends Exception {
 
@@ -28,7 +27,6 @@ public class JwtException extends Exception {
 
     /**
      * Constructor setting the message exception thanks to the parameter
-     * @param pClaimKey
      */
     public JwtException(String pClaimKey) {
         super("Missing " + pClaimKey);

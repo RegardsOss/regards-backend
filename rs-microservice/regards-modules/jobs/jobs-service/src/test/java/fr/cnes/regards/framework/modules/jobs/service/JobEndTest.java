@@ -6,7 +6,6 @@ import java.util.Map;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -79,7 +78,7 @@ public class JobEndTest {
         // wait a bisto denas half job time (which is 10 s)
         Thread.sleep(5_000);
         // Look at jobInfo from database
-        JobInfo jobInfoFromDb = jobInfoRepos.findOne(longJob.getId());
+        JobInfo jobInfoFromDb = jobInfoRepos.findById(longJob.getId()).get();
         // percentComplete should be > 0 (around 50 %)
         int percent = jobInfoFromDb.getStatus().getPercentCompleted();
         Assert.assertTrue(percent > 0);
@@ -87,7 +86,7 @@ public class JobEndTest {
         Assert.assertNotNull(jobInfoFromDb.getStatus().getEstimatedCompletion());
         // Wait One second and a half : percent should be modified (upper)
         Thread.sleep(1_500);
-        jobInfoFromDb = jobInfoRepos.findOne(longJob.getId());
+        jobInfoFromDb = jobInfoRepos.findById(longJob.getId()).get();
         Assert.assertTrue(jobInfoFromDb.getStatus().getPercentCompleted() > percent);
 
         Thread.sleep(5_000);
@@ -102,7 +101,7 @@ public class JobEndTest {
         Thread.sleep(1_000);
         // Look at jobInfo from database
         do {
-            blowJob = jobInfoRepos.findOne(blowJob.getId());
+            blowJob = jobInfoRepos.findById(blowJob.getId()).get();
         } while ((blowJob.getStatus().getStatus() != JobStatus.SUCCEEDED) && (blowJob.getStatus().getStatus()
                 != JobStatus.FAILED));
         Assert.assertEquals(JobStatus.SUCCEEDED, blowJob.getStatus().getStatus());
@@ -121,7 +120,7 @@ public class JobEndTest {
         Thread.sleep(1_000);
         // Look at jobInfo from database
         do {
-            handJob = jobInfoRepos.findOne(handJob.getId());
+            handJob = jobInfoRepos.findById(handJob.getId()).get();
         } while ((handJob.getStatus().getStatus() != JobStatus.SUCCEEDED) && (handJob.getStatus().getStatus()
                 != JobStatus.FAILED));
         Assert.assertEquals(JobStatus.SUCCEEDED, handJob.getStatus().getStatus());
@@ -146,7 +145,7 @@ public class JobEndTest {
         Thread.sleep(1_000);
         // Look at jobInfo from database
         do {
-            footJob = jobInfoRepos.findOne(footJob.getId());
+            footJob = jobInfoRepos.findById(footJob.getId()).get();
         } while ((footJob.getStatus().getStatus() != JobStatus.SUCCEEDED) && (footJob.getStatus().getStatus()
                 != JobStatus.FAILED));
         Assert.assertEquals(JobStatus.SUCCEEDED, footJob.getStatus().getStatus());
@@ -172,7 +171,7 @@ public class JobEndTest {
         Thread.sleep(1_000);
         // Look at jobInfo from database
         do {
-            jobSnow = jobInfoRepos.findOne(jobSnow.getId());
+            jobSnow = jobInfoRepos.findById(jobSnow.getId()).get();
         } while ((jobSnow.getStatus().getStatus() != JobStatus.SUCCEEDED) && (jobSnow.getStatus().getStatus()
                 != JobStatus.FAILED));
         Assert.assertEquals(JobStatus.FAILED, jobSnow.getStatus().getStatus());

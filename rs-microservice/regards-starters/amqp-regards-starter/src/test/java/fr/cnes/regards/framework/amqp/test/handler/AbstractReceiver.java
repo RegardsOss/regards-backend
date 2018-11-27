@@ -27,9 +27,7 @@ import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 
 /**
  * Event counter
- *
  * @author Marc Sordi
- *
  */
 public abstract class AbstractReceiver<T> implements IHandler<T> {
 

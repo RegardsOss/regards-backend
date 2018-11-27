@@ -47,13 +47,10 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
- *
  * Class MethodAuthorizationServiceTest
  *
  * Test class for method authorization service.
- *
  * @author sbinda
- * @since 1.0-SNAPSHOT
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestConfiguration.class)
@@ -71,14 +68,9 @@ public class MethodAuthorizationServiceTest {
     private MethodAuthorizationService methodAuthService;
 
     /**
-     *
      * Check that the resource voter accept or denied access to endpoints controller
-     *
-     * @throws NoSuchMethodException
-     *             test internal error
-     * @throws SecurityException
-     *             test internal error
-     * @since 1.0-SNAPSHOT
+     * @throws NoSuchMethodException test internal error
+     * @throws SecurityException     test internal error
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify access granted/denied to endpoints defined in authorized resources for a specific tenant")
@@ -92,13 +84,13 @@ public class MethodAuthorizationServiceTest {
          * Test controller
          *
          * @author sbinda
-         * @since 1.0-SNAPSHOT
+         *
          */
         @RequestMapping
         class Controller {
 
             @ResourceAccess(description = "description") // default role here is not important as it is override by a
-                                                         // property file
+            // property file
             @RequestMapping(value = "/endpoint1", method = RequestMethod.GET)
             public Object endpoint() {
                 return null;
@@ -126,14 +118,9 @@ public class MethodAuthorizationServiceTest {
     }
 
     /**
-     *
      * Check that the resource voter denied access to endpoints controller not auhtorized
-     *
-     * @throws NoSuchMethodException
-     *             test internal error
-     * @throws SecurityException
-     *             test internal error
-     * @since 1.0-SNAPSHOT
+     * @throws NoSuchMethodException test internal error
+     * @throws SecurityException     test internal error
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify access denied to endpoints not defined in authorized resources")
@@ -147,7 +134,7 @@ public class MethodAuthorizationServiceTest {
          * Test controller
          *
          * @author sbinda
-         * @since 1.0-SNAPSHOT
+         *
          */
         @RequestMapping
         class Controller {
@@ -175,14 +162,8 @@ public class MethodAuthorizationServiceTest {
     }
 
     /**
-     *
      * testManagedAuthoritiesByTenantAndResources
-     *
-     * @throws fr.cnes.regards.framework.security.domain.SecurityException
-     *             if error occurs
-     *
-     *
-     * @since 1.0-SNAPSHOT
+     * @throws fr.cnes.regards.framework.security.domain.SecurityException if error occurs
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify internal management of resources endponts by tenants and resources")
@@ -193,15 +174,18 @@ public class MethodAuthorizationServiceTest {
         final String resourcePath = "new/path";
         final int expectedResult = 6;
         methodAuthService.onApplicationEvent(null);
-        methodAuthService.setAuthorities(TestConfiguration.TENANT_1, resourcePath, "Controller", RequestMethod.GET,
-                                         "TEST_ROLE", "TEST_ROLE_2");
+        methodAuthService
+                .setAuthorities(TestConfiguration.TENANT_1, resourcePath, "Controller", RequestMethod.GET, "TEST_ROLE",
+                                "TEST_ROLE_2");
 
         final Map<String, ArrayList<GrantedAuthority>> authorities = methodAuthService
                 .getTenantAuthorities(TestConfiguration.TENANT_1);
         Assert.assertEquals(authorities.size(), expectedResult);
-        final Optional<List<GrantedAuthority>> roles = methodAuthService
-                .getAuthorities(TestConfiguration.TENANT_1,
-                                new ResourceMapping(resourcePath, "Controller", RequestMethod.GET));
+        final Optional<List<GrantedAuthority>> roles = methodAuthService.getAuthorities(TestConfiguration.TENANT_1,
+                                                                                        new ResourceMapping(
+                                                                                                resourcePath,
+                                                                                                "Controller",
+                                                                                                RequestMethod.GET));
         Assert.assertEquals(roles.get().size(), 2);
         Assert.assertEquals(roles.get().get(0).getAuthority(), "ROLE_TEST_ROLE");
 

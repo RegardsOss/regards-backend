@@ -32,13 +32,10 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
- *
  * Class ResourcesControllerTest
  *
  * Tests for resources controller
- *
  * @author CS
- * @since 1.0-SNAPSHOT
  */
 public class ResourcesControllerTest {
 
@@ -49,10 +46,7 @@ public class ResourcesControllerTest {
             new MethodAuthorizationService());
 
     /**
-     *
      * Check the /resources common endpoint that retrieves all resources of a microservice.
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_ADM_ADM_240")
     @Requirement("REGARDS_DSL_SYS_SEC_200")

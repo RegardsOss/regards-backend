@@ -34,9 +34,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
  * REGARDS endpoint security voter to manage resource access dynamically at method level.
  *
  * {@link MethodSecurityAutoConfiguration}
- *
  * @author msordi
- *
  */
 public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
 
@@ -52,9 +50,7 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
 
     /**
      * Constructor
-     *
-     * @param pMethodAuthService
-     *            the method authoization service
+     * @param pMethodAuthService the method authoization service
      */
     public ResourceAccessVoter(final MethodAuthorizationService pMethodAuthService) {
         this.methodAuthService = pMethodAuthService;
@@ -67,10 +63,7 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
 
     /**
      * This implementation supports any type of class, because it does not query the presented secure object.
-     *
-     * @param pClazz
-     *            the secure object
-     *
+     * @param pClazz the secure object
      * @return always <code>true</code>
      */
     @Override

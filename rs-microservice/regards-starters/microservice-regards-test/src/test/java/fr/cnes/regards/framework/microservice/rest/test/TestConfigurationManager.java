@@ -14,7 +14,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
  * Some Dummy export/import for test purpose
- *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class TestConfigurationManager extends AbstractModuleManager<Void> {

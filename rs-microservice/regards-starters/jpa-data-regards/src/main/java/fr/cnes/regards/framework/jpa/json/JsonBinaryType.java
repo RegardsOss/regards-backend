@@ -46,9 +46,7 @@ import org.hibernate.usertype.DynamicParameterizedType;
 
 /**
  * Descriptor for a Json type.
- *
  * @author Vlad MIhalcea
- *
  */
 @SuppressWarnings("serial")
 public class JsonBinaryType extends AbstractSingleColumnStandardBasicType<Object> implements DynamicParameterizedType {

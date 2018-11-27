@@ -24,10 +24,9 @@ import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
-import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
-import org.springframework.boot.context.embedded.jetty.JettyEmbeddedServletContainerFactory;
-import org.springframework.boot.context.embedded.jetty.JettyServerCustomizer;
+import org.springframework.boot.web.embedded.jetty.JettyServerCustomizer;
+import org.springframework.boot.web.embedded.jetty.JettyServletWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -36,36 +35,27 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class JettyConfiguration {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(JettyConfiguration.class);
 
     @Value("${jetty.threadPool.idleTimeout:3600000}")
     private int threadPoolIdleTimeout;
 
     @Bean
-    public EmbeddedServletContainerCustomizer customizer() {
+    public WebServerFactoryCustomizer<JettyServletWebServerFactory> customizer() {
         LOGGER.info("Customizing Jetty server...");
-        return new EmbeddedServletContainerCustomizer() {
-
-            @Override
-            public void customize(ConfigurableEmbeddedServletContainer container) {
-                if (container instanceof JettyEmbeddedServletContainerFactory) {
-                    customizeJetty((JettyEmbeddedServletContainerFactory) container);
-                }
-            }
-
-            private void customizeJetty(JettyEmbeddedServletContainerFactory jetty) {
-                QueuedThreadPool threadPool = new QueuedThreadPool();
-                LOGGER.info("Setting Jetty server thread pool idle timeout to {} ms", threadPoolIdleTimeout);
-                threadPool.setIdleTimeout(threadPoolIdleTimeout);
-                jetty.setThreadPool(threadPool);
-                jetty.addServerCustomizers((JettyServerCustomizer) server -> {
-                    for (Connector connector : server.getConnectors()) {
-                        if (connector instanceof ServerConnector) {
-                            ((ServerConnector) connector).setIdleTimeout(threadPoolIdleTimeout);
-                        }
+        return jetty -> {
+            QueuedThreadPool threadPool = new QueuedThreadPool();
+            LOGGER.info("Setting Jetty server thread pool idle timeout to {} ms", threadPoolIdleTimeout);
+            threadPool.setIdleTimeout(threadPoolIdleTimeout);
+            jetty.setThreadPool(threadPool);
+            jetty.addServerCustomizers((JettyServerCustomizer) server -> {
+                for (Connector connector : server.getConnectors()) {
+                    if (connector instanceof ServerConnector) {
+                        ((ServerConnector) connector).setIdleTimeout(threadPoolIdleTimeout);
                     }
-                });
-            }
+                }
+            });
         };
     }
 }

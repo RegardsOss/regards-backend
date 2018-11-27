@@ -38,9 +38,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 
 /**
  * Test plugin containing collection as parameter
- *
  * @author Marc Sordi
- *
  */
 public class PluginWithGenericsTest {
 

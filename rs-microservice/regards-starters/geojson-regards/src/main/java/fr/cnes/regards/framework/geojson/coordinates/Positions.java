@@ -25,9 +25,7 @@ import java.util.stream.Collectors;
 /**
  * Not in RFC 7946 -August 2016<br/>
  * GeoJson consistent set of positions representation.<br/>
- *
  * @author Marc Sordi
- *
  */
 @SuppressWarnings("serial")
 public class Positions extends ArrayList<Position> {

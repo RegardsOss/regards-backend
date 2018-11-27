@@ -26,7 +26,6 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 /**
  * Implement the type conversion logic for a String to a {@link UrnConverter}.<br>
  * This is automatically used by Spring if need be.
- *
  * @author Xavier-Alexandre Brochard
  */
 @Component

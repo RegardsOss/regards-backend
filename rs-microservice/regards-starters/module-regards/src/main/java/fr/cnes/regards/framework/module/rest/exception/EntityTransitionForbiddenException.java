@@ -21,7 +21,6 @@ package fr.cnes.regards.framework.module.rest.exception;
 /**
  * Exception thrown when an illegal transition is called on an entity which state is managed by a workflow, like
  * {@link Account}s and {@link ProjectUser}s.<br>
- *
  * @author Xavier-Alexandre Brochard
  * @since 1.1-SNAPSHOT
  */
@@ -30,8 +29,9 @@ public class EntityTransitionForbiddenException extends EntityOperationForbidden
 
     public <T> EntityTransitionForbiddenException(final String entityIdentifier, final Class<?> entityClass,
             final String state, final String transition) {
-        super(entityIdentifier, entityClass, "The transition " + transition
-                + " called on this state-managed entity is illegal for its current state " + state);
+        super(entityIdentifier, entityClass,
+              "The transition " + transition + " called on this state-managed entity is illegal for its current state "
+                      + state);
     }
 
 }

@@ -23,9 +23,7 @@ import java.util.Set;
 
 /**
  * Test class to test complex class plugin parameter type.
- *
  * @author sbinda
- *
  */
 public class TestPojoWithSet {
 
@@ -56,18 +54,23 @@ public class TestPojoWithSet {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         TestPojoWithSet other = (TestPojoWithSet) obj;
         if (childs == null) {
-            if (other.childs != null)
+            if (other.childs != null) {
                 return false;
-        } else if (!childs.equals(other.childs))
+            }
+        } else if (!childs.equals(other.childs)) {
             return false;
+        }
         return true;
     }
 

@@ -27,7 +27,6 @@ import com.google.common.collect.Sets;
 
 /**
  * Allow to convert a {@link Set} of String to a simple String which each value is separated by a comma
- *
  * @author Sylvain Vissiere-Guerinet
  */
 @Converter
@@ -39,7 +38,6 @@ public class SetStringCsvConverter implements AttributeConverter<Set<String>, St
     private static final String DELIMITER = ",";
 
     /**
-     * @param pSet
      * @return converted set to string for the database
      */
     @Override
@@ -56,7 +54,6 @@ public class SetStringCsvConverter implements AttributeConverter<Set<String>, St
     }
 
     /**
-     * @param pArg0
      * @return converted string from database to a set
      */
     @Override

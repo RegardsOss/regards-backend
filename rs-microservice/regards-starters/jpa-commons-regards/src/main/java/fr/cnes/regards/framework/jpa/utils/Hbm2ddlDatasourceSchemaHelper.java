@@ -20,22 +20,21 @@ package fr.cnes.regards.framework.jpa.utils;
 
 import javax.sql.DataSource;
 import java.lang.annotation.Annotation;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.boot.spi.MetadataImplementor;
 import org.hibernate.cfg.Environment;
 import org.hibernate.tool.hbm2ddl.SchemaUpdate;
+import org.hibernate.tool.schema.TargetType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Help to update datasource schema using hbm2ddl
- *
  * @author Marc Sordi
- *
  */
 public class Hbm2ddlDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper {
 
@@ -68,9 +67,7 @@ public class Hbm2ddlDatasourceSchemaHelper extends AbstractDataSourceSchemaHelpe
     }
 
     /**
-     *
      * Update datasource schema
-     *
      * @param dataSource datasource to update
      * @param rootPackageToScan package to scan for JPA entities
      * @param schema forced target database schema removing existing (if any) from properties
@@ -91,18 +88,18 @@ public class Hbm2ddlDatasourceSchemaHelper extends AbstractDataSourceSchemaHelpe
         final MetadataSources metadata = new MetadataSources(builder.build());
 
         Set<String> packagesToScan = DaoUtils.findPackagesForJpa(rootPackageToScan);
-        packagesToScan.stream().flatMap(pPackage -> DaoUtils
-                .scanPackageForJpa(pPackage, includeAnnotation, excludeAnnotation).stream())
+        packagesToScan.stream().flatMap(
+                pPackage -> DaoUtils.scanPackageForJpa(pPackage, includeAnnotation, excludeAnnotation).stream())
                 .forEach(metadata::addAnnotatedClass);
 
-        final SchemaUpdate export = new SchemaUpdate((MetadataImplementor) metadata.buildMetadata());
+        final SchemaUpdate export = new SchemaUpdate();
 
         if (outputFile != null) {
             export.setOutputFile(outputFile);
             export.setDelimiter(";");
-            export.execute(true, true);
+            export.execute(EnumSet.of(TargetType.SCRIPT), metadata.buildMetadata());
         } else {
-            export.execute(false, true);
+            export.execute(EnumSet.of(TargetType.DATABASE), metadata.buildMetadata());
         }
 
     }

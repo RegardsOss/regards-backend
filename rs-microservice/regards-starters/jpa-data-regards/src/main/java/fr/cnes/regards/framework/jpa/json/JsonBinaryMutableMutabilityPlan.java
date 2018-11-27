@@ -24,7 +24,6 @@ import org.hibernate.type.descriptor.java.MutableMutabilityPlan;
 
 /**
  * @author Marc Sordi
- *
  */
 @SuppressWarnings("serial")
 public class JsonBinaryMutableMutabilityPlan extends MutableMutabilityPlan<Object> {

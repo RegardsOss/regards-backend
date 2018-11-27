@@ -17,10 +17,7 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- *
  * Package to manage endpoints for data source consultation and test.
- *
  * @author Marc Sordi
- *
  */
 package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.rest;

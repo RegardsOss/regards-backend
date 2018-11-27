@@ -24,13 +24,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
  * This class represents a default GeoJson feature with properties as {@link Map} and an optional {@link String}
  * identifier.<br/>
  * You can define your own extending {@link AbstractFeature}.
- *
  * @author Marc Sordi
- *
  */
 public class Feature extends AbstractFeature<Map<String, Object>, String> {
 

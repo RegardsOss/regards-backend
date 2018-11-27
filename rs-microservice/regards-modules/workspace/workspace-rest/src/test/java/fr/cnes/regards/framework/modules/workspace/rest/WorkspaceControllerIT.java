@@ -13,7 +13,6 @@ import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 @TestPropertySource(locations = { "classpath:workspace.properties" })
 public class WorkspaceControllerIT extends AbstractRegardsIT {
 
-
     @Test
     public void testMonitoring() {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();

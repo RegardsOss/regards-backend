@@ -20,15 +20,12 @@ package fr.cnes.regards.framework.modules.plugins;
 
 /**
  * INotInterfacePlugin
- * 
  * @author Christophe Mertz
- *
  */
 public interface INotInterfacePlugin {
 
     /**
      * method foo
-     * 
      * @return the result
      */
     public int foo();

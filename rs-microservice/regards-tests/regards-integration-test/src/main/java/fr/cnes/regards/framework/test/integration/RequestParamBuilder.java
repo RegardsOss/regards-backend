@@ -21,7 +21,6 @@ import org.springframework.util.MultiValueMap;
 
 /**
  * @author Marc Sordi
- *
  */
 public final class RequestParamBuilder {
 
@@ -37,11 +36,11 @@ public final class RequestParamBuilder {
         return new RequestParamBuilder();
     }
 
-    public RequestParamBuilder param(String pName, String... pValues) {
-        Assert.hasLength(pName, "'name' must not be empty");
-        Assert.notEmpty(pValues, "'values' must not be empty");
-        for (String value : pValues) {
-            parameters.add(pName, value);
+    public RequestParamBuilder param(String name, String... values) {
+        Assert.hasLength(name, "'name' must not be empty");
+        Assert.notEmpty(values, "'values' must not be empty");
+        for (String value : values) {
+            parameters.add(name, value);
         }
         return this;
     }

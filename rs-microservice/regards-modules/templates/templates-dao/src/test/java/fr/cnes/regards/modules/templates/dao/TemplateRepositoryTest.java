@@ -30,7 +30,6 @@ import fr.cnes.regards.modules.templates.domain.Template;
 
 /**
  * Test class for {@link Template} DAO module
- *
  * @author Xavier-Alexandre Brochard
  */
 @TestPropertySource(locations = "classpath:application-test.properties")
@@ -39,10 +38,8 @@ public class TemplateRepositoryTest extends AbstractDaoTransactionalTest {
     /**
      * A template with some values
      */
-    private final Template template = new Template(TemplateTestConstants.CODE,
-                                                   TemplateTestConstants.CONTENT,
-                                                   TemplateTestConstants.DATA,
-                                                   TemplateTestConstants.SUBJECT);
+    private final Template template = new Template(TemplateTestConstants.CODE, TemplateTestConstants.CONTENT,
+                                                   TemplateTestConstants.DATA, TemplateTestConstants.SUBJECT);
 
     /**
      * The template repository

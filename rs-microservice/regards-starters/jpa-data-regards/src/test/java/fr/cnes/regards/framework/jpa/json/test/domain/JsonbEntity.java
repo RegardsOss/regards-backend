@@ -20,9 +20,7 @@ package fr.cnes.regards.framework.jpa.json.test.domain;
 
 /**
  * for testing purpose, class that will be stored as a jsonb field into a postgreSQL database
- *
  * @author Sylvain Vissiere-Guerinet
- *
  */
 public class JsonbEntity {
 

@@ -11,7 +11,6 @@ import fr.cnes.regards.framework.oais.adapter.InformationPackageMap;
 
 /**
  * Information package main structure
- *
  * @author Sylvain VISSIERE-GUERINET
  * @author Sébastien Binda
  */
@@ -71,7 +70,6 @@ public class InformationPackageProperties {
 
     /**
      * Set the preservation and description information
-     * @param pPdi
      */
     public void setPdi(PreservationDescriptionInformation pPdi) {
         pdi = pPdi;

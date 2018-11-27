@@ -36,13 +36,10 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
- *
  * Class DaoTransactionTest
  *
  * Test for transactionnal DAO actions
- *
  * @author CS
- * @since 1.0-SNAPSHOT
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { DaoTransactionTestConfiguration.class })
@@ -61,10 +58,7 @@ public class DaoTransactionTest {
     private DaoUserService service;
 
     /**
-     *
      * Test for multitenant transactions.
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Test multitenant transactions operations in database")

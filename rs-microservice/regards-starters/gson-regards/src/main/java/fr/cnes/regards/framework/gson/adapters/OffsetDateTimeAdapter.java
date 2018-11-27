@@ -32,7 +32,6 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
 /**
- *
  * ISO 8601 date adapter
  * This TypeAdapter is used in method GsonAutoConfiguration#customizeBuilder.
  * The aim is to be able to read a date time with or without Time zone specified and to format date time with UTC Time

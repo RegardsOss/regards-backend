@@ -9,79 +9,79 @@
 	Public License for more details. You should have received a copy of the GNU 
 	General Public License along with REGARDS. If not, see <http://www.gnu.org/licenses/>. -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.framework.modules</groupId>
-	<artifactId>jobs</artifactId>
-	<description>Jobs manager module</description>
-	<version>4.0.0-SNAPSHOT</version>
-	<packaging>pom</packaging>
+    <groupId>fr.cnes.regards.framework.modules</groupId>
+    <artifactId>jobs</artifactId>
+    <description>Jobs manager module</description>
+    <version>4.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
-	<parent>
-		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-parent</artifactId>
-		<version>4.0.0-SNAPSHOT</version>
-		<relativePath />
-	</parent>
+    <parent>
+        <groupId>fr.cnes.regards</groupId>
+        <artifactId>regards-parent</artifactId>
+        <version>4.0.0-SNAPSHOT</version>
+        <relativePath/>
+    </parent>
 
-	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
-	<inceptionYear>2016</inceptionYear>
-	<licenses>
-		<license>
-			<name>GNU General Public License (GNU GPL)</name>
-			<url>http://www.gnu.org/licenses/gpl.html</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-	<organization>
-		<name>CNES</name>
-		<url>https://cnes.fr/fr</url>
-	</organization>
-	<developers>
-		<developer>
-			<name>REGARDS Team</name>
-			<organization>CS Systèmes d'Information</organization>
-			<organizationUrl>http://www.c-s.fr</organizationUrl>
-		</developer>
-	</developers>
+    <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
+    <inceptionYear>2016</inceptionYear>
+    <licenses>
+        <license>
+            <name>GNU General Public License (GNU GPL)</name>
+            <url>http://www.gnu.org/licenses/gpl.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <organization>
+        <name>CNES</name>
+        <url>https://cnes.fr/fr</url>
+    </organization>
+    <developers>
+        <developer>
+            <name>REGARDS Team</name>
+            <organization>CS Systèmes d'Information</organization>
+            <organizationUrl>http://www.c-s.fr</organizationUrl>
+        </developer>
+    </developers>
 
-	<modules>
-		<module>jobs-domain</module>
-		<module>jobs-dao</module>
-		<module>jobs-rest</module>
-		<module>jobs-service</module>
-		<module>jobs-client</module>
-	</modules>
+    <modules>
+        <module>jobs-domain</module>
+        <module>jobs-dao</module>
+        <module>jobs-rest</module>
+        <module>jobs-service</module>
+        <module>jobs-client</module>
+    </modules>
 
-	<dependencyManagement>
-		<dependencies>
-			<!-- Module layers -->
-			<dependency>
-				<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
-				<artifactId>jobs-dao</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
-				<artifactId>jobs-domain</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
-				<artifactId>jobs-rest</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
-				<artifactId>jobs-service</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>fr.cnes.regards.framework.modules.jobs</groupId>
-				<artifactId>jobs-client</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+    <dependencyManagement>
+        <dependencies>
+            <!-- Module layers -->
+            <dependency>
+                <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
+                <artifactId>jobs-dao</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
+                <artifactId>jobs-domain</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
+                <artifactId>jobs-rest</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
+                <artifactId>jobs-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
+                <artifactId>jobs-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 </project>

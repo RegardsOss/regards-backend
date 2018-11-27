@@ -33,13 +33,11 @@ import fr.cnes.regards.framework.amqp.event.WorkerMode;
 
 /**
  * @author Marc Sordi
- *
  */
 public interface IAmqpAdmin {
 
     /**
      * Declare an exchange for each event so we use its name to instantiate it.
-     *
      * @param eventType event type
      * @param workerMode {@link WorkerMode}
      * @param target {@link Target}
@@ -49,7 +47,6 @@ public interface IAmqpAdmin {
 
     /**
      * Declare a queue that can handle priority
-     *
      * @param tenant tenant for which the queue is created
      * @param eventType event type inheriting {@link IPollable} or {@link ISubscribable}
      * @param workerMode worker mode
@@ -66,7 +63,6 @@ public interface IAmqpAdmin {
 
     /**
      * Declare binding to link {@link Queue} and {@link Exchange} with an optional routing key
-     *
      * @param queue {@link Queue} to bind
      * @param exchange {@link Exchange} to bind
      * @param workerMode {@link WorkerMode} to compute routing key
@@ -76,7 +72,6 @@ public interface IAmqpAdmin {
 
     /**
      * Routing key build according to {@link WorkerMode}.
-     *
      * @param queue queue
      * @param workerMode worker mode
      * @return routing key

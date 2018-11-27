@@ -64,14 +64,12 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantBootstrapProperties;
 
 /**
- *
  * @author svissier
- *
  */
 @Configuration
 @ConditionalOnProperty(prefix = "regards.amqp", name = "enabled", matchIfMissing = true)
-@EnableConfigurationProperties({ RabbitProperties.class, AmqpManagementProperties.class,
-        AmqpMicroserviceProperties.class })
+@EnableConfigurationProperties(
+        { RabbitProperties.class, AmqpManagementProperties.class, AmqpMicroserviceProperties.class })
 @EnableTransactionManagement
 public class AmqpAutoConfiguration {
 
@@ -115,10 +113,11 @@ public class AmqpAutoConfiguration {
             final MultitenantSimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory,
             final RestOperations restOperations) {
         return new RabbitVirtualHostAdmin(amqpManagmentProperties.getMode(), pTenantResolver,
-                amqpProperties.getRabbitmqUserName(), amqpProperties.getRabbitmqPassword(),
-                amqpProperties.getAmqpManagementHost(), amqpProperties.getAmqpManagementPort(), restOperations,
-                pSimpleRoutingConnectionFactory, amqpProperties.getRabbitmqAddresses(),
-                bootstrapProperties.getBootstrapTenants());
+                                          amqpProperties.getRabbitmqUserName(), amqpProperties.getRabbitmqPassword(),
+                                          amqpProperties.getAmqpManagementHost(),
+                                          amqpProperties.getAmqpManagementPort(), restOperations,
+                                          pSimpleRoutingConnectionFactory, amqpProperties.getRabbitmqAddresses(),
+                                          bootstrapProperties.getBootstrapTenants());
     }
 
     /**
@@ -163,10 +162,10 @@ public class AmqpAutoConfiguration {
             IRuntimeTenantResolver pThreadTenantResolver) {
         if (VirtualHostMode.MULTI.equals(amqpManagmentProperties.getMode())) {
             return new Publisher(pRabbitVirtualHostAdmin, transactionalRabbitTemplate(), amqpAdmin,
-                    pThreadTenantResolver);
+                                 pThreadTenantResolver);
         } else {
             return new SingleVhostPublisher(transactionalRabbitTemplate(), amqpAdmin, pRabbitVirtualHostAdmin,
-                    pThreadTenantResolver);
+                                            pThreadTenantResolver);
         }
     }
 
@@ -177,7 +176,7 @@ public class AmqpAutoConfiguration {
             return new Subscriber(pRabbitVirtualHostAdmin, amqpAdmin, pJackson2JsonMessageConverter, pTenantResolver);
         } else {
             return new SingleVhostSubscriber(pRabbitVirtualHostAdmin, amqpAdmin, pJackson2JsonMessageConverter,
-                    pTenantResolver);
+                                             pTenantResolver);
         }
     }
 
@@ -188,7 +187,7 @@ public class AmqpAutoConfiguration {
             return new Poller(pRabbitVirtualHostAdmin, transactionalRabbitTemplate(), amqpAdmin, pThreadTenantResolver);
         } else {
             return new SingleVhostPoller(pRabbitVirtualHostAdmin, transactionalRabbitTemplate(), amqpAdmin,
-                    pThreadTenantResolver);
+                                         pThreadTenantResolver);
         }
     }
 
@@ -217,11 +216,8 @@ public class AmqpAutoConfiguration {
 
     /**
      * This bean is only useful if no {@link PlatformTransactionManager} was provided by a database or else.
-     *
-     * @param pThreadTenantResolver
-     *            runtime tenant resolver
-     * @param pRabbitVirtualHostAdmin
-     *            virtual host admin
+     * @param pThreadTenantResolver runtime tenant resolver
+     * @param pRabbitVirtualHostAdmin virtual host admin
      * @return a {@link RabbitTransactionManager}
      */
     @Bean
@@ -229,7 +225,8 @@ public class AmqpAutoConfiguration {
     public PlatformTransactionManager rabbitTransactionManager(IRuntimeTenantResolver pThreadTenantResolver,
             IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {
         return new MultitenantRabbitTransactionManager(amqpManagmentProperties.getMode(),
-                simpleRoutingConnectionFactory(), pThreadTenantResolver, pRabbitVirtualHostAdmin);
+                                                       simpleRoutingConnectionFactory(), pThreadTenantResolver,
+                                                       pRabbitVirtualHostAdmin);
     }
 
     @Bean

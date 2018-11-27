@@ -18,24 +18,20 @@
  */
 package fr.cnes.regards.framework.oais;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.net.URL;
 import java.util.Set;
-
-import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.NotEmpty;
 
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.validator.ValidOAISDataObject;
 import fr.cnes.regards.framework.utils.file.validation.HandledMessageDigestAlgorithm;
 
 /**
- *
  * OAIS data object
- *
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
- *
  */
 @ValidOAISDataObject
 public class OAISDataObject {
@@ -90,7 +86,6 @@ public class OAISDataObject {
 
     /**
      * Set the file name
-     * @param filename
      */
     public void setFilename(String filename) {
         this.filename = filename;
@@ -105,7 +100,6 @@ public class OAISDataObject {
 
     /**
      * Set the regards data type
-     * @param regardsDataType
      */
     public void setRegardsDataType(DataType regardsDataType) {
         this.regardsDataType = regardsDataType;
@@ -120,7 +114,6 @@ public class OAISDataObject {
 
     /**
      * Set the url
-     * @param urls
      */
     public void setUrls(Set<URL> urls) {
         this.urls = urls;
@@ -135,7 +128,6 @@ public class OAISDataObject {
 
     /**
      * Set the checksum algorithm
-     * @param algorithm
      */
     public void setAlgorithm(String algorithm) {
         this.algorithm = algorithm;
@@ -150,7 +142,6 @@ public class OAISDataObject {
 
     /**
      * Set the checksum
-     * @param checksum
      */
     public void setChecksum(String checksum) {
         this.checksum = checksum;
@@ -165,7 +156,6 @@ public class OAISDataObject {
 
     /**
      * Set the file size
-     * @param fileSize
      */
     public void setFileSize(Long fileSize) {
         this.fileSize = fileSize;

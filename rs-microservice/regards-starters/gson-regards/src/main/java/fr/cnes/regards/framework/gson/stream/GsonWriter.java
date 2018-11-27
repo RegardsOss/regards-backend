@@ -33,9 +33,7 @@ import fr.cnes.regards.framework.gson.exception.GsonUtilException;
 
 /**
  * GSON writer
- *
  * @author Marc Sordi
- *
  */
 public final class GsonWriter {
 
@@ -49,17 +47,11 @@ public final class GsonWriter {
 
     /**
      * Write object to output stream
-     *
-     * @param <T>
-     *            object type
-     * @param pOutputStream
-     *            output stream
-     * @param pObject
-     *            object to write
-     * @param pClass
-     *            object type
-     * @throws GsonUtilException
-     *             if error occurs!
+     * @param <T> object type
+     * @param pOutputStream output stream
+     * @param pObject object to write
+     * @param pClass object type
+     * @throws GsonUtilException if error occurs!
      */
     public static <T> void write(OutputStream pOutputStream, T pObject, Class<T> pClass) throws GsonUtilException {
         final Gson gson = new GsonBuilder().setPrettyPrinting().create();

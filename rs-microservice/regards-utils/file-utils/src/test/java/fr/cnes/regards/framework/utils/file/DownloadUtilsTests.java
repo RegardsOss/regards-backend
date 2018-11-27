@@ -25,8 +25,6 @@ public class DownloadUtilsTests {
     /**
      * For this test, lets get a file throw URL possibilities on one hand and directly thanks to Files on the other hand.
      * If both checksums are equals then it means it works perfectly.
-     * @throws IOException
-     * @throws NoSuchAlgorithmException
      */
     @Test
     public void testDownloadWithFileProtocolWithoutProxy() throws IOException, NoSuchAlgorithmException {
@@ -53,8 +51,6 @@ public class DownloadUtilsTests {
 
     /**
      * Just to test that we can provide a proxy configuration even if it's not needed, and it still works
-     * @throws IOException
-     * @throws NoSuchAlgorithmException
      */
     @Test
     public void testDownloadWithFileProtocolWithProxy() throws IOException, NoSuchAlgorithmException {

@@ -29,7 +29,6 @@ import static org.junit.Assert.assertNull;
 /**
  * @author Gary Russell
  * @author Marc Sordi
- *
  */
 @Ignore("This test context has to be set manually : queues, vhosts, ...")
 public class TxTest {

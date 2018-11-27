@@ -16,7 +16,6 @@ import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 
 /**
  * Some basic tests
- *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class BlowfishEncryptionTests {

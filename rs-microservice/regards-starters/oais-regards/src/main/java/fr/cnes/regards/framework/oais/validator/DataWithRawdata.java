@@ -16,9 +16,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 /**
  * Ensure that {@link AbstractInformationPackage} of type {@link EntityType#DATA} have at least one
  * {@link OAISDataObject} of type {@link DataType#RAWDATA}
- *
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @Target({ ElementType.TYPE })
 @Retention(RUNTIME)

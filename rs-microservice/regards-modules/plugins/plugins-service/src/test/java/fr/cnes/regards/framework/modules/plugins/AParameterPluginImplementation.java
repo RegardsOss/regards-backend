@@ -23,7 +23,6 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
  * ParameterPlugin
- *
  * @author Christophe Mertz
  */
 @Plugin(description = "Parameter plugin test", id = "aParameterPlugin", version = "0.0.1", author = "REGARDS Team",

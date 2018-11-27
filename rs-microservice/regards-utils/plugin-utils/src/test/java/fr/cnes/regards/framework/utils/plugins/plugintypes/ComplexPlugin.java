@@ -28,7 +28,6 @@ import fr.cnes.regards.framework.utils.plugins.basic.ISamplePlugin;
 
 /**
  * ISamplePlugin
- *
  * @author Christophe Mertz
  */
 @Plugin(description = "Complex plugin test", id = "aComplexPlugin", version = "0.0.1", author = "REGARDS Team",

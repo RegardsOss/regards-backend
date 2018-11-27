@@ -66,8 +66,8 @@ public final class Beans {
             for (MethodDescriptor methodDesc : info1.getMethodDescriptors()) {
                 Method method = methodDesc.getMethod();
                 // if it is a read property method (starting by get or is and without any parameter)
-                if ((method.getParameterCount() == 0)
-                        && (method.getName().startsWith("get") || method.getName().startsWith("is"))) {
+                if ((method.getParameterCount() == 0) && (method.getName().startsWith("get") || method.getName()
+                        .startsWith("is"))) {
                     if (contains(gettersToForget, method.getName())) {
                         continue;
                     }

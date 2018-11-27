@@ -20,9 +20,7 @@ package fr.cnes.regards.framework.microservice.maintenance;
 
 /**
  * If this exception is thrown by whatever module, the maintenance mode is activated in current tenant.
- *
  * @author Marc Sordi
- *
  */
 @SuppressWarnings("serial")
 public class MaintenanceException extends RuntimeException {

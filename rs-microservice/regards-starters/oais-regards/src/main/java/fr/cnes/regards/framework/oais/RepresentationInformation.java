@@ -22,12 +22,9 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 /**
- *
  * OAIS representation information
- *
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
- *
  */
 public class RepresentationInformation {
 
@@ -68,7 +65,6 @@ public class RepresentationInformation {
 
     /**
      * Set the environment description
-     * @param environmentDescription
      */
     public void setEnvironmentDescription(EnvironmentDescription environmentDescription) {
         this.environmentDescription = environmentDescription;

@@ -196,13 +196,14 @@ public class UniformResourceName {
                 final String revisionString = stringFragment[6];
                 // so we have all fields
                 return new UniformResourceName(oaisIdentifier, entityType, tenant, entityId,
-                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
-                        Long.parseLong(versionWithOrder[1]), revisionString.substring(REVISION_PREFIX.length()));
+                                               Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
+                                               Long.parseLong(versionWithOrder[1]),
+                                               revisionString.substring(REVISION_PREFIX.length()));
             } else {
                 // Revision is missing so we have all except Revision
                 return new UniformResourceName(oaisIdentifier, entityType, tenant, entityId,
-                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
-                        Long.parseLong(versionWithOrder[1]));
+                                               Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
+                                               Long.parseLong(versionWithOrder[1]));
             }
         } else {
             // we don't have an order specified
@@ -211,28 +212,24 @@ public class UniformResourceName {
                 final String revisionString = stringFragment[6];
                 // so we have all fields exception Order
                 return new UniformResourceName(oaisIdentifier, entityType, tenant, entityId,
-                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
-                        revisionString.substring(REVISION_PREFIX.length()));
+                                               Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
+                                               revisionString.substring(REVISION_PREFIX.length()));
             } else {
                 // Revision is missing so we have all except Revision and Order
-                return new UniformResourceName(oaisIdentifier, entityType, tenant, entityId,
-                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())));
+                return new UniformResourceName(oaisIdentifier, entityType, tenant, entityId, Integer.parseInt(
+                        versionWithOrder[0].substring(VERSION_PREFIX.length())));
             }
         }
     }
 
     /**
      * Build a pseudo random UUID starting with 00000000-0000-0000-0000
-     * @param oaisIdentifier
-     * @param entityType
-     * @param tenant
-     * @param version
-     * @return
      */
     public static UniformResourceName pseudoRandomUrn(OAISIdentifier oaisIdentifier, EntityType entityType,
             String tenant, int version) {
         return new UniformResourceName(oaisIdentifier, entityType, tenant,
-                UUID.fromString("0-0-0-0-" + (int) (Math.random() * Integer.MAX_VALUE)), version);
+                                       UUID.fromString("0-0-0-0-" + (int) (Math.random() * Integer.MAX_VALUE)),
+                                       version);
     }
 
     /**

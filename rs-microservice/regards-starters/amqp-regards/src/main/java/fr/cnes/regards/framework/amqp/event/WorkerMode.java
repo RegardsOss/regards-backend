@@ -23,14 +23,13 @@ package fr.cnes.regards.framework.amqp.event;
  * if {@link WorkerMode#UNICAST}, a <b>single worker</b> can handle the event.<br/>
  * if {@link WorkerMode#BROADCAST}, <b>all workers</b> can handle this same event.<br/>
  * A
- *
  * @author Marc Sordi
- *
  */
 public enum WorkerMode {
 
     /**
      * Available worker mode
      */
-    UNICAST, BROADCAST;
+    UNICAST,
+    BROADCAST;
 }

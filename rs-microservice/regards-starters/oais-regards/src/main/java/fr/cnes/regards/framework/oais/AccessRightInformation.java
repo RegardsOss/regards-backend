@@ -22,12 +22,9 @@ import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 
 /**
- *
  * OAIS Access Right Information object
- *
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
- *
  */
 public class AccessRightInformation {
 

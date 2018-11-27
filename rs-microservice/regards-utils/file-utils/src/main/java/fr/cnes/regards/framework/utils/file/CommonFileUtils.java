@@ -51,7 +51,7 @@ public final class CommonFileUtils {
     /**
      * Return the first non existing file name into the pDirectory {@link Path} given and related to the given {@link String} pOrigineFileName.
      * If a file exists in the pDirectory with the pOrigineFileName as name, so this method return a file name as :<br/>
-     *  [pOrigineFileName without extension]_[i].[pOrigineFileName extension] where i is an integer.
+     * [pOrigineFileName without extension]_[i].[pOrigineFileName extension] where i is an integer.
      * @param pDirectory {@link Path} Directory to scan for existings files.
      * @param pOrigineFileName {@link String} Original file name wanted.
      * @return {@link String} First available file name.
@@ -68,9 +68,7 @@ public final class CommonFileUtils {
         while (fileNames.contains(availableFileName)) {
             int index = availableFileName.indexOf('.');
             if (index > 0) {
-                availableFileName = String.format("%s_%d.%s",
-                                                  availableFileName.substring(0, index),
-                                                  cpt,
+                availableFileName = String.format("%s_%d.%s", availableFileName.substring(0, index), cpt,
                                                   availableFileName.substring(index + 1));
             }
             cpt++;
@@ -112,7 +110,7 @@ public final class CommonFileUtils {
         Iterator<ImageReader> iter = ImageIO.getImageReadersBySuffix(suffix);
         while (iter.hasNext()) {
             ImageReader reader = iter.next();
-            try ( ImageInputStream stream = new FileImageInputStream(imgFile) ) {
+            try (ImageInputStream stream = new FileImageInputStream(imgFile)) {
                 reader.setInput(stream);
                 int width = reader.getWidth(reader.getMinIndex());
                 int height = reader.getHeight(reader.getMinIndex());

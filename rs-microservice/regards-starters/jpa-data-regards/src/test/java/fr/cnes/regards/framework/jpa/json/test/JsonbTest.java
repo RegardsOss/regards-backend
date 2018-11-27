@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.jpa.json.test;
 
+import java.util.Optional;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,10 +36,8 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
- *
  * WARNING : this test needs default "public" schema on the target database
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { JsonbTestConfiguration.class })
@@ -56,11 +56,12 @@ public class JsonbTest {
     @Purpose("Test ability to persist and retrieve structureless data stored as jsonb into postgres")
     @Test
     public void testPersist() {
-        final TestEntity te = new TestEntity(new JsonbEntity("name", "content"));
-        final TestEntity fromSave = testEntityRepository.save(te);
-        final TestEntity fromDB = testEntityRepository.findOne(fromSave.getId());
+        TestEntity te = new TestEntity(new JsonbEntity("name", "content"));
+        TestEntity fromSave = testEntityRepository.save(te);
+        Optional<TestEntity> fromDBOpt = testEntityRepository.findById(fromSave.getId());
+        Assert.assertTrue(fromDBOpt.isPresent());
         Assert.assertEquals(te, fromSave);
-        Assert.assertEquals(te, fromDB);
+        Assert.assertEquals(te, fromDBOpt.get());
     }
 
 }

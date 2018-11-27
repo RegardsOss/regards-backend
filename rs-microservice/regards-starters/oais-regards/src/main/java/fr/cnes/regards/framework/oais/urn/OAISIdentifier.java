@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.oais.urn;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 public enum OAISIdentifier {
     /**

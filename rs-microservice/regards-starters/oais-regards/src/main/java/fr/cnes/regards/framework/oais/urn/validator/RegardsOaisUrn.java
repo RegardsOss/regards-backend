@@ -30,7 +30,6 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 
 /**
  * Annotation allowing to Validate {@link UniformResourceName} thanks to {@link RegardsOaisUrnValidator}
- *
  * @author Sylvain Vissiere-Guerinet
  */
 @Retention(RetentionPolicy.RUNTIME)

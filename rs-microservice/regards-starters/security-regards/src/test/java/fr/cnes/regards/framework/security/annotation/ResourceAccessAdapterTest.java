@@ -35,13 +35,10 @@ import com.google.gson.stream.JsonWriter;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**
- *
  * Class ResourceAccessAdapterTest
  *
  * Test to check json serialization/deserialization for ResourceAccess annotation
- *
  * @author sbinda
- * @since 1.0-SNAPSHOT
  */
 public class ResourceAccessAdapterTest {
 
@@ -51,10 +48,7 @@ public class ResourceAccessAdapterTest {
     private static final Logger LOG = LoggerFactory.getLogger(ResourceAccessAdapterTest.class);
 
     /**
-     *
      * Test to check json serialization/deserialization for ResourceAccess annotation
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Test
     public void testResourceJsonAdapter() {
@@ -68,8 +62,8 @@ public class ResourceAccessAdapterTest {
         final Map<String, Object> attributs = new HashMap<>();
         attributs.put(ResourceAccessAdapter.ROLE_LABEL, DefaultRole.ADMIN);
         attributs.put(ResourceAccessAdapter.DESCRIPTION_LABEL, "description");
-        final ResourceAccess resourceAccess = AnnotationUtils.synthesizeAnnotation(attributs, ResourceAccess.class,
-                                                                                   null);
+        final ResourceAccess resourceAccess = AnnotationUtils
+                .synthesizeAnnotation(attributs, ResourceAccess.class, null);
 
         try {
             // Serialize test

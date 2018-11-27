@@ -23,7 +23,6 @@ import org.springframework.stereotype.Repository;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @Repository
 public interface ITestEntityRepository extends CrudRepository<TestEntity, Long> {

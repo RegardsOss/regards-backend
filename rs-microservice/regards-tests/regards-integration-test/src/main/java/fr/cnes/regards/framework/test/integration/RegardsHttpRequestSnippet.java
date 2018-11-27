@@ -9,7 +9,6 @@ import org.springframework.util.Assert;
 
 /**
  * REGARDS customization of {@link HttpRequestSnippet}.
- *
  * @author Sylvain VISSIERE-GUERINET
  * @author Marc Sordi
  */
