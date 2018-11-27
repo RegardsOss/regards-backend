@@ -90,14 +90,14 @@ public class StorageDataFile {
      */
     @Column(columnDefinition = "text")
     @Convert(converter = SetURLCsvConverter.class)
-    private Set<URL> urls;
+    private Set<URL> urls = new HashSet<>();
 
     /**
      * File origin urls
      */
     @Column(columnDefinition = "text", name = "origin_urls")
     @Convert(converter = SetURLCsvConverter.class)
-    private Set<URL> originUrls;
+    private Set<URL> originUrls = new HashSet<>();
 
     /**
      * File name
@@ -229,7 +229,9 @@ public class StorageDataFile {
      */
     public StorageDataFile(Set<URL> urls, String checksum, String algorithm, DataType type, Long fileSize,
             MimeType mimeType, AIPEntity aipEntity, String name, String storageDirectory) {
-        this.urls = urls;
+        if(urls != null) {
+            this.urls.addAll(urls);
+        }
         this.checksum = checksum;
         this.algorithm = algorithm;
         this.dataType = type;
