@@ -22,7 +22,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.MimeType;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -48,6 +47,8 @@ import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
         properties = { "spring.jpa.properties.hibernate.default_schema=storage", "spring.application.name=storage" })
 @ContextConfiguration(classes = DAOTestConfiguration.class)
 public class DataFileRepoIT extends AbstractDaoTransactionalTest {
+
+    private static final String SESSION = "SESSION_1";
 
     @Autowired
     private IStorageDataFileRepository dataFileRepository;
@@ -84,8 +85,6 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
     private Long dataStorage3UsedSize = 0L;
 
     private AIP aip3;
-
-    private static final String SESSION = "SESSION_1";
 
     @Before
     public void init() throws MalformedURLException, NoSuchAlgorithmException {
@@ -153,7 +152,6 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
             dataStorage3UsedSize += df.getFileSize();
         }
         dataFiles.addAll(dataFilesAip);
-        dataFileDao.save(dataFiles);
         // lets test with a file stored into two archives ( 1 and 2 )
         AIP aip12 = generateRandomAIP();
         aip12 = aipDao.save(aip12, aipSession);
@@ -194,10 +192,16 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
 
     public AIP generateRandomAIP() throws NoSuchAlgorithmException, MalformedURLException {
 
-        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP, EntityType.COLLECTION, "tenant",
-                UUID.randomUUID(), 1);
-        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.COLLECTION, "tenant",
-                sipId.getEntityId(), 1);
+        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP,
+                                                            EntityType.COLLECTION,
+                                                            "tenant",
+                                                            UUID.randomUUID(),
+                                                            1);
+        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP,
+                                                            EntityType.COLLECTION,
+                                                            "tenant",
+                                                            sipId.getEntityId(),
+                                                            1);
 
         String providerId = String.valueOf(generateRandomString(new Random(), 40));
 
@@ -236,10 +240,14 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
         Random random = new Random();
         int listSize = random.nextInt(listMaxSize) + 1;
         for (int i = 0; i < listSize; i++) {
-            ippBuilder.getContentInformationBuilder().setDataObject(DataType.OTHER, "blah", "SHA1", sha1("blahblah"),
+            ippBuilder.getContentInformationBuilder().setDataObject(DataType.OTHER,
+                                                                    "blah",
+                                                                    "SHA1",
+                                                                    sha1("blahblah"),
                                                                     new Long((new Random()).nextInt(10000000)),
                                                                     new URL("ftp://bla"));
-            ippBuilder.getContentInformationBuilder().setSyntaxAndSemantic("NAME", "SYNTAX_DESCRIPTION",
+            ippBuilder.getContentInformationBuilder().setSyntaxAndSemantic("NAME",
+                                                                           "SYNTAX_DESCRIPTION",
                                                                            MimeType.valueOf("application/name"),
                                                                            "DESCRIPTION");
             ippBuilder.addContentInformation();

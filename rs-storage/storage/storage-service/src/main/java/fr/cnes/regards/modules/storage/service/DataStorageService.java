@@ -626,6 +626,8 @@ public class DataStorageService implements IDataStorageService {
             AIP associatedAIP = optionalAssociatedAip.get();
             // update data status
             storeFailFile.setState(DataFileState.ERROR);
+            // reset notYetStoredBy to avoid issue during retry
+            storeFailFile.resetNotYetStoredBy();
             storeFailFile.addFailureCause(failureCause);
             dataFileDao.save(storeFailFile);
             // Update associated AIP in db
