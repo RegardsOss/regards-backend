@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,29 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.feign.security;
+package fr.cnes.regards.framework.jpa.multitenant.autoconfigure;
 
+import org.flywaydb.core.Flyway;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import feign.RequestInterceptor;
-
 /**
- * This class allows to customize Feign behavior.<br>
- * This class has to be annotated with <code>@Configuration</code>. <br/>
- * It uses an internal JWT with a system role to call another microservice.
- * @author Marc Sordi
+ * COnfiguration to prevent Flyway auto configuration
+ * @author Olivier Rousselot
  */
 @Configuration
-public class FeignSecurityConfiguration {
-
+@AutoConfigureBefore(FlywayAutoConfiguration.class)
+public class NeverUseFlywayAutoConfiguration {
     /**
-     * Interceptor for Feign client request security. This interceptor injects a token into request headers.
-     * @param feignSecurityManager the Feign security manager
-     * @return RequestInterceptor custom system interceptor
+     * Prevent flyway auto configuration (Flyway is created by this configuration not by the FlywayAutoConfiguration)
      */
     @Bean
-    public RequestInterceptor securityRequestInterceptor(FeignSecurityManager feignSecurityManager) {
-        return new FeignSecurityInterceptor(feignSecurityManager);
+    public Flyway flyway() {
+        return new Flyway();
     }
 }

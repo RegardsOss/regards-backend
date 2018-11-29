@@ -28,8 +28,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * Update Spring Web Mvc configuration to ignore RequestMapping on FeignClient implementations.
  * @author CS
  */
-public class ExcludeFeignRequestMappingHandler extends RequestMappingHandlerMapping { // NOSONAR
-
+public class ExcludeFeignRequestMappingHandler extends RequestMappingHandlerMapping {
     @Override
     protected boolean isHandler(final Class<?> beanType) {
         return super.isHandler(beanType) && (AnnotationUtils.findAnnotation(beanType, FeignClient.class) == null);

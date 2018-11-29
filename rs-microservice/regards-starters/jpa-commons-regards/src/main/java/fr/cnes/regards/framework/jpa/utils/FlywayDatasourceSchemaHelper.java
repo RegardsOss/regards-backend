@@ -22,7 +22,9 @@ import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,10 +36,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.Location;
 import org.flywaydb.core.api.MigrationVersion;
-import org.flywaydb.core.internal.util.Location;
-import org.flywaydb.core.internal.util.scanner.Resource;
-import org.flywaydb.core.internal.util.scanner.Scanner;
+import org.flywaydb.core.internal.resource.LoadableResource;
+import org.flywaydb.core.internal.resource.Resource;
+import org.flywaydb.core.internal.scanner.Scanner;
 import org.hibernate.cfg.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,19 +92,15 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
 
         LOGGER.debug("Migrating datasource with schema {} for module {}", schema, moduleName);
 
-        // Init Flywaydb tool
-        Flyway flyway = new Flyway();
-        // Associate datasource
-        flyway.setDataSource(dataSource);
-        // Set module location
-        flyway.setLocations(scriptLocationPath + File.separator + moduleName);
-        // Specify working schema
-        flyway.setSchemas(schema);
-        // Create one migration table by module
-        flyway.setTable(moduleName + "_schema_version");
-        flyway.setBaselineOnMigrate(true);
-        // When creating module metadata table, set beginning version to 0 in order to properly apply all init scripts
-        flyway.setBaselineVersion(MigrationVersion.fromVersion("0"));
+        Flyway flyway = Flyway.configure() // get configurfation
+                .dataSource(dataSource) // Associate datasource
+                .locations(scriptLocationPath + File.separator + moduleName) // Set module location
+                .schemas(schema) // Specify working schema
+                .table(moduleName + "_schema_version") // Create one migration table by module
+                .baselineOnMigrate(true)
+                .baselineVersion(MigrationVersion.fromVersion("0"))// When creating module metadata table,
+                // set beginning version to 0 in order to properly apply all init scripts
+                .load();
         // Do migrate
         flyway.migrate();
     }
@@ -116,23 +115,25 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
         Preconditions.checkNotNull(dataSource);
         Preconditions.checkNotNull(schema, "Flyway migration tool requires a database schema");
 
-        // Use flyway scanner to be consistent
-        Scanner scanner = new Scanner(classLoader);
-        // Scan all resources without considering modules
-        Resource[] resources = scanner.scanForResources(new Location(scriptLocationPath), "", SQL_MIGRATION_SUFFIX);
-        // Manage resource pattern
-        Pattern resourcePattern = Pattern.compile(
+        // Use flyway scanner initialized with script dir (ie resources/scripts)
+        Scanner scanner = new Scanner(Collections.singleton(new Location(scriptLocationPath)), classLoader,
+                                      Charset.defaultCharset());
+        // Scan all sql scripts without considering modules (into resources/scripts, there are one dir per module)
+        Collection<LoadableResource> sqlScripts = scanner.getResources("", SQL_MIGRATION_SUFFIX);
+        // Manage resource (ie SQL scripts) pattern (^scripts/(.*)/.*\\.sql)
+        Pattern scriptPattern = Pattern.compile(
                 "^" + scriptLocationPath + File.separator + "(.*)" + File.separator + ".*\\" + SQL_MIGRATION_SUFFIX
                         + "$");
-        // Retrieve all modules
+        // Retrieve all modules (scripts are into <module> dir)
         Set<String> modules = new HashSet<>();
-        for (Resource resource : resources) {
-            Matcher matcher = resourcePattern.matcher(resource.getLocation());
+        for (Resource script : sqlScripts) {
+            // Match script from relative path
+            Matcher matcher = scriptPattern.matcher(script.getRelativePath());
             if (matcher.matches()) {
                 modules.add(matcher.group(1));
             } else {
                 LOGGER.warn("Cannot retrieve module name in resource {}. Format must conform to {}",
-                            resource.getLocation(), resourcePattern.toString());
+                            script.getAbsolutePath(), scriptPattern.toString());
             }
         }
         // Apply dependency check
@@ -143,7 +144,7 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
     }
 
     /**
-     * Build database module tree and sort all module by priority
+     * Build database module tree and sort all modules by priority
      * @param modules list of modules to consider
      * @return a list of modules ordered according to its dependencies
      */

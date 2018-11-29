@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
@@ -228,10 +229,29 @@ public class RequestBuilderCustomizer {
     /**
      * Grants access to the {@link HttpHeaders} used to add request parameters to the request
      * @return http headers for further customization
+     * @deprecated use {@link #addHeaderValue(String, String)} or {@link #addHeaderValues(String, List)}
      */
+    @Deprecated
     public HttpHeaders customizeHeaders() {
         return headers;
     }
+
+    /**
+     * Set or add given value to associated header name values
+     */
+    public RequestBuilderCustomizer addHeaderValue(String name, String value) {
+        headers.add(name, value);
+        return this;
+    }
+
+    /**
+     * Set or replace given values to associated header name values
+     */
+    public RequestBuilderCustomizer addHeaderValues(String name, List<String> values) {
+        headers.put(name, values);
+        return this;
+    }
+
 
     /**
      * Add a whole list of ResultMatcher to be matched. Mainly here for easier refactor. We strongly advise to use
@@ -250,6 +270,20 @@ public class RequestBuilderCustomizer {
     public RequestBuilderCustomizer expect(ResultMatcher matcher) {
         expectations.add(matcher);
         return this;
+    }
+
+    /**
+     * Add a ResultMatcher status OK to be matched
+     */
+    public RequestBuilderCustomizer expectStatusOk() {
+        return expect(MockMvcResultMatchers.status().isOk());
+    }
+
+    /**
+     * Add a ResultMatcher status CREATED to be matched
+     */
+    public RequestBuilderCustomizer expectStatusCreated() {
+        return expect(MockMvcResultMatchers.status().isCreated());
     }
 
     /**

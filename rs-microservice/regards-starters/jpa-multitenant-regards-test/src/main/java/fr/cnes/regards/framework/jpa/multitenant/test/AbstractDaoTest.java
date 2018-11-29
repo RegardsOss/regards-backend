@@ -39,18 +39,11 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 @ContextConfiguration(classes = { DefaultDaoTestConfiguration.class, MockAmqpConfiguration.class })
 public abstract class AbstractDaoTest {
 
-    /**
-     * Default tenant. Use {@link #getDefaultTenant()} instead.
-     */
-    @Deprecated
-    public static final String DEFAULT_TENANT = "PROJECT";
-
     @Value("${regards.tenant:PROJECT}")
     private String defaultTenant;
 
     /**
      * JPA entity manager : use it to flush context to prevent false positive
-     * @see MultitenantJpaAutoConfiguration#PERSITENCE_UNIT_NAME for unit name
      */
     @PersistenceContext(unitName = "multitenant")
     protected EntityManager entityManager;

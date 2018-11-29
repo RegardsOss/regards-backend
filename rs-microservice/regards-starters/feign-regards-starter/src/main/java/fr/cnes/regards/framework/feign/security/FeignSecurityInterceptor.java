@@ -33,13 +33,13 @@ public class FeignSecurityInterceptor implements RequestInterceptor {
      */
     protected final FeignSecurityManager feignSecurityManager;
 
-    public FeignSecurityInterceptor(FeignSecurityManager pFeignSecurityManager) {
-        this.feignSecurityManager = pFeignSecurityManager;
+    public FeignSecurityInterceptor(FeignSecurityManager feignSecurityManager) {
+        this.feignSecurityManager = feignSecurityManager;
     }
 
     @Override
-    public void apply(RequestTemplate pTemplate) {
-        pTemplate.header(HttpConstants.AUTHORIZATION, HttpConstants.BEARER + " " + feignSecurityManager.getToken());
+    public void apply(RequestTemplate template) {
+        template.header(HttpConstants.AUTHORIZATION, HttpConstants.BEARER + " " + feignSecurityManager.getToken());
     }
 
 }

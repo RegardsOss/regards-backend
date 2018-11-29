@@ -49,9 +49,7 @@
     <modules>
         <module>jobs-domain</module>
         <module>jobs-dao</module>
-        <module>jobs-rest</module>
         <module>jobs-service</module>
-        <module>jobs-client</module>
     </modules>
 
     <dependencyManagement>
@@ -69,17 +67,7 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
-                <artifactId>jobs-rest</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
                 <artifactId>jobs-service</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
-                <artifactId>jobs-client</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

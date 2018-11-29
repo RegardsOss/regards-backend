@@ -45,15 +45,14 @@ import org.springframework.web.client.HttpServerErrorException;
 
 import com.google.gson.Gson;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**
  * @author Marc Sordi
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = FeignClientTests.Application.class, webEnvironment = WebEnvironment.DEFINED_PORT,
-        value = { "spring.application.name=feignclienttest", "server.port=30333",
-                "logging.level.org.springframework.cloud.netflix.feign.valid=DEBUG", "feign.httpclient.enabled=false",
-                "feign.okhttp.enabled=false", "jwt.secret=123456789" })
+@SpringBootTest(classes = FeignClientTests.Application.class, webEnvironment = WebEnvironment.DEFINED_PORT)
 public class FeignClientTests {
 
     private static final String HELLO_MESSAGE = "Hello world";
@@ -75,6 +74,7 @@ public class FeignClientTests {
     protected static class Application {
 
         @RequestMapping(method = RequestMethod.GET, value = "/hello")
+        @ResourceAccess(role = DefaultRole.PROJECT_ADMIN, description = "FUCK")
         public ResponseEntity<Hello> getHello() {
             Hello hello = new Hello();
             hello.setMessage(HELLO_MESSAGE);
@@ -89,8 +89,7 @@ public class FeignClientTests {
         }
 
         public static void main(String[] args) {
-            new SpringApplicationBuilder(Application.class)
-                    .properties("spring.application.name=feignclienttest", "management.contextPath=/admin").run(args);
+            new SpringApplicationBuilder(Application.class).run(args);
         }
     }
 

@@ -55,13 +55,17 @@
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>security-regards</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.springframework.security</groupId>
-                    <artifactId>spring-security-web</artifactId>
-                </exclusion>
-            </exclusions>
+            <artifactId>security-regards-starter</artifactId>
+            <!--<exclusions>-->
+                <!--<exclusion>-->
+                    <!--<groupId>org.springframework.security</groupId>-->
+                    <!--<artifactId>spring-security-web</artifactId>-->
+                <!--</exclusion>-->
+            <!--</exclusions>-->
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-web</artifactId>
         </dependency>
         <!-- Starter feign -->
         <dependency>

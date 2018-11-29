@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.flywaydb.core.Flyway;
 import org.hibernate.MultiTenancyStrategy;
 import org.hibernate.cfg.Environment;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
@@ -34,10 +33,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
@@ -81,7 +78,6 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 @EnableTransactionManagement
 @EnableConfigurationProperties({ JpaProperties.class })
 @AutoConfigureAfter({ GsonAutoConfiguration.class, AmqpAutoConfiguration.class })
-@AutoConfigureBefore({ FlywayAutoConfiguration.class })
 @ConditionalOnProperty(prefix = "regards.jpa", name = "multitenant.enabled", matchIfMissing = true)
 public class MultitenantJpaAutoConfiguration {
 
@@ -130,15 +126,6 @@ public class MultitenantJpaAutoConfiguration {
      */
     public MultitenantJpaAutoConfiguration() throws MultiDataBasesException {
         DaoUtils.checkClassPath(DaoUtils.ROOT_PACKAGE);
-    }
-
-    /**
-     * This bean is not used at the moment but prevent flyway auto configuration in a single point
-     */
-    @Bean
-    @ConditionalOnMissingBean
-    public Flyway flyway() {
-        return new Flyway();
     }
 
     /**
