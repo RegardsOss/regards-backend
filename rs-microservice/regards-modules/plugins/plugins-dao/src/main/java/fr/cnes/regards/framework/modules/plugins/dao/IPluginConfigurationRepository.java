@@ -50,7 +50,7 @@ public interface IPluginConfigurationRepository extends JpaRepository<PluginConf
      */
     List<PluginConfiguration> findByPluginIdAndActiveTrueOrderByPriorityOrderDesc(String pluginId);
 
-    @Query("from PluginConfiguration conf join fetch conf.parameters p where p.parent_conf_id=:id")
+    @Query("from PluginConfiguration conf join fetch conf.parameters where conf.id=:id")
     PluginConfiguration findOneWithPluginParameter(@Param("id") Long id);
 
     /**

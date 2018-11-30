@@ -128,7 +128,7 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
         Set<String> modules = new HashSet<>();
         for (Resource script : sqlScripts) {
             // Match script from relative path
-            Matcher matcher = scriptPattern.matcher(script.getRelativePath());
+            Matcher matcher = scriptPattern.matcher(script.getAbsolutePath());
             if (matcher.matches()) {
                 modules.add(matcher.group(1));
             } else {

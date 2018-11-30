@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.jpa.multitenant.autoconfigure;
+package fr.cnes.regards.framework.jpa.autoconfigure;
 
 import org.flywaydb.core.Flyway;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;

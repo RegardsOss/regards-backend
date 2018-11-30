@@ -101,8 +101,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     @Test(expected = ModuleException.class)
     public void deleteAPluginConfigurationUnknown() throws ModuleException {
         final Long aPluginId = 56789L;
-        Mockito.when(pluginConfRepositoryMocked.existsById(aPluginId)).thenReturn(false);
-        Mockito.doThrow(ModuleException.class).when(pluginConfRepositoryMocked).deleteById(aPluginId);
+        Mockito.when(pluginConfRepositoryMocked.findById(aPluginId)).thenReturn(Optional.empty());
         pluginServiceMocked.deletePluginConfiguration(aPluginId);
         Assert.fail("There must be an exception thrown");
     }

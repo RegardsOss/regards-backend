@@ -37,7 +37,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
  *
  * @author Christophe Mertz
  */
-public class PluginDaoUtility extends AbstractDaoTest {
+public abstract class PluginDaoUtility extends AbstractDaoTest {
 
     /**
      * Class logger

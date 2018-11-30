@@ -9,6 +9,8 @@ import org.springframework.util.Assert;
 
 /**
  * REGARDS customization of {@link HttpRequestSnippet}.
+ * http-request.snippet contains 1 field (urlTemplate) that isn't into default one, this snippet permits to extract
+ * urlTemplate value from operation (Operation ~= HttpRequest) and inject it into model.
  * @author Sylvain VISSIERE-GUERINET
  * @author Marc Sordi
  */

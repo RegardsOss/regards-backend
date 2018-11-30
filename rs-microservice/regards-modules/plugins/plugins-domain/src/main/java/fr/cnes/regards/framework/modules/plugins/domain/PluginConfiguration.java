@@ -297,46 +297,46 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         }
     }
 
-    public final String getLabel() {
+    public String getLabel() {
         return label;
     }
 
-    public final void setLabel(String pLabel) {
+    public void setLabel(String pLabel) {
         label = pLabel;
     }
 
-    public final String getVersion() {
+    public String getVersion() {
         return version;
     }
 
     /**
      * This setter <b>must</b> only be used while TESTING
      */
-    public final void setVersion(String version) {
+    public void setVersion(String version) {
         this.version = version;
     }
 
-    public final String getPluginId() {
+    public String getPluginId() {
         return pluginId;
     }
 
-    public final void setPluginId(String pluginId) {
+    public void setPluginId(String pluginId) {
         this.pluginId = pluginId;
     }
 
-    public final Integer getPriorityOrder() {
+    public Integer getPriorityOrder() {
         return priorityOrder;
     }
 
-    public final void setPriorityOrder(Integer order) {
+    public void setPriorityOrder(Integer order) {
         priorityOrder = order;
     }
 
-    public final Set<PluginParameter> getParameters() {
+    public Set<PluginParameter> getParameters() {
         return parameters;
     }
 
-    public final void setParameters(Set<PluginParameter> parameters) {
+    public void setParameters(Set<PluginParameter> parameters) {
         this.parameters.clear();
         if ((parameters != null) && !parameters.isEmpty()) {
             this.parameters.addAll(parameters);

@@ -16,7 +16,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
-import org.springframework.restdocs.operation.preprocess.Preprocessors;
+import org.springframework.restdocs.operation.preprocess.OperationRequestPreprocessor;
+import org.springframework.restdocs.operation.preprocess.OperationResponsePreprocessor;
 import org.springframework.restdocs.request.ParameterDescriptor;
 import org.springframework.restdocs.request.RequestDocumentation;
 import org.springframework.restdocs.snippet.Snippet;
@@ -30,8 +31,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
 import fr.cnes.regards.framework.security.utils.HttpConstants;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 
 /**
  * Allow to customize the request done thanks to {@link MockMvc}.
@@ -78,7 +79,7 @@ public class RequestBuilderCustomizer {
     /**
      * Documentation snippets
      */
-    private final List<Snippet> documentationSnippets = Lists.newArrayList();
+    private final List<Snippet> docSnippets = Lists.newArrayList();
 
     /**
      * Request result expectations
@@ -252,7 +253,6 @@ public class RequestBuilderCustomizer {
         return this;
     }
 
-
     /**
      * Add a whole list of ResultMatcher to be matched. Mainly here for easier refactor. We strongly advise to use
      * {@link RequestBuilderCustomizer#expect(ResultMatcher)}.
@@ -306,7 +306,7 @@ public class RequestBuilderCustomizer {
      * @param snippet documentation snippet to be added.
      */
     public RequestBuilderCustomizer addDocumentationSnippet(Snippet snippet) {
-        documentationSnippets.add(snippet);
+        docSnippets.add(snippet);
         return this;
     }
 
@@ -335,20 +335,17 @@ public class RequestBuilderCustomizer {
                 request = request.andExpect(matcher);
             }
             if (!skipDocumentation) {
-                request.andDo(MockMvcRestDocumentation.document("{ClassName}/{methodName}", Preprocessors
-                                                                        .preprocessRequest(Preprocessors.prettyPrint(),
-                                                                                           Preprocessors.removeHeaders("Authorization", "Host", "Content-Length")),
-                                                                Preprocessors
-                                                                        .preprocessResponse(Preprocessors.prettyPrint(),
-                                                                                            Preprocessors.removeHeaders(
-                                                                                                    "Content-Length")),
-                                                                documentationSnippets.toArray(
-                                                                        new Snippet[documentationSnippets.size()])));
+                OperationRequestPreprocessor reqPreprocessor = preprocessRequest(prettyPrint(),
+                                                                                 removeHeaders("Authorization", "Host",
+                                                                                               "Content-Length"));
+                OperationResponsePreprocessor respPreprocessor = preprocessResponse(prettyPrint(),
+                                                                                    removeHeaders("Content-Length"));
+                request.andDo(MockMvcRestDocumentation
+                                      .document("{ClassName}/{methodName}", reqPreprocessor, respPreprocessor,
+                                                docSnippets.toArray(new Snippet[docSnippets.size()])));
             }
             return request;
-            // CHECKSTYLE:OFF
-        } catch (Exception e) {
-            // CHECKSTYLE:ON
+        } catch (Exception e) { // NOSONAR
             LOGGER.error(errorMsg, e);
             throw new AssertionError(errorMsg, e);
         }

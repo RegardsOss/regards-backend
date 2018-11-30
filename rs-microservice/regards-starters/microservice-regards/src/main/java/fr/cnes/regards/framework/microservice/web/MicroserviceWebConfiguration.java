@@ -34,13 +34,11 @@ public class MicroserviceWebConfiguration implements WebMvcConfigurer {
     @Override
     public void configurePathMatch(PathMatchConfigurer configurer) {
         configurer.setUseSuffixPatternMatch(false);
-        configurePathMatch(configurer);
     }
 
     @Override
     public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
         // Avoid to match uri path extension with a content negociator.
         configurer.favorPathExtension(false);
-        configureContentNegotiation(configurer);
     }
 }
