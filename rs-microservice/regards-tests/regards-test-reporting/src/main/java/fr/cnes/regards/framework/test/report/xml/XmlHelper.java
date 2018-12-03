@@ -107,7 +107,7 @@ public final class XmlHelper {
      * @throws ReportException if report cannot be read
      */
     public static <T> T read(Path pDirectory, String pFilename, Class<T> pClass)
-            throws ReportException, UnsupportedEncodingException {
+            throws ReportException {
         // Validate
         assertNotNull(pDirectory, "Missing directory path");
         assertNotNull(pFilename, "Missing filename");

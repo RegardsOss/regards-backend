@@ -82,7 +82,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
         PluginUtils.setup(PLUGIN_PACKAGES);
         Set<String> pluginInterfaces = PluginUtils.getPluginInterfaces();
         Assert.assertNotNull(pluginInterfaces);
-        pluginInterfaces.stream().forEach(s -> LOGGER.info(s));
+        pluginInterfaces.forEach(LOGGER::info);
         Assert.assertTrue(pluginInterfaces.size() > 0);
         LOGGER.debug(ENDING + toString());
     }
@@ -111,7 +111,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
         PluginUtils.setup(PLUGIN_CURRENT_PACKAGE);
         Set<String> pluginInterfaces = PluginUtils.getPluginInterfaces();
         Assert.assertNotNull(pluginInterfaces);
-        pluginInterfaces.stream().forEach(s -> LOGGER.info(s));
+        pluginInterfaces.forEach(LOGGER::info);
         Assert.assertTrue(pluginInterfaces.size() > 0);
         LOGGER.debug(ENDING + toString());
     }

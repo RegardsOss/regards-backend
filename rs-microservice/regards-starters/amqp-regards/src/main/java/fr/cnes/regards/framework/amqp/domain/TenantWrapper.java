@@ -111,6 +111,7 @@ public class TenantWrapper<T> implements Cloneable {
      * @return a TenantWrapper clone
      */
     @Override
+    @SuppressWarnings("unchecked")
     public TenantWrapper<T> clone() {
         try {
             return (TenantWrapper<T>) super.clone();

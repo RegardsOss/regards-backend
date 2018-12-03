@@ -110,7 +110,7 @@ public class MultipleSchemaUpdate {
      * @throws JpaException if error occurs!
      */
     @Test
-    public void testWithHbm2ddl() throws JpaException {
+    public void testWithHbm2ddl() {
 
         Hbm2ddlDatasourceSchemaHelper schemaHelper = new Hbm2ddlDatasourceSchemaHelper(hibernateProperties,
                                                                                        Entity.class, null);
@@ -159,10 +159,10 @@ public class MultipleSchemaUpdate {
             module.computeWeight();
         }
 
-        Assert.assertTrue(plugins.getWeight() == 0);
-        Assert.assertTrue(models.getWeight() == 1);
-        Assert.assertTrue(entities.getWeight() == 2);
-        Assert.assertTrue(dataAccess.getWeight() == 3);
+        Assert.assertEquals(0, plugins.getWeight());
+        Assert.assertEquals(1, models.getWeight());
+        Assert.assertEquals(2, entities.getWeight());
+        Assert.assertEquals(3, dataAccess.getWeight());
 
         Collections.sort(modules, new DatabaseModuleComparator());
 

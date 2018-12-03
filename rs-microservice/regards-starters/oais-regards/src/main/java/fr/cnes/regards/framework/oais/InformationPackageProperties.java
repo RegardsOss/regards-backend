@@ -130,12 +130,8 @@ public class InformationPackageProperties {
             return false;
         }
         if (pdi == null) {
-            if (other.pdi != null) {
-                return false;
-            }
-        } else if (!pdi.equals(other.pdi)) {
-            return false;
-        }
-        return true;
+            return other.pdi == null;
+        } else
+            return pdi.equals(other.pdi);
     }
 }

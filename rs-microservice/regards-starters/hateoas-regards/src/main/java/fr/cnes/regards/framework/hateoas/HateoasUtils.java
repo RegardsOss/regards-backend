@@ -146,7 +146,7 @@ public final class HateoasUtils {
             if (response.getStatusCode().equals(HttpStatus.OK)) {
                 PagedResources<Resource<T>> page = response.getBody();
                 pageResources.clear();
-                page.getContent().forEach(pageResources::add);
+                pageResources.addAll(page.getContent());
                 results.addAll(HateoasUtils.unwrapList(pageResources));
                 if (results.size() < page.getMetadata().getTotalElements()) {
                     pageable = pageable.next();

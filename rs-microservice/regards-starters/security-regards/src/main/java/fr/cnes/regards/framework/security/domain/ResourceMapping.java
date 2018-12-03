@@ -106,13 +106,9 @@ public class ResourceMapping {
      * @return a unique identifier for the resource access
      */
     public String getResourceMappingId() {
-        final StringBuilder identifier = new StringBuilder();
 
-        identifier.append(fullPath);
-        identifier.append(SEPARATOR);
-        identifier.append(method.toString());
-
-        return identifier.toString();
+        String identifier = fullPath + SEPARATOR + method.toString();
+        return identifier;
     }
 
     /**

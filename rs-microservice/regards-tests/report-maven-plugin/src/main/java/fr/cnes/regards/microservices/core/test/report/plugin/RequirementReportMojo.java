@@ -58,7 +58,7 @@ public class RequirementReportMojo extends AbstractMojo {
     private String target;
 
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException {
 
         getLog().info("Generating requirement report.");
 

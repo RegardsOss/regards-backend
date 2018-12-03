@@ -86,7 +86,7 @@ public class IPFilterTest {
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Check security filter with ip adress for endpoints accesses")
     @Test
-    public void ipFilterTest() throws SecurityException {
+    public void ipFilterTest() {
 
         final HttpServletRequest mockedRequest = Mockito.mock(HttpServletRequest.class);
         final HttpServletResponse mockedResponse = new MockHttpServletResponse();
@@ -142,7 +142,7 @@ public class IPFilterTest {
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Check security filter with subdomain ip adress for endpoints accesses")
     @Test
-    public void subdomainIpFilterTest() throws SecurityException {
+    public void subdomainIpFilterTest() {
 
         final HttpServletRequest mockedRequest = Mockito.mock(HttpServletRequest.class);
         final HttpServletResponse mockedResponse = new MockHttpServletResponse();

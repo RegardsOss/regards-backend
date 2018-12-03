@@ -10,7 +10,7 @@ public class HandJob extends AbstractNoParamJob<Map<String, Double>> {
 
     @Override
     public void run() {
-        Map map = new HashMap<>();
+        Map<String, Double> map = new HashMap<>();
         map.put("toto", 1.0);
         map.put("tutu", 2.0);
         map.put("titi", 3.0);

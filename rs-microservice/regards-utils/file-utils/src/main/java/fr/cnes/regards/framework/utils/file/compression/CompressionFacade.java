@@ -35,7 +35,10 @@ import fr.cnes.regards.framework.utils.file.compression.zip.ZipCompression;
  * Cette classe est la facade du paquetage de compression. La Facade cree une instance de Compression, et la passe au
  * contexte de compression qui s'occupe de l'execution. Les informations necessaires a la compression sont gerees au
  * niveau du contexte "CompressionContext".
+ * @deprecated this class is a mess, if you really need to use, please update it to Java 8 removing all bullshits like
+ * Vector, 'p' in front on variables, cut too long methods: make a true Java class well written.
  */
+@Deprecated
 public class CompressionFacade {
 
     /**
@@ -117,51 +120,51 @@ public class CompressionFacade {
 
     /**
      * Cette methode permet de compresser un fichier ou ensemble de fichier d'un repertoire vers un autre repertoire La
-     * liste des fichiers a compresser est precisee, mais si le parametre pFileList est nul tout le repertoire en entree
+     * liste des fichiers a compresser est precisee, mais si le parametre inFileList est nul tout le repertoire en entree
      * est compresse.
      *
      * Cette methode permet de définir l'encodage utilisé pour la compression.
      *
      * Attention : l'encodage des caractères n'est implémenté que pour le format ZIP.
-     * @param pMode le type de compression (ZIP, GZIP, TAR, ...)
-     * @param pInputDirectory repertoire source
-     * @param pFileList une liste contenant les fichiers a compresser (classe File)
-     * @param pZipFile definit le chemin et le nom du fichier compresse SANS l'extension
-     * @param pRootDirectory le répertoire racine dans le cas d'une liste de fichiers.
-     * @param pFlatArchive contenu de l'archive à plat ou non
-     * @param pCharset Encodage des caractères utilisé lors de la compression.
+     * @param mode le type de compression (ZIP, GZIP, TAR, ...)
+     * @param inputDirectory repertoire source
+     * @param inFileList une liste contenant les fichiers a compresser (classe File)
+     * @param zipFile definit le chemin et le nom du fichier compresse SANS l'extension
+     * @param rootDirectory le répertoire racine dans le cas d'une liste de fichiers.
+     * @param flatArchive contenu de l'archive à plat ou non
+     * @param charset Encodage des caractères utilisé lors de la compression.
      * @return la liste des fichiers compresses
      * @throws CompressionException si l'un des paramètres n'est pas correct
      */
-    public Vector<CompressManager> compress(CompressionTypeEnum pMode, File pInputDirectory, List<File> pFileList,
-            File pZipFile, File pRootDirectory, Boolean pFlatArchive, Boolean pRunInThread, Charset pCharset)
+    public Vector<CompressManager> compress(CompressionTypeEnum mode, File inputDirectory, List<File> inFileList,
+            File zipFile, File rootDirectory, Boolean flatArchive, Boolean runInThread, Charset charset)
             throws CompressionException {
 
         Vector<CompressManager> compressManagers = new Vector<>();
 
         // initialise concrete compression
-        initCompression(pMode);
+        initCompression(mode);
 
         // specify input file list
-        List<File> fileList = validateFilesForCompress(pFileList, pInputDirectory);
+        List<File> fileList = validateFilesForCompress(inFileList, inputDirectory);
 
         // Sets the root directory
-        if (pInputDirectory != null) {
-            strategy.setRootDirectory(pInputDirectory);
+        if (inputDirectory != null) {
+            strategy.setRootDirectory(inputDirectory);
         } else {
-            if (pRootDirectory != null) {
-                strategy.setRootDirectory(pRootDirectory);
+            if (rootDirectory != null) {
+                strategy.setRootDirectory(rootDirectory);
             } else {
                 throw new CompressionException("The root directory must be set and cannot be null.");
             }
         }
-        strategy.setFlatArchive(pFlatArchive.booleanValue());
+        strategy.setFlatArchive(flatArchive.booleanValue());
 
         // Apply the encoding format
-        strategy.setCharSet(pCharset);
+        strategy.setCharSet(charset);
 
         // Set synchrone or asynchrone compression mode
-        strategy.setRunInThread(pRunInThread);
+        strategy.setRunInThread(runInThread);
 
         /*
          * Check the size of the files to compress
@@ -194,7 +197,7 @@ public class CompressionFacade {
          */
         if (sizeTotal < maxArchiveSize) {
             if (!listFile2Compress.isEmpty()) {
-                compressManagers.add(this.compress(listFile2Compress, pZipFile));
+                compressManagers.add(this.compress(listFile2Compress, zipFile));
             } else {
                 if (LOGGER.isInfoEnabled()) {
                     LOGGER.info("No file to compress");
@@ -209,7 +212,7 @@ public class CompressionFacade {
             /*
              * The total size exceed the max, split it in several files
              */
-            if (pRunInThread) {
+            if (runInThread) {
                 strategy.setRunInThread(false);
                 LOGGER.warn("The size of data exceeds the maximum size, synchrone compression mode is used.");
             }
@@ -230,7 +233,7 @@ public class CompressionFacade {
                 }
                 if (compress) {
                     indiceArchive++;
-                    File archiveName = new File(pZipFile.getAbsoluteFile() + "_" + Integer.toString(indiceArchive));
+                    File archiveName = new File(zipFile.getAbsoluteFile() + "_" + Integer.toString(indiceArchive));
                     compressManagers.add(this.compress(listFileOneArchive, archiveName));
                     listFileOneArchive.clear();
 
@@ -243,7 +246,7 @@ public class CompressionFacade {
 
             if (!listFileOneArchive.isEmpty()) {
                 indiceArchive++;
-                File archiveName = new File(pZipFile.getAbsoluteFile() + "_" + Integer.toString(indiceArchive));
+                File archiveName = new File(zipFile.getAbsoluteFile() + "_" + Integer.toString(indiceArchive));
                 compressManagers.add(this.compress(listFileOneArchive, archiveName));
                 listFileOneArchive.clear();
             }

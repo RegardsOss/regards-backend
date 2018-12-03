@@ -18,8 +18,8 @@
  */
 package fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transactional.controller;
 
-/**
- * Test controller for JWT and DAO Integration tests
+/*
+  Test controller for JWT and DAO Integration tests
  */
 
 import java.util.ArrayList;
@@ -72,7 +72,7 @@ public class DaoTestController {
     @RequestMapping(value = "/users", method = RequestMethod.GET)
     public HttpEntity<List<User>> getUsers() throws CannotCreateTransactionException {
         final List<User> users = new ArrayList<>();
-        userRepo.findAll().forEach(user -> users.add(user));
+        userRepo.findAll().forEach(users::add);
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 

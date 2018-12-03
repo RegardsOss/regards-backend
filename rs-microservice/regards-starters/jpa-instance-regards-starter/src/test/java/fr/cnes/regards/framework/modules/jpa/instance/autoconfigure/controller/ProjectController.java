@@ -72,7 +72,7 @@ public class ProjectController {
     @RequestMapping(value = "/projects", method = RequestMethod.GET)
     public HttpEntity<List<TestProject>> getUsers() throws CannotCreateTransactionException {
         final List<TestProject> projects = new ArrayList<>();
-        projectRepo.findAll().forEach(project -> projects.add(project));
+        projectRepo.findAll().forEach(projects::add);
         return new ResponseEntity<>(projects, HttpStatus.OK);
     }
 

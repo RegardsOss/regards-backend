@@ -148,7 +148,7 @@ public class CorsFilter extends OncePerRequestFilter {
      * @throws IOException      Internal error
      */
     public static void allowCorsRequest(HttpServletRequest request, HttpServletResponse response,
-            FilterChain filterChain) throws IOException, ServletException {
+            FilterChain filterChain) {
         response.setHeader(ALLOW_ORIGIN, "*");
         response.setHeader(ALLOW_METHOD, "POST, PUT, GET, OPTIONS, DELETE");
         response.setHeader(ALLOW_HEADER, "authorization, content-type, scope");

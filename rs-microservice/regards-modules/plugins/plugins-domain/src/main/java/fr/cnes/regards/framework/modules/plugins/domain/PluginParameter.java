@@ -269,24 +269,15 @@ public class PluginParameter implements IIdentifiable<Long> {
         PluginParameter other = (PluginParameter) obj;
 
         if (name == null) {
-            if (other.name != null) {
-                return false;
-            }
-        } else if (!name.equals(other.name)) {
-            return false;
-        }
-        return true;
+            return other.name == null;
+        } else
+            return name.equals(other.name);
     }
 
     @Override
     public String toString() {
-        StringBuilder strBuilder = new StringBuilder();
-        strBuilder.append(name);
-        strBuilder.append(" - ");
-        strBuilder.append(value);
-        strBuilder.append(" - ");
-        strBuilder.append(dynamic.toString());
-        return strBuilder.toString();
+        String strBuilder = name + " - " + value + " - " + dynamic.toString();
+        return strBuilder;
     }
 
     /**

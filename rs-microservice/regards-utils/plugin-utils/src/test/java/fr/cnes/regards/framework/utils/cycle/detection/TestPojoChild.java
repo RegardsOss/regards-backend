@@ -139,13 +139,9 @@ public class TestPojoChild {
             return false;
         }
         if (values == null) {
-            if (other.values != null) {
-                return false;
-            }
-        } else if (!values.equals(other.values)) {
-            return false;
-        }
-        return true;
+            return other.values == null;
+        } else
+            return values.equals(other.values);
     }
 
 }

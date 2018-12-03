@@ -25,5 +25,5 @@ package fr.cnes.regards.framework.amqp.configuration;
 public enum VirtualHostMode {
 
     SINGLE,
-    MULTI;
+    MULTI
 }

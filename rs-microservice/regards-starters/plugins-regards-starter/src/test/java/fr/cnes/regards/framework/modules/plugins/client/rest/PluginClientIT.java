@@ -62,13 +62,13 @@ public class PluginClientIT extends AbstractRegardsWebIT {
             authService.setAuthorities(getDefaultTenant(), IPluginClient.PLUGIN_TYPES, "Controller", RequestMethod.GET,
                                        RoleAuthority.getSysRole(""));
             jwtService.injectToken(getDefaultTenant(), RoleAuthority.getSysRole(""), "", "");
-            final IPluginClient pluginClient = HystrixFeign.builder().contract(new SpringMvcContract())
+            IPluginClient pluginClient = HystrixFeign.builder().contract(new SpringMvcContract())
                     .encoder(new GsonEncoder()).decoder(new ResponseEntityDecoder(new GsonDecoder()))
                     .target(new TokenClientProvider<>(IPluginClient.class, "http://" + serverAddress + ":" + getPort(),
                                                       feignSecurityManager));
-            final ResponseEntity<List<Resource<String>>> pluginTypes = pluginClient.getPluginTypes();
-            Assert.assertTrue(pluginTypes.getStatusCode().equals(HttpStatus.OK));
-        } catch (final Exception e) {
+            ResponseEntity<List<Resource<String>>> pluginTypes = pluginClient.getPluginTypes();
+            Assert.assertEquals(pluginTypes.getStatusCode(), HttpStatus.OK);
+        } catch (Exception e) {
             LOG.error(e.getMessage(), e);
             Assert.fail(e.getMessage());
         }

@@ -165,7 +165,7 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
         requestBuilderCustomizer.addExpectations(matchers);
         for (Map.Entry<String, List<String>> requestParam : requestParams.getParameters().entrySet()) {
             requestBuilderCustomizer.customizeRequestParam().param(requestParam.getKey(), requestParam.getValue()
-                    .toArray(new String[requestParam.getValue().size()]));
+                    .toArray(new String[0]));
         }
         return performGet(urlTemplate, jwt, requestBuilderCustomizer, errorMsg, urlVariables);
     }

@@ -55,10 +55,8 @@ public class SampleBeanFactoryPlugin implements ISamplePlugin {
 
     @Override
     public String echo(final String pMessage) {
-        final StringBuffer str = new StringBuffer();
-        str.append(this.getClass().getCanonicalName() + " -> " + pMessage + " - " + suffix);
         sampleBeanService.setId("---> add string with PluginService");
-        return str.toString() + sampleBeanService.getId();
+        return this.getClass().getCanonicalName() + " -> " + pMessage + " - " + suffix + sampleBeanService.getId();
     }
 
     /**

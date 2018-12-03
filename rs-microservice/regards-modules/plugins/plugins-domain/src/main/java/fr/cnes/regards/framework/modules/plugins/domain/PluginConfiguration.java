@@ -272,17 +272,13 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     public void logParams() {
         LOGGER.info("===> parameters <===");
         LOGGER.info(
-                "  ---> number of dynamic parameters : " + getParameters().stream().filter(p -> p.isDynamic()).count());
+                "  ---> number of dynamic parameters : " + getParameters().stream().filter(PluginParameter::isDynamic).count());
 
-        getParameters().stream().filter(p -> p.isDynamic()).forEach(p -> {
-            logParam(p, "  ---> dynamic parameter : ");
-        });
+        getParameters().stream().filter(PluginParameter::isDynamic).forEach(p -> logParam(p, "  ---> dynamic parameter : "));
 
         LOGGER.info("  ---> number of no dynamic parameters : " + getParameters().stream().filter(p -> !p.isDynamic())
                 .count());
-        getParameters().stream().filter(p -> !p.isDynamic()).forEach(p -> {
-            logParam(p, "  ---> parameter : ");
-        });
+        getParameters().stream().filter(p -> !p.isDynamic()).forEach(p -> logParam(p, "  ---> parameter : "));
     }
 
     /**
@@ -425,13 +421,9 @@ public class PluginConfiguration implements IIdentifiable<Long> {
             return false;
         }
         if (pluginId == null) {
-            if (other.pluginId != null) {
-                return false;
-            }
-        } else if (!pluginId.equals(other.pluginId)) {
-            return false;
-        }
-        return true;
+            return other.pluginId == null;
+        } else
+            return pluginId.equals(other.pluginId);
     }
 
     @Override

@@ -33,7 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -59,8 +58,6 @@ import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantExcepti
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.CurrentTenantIdentifierResolverImpl;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.DataSourceBasedMultiTenantConnectionProviderImpl;
-import fr.cnes.regards.framework.jpa.multitenant.resolver.DefaultTenantConnectionResolver;
-import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.utils.DaoUtils;
 import fr.cnes.regards.framework.jpa.utils.IDatasourceSchemaHelper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -134,8 +131,8 @@ public class MultitenantJpaAutoConfiguration {
      */
     @Bean
     public CurrentTenantIdentifierResolver currentTenantIdentifierResolver(
-            IRuntimeTenantResolver pThreadTenantResolver) {
-        this.currentTenantIdentifierResolver = new CurrentTenantIdentifierResolverImpl(pThreadTenantResolver);
+            IRuntimeTenantResolver threadTenantResolver) {
+        this.currentTenantIdentifierResolver = new CurrentTenantIdentifierResolverImpl(threadTenantResolver);
         return currentTenantIdentifierResolver;
     }
 
@@ -164,7 +161,7 @@ public class MultitenantJpaAutoConfiguration {
      * @return {@link LocalContainerEntityManagerFactoryBean}
      */
     @Bean(name = "multitenantsEntityManagerFactory")
-    public LocalContainerEntityManagerFactoryBean multitenantsEntityManagerFactory() throws JpaMultitenantException {
+    public LocalContainerEntityManagerFactoryBean multitenantsEntityManagerFactory() {
         // Use the first dataSource configuration to init the entityManagerFactory
         if (dataSources.isEmpty()) {
             throw new ApplicationContextException("No datasource defined. JPA is not able to start."
@@ -185,18 +182,10 @@ public class MultitenantJpaAutoConfiguration {
         final List<Class<?>> packages = DaoUtils.scanPackagesForJpa(Entity.class, InstanceEntity.class, packagesToScan);
 
         return builder.dataSource(defaultDataSource).persistenceUnit(PERSITENCE_UNIT_NAME)
-                .packages(packages.toArray(new Class[packages.size()])).properties(hibernateProps).jta(false).build();
+                .packages(packages.toArray(new Class[0])).properties(hibernateProps).jta(false).build();
     }
 
-    /**
-     * Create a default TenantConnection resolver if none defined.
-     * @return ITenantConnectionResolver
-     */
-    @Bean
-    @ConditionalOnMissingBean
-    public ITenantConnectionResolver defaultTenantConnectionResolver() {
-        return new DefaultTenantConnectionResolver();
-    }
+
 
     /**
      * this bean allow us to set <b>our</b> instance of Gson, customized for the serialization of any data as jsonb into

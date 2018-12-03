@@ -103,7 +103,7 @@ public class DaoUserService {
         runtimeTenantResolver.forceTenant(pTenant);
         final Iterable<User> list = userRepository.findAll();
         final List<User> results = new ArrayList<>();
-        list.forEach(user -> results.add(user));
+        list.forEach(results::add);
         return results;
     }
 

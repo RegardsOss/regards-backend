@@ -108,13 +108,9 @@ public abstract class AbstractPluginConfEvent {
             return false;
         }
         if (pluginTypes == null) {
-            if (other.pluginTypes != null) {
-                return false;
-            }
-        } else if (!pluginTypes.equals(other.pluginTypes)) {
-            return false;
-        }
-        return true;
+            return other.pluginTypes == null;
+        } else
+            return pluginTypes.equals(other.pluginTypes);
     }
 
 }

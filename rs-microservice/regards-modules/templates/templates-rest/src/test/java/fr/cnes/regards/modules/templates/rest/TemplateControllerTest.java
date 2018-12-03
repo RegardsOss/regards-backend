@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.templates.rest;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Assert;
@@ -93,7 +93,7 @@ public class TemplateControllerTest {
     @Requirement("REGARDS_DSL_ADM_ADM_460")
     public final void testFindAll() {
         // Mock service
-        final List<Template> templates = Arrays.asList(template);
+        final List<Template> templates = Collections.singletonList(template);
         Mockito.when(templateService.findAll()).thenReturn(templates);
 
         // Define actual

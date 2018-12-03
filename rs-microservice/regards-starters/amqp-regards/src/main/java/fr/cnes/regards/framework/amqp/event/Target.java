@@ -29,5 +29,5 @@ public enum Target {
      */
     ALL,
     MICROSERVICE,
-    ONE_PER_MICROSERVICE_TYPE;
+    ONE_PER_MICROSERVICE_TYPE
 }

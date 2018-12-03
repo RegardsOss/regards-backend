@@ -109,7 +109,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
         LOGGER.debug(STARTING + toString());
 
-        List<String> values = new ArrayList<String>();
+        List<String> values = new ArrayList<>();
         values.add("test1");
         values.add("test2");
         /*

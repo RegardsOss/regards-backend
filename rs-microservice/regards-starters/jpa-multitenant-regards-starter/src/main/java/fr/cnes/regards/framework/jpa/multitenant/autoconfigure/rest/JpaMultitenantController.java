@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.rest;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
-
-import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +35,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mchange.v2.c3p0.PooledDataSource;
-
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.DataSourcesAutoConfiguration;
 import fr.cnes.regards.framework.module.rest.representation.GenericResponseBody;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -98,11 +96,11 @@ public class JpaMultitenantController {
             PooledDataSource pds = (PooledDataSource) dataSource;
             GenericResponseBody body = new GenericResponseBody();
             try {
-                body.getProperties().put("num_connections", Integer.valueOf(pds.getNumConnectionsDefaultUser()));
+                body.getProperties().put("num_connections", pds.getNumConnectionsDefaultUser());
                 body.getProperties()
-                        .put("num_busy_connections", Integer.valueOf(pds.getNumBusyConnectionsDefaultUser()));
+                        .put("num_busy_connections", pds.getNumBusyConnectionsDefaultUser());
                 body.getProperties()
-                        .put("num_idle_connections", Integer.valueOf(pds.getNumIdleConnectionsDefaultUser()));
+                        .put("num_idle_connections", pds.getNumIdleConnectionsDefaultUser());
                 return ResponseEntity.ok(body);
             } catch (SQLException e) {
                 LOGGER.error("Status check fail", e);

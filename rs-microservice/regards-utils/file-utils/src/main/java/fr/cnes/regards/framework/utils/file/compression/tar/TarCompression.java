@@ -173,7 +173,7 @@ public class TarCompression extends AbstractRunnableCompression {
 
         File temporaryFile = new File(pFile.getAbsolutePath());
 
-        final StringBuffer pathToRoot = new StringBuffer();
+        final StringBuilder pathToRoot = new StringBuilder();
         pathToRoot.insert(0, temporaryFile.getName());
 
         boolean loop = !temporaryFile.getParentFile().getAbsolutePath().equals(pRootDir.getAbsolutePath());

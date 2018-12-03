@@ -25,5 +25,5 @@ package fr.cnes.regards.framework.oais.builder;
 @FunctionalInterface
 public interface IOAISBuilder<T> {
 
-    public T build();
+    T build();
 }

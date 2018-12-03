@@ -93,7 +93,7 @@ public class DaoTransactionTest {
         service.addWithoutError(testTenant);
         users.clear();
         users = service.getUsers(testTenant);
-        Assert.assertTrue("There must be 1 element !", users.size() == 1);
+        Assert.assertEquals(1, users.size());
         LOG.info("Insert correctly done and commited ! ");
 
         // Test for second tenant

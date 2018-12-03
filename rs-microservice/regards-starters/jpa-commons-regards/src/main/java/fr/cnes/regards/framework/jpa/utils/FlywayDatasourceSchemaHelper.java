@@ -159,12 +159,11 @@ public class FlywayDatasourceSchemaHelper extends AbstractDataSourceSchemaHelper
         initModuleDependencies(moduleMap);
 
         // Compute weight
-        moduleMap.values().forEach(dbModule -> dbModule.computeWeight());
+        moduleMap.values().forEach(DatabaseModule::computeWeight);
 
         // Compute sorted result list
-        List<DatabaseModule> dbModules = new ArrayList<>();
-        dbModules.addAll(moduleMap.values());
-        Collections.sort(dbModules, new DatabaseModuleComparator());
+        List<DatabaseModule> dbModules = new ArrayList<>(moduleMap.values());
+        dbModules.sort(new DatabaseModuleComparator());
 
         return dbModules;
     }

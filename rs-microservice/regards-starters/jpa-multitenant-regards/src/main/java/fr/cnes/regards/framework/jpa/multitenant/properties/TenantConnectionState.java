@@ -27,5 +27,5 @@ public enum TenantConnectionState {
     ENABLED,
     DISABLED,
     CONNECTING,
-    ERROR;
+    ERROR
 }

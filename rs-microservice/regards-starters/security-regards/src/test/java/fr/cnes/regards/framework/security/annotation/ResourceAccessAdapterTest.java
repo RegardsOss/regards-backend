@@ -68,8 +68,8 @@ public class ResourceAccessAdapterTest {
         try {
             // Serialize test
             adapter.write(writer, resourceAccess);
-            Assert.assertTrue("Invalid transformation to json for annotation REsourceAccess",
-                              jsonResourceAccess.equals(swriter.toString()));
+            Assert.assertEquals("Invalid transformation to json for annotation REsourceAccess", jsonResourceAccess,
+                                swriter.toString());
         } catch (final IOException e) {
             Assert.fail(e.getMessage());
         }
@@ -78,8 +78,8 @@ public class ResourceAccessAdapterTest {
             // Deserialize test
             final ResourceAccess resource = adapter.read(new JsonReader(new StringReader(jsonResourceAccess)));
             Assert.assertNotNull(resource);
-            Assert.assertTrue(resource.role().equals(resourceAccess.role()));
-            Assert.assertTrue(resource.description().equals(resourceAccess.description()));
+            Assert.assertEquals(resource.role(), resourceAccess.role());
+            Assert.assertEquals(resource.description(), resourceAccess.description());
         } catch (final IOException e) {
             Assert.fail(e.getMessage());
         }

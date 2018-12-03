@@ -52,7 +52,7 @@ public class PluginConfigurationFieldDescriptors {
     }
 
     public List<FieldDescriptor> build(boolean update) {
-        List<FieldDescriptor> lfd = new ArrayList<FieldDescriptor>();
+        List<FieldDescriptor> lfd = new ArrayList<>();
 
         ConstrainedFields pluginConfField = new ConstrainedFields(PluginConfiguration.class);
 
@@ -86,7 +86,7 @@ public class PluginConfigurationFieldDescriptors {
     }
 
     private List<FieldDescriptor> buildPluginParameterDescription(String prefix) {
-        List<FieldDescriptor> lfd = new ArrayList<FieldDescriptor>();
+        List<FieldDescriptor> lfd = new ArrayList<>();
 
         ConstrainedFields representationInformationField = new ConstrainedFields(PluginParameter.class);
 

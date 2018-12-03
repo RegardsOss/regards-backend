@@ -96,7 +96,7 @@ public class JpaUtilsTest {
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Check for embedded HSQLDB database creation")
     @Test
-    public void embeddedDataSourceTest() throws IOException, SQLException {
+    public void embeddedDataSourceTest() throws SQLException {
         final String path = "target/embedded";
         final DataSource datasource = DataSourceHelper.createEmbeddedDataSource("test", path);
         datasource.getConnection().close();

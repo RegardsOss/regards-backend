@@ -190,7 +190,7 @@ public class JobInfo {
     }
 
     public void setPriority(int priority) {
-        this.priority = Integer.valueOf(priority);
+        this.priority = priority;
     }
 
     public void setParameters(Set<JobParameter> parameters) {

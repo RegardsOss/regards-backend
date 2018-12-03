@@ -63,7 +63,7 @@ public class Positions extends ArrayList<Position> {
      * Return positions as double[][] (array of positions as double[] { longitude, latitude })
      */
     public double[][] toArray() {
-        return this.stream().map(Position::toArray).toArray(n -> new double[n][]);
+        return this.stream().map(Position::toArray).toArray(double[][]::new);
     }
 
     /**

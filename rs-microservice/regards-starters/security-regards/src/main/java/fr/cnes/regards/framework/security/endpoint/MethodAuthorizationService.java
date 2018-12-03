@@ -245,14 +245,11 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
                 // we already have some authorities(roles) in the system, so lets get them and add the new ones
                 final Set<GrantedAuthority> grantedAuthorities = new LinkedHashSet<>(
                         grantedAuthoritiesByResource.get(resourceId));
-                for (final GrantedAuthority granted : resourceMapping.getAutorizedRoles()) {
-                    grantedAuthorities.add(granted);
-                }
+                grantedAuthorities.addAll(resourceMapping.getAutorizedRoles());
                 newAuthorities = new ArrayList<>(grantedAuthorities);
             } else {
                 // we do not have any authorities(roles) for this resource, so lets just take the new ones
-                newAuthorities = new ArrayList<>();
-                newAuthorities.addAll(resourceMapping.getAutorizedRoles());
+                newAuthorities = new ArrayList<>(resourceMapping.getAutorizedRoles());
             }
             grantedAuthoritiesByResource.put(resourceId, newAuthorities);
         }

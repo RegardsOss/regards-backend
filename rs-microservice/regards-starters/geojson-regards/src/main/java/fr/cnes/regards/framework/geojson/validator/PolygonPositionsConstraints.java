@@ -38,7 +38,7 @@ import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
 @Documented
 public @interface PolygonPositionsConstraints {
 
-    static final String CLASS_NAME = "fr.cnes.regards.framework.geojson.coordinates.PolygonPositions.";
+    String CLASS_NAME = "fr.cnes.regards.framework.geojson.coordinates.PolygonPositions.";
 
     String message() default "{" + CLASS_NAME + "message}";
 

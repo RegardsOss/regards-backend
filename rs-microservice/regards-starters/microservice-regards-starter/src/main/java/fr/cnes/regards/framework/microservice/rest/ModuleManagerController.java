@@ -115,7 +115,7 @@ public class ModuleManagerController {
 
     @RequestMapping(method = RequestMethod.GET, value = CONFIGURATION_ENABLED_MAPPING)
     @ResourceAccess(description = "Import/export support information")
-    public ResponseEntity<Void> isConfigurationEnabled() throws ModuleException {
+    public ResponseEntity<Void> isConfigurationEnabled() {
         if (managers != null && !managers.isEmpty()) {
             return ResponseEntity.ok().build();
         } else {
@@ -182,7 +182,7 @@ public class ModuleManagerController {
                         return new ResponseEntity<>(importReports, HttpStatus.PARTIAL_CONTENT);
                     } else {
                         // now that we know that every module has errors, lets check if any configuration at all could be imported
-                        long numberModulesInTotalError = modulesInError.stream().filter(mir -> mir.isOnlyErrors())
+                        long numberModulesInTotalError = modulesInError.stream().filter(ModuleImportReport::isOnlyErrors)
                                 .count();
                         if (numberModulesInTotalError == modulesInError.size()) {
                             return new ResponseEntity<>(importReports, HttpStatus.CONFLICT);
@@ -228,9 +228,8 @@ public class ModuleManagerController {
     @RequestMapping(method = RequestMethod.GET, value = READY_MAPPING)
     @ResourceAccess(description = "allows to known if the microservice is ready to work")
     public ResponseEntity<ModuleReadinessReport<?>> isReady() {
-        ModuleReadinessReport<Object> microserviceReadiness = new ModuleReadinessReport<Object>(Boolean.TRUE,
-                                                                                                Lists.newArrayList(),
-                                                                                                null);
+        ModuleReadinessReport<Object> microserviceReadiness = new ModuleReadinessReport<>(Boolean.TRUE, Lists.newArrayList(),
+                                                                                          null);
         if (managers != null && !managers.isEmpty()) {
             for (IModuleManager<?> manager : managers) {
                 if (manager.isReadyImplemented()) {
@@ -243,7 +242,7 @@ public class ModuleManagerController {
                 }
             }
         }
-        return new ResponseEntity<ModuleReadinessReport<?>>(microserviceReadiness, HttpStatus.OK);
+        return new ResponseEntity<>(microserviceReadiness, HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = READY_ENABLED_MAPPING)

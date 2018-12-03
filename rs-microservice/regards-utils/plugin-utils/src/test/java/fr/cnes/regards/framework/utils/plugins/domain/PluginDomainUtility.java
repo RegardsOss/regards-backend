@@ -44,7 +44,7 @@ public class PluginDomainUtility {
     /**
      * An id constant {@link Long}
      */
-    protected static final Long AN_ID = new Long(33);
+    protected static final Long AN_ID = 33L;
 
     /**
      * Version

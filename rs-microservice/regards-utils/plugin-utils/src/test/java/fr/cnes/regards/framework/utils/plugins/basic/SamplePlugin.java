@@ -66,12 +66,12 @@ public class SamplePlugin implements ISamplePlugin {
 
     @Override
     public String echo(final String pMessage) {
-        final StringBuffer str = new StringBuffer();
+        final StringBuilder str = new StringBuilder();
         if (isActive) {
-            str.append(this.getClass().getName() + " -> " + pMessage + " - " + suffix);
+            str.append(this.getClass().getName()).append(" -> ").append(pMessage).append(" - ").append(suffix);
         } else {
 
-            str.append(this.getClass().getName() + ":is not active");
+            str.append(this.getClass().getName()).append(":is not active");
         }
         return str.toString();
     }

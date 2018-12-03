@@ -146,7 +146,7 @@ public class ZipCompression extends AbstractRunnableCompression {
                 if (fileNow.isFile()) {
 
                     try (FileInputStream fi = new FileInputStream(fileNow);
-                            BufferedInputStream origin = new BufferedInputStream(fi, BUFFER);) {
+                            BufferedInputStream origin = new BufferedInputStream(fi, BUFFER)) {
                         int count = 0;
                         byte data[] = new byte[BUFFER];
                         count = origin.read(data);
@@ -194,7 +194,7 @@ public class ZipCompression extends AbstractRunnableCompression {
 
         File temporaryFile = new File(pFile.getAbsolutePath());
 
-        StringBuffer pathToRoot = new StringBuffer();
+        StringBuilder pathToRoot = new StringBuilder();
         pathToRoot.insert(0, temporaryFile.getName());
 
         boolean loop = !temporaryFile.getParentFile().getAbsolutePath().equals(pRootDir.getAbsolutePath());

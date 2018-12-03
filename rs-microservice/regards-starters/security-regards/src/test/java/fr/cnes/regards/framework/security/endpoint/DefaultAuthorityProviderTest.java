@@ -52,7 +52,7 @@ public class DefaultAuthorityProviderTest {
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify access to all resources access per microservice")
     @Test
-    public void defaultAuthorityProviderTest() throws SecurityException {
+    public void defaultAuthorityProviderTest() {
 
         // TODO
     }

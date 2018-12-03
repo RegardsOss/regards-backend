@@ -43,6 +43,7 @@ public interface IGeometry {
 
     void setCrs(String crs);
 
+    @SuppressWarnings("unchecked")
     default <T extends IGeometry> T withCrs(String crs) {
         this.setCrs(crs);
         return (T) this;

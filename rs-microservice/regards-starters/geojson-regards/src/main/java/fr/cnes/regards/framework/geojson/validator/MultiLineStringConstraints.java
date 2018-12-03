@@ -38,7 +38,7 @@ import fr.cnes.regards.framework.geojson.geometry.LineString;
 @Documented
 public @interface MultiLineStringConstraints {
 
-    static final String CLASS_NAME = "fr.cnes.regards.framework.geojson.geometry.MultiLineString.";
+    String CLASS_NAME = "fr.cnes.regards.framework.geojson.geometry.MultiLineString.";
 
     String message() default "{" + CLASS_NAME + "message}";
 

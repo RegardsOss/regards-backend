@@ -88,13 +88,9 @@ public class AccessRightInformation {
             return false;
         }
         if (publicReleaseDate == null) {
-            if (other.publicReleaseDate != null) {
-                return false;
-            }
-        } else if (!publicReleaseDate.equals(other.publicReleaseDate)) {
-            return false;
-        }
-        return true;
+            return other.publicReleaseDate == null;
+        } else
+            return publicReleaseDate.equals(other.publicReleaseDate);
     }
 
 }

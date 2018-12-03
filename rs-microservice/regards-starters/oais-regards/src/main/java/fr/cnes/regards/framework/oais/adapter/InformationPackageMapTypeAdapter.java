@@ -62,7 +62,7 @@ public class InformationPackageMapTypeAdapter extends TypeAdapter<InformationPac
         JsonToken token = in.peek();
         switch (token) {
             case BEGIN_ARRAY:
-                List<Object> list = new ArrayList<Object>();
+                List<Object> list = new ArrayList<>();
                 in.beginArray();
                 while (in.hasNext()) {
                     list.add(readElement(in));
@@ -71,7 +71,7 @@ public class InformationPackageMapTypeAdapter extends TypeAdapter<InformationPac
                 return list;
 
             case BEGIN_OBJECT:
-                Map<String, Object> map = new LinkedTreeMap<String, Object>();
+                Map<String, Object> map = new LinkedTreeMap<>();
                 in.beginObject();
                 while (in.hasNext()) {
                     map.put(in.nextName(), readElement(in));
@@ -111,8 +111,7 @@ public class InformationPackageMapTypeAdapter extends TypeAdapter<InformationPac
         if (this.gson == null) {
             //lets see if gson has been configured
             try {
-                Gson gson = applicationContext.getBean(Gson.class);
-                this.gson = gson;
+                this.gson = applicationContext.getBean(Gson.class);
             } catch (NoSuchBeanDefinitionException e) {
                 LOG.trace("Gson has not been initialized yet", e);
             }

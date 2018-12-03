@@ -36,6 +36,6 @@ public class NeverUseFlywayAutoConfiguration {
      */
     @Bean
     public Flyway flyway() {
-        return new Flyway();
+        return Flyway.configure().load();
     }
 }

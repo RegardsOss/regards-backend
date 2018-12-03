@@ -17,10 +17,6 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * Class GsonIgnore
- * @author Christophe Mertz
- */
 package fr.cnes.regards.framework.gson.annotation;
 
 import java.lang.annotation.ElementType;

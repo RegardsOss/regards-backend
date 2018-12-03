@@ -50,7 +50,7 @@ public class ModuleConfigurationItemAdapter extends TypeAdapter<ModuleConfigurat
     }
 
     @Override
-    public void write(JsonWriter out, ModuleConfigurationItem value) throws IOException {
+    public void write(JsonWriter out, ModuleConfigurationItem value) {
         gson.toJson(value, ModuleConfigurationItem.class, out);
     }
 

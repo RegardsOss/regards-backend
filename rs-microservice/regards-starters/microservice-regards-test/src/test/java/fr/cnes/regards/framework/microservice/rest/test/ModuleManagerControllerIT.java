@@ -41,7 +41,7 @@ public class ModuleManagerControllerIT extends AbstractRegardsIT {
         Path filePath = Paths.get("src", "test", "resources", "test-configuration.json");
 
         performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
-                                 filePath, customizer().expectStatusOk(), "Should be able to import configuration");
+                                 filePath, customizer().expectStatusCreated(), "Should be able to import configuration");
     }
 
     @Test

@@ -56,13 +56,13 @@ public class AdapterTest {
         LOGGER.info(jsonCollection);
         final CollectionSample collection = gson.fromJson(jsonCollection, CollectionSample.class);
 
-        Assert.assertTrue(CollectionSample.NAME.equals(collection.getName()));
+        Assert.assertEquals(CollectionSample.NAME, collection.getName());
 
         entity = new DatasetSample();
         final String jsonDataset = gson.toJson(entity);
         LOGGER.info(jsonDataset);
         final DatasetSample dataset = gson.fromJson(jsonDataset, DatasetSample.class);
 
-        Assert.assertTrue(DatasetSample.NAME.equals(dataset.getName()));
+        Assert.assertEquals(DatasetSample.NAME, dataset.getName());
     }
 }

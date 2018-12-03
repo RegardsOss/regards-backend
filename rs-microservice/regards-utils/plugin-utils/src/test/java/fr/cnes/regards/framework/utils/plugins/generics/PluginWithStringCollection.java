@@ -42,7 +42,7 @@ public class PluginWithStringCollection implements IPluginWithGenerics {
     @Override
     public void doIt() {
         Assert.assertNotNull(infos);
-        Assert.assertTrue(infos.size() == 3);
+        Assert.assertEquals(3, infos.size());
         for (String info : infos) {
             Assert.assertTrue(info instanceof String);
         }

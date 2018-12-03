@@ -173,8 +173,7 @@ public class DefaultResourceService implements IResourceService {
             } else {
                 invoke = method.invoke(proxyControllerInstance);
             }
-            Link link = ControllerLinkBuilder.linkTo(invoke).withRel(rel);
-            return link;
+            return ControllerLinkBuilder.linkTo(invoke).withRel(rel);
         } catch (MethodException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             // Do not insert link
             LOGGER.trace("HATEOAS link skipped silently due to introspection error or access denied", e);

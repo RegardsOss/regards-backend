@@ -66,7 +66,7 @@ public class PolygonPositions extends ArrayList<Positions> {
      * holes)
      */
     public double[][][] toArray() {
-        return this.stream().map(Positions::toArray).toArray(n -> new double[n][][]);
+        return this.stream().map(Positions::toArray).toArray(double[][][]::new);
     }
 
     /**

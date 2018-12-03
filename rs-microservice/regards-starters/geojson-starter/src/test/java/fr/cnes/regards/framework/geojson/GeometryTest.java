@@ -77,7 +77,7 @@ public class GeometryTest {
 
         // Read
         Feature readFeature = gson.fromJson(jsonElement, Feature.class);
-        Assert.assertTrue(readFeature.getId().equals(id));
+        Assert.assertEquals(readFeature.getId(), id);
         Assert.assertTrue(readFeature.getGeometry() instanceof Unlocated);
     }
 
@@ -97,13 +97,13 @@ public class GeometryTest {
         // Get geometry
         JsonObject geometryObject = jsonObject.get(GEOMETRY).getAsJsonObject();
         Assert.assertTrue(geometryObject.has(TYPE));
-        Assert.assertTrue(geometryObject.get(TYPE).getAsString().equals(GeoJsonType.POINT.getType()));
+        Assert.assertEquals(geometryObject.get(TYPE).getAsString(), GeoJsonType.POINT.getType());
         Assert.assertTrue(geometryObject.has(COORDINATES));
 
         // Get coordinates
         JsonElement coordinates = geometryObject.get(COORDINATES);
         Assert.assertTrue(coordinates.isJsonArray());
-        Assert.assertTrue(coordinates.getAsJsonArray().size() == 2);
+        Assert.assertEquals(2, coordinates.getAsJsonArray().size());
 
         LOGGER.debug(jsonElement.toString());
 
@@ -128,13 +128,13 @@ public class GeometryTest {
         // Get geometry
         JsonObject geometryObject = jsonObject.get(GEOMETRY).getAsJsonObject();
         Assert.assertTrue(geometryObject.has(TYPE));
-        Assert.assertTrue(geometryObject.get(TYPE).getAsString().equals(GeoJsonType.MULTIPOINT.getType()));
+        Assert.assertEquals(geometryObject.get(TYPE).getAsString(), GeoJsonType.MULTIPOINT.getType());
         Assert.assertTrue(geometryObject.has(COORDINATES));
 
         // Get coordinates
         JsonElement coordinates = geometryObject.get(COORDINATES);
         Assert.assertTrue(coordinates.isJsonArray());
-        Assert.assertTrue(coordinates.getAsJsonArray().size() == 2);
+        Assert.assertEquals(2, coordinates.getAsJsonArray().size());
 
         LOGGER.debug(jsonElement.toString());
 
@@ -161,13 +161,13 @@ public class GeometryTest {
         // Get geometry
         JsonObject geometryObject = jsonObject.get(GEOMETRY).getAsJsonObject();
         Assert.assertTrue(geometryObject.has(TYPE));
-        Assert.assertTrue(geometryObject.get(TYPE).getAsString().equals(GeoJsonType.LINESTRING.getType()));
+        Assert.assertEquals(geometryObject.get(TYPE).getAsString(), GeoJsonType.LINESTRING.getType());
         Assert.assertTrue(geometryObject.has(COORDINATES));
 
         // Get coordinates
         JsonElement coordinates = geometryObject.get(COORDINATES);
         Assert.assertTrue(coordinates.isJsonArray());
-        Assert.assertTrue(coordinates.getAsJsonArray().size() == 2);
+        Assert.assertEquals(2, coordinates.getAsJsonArray().size());
 
         LOGGER.debug(jsonElement.toString());
 
@@ -199,13 +199,13 @@ public class GeometryTest {
         // Get geometry
         JsonObject geometryObject = jsonObject.get(GEOMETRY).getAsJsonObject();
         Assert.assertTrue(geometryObject.has(TYPE));
-        Assert.assertTrue(geometryObject.get(TYPE).getAsString().equals(GeoJsonType.MULTILINESTRING.getType()));
+        Assert.assertEquals(geometryObject.get(TYPE).getAsString(), GeoJsonType.MULTILINESTRING.getType());
         Assert.assertTrue(geometryObject.has(COORDINATES));
 
         // Get coordinates
         JsonElement coordinates = geometryObject.get(COORDINATES);
         Assert.assertTrue(coordinates.isJsonArray());
-        Assert.assertTrue(coordinates.getAsJsonArray().size() == 2);
+        Assert.assertEquals(2, coordinates.getAsJsonArray().size());
 
         LOGGER.debug(jsonElement.toString());
 
@@ -241,13 +241,13 @@ public class GeometryTest {
         // Get geometry
         JsonObject geometryObject = jsonObject.get(GEOMETRY).getAsJsonObject();
         Assert.assertTrue(geometryObject.has(TYPE));
-        Assert.assertTrue(geometryObject.get(TYPE).getAsString().equals(GeoJsonType.POLYGON.getType()));
+        Assert.assertEquals(geometryObject.get(TYPE).getAsString(), GeoJsonType.POLYGON.getType());
         Assert.assertTrue(geometryObject.has(COORDINATES));
 
         // Get coordinates
         JsonElement coordinates = geometryObject.get(COORDINATES);
         Assert.assertTrue(coordinates.isJsonArray());
-        Assert.assertTrue(coordinates.getAsJsonArray().size() == 2);
+        Assert.assertEquals(2, coordinates.getAsJsonArray().size());
 
         LOGGER.debug(jsonElement.toString());
 
@@ -284,13 +284,13 @@ public class GeometryTest {
         // Get geometry
         JsonObject geometryObject = jsonObject.get(GEOMETRY).getAsJsonObject();
         Assert.assertTrue(geometryObject.has(TYPE));
-        Assert.assertTrue(geometryObject.get(TYPE).getAsString().equals(GeoJsonType.MULTIPOLYGON.getType()));
+        Assert.assertEquals(geometryObject.get(TYPE).getAsString(), GeoJsonType.MULTIPOLYGON.getType());
         Assert.assertTrue(geometryObject.has(COORDINATES));
 
         // Get coordinates
         JsonElement coordinates = geometryObject.get(COORDINATES);
         Assert.assertTrue(coordinates.isJsonArray());
-        Assert.assertTrue(coordinates.getAsJsonArray().size() == 2);
+        Assert.assertEquals(2, coordinates.getAsJsonArray().size());
 
         LOGGER.debug(jsonElement.toString());
 
@@ -326,22 +326,22 @@ public class GeometryTest {
         // Get geometry
         JsonObject geometryObject = jsonObject.get(GEOMETRY).getAsJsonObject();
         Assert.assertTrue(geometryObject.has(TYPE));
-        Assert.assertTrue(geometryObject.get(TYPE).getAsString().equals(GeoJsonType.GEOMETRY_COLLECTION.getType()));
+        Assert.assertEquals(geometryObject.get(TYPE).getAsString(), GeoJsonType.GEOMETRY_COLLECTION.getType());
         Assert.assertTrue(geometryObject.has(GEOMETRIES));
 
         // Get geometries
         JsonArray geometries = geometryObject.get(GEOMETRIES).getAsJsonArray();
-        Assert.assertTrue(geometries.size() == 2);
+        Assert.assertEquals(2, geometries.size());
 
         // Get first geometry
         geometryObject = geometries.get(0).getAsJsonObject();
         Assert.assertTrue(geometryObject.has(TYPE));
-        Assert.assertTrue(geometryObject.get(TYPE).getAsString().equals(GeoJsonType.POINT.getType()));
+        Assert.assertEquals(geometryObject.get(TYPE).getAsString(), GeoJsonType.POINT.getType());
 
         // Get second geometry
         geometryObject = geometries.get(1).getAsJsonObject();
         Assert.assertTrue(geometryObject.has(TYPE));
-        Assert.assertTrue(geometryObject.get(TYPE).getAsString().equals(GeoJsonType.LINESTRING.getType()));
+        Assert.assertEquals(geometryObject.get(TYPE).getAsString(), GeoJsonType.LINESTRING.getType());
 
         LOGGER.debug(jsonElement.toString());
 

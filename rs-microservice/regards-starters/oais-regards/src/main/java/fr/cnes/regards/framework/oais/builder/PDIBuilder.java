@@ -18,15 +18,13 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
+import javax.annotation.Nullable;
 import java.time.OffsetDateTime;
 import java.util.Collection;
-
-import javax.annotation.Nullable;
 
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
 
@@ -134,6 +132,7 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
     /**
      * Remove tags from the information package
      */
+    @SuppressWarnings("unchecked")
     public void removeTags(String... tags) {
         Collection<String> existingTags = (Collection<String>) pdi.getContextInformation()
                 .get(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY);

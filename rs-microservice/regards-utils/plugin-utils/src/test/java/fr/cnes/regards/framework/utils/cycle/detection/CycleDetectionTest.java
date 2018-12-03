@@ -48,7 +48,7 @@ public class CycleDetectionTest {
 
     @Test
     public void cycleDetectionOK() {
-        List<String> values = new ArrayList<String>();
+        List<String> values = new ArrayList<>();
         values.add("test1");
         values.add("test2");
         OffsetDateTime ofdt = OffsetDateTime.now().minusDays(5);
@@ -89,7 +89,7 @@ public class CycleDetectionTest {
 
     @Test(expected = PluginUtilsRuntimeException.class)
     public void cycleDetectedWithTwoLevel() {
-        List<String> values = new ArrayList<String>();
+        List<String> values = new ArrayList<>();
         values.add("test1");
         values.add("test2");
         values.add("test3");
@@ -174,7 +174,7 @@ public class CycleDetectionTest {
 
     @Test(expected = PluginUtilsRuntimeException.class)
     public void cycleDetectedWithThreeLevel() {
-        List<String> values = new ArrayList<String>();
+        List<String> values = new ArrayList<>();
         values.add("test1");
         values.add("test2");
         values.add("test3");

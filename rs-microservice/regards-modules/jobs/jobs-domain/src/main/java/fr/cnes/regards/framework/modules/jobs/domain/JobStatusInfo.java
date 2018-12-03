@@ -179,7 +179,7 @@ public class JobStatusInfo implements Observer {
             Duration fromStart = Duration.between(startDate, now);
             if (percentCompleted > 0) {
                 estimatedCompletion = startDate
-                        .plus((fromStart.toMillis() * 100l) / percentCompleted, ChronoUnit.MILLIS);
+                        .plus((fromStart.toMillis() * 100L) / percentCompleted, ChronoUnit.MILLIS);
             }
             completionChanged.set(true);
         }

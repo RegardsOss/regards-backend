@@ -127,9 +127,7 @@ public abstract class AbstractFeature<P, ID> extends AbstractGeoJsonObject {
         }
         @SuppressWarnings("rawtypes") AbstractFeature other = (AbstractFeature) obj;
         if (id == null) {
-            if (other.id != null) {
-                return false;
-            }
+            return other.id == null;
         } else if (!id.equals(other.id)) {
             return false;
         }

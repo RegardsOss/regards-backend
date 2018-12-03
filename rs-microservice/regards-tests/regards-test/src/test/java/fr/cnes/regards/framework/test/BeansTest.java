@@ -22,7 +22,6 @@ public class BeansTest {
         Assert.assertFalse(Beans.areEqual(item1, item4));
     }
 
-    // CHECKSTYLE:OFF
     public static class RootItem {
 
         private int toto;
@@ -36,8 +35,8 @@ public class BeansTest {
         }
 
         @Override
-        public boolean equals(Object pObj) {
-            return true;
+        public boolean equals(Object obj) {
+            return (obj == null) ? false : true;
         }
     }
 
@@ -54,8 +53,8 @@ public class BeansTest {
         }
 
         @Override
-        public boolean equals(Object pObj) {
-            return true;
+        public boolean equals(Object obj) {
+            return (obj == null) ? false : true;
         }
     }
 
@@ -80,9 +79,8 @@ public class BeansTest {
         }
 
         @Override
-        public boolean equals(Object pObj) {
-            return true;
+        public boolean equals(Object obj) {
+            return (obj == null) ? false : true;
         }
     }
-    // CHECKSTYLE:ON
 }

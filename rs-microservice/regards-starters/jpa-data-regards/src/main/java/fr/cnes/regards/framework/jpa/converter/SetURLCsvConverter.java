@@ -30,7 +30,7 @@ public class SetURLCsvConverter implements AttributeConverter<Set<URL>, String> 
             return null;
         }
         return stringConverter
-                .convertToDatabaseColumn(urls.stream().map(url -> url.toExternalForm()).collect(Collectors.toSet()));
+                .convertToDatabaseColumn(urls.stream().map(URL::toExternalForm).collect(Collectors.toSet()));
     }
 
     @Override

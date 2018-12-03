@@ -75,7 +75,7 @@ public class MethodAuthorizationServiceTest {
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify access granted/denied to endpoints defined in authorized resources for a specific tenant")
     @Test
-    public void testResourceAccessVoterVote() throws NoSuchMethodException, SecurityException {
+    public void testResourceAccessVoterVote() throws SecurityException {
 
         /**
          *
@@ -125,7 +125,7 @@ public class MethodAuthorizationServiceTest {
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify access denied to endpoints not defined in authorized resources")
     @Test
-    public void testResourceAccessVoterVoteDenied() throws NoSuchMethodException, SecurityException {
+    public void testResourceAccessVoterVoteDenied() throws SecurityException {
 
         /**
          *
@@ -168,8 +168,7 @@ public class MethodAuthorizationServiceTest {
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify internal management of resources endponts by tenants and resources")
     @Test
-    public void testManagedAuthoritiesByTenantAndResources()
-            throws fr.cnes.regards.framework.security.domain.SecurityException {
+    public void testManagedAuthoritiesByTenantAndResources() {
 
         final String resourcePath = "new/path";
         final int expectedResult = 6;

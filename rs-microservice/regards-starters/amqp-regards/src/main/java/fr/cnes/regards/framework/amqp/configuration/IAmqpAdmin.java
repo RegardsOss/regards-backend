@@ -43,7 +43,7 @@ public interface IAmqpAdmin {
      * @param target {@link Target}
      * @return a new {@link Exchange} related to current tenant and event
      */
-    public Exchange declareExchange(Class<?> eventType, WorkerMode workerMode, Target target);
+    Exchange declareExchange(Class<?> eventType, WorkerMode workerMode, Target target);
 
     /**
      * Declare a queue that can handle priority
@@ -54,7 +54,7 @@ public interface IAmqpAdmin {
      * @param handlerType optional event handler type
      * @return declared {@link Queue}
      */
-    public Queue declareQueue(String tenant, Class<?> eventType, WorkerMode workerMode, Target target,
+    Queue declareQueue(String tenant, Class<?> eventType, WorkerMode workerMode, Target target,
             Optional<Class<? extends IHandler<?>>> handlerType);
 
     String getUnicastQueueName(String tenant, Class<?> eventType, Target target);
@@ -68,7 +68,7 @@ public interface IAmqpAdmin {
      * @param workerMode {@link WorkerMode} to compute routing key
      * @return {@link Binding}
      */
-    public Binding declareBinding(Queue queue, Exchange exchange, WorkerMode workerMode);
+    Binding declareBinding(Queue queue, Exchange exchange, WorkerMode workerMode);
 
     /**
      * Routing key build according to {@link WorkerMode}.
@@ -76,32 +76,32 @@ public interface IAmqpAdmin {
      * @param workerMode worker mode
      * @return routing key
      */
-    public String getRoutingKey(Optional<Queue> queue, WorkerMode workerMode);
+    String getRoutingKey(Optional<Queue> queue, WorkerMode workerMode);
 
     /**
      * Purge the queue that manages the specified event
      * @param eventType event type
      * @param noWait true to not await completion of the purge
      */
-    public void purgeQueue(String queueName, boolean noWait);
+    void purgeQueue(String queueName, boolean noWait);
 
     /**
      * Get queue properties
      * @param queueName queue name
      * @return properties
      */
-    public Properties getQueueProperties(String queueName);
+    Properties getQueueProperties(String queueName);
 
     /**
      * @param queueName queue name
      * @return true if the queued existed and was deleted
      */
-    public boolean deleteQueue(String queueName);
+    boolean deleteQueue(String queueName);
 
     /**
      * @param queueName queue name
      * @param unused true if the queue should be deleted only if not in use
      * @param empty true if the queue should be deleted only if not in use
      */
-    public void deleteQueue(String queueName, boolean unused, boolean empty);
+    void deleteQueue(String queueName, boolean unused, boolean empty);
 }

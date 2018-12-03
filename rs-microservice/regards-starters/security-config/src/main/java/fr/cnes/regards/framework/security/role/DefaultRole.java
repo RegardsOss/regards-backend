@@ -48,5 +48,5 @@ public enum DefaultRole {
     /**
      * Public
      */
-    PUBLIC;
+    PUBLIC
 }

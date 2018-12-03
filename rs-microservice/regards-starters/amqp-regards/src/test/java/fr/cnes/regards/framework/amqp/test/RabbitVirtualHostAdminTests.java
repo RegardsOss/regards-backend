@@ -110,20 +110,20 @@ public class RabbitVirtualHostAdminTests {
         for (int i = 0; i < success.size(); i++) {
             success.set(i, TWO_HUNDRED + i);
         }
-        success.parallelStream().forEach(i -> Assert.assertEquals(true, rabbitVirtualHostAdmin.isSuccess(i)));
+        success.parallelStream().forEach(i -> Assert.assertTrue(rabbitVirtualHostAdmin.isSuccess(i)));
 
         final List<Integer> inferiorTwoHundred = new ArrayList<>(200);
         for (int i = 0; i < inferiorTwoHundred.size(); i++) {
             inferiorTwoHundred.set(i, i);
         }
         inferiorTwoHundred.parallelStream()
-                .forEach(i -> Assert.assertEquals(false, rabbitVirtualHostAdmin.isSuccess(i)));
+                .forEach(i -> Assert.assertFalse(rabbitVirtualHostAdmin.isSuccess(i)));
 
         final List<Integer> superiorTwoNintyNine = new ArrayList<>(300);
         for (int i = 0; i < superiorTwoNintyNine.size(); i++) {
             superiorTwoNintyNine.set(i, THREE_HUNDRED + i);
         }
         superiorTwoNintyNine.parallelStream()
-                .forEach(i -> Assert.assertEquals(false, rabbitVirtualHostAdmin.isSuccess(i)));
+                .forEach(i -> Assert.assertFalse(rabbitVirtualHostAdmin.isSuccess(i)));
     }
 }

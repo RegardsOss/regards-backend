@@ -83,9 +83,9 @@ public class InstanceDaoTest {
 
         // Check results
         final Iterable<TestProject> listP = projectRepository.findAll();
-        listP.forEach(project -> resultsP.add(project));
-        Assert.assertTrue(String.format("Error, there must be 1 elements in database associated to instance (%d)",
-                                        resultsP.size()), resultsP.size() == 1);
+        listP.forEach(resultsP::add);
+        Assert.assertEquals(String.format("Error, there must be 1 elements in database associated to instance (%d)",
+                                          resultsP.size()), 1, resultsP.size());
 
     }
 

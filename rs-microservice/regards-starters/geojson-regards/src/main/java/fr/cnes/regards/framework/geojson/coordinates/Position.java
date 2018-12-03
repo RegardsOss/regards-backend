@@ -104,13 +104,9 @@ public class Position {
             return false;
         }
         if (longitude == null) {
-            if (other.longitude != null) {
-                return false;
-            }
-        } else if (!longitude.equals(other.longitude)) {
-            return false;
-        }
-        return true;
+            return other.longitude == null;
+        } else
+            return longitude.equals(other.longitude);
     }
 
     @Override

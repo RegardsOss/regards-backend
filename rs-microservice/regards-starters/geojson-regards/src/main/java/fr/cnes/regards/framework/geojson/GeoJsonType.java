@@ -40,7 +40,7 @@ public enum GeoJsonType {
 
     private String type;
 
-    private GeoJsonType(String name) {
+    GeoJsonType(String name) {
         this.type = name;
     }
 

@@ -28,5 +28,5 @@ public enum AnimalType {
      */
     BIRD,
     FISH,
-    MAMMAL;
+    MAMMAL
 }

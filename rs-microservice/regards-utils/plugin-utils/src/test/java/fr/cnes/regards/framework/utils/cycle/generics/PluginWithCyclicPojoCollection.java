@@ -43,7 +43,7 @@ public class PluginWithCyclicPojoCollection implements IPluginWithGenerics {
     @Override
     public void doIt() {
         Assert.assertNotNull(infos);
-        Assert.assertTrue(infos.size() == 3);
+        Assert.assertEquals(3, infos.size());
         for (CyclicInfo info : infos) {
             Assert.assertTrue(info instanceof CyclicInfo);
         }

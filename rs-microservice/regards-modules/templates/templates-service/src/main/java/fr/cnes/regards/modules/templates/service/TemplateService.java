@@ -126,7 +126,7 @@ public class TemplateService implements ITemplateService {
     @Value("${regards.microservice.type:multitenant}")
     private String microserviceType;
 
-    public TemplateService() throws IOException {
+    public TemplateService() {
         configureTemplateLoader();
     }
 
@@ -232,7 +232,7 @@ public class TemplateService implements ITemplateService {
     }
 
     @Override
-    public SimpleMailMessage writeToEmail(String templateCode, String subject, Map<String, ? extends Object> dataModel,
+    public SimpleMailMessage writeToEmail(String templateCode, String subject, Map<String, ?> dataModel,
             String... recipients) throws EntityNotFoundException {
         // Retrieve the template of given code
         Template template = templateRepository.findByCode(templateCode)

@@ -147,7 +147,7 @@ public class TemplateServiceTest {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() {
         template = new Template(CODE, CONTENT, DATA, SUBJECT);
     }
 

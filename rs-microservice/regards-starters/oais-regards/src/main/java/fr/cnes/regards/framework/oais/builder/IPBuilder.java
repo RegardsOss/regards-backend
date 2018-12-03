@@ -399,7 +399,7 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
      */
     public void addEvents(Collection<Event> events) {
         Assert.notNull(events, "Collection of events cannot be null");
-        addEvents(events.toArray(new Event[events.size()]));
+        addEvents(events.toArray(new Event[0]));
     }
 
     /**

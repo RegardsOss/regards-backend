@@ -90,7 +90,7 @@ public class JobServiceTest {
     private Gson gson;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         GsonUtil.setGson(gson);
 
         tenantResolver.forceTenant(TENANT);
@@ -156,7 +156,7 @@ public class JobServiceTest {
         JobInfo waitJobInfo = new JobInfo(false);
         waitJobInfo.setPriority(10);
         waitJobInfo.setClassName(WaiterJob.class.getName());
-        waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500l),
+        waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500L),
                                   new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 1));
         waitJobInfo = jobInfoService.createAsQueued(waitJobInfo);
 
@@ -173,7 +173,7 @@ public class JobServiceTest {
         JobInfo waitJobInfo = new JobInfo(false);
         waitJobInfo.setPriority(10);
         waitJobInfo.setClassName(WaiterJob.class.getName());
-        waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
+        waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000L),
                                   new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
         waitJobInfo = jobInfoService.createAsQueued(waitJobInfo);
         jobInfoService.stopJob(waitJobInfo.getId());
@@ -188,7 +188,7 @@ public class JobServiceTest {
         JobInfo waitJobInfo = new JobInfo(false);
         waitJobInfo.setPriority(10);
         waitJobInfo.setClassName(WaiterJob.class.getName());
-        waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
+        waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000L),
                                   new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
         waitJobInfo = jobInfoService.createAsQueued(waitJobInfo);
 
@@ -227,7 +227,7 @@ public class JobServiceTest {
             jobInfos[i] = new JobInfo(false);
             jobInfos[i].setPriority(20 - i); // Makes it easier to know which ones are launched first
             jobInfos[i].setClassName(WaiterJob.class.getName());
-            jobInfos[i].setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
+            jobInfos[i].setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000L),
                                       new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 2));
         }
         for (int i = 0; i < jobInfos.length; i++) {

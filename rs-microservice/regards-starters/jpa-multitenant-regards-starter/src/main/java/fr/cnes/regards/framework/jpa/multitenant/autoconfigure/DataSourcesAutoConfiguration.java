@@ -56,6 +56,7 @@ import fr.cnes.regards.framework.jpa.multitenant.event.MultitenantJpaEventPublis
 import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
+import fr.cnes.regards.framework.jpa.multitenant.resolver.DefaultTenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.multitenant.utils.TenantDataSourceHelper;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
@@ -102,16 +103,10 @@ public class DataSourcesAutoConfiguration {
     private String physicalNamingStrategyName;
 
     /**
-     * Microservice globale configuration
+     * Microservice global configuration
      */
     @Autowired
     private MultitenantDaoProperties daoProperties;
-
-    /**
-     * Custom projects dao connection reader
-     */
-    @Autowired
-    private ITenantConnectionResolver tenantConnectionResolver;
 
     /**
      * JPA Configuration
@@ -126,15 +121,24 @@ public class DataSourcesAutoConfiguration {
     private IEncryptionService encryptionService;
 
     /**
+     * Create a default TenantConnection resolver if none defined.
+     * @return ITenantConnectionResolver
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public ITenantConnectionResolver defaultTenantConnectionResolver() {
+        return new DefaultTenantConnectionResolver();
+    }
+
+    /**
      * List of data sources for each configured tenant.
-     * @return Map<Tenant               ,                               DataSource>
+     * @return Map { Tenant, DataSource }
      * @throws JpaMultitenantException if connections cannot be retrieved on startup
      */
     @Bean(name = { DATA_SOURCE_BEAN_NAME })
-    public Map<String, DataSource> getDataSources() throws JpaMultitenantException, EncryptionException {
-
+    public Map<String, DataSource> getDataSources(ITenantConnectionResolver tenantConnectionResolver)
+            throws JpaMultitenantException, EncryptionException {
         Map<String, DataSource> datasources = new HashMap<>();
-
         // Retrieve microservice tenant connections from multitenant resolver
         List<TenantConnection> connections = tenantConnectionResolver.getTenantConnections(microserviceName);
         // Initialize tenant connections
@@ -142,10 +146,10 @@ public class DataSourcesAutoConfiguration {
         for (TenantConnection connection : connections) {
             connection.setPassword(encryptionService.decrypt(connection.getPassword()));
         }
-        initDataSources(datasources, connections, false);
+        initDataSources(datasources, connections, false, tenantConnectionResolver);
         // Add static datasources configuration from properties file if necessary
         // configuration files are not encrypted so we do not need to decrypt passwords here.
-        initDataSources(datasources, daoProperties.getTenants(), true);
+        initDataSources(datasources, daoProperties.getTenants(), true, tenantConnectionResolver);
 
         return datasources;
     }
@@ -157,9 +161,7 @@ public class DataSourcesAutoConfiguration {
      */
     @Bean(name = DATASOURCE_SCHEMA_HELPER_BEAN_NAME)
     public IDatasourceSchemaHelper datasourceSchemaHelper() throws JpaException {
-
         Map<String, Object> hibernateProperties = getHibernateProperties();
-
         if (MigrationTool.HBM2DDL.equals(daoProperties.getMigrationTool())) {
             Hbm2ddlDatasourceSchemaHelper helper = new Hbm2ddlDatasourceSchemaHelper(hibernateProperties, Entity.class,
                                                                                      InstanceEntity.class);
@@ -181,9 +183,9 @@ public class DataSourcesAutoConfiguration {
     @Bean
     public MultitenantJpaEventHandler multitenantJpaEventHandler(IInstanceSubscriber instanceSubscriber,
             ITenantConnectionResolver multitenantResolver,
-            @Qualifier(DATASOURCE_SCHEMA_HELPER_BEAN_NAME) IDatasourceSchemaHelper datasourceSchemaHelper)
-            throws JpaMultitenantException, EncryptionException {
-        return new MultitenantJpaEventHandler(microserviceName, getDataSources(), daoProperties, datasourceSchemaHelper,
+            @Qualifier(DATASOURCE_SCHEMA_HELPER_BEAN_NAME) IDatasourceSchemaHelper datasourceSchemaHelper,
+            @Qualifier(DataSourcesAutoConfiguration.DATA_SOURCE_BEAN_NAME) Map<String, DataSource> dataSources) {
+        return new MultitenantJpaEventHandler(microserviceName, dataSources, daoProperties, datasourceSchemaHelper,
                                               instanceSubscriber, multitenantResolver, localPublisher(),
                                               encryptionService);
     }
@@ -199,36 +201,33 @@ public class DataSourcesAutoConfiguration {
 
     /**
      * Create the datasources from the TenantConfiguration list given
-     * @param pExistingDataSources list of existing datasources
-     * @param pConnections pTenants tenants configuration
-     * @param pNeedRegistration if data source have to be registered
+     * @param existingDataSources list of existing datasources
+     * @param connections pTenants tenants configuration
+     * @param needRegistration if data source have to be registered
      * @return datasources created
      */
-    private void initDataSources(Map<String, DataSource> pExistingDataSources,
-            final List<TenantConnection> pConnections, boolean pNeedRegistration) {
+    private void initDataSources(Map<String, DataSource> existingDataSources, List<TenantConnection> connections,
+            boolean needRegistration, ITenantConnectionResolver tenantConnectionResolver) {
 
-        for (final TenantConnection tenantConnection : pConnections) {
-
+        for (TenantConnection tenantConnection : connections) {
             // Prevent duplicates
-            if (!pExistingDataSources.containsKey(tenantConnection.getTenant())) {
-
+            if (!existingDataSources.containsKey(tenantConnection.getTenant())) {
                 try {
                     // Init data source
                     DataSource dataSource = TenantDataSourceHelper.initDataSource(daoProperties, tenantConnection);
                     // Update database schema
                     datasourceSchemaHelper().migrate(dataSource);
                     // Register connection
-                    if (pNeedRegistration) {
+                    if (needRegistration) {
                         tenantConnectionResolver.addTenantConnection(microserviceName, tenantConnection);
                     }
                     // Register data source
-                    pExistingDataSources.put(tenantConnection.getTenant(), dataSource);
+                    existingDataSources.put(tenantConnection.getTenant(), dataSource);
                 } catch (PropertyVetoException | JpaMultitenantException | JpaException | SQLException e) {
                     // Do not block all tenants if for an inconsistent data source
                     LOGGER.error("Cannot create datasource for tenant {}", tenantConnection.getTenant());
                     LOGGER.error(e.getMessage(), e);
                 }
-
             } else {
                 LOGGER.warn(String.format("Datasource for tenant %s already defined.", tenantConnection.getTenant()));
             }
@@ -244,13 +243,13 @@ public class DataSourcesAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean(DataSource.class)
-    public DataSource projectsDataSource() throws JpaMultitenantException, EncryptionException {
-        final Map<String, DataSource> multitenantsDataSources = getDataSources();
+    public DataSource projectsDataSource(
+            @Qualifier(DataSourcesAutoConfiguration.DATA_SOURCE_BEAN_NAME) Map<String, DataSource> dataSources) {
         DataSource datasource = null;
-        if ((multitenantsDataSources != null) && !multitenantsDataSources.isEmpty()) {
-            datasource = multitenantsDataSources.values().iterator().next();
+        if ((dataSources != null) && !dataSources.isEmpty()) {
+            datasource = dataSources.values().iterator().next();
         } else {
-            LOGGER.error("No datasource defined for MultitenantcyJpaAutoConfiguration !");
+            LOGGER.error("No datasource defined for MultitenantJpaAutoConfiguration !");
         }
         return datasource;
     }
@@ -261,15 +260,14 @@ public class DataSourcesAutoConfiguration {
      * @throws JpaException if error occurs!
      */
     private Map<String, Object> getHibernateProperties() throws JpaException {
-        Map<String, Object> dbProperties = new HashMap<>();
 
         // Add Spring JPA hibernate properties
         // Schema must be retrieved here if managed with property :
         // spring.jpa.properties.hibernate.default_schema
         // Before retrieving hibernate properties, set ddl auto to avoid the need of a datasource
         hb8Properties.setDdlAuto("none");
-        dbProperties.putAll(hb8Properties.determineHibernateProperties(jpaProperties.getProperties(),
-                                                                       new HibernateSettings()));
+        Map<String, Object> dbProperties = new HashMap<>(
+                hb8Properties.determineHibernateProperties(jpaProperties.getProperties(), new HibernateSettings()));
         // Remove hbm2ddl as schema update is done programmatically
         dbProperties.remove(Environment.HBM2DDL_AUTO);
 

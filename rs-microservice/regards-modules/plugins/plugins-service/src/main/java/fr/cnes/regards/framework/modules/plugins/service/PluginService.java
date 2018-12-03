@@ -365,7 +365,7 @@ public class PluginService implements IPluginService {
     private void cleanRecursively(PluginConfiguration pluginConf) {
         // And don't forget to clean all PluginConfiguration that have this plugin as a parameter
         List<PluginConfiguration> parentPluginConfs = repos.findByParametersPluginConfiguration(pluginConf);
-        parentPluginConfs.forEach(pc -> cleanRecursively(pc));
+        parentPluginConfs.forEach(this::cleanRecursively);
         cleanPluginCache(pluginConf.getId());
     }
 

@@ -50,9 +50,7 @@ public class ComplexErrorPlugin implements ISamplePlugin {
 
     @Override
     public String echo(String pMessage) {
-        final StringBuffer str = new StringBuffer();
-        str.append(this.getClass().getName() + "-" + pMessage + interfacePlugin.toString());
-        return str.toString();
+        return this.getClass().getName() + "-" + pMessage + interfacePlugin.toString();
     }
 
     @Override

@@ -48,7 +48,7 @@ public class MaintenanceHealthIndicator extends AbstractHealthIndicator
     }
 
     @Override
-    protected void doHealthCheck(Health.Builder builder) throws Exception {
+    protected void doHealthCheck(Health.Builder builder) {
         MaintenanceInfo info = MaintenanceManager.getMaintenanceMap().get(runtimeTenantResolver.getTenant());
         builder.withDetail("lastUpdate", info.getLastUpdate());
         if (info.getActive()) {

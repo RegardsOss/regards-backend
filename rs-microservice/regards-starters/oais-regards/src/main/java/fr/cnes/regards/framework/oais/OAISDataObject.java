@@ -224,13 +224,9 @@ public class OAISDataObject {
             return false;
         }
         if (urls == null) {
-            if (other.urls != null) {
-                return false;
-            }
-        } else if (!urls.equals(other.urls)) {
-            return false;
-        }
-        return true;
+            return other.urls == null;
+        } else
+            return urls.equals(other.urls);
     }
 
     @Override

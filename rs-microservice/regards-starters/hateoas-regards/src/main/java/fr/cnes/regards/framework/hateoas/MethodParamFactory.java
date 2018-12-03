@@ -28,11 +28,11 @@ public final class MethodParamFactory {
     }
 
     public static <T> MethodParam<T> build(Class<T> pParameterType, T pValue) {
-        return new MethodParam<T>(pParameterType, pValue);
+        return new MethodParam<>(pParameterType, pValue);
     }
 
     public static <T> MethodParam<T> build(Class<T> pParameterType) {
-        return new MethodParam<T>(pParameterType, null);
+        return new MethodParam<>(pParameterType, null);
     }
 
 }

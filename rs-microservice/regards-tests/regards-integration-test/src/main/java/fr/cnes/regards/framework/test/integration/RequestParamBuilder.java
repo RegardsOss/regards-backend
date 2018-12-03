@@ -27,7 +27,7 @@ public final class RequestParamBuilder {
     /**
      * Request parameters
      */
-    private final MultiValueMap<String, String> parameters = new LinkedMultiValueMap<String, String>();
+    private final MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
 
     private RequestParamBuilder() {
     }

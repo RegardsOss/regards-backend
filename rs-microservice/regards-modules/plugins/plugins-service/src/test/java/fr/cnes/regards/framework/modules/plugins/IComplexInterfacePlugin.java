@@ -33,6 +33,6 @@ public interface IComplexInterfacePlugin {
      * @param pSecond second parameter's method
      * @return the result
      */
-    public int mult(int pFirst, int pSecond);
+    int mult(int pFirst, int pSecond);
 
 }

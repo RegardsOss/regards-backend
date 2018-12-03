@@ -25,7 +25,6 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantException;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
 
@@ -44,20 +43,19 @@ public class DefaultTenantConnectionResolver implements ITenantConnectionResolve
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultTenantConnectionResolver.class);
 
     @Override
-    public List<TenantConnection> getTenantConnections(String microserviceName) throws JpaMultitenantException {
+    public List<TenantConnection> getTenantConnections(String microserviceName) {
         LOGGER.warn("No Tenant connections resolver defined. Default one used.");
         return new ArrayList<>();
     }
 
     @Override
-    public void addTenantConnection(String microserviceName, final TenantConnection pTenantConnection)
-            throws JpaMultitenantException {
+    public void addTenantConnection(String microserviceName, final TenantConnection pTenantConnection) {
         LOGGER.warn("No Tenant connections resolver defined. Tenant connection is not persisted.");
     }
 
     @Override
     public void updateState(String microservice, String tenant, TenantConnectionState state,
-            Optional<String> errorCause) throws JpaMultitenantException {
+            Optional<String> errorCause) {
         LOGGER.warn("No Tenant connections resolver defined. Tenant connection is not updated.");
     }
 

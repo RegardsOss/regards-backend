@@ -62,7 +62,7 @@ public class FeatureTest {
         // Read
         FeatureCollection readCollection = gson.fromJson(collectionString, FeatureCollection.class);
         Assert.assertNotNull(readCollection.getFeatures());
-        Assert.assertTrue(readCollection.getFeatures().size() == 2);
-        Assert.assertTrue(readCollection.getFeatures().get(0) instanceof Feature);
+        Assert.assertEquals(2, readCollection.getFeatures().size());
+        Assert.assertNotNull(readCollection.getFeatures().get(0));
     }
 }

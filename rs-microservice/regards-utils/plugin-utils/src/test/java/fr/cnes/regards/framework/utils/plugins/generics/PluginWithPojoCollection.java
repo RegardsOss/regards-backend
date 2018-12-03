@@ -42,7 +42,7 @@ public class PluginWithPojoCollection implements IPluginWithGenerics {
     @Override
     public void doIt() {
         Assert.assertNotNull(infos);
-        Assert.assertTrue(infos.size() == 3);
+        Assert.assertEquals(3, infos.size());
         for (Info info : infos) {
             Assert.assertTrue(info instanceof Info);
         }

@@ -22,7 +22,7 @@ package fr.cnes.regards.framework.utils.plugins;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +42,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
 import com.google.common.reflect.TypeToken;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginDestroy;
@@ -110,7 +109,7 @@ public final class PluginUtils {
      * @param reflectionPackage package to scan
      */
     public static void setup(String reflectionPackage) {
-        setup(Arrays.asList(reflectionPackage));
+        setup(Collections.singletonList(reflectionPackage));
     }
 
     /**
@@ -130,10 +129,10 @@ public final class PluginUtils {
             reflections = new Reflections(defaultPackage);
         } else {
             StringJoiner customPackages = new StringJoiner(",");
-            reflectionPackages.forEach(p -> customPackages.add(p));
+            reflectionPackages.forEach(customPackages::add);
             LOGGER.info("System will look for plugins in custom package(s): {}", customPackages.toString());
             Configuration configuration = ConfigurationBuilder
-                    .build(reflectionPackages.toArray(new Object[reflectionPackages.size()]));
+                    .build(reflectionPackages.toArray(new Object[0]));
             reflections = new Reflections(configuration);
         }
 

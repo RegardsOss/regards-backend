@@ -67,7 +67,7 @@ public class CorsFilterTest {
     @Requirement("REGARDS_DSL_SYS_ARC_030")
     @Purpose("Check security filter with cors requests")
     @Test
-    public void corsFilterTest() throws SecurityException {
+    public void corsFilterTest() {
 
         final HttpServletRequest mockedRequest = Mockito.mock(HttpServletRequest.class);
         final HttpServletResponse mockedResponse = new MockHttpServletResponse();
@@ -108,7 +108,7 @@ public class CorsFilterTest {
     @Requirement("REGARDS_DSL_SYS_ARC_040")
     @Purpose("Check security filter with cors requests access denied for a given Role")
     @Test
-    public void corsFilterAccessDeniedTest() throws SecurityException {
+    public void corsFilterAccessDeniedTest() {
 
         final HttpServletRequest mockedRequest = Mockito.mock(HttpServletRequest.class);
         final HttpServletResponse mockedResponse = new MockHttpServletResponse();

@@ -39,7 +39,7 @@ public class TestPojoChildWithSet {
 
     public void addPojo(TestPojo aPojo) {
         if (this.pojos == null) {
-            this.pojos = new HashSet<TestPojo>();
+            this.pojos = new HashSet<>();
         }
         this.pojos.add(aPojo);
     }
@@ -65,13 +65,9 @@ public class TestPojoChildWithSet {
         }
         TestPojoChildWithSet other = (TestPojoChildWithSet) obj;
         if (pojos == null) {
-            if (other.pojos != null) {
-                return false;
-            }
-        } else if (!pojos.equals(other.pojos)) {
-            return false;
-        }
-        return true;
+            return other.pojos == null;
+        } else
+            return pojos.equals(other.pojos);
     }
 
 }

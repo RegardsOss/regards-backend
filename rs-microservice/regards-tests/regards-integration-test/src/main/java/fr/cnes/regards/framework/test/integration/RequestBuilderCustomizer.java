@@ -5,9 +5,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.assertj.core.util.Lists;
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +18,6 @@ import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.operation.preprocess.OperationRequestPreprocessor;
 import org.springframework.restdocs.operation.preprocess.OperationResponsePreprocessor;
-import org.springframework.restdocs.request.ParameterDescriptor;
-import org.springframework.restdocs.request.RequestDocumentation;
 import org.springframework.restdocs.snippet.Snippet;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -28,7 +26,6 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
@@ -287,6 +284,50 @@ public class RequestBuilderCustomizer {
     }
 
     /**
+     * Add a ResultMatcher status NOT_FOUND to be matched
+     */
+    public RequestBuilderCustomizer expectStatusNotFound() {
+        return expect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    /**
+     * Add a ResultMatcher status BAD_REQUEST to be matched
+     */
+    public RequestBuilderCustomizer expectStatusBadRequest() {
+        return expect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    /**
+     * Add a ResultMatcher status NO_CONTENT to be matched
+     */
+    public RequestBuilderCustomizer expectStatusNoContent() {
+        return expect(MockMvcResultMatchers.status().isNoContent());
+    }
+
+
+    /**
+     * Add a ResultMatcher expecting given contentType to be matched
+     */
+    public RequestBuilderCustomizer expectContentType(String contentType) {
+        return expect(MockMvcResultMatchers.content().contentType(contentType));
+    }
+
+    /**
+     * Add a ResultMatcher expecting given jsonPath (corresponding to an array) to have given size
+     */
+    public RequestBuilderCustomizer expectToHaveSize(String jsonPath, int size) {
+        return expect(MockMvcResultMatchers.jsonPath(jsonPath, Matchers.hasSize(size)));
+    }
+
+    /**
+     * Add a ResultMatcher expecting given jsonPath to have given toString() string value
+     */
+    public RequestBuilderCustomizer expectToHaveToString(String jsonPath, String expectedToString) {
+        return expect(MockMvcResultMatchers.jsonPath(jsonPath, Matchers.hasToString(expectedToString)));
+    }
+
+
+    /**
      * Add {@link ResultMatcher} to the already present matchers
      * @deprecated use {@link #expect(ResultMatcher)} instead (it uses fluent API)
      */
@@ -316,20 +357,8 @@ public class RequestBuilderCustomizer {
     private ResultActions performRequest(MockMvc mvc, MockHttpServletRequestBuilder requestBuilder, String errorMsg) {
         Assert.assertFalse("At least one expectation is required", expectations.isEmpty());
         try {
-            Map<String, Object> queryParams = Maps.newHashMap();
-            List<ParameterDescriptor> queryParamDescriptors = Lists.newArrayList();
-            if (requestParamBuilder != null) {
-                // lets create the attributes and description for the documentation snippet
-                requestBuilder.params(requestParamBuilder.getParameters());
-                for (Map.Entry<String, List<String>> entry : requestParamBuilder.getParameters().entrySet()) {
-                    if (entry.getValue().size() == 1) {
-                        queryParams.put(entry.getKey(), entry.getValue().get(0));
-                    } else {
-                        queryParams.put(entry.getKey(), entry.getValue());
-                    }
-                    queryParamDescriptors.add(RequestDocumentation.parameterWithName(entry.getKey()).description(""));
-                }
-            }
+            // lets create the attributes and description for the documentation snippet
+            requestBuilder.params(requestParamBuilder.getParameters());
             ResultActions request = mvc.perform(requestBuilder);
             for (ResultMatcher matcher : expectations) {
                 request = request.andExpect(matcher);
@@ -342,7 +371,7 @@ public class RequestBuilderCustomizer {
                                                                                     removeHeaders("Content-Length"));
                 request.andDo(MockMvcRestDocumentation
                                       .document("{ClassName}/{methodName}", reqPreprocessor, respPreprocessor,
-                                                docSnippets.toArray(new Snippet[docSnippets.size()])));
+                                                docSnippets.toArray(new Snippet[0])));
             }
             return request;
         } catch (Exception e) { // NOSONAR

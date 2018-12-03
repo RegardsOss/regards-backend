@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.jpa.converter;
 
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
+import java.util.Collections;
 import java.util.Set;
 import java.util.StringJoiner;
 
@@ -41,12 +42,12 @@ public class SetStringCsvConverter implements AttributeConverter<Set<String>, St
      * @return converted set to string for the database
      */
     @Override
-    public String convertToDatabaseColumn(Set<String> pSet) {
-        if (pSet == null) {
+    public String convertToDatabaseColumn(Set<String> set) {
+        if (set == null) {
             return null;
         }
         StringJoiner sj = new StringJoiner(DELIMITER);
-        for (String entry : pSet) {
+        for (String entry : set) {
             sj.add(entry);
         }
         return sj.toString();
@@ -57,15 +58,13 @@ public class SetStringCsvConverter implements AttributeConverter<Set<String>, St
      * @return converted string from database to a set
      */
     @Override
-    public Set<String> convertToEntityAttribute(String pArg0) {
+    public Set<String> convertToEntityAttribute(String multiValueString) {
         Set<String> result = Sets.newHashSet();
-        if (pArg0 == null) {
+        if (multiValueString == null) {
             return result;
         }
-        String[] entries = pArg0.split(DELIMITER);
-        for (String entry : entries) {
-            result.add(entry);
-        }
+        String[] entries = multiValueString.split(DELIMITER);
+        Collections.addAll(result, entries);
         return result;
     }
 

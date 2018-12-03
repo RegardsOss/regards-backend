@@ -202,7 +202,7 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
         final HttpEntity<Void> request = new HttpEntity<>(headers);
         final ResponseEntity<List<RabbitVhost>> response = restOperations
                 .exchange(host, HttpMethod.GET, request, typeRef);
-        vhostList = response.getBody().stream().map(rVh -> rVh.getName()).collect(Collectors.toList());
+        vhostList = response.getBody().stream().map(RabbitVhost::getName).collect(Collectors.toList());
         return vhostList;
     }
 
@@ -355,7 +355,7 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
 
     @Override
     public boolean existVhost(String virtualHost) {
-        return vhostList.stream().filter(rVhName -> rVhName.equals(virtualHost)).findAny().isPresent();
+        return vhostList.stream().anyMatch(rVhName -> rVhName.equals(virtualHost));
     }
 
     @Override

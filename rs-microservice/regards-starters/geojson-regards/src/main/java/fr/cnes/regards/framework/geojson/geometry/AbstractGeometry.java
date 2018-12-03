@@ -66,12 +66,8 @@ public abstract class AbstractGeometry<T> extends AbstractGeoJsonObject implemen
         }
         @SuppressWarnings("rawtypes") AbstractGeometry other = (AbstractGeometry) obj;
         if (coordinates == null) {
-            if (other.coordinates != null) {
-                return false;
-            }
-        } else if (!coordinates.equals(other.coordinates)) {
-            return false;
-        }
-        return true;
+            return other.coordinates == null;
+        } else
+            return coordinates.equals(other.coordinates);
     }
 }

@@ -165,7 +165,7 @@ public class MaintenanceControllerIT extends AbstractRegardsIT {
         // control that the service is not in maintenance for the other tenant
         String token = jwtService.generateToken(TENANT, getDefaultUserEmail(), getDefaultUserEmail(), DEFAULT_ROLE);
         performPost(TestController.MAINTENANCE_TEST_URL, token, null,
-                    customizer().expectStatusOk().addHeaderValue(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                    customizer().expectStatusCreated().addHeaderValue(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                             .addHeaderValue(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE), ERROR_MSG);
 
         resetMaintenanceMode();

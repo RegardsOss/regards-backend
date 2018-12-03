@@ -247,12 +247,8 @@ public class PluginMetaData implements Comparable<PluginMetaData> {
 
     @Override
     public String toString() {
-        StringBuilder buf = new StringBuilder(pluginId);
-        buf.append(" : ");
-        buf.append(pluginClassName);
-        buf.append(" : ");
-        buf.append(version);
-        return buf.toString();
+        String buf = pluginId + " : " + pluginClassName + " : " + version;
+        return buf;
     }
 
     public String getMarkdown() {

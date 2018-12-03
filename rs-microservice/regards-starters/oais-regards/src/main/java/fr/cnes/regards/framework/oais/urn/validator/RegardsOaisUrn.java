@@ -41,7 +41,7 @@ public @interface RegardsOaisUrn {
     /**
      * Class to validate
      */
-    static final String CLASS_NAME = "RegardsOaisUrn.";
+    String CLASS_NAME = "RegardsOaisUrn.";
 
     /**
      * @return error message key

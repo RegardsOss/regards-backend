@@ -114,7 +114,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         Assert.assertFalse(types.isEmpty());
 
         LOGGER.debug("List all plugin types :");
-        types.forEach(p -> LOGGER.debug(p));
+        types.forEach(LOGGER::debug);
     }
 
     @Test

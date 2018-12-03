@@ -49,7 +49,7 @@ public class SpringFoxTypeFactory implements TypeAdapterFactory {
             }
 
             @Override
-            public T read(JsonReader pIn) throws IOException {
+            public T read(JsonReader pIn) {
                 throw new UnsupportedOperationException();
             }
         };

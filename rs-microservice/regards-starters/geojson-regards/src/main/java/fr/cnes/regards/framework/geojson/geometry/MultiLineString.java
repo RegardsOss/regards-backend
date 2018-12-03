@@ -45,7 +45,7 @@ public class MultiLineString extends AbstractGeometry<List<Positions>> {
     }
 
     public double[][][] toArray() {
-        return coordinates.stream().map(Positions::toArray).toArray(n -> new double[n][][]);
+        return coordinates.stream().map(Positions::toArray).toArray(double[][][]::new);
     }
 
     /**
@@ -56,7 +56,7 @@ public class MultiLineString extends AbstractGeometry<List<Positions>> {
     public static MultiLineString fromArray(double[][][] lonLatsArray) {
         MultiLineString multiLineString = new MultiLineString();
         multiLineString.coordinates.addAll(Arrays.asList(
-                Arrays.stream(lonLatsArray).map(Positions::fromArray).toArray(n -> new Positions[n])));
+                Arrays.stream(lonLatsArray).map(Positions::fromArray).toArray(Positions[]::new)));
         return multiLineString;
     }
 

@@ -68,7 +68,7 @@ public class MethodSecurityAutoConfiguration extends GlobalMethodSecurityConfigu
     @Bean
     @Override
     protected AccessDecisionManager accessDecisionManager() {
-        final List<AccessDecisionVoter<? extends Object>> decisionVoters = new ArrayList<>();
+        final List<AccessDecisionVoter<?>> decisionVoters = new ArrayList<>();
 
         // Manage system voter
         if (systemAccessVoter != null) {

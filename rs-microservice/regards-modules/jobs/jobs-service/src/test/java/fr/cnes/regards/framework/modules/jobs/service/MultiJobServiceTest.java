@@ -75,7 +75,7 @@ public class MultiJobServiceTest {
         waitJobInfo = new JobInfo(false);
         waitJobInfo.setPriority(10);
         waitJobInfo.setClassName(WaiterJob.class.getName());
-        waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500l),
+        waitJobInfo.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500L),
                                   new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 1));
         waitJobInfo = jobInfoService.createAsQueued(waitJobInfo);
 
@@ -90,7 +90,7 @@ public class MultiJobServiceTest {
     }
 
     @Test
-    public void test() throws InterruptedException {
+    public void test() {
         Thread thread = new Thread(() -> {
             tenantResolver.forceTenant(tenant);
             jobInfoService.findHighestPriorityQueuedJobAndSetAsToBeRun();

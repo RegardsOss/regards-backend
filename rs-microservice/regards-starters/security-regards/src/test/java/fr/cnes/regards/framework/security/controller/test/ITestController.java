@@ -31,6 +31,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 public interface ITestController {
 
     @RequestMapping(method = RequestMethod.GET, value = "/endpoint")
-    public void testMethod();
+    void testMethod();
 
 }

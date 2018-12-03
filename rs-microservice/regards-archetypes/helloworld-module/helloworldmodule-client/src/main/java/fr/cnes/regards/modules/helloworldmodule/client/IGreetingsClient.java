@@ -42,13 +42,13 @@ public interface IGreetingsClient {
      */
     @RequestMapping(method = RequestMethod.GET, value = "/greeting")
     @ResponseBody
-    public HttpEntity<Resource<Greeting>> greeting(String pName);
+    HttpEntity<Resource<Greeting>> greeting(String pName);
 
     /**
      * Rest resource /api/me/{name} Method GET
      */
     @RequestMapping(method = RequestMethod.GET, value = "/me")
     @ResponseBody
-    public HttpEntity<Resource<Greeting>> me(String pName);
+    HttpEntity<Resource<Greeting>> me(String pName);
 
 }

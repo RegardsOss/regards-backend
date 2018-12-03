@@ -51,8 +51,7 @@ public class ModuleConfigurationItem<T> {
     }
 
     public static <T> ModuleConfigurationItem<T> build(T value) {
-        ModuleConfigurationItem<T> mci = new ModuleConfigurationItem<T>(value);
-        return mci;
+        return new ModuleConfigurationItem<T>(value);
     }
 
     public Class<T> getKey() {

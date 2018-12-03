@@ -57,7 +57,7 @@ public class OaisFieldDescriptors {
     }
 
     public List<FieldDescriptor> build() {
-        List<FieldDescriptor> lfd = new ArrayList<FieldDescriptor>();
+        List<FieldDescriptor> lfd = new ArrayList<>();
 
         /**
          * OAIS content information
@@ -98,7 +98,7 @@ public class OaisFieldDescriptors {
     }
 
     private List<FieldDescriptor> buildRepresentationInformationDescription() {
-        List<FieldDescriptor> lfd = new ArrayList<FieldDescriptor>();
+        List<FieldDescriptor> lfd = new ArrayList<>();
 
         String path = addPrefix("properties.contentInformations[].representationInformation.");
 
@@ -113,7 +113,7 @@ public class OaisFieldDescriptors {
     }
 
     private List<FieldDescriptor> buildSyntaxDescription(String prefix) {
-        List<FieldDescriptor> lfd = new ArrayList<FieldDescriptor>();
+        List<FieldDescriptor> lfd = new ArrayList<>();
 
         ConstrainedFields syntaxField = new ConstrainedFields(Syntax.class);
 
@@ -127,7 +127,7 @@ public class OaisFieldDescriptors {
     }
 
     private List<FieldDescriptor> buildDataObjectDescription(String prefix) {
-        List<FieldDescriptor> lfd = new ArrayList<FieldDescriptor>();
+        List<FieldDescriptor> lfd = new ArrayList<>();
 
         ConstrainedFields oaisDataObjectField = new ConstrainedFields(OAISDataObject.class);
 
@@ -158,7 +158,7 @@ public class OaisFieldDescriptors {
     }
 
     private List<FieldDescriptor> buildPdiDescription(String prefix) {
-        List<FieldDescriptor> lfd = new ArrayList<FieldDescriptor>();
+        List<FieldDescriptor> lfd = new ArrayList<>();
 
         ConstrainedFields preservationField = new ConstrainedFields(PreservationDescriptionInformation.class);
 
@@ -181,7 +181,7 @@ public class OaisFieldDescriptors {
     }
 
     private List<FieldDescriptor> buildProvenanceDescription(String prefix) {
-        List<FieldDescriptor> lfd = new ArrayList<FieldDescriptor>();
+        List<FieldDescriptor> lfd = new ArrayList<>();
 
         ConstrainedFields provenanceField = new ConstrainedFields(ProvenanceInformation.class);
 
@@ -204,7 +204,7 @@ public class OaisFieldDescriptors {
     }
 
     private List<FieldDescriptor> buildEventDescription(String prefix) {
-        List<FieldDescriptor> lfd = new ArrayList<FieldDescriptor>();
+        List<FieldDescriptor> lfd = new ArrayList<>();
 
         ConstrainedFields eventField = new ConstrainedFields(Event.class);
 
@@ -217,7 +217,7 @@ public class OaisFieldDescriptors {
     }
 
     private List<FieldDescriptor> buildAccessRightDescription(String prefix) {
-        List<FieldDescriptor> lfd = new ArrayList<FieldDescriptor>();
+        List<FieldDescriptor> lfd = new ArrayList<>();
 
         ConstrainedFields accessRightField = new ConstrainedFields(AccessRightInformation.class);
 

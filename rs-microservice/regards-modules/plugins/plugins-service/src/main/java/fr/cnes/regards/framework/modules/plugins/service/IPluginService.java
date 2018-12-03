@@ -206,7 +206,7 @@ public interface IPluginService {
      * @param pluginPackage A package name to scan to find the plugins.
      */
     @Deprecated
-    default public void addPluginPackage(String pluginPackage) {
+    default void addPluginPackage(String pluginPackage) {
         // Nothing to do
     }
 

@@ -46,7 +46,7 @@ public class GeoJsonFieldDescriptors {
     }
 
     public List<FieldDescriptor> build() {
-        List<FieldDescriptor> lfd = new ArrayList<FieldDescriptor>();
+        List<FieldDescriptor> lfd = new ArrayList<>();
 
         ConstrainedFields fieldsCollection = new ConstrainedFields(AbstractFeatureCollection.class);
 

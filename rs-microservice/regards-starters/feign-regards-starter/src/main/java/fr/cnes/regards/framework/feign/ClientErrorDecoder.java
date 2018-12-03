@@ -54,7 +54,7 @@ public class ClientErrorDecoder extends ErrorDecoder.Default implements ErrorDec
         LOGGER.error(String.format("Remote call to %s. Response is : %d - %s", methodKey, response.status(),
                                    response.reason()));
         HttpHeaders responseHeaders = new HttpHeaders();
-        response.headers().entrySet().stream()
+        response.headers().entrySet()
                 .forEach(entry -> responseHeaders.put(entry.getKey(), new ArrayList<>(entry.getValue())));
 
         byte[] responseBody;

@@ -77,6 +77,7 @@ public class SpringContext implements ApplicationContextAware, ApplicationListen
      * @param <T> Type of expected bean or value
      * @return guess
      */
+    @SuppressWarnings("unchecked")
     public static <T> T getBean(String beanName) {
         return (T) applicationContext.getBean(beanName);
     }

@@ -1,7 +1,5 @@
 package fr.cnes.regards.framework.encryption;
 
-import javax.crypto.BadPaddingException;
-
 import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 
 /**

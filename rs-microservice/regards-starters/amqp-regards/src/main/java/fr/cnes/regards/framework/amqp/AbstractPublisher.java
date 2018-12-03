@@ -187,8 +187,8 @@ public abstract class AbstractPublisher implements IPublisherContract {
                                        amqpAdmin.getRoutingKey(Optional.of(queue), workerMode), event, priority);
             } else if (WorkerMode.BROADCAST.equals(workerMode)) {
                 // Routing key useless ... always skipped with a fanout exchange
-                publishMessageByTenant(tenant, exchange.getName(), amqpAdmin.getRoutingKey(null, workerMode), event,
-                                       priority);
+                publishMessageByTenant(tenant, exchange.getName(),
+                                       amqpAdmin.getRoutingKey(Optional.empty(), workerMode), event, priority);
             } else {
                 String errorMessage = String.format("Unexpected worker mode : %s.", workerMode);
                 LOGGER.error(errorMessage);

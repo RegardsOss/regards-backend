@@ -26,8 +26,8 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 @PluginInterface
 public interface ISampleBeanService {
 
-    public String getId();
+    String getId();
 
-    public void setId(String pId);
+    void setId(String pId);
 
 }

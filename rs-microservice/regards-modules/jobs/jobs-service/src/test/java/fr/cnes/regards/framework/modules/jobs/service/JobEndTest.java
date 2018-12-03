@@ -56,7 +56,7 @@ public class JobEndTest {
     private Gson gson;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         GsonUtil.setGson(gson);
 
         tenantResolver.forceTenant(TENANT);

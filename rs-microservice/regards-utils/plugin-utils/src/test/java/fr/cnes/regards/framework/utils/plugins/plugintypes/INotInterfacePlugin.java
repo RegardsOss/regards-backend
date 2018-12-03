@@ -28,6 +28,6 @@ public interface INotInterfacePlugin {
      * method foo
      * @return the result
      */
-    public int foo();
+    int foo();
 
 }

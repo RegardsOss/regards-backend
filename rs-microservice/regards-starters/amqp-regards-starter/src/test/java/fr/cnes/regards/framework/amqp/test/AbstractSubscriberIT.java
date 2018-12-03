@@ -188,7 +188,7 @@ public abstract class AbstractSubscriberIT {
         // Retrieve listener
         Map<String, SimpleMessageListenerContainer> listeners2 = abstractSubscriber.getListeners(receiver);
         Assert.assertNotNull(listeners);
-        listeners2.forEach((k, v) -> Assert.assertTrue(refListeners.get(k) == v.hashCode()));
+        listeners2.forEach((k, v) -> Assert.assertEquals((int) refListeners.get(k), v.hashCode()));
     }
 
     private class Receiver extends AbstractReceiver<Info> {

@@ -44,7 +44,7 @@ public class PluginWithStringMap implements IPluginWithGenerics {
     public void doIt() {
         Assert.assertNotNull(infos);
         Assert.assertTrue(infos instanceof Map<?, ?>);
-        Assert.assertTrue(infos.size() == 3);
+        Assert.assertEquals(3, infos.size());
         for (Entry<String, String> info : infos.entrySet()) {
             Assert.assertTrue(info.getKey() instanceof String);
             Assert.assertTrue(info.getValue() instanceof String);

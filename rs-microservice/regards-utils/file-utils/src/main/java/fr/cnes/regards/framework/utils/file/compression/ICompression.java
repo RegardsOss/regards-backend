@@ -26,8 +26,8 @@ public interface ICompression {
      * archives
      * @since 5.3
      */
-    public abstract CompressManager compress(List<File> pFileList, File pCompressedFile, File pRootDirectory,
-            boolean pFlatArchive, boolean pRunInThread, Charset pCharset) throws CompressionException;
+    CompressManager compress(List<File> pFileList, File pCompressedFile, File pRootDirectory, boolean pFlatArchive,
+            boolean pRunInThread, Charset pCharset) throws CompressionException;
 
     /**
      * Permet de compression une liste de fichiers dans un seul. le format d'encodage des caractère utilisé est celui du
@@ -41,8 +41,8 @@ public interface ICompression {
      * @FA SIPNG-FA-0450-CN : ajout d'un parametre
      * @since 1.0
      */
-    public abstract CompressManager compress(List<File> pFileList, File pCompressedFile, File pRootDirectory,
-            boolean pFlatArchive, boolean pRunInThread) throws CompressionException;
+    CompressManager compress(List<File> pFileList, File pCompressedFile, File pRootDirectory, boolean pFlatArchive,
+            boolean pRunInThread) throws CompressionException;
 
     /**
      * Permet de decompresser un fichier compresse dans un repertoire cible
@@ -53,7 +53,7 @@ public interface ICompression {
      * archives
      * @since 5.3
      */
-    public abstract void uncompress(File pCompressedFile, File pOutputDir, Charset pCharset)
+    void uncompress(File pCompressedFile, File pOutputDir, Charset pCharset)
             throws CompressionException;
 
     /**
@@ -63,5 +63,5 @@ public interface ICompression {
      * @throws CompressionException si l'un des paramètres est incorrect ou illisible
      * @since 1.0
      */
-    public abstract void uncompress(File pCompressedFile, File pOutputDir) throws CompressionException;
+    void uncompress(File pCompressedFile, File pOutputDir) throws CompressionException;
 }

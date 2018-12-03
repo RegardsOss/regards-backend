@@ -40,9 +40,8 @@ public class AParameterPluginImplementation implements IComplexInterfacePlugin {
 
     @Override
     public int mult(final int pFirst, final int pSecond) {
-        final int res = ll.intValue() * (pFirst * pSecond);
 
-        return res;
+        return ll.intValue() * (pFirst * pSecond);
     }
 
 }

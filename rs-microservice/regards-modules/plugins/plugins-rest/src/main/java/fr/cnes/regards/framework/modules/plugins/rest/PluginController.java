@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.framework.modules.plugins.rest;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -173,7 +172,7 @@ public class PluginController implements IResourceController<PluginConfiguration
     @ResourceAccess(description = "Get all the plugin types (ie interface annotated with @PluginInterface)")
     public ResponseEntity<List<Resource<String>>> getPluginTypes(
             @RequestParam(name = "available", required = false) Boolean available) {
-        if ((available != null) && (available.booleanValue() == true)) {
+        if ((available != null) && available) {
             Set<String> types = pluginService.getAvailablePluginTypes();
             List<Resource<String>> resources = types.stream().map(Resource::new).collect(Collectors.toList());
             return new ResponseEntity<>(resources, HttpStatus.OK);

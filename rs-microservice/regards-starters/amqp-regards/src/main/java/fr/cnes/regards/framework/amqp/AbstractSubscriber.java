@@ -273,7 +273,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
             }
             // Add new queues to the existing container
             if (!newQueueNames.isEmpty()) {
-                container.addQueueNames(newQueueNames.toArray(new String[newQueueNames.size()]));
+                container.addQueueNames(newQueueNames.toArray(new String[0]));
             }
             return;
         }
@@ -292,7 +292,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         // Prevent duplicate queue
         Set<String> queueNames = new HashSet<>();
         queues.forEach(q -> queueNames.add(q.getName()));
-        container.addQueueNames(queueNames.toArray(new String[queueNames.size()]));
+        container.addQueueNames(queueNames.toArray(new String[0]));
 
         vhostsContainers.put(virtualHost, container);
 

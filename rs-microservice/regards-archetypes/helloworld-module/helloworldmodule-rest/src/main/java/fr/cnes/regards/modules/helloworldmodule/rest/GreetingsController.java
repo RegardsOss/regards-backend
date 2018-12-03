@@ -59,7 +59,7 @@ public class GreetingsController implements IResourceController<Greeting> {
     @ResourceAccess(description = "send 'greeting' as response")
     public HttpEntity<Resource<Greeting>> greeting(@RequestParam(value = "name", defaultValue = "World") String pName) {
         Greeting greeting = myService.getGreeting(pName);
-        return new ResponseEntity<>(new Resource<Greeting>(greeting), HttpStatus.OK);
+        return new ResponseEntity<>(new Resource<>(greeting), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/me", method = RequestMethod.GET)
@@ -67,7 +67,7 @@ public class GreetingsController implements IResourceController<Greeting> {
     @ResourceAccess(description = "send 'me' as response")
     public HttpEntity<Resource<Greeting>> me(@RequestParam(value = "name", defaultValue = "me") String pName) {
         Greeting greeting = myService.getGreeting(pName);
-        return new ResponseEntity<>(new Resource<Greeting>(greeting), HttpStatus.OK);
+        return new ResponseEntity<>(new Resource<>(greeting), HttpStatus.OK);
     }
 
     @Override

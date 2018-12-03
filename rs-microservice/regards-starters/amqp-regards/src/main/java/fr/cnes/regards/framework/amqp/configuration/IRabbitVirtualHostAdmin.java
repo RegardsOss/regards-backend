@@ -96,21 +96,21 @@ public interface IRabbitVirtualHostAdmin {
      * Bind {@link ConnectionFactory} to virtual host before declaring an AMQP element
      * @param virtualHost virtual host to bind
      */
-    public void bind(String virtualHost);
+    void bind(String virtualHost);
 
     /**
      * Unbind {@link ConnectionFactory} from virtual host
      */
-    public void unbind();
+    void unbind();
 
     /**
      * @return true if a {@link ConnectionFactory} is bound
      */
-    public boolean isBound();
+    boolean isBound();
 
     /**
      * @param virtualHost virtual host to bind
      * @return true if the virtual host {@link ConnectionFactory} is already bound
      */
-    public boolean isBound(String virtualHost);
+    boolean isBound(String virtualHost);
 }
