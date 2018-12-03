@@ -216,8 +216,8 @@ public class JobService implements IJobService {
     @SuppressWarnings("unchecked")
     public void execute(JobInfo jobInfo) {
         try {
-            // we force tenant in all cases even if everything is good there is no need to.
-            // forced tenant is neccessary when updating database so for the following cases:
+            // Tenant is forced in all cases even if everything is OK (case when no DB save is done).
+            // Forced tenant is mandatory when updating database so for the following cases:
             // expired job, aborted job, instantiation errors and job resetting
             runtimeTenantResolver.forceTenant(jobInfo.getTenant());
             // Case expiration date reached
