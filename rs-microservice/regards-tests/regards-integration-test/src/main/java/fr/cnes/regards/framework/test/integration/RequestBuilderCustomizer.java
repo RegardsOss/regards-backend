@@ -313,6 +313,21 @@ public class RequestBuilderCustomizer {
     }
 
     /**
+     * Add a ResultMatcher expecting given jsonPath is not empty
+     */
+    public RequestBuilderCustomizer expectIsNotEmpty(String jsonPath) {
+        return expect(MockMvcResultMatchers.jsonPath(jsonPath).isNotEmpty());
+    }
+
+    /**
+     * Add a ResultMatcher expecting given jsonPath is an array
+     */
+    public RequestBuilderCustomizer expectIsArray(String jsonPath) {
+        return expect(MockMvcResultMatchers.jsonPath(jsonPath).isArray());
+    }
+
+
+    /**
      * Add a ResultMatcher expecting given jsonPath (corresponding to an array) to have given size
      */
     public RequestBuilderCustomizer expectToHaveSize(String jsonPath, int size) {
