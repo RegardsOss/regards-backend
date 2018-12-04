@@ -61,7 +61,7 @@ import fr.cnes.regards.framework.test.util.JUnitLogRule;
 @ContextConfiguration(classes = { DefaultTestFeignConfiguration.class, DefaultDaoTestConfiguration.class,
         MockAmqpConfiguration.class })
 @ActiveProfiles({ "default", "test", "noschedule" })
-@TestPropertySource(properties = { "regards.cloud.enabled=false" })
+@TestPropertySource(properties = { "regards.cloud.enabled=false", "spring.flyway.enabled=false" })
 public abstract class AbstractRegardsServiceIT {
 
     private static final String DEFAULT_USER_EMAIL = "default_user@regards.fr";
