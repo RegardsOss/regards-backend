@@ -326,6 +326,12 @@ public class RequestBuilderCustomizer {
         return expect(MockMvcResultMatchers.jsonPath(jsonPath).isArray());
     }
 
+    /**
+     * Add a ResultMatcher expecting given jsonPath has given value
+     */
+    public RequestBuilderCustomizer expectValue(String jsonPath, Object value) {
+        return expect(MockMvcResultMatchers.jsonPath(jsonPath).value(value));
+    }
 
     /**
      * Add a ResultMatcher expecting given jsonPath (corresponding to an array) to have given size
