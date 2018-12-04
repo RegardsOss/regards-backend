@@ -27,11 +27,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import com.google.common.collect.Maps;
 
 /**
- *
  * Properties to configure gateway CORS policy
- *
  * @author Marc Sordi
- *
  */
 @ConfigurationProperties(prefix = "regards.gateway.cors")
 public class CorsConfigurationProperties {

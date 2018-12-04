@@ -35,11 +35,8 @@ import fr.cnes.regards.modules.authentication.service.role.CoupleJwtRole;
 import fr.cnes.regards.modules.authentication.service.role.IBorrowRoleService;
 
 /**
- *
  * Controller handling the role borrowing feature
- *
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @RestController
 @RequestMapping(path = BorrowRoleController.PATH_BORROW_ROLE)
@@ -63,10 +60,7 @@ public class BorrowRoleController {
 
     /**
      * Allows to switch role
-     * @param pTargetRoleName
      * @return information to switch role
-     * @throws EntityOperationForbiddenException
-     * @throws JwtException
      */
     @ResponseBody
     @ResourceAccess(role = DefaultRole.PUBLIC, description = "endpoint allowing to switch role")

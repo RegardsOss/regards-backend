@@ -18,17 +18,12 @@
  */
 package fr.cnes.regards.modules.authentication.rest;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.web.servlet.ResultMatcher;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
@@ -43,10 +38,8 @@ import fr.cnes.regards.modules.authentication.plugins.impl.kerberos.KerberosServ
 
 /**
  * Class AuthenticationControllerIT Test REST endpoints to manage Service provider plugins
- *
  * @author Sébastien Binda
  * @author Christophe Mertz
-
  */
 // @EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class })
 // @ComponentScan("fr.cnes.regards.framework.authentication")
@@ -107,76 +100,59 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
 
     /**
      * Init the context of the tests
-     *
-
      */
     @Before
     public void init() {
-        final PluginMetaData metadata = new PluginMetaData();
+        PluginMetaData metadata = new PluginMetaData();
         metadata.setPluginId(PLUGIN_ID_KERBEROS);
         metadata.setPluginClassName(KerberosServiceProviderPlugin.class.getName());
         metadata.getInterfaceNames().add(IServiceProviderPlugin.class.getName());
         metadata.setVersion(DEFAULT_PLUGIN_VERSION);
-        final PluginConfiguration conf = new PluginConfiguration(metadata, DEFAULT_PLUGIN_LABEL, 0);
+        PluginConfiguration conf = new PluginConfiguration(metadata, DEFAULT_PLUGIN_LABEL, 0);
         aPluginConfSaved = pluginConfRepo.save(conf);
     }
 
     /**
      * Integration test to retrieve all configured Service Provider plugins of the Authentication module
-     *
-
      */
     @Purpose("Integration test to retrieve all configured Service Provider plugins of the Authentication module")
     @Requirement("REGARDS_DSL_ADM_ARC_010")
     @Requirement("REGARDS_DSL_ADM_ARC_020")
     @Test
     public void retrieveServiceProviders() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isArray());
-        performDefaultGet(SPS_URL, expectations, "Error getting Service providers");
+        performDefaultGet(SPS_URL,
+                          customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT).expectIsArray(JSON_PATH_ROOT),
+                          "Error getting Service providers");
     }
 
     /**
      * Integration test to retrieve one configured Service Provider plugin of the Authentication module
-     *
-
      */
     @Purpose("Integration test to retrieve one configured Service Provider plugin of the Authentication module")
     @Requirement("REGARDS_DSL_ADM_ARC_010")
     @Requirement("REGARDS_DSL_ADM_ARC_020")
     @Test
     public void retrieveServiceProvider() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_LINKS).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_LINKS).isArray());
-        performDefaultGet(SPS_URL + URL_PATH_SEPARATOR + aPluginConfSaved.getId().toString(), expectations,
+        performDefaultGet(SPS_URL + URL_PATH_SEPARATOR + aPluginConfSaved.getId().toString(),
+                          customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_CONTENT)
+                                  .expectIsNotEmpty(JSON_PATH_LINKS).expectIsArray(JSON_PATH_LINKS),
                           "retrieveServiceProvider : Error getting Service provider");
     }
 
     /**
      * Integration test to retrieve one configured Service Provider plugin of the Authentication module
-     *
-
      */
     @Purpose("Integration test to retrieve one configured Service Provider plugin of the Authentication module")
     @Requirement("REGARDS_DSL_ADM_ARC_010")
     @Requirement("REGARDS_DSL_ADM_ARC_020")
     @Test
     public void retrieveInexistantServiceProvider() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isNotFound());
-        performDefaultGet(SP_URL, expectations, "retrieveInexistantServiceProvider : Error getting Service provider",
-                          123);
+        performDefaultGet(SP_URL, customizer().expectStatusNotFound(),
+                          "retrieveInexistantServiceProvider : Error getting Service provider", 123);
     }
 
     /**
      * Integration test to create a configured Service Provider plugin of the Authentication module
-     *
-
      */
     @Purpose("Integration test to create a configured Service Provider plugin of the Authentication module")
     @Requirement("REGARDS_DSL_ADM_ARC_010")
@@ -185,25 +161,20 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     @Ignore("FIXME V3.0.0 : plugin validation")
     public void createServiceProvider() {
 
-        final PluginMetaData metadata = new PluginMetaData();
+        PluginMetaData metadata = new PluginMetaData();
         metadata.setPluginId(PLUGIN_ID_KERBEROS);
         metadata.setPluginClassName(KerberosServiceProviderPlugin.class.getName());
         metadata.setVersion(DEFAULT_PLUGIN_VERSION);
-        final PluginConfiguration conf = new PluginConfiguration(metadata, "Plugin2", 0);
+        PluginConfiguration conf = new PluginConfiguration(metadata, "Plugin2", 0);
         conf.setId(1L);
 
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_LINKS).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_LINKS).isArray());
-        performDefaultPost(SPS_URL, conf, expectations, "createServiceProvider : Error getting Service provider");
+        performDefaultPost(SPS_URL, conf, customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_CONTENT)
+                                   .expectIsNotEmpty(JSON_PATH_LINKS).expectIsArray(JSON_PATH_LINKS),
+                           "createServiceProvider : Error getting Service provider");
     }
 
     /**
      * Integration test to update a configured Service Provider plugin of the Authentication module
-     *
-
      */
     @Purpose("Integration test to update a configured Service Provider plugin of the Authentication module")
     @Requirement("REGARDS_DSL_ADM_ARC_010")
@@ -211,101 +182,80 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     @Test
     @Ignore("FIXME V3.0.0 : plugin validation")
     public void updateServiceProvider() {
-        final String newVersion = "2.0";
+        String newVersion = "2.0";
         aPluginConfSaved.setVersion(newVersion);
 
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_LINKS).isNotEmpty());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_LINKS).isArray());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".version",
-                                                        org.hamcrest.Matchers.is(newVersion)));
-        performDefaultPut(SP_URL, aPluginConfSaved, expectations,
+        performDefaultPut(SP_URL, aPluginConfSaved, customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_CONTENT)
+                                  .expectIsNotEmpty(JSON_PATH_LINKS).expectIsArray(JSON_PATH_LINKS)
+                                  .expectValue(JSON_PATH_CONTENT + ".version", newVersion),
                           "updateServiceProvider : Error getting Service provider", aPluginConfSaved.getId());
     }
 
     /**
      * Integration test to update a configured Service Provider plugin of the Authentication module with error
-     *
-
      */
     @Purpose("Integration test to update a configured Service Provider plugin of the Authentication module with error")
     @Requirement("REGARDS_DSL_ADM_ARC_010")
     @Requirement("REGARDS_DSL_ADM_ARC_020")
     @Test
     public void updateInexistantServiceProvider() {
-        final PluginMetaData metadata = new PluginMetaData();
+        PluginMetaData metadata = new PluginMetaData();
         metadata.setPluginId(PLUGIN_ID_KERBEROS);
         metadata.setPluginClassName(KerberosServiceProviderPlugin.class.getName());
         metadata.setVersion(DEFAULT_PLUGIN_VERSION);
-        final PluginConfiguration unSavedPluginConf = new PluginConfiguration(metadata, DEFAULT_PLUGIN_LABEL, 0);
+        PluginConfiguration unSavedPluginConf = new PluginConfiguration(metadata, DEFAULT_PLUGIN_LABEL, 0);
         unSavedPluginConf.setId(12345L);
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isNotFound());
-        performDefaultPut(SP_URL, unSavedPluginConf, expectations,
+        performDefaultPut(SP_URL, unSavedPluginConf, customizer().expectStatusNotFound(),
                           "updateInexistantServiceProvider : Error getting Service provider",
                           unSavedPluginConf.getId());
     }
 
     /**
      * Integration test to update a configured Service Provider plugin of the Authentication module with eror
-     *
-
      */
     @Purpose("Integration test to update a configured Service Provider plugin of the Authentication module with eror")
     @Requirement("REGARDS_DSL_ADM_ARC_010")
     @Requirement("REGARDS_DSL_ADM_ARC_020")
     @Test
     public void updateInvalidServiceProvider() {
-        final PluginMetaData metadata = new PluginMetaData();
+        PluginMetaData metadata = new PluginMetaData();
         metadata.setPluginId(PLUGIN_ID_KERBEROS);
         metadata.setPluginClassName(KerberosServiceProviderPlugin.class.getName());
         metadata.setVersion(DEFAULT_PLUGIN_VERSION);
-        final PluginConfiguration conf = new PluginConfiguration(metadata, DEFAULT_PLUGIN_LABEL, 0);
+        PluginConfiguration conf = new PluginConfiguration(metadata, DEFAULT_PLUGIN_LABEL, 0);
         conf.setId(123L);
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isBadRequest());
-        performDefaultPut(SP_URL, conf, expectations, "updateInvalidServiceProvider : Error getting Service provider",
-                          12);
+        performDefaultPut(SP_URL, conf, customizer().expectStatusBadRequest(),
+                          "updateInvalidServiceProvider : Error getting Service provider", 12);
     }
 
     /**
      * Integration test to delete a configured Service Provider plugin of the Authentication module
-     *
-
      */
     @Purpose("Integration test to delete a configured Service Provider plugin of the Authentication module")
     @Requirement("REGARDS_DSL_ADM_ARC_010")
     @Requirement("REGARDS_DSL_ADM_ARC_020")
     @Test
     public void deleteIdentityProvider() {
-        final PluginMetaData metadata = new PluginMetaData();
+        PluginMetaData metadata = new PluginMetaData();
         metadata.setPluginId(PLUGIN_ID_KERBEROS);
         metadata.setPluginClassName(KerberosServiceProviderPlugin.class.getName());
         metadata.getInterfaceNames().add("fr.cnes.regards.framework.some.modules.PluginToDelete");
         metadata.setVersion(DEFAULT_PLUGIN_VERSION);
         PluginConfiguration aPluginConfToDelete = new PluginConfiguration(metadata, "PluginToDelete", 0);
         aPluginConfToDelete = pluginConfRepo.save(aPluginConfToDelete);
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultDelete(SP_URL, expectations, "deleteIdentityProvider : Error getting Service provider",
-                             aPluginConfToDelete.getId());
+        performDefaultDelete(SP_URL, customizer().expectStatusOk(),
+                             "deleteIdentityProvider : Error getting Service provider", aPluginConfToDelete.getId());
     }
 
     /**
      * Integration test to delete a configured Service Provider plugin of the Authentication module with error
-     *
-
      */
     @Purpose("Integration test to delete a configured Service Provider plugin of the Authentication module with error")
     @Requirement("REGARDS_DSL_ADM_ARC_010")
     @Requirement("REGARDS_DSL_ADM_ARC_020")
     @Test
     public void deleteInexistantIndentityProvider() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isNotFound());
-        performDefaultDelete(SP_URL, expectations, "Error getting Service provider", 1000);
+        performDefaultDelete(SP_URL, customizer().expectStatusNotFound(), "Error getting Service provider", 1000);
 
     }
 
@@ -313,12 +263,10 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     @Test
     public void authenticateKerberosServiceProvider() {
 
-        final ExternalAuthenticationInformations infos = new ExternalAuthenticationInformations("usernma",
-                DEFAULT_TENANT, "ticket".getBytes(), "key");
+        ExternalAuthenticationInformations infos = new ExternalAuthenticationInformations("usernma", getDefaultTenant(),
+                                                                                          "ticket".getBytes(), "key");
 
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultPost("/authentication/sps/0/authenticate", infos, expectations,
+        performDefaultPost("/authentication/sps/0/authenticate", infos, customizer().expectStatusOk(),
                            "kerberos authenticate : Authentication error");
 
     }

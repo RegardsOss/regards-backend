@@ -30,7 +30,6 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
  *
  * Auto-configuration to enable feign clients. This configuration is alone to allow tests to exlude it.
  * @author Sébastien Binda
-
  */
 @ConditionalOnProperty(name = "regards.cloud.enabled", matchIfMissing = true)
 @EnableFeignClients(clients = { IProjectsClient.class, IProjectUsersClient.class, IAccountsClient.class })

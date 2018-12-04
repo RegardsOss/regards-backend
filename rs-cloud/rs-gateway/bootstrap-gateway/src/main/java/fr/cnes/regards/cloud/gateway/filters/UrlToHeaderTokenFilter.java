@@ -26,11 +26,9 @@ import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 
 /**
- *
  * This filter detects JWT in the URL query params and if found set it into the header.<br/>
  * Source URL query param : token<br/>
  * Target header : Bearer : Authorization
- *
  * @author Marc Sordi
  */
 @Component

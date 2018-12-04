@@ -30,13 +30,10 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.modules.authentication.plugins.IAuthenticationPlugin;
 
 /**
- *
  * Class InternalAuthenticationPluginService
  *
  * Internal authentication plugins manager
- *
  * @author Sébastien Binda
-
  */
 @Service
 public class InternalAuthenticationPluginService implements IInternalAuthenticationPluginsService {

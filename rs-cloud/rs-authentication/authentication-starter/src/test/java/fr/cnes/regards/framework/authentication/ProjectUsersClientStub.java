@@ -55,7 +55,7 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
         final PageMetadata metadata = new PageMetadata(pSize, pPage, users.size());
         final PagedResources<Resource<ProjectUser>> resource = new PagedResources<>(HateoasUtils.wrapList(users),
                                                                                     metadata, new ArrayList<>());
-        return new ResponseEntity<PagedResources<Resource<ProjectUser>>>(resource, HttpStatus.OK);
+        return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     @Override
@@ -70,7 +70,7 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
         if (result == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<Resource<ProjectUser>>(HateoasUtils.wrap(result), HttpStatus.OK);
+        return new ResponseEntity<>(HateoasUtils.wrap(result), HttpStatus.OK);
     }
 
     @Override

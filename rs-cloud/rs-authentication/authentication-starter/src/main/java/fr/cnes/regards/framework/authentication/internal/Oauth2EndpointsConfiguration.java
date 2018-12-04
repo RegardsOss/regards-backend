@@ -29,13 +29,10 @@ import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfigura
 import fr.cnes.regards.framework.security.filter.IpFilter;
 
 /**
- *
  * Class Oauth2EndpointsConfiguration
  *
  * Custom configuration to allow access to Oauth2 tokens
- *
  * @author Sébastien Binda
- *
  */
 public class Oauth2EndpointsConfiguration implements ICustomWebSecurityConfiguration {
 

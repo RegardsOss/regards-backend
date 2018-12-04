@@ -24,13 +24,10 @@ import org.springframework.security.oauth2.provider.endpoint.FrameworkEndpointHa
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 /**
- *
  * Class NotOAuthRequestMatcher
  *
  * Filter for authentication oauth2 endpoints
- *
  * @author Sébastien Binda
-
  */
 public class NotOAuthRequestMatcher implements RequestMatcher {
 
@@ -56,11 +53,8 @@ public class NotOAuthRequestMatcher implements RequestMatcher {
     }
 
     /**
-     *
      * Get path of the given HttpRequest
-     *
-     * @param pRequest
-     *            HttpRequest
+     * @param pRequest HttpRequest
      * @return String path
      */
     private String getRequestPath(final HttpServletRequest pRequest) {

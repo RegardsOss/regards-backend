@@ -85,10 +85,10 @@ public class TokenEnhancerTest {
 
         final OAuth2AccessToken result = enhancer.enhance(token, auth);
         Assert.assertNotNull(result);
-        Assert.assertTrue(result.getAdditionalInformation().get(JWTService.CLAIM_TENANT).equals(PROJECT));
-        Assert.assertTrue(result.getAdditionalInformation().get(JWTService.CLAIM_ROLE).equals(ROLE));
-        Assert.assertTrue(result.getAdditionalInformation().get(JWTService.CLAIM_SUBJECT).equals(EMAIL));
-        Assert.assertTrue(result.getAdditionalInformation().get(JWTService.CLAIM_EMAIL).equals(EMAIL));
+        Assert.assertEquals(result.getAdditionalInformation().get(JWTService.CLAIM_TENANT), PROJECT);
+        Assert.assertEquals(result.getAdditionalInformation().get(JWTService.CLAIM_ROLE), ROLE);
+        Assert.assertEquals(result.getAdditionalInformation().get(JWTService.CLAIM_SUBJECT), EMAIL);
+        Assert.assertEquals(result.getAdditionalInformation().get(JWTService.CLAIM_EMAIL), EMAIL);
 
     }
 

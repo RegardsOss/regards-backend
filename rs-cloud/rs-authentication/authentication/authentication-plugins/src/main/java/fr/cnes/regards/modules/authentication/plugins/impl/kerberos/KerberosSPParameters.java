@@ -19,13 +19,10 @@
 package fr.cnes.regards.modules.authentication.plugins.impl.kerberos;
 
 /**
- *
  * Class KerberosSPParameters
  *
  * PArameters Labels for Kerberos Service Provider Plugin
- *
  * @author Sébastien Binda
-
  */
 public final class KerberosSPParameters {
 

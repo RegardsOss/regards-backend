@@ -44,23 +44,17 @@ import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPlugi
 import fr.cnes.regards.modules.authentication.plugins.regards.RegardsInternalAuthenticationPlugin;
 
 /**
- *
  * Class RegardsInternalAuthenticationPluginTest
  *
  * Test plugin for Regards internal authentication
- *
  * @author Sébastien Binda
-
  */
 public class RegardsInternalAuthenticationPluginTest {
 
     private static RegardsInternalAuthenticationPlugin plugin;
 
     /**
-     *
      * Initialize Authentication plugin thought plugin utilities.
-     *
-
      */
     @BeforeClass
     public static void init() {
@@ -81,19 +75,15 @@ public class RegardsInternalAuthenticationPluginTest {
     }
 
     /**
-     *
      * Check a valid authentication throught the Regards internal authentication system
-     *
-     * @throws EntityNotFoundException
-     *             test error.
-
+     * @throws EntityNotFoundException test error.
      */
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Requirement("REGARDS_DSL_ADM_ADM_620")
     @Requirement("REGARDS_DSL_ADM_PLG_200")
     @Purpose("Check a valid authentication throught the Regards internal authentication system")
     @Test
-    public void testValidAuthentication() throws EntityNotFoundException {
+    public void testValidAuthentication() {
 
         Field privateField;
         try {
@@ -102,8 +92,8 @@ public class RegardsInternalAuthenticationPluginTest {
             final IAccountsClient client = Mockito.mock(IAccountsClient.class);
             final ResponseEntity<Boolean> response = new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK);
             Mockito.when(client.validatePassword(Mockito.anyString(), Mockito.anyString())).thenReturn(response);
-            final ResponseEntity<Resource<Account>> accountResponse = new ResponseEntity<Resource<Account>>(
-                    new Resource<Account>(new Account(email, "firstName", "lastName", "password")), HttpStatus.OK);
+            final ResponseEntity<Resource<Account>> accountResponse = new ResponseEntity<>(
+                    new Resource<>(new Account(email, "firstName", "lastName", "password")), HttpStatus.OK);
             Mockito.when(client.retrieveAccounByEmail(email)).thenReturn(accountResponse);
 
             privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("accountsClient");
@@ -116,14 +106,14 @@ public class RegardsInternalAuthenticationPluginTest {
 
         final AuthenticationPluginResponse response = plugin.authenticate("test@regards.fr", "password", "test1");
         Assert.assertNotNull(response);
-        Assert.assertTrue(response.getEmail().equals("test@regards.fr"));
+        Assert.assertEquals("test@regards.fr", response.getEmail());
         Assert.assertNull(response.getErrorMessage());
         Assert.assertTrue(response.getAccessGranted());
 
     }
 
     @Test
-    public void testAuthenticationWithEternalAccount() throws EntityNotFoundException {
+    public void testAuthenticationWithEternalAccount() {
 
         Field privateField;
         try {
@@ -134,8 +124,8 @@ public class RegardsInternalAuthenticationPluginTest {
             final IAccountsClient client = Mockito.mock(IAccountsClient.class);
             final ResponseEntity<Boolean> response = new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK);
             Mockito.when(client.validatePassword(Mockito.anyString(), Mockito.anyString())).thenReturn(response);
-            final ResponseEntity<Resource<Account>> accountResponse = new ResponseEntity<Resource<Account>>(
-                    new Resource<Account>(extAccount), HttpStatus.OK);
+            final ResponseEntity<Resource<Account>> accountResponse = new ResponseEntity<>(new Resource<>(extAccount),
+                                                                                           HttpStatus.OK);
             Mockito.when(client.retrieveAccounByEmail(email)).thenReturn(accountResponse);
 
             privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("accountsClient");
@@ -148,26 +138,22 @@ public class RegardsInternalAuthenticationPluginTest {
 
         final AuthenticationPluginResponse response = plugin.authenticate("test@regards.fr", "password", "test1");
         Assert.assertNotNull(response);
-        Assert.assertTrue(response.getEmail().equals("test@regards.fr"));
+        Assert.assertEquals("test@regards.fr", response.getEmail());
         Assert.assertNotNull(response.getErrorMessage());
         Assert.assertFalse(response.getAccessGranted());
 
     }
 
     /**
-     *
      * Check a authentication throught the Regards internal authentication system with error
-     *
-     * @throws EntityNotFoundException
-     *             test error.
-
+     * @throws EntityNotFoundException test error.
      */
     @Purpose("Check a authentication throught the Regards internal authentication system with error")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Requirement("REGARDS_DSL_ADM_ADM_620")
     @Requirement("REGARDS_DSL_ADM_PLG_200")
     @Test
-    public void testErrorAuthentication() throws EntityNotFoundException {
+    public void testErrorAuthentication() {
 
         Field privateField;
         try {
@@ -192,18 +178,14 @@ public class RegardsInternalAuthenticationPluginTest {
     }
 
     /**
-     *
      * Check a authentication throught the Regards internal authentication system with error
-     *
-     * @throws EntityNotFoundException
-
      */
     @Purpose("Check a authentication throught the Regards internal authentication system with error")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Requirement("REGARDS_DSL_ADM_ADM_620")
     @Requirement("REGARDS_DSL_ADM_PLG_200")
     @Test
-    public void testRequestErrorAuthentication() throws EntityNotFoundException {
+    public void testRequestErrorAuthentication() {
 
         Field privateField;
         try {
@@ -228,19 +210,15 @@ public class RegardsInternalAuthenticationPluginTest {
     }
 
     /**
-     *
      * Check a authentication throught the Regards internal authentication system with error
-     *
-     * @throws EntityNotFoundException
-     *             test error
-
+     * @throws EntityNotFoundException test error
      */
     @Purpose("Check a authentication throught the Regards internal authentication system with error")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Requirement("REGARDS_DSL_ADM_ADM_620")
     @Requirement("REGARDS_DSL_ADM_PLG_200")
     @Test
-    public void testRequestErrorAuthenticationException() throws EntityNotFoundException {
+    public void testRequestErrorAuthenticationException() {
 
         Field privateField;
         try {

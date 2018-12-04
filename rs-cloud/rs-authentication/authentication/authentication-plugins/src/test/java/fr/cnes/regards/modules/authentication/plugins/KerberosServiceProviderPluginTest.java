@@ -49,15 +49,11 @@ import fr.cnes.regards.modules.authentication.plugins.impl.kerberos.KerberosServ
 import fr.cnes.regards.modules.authentication.plugins.impl.kerberos.Krb5TicketValidateAction;
 
 /**
- *
  * Class KerberosServiceProviderPluginTest
  *
  * Test the Kerberos service provider plugin
- *
  * @author Sébastien Binda
  * @author Christophe Mertz
- *
-
  */
 @Ignore
 public class KerberosServiceProviderPluginTest {
@@ -83,10 +79,7 @@ public class KerberosServiceProviderPluginTest {
     private static final String userPrincipal = "sbinda";
 
     /**
-     *
      * Initialize LDAP Authentication plugin thought plugin utilities.
-     *
-
      */
     @BeforeClass
     public static void init() {
@@ -127,10 +120,7 @@ public class KerberosServiceProviderPluginTest {
     }
 
     /**
-     *
      * Check authentication to REGARDS system with a kerberos ticket
-     *
-
      */
     @Test
     @Requirement("REGARDS_DSL_SYS_SEC_120")
@@ -151,15 +141,10 @@ public class KerberosServiceProviderPluginTest {
     }
 
     /**
-     *
      * Authenticate to Kerberos server to generate a valid ticket
-     *
-     * @param pApplicationPrincipal
-     *            Kerberos princiapl
-     * @param pUserPrincipal
-     *            user to connect
+     * @param pApplicationPrincipal Kerberos princiapl
+     * @param pUserPrincipal user to connect
      * @return valid ticket
-
      */
     public byte[] generateKerberosTicket(final String pApplicationPrincipal, final String pUserPrincipal) {
         try {
@@ -170,13 +155,13 @@ public class KerberosServiceProviderPluginTest {
 
             // Authenticate test user
             final GSSName clientName = manager.createName(pUserPrincipal, GSSName.NT_USER_NAME);
-            final GSSCredential clientCred = manager.createCredential(clientName, 8 * 3600, krb5Oid,
-                                                                      GSSCredential.INITIATE_ONLY);
+            final GSSCredential clientCred = manager
+                    .createCredential(clientName, 8 * 3600, krb5Oid, GSSCredential.INITIATE_ONLY);
 
             // Authenticate Regards application
             final GSSName serverName = manager.createName(pApplicationPrincipal, GSSName.NT_USER_NAME);
-            final GSSContext context = manager.createContext(serverName, krb5Oid, clientCred,
-                                                             GSSContext.DEFAULT_LIFETIME);
+            final GSSContext context = manager
+                    .createContext(serverName, krb5Oid, clientCred, GSSContext.DEFAULT_LIFETIME);
             context.requestMutualAuth(false);
             context.requestInteg(false);
             context.requestCredDeleg(true);

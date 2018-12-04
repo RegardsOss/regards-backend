@@ -9,17 +9,15 @@
 
 package fr.cnes.regards.modules.authentication.plugins.domain;
 
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.Email;
-import org.hibernate.validator.constraints.NotEmpty;
 
 /**
- *
  * Class AuthenticationPluginResponse
  *
  * Response class for authentication plugins.
- *
  * @author Sébastien Binda
  * @since 1.0
  */
@@ -72,7 +70,6 @@ public class AuthenticationPluginResponse {
 
     /**
      * Get method.
-     *
      * @return the errorMessage
      * @since 1.0
      */
@@ -82,9 +79,7 @@ public class AuthenticationPluginResponse {
 
     /**
      * Set method.
-     *
-     * @param pErrorMessage
-     *            the errorMessage to set
+     * @param pErrorMessage the errorMessage to set
      * @since 1.0
      */
     public void setErrorMessage(final String pErrorMessage) {

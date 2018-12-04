@@ -40,13 +40,10 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.modules.authentication.plugins.impl.ldap.LdapAuthenticationPlugin;
 
 /**
- *
  * Class KerberosLdapAction
  *
  * JAAS Kerberos action to retrieve informations from LDAP.
- *
  * @author Sébastien Binda
-
  */
 public class KerberosLdapAction implements PrivilegedAction<DirContext> {
 
@@ -88,9 +85,7 @@ public class KerberosLdapAction implements PrivilegedAction<DirContext> {
     }
 
     /**
-     *
      * {@inheritDoc}
-     *
      * @return {@link DirContext}
      * @see java.security.PrivilegedAction#run()
      */
@@ -105,13 +100,9 @@ public class KerberosLdapAction implements PrivilegedAction<DirContext> {
     }
 
     /**
-     *
      * Connect to LDAP server using kerberos ticket
-     *
      * @return {@link DirContext}
-     * @throws LdapException
-     *             Connection error
-
+     * @throws LdapException Connection error
      */
     public DirContext connect() throws LdapException {
 
@@ -141,9 +132,7 @@ public class KerberosLdapAction implements PrivilegedAction<DirContext> {
 
     /**
      * Construct Root LDAP server name from complete LDAP domain name
-     *
-     * @param pFullLdapDomainName
-     *            complete LDAP domain name
+     * @param pFullLdapDomainName complete LDAP domain name
      */
     private void extractDomainRoot(final String pFullLdapDomainName) {
         if (ldapRoot == null) {
@@ -152,7 +141,7 @@ public class KerberosLdapAction implements PrivilegedAction<DirContext> {
             final String[] parts = domain.split("\\.");
             final StringBuilder builder = new StringBuilder();
             for (int i = 0; i < parts.length; i++) {
-                builder.append("DC=" + parts[i].toUpperCase());
+                builder.append("DC=").append(parts[i].toUpperCase());
                 if (i < (parts.length - 1)) {
                     builder.append(",");
                 }
@@ -162,21 +151,13 @@ public class KerberosLdapAction implements PrivilegedAction<DirContext> {
     }
 
     /**
-     *
      * Retrieve user email from LDAP server
-     *
-     * @param pLdapRootDn
-     *            Root DN
-     * @param pLdapEmailAttribute
-     *            email attribute to retrieve from User object
-     * @param pUserFilter
-     *            LDAP Filter to find User object
-     * @param pAccountNameLabel
-     *            Account name attribute from User object
+     * @param pLdapRootDn Root DN
+     * @param pLdapEmailAttribute email attribute to retrieve from User object
+     * @param pUserFilter LDAP Filter to find User object
+     * @param pAccountNameLabel Account name attribute from User object
      * @return account mail
-     * @throws LdapException
-     *             Error getting user mail
-
+     * @throws LdapException Error getting user mail
      */
     public String getUserEmail(final String pLdapRootDn, final String pLdapEmailAttribute, final String pUserFilter,
             final String pAccountNameLabel) throws LdapException {
@@ -212,9 +193,7 @@ public class KerberosLdapAction implements PrivilegedAction<DirContext> {
 
     /**
      * Initialize LDAP search controls
-     *
-     * @param pArgs
-     *            search arguments
+     * @param pArgs search arguments
      * @return {@link SearchControls}
      */
     public SearchControls setControls(final String[] pArgs) {

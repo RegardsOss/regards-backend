@@ -35,13 +35,10 @@ import fr.cnes.regards.modules.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPluginResponse;
 
 /**
- *
  * Class SimpleAuthentication
  *
  * Regards internal authentication plugin
- *
  * @author Sébastien Binda
-
  */
 @Plugin(author = "CSSI", description = "Regards internal authentication plugin",
         id = "RegardsInternalAuthenticationPlugin", version = "1.0", contact = "regards@c-s.fr", licence = "GPL V3",
@@ -92,12 +89,12 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
             if (validateResponse.getBody()) {
                 accessGranted = validateResponse.getBody();
             } else {
-                errorMessage = String.format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists",
-                                             pEmail);
+                errorMessage = String
+                        .format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists", pEmail);
             }
         } else {
-            errorMessage = String.format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists",
-                                         pEmail);
+            errorMessage = String
+                    .format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists", pEmail);
         }
 
         return new AuthenticationPluginResponse(accessGranted, pEmail, errorMessage);
