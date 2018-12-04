@@ -152,8 +152,8 @@
         <io.springfox.springfox-swagger2.version>2.7.0</io.springfox.springfox-swagger2.version>
         <io.springfox.springfox-swagger-ui.version>2.7.0</io.springfox.springfox-swagger-ui.version>
         <org.hibernate.javax.persistence.version>1.0.0.Final</org.hibernate.javax.persistence.version>
-        <!-- hsqldb is into spring-boot dependencies with version 2.4.1 -->
-        <!--<hsqldb.hsqldb.version>2.4.1</hsqldb.hsqldb.version>-->
+        <!-- hsqldb is into spring-boot dependencies with version 2.4.1, but some dao use it without spring-boot -->
+        <hsqldb.hsqldb.version>2.4.1</hsqldb.hsqldb.version>
         <!-- Finchley.SR2 is compatible with Spring Boot 2.0.X, Greenwich for 2.1.X but Greenwich doesn't seem to be
         released yet -->
         <org.springframework.cloud.spring-cloud-dependencies.version>Finchley.SR2</org.springframework.cloud.spring-cloud-dependencies.version>
@@ -162,6 +162,9 @@
         <!-- Take a version that retrieve a version of Hibernate that correctly
             manage uk naming while inheriting classes with JOINED strategy -->
         <org.springframework.boot.spring-boot-dependencies.version>2.1.0.RELEASE</org.springframework.boot.spring-boot-dependencies.version>
+        <!-- Spring OAuth is no more into spring-boot, only client is (From what i understood) -->
+        <org.springframework.security.oauth.version>2.3.4.RELEASE</org.springframework.security.oauth.version>
+        <org.springframework.security.jwt.version>1.0.9.RELEASE</org.springframework.security.jwt.version>
         <!-- use same version the one provided by spring-boot. This is mandatory, i don't know why but hateoas-spring
          override spring-core version given by spring-boot -->
         <org.springframework.spring-core.version>5.1.2.RELEASE</org.springframework.spring-core.version>
@@ -1105,11 +1108,11 @@
                 <artifactId>hibernate-jpa-2.1-api</artifactId>
                 <version>${org.hibernate.javax.persistence.version}</version>
             </dependency>
-            <!--<dependency>-->
-                <!--<groupId>org.hsqldb</groupId>-->
-                <!--<artifactId>hsqldb</artifactId>-->
-                <!--<version>${hsqldb.hsqldb.version}</version>-->
-            <!--</dependency>-->
+            <dependency>
+                <groupId>org.hsqldb</groupId>
+                <artifactId>hsqldb</artifactId>
+                <version>${hsqldb.hsqldb.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
@@ -1123,6 +1126,16 @@
                 <version>${org.springframework.boot.spring-boot-dependencies.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security.oauth</groupId>
+                <artifactId>spring-security-oauth2</artifactId>
+                <version>${org.springframework.security.oauth.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-jwt</artifactId>
+                <version>${org.springframework.security.jwt.version}</version>
             </dependency>
             <!--<dependency>-->
                 <!--<groupId>com.netflix.feign</groupId>-->
