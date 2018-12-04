@@ -30,7 +30,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
  * Internal authentication plugins Interface manager
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 public interface IInternalAuthenticationPluginsService {
 
@@ -39,7 +39,7 @@ public interface IInternalAuthenticationPluginsService {
      * Retrieve all configured Identity Provider plugins to handle REGARDS internal authentication
      *
      * @return List fo PluginConfiguration
-     * @since 1.0-SNAPSHOT
+
      */
     List<PluginConfiguration> retrieveIdentityProviderPlugins();
 
@@ -52,7 +52,7 @@ public interface IInternalAuthenticationPluginsService {
      * @return PluginConfiguration
      * @throws ModuleException
      *             Plugin does not exists
-     * @since 1.0-SNAPSHOT
+
      */
     PluginConfiguration retrieveIdentityProviderPlugin(Long pPluginConfigurationId) throws ModuleException;
 
@@ -65,7 +65,7 @@ public interface IInternalAuthenticationPluginsService {
      * @return Created PluginConfiguration
      * @throws ModuleException
      *             Plugin to create is not valid
-     * @since 1.0-SNAPSHOT
+
      */
     PluginConfiguration createIdentityProviderPlugin(final PluginConfiguration pPluginConfigurationToCreate)
             throws ModuleException;
@@ -79,7 +79,7 @@ public interface IInternalAuthenticationPluginsService {
      * @return updated PluginConfiguration (hateoas formated)
      * @throws ModuleException
      *             Plugin to update does not exists
-     * @since 1.0-SNAPSHOT
+
      */
     PluginConfiguration updateIdentityProviderPlugin(final PluginConfiguration pPluginConfigurationToUpdate)
             throws ModuleException;
@@ -92,7 +92,7 @@ public interface IInternalAuthenticationPluginsService {
      *            PluginConfiguration identifier to delete
      * @throws ModuleException
      *             Plugin to delete does not exists
-     * @since 1.0-SNAPSHOT
+
      */
     void deleteIdentityProviderPlugin(Long pPluginConfigurationId) throws ModuleException;
 

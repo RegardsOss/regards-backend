@@ -165,7 +165,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
      * @param scope
      *            project to authenticate to
      * @return Authentication token
-     * @since 1.0-SNAPSHOT
+
      */
     private Authentication doAuthentication(final String login, final String password, final String scope,
             final String origineUrl, final String requestLink) {
@@ -223,7 +223,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
      * @param pScope
      *            Project
      * @return Authentication
-     * @since 1.0-SNAPSHOT
+
      */
     private AuthenticationPluginResponse doScopePluginsAuthentication(final String pLogin, final String pPassword,
             final String pScope) {
@@ -259,7 +259,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
      * @param pScope
      *            Project to check
      * @return [true|false]
-     * @since 1.0-SNAPSHOT
+
      */
     private boolean checkScopeValidity(final String pScope) {
         // Check for scope validity
@@ -279,7 +279,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
      * Create new account and project user by bypassing validation process
      *
      * @param pUserEmail
-     * @since 1.0-SNAPSHOT
+
      */
     private void createExternalProjectUser(final String pUserEmail, AuthenticationStatus userStatus,
             final String pOrigineUrl, final String pRequestLink) {
@@ -319,7 +319,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
      * @param pUserEmail
      * @param pTenant
      * @return {@link AuthenticationStatus}
-     * @since 1.0-SNAPSHOT
+
      */
     private AuthenticationStatus checkUserStatus(final String pUserEmail, final String pTenant) {
 
@@ -459,7 +459,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
      * @param password
      *            user password
      * @return {@link AbstractAuthenticationToken}
-     * @since 1.0-SNAPSHOT
+
      */
     private AbstractAuthenticationToken generateAuthenticationToken(final String scope, final String login,
             final String email, final String password) {
@@ -497,7 +497,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
      * @return UserDetails
      * @throws EntityNotFoundException
      *             user not found in internal REGARDS database
-     * @since 1.0-SNAPSHOT
+
      */
     public UserDetails retrieveUserDetails(final String login, final String email, final String scope)
             throws EntityNotFoundException {

@@ -30,7 +30,7 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
  * Filter for authentication oauth2 endpoints
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 public class NotOAuthRequestMatcher implements RequestMatcher {
 

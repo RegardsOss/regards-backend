@@ -37,25 +37,19 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
- *
  * Class RoleSysFilterTest
  *
  * Test filter to deny access to all SYS role users.
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 public class RoleSysFilterTest {
 
     /**
-     *
      * Check access to gateway is not denied by the ROLE Filter for all non SYS roles users
      *
-     ** @throws ServletException
-     *             test error
-     * @throws IOException
-     *             test error
-     * @since 1.0-SNAPSHOT
+     * * @throws ServletException
+     * test error
+     * @throws IOException test error
      */
     @Purpose("Check access to gateway is not denied by the ROLE Filter for all non SYS roles users")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
@@ -79,14 +73,9 @@ public class RoleSysFilterTest {
     }
 
     /**
-     *
      * Check error during oauth2 authentication process using default authentication plugin
-     *
-     * @throws ServletException
-     *             test error
-     * @throws IOException
-     *             test error
-     * @since 1.0-SNAPSHOT
+     * @throws ServletException test error
+     * @throws IOException      test error
      */
     @Purpose("Check access to gateway is denied for all SYS roles users ")
     @Requirement("REGARDS_DSL_SYS_SEC_100")

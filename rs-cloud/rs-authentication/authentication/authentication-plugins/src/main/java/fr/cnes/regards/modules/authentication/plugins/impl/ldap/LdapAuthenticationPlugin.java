@@ -177,7 +177,7 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
      * @param pPort
      *            ldap server port
      * @return LdapConnection
-     * @since 1.0-SNAPSHOT
+
      */
     public LdapConnection getLdapConnection(final String pHost, final Integer pPort) {
         return new LdapNetworkConnection(pHost, pPort);
@@ -196,7 +196,7 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
      * @return user email
      * @throws LdapException
      *             error during LDAP transation
-     * @since 1.0-SNAPSHOT
+
      */
     private String getEmail(final LdapConnection pLdapContext, final String pDn, final String pLogin)
             throws LdapException {

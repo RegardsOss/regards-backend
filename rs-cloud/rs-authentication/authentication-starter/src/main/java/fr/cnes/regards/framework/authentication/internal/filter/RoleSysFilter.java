@@ -43,7 +43,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
  * Specific gateway Filter to deny access to all Systems Roles. Systems roles must be used between microservices only.
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 public class RoleSysFilter extends OncePerRequestFilter {
 

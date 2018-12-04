@@ -51,7 +51,7 @@ import fr.cnes.regards.modules.authentication.plugins.impl.ldap.LdapAuthenticati
  * Test authentication through LDAP server
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 public class LdapAuthenticationPluginTest {
 
@@ -69,7 +69,7 @@ public class LdapAuthenticationPluginTest {
      *
      * Initialize LDAP Authentication plugin thought plugin utilities.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @BeforeClass
     public static void init() {
@@ -97,7 +97,7 @@ public class LdapAuthenticationPluginTest {
      *
      * Test valid authentication throught LDAP plugin
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Test valid authentication throught LDAP plugin")
     @Test
@@ -125,7 +125,7 @@ public class LdapAuthenticationPluginTest {
      *             test error.
      * @throws IOException
      *             test error.
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Test error authentication throught LDAP plugin")
     @Test
@@ -150,7 +150,7 @@ public class LdapAuthenticationPluginTest {
      *             test error.
      * @throws IOException
      *             test error.
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Test error authentication throught LDAP plugin")
     @Test
@@ -176,7 +176,7 @@ public class LdapAuthenticationPluginTest {
      *             test error.
      * @throws IOException
      *             test error.
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Test error authentication throught LDAP plugin")
     @Test
@@ -201,7 +201,7 @@ public class LdapAuthenticationPluginTest {
      *             test error.
      * @throws IOException
      *             test error.
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Test error authentication throught LDAP plugin")
     @Test
@@ -227,7 +227,7 @@ public class LdapAuthenticationPluginTest {
      *             test error.
      * @throws IOException
      *             test error.
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Test error authentication throught LDAP plugin")
     @Test
@@ -252,7 +252,7 @@ public class LdapAuthenticationPluginTest {
      * @param pValidEmail
      *            does the LDAP mock connection return a valid email or not
      * @return LdapConnection
-     * @since 1.0-SNAPSHOT
+
      */
     private LdapConnection getMockedLdapConnection(final boolean pValidEmail) {
 

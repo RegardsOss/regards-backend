@@ -31,7 +31,7 @@ import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
  * microservice-core we have to define here a specific converter.
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  *
  */
 public class Oauth2DefaultTokenMessageConverter extends MappingJackson2HttpMessageConverter {

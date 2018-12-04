@@ -38,7 +38,7 @@ import org.apache.directory.api.ldap.model.message.SearchResultDone;
  * @author Sébastien Binda
  * @author Christophe Mertz
  * 
- * @since 1.0-SNAPSHOT
+
  */
 public class EntryCursorStub implements EntryCursor {
 

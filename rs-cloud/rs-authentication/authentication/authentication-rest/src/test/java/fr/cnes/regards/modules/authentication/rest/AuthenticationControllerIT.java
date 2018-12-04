@@ -49,7 +49,7 @@ import fr.cnes.regards.modules.authentication.plugins.impl.ldap.LdapAuthenticati
  *
  * @author Sébastien Binda
  * @author Christophe Mertz
- * @since 1.0-SNAPSHOT
+
  */
 // FIXME remove lines
 // @EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class })
@@ -102,7 +102,7 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
     /**
      * Init the context of the tests
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Before
     public void init() {
@@ -124,7 +124,7 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
     /**
      * Integration test to retrieve all configured Identity Provider plugins of the Authentication module
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Integration test to retrieve all configured Identity Provider plugins of the Authentication module")
     @Requirement("REGARDS_DSL_ADM_ARC_010")
@@ -142,7 +142,7 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
     /**
      * Integration test to retrieve one configured Identity Provider plugin of the Authentication module
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Integration test to retrieve one configured Identity Provider plugin of the Authentication module")
     @Requirement("REGARDS_DSL_ADM_ARC_010")
@@ -161,7 +161,7 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
     /**
      * Integration test to retrieve one configured Identity Provider plugin of the Authentication module
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Integration test to retrieve one configured Identity Provider plugin of the Authentication module")
     @Requirement("REGARDS_DSL_ADM_ARC_010")
@@ -177,7 +177,7 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
     /**
      * Integration test to create a configured Identity Provider plugin of the Authentication module
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Integration test to create a configured Identity Provider plugin of the Authentication module")
     @Requirement("REGARDS_DSL_ADM_ARC_010")
@@ -209,7 +209,7 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
     /**
      * Integration test to update a configured Identity Provider plugin of the Authentication module
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Integration test to update a configured Identity Provider plugin of the Authentication module")
     @Requirement("REGARDS_DSL_ADM_ARC_010")
@@ -234,7 +234,7 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
     /**
      * Integration test to update a configured Identity Provider plugin of the Authentication module with error
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Integration test to update a configured Identity Provider plugin of the Authentication module with error")
     @Requirement("REGARDS_DSL_ADM_ARC_010")
@@ -257,7 +257,7 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
     /**
      * Integration test to update a configured Identity Provider plugin of the Authentication module with eror
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Integration test to update a configured Identity Provider plugin of the Authentication module with eror")
     @Requirement("REGARDS_DSL_ADM_ARC_010")
@@ -279,7 +279,7 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
     /**
      * Integration test to delete a configured Identity Provider plugin of the Authentication module
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Integration test to delete a configured Identity Provider plugin of the Authentication module")
     @Requirement("REGARDS_DSL_ADM_ARC_010")
@@ -302,7 +302,7 @@ public class AuthenticationControllerIT extends AbstractRegardsTransactionalIT {
     /**
      * Integration test to delete a configured Identity Provider plugin of the Authentication module with error
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Integration test to delete a configured Identity Provider plugin of the Authentication module with error")
     @Requirement("REGARDS_DSL_ADM_ARC_010")

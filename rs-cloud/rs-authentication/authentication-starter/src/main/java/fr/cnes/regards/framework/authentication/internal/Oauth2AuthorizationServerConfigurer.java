@@ -101,7 +101,7 @@ public class Oauth2AuthorizationServerConfigurer extends AuthorizationServerConf
      * Create custom token enhancer to add custom claims in the JWT token generated.
      *
      * @return CustomTokenEnhancer
-     * @since 1.0-SNAPSHOT
+
      */
     private TokenEnhancer tokenEnhancer() {
         return new CustomTokenEnhancer(jwtService);
@@ -112,7 +112,7 @@ public class Oauth2AuthorizationServerConfigurer extends AuthorizationServerConf
      * Create token store for spring JWT manager
      *
      * @return TokenStore
-     * @since 1.0-SNAPSHOT
+
      */
     private TokenStore tokenStore() {
         return new JwtTokenStore(accessTokenConverter());
@@ -123,7 +123,7 @@ public class Oauth2AuthorizationServerConfigurer extends AuthorizationServerConf
      * Create the Oauth2 token to JWT Token converter
      *
      * @return JwtAccessTokenConverter
-     * @since 1.0-SNAPSHOT
+
      */
     private JwtAccessTokenConverter accessTokenConverter() {
         final JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
@@ -156,7 +156,7 @@ public class Oauth2AuthorizationServerConfigurer extends AuthorizationServerConf
      * Create token services
      *
      * @return DefaultTokenServices
-     * @since 1.0-SNAPSHOT
+
      */
     @Bean
     @Primary

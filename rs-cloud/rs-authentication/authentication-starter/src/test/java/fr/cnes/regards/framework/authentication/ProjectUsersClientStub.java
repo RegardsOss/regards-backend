@@ -35,13 +35,10 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
 
 /**
- *
  * Class ProjectUsersClientStub
  *
  * Stub to simulate the responses from the administration services for the ProjectUsers entities.
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 @Component
 @Primary
@@ -57,7 +54,7 @@ public class ProjectUsersClientStub implements IProjectUsersClient {
             final int pSize) {
         final PageMetadata metadata = new PageMetadata(pSize, pPage, users.size());
         final PagedResources<Resource<ProjectUser>> resource = new PagedResources<>(HateoasUtils.wrapList(users),
-                metadata, new ArrayList<>());
+                                                                                    metadata, new ArrayList<>());
         return new ResponseEntity<PagedResources<Resource<ProjectUser>>>(resource, HttpStatus.OK);
     }
 

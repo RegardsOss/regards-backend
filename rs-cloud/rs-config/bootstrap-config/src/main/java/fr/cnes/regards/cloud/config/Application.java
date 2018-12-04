@@ -23,13 +23,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.config.server.EnableConfigServer;
 
 /**
- *
  * Class ConfigApplication
  *
  * Boostrap for Spring Configuration Server
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 // CHECKSTYLE:OFF
 @SpringBootApplication
@@ -38,12 +35,8 @@ import org.springframework.cloud.config.server.EnableConfigServer;
 public class Application { // NOSONAR
 
     /**
-     *
      * Starter method
-     *
-     * @param pArgs
-     *            params
-     * @since 1.0-SNAPSHOT
+     * @param pArgs params
      */
     public static void main(final String[] pArgs) {
         SpringApplication.run(Application.class, pArgs); // NOSONAR

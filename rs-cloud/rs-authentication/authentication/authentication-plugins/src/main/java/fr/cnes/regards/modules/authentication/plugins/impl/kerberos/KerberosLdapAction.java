@@ -46,7 +46,7 @@ import fr.cnes.regards.modules.authentication.plugins.impl.ldap.LdapAuthenticati
  * JAAS Kerberos action to retrieve informations from LDAP.
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 public class KerberosLdapAction implements PrivilegedAction<DirContext> {
 
@@ -111,7 +111,7 @@ public class KerberosLdapAction implements PrivilegedAction<DirContext> {
      * @return {@link DirContext}
      * @throws LdapException
      *             Connection error
-     * @since 1.0-SNAPSHOT
+
      */
     public DirContext connect() throws LdapException {
 
@@ -176,7 +176,7 @@ public class KerberosLdapAction implements PrivilegedAction<DirContext> {
      * @return account mail
      * @throws LdapException
      *             Error getting user mail
-     * @since 1.0-SNAPSHOT
+
      */
     public String getUserEmail(final String pLdapRootDn, final String pLdapEmailAttribute, final String pUserFilter,
             final String pAccountNameLabel) throws LdapException {

@@ -25,7 +25,7 @@ package fr.cnes.regards.modules.authentication.plugins.domain;
  * POJO for needed informations to authenticate from an external service provider.
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 public class ExternalAuthenticationInformations {
 

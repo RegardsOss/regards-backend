@@ -41,7 +41,7 @@ import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPlugi
  * Regards internal authentication plugin
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @Plugin(author = "CSSI", description = "Regards internal authentication plugin",
         id = "RegardsInternalAuthenticationPlugin", version = "1.0", contact = "regards@c-s.fr", licence = "GPL V3",

@@ -36,7 +36,7 @@ import fr.cnes.regards.modules.authentication.plugins.IAuthenticationPlugin;
  * Internal authentication plugins manager
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @Service
 public class InternalAuthenticationPluginService implements IInternalAuthenticationPluginsService {

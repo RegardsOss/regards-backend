@@ -50,7 +50,7 @@ import fr.cnes.regards.modules.authentication.plugins.regards.RegardsInternalAut
  * Test plugin for Regards internal authentication
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 public class RegardsInternalAuthenticationPluginTest {
 
@@ -60,7 +60,7 @@ public class RegardsInternalAuthenticationPluginTest {
      *
      * Initialize Authentication plugin thought plugin utilities.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @BeforeClass
     public static void init() {
@@ -86,7 +86,7 @@ public class RegardsInternalAuthenticationPluginTest {
      *
      * @throws EntityNotFoundException
      *             test error.
-     * @since 1.0-SNAPSHOT
+
      */
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Requirement("REGARDS_DSL_ADM_ADM_620")
@@ -160,7 +160,7 @@ public class RegardsInternalAuthenticationPluginTest {
      *
      * @throws EntityNotFoundException
      *             test error.
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Check a authentication throught the Regards internal authentication system with error")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
@@ -196,7 +196,7 @@ public class RegardsInternalAuthenticationPluginTest {
      * Check a authentication throught the Regards internal authentication system with error
      *
      * @throws EntityNotFoundException
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Check a authentication throught the Regards internal authentication system with error")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
@@ -233,7 +233,7 @@ public class RegardsInternalAuthenticationPluginTest {
      *
      * @throws EntityNotFoundException
      *             test error
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Check a authentication throught the Regards internal authentication system with error")
     @Requirement("REGARDS_DSL_SYS_SEC_100")

@@ -46,7 +46,7 @@ import fr.cnes.regards.modules.authentication.plugins.impl.kerberos.KerberosServ
  *
  * @author Sébastien Binda
  * @author Christophe Mertz
- * @since 1.0-SNAPSHOT
+
  */
 // @EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class })
 // @ComponentScan("fr.cnes.regards.framework.authentication")
@@ -108,7 +108,7 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     /**
      * Init the context of the tests
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Before
     public void init() {
@@ -124,7 +124,7 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     /**
      * Integration test to retrieve all configured Service Provider plugins of the Authentication module
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Integration test to retrieve all configured Service Provider plugins of the Authentication module")
     @Requirement("REGARDS_DSL_ADM_ARC_010")
@@ -141,7 +141,7 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     /**
      * Integration test to retrieve one configured Service Provider plugin of the Authentication module
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Integration test to retrieve one configured Service Provider plugin of the Authentication module")
     @Requirement("REGARDS_DSL_ADM_ARC_010")
@@ -160,7 +160,7 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     /**
      * Integration test to retrieve one configured Service Provider plugin of the Authentication module
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Integration test to retrieve one configured Service Provider plugin of the Authentication module")
     @Requirement("REGARDS_DSL_ADM_ARC_010")
@@ -176,7 +176,7 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     /**
      * Integration test to create a configured Service Provider plugin of the Authentication module
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Integration test to create a configured Service Provider plugin of the Authentication module")
     @Requirement("REGARDS_DSL_ADM_ARC_010")
@@ -203,7 +203,7 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     /**
      * Integration test to update a configured Service Provider plugin of the Authentication module
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Integration test to update a configured Service Provider plugin of the Authentication module")
     @Requirement("REGARDS_DSL_ADM_ARC_010")
@@ -228,7 +228,7 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     /**
      * Integration test to update a configured Service Provider plugin of the Authentication module with error
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Integration test to update a configured Service Provider plugin of the Authentication module with error")
     @Requirement("REGARDS_DSL_ADM_ARC_010")
@@ -251,7 +251,7 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     /**
      * Integration test to update a configured Service Provider plugin of the Authentication module with eror
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Integration test to update a configured Service Provider plugin of the Authentication module with eror")
     @Requirement("REGARDS_DSL_ADM_ARC_010")
@@ -273,7 +273,7 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     /**
      * Integration test to delete a configured Service Provider plugin of the Authentication module
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Integration test to delete a configured Service Provider plugin of the Authentication module")
     @Requirement("REGARDS_DSL_ADM_ARC_010")
@@ -296,7 +296,7 @@ public class ExternalAuthenticationControllerIT extends AbstractRegardsTransacti
     /**
      * Integration test to delete a configured Service Provider plugin of the Authentication module with error
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Integration test to delete a configured Service Provider plugin of the Authentication module with error")
     @Requirement("REGARDS_DSL_ADM_ARC_010")

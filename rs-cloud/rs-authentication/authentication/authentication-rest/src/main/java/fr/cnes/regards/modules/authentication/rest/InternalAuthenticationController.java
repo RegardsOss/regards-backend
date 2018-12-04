@@ -52,7 +52,7 @@ import fr.cnes.regards.modules.authentication.service.IInternalAuthenticationPlu
  * REST Controller to manage internal authentication Identity providers
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @RestController
 @RequestMapping(InternalAuthenticationController.TYPE_MAPPING)
@@ -95,7 +95,7 @@ public class InternalAuthenticationController implements IResourceController<Plu
      * Retrieve all configured Identity Provider plugins to handle REGARDS internal authentication
      *
      * @return List for PluginConfiguration (Hateoas formated)
-     * @since 1.0-SNAPSHOT
+
      */
     @ResourceAccess(
             description = "Retrieve all configured Identity Provider plugins to handle REGARDS internal authentication",
@@ -113,7 +113,7 @@ public class InternalAuthenticationController implements IResourceController<Plu
      * @param pPluginConfigurationToCreate
      *            PluginConfiguration to create
      * @return Created PluginConfiguration (hateoas formated)
-     * @since 1.0-SNAPSHOT
+
      */
     @ResourceAccess(description = "Create a new Identity Provider plugin", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(method = RequestMethod.POST, produces = "application/json")
@@ -137,7 +137,7 @@ public class InternalAuthenticationController implements IResourceController<Plu
      * @param pPluginConfigurationId
      *            PluginConfiguration identifier to retrieve
      * @return PluginConfiguration (hateoas formated)
-     * @since 1.0-SNAPSHOT
+
      */
     @ResourceAccess(description = "Retrieve a configured Identity Provider plugin", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(path = "/{idp_id}", method = RequestMethod.GET, produces = "application/json")
@@ -168,7 +168,7 @@ public class InternalAuthenticationController implements IResourceController<Plu
      * @param pPluginConfigurationToUpdate
      *            PluginConfiguration to update
      * @return updated PluginConfiguration (hateoas formated)
-     * @since 1.0-SNAPSHOT
+
      */
     @ResourceAccess(description = "Update an Identity Provider plugin", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(path = "/{idp_id}", method = RequestMethod.PUT, produces = "application/json")
@@ -207,7 +207,7 @@ public class InternalAuthenticationController implements IResourceController<Plu
      * @param pPluginConfigurationId
      *            PluginConfiguration identifier to delete
      * @return Void
-     * @since 1.0-SNAPSHOT
+
      */
     @ResourceAccess(description = "Delete an Identity Provider plugin", role = DefaultRole.PROJECT_ADMIN)
     @RequestMapping(path = "/{idp_id}", method = RequestMethod.DELETE)

@@ -62,7 +62,7 @@ import fr.cnes.regards.modules.project.domain.Project;
  * Test Regards Oauth2 authentication process
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 public class Oauth2AuthenticationManagerTest {
 
@@ -118,7 +118,7 @@ public class Oauth2AuthenticationManagerTest {
      * @throws EntityException
      *             test error.
      * @throws EntityNotFoundException
-     * @since 1.0-SNAPSHOT
+
      */
     @BeforeClass
     public static void init() throws EntityNotFoundException, EntityException {
@@ -191,7 +191,7 @@ public class Oauth2AuthenticationManagerTest {
      *
      * @throws EntityException
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Check that an account is created after success authentication by plugin if account does not exits")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
@@ -224,7 +224,7 @@ public class Oauth2AuthenticationManagerTest {
      *
      * Check error during oauth2 authentication process using default authentication plugin
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Check valid authentication process.")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
@@ -258,7 +258,7 @@ public class Oauth2AuthenticationManagerTest {
      *
      * Check error during oauth2 authentication process using default authentication plugin
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Check error authentication process with projectUser not defined.")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
@@ -291,7 +291,7 @@ public class Oauth2AuthenticationManagerTest {
      *
      * Check error during oauth2 authentication process using default authentication plugin
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Check error authentication process with projectUser not validated yet.")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
@@ -330,7 +330,7 @@ public class Oauth2AuthenticationManagerTest {
      *
      * Check error during oauth2 authentication process using default authentication plugin
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Error during oauth2 authentication. Default authentication plugin. Invalid authentication parameters.")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
@@ -357,7 +357,7 @@ public class Oauth2AuthenticationManagerTest {
      * Check error during oauth2 authentication process using default authentication plugin. Invalid authentication
      * parameters.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Error during oauth2 authentication. Default authentication plugin. Invalid authentication parameters.")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
@@ -384,7 +384,7 @@ public class Oauth2AuthenticationManagerTest {
      * Check error during oauth2 authentication process using default authentication plugin. Invalid authentication
      * parameters.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Error during oauth2 authentication. Default authentication plugin. No authentication parameters.")
     @Requirement("REGARDS_DSL_SYS_SEC_100")

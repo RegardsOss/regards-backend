@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.authentication.plugins.domain.ExternalAuthenticat
  * Internal authentication plugins Interface manager
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 public interface IExternalAuthenticationPluginsService {
 
@@ -43,7 +43,7 @@ public interface IExternalAuthenticationPluginsService {
      * Retrieve all configured Service Provider plugins to handle REGARDS internal authentication
      *
      * @return List fo PluginConfiguration
-     * @since 1.0-SNAPSHOT
+
      */
     List<PluginConfiguration> retrieveServiceProviderPlugins();
 
@@ -57,7 +57,7 @@ public interface IExternalAuthenticationPluginsService {
      * @throws ModuleException
      * @throws EntityNotFoundException
      *             Plugin does not exists
-     * @since 1.0-SNAPSHOT
+
      */
     PluginConfiguration retrieveServiceProviderPlugin(Long pPluginConfigurationId) throws ModuleException;
 
@@ -70,7 +70,7 @@ public interface IExternalAuthenticationPluginsService {
      * @return Created PluginConfiguration
      * @throws ModuleException
      *             Plugin to create is not valid
-     * @since 1.0-SNAPSHOT
+
      */
     PluginConfiguration createServiceProviderPlugin(final PluginConfiguration pPluginConfigurationToCreate)
             throws ModuleException;
@@ -84,7 +84,7 @@ public interface IExternalAuthenticationPluginsService {
      * @return updated PluginConfiguration (hateoas formated)
      * @throws ModuleException
      *             Plugin to update is not valid
-     * @since 1.0-SNAPSHOT
+
      */
     PluginConfiguration updateServiceProviderPlugin(final PluginConfiguration pPluginConfigurationToUpdate)
             throws ModuleException;
@@ -97,7 +97,7 @@ public interface IExternalAuthenticationPluginsService {
      *            PluginConfiguration identifier to delete
      * @throws ModuleException
      *             Plugin to delete does not exists
-     * @since 1.0-SNAPSHOT
+
      */
     void deleteServiceProviderPlugin(Long pPluginConfigurationId) throws ModuleException;
 
@@ -111,7 +111,7 @@ public interface IExternalAuthenticationPluginsService {
      *            External SSO informations to validate
      * @return OAuth2AccessToken
      * @throws EntityNotFoundException
-     * @since 1.0-SNAPSHOT
+
      */
     OAuth2AccessToken authenticate(Long pPluginConfigurationId, ExternalAuthenticationInformations pAuthInformations)
             throws EntityNotFoundException;

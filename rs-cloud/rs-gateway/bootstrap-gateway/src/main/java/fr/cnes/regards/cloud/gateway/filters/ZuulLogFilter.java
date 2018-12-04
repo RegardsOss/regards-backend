@@ -35,7 +35,7 @@ import com.netflix.zuul.context.RequestContext;
  *
  * @author Sébastien Binda
  * @author Christophe Mertz
- * @since 1.0-SNAPSHOT
+
  */
 @Component
 public class ZuulLogFilter extends ZuulFilter {

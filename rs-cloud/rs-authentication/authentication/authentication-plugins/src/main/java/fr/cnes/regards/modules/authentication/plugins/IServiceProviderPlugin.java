@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.authentication.plugins.domain.ExternalAuthenticat
  * Interface for all Service Provider plugins.
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @PluginInterface(description="Interface for all Service Provider.")
 public interface IServiceProviderPlugin {
@@ -42,7 +42,7 @@ public interface IServiceProviderPlugin {
      * @param pAuthInformations
      *            Authentication informations
      * @return [true|false]
-     * @since 1.0-SNAPSHOT
+
      */
     boolean checkTicketValidity(ExternalAuthenticationInformations pAuthInformations);
 
@@ -53,7 +53,7 @@ public interface IServiceProviderPlugin {
      * @param pAuthInformations
      *            Authentication informations
      * @return {@link UserDetails}
-     * @since 1.0-SNAPSHOT
+
      */
     UserDetails getUserInformations(ExternalAuthenticationInformations pAuthInformations);
 

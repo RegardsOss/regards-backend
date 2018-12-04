@@ -25,7 +25,7 @@ package fr.cnes.regards.modules.authentication.plugins.impl.kerberos;
  * PArameters Labels for Kerberos Service Provider Plugin
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 public final class KerberosSPParameters {
 

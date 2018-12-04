@@ -28,7 +28,7 @@ import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPlugi
  * Authentication Provider interface.
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @FunctionalInterface
 @PluginInterface(description = "Interface for all identity provider plugins.")
@@ -45,7 +45,7 @@ public interface IAuthenticationPlugin {
      * @param pScope
      *            user project
      * @return Authentication status UserStatus
-     * @since 1.0-SNAPSHOT
+
      */
     AuthenticationPluginResponse authenticate(String pName, String pPassword, String pScope);
 

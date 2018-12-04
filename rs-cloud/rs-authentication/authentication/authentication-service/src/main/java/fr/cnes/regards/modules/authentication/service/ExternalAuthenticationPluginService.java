@@ -48,7 +48,7 @@ import fr.cnes.regards.modules.project.domain.Project;
  *
  * @author Sébastien Binda
  * @author Christophe Mertz
- * @since 1.0-SNAPSHOT
+
  */
 @Service
 public class ExternalAuthenticationPluginService implements IExternalAuthenticationPluginsService {

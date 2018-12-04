@@ -48,7 +48,7 @@ import fr.cnes.regards.modules.authentication.plugins.regards.RegardsInternalAut
  * Auto-configuration to activate Oauth2 authentication.
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @Configuration
 @EnableAuthorizationServer
@@ -104,7 +104,7 @@ public class Oauth2AutoConfiguration {
      * Create Authentication manager
      *
      * @return Oauth2AuthenticationManager
-     * @since 1.0-SNAPSHOT
+
      */
     @Bean
     public AuthenticationManager authenticationManager() {
@@ -116,7 +116,7 @@ public class Oauth2AutoConfiguration {
      * Create Authorization server configurer
      *
      * @return Oauth2AuthorizationServerConfigurer
-     * @since 1.0-SNAPSHOT
+
      */
     @Bean
     public Oauth2AuthorizationServerConfigurer authorizationServer() {
@@ -130,7 +130,7 @@ public class Oauth2AutoConfiguration {
      * @param pEndpoints
      *
      * @return ICustomWebSecurityConfiguration
-     * @since 1.0-SNAPSHOT
+
      */
     @Bean
     public ICustomWebSecurityConfiguration securityConf(final AuthorizationServerEndpointsConfiguration pEndpoints) {
@@ -144,7 +144,7 @@ public class Oauth2AutoConfiguration {
      * Set {@link PlatformTransactionManager} as primary to prevent conflict with another manager.
      *
      * @return PlatformTransactionManager
-     * @since 1.0-SNAPSHOT
+
      */
     @Bean
     @Primary

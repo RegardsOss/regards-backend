@@ -35,7 +35,7 @@ import fr.cnes.regards.framework.authentication.internal.Oauth2DefaultTokenMessa
  * Configuration class for Spring Web Mvc.
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @Configuration
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
@@ -47,7 +47,7 @@ public class Oauth2WebAutoConfiguration extends WebMvcConfigurerAdapter {
      * microservice-core we have to define here a specific converter.
      *
      * @see org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter#configureMessageConverters(java.util.List)
-     * @since 1.0-SNAPSHOT
+
      */
     @Override
     public void configureMessageConverters(final List<HttpMessageConverter<?>> pConverters) {

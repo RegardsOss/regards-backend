@@ -43,7 +43,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  * Class GatewayApplicationTest Test class for the Gateway application
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @SpringBootTest(classes = AuthenticationTestConfiguration.class)
 @AutoConfigureMockMvc
@@ -106,7 +106,7 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
     /**
      * Check that the gateway spring context is valid
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Purpose("Check that the gateway spring context is valid")
     @Test
@@ -118,7 +118,7 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
      * Check access to unexisting endpoints. Response must be Unauthorized.
      *
      * @throws Exception
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     public void test() throws Exception {
@@ -132,7 +132,7 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
     /**
      * Test the Oauth2 authentication process. Test unauthorized for basic authentication fail.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Purpose("Test the Oauth2 authentication process. Test unauthorized for basic authentication fail.")
@@ -163,7 +163,7 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
     /**
      * Test the Oauth2 authentication process. Test unauthorized for user/password invalid.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Purpose("Test the Oauth2 authentication process. Test unauthorized for user/password invalid.")
@@ -190,7 +190,7 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
     /**
      * Test the Oauth2 authentication process. Get a valid token.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Purpose("Test the Oauth2 authentication process. Get a valid token.")

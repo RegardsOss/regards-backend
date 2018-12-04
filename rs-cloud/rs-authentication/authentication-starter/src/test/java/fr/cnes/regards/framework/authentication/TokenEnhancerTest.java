@@ -37,13 +37,10 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
- *
  * Class TokenEnhancerTest
  *
  * Test utility adding specific REGARDS Claims in JWT token after authentication succeed by Oauth2 process
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 public class TokenEnhancerTest {
 
@@ -63,10 +60,7 @@ public class TokenEnhancerTest {
     private static final String ROLE = "test";
 
     /**
-     *
      * Check that valid claims are added in JWT authentication token
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Purpose("Check access to gateway is not denied by the ROLE Filter for all non SYS roles users")
     @Requirement("REGARDS_DSL_SYS_SEC_100")

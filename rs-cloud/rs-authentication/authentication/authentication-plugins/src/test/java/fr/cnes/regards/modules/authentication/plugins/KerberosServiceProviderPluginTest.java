@@ -57,7 +57,7 @@ import fr.cnes.regards.modules.authentication.plugins.impl.kerberos.Krb5TicketVa
  * @author Sébastien Binda
  * @author Christophe Mertz
  *
- * @since 1.0-SNAPSHOT
+
  */
 @Ignore
 public class KerberosServiceProviderPluginTest {
@@ -86,7 +86,7 @@ public class KerberosServiceProviderPluginTest {
      *
      * Initialize LDAP Authentication plugin thought plugin utilities.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @BeforeClass
     public static void init() {
@@ -130,7 +130,7 @@ public class KerberosServiceProviderPluginTest {
      *
      * Check authentication to REGARDS system with a kerberos ticket
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     @Requirement("REGARDS_DSL_SYS_SEC_120")
@@ -159,7 +159,7 @@ public class KerberosServiceProviderPluginTest {
      * @param pUserPrincipal
      *            user to connect
      * @return valid ticket
-     * @since 1.0-SNAPSHOT
+
      */
     public byte[] generateKerberosTicket(final String pApplicationPrincipal, final String pUserPrincipal) {
         try {

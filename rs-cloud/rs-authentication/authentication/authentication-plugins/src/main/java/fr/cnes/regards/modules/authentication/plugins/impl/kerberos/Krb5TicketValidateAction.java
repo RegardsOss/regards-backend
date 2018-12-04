@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  * Handler to validate a kerberos ticket
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 public class Krb5TicketValidateAction implements PrivilegedExceptionAction<String> {
 
@@ -101,7 +101,7 @@ public class Krb5TicketValidateAction implements PrivilegedExceptionAction<Strin
      * Retrieve authenticated kerberos context
      *
      * @return {@link GSSContext}
-     * @since 1.0-SNAPSHOT
+
      */
     public GSSContext getGssContext() {
         return gssContext;
@@ -111,7 +111,7 @@ public class Krb5TicketValidateAction implements PrivilegedExceptionAction<Strin
      *
      * Close Kerberos context
      *
-     * @since 1.0-SNAPSHOT
+
      */
     public void closeContext() {
         if (gssContext != null) {
