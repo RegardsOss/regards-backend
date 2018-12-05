@@ -77,7 +77,7 @@
 
     <modules>
         <module>workspace-domain</module>
-        <!--<module>workspace-rest</module>-->
-        <!--<module>workspace-service</module>-->
+        <module>workspace-rest</module>
+        <module>workspace-service</module>
     </modules>
 </project>
