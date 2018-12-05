@@ -308,20 +308,25 @@ public class DataStorageService implements IDataStorageService {
     @Override
     public void handleDeletionAction(StorageEventType type, DataStorageEvent event) {
         // Check that the given StorageDataFile id is associated to an existing StorageDataFile from db.
-        Optional<StorageDataFile> data = dataFileDao.findLockedOneById(event.getDataFileId());
+        Optional<StorageDataFile> oData = dataFileDao.findLockedOneById(event.getDataFileId());
         Long dataStorageConfId = event.getStorageConfId();
-        if (data.isPresent()) {
+        if (oData.isPresent()) {
+            StorageDataFile data = oData.get();
             switch (type) {
                 case SUCCESSFULL:
-                    handleDeletionSuccess(data.get(), event.getHandledUrl(), event.getChecksum(), dataStorageConfId);
+                    handleDeletionSuccess(data, event.getHandledUrl(), event.getChecksum(), dataStorageConfId);
                     break;
                 case FAILED:
                 default:
-                    PluginConfiguration storageConf = null;
+                    PrioritizedDataStorage storageConf = null;
                     try {
-                        storageConf = pluginService.getPluginConfiguration(dataStorageConfId);
+                        storageConf = prioritizedDataStorageService.retrieve(dataStorageConfId);
                     } catch (EntityNotFoundException e) {
                         LOGGER.error(e.getMessage(), e);
+                    }
+                    // In case we were on a partial deletion, lets reset data storage removed by IAIPService#deleteFilesFromDataStorage(Collection, Long)
+                    if (data.getState() == DataFileState.PARTIAL_DELETION_PENDING) {
+                        data.getPrioritizedDataStorages().add(storageConf);
                     }
                     // IDataStorage plugin used to delete the file is not able to delete the file right now.
                     // Notify administrator and set data file to STORED, because it is its real state for now.
@@ -330,10 +335,12 @@ public class DataStorageService implements IDataStorageService {
                                                    event.getDataFileId(),
                                                    event.getChecksum(),
                                                    event.getStorageConfId(),
-                                                   storageConf == null ? null : storageConf.getLabel(),
+                                                   storageConf == null ?
+                                                           null :
+                                                           storageConf.getDataStorageConfiguration().getLabel(),
                                                    event.getFailureCause());
-                    data.get().setState(DataFileState.STORED);
-                    dataFileDao.save(data.get());
+                    data.setState(DataFileState.STORED);
+                    dataFileDao.save(data);
                     LOGGER.error(message);
                     notifyAdmins("File deletion error", message, NotificationType.INFO, MimeTypeUtils.TEXT_PLAIN);
                     break;
