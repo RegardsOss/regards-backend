@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.accessrights.service;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -46,15 +47,11 @@ import fr.cnes.regards.modules.accessrights.service.resources.ResourcesService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
- *
  * Class ResourcesServiceTest
  *
  * Test for resources management
- *
  * @author Sébastien Binda
  * @author Christophe Mertz
- *
- * @since 1.0-SNAPSHOT
  */
 public class ResourcesServiceTest {
 
@@ -98,44 +95,39 @@ public class ResourcesServiceTest {
     private Role roleAdmin;
 
     /**
-     *
      * Initialization of mocks and stubs
-     *
-     * @throws EntityNotFoundException
-     *             test error
-     *
-     * @since 1.0-SNAPSHOT
+     * @throws EntityNotFoundException test error
      */
     @Before
     public void init() throws EntityNotFoundException {
 
         resourcesRepo = Mockito.mock(IResourcesAccessRepository.class);
         ra0 = new ResourcesAccess(0L, "ResourceAccess 0", "Microservice 0", "Resource 0", "Controller",
-                RequestMethod.GET, DefaultRole.ADMIN);
+                                  RequestMethod.GET, DefaultRole.ADMIN);
         ra1 = new ResourcesAccess(1L, "ResourceAccess 1", "Microservice 1", "Resource 1", "Controller",
-                RequestMethod.PUT, DefaultRole.ADMIN);
+                                  RequestMethod.PUT, DefaultRole.ADMIN);
         ra2 = new ResourcesAccess(2L, "ResourceAccess 2", "Microservice 2", "Resource 2", "Controller",
-                RequestMethod.DELETE, DefaultRole.ADMIN);
+                                  RequestMethod.DELETE, DefaultRole.ADMIN);
         ra3 = new ResourcesAccess(3L, "ResourceAccess 3", "Microservice 3", "Resource 3", "Controller",
-                RequestMethod.GET, DefaultRole.ADMIN);
+                                  RequestMethod.GET, DefaultRole.ADMIN);
         ras = new HashSet<>();
         ras.add(ra0);
         ras.add(ra1);
         ras.add(ra2);
         ras.add(ra3);
-        Mockito.when(resourcesRepo.findOne(ra0.getId())).thenReturn(ra0);
-        Mockito.when(resourcesRepo.findOne(ra1.getId())).thenReturn(ra1);
-        Mockito.when(resourcesRepo.findOne(ra2.getId())).thenReturn(ra2);
-        Mockito.when(resourcesRepo.findOne(ra3.getId())).thenReturn(ra3);
+        Mockito.when(resourcesRepo.findById(ra0.getId())).thenReturn(Optional.of(ra0));
+        Mockito.when(resourcesRepo.findById(ra1.getId())).thenReturn(Optional.of(ra1));
+        Mockito.when(resourcesRepo.findById(ra2.getId())).thenReturn(Optional.of(ra2));
+        Mockito.when(resourcesRepo.findById(ra3.getId())).thenReturn(Optional.of(ra3));
 
         discoveryClientMock = Mockito.mock(DiscoveryClient.class);
 
         roleServiceMock = Mockito.mock(IRoleService.class);
         roleAdmin = new Role("ADMIN", null);
         roleAdmin.setId(33L);
-        Mockito.stub(roleServiceMock.retrieveInheritedRoles(Mockito.any(Role.class)))
-                .toReturn(Sets.newHashSet(roleAdmin));
-        Mockito.stub(roleServiceMock.retrieveRole("ADMIN")).toReturn(roleAdmin);
+        Mockito.when(roleServiceMock.retrieveInheritedRoles(Mockito.any(Role.class)))
+                .thenReturn(Sets.newHashSet(roleAdmin));
+        Mockito.when(roleServiceMock.retrieveRole("ADMIN")).thenReturn(roleAdmin);
 
         tenantResolverMock = Mockito.mock(ITenantResolver.class);
         final Set<String> tenants = new HashSet<>();
@@ -166,16 +158,16 @@ public class ResourcesServiceTest {
         final String ms = "rs-test";
 
         ResourcesAccess raTest1 = new ResourcesAccess("description", ms, "/resource/test/1", "Controller",
-                RequestMethod.GET, DefaultRole.ADMIN);
+                                                      RequestMethod.GET, DefaultRole.ADMIN);
         roleAdmin.addPermission(raTest1);
         ResourcesAccess raTest2 = new ResourcesAccess("description", ms, "/resource/test/2", "Controller",
-                RequestMethod.GET, DefaultRole.ADMIN);
+                                                      RequestMethod.GET, DefaultRole.ADMIN);
         roleAdmin.addPermission(raTest2);
         ResourcesAccess raTest3 = new ResourcesAccess("description", ms, "/resource/test/3", "Controller",
-                RequestMethod.GET, DefaultRole.ADMIN);
+                                                      RequestMethod.GET, DefaultRole.ADMIN);
         roleAdmin.addPermission(raTest3);
         ResourcesAccess raTest4 = new ResourcesAccess("description", ms, "/resource/test/4", "Controller",
-                RequestMethod.GET, DefaultRole.ADMIN);
+                                                      RequestMethod.GET, DefaultRole.ADMIN);
         roleAdmin.addPermission(raTest4);
 
         final Page<ResourcesAccess> page = resourcesService.retrieveRessources(ms, new PageRequest(0, 20));

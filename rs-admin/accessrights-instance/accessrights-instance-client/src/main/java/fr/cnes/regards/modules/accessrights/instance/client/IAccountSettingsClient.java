@@ -36,7 +36,7 @@ import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
  *
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
- * @since 1.0-SNAPSHOT
+
  */
 @RestClient(name = "rs-admin-instance")
 @RequestMapping(path = "/accounts/settings", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)

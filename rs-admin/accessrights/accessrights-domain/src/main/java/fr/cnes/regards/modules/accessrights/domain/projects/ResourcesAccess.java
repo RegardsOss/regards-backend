@@ -45,7 +45,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
  *
  * @author Sébastien Binda
  * @author Christophe Mertz
- * @since 1.0-SNAPSHOT
+
  */
 @Entity
 @Table(name = "t_resources_access")

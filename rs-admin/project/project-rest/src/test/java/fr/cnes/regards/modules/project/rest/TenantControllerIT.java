@@ -46,7 +46,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * Tests for REST endpoints to access tenant entities.
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @InstanceTransactional
 @ContextConfiguration(classes = { LicenseConfiguration.class })
@@ -103,7 +103,7 @@ public class TenantControllerIT extends AbstractRegardsIT {
      *
      * Check REST Access to project resources and Hateoas returned links
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Requirement("REGARDS_DSL_ADM_INST_130")
     @Requirement("REGARDS_DSL_SYS_ARC_020")

@@ -57,7 +57,7 @@ import fr.cnes.regards.modules.accessrights.service.role.RoleService;
  * @author svissier
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
- * @since 1.0-SNAPSHOT
+
  */
 @MultitenantTransactional
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })

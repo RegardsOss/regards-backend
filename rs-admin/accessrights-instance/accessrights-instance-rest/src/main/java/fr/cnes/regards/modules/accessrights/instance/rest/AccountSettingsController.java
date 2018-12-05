@@ -46,7 +46,7 @@ import fr.cnes.regards.modules.accessrights.instance.service.IAccountSettingsSer
  *
  * REST Controller to manage accounts global settings
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @RestController
 @ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",

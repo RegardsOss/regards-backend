@@ -78,7 +78,7 @@ public interface INotificationRepository
                     + "ORDER BY n.id DESC, ?#{#pageable}",
             nativeQuery = true)
     Page<Notification> findByStatusAndRecipientsContaining(String status, String projectUser, String role,
-            Pageable page);
+            Pageable pageable);
 
     /**
      * Find all notifications with passed <code>status</code>

@@ -142,7 +142,7 @@ public class ProjectUserWorkflowManagerTest {
         projectUserWorkflowManager.removeAccess(projectUser);
 
         // Check that the repository's method was called with right arguments
-        Mockito.verify(projectUserRepository).delete(projectUser.getId());
+        Mockito.verify(projectUserRepository).deleteById(projectUser.getId());
     }
 
     /**

@@ -52,7 +52,7 @@ import fr.cnes.regards.modules.project.domain.Project;
  * @author Christophe Mertz
  * @author Sébastien Binda
  *
- * @since 1.0-SNAPSHOT
+
  */
 @Service
 @InstanceTransactional

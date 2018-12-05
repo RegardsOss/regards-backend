@@ -39,7 +39,7 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
  * Specific integration test for 'accesses/acceptAccount' endpoint
  *
  * @author Xavier-Alexandre Brochard
- * @since 1.0-SNAPSHOT
+
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
 public class AcceptAccountIT extends AbstractRegardsIT {
@@ -82,13 +82,13 @@ public class AcceptAccountIT extends AbstractRegardsIT {
      */
     @Before
     public void setUp() {
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         account = accountRepository.save(new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSWORD));
     }
 
     @After
     public void tearDown() {
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         accountRepository.delete(account);
     }
 
@@ -101,9 +101,7 @@ public class AcceptAccountIT extends AbstractRegardsIT {
     public void acceptAccount() {
         String endpoint = AccountsController.TYPE_MAPPING + AccountsController.ACCEPT_ACCOUNT_RELATIVE_PATH;
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultPut(endpoint, null, requestBuilderCustomizer, "Unable to accept the account", EMAIL);
+        performDefaultPut(endpoint, null, customizer().expectStatusOk(), "Unable to accept the account", EMAIL);
     }
 
     @Override

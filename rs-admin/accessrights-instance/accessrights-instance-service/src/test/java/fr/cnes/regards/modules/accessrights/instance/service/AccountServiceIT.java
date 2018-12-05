@@ -96,7 +96,7 @@ public class AccountServiceIT extends AbstractRegardsIT {
 
     @Before
     public void init() throws IOException, ModuleException, URISyntaxException, InterruptedException {
-        tenantResolver.forceTenant(DEFAULT_TENANT);
+        tenantResolver.forceTenant(getDefaultTenant());
         initDb();
     }
 
@@ -136,9 +136,9 @@ public class AccountServiceIT extends AbstractRegardsIT {
         // lets test now that everything is in place
         accountService.checkAccountValidity();
 
-        accountValid = accountRepository.findOne(accountValid.getId());
-        accountInvalid = accountRepository.findOne(accountInvalid.getId());
-        accountPasswordInvalid = accountRepository.findOne(accountPasswordInvalid.getId());
+        accountValid = accountRepository.findById(accountValid.getId()).get();
+        accountInvalid = accountRepository.findById(accountInvalid.getId()).get();
+        accountPasswordInvalid = accountRepository.findById(accountPasswordInvalid.getId()).get();
 
         LOG.info("account :                <{}> - {} - {}", account.getStatus(), account.getInvalidityDate(),
                  account.getPasswordUpdateDate());
@@ -173,7 +173,7 @@ public class AccountServiceIT extends AbstractRegardsIT {
 
         // lets test now that everything is in place
         accountService.checkAccountValidity();
-        accountPasswordInvalid = accountRepository.findOne(accountPasswordInvalid.getId());
+        accountPasswordInvalid = accountRepository.findById(accountPasswordInvalid.getId()).get();
 
         LOG.info("accountPasswordInvalid : <{}> - {} - {}", accountPasswordInvalid.getStatus(),
                  accountPasswordInvalid.getInvalidityDate(), accountPasswordInvalid.getPasswordUpdateDate());
@@ -188,7 +188,7 @@ public class AccountServiceIT extends AbstractRegardsIT {
         }
 
         accountService.checkAccountValidity();
-        accountPasswordInvalid = accountRepository.findOne(accountPasswordInvalid.getId());
+        accountPasswordInvalid = accountRepository.findById(accountPasswordInvalid.getId()).get();
         
         LOG.info("accountPasswordInvalid : <{}> - {} - {}", accountPasswordInvalid.getStatus(),
                  accountPasswordInvalid.getInvalidityDate(), accountPasswordInvalid.getPasswordUpdateDate());

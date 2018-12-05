@@ -31,15 +31,14 @@ import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
- *
  * Class JpaTenantConnectionConfiguration
  *
  * Test configuration class
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 @Configuration
 @ComponentScan("fr.cnes.regards.modules")
@@ -69,11 +68,8 @@ public class AuthoritiesTestConfiguration {
     }
 
     /**
-     *
      * Initialize a Mock for AMQP Publisher
-     *
      * @return IPublisher
-     * @since 1.0-SNAPSHOT
      */
     @Bean
     public IPublisher mockPublisher() {
@@ -85,12 +81,19 @@ public class AuthoritiesTestConfiguration {
         return Mockito.mock(IInstancePublisher.class);
     }
 
+    @Bean
+    public IAccountsClient mockAccountsClient() {
+        return Mockito.mock(IAccountsClient.class);
+    }
+
+    @Bean
+    public IProjectsClient mockProjectsClient() {
+        return Mockito.mock(IProjectsClient.class);
+    }
+
     /**
-     *
      * Initialize a Mock for AMQP Subsriber
-     *
      * @return ISubscriber
-     * @since 1.0-SNAPSHOT
      */
     @Bean
     public ISubscriber mockSubscriber() {

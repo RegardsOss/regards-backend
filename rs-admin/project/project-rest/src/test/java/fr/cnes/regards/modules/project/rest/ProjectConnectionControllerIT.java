@@ -46,7 +46,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  *
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
- * @since 1.0-SNAPSHOT
+
  */
 @InstanceTransactional
 @ContextConfiguration(classes = { LicenseConfiguration.class })
@@ -98,7 +98,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
      *
      * Initialize token and datas
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Before
     public void initialize() {
@@ -138,7 +138,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
      *
      * Check REST Access to get a project connection and Hateoas returned links
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
@@ -155,7 +155,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
      *
      * Check REST Access to create a project connection and Hateoas returned links
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
@@ -175,7 +175,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
      *
      * Check REST Access to update a project connection and Hateoas returned links
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
@@ -194,7 +194,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     /**
      * Check REST Access to project connections by id. >>>>>>> 538fc5b3af67db38dc598432cc06e9e4134c9971
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Requirement("REGARDS_DSL_SYS_ARC_020")

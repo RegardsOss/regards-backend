@@ -44,7 +44,7 @@ import fr.cnes.regards.modules.project.domain.Project;
  * Tests for REST endpoints to access Project entities.
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @InstanceTransactional
 @ContextConfiguration(classes = { LicenseConfiguration.class })
@@ -81,7 +81,7 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
      *
      * Check REST Access to project resources and Hateoas returned links
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Requirement("REGARDS_DSL_ADM_INST_130")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
@@ -98,7 +98,7 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
      *
      * Check REST Access to project resources and Hateoas returned links
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Requirement("REGARDS_DSL_ADM_INST_130")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
@@ -122,7 +122,7 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
      *
      * Check REST Access to project resources and Hateoas returned links
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Requirement("REGARDS_DSL_ADM_INST_130")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
@@ -146,7 +146,7 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
      *
      * Check REST Access to project resource and Hateoas returned links
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Requirement("REGARDS_DSL_ADM_INST_100")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
@@ -164,7 +164,7 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
      *
      * Check REST Access for project creation and Hateoas returned links
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Requirement("REGARDS_DSL_ADM_INST_100")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
@@ -205,7 +205,7 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
      *
      * Check REST Access for project update and Hateoas returned links
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Requirement("REGARDS_DSL_ADM_INST_100")
     @Requirement("REGARDS_DSL_SYS_ARC_020")

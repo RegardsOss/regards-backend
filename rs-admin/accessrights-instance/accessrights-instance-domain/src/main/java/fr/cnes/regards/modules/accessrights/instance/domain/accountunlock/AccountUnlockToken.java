@@ -122,7 +122,7 @@ public class AccountUnlockToken {
      *
      * Update token expiracy date from the current date.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     public void updateExipracyDate() {
         this.expiryDate = calculateExpiryDate(EXPIRATION);

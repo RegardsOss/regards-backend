@@ -57,7 +57,7 @@ import fr.cnes.regards.modules.accessrights.service.role.RoleService;
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
- * @since 1.0-SNAPSHOT
+
  */
 @MultitenantTransactional
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
@@ -281,7 +281,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     /**
      * Check hierarchy of roles
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")

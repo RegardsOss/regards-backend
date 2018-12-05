@@ -30,7 +30,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
 
 /**
  * {@link IAccessSettingsService} implementation
- *
  * @author Xavier-Alexandre Brochard
  */
 @Service
@@ -44,23 +43,16 @@ public class AccessSettingsService implements IAccessSettingsService {
 
     /**
      * Creates an {@link AccessSettingsService} wired to the given {@link IProjectUserRepository}.
-     *
-     * @param pAccessSettingsRepository
-     *            Autowired by Spring. Must not be {@literal null}.
+     * @param pAccessSettingsRepository Autowired by Spring. Must not be {@literal null}.
      */
-    public AccessSettingsService(final IAccessSettingsRepository pAccessSettingsRepository) {
+    public AccessSettingsService(IAccessSettingsRepository pAccessSettingsRepository) {
         super();
         accessSettingsRepository = pAccessSettingsRepository;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.service.role.IAccessSettingsService#retrieve()
-     */
     @Override
     public AccessSettings retrieve() {
-        final List<AccessSettings> list = accessSettingsRepository.findAll();
+        List<AccessSettings> list = accessSettingsRepository.findAll();
         AccessSettings result;
         if (list.isEmpty()) {
             result = new AccessSettings();
@@ -72,17 +64,12 @@ public class AccessSettingsService implements IAccessSettingsService {
         return result;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.service.role.IAccessSettingsService#update()
-     */
     @Override
-    public AccessSettings update(final AccessSettings pAccessSettings) throws EntityNotFoundException {
-        if (!accessSettingsRepository.exists(pAccessSettings.getId())) {
-            throw new EntityNotFoundException(pAccessSettings.getId().toString(), AccessSettings.class);
+    public AccessSettings update(AccessSettings accessSettings) throws EntityNotFoundException {
+        if (!accessSettingsRepository.existsById(accessSettings.getId())) {
+            throw new EntityNotFoundException(accessSettings.getId().toString(), AccessSettings.class);
         }
-        return accessSettingsRepository.save(pAccessSettings);
+        return accessSettingsRepository.save(accessSettings);
     }
 
 }

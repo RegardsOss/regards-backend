@@ -18,51 +18,50 @@
  */
 package fr.cnes.regards.modules.project.service;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.persistence.EntityManager;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.context.ContextConfiguration;
 
-import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.encryption.AESEncryptionService;
 import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
+import fr.cnes.regards.framework.jpa.autoconfigure.NeverUseFlywayAutoConfiguration;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
-import fr.cnes.regards.modules.project.service.stub.ProjectConnectionRepositoryStub;
-import fr.cnes.regards.modules.project.service.stub.ProjectRepositoryStub;
 
 /**
- *
  * Class ProjectServiceTest
  *
  * Project business service tests
- *
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
- * @since 1.0-SNAPSHOT
+ * @author Olivier Rousselot
  */
-public class ProjectConnectionServiceTest {
+@PropertySource("classpath:application-test.properties")
+public class ProjectConnectionServiceTest extends AbstractRegardsServiceIT {
 
     /**
      * Common string value for project creation.
@@ -118,58 +117,53 @@ public class ProjectConnectionServiceTest {
 
     private static final String PROJECT2_URL = "url2";
 
-    /**
-     * Project service to test.
-     */
-    private ProjectService projectService;
+    @Autowired
+    private IProjectService projectService;
 
-    /**
-     * Project service to test.
-     */
-    private ProjectConnectionService projectConnectionService;
+    @Autowired
+    private IProjectConnectionService projectConnectionService;
 
-    /**
-     * Stubbed repository
-     */
-    private IProjectConnectionRepository projectConnectionRepoStub;
+    @Autowired
+    private IProjectConnectionRepository projectConnectionRepo;
 
-    /**
-     *
-     * Initializa DAO Stub and inline entities for tests
-     *
-     * @since 1.0-SNAPSHOT
-     */
+    @Autowired
+    private IProjectRepository projectRepo;
+
+    private Project project1;
+
+    private Project project2;
+
+    private ProjectConnection projectCtx;
+
     @Before
     public void init() throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
-        // use a stub repository, to be able to only test the service
-        IProjectRepository projectRepoStub = new ProjectRepositoryStub();
-        projectService = new ProjectService(projectRepoStub, Mockito.mock(ITenantResolver.class),
-                Mockito.mock(IInstancePublisher.class), "default-project-test",
-                "http://localhost/default-project-test");
+        projectConnectionRepo.deleteAll();
+        projectRepo.deleteAll();
+
         AESEncryptionService aesEncryptionService = new AESEncryptionService();
         aesEncryptionService
                 .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "1234567812345678"));
-        projectConnectionRepoStub = new ProjectConnectionRepositoryStub();
-        projectConnectionService = new ProjectConnectionService(projectRepoStub, projectConnectionRepoStub,
-                Mockito.mock(IInstancePublisher.class), Mockito.mock(EntityManager.class), aesEncryptionService);
 
-        Project project1 = projectRepoStub
-                .save(new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_1));
-        Project project2 = projectRepoStub
-                .save(new Project(1L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_2));
+        project1 = new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_1);
+        project1.setLabel("Project1");
+        project1 = projectRepo.save(project1);
 
-        projectConnectionRepoStub.save(new ProjectConnection(0L, project1, MS_TEST_1, COMMON_PROJECT_USER_NAME,
-                COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT1_URL));
-        projectConnectionRepoStub.save(new ProjectConnection(1L, project2, MS_TEST_2, COMMON_PROJECT_USER_NAME,
-                COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT2_URL));
+        project2 = new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_2);
+        project2.setLabel("Project1");
+        project2 = projectRepo.save(project2);
+
+        projectCtx = new ProjectConnection(project1, MS_TEST_1, COMMON_PROJECT_USER_NAME,
+                                                             COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER,
+                                                             PROJECT1_URL);
+        projectCtx = projectConnectionRepo.save(projectCtx);
+        projectConnectionRepo
+                .save(new ProjectConnection(project2, MS_TEST_2, COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD,
+                                            COMMON_PROJECT_DRIVER, PROJECT2_URL));
     }
 
     /**
-     *
      * Test creation of a new database connection for a given project and a given microservice
      * @throws ModuleException if error occurs!
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Test creation of a new database connection for a given project and a given microservice.")
@@ -180,7 +174,8 @@ public class ProjectConnectionServiceTest {
 
         // Test database parameter conflict detection : project 1 connection = project 2 connection
         ProjectConnection connection = new ProjectConnection(600L, project1, "microservice-test",
-                COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT2_URL);
+                                                             COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD,
+                                                             COMMON_PROJECT_DRIVER, PROJECT2_URL);
         try {
             projectConnectionService.createProjectConnection(connection, true);
             Assert.fail("Conflicting connection should not be created");
@@ -202,10 +197,7 @@ public class ProjectConnectionServiceTest {
     }
 
     /**
-     *
      * Test deletion of a database connection for a given project and a given microservice.
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Test deletion of a database connection for a given project and a given microservice.")
@@ -241,10 +233,7 @@ public class ProjectConnectionServiceTest {
     }
 
     /**
-     *
      * Test updating of a database connection for a given project and a given microservice.
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Test updating of a database connection for a given project and a given microservice.")
@@ -268,9 +257,9 @@ public class ProjectConnectionServiceTest {
         }
 
         // Updating with an non existing project
-        connection = new ProjectConnection(0L,
-                new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_3), MS_TEST_1,
-                COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT1_URL);
+        connection = new ProjectConnection(0L, new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true,
+                                                           PROJECT_TEST_3), MS_TEST_1, COMMON_PROJECT_USER_NAME,
+                                           COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT1_URL);
         try {
             connection = projectConnectionService.updateProjectConnection(0L, connection);
             Assert.fail(errorUpdate);
@@ -280,9 +269,9 @@ public class ProjectConnectionServiceTest {
 
         // Updating a non existing projectConnection
         final long id = 56L;
-        connection = new ProjectConnection(id,
-                new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_3), MS_TEST_1,
-                COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT1_URL);
+        connection = new ProjectConnection(id, new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true,
+                                                           PROJECT_TEST_3), MS_TEST_1, COMMON_PROJECT_USER_NAME,
+                                           COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT1_URL);
         try {
             connection = projectConnectionService.updateProjectConnection(id, connection);
             Assert.fail(errorUpdate);
@@ -293,8 +282,6 @@ public class ProjectConnectionServiceTest {
 
     /**
      * Test to retrieve projects connections of given project's name in instance database.
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose(" Test to retrieve projects connections of given project's name in instance database.")
@@ -312,10 +299,7 @@ public class ProjectConnectionServiceTest {
 
     /**
      * Test to retrieve projects connections of passed id in instance database.
-     *
-     * @throws EntityNotFoundException
-     *             No project connection with passed id
-     * @since 1.0-SNAPSHOT
+     * @throws EntityNotFoundException No project connection with passed id
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Test to retrieve projects connections of passed id in instance database.")
@@ -323,7 +307,7 @@ public class ProjectConnectionServiceTest {
     public void testRetrieveProjectConnectionById() throws EntityNotFoundException {
 
         // Call tested method
-        final ProjectConnection actual = projectConnectionService.retrieveProjectConnectionById(0L);
+        ProjectConnection actual = projectConnectionService.retrieveProjectConnectionById(projectCtx.getId());
 
         // Check
         Assert.assertNotNull(actual);

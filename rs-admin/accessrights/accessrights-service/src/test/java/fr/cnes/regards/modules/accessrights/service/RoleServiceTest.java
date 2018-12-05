@@ -63,7 +63,6 @@ import fr.cnes.regards.modules.accessrights.service.role.RoleService;
 
 /**
  * Test class for {@link RoleService}.
- *
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
  * @author Christophe Mertz
@@ -149,7 +148,7 @@ public class RoleServiceTest {
         tenantResolver = Mockito.mock(ITenantResolver.class);
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         roleService = new RoleService(roleRepository, projectUserRepository, tenantResolver, runtimeTenantResolver,
-                Mockito.mock(IPublisher.class), authResolver);
+                                      Mockito.mock(IPublisher.class), authResolver);
 
         // Clear the repos
         projectUserRepository.deleteAll();
@@ -212,7 +211,7 @@ public class RoleServiceTest {
 
         // mock project user
         final ProjectUser projectUser = new ProjectUser("test@test.test", roleAdmin, new ArrayList<>(),
-                new ArrayList<>());
+                                                        new ArrayList<>());
         Mockito.when(projectUserRepository.findOneByEmail("test@test.test")).thenReturn(Optional.of(projectUser));
         Mockito.when(roleRepository.findByParentRoleName(roleAdmin.getName())).thenReturn(Sets.newHashSet(adminSon));
         Set<Role> result = roleService.retrieveBorrowableRoles();
@@ -236,9 +235,7 @@ public class RoleServiceTest {
 
     /**
      * Check that the allows to retrieve a single role.
-     *
-     * @throws EntityNotFoundException
-     *             when no role with passed name could be found
+     * @throws EntityNotFoundException when no role with passed name could be found
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
@@ -300,10 +297,7 @@ public class RoleServiceTest {
 
     /**
      * Check that the system allows to create a role in a regular case.
-     * @throws EntityException
-     *
-     * @throws EntityAlreadyExistsException
-     *             Thrown if a role with passed id already exists
+     * @throws EntityAlreadyExistsException Thrown if a role with passed id already exists
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
@@ -327,7 +321,7 @@ public class RoleServiceTest {
         final Role actual = roleService.createRole(newRole);
 
         Mockito.when(roleRepository.findOneByName(Mockito.anyString())).thenReturn((Optional.of(actual)));
-        Mockito.when(roleRepository.findOne(id)).thenReturn(actual);
+        Mockito.when(roleRepository.findById(id)).thenReturn(Optional.of(actual));
 
         // Check that the expected and actual role have same values
         checkRolesEqual(expected, actual);
@@ -338,13 +332,11 @@ public class RoleServiceTest {
 
     /**
      * Check that the system fails when trying to update a role which does not exist.
-     *
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityNotFoundException} when no {@link Role} with passed <code>id</code> could be found<br/>
-     *             <br>
-     *             {@link EntityInconsistentIdentifierException} Thrown if passed role id differs from the id of the
-     *             passed role<br>
+     * @throws EntityException <br>
+     *                         {@link EntityNotFoundException} when no {@link Role} with passed <code>id</code> could be found<br/>
+     *                         <br>
+     *                         {@link EntityInconsistentIdentifierException} Thrown if passed role id differs from the id of the
+     *                         passed role<br>
      */
     @Test(expected = EntityNotFoundException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_210")
@@ -359,13 +351,11 @@ public class RoleServiceTest {
 
     /**
      * Check that the system fails when trying to update a role which id is different from the passed one.
-     *
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityNotFoundException} when no {@link Role} with passed <code>id</code> could be found<br/>
-     *             <br>
-     *             {@link EntityInconsistentIdentifierException} Thrown if passed role id differs from the id of the
-     *             passed role<br>
+     * @throws EntityException <br>
+     *                         {@link EntityNotFoundException} when no {@link Role} with passed <code>id</code> could be found<br/>
+     *                         <br>
+     *                         {@link EntityInconsistentIdentifierException} Thrown if passed role id differs from the id of the
+     *                         passed role<br>
      */
     @Test(expected = EntityInconsistentIdentifierException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_210")
@@ -381,20 +371,18 @@ public class RoleServiceTest {
 
     /**
      * Check that the system allows to update a role in a regular case.
-     *
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityNotFoundException} when no {@link Role} with passed <code>id</code> could be found<br/>
-     *             <br>
-     *             {@link EntityInconsistentIdentifierException} Thrown if passed role id differs from the id of the
-     *             passed role<br>
+     * @throws EntityException <br>
+     *                         {@link EntityNotFoundException} when no {@link Role} with passed <code>id</code> could be found<br/>
+     *                         <br>
+     *                         {@link EntityInconsistentIdentifierException} Thrown if passed role id differs from the id of the
+     *                         passed role<br>
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to update a role in a regular case.")
     public void updateRole() throws EntityException {
         // Mock
-        Mockito.when(roleRepository.exists(PUBLIC_ID)).thenReturn(true);
+        Mockito.when(roleRepository.existsById(PUBLIC_ID)).thenReturn(true);
         Mockito.when(roleRepository.findOneByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
         Mockito.when(roleRepository.findByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
 
@@ -405,7 +393,7 @@ public class RoleServiceTest {
         roleService.updateRole(NAME, rolePublic);
 
         // Retrieve the updated role
-        Mockito.when(roleRepository.findOne(PUBLIC_ID)).thenReturn(rolePublic);
+        Mockito.when(roleRepository.findById(PUBLIC_ID)).thenReturn(Optional.of(rolePublic));
         final Role updatedRole = roleService.retrieveRole(NAME);
 
         // Ensure they are now equal
@@ -417,8 +405,6 @@ public class RoleServiceTest {
 
     /**
      * Check that the system does not remove a native role.
-     *
-     * @throws EntityException
      */
     @Test(expected = EntityOperationForbiddenException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_210")
@@ -429,8 +415,8 @@ public class RoleServiceTest {
         final Role roleNative = roleFactory.createPublic();
 
         // Mock repo
-        Mockito.when(roleRepository.exists(id)).thenReturn(true);
-        Mockito.when(roleRepository.findOne(id)).thenReturn(roleNative);
+        Mockito.when(roleRepository.existsById(id)).thenReturn(true);
+        Mockito.when(roleRepository.findById(id)).thenReturn(Optional.of(roleNative));
 
         // Call tested method
         roleService.removeRole(id);
@@ -438,9 +424,7 @@ public class RoleServiceTest {
 
     /**
      * Check that the system allows to delete a role in a regular case.
-     *
-     * @throws EntityException
-     *             when the updated role is native. Native roles should not be modified.
+     * @throws EntityException when the updated role is native. Native roles should not be modified.
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
@@ -448,27 +432,25 @@ public class RoleServiceTest {
     public void removeRole() throws EntityException {
         final Long id = 0L;
 
-        Mockito.when(roleRepository.exists(id)).thenReturn(true);
+        Mockito.when(roleRepository.existsById(id)).thenReturn(true);
 
         Role role = new Role();
         role.setId(id);
-        Mockito.when(roleRepository.findOne(id)).thenReturn(role);
+        Mockito.when(roleRepository.findById(id)).thenReturn(Optional.of(role));
         Assert.assertTrue(roleService.existRole(id));
 
         roleService.removeRole(id);
 
         // Check it was removed
-        Mockito.when(roleRepository.exists(id)).thenReturn(false);
+        Mockito.when(roleRepository.existsById(id)).thenReturn(false);
         Assert.assertFalse(roleService.existRole(id));
 
         // Check that the repository's method was called with right arguments
-        Mockito.verify(roleRepository).delete(id);
+        Mockito.verify(roleRepository).deleteById(id);
     }
 
     /**
      * Check that the system fails when trying to update permissions of a role which does not exist.
-     *
-     * @throws EntityException
      */
     @Test(expected = EntityNotFoundException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_210")
@@ -476,7 +458,7 @@ public class RoleServiceTest {
     public void updateRoleResourcesAccessNotExistent() throws EntityException {
         final Long id = 44255L;
 
-        Mockito.when(roleRepository.exists(id)).thenReturn(false);
+        Mockito.when(roleRepository.existsById(id)).thenReturn(false);
         Assert.assertTrue(!roleService.existRole(id));
 
         final Set<ResourcesAccess> resourcesAccesses = new HashSet<>();
@@ -485,8 +467,6 @@ public class RoleServiceTest {
 
     /**
      * Check that the system allows to add resources accesses on a role.
-     *
-     * @throws EntityException
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210") // FIXME: change the requirement to PM003, ask to claire the naming
@@ -495,7 +475,7 @@ public class RoleServiceTest {
         // Mock
         final Set<ResourcesAccess> resourcesAccesses = new HashSet<>();
         final ResourcesAccess addedResourcesAccess = new ResourcesAccess(468645L, "", "", "", "Controller",
-                RequestMethod.PATCH, DefaultRole.ADMIN);
+                                                                         RequestMethod.PATCH, DefaultRole.ADMIN);
         resourcesAccesses.add(addedResourcesAccess);
         // for this test, let's consider that the user adding a right onto role PUBLIC has the role ADMIN
 
@@ -520,10 +500,10 @@ public class RoleServiceTest {
             final Set<Role> sonsOfAdmin = new HashSet<>();
             return sonsOfAdmin;
         });
-        rolePublic.addPermission(new ResourcesAccess(4567L, "", "", "", "Controller", RequestMethod.GET,
-                DefaultRole.ADMIN));
-        Mockito.when(roleRepository.exists(PUBLIC_ID)).thenReturn(true);
-        Mockito.when(roleRepository.findOne(PUBLIC_ID)).thenReturn(rolePublic);
+        rolePublic.addPermission(
+                new ResourcesAccess(4567L, "", "", "", "Controller", RequestMethod.GET, DefaultRole.ADMIN));
+        Mockito.when(roleRepository.existsById(PUBLIC_ID)).thenReturn(true);
+        Mockito.when(roleRepository.findById(PUBLIC_ID)).thenReturn(Optional.of(rolePublic));
         Mockito.when(roleRepository.findOneByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
         Mockito.when(roleRepository.save(rolePublic)).thenReturn(rolePublic);
         // because we consider that ADMIN is the role of the caller, we have to be able to return it
@@ -535,7 +515,7 @@ public class RoleServiceTest {
         // Prepare the expected result
         final Role expected = new Role(NAME, null);
         expected.setPermissions(resourcesAccesses);
-        Mockito.when(roleRepository.findOne(PUBLIC_ID)).thenReturn(expected);
+        Mockito.when(roleRepository.findById(PUBLIC_ID)).thenReturn(Optional.of(expected));
 
         // Check
         Assert.assertTrue(roleService.retrieveRole(NAME).getPermissions().contains(addedResourcesAccess));
@@ -546,20 +526,18 @@ public class RoleServiceTest {
 
     /**
      * Check that the system allows to update resources accesses of a role.
-     *
-     * @throws EntityException
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210") // FIXME: change the requirement to PM003, ask to claire the naming
     @Purpose("Check that the system allows to update resources accesses of a role.")
     public void updateRoleResourcesAccessUpdatingResourcesAccess() throws EntityException {
         final Set<ResourcesAccess> initRAs = new HashSet<>();
-        initRAs.add(new ResourcesAccess(0L, "desc", "mic", "res", "Controller", RequestMethod.TRACE,
-                DefaultRole.ADMIN));
+        initRAs.add(
+                new ResourcesAccess(0L, "desc", "mic", "res", "Controller", RequestMethod.TRACE, DefaultRole.ADMIN));
 
         final Set<ResourcesAccess> passedRAs = new HashSet<>();
         passedRAs.add(new ResourcesAccess(0L, "new desc", "new mic", "new res", "Controller", RequestMethod.DELETE,
-                DefaultRole.ADMIN));
+                                          DefaultRole.ADMIN));
 
         // for this test, let's consider that the user adding a right onto role PUBLIC has the role ADMIN
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.ADMIN.toString());
@@ -584,8 +562,8 @@ public class RoleServiceTest {
             sonsOfAdmin.add(roleProjectAdmin);
             return sonsOfAdmin;
         });
-        Mockito.when(roleRepository.exists(PUBLIC_ID)).thenReturn(true);
-        Mockito.when(roleRepository.findOne(PUBLIC_ID)).thenReturn(rolePublic);
+        Mockito.when(roleRepository.existsById(PUBLIC_ID)).thenReturn(true);
+        Mockito.when(roleRepository.findById(PUBLIC_ID)).thenReturn(Optional.of(rolePublic));
         Mockito.when(roleRepository.findOneByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
         // because we consider that ADMIN is the role of the caller, we have to be able to return it
         Mockito.when(roleRepository.findByName(DefaultRole.ADMIN.name())).thenReturn(Optional.ofNullable(roleAdmin));
@@ -606,9 +584,7 @@ public class RoleServiceTest {
 
     /**
      * Check that the system allows to remove all resources accesses of a role.
-     *
-     * @throws EntityNotFoundException
-     *             Thrown if no role with passed id could be found
+     * @throws EntityNotFoundException Thrown if no role with passed id could be found
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
@@ -617,12 +593,12 @@ public class RoleServiceTest {
         // Prepare the role by adding some resources accesses
         final Set<ResourcesAccess> resourcesAccesses = new HashSet<>();
         resourcesAccesses.add(new ResourcesAccess(0L, "desc", "mic", "res", "Controller", RequestMethod.TRACE,
-                DefaultRole.ADMIN));
+                                                  DefaultRole.ADMIN));
         rolePublic.setPermissions(resourcesAccesses);
 
         // Mock
-        Mockito.when(roleRepository.exists(PUBLIC_ID)).thenReturn(true);
-        Mockito.when(roleRepository.findOne(PUBLIC_ID)).thenReturn(rolePublic);
+        Mockito.when(roleRepository.existsById(PUBLIC_ID)).thenReturn(true);
+        Mockito.when(roleRepository.findById(PUBLIC_ID)).thenReturn(Optional.of(rolePublic));
         Mockito.when(roleRepository.findOneByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
 
         roleService.clearRoleResourcesAccess(PUBLIC_ID);
@@ -639,9 +615,7 @@ public class RoleServiceTest {
 
     /**
      * Check that the system allows to retrieve all users from a role hierarchy.
-     *
-     * @throws EntityNotFoundException
-     *             Thrown when no entity of passed id could be found
+     * @throws EntityNotFoundException Thrown when no entity of passed id could be found
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_210")
@@ -671,8 +645,8 @@ public class RoleServiceTest {
         expected.addAll(childUsers);
 
         // Mock
-        Mockito.when(roleRepository.exists(idParent)).thenReturn(true);
-        Mockito.when(roleRepository.findOne(idParent)).thenReturn(roleParent);
+        Mockito.when(roleRepository.existsById(idParent)).thenReturn(true);
+        Mockito.when(roleRepository.findById(idParent)).thenReturn(Optional.of(roleParent));
 
         final Set<String> roleNames = new HashSet<>();
         roleNames.add(roleChildName);
@@ -695,7 +669,7 @@ public class RoleServiceTest {
         Assert.assertEquals(expectedPage, actual);
 
         // Check that the repository's method was called with right arguments
-        Mockito.verify(roleRepository).findOne(idParent);
+        Mockito.verify(roleRepository).findById(idParent);
         Mockito.verify(projectUserRepository).findByRoleNameIn(roleNames, pageable);
     }
 
@@ -825,11 +799,8 @@ public class RoleServiceTest {
 
     /**
      * Check that the passed {@link Role} has same attributes as the passed {@link Role}.
-     *
-     * @param pExpected
-     *            The expected role
-     * @param pActual
-     *            The actual role
+     * @param pExpected The expected role
+     * @param pActual The actual role
      */
     private void checkRolesEqual(final Role pExpected, final Role pActual) {
         Assert.assertThat(pActual.getId(), CoreMatchers.is(CoreMatchers.equalTo(pExpected.getId())));

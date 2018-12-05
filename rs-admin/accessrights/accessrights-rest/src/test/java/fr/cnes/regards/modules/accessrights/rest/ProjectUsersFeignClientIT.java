@@ -95,7 +95,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve all accounts.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Ignore
     @Test
@@ -108,7 +108,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve all accounts.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     public void retrieveAccessRequestListFromFeignClient() {
@@ -120,7 +120,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve all accounts.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     public void retrieveProjectUserByEmailFromFeignClient() {
@@ -132,7 +132,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve all accounts.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Ignore
     @Test
@@ -145,7 +145,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve all accounts.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     public void removeProjectUserFromFeignClient() {
@@ -160,7 +160,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
      * @throws EntityInvalidException
      * @throws EntityAlreadyExistsException
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     @Ignore

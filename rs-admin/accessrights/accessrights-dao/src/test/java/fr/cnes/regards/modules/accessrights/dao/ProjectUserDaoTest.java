@@ -47,7 +47,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
  * Test class for {@link ProjectUser} DAO module
  *
  * @author Xavier-Alexandre Brochard
- * @since 1.0-SNAPSHOT
+
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { AccessRightsDaoTestConfiguration.class })

@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.project.service.ITenantService;
  * Administration microservice local tenant resolver.
  *
  * @author CS
- * @since 1.0-SNAPSHOT
+
  */
 public class LocalTenantResolver implements ITenantResolver {
 

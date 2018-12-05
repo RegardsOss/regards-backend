@@ -50,7 +50,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
  * Test that all endpoints of the ResourceController are accessible with Feign clients
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
 public class ResourceFeignClientIT extends AbstractRegardsWebIT {

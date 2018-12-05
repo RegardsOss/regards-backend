@@ -37,7 +37,7 @@ import fr.cnes.regards.modules.project.domain.Project;
  * Stub to get a test implementation for IProjectsClient
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 public class ProjectClientStub implements IProjectsClient {
 

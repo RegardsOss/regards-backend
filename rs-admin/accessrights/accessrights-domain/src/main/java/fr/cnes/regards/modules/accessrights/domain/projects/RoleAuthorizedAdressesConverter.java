@@ -30,7 +30,7 @@ import java.util.List;
  * Convert from List<String> to String for database access
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @Converter
 public class RoleAuthorizedAdressesConverter implements AttributeConverter<List<String>, String> {

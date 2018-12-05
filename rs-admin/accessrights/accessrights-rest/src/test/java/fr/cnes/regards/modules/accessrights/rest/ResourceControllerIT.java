@@ -47,7 +47,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  * access to microservices endpoints.
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @MultitenantTransactional
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
@@ -100,7 +100,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
      *
      * @throws EntityNotFoundException
      *             test error
-     * @since 1.0-SNAPSHOT
+
      */
     @Before
     public void initResources() throws EntityNotFoundException {
@@ -118,7 +118,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
      *
      * Check that the microservice allow to retrieve all resource endpoints configurations as PUBLIC
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     @Purpose("Check that the microservice allows to retrieve all resource endpoints configurations")
@@ -135,7 +135,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
      *
      * Check that the microservice allow to retrieve all resource endpoints configurations as PROJECT_ADMIN
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     @Purpose("Check that the microservice allows to retrieve all resource endpoints configurations")
@@ -152,7 +152,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
      *
      * Check that the microservice allow to retrieve all resource endpoints configurations as INSTANCE_ADMIN
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     @Purpose("Check that the microservice allows to retrieve all resource endpoints configurations for instance admin")
@@ -169,7 +169,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
      *
      * Check that the microservice allow to retrieve all resource endpoints configurations
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     public void getResourceAccessTest() {

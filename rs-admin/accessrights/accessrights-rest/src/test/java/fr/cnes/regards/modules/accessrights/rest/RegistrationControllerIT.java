@@ -57,7 +57,7 @@ import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
  *
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @MultitenantTransactional
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })

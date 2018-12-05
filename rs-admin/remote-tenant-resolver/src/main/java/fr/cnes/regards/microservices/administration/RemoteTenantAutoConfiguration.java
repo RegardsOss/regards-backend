@@ -47,7 +47,7 @@ import fr.cnes.regards.modules.project.client.rest.ITenantConnectionClient;
  * Autoconfiguration class for Microservices multitenant resolver
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @Configuration
 @EnableCaching
@@ -82,7 +82,7 @@ public class RemoteTenantAutoConfiguration {
      *            administration clients manually configured {@link FeignInitialAdminClients}
      *
      * @return RemoteTenantResolver
-     * @since 1.0-SNAPSHOT
+
      */
     @Bean
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)

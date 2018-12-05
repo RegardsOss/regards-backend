@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.notification.service;
 
+import java.util.Optional;
+
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -156,8 +158,8 @@ public class NotificationSettingsServiceTest {
         initial.setFrequency(NotificationFrequency.MONTHLY);
 
         // Mock the repository returned value
-        Mockito.when(notificationSettingsRepository.exists(id)).thenReturn(true);
-        Mockito.when(notificationSettingsRepository.findOne(id)).thenReturn(initial);
+        Mockito.when(notificationSettingsRepository.existsById(id)).thenReturn(true);
+        Mockito.when(notificationSettingsRepository.findById(id)).thenReturn(Optional.of(initial));
         Mockito.when(notificationSettingsRepository.findOneByProjectUserEmail("")).thenReturn(expected);
         Mockito.when(authenticationResolver.getUser()).thenReturn("");
 
@@ -199,8 +201,8 @@ public class NotificationSettingsServiceTest {
         initial.setFrequency(NotificationFrequency.MONTHLY);
 
         // Mock the repository returned value
-        Mockito.when(notificationSettingsRepository.exists(id)).thenReturn(true);
-        Mockito.when(notificationSettingsRepository.findOne(id)).thenReturn(initial);
+        Mockito.when(notificationSettingsRepository.existsById(id)).thenReturn(true);
+        Mockito.when(notificationSettingsRepository.findById(id)).thenReturn(Optional.of(initial));
         Mockito.when(notificationSettingsRepository.findOneByProjectUserEmail("")).thenReturn(expected);
         Mockito.when(authenticationResolver.getUser()).thenReturn("");
 
@@ -242,8 +244,8 @@ public class NotificationSettingsServiceTest {
         initial.setFrequency(NotificationFrequency.MONTHLY);
 
         // Mock the repository returned value
-        Mockito.when(notificationSettingsRepository.exists(id)).thenReturn(true);
-        Mockito.when(notificationSettingsRepository.findOne(id)).thenReturn(initial);
+        Mockito.when(notificationSettingsRepository.existsById(id)).thenReturn(true);
+        Mockito.when(notificationSettingsRepository.findById(id)).thenReturn(Optional.of(initial));
         Mockito.when(notificationSettingsRepository.findOneByProjectUserEmail("")).thenReturn(expected);
         Mockito.when(authenticationResolver.getUser()).thenReturn("");
 
@@ -285,8 +287,8 @@ public class NotificationSettingsServiceTest {
         initial.setFrequency(null);
 
         // Mock the repository returned value
-        Mockito.when(notificationSettingsRepository.exists(id)).thenReturn(true);
-        Mockito.when(notificationSettingsRepository.findOne(id)).thenReturn(initial);
+        Mockito.when(notificationSettingsRepository.existsById(id)).thenReturn(true);
+        Mockito.when(notificationSettingsRepository.findById(id)).thenReturn(Optional.of(initial));
         Mockito.when(notificationSettingsRepository.findOneByProjectUserEmail("")).thenReturn(expected);
         Mockito.when(authenticationResolver.getUser()).thenReturn("");
 

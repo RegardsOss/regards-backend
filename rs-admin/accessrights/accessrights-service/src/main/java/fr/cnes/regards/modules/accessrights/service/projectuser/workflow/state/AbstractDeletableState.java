@@ -88,7 +88,7 @@ public abstract class AbstractDeletableState extends AbstractProjectUserState {
      */
     protected void doDelete(final ProjectUser projectUser) {
         emailVerificationTokenService.deleteTokenForProjectUser(projectUser);
-        projectUserRepository.delete(projectUser.getId());
+        projectUserRepository.deleteById(projectUser.getId());
         publisher.publish(new ProjectUserEvent(projectUser.getEmail(), ProjectUserAction.DELETION));
     }
 

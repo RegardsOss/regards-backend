@@ -47,7 +47,7 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserServ
  * Controller responsible for the /users(/*)? endpoints
  * @author svissier
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @RestController
 @RequestMapping(ProjectUserMetadataController.REQUEST_MAPPING_ROOT)

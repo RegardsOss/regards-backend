@@ -81,7 +81,7 @@ public class MicroserviceResourceControllerIT extends AbstractRegardsTransaction
      *
      * @throws EntityNotFoundException
      *             test error
-     * @since 1.0-SNAPSHOT
+
      */
     @Before
     public void initResources() throws EntityNotFoundException {
@@ -100,7 +100,7 @@ public class MicroserviceResourceControllerIT extends AbstractRegardsTransaction
      *
      * Check first registration of a microservice endpoints
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     @Purpose("Check first registration of a microservice endpoints")
@@ -126,7 +126,7 @@ public class MicroserviceResourceControllerIT extends AbstractRegardsTransaction
      * Check that the microservice allow to retrieve all resource endpoints configurations for a given microservice name
      * and a given controller name
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     @Purpose("Check that the microservice allow to retrieve resource endpoints for a microservice and a controller")
@@ -168,7 +168,7 @@ public class MicroserviceResourceControllerIT extends AbstractRegardsTransaction
      * Check that the microservice allow to retrieve all resource endpoints configurations for a given microservice name
      * and a given controller name
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     @Purpose("Check that the microservice allow to retrieve a microservice resources crontrollers name")

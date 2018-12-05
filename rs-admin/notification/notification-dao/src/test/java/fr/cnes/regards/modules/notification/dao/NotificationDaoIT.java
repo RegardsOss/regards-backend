@@ -71,7 +71,7 @@ public class NotificationDaoIT extends AbstractDaoTransactionalTest {
         Assert.assertNotNull(notifSaved);
         Assert.assertNotNull(notifSaved.getId());
 
-        Assert.assertNotNull(notificationRepository.findOne(notifSaved.getId()));
+        Assert.assertTrue(notificationRepository.findById(notifSaved.getId()).isPresent());
 
         // create a second notification
         final Notification secondNotif = getNotification("Hello Paris!", "jack", NotificationStatus.UNREAD);

@@ -61,57 +61,57 @@ public class AccountService implements IAccountService {
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(AccountService.class);
+    private static Logger LOG = LoggerFactory.getLogger(AccountService.class);
 
     /**
      * Regex that the password should respect. Provided by property file.
      */
-    private final String passwordRegex;
+    private String passwordRegex;
 
     /**
      * Associated Pattern
      */
-    private final Pattern passwordRegexPattern;
+    private Pattern passwordRegexPattern;
 
     /**
      * Description of the regex to respect in natural language. Provided by property file. Parsed according to "\n" to transform it into a list
      */
-    private final String passwordRules;
+    private String passwordRules;
 
     /**
      * In days. Provided by property file.
      */
-    private final Long accountPasswordValidityDuration;
+    private Long accountPasswordValidityDuration;
 
     /**
      * In days. Provided by property file.
      */
-    private final Long accountValidityDuration;
+    private Long accountValidityDuration;
 
     /**
      * Root admin user login. Provided by property file.
      */
-    private final String rootAdminUserLogin;
+    private String rootAdminUserLogin;
 
     /**
      * Root admin user password. Provided by property file.
      */
-    private final String rootAdminUserPassword;
+    private String rootAdminUserPassword;
 
     /**
      * threshold of failed authentication above which an account should be locked. Provided by property file.
      */
-    private final Long thresholdFailedAuthentication;
+    private Long thresholdFailedAuthentication;
 
     /**
      * CRUD repository handling {@link Account}s. Autowired by Spring.
      */
-    private final IAccountRepository accountRepository;
+    private IAccountRepository accountRepository;
 
     /**
      * Instance tenant name
      */
-    private final IRuntimeTenantResolver runtimeTenantResolver;
+    private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
      * Constructor
@@ -125,15 +125,15 @@ public class AccountService implements IAccountService {
      * @param thresholdFailedAuthentication threshold faild autentication
      * @param pRuntimeTenantResolver runtime tenant resolver
      */
-    public AccountService(final IAccountRepository accountRepository, //NOSONAR
-            @Value("${regards.accounts.password.regex}") final String passwordRegex,
-            @Value("${regards.accounts.password.rules}") final String passwordRules,
-            @Value("${regards.accounts.password.validity.duration}") final Long accountPasswordValidityDuration,
-            @Value("${regards.accounts.validity.duration}") final Long accountValidityDuration,
-            @Value("${regards.accounts.root.user.login}") final String rootAdminUserLogin,
-            @Value("${regards.accounts.root.user.password}") final String rootAdminUserPassword,
-            @Value("${regards.accounts.failed.authentication.max}") final Long thresholdFailedAuthentication,
-            @Autowired final IRuntimeTenantResolver pRuntimeTenantResolver) {
+    public AccountService(IAccountRepository accountRepository, //NOSONAR
+            @Value("${regards.accounts.password.regex}") String passwordRegex,
+            @Value("${regards.accounts.password.rules}") String passwordRules,
+            @Value("${regards.accounts.password.validity.duration}") Long accountPasswordValidityDuration,
+            @Value("${regards.accounts.validity.duration}") Long accountValidityDuration,
+            @Value("${regards.accounts.root.user.login}") String rootAdminUserLogin,
+            @Value("${regards.accounts.root.user.password}") String rootAdminUserPassword,
+            @Value("${regards.accounts.failed.authentication.max}") Long thresholdFailedAuthentication,
+            @Autowired IRuntimeTenantResolver pRuntimeTenantResolver) {
         super();
         this.accountRepository = accountRepository;
         this.passwordRegex = passwordRegex;
@@ -153,8 +153,8 @@ public class AccountService implements IAccountService {
     @PostConstruct
     public void initialize() {
         if (!this.existAccount(rootAdminUserLogin)) {
-            final Account account = new Account(rootAdminUserLogin, rootAdminUserLogin, rootAdminUserLogin,
-                    rootAdminUserPassword);
+            Account account = new Account(rootAdminUserLogin, rootAdminUserLogin, rootAdminUserLogin,
+                                          rootAdminUserPassword);
             account.setStatus(AccountStatus.ACTIVE);
             account.setAuthenticationFailedCounter(0L);
             account.setExternal(false);
@@ -163,22 +163,22 @@ public class AccountService implements IAccountService {
     }
 
     @Override
-    public Page<Account> retrieveAccountList(final Pageable pPageable) {
+    public Page<Account> retrieveAccountList(Pageable pPageable) {
         return accountRepository.findAll(pPageable);
     }
 
     @Override
-    public Page<Account> retrieveAccountList(final AccountStatus pStatus, final Pageable pPageable) {
+    public Page<Account> retrieveAccountList(AccountStatus pStatus, Pageable pPageable) {
         return accountRepository.findAllByStatus(pStatus, pPageable);
     }
 
     @Override
-    public boolean existAccount(final Long pId) {
-        return accountRepository.exists(pId);
+    public boolean existAccount(Long pId) {
+        return accountRepository.existsById(pId);
     }
 
     @Override
-    public Account createAccount(final Account account) {
+    public Account createAccount(Account account) {
         account.setId(null);
         if (account.getPassword() != null) {
             account.setPassword(EncryptionUtils.encryptPassword(account.getPassword()));
@@ -188,20 +188,21 @@ public class AccountService implements IAccountService {
     }
 
     @Override
-    public Account retrieveAccount(final Long pAccountId) throws EntityNotFoundException {
-        final Optional<Account> account = Optional.ofNullable(accountRepository.findOne(pAccountId));
+    public Account retrieveAccount(Long pAccountId) throws EntityNotFoundException {
+        Optional<Account> account = accountRepository.findById(pAccountId);
         return account.orElseThrow(() -> new EntityNotFoundException(pAccountId.toString(), Account.class));
     }
 
     @Override
-    public Account updateAccount(final Long pAccountId, final Account pUpdatedAccount) throws EntityException {
-        final Account account = accountRepository.findOne(pAccountId);
-        if (account == null) {
+    public Account updateAccount(Long pAccountId, Account pUpdatedAccount) throws EntityException {
+        Optional<Account> accountOpt = accountRepository.findById(pAccountId);
+        if (!accountOpt.isPresent()) {
             throw new EntityNotFoundException(pAccountId.toString(), Account.class);
         }
         if (!pUpdatedAccount.getId().equals(pAccountId)) {
             throw new EntityInconsistentIdentifierException(pAccountId, pUpdatedAccount.getId(), Account.class);
         }
+        Account account = accountOpt.get();
         account.setFirstName(pUpdatedAccount.getFirstName());
         account.setLastName(pUpdatedAccount.getLastName());
         account.setStatus(pUpdatedAccount.getStatus());
@@ -209,16 +210,16 @@ public class AccountService implements IAccountService {
     }
 
     @Override
-    public Account retrieveAccountByEmail(final String pEmail) throws EntityNotFoundException {
+    public Account retrieveAccountByEmail(String pEmail) throws EntityNotFoundException {
         return accountRepository.findOneByEmail(pEmail)
                 .orElseThrow(() -> new EntityNotFoundException(pEmail, Account.class));
     }
 
     @Override
-    public boolean validatePassword(final String email, final String password, boolean checkAccountValidity)
+    public boolean validatePassword(String email, String password, boolean checkAccountValidity)
             throws EntityNotFoundException {
 
-        final Optional<Account> toValidate = accountRepository.findOneByEmail(email);
+        Optional<Account> toValidate = accountRepository.findOneByEmail(email);
 
         if (!toValidate.isPresent()) {
             return false;
@@ -227,9 +228,10 @@ public class AccountService implements IAccountService {
         Account accountToValidate = toValidate.get();
 
         // Check password validity and account active status.
-        final boolean activeAccount = checkAccountValidity ? accountToValidate.getStatus().equals(AccountStatus.ACTIVE)
-                : true;
-        final boolean validPassword = accountToValidate.getPassword().equals(EncryptionUtils.encryptPassword(password));
+        boolean activeAccount = checkAccountValidity ?
+                accountToValidate.getStatus().equals(AccountStatus.ACTIVE) :
+                true;
+        boolean validPassword = accountToValidate.getPassword().equals(EncryptionUtils.encryptPassword(password));
 
         // If password is invalid
         if (!validPassword && !runtimeTenantResolver.isInstance()) {
@@ -240,7 +242,7 @@ public class AccountService implements IAccountService {
                 accountToValidate.setStatus(AccountStatus.LOCKED);
                 try {
                     updateAccount(accountToValidate.getId(), accountToValidate);
-                } catch (final EntityException e) {
+                } catch (EntityException e) {
                     LOG.error(e.getMessage(), e);
                 }
             }
@@ -251,13 +253,13 @@ public class AccountService implements IAccountService {
     }
 
     @Override
-    public boolean existAccount(final String pEmail) {
+    public boolean existAccount(String pEmail) {
         accountRepository.findAll();
         return accountRepository.findOneByEmail(pEmail).isPresent();
     }
 
     @Override
-    public void checkPassword(final Account pAccount) throws EntityInvalidException {
+    public void checkPassword(Account pAccount) throws EntityInvalidException {
         if (!pAccount.getExternal() && !validPassword(pAccount.getPassword())) {
             throw new EntityInvalidException(
                     "The provided password doesn't match the configured pattern : " + passwordRegex);
@@ -265,7 +267,7 @@ public class AccountService implements IAccountService {
     }
 
     @Override
-    public boolean validPassword(final String password) {
+    public boolean validPassword(String password) {
         if (password == null) {
             return false;
         }
@@ -278,8 +280,8 @@ public class AccountService implements IAccountService {
     }
 
     @Override
-    public void changePassword(final Long pId, final String pEncryptPassword) throws EntityNotFoundException {
-        final Account toChange = retrieveAccount(pId);
+    public void changePassword(Long pId, String pEncryptPassword) throws EntityNotFoundException {
+        Account toChange = retrieveAccount(pId);
         toChange.setPassword(pEncryptPassword);
         toChange.setPasswordUpdateDate(LocalDateTime.now());
         resetAuthenticationFailedCounter(toChange);
@@ -306,31 +308,28 @@ public class AccountService implements IAccountService {
     @Override
     public void checkAccountValidity() {
         LOG.info("Start checking accounts inactivity");
-        final Set<Account> toCheck = accountRepository.findAllByStatusNot(AccountStatus.INACTIVE);
+        Set<Account> toCheck = accountRepository.findAllByStatusNot(AccountStatus.INACTIVE);
 
         // Account#equals being on email, we create a fake Account with the INSTANCE_ADMIN login and we remove it from the database result.
         toCheck.remove(new Account(rootAdminUserLogin, "", "", rootAdminUserPassword));
         // lets check issues with the invalidity date
         if ((accountValidityDuration != null) && !accountValidityDuration.equals(0L)) {
-            final LocalDateTime now = LocalDateTime.now();
+            LocalDateTime now = LocalDateTime.now();
             toCheck.stream().filter(a -> a.getInvalidityDate().isBefore(now))
-                    .peek(a -> a.setStatus(AccountStatus.INACTIVE))
-                    .peek(a -> LOG.info("Account {} set to {} because of its account validity date", a.getEmail(),
-                                        AccountStatus.INACTIVE))
-                    .forEach(accountRepository::save);
+                    .peek(a -> a.setStatus(AccountStatus.INACTIVE)).peek(a -> LOG
+                    .info("Account {} set to {} because of its account validity date", a.getEmail(),
+                          AccountStatus.INACTIVE)).forEach(accountRepository::save);
         }
 
         // lets check issues with the password
         if ((accountPasswordValidityDuration != null) && !accountPasswordValidityDuration.equals(0L)) {
-            final LocalDateTime minValidityDate = LocalDateTime.now().minusDays(accountPasswordValidityDuration);
+            LocalDateTime minValidityDate = LocalDateTime.now().minusDays(accountPasswordValidityDuration);
             // get all account that are not already locked, those already locked would not be re-locked anyway
-            toCheck.stream()
-                    .filter(a -> a.getExternal().equals(false) && (a.getPasswordUpdateDate() != null)
-                            && a.getPasswordUpdateDate().isBefore(minValidityDate))
-                    .peek(a -> a.setStatus(AccountStatus.INACTIVE_PASSWORD))
-                    .peek(a -> LOG.info("Account {} set to {} because of its password validity date", a.getEmail(),
-                                        AccountStatus.INACTIVE_PASSWORD))
-                    .forEach(accountRepository::save);
+            toCheck.stream().filter(a -> a.getExternal().equals(false) && (a.getPasswordUpdateDate() != null) && a
+                    .getPasswordUpdateDate().isBefore(minValidityDate))
+                    .peek(a -> a.setStatus(AccountStatus.INACTIVE_PASSWORD)).peek(a -> LOG
+                    .info("Account {} set to {} because of its password validity date", a.getEmail(),
+                          AccountStatus.INACTIVE_PASSWORD)).forEach(accountRepository::save);
         }
     }
 

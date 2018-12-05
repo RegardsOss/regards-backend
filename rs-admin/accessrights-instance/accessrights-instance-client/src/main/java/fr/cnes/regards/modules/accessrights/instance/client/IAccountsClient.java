@@ -43,7 +43,7 @@ import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.Reques
  *
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
- * @since 1.0-SNAPSHOT
+
  */
 @RestClient(name = "rs-admin-instance")
 @RequestMapping(path = "/accounts", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,

@@ -36,7 +36,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  * Interface for a JPA auto-generated CRUD repository managing {@link Role}s.<br>
  * Embed paging/sorting abilities by extending {@link PagingAndSortingRepository}.<br>
  * Allows execution of Query by Example {@link Example} instances.
- *
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
  */
@@ -45,9 +44,7 @@ public interface IRoleRepository extends JpaRepository<Role, Long> {
     /**
      * Find the unique {@link Role} where <code>default</code> equal to passed boolean.<br>
      * Custom query auto-implemented by JPA thanks to the method naming convention.
-     *
-     * @param pIsDefault
-     *            <code>True</code> or <code>False</code>
+     * @param pIsDefault <code>True</code> or <code>False</code>
      * @return The found {@link Role}
      */
     @EntityGraph(value = "graph.role.permissions")
@@ -56,9 +53,7 @@ public interface IRoleRepository extends JpaRepository<Role, Long> {
     /**
      * Find the unique {@link Role}s where <code>name</code> equal to passed name.<br>
      * Custom query auto-implemented by JPA thanks to the method naming convention.
-     *
-     * @param pName
-     *            The <code>name</code>
+     * @param pName The <code>name</code>
      * @return The found {@link Role}
      */
     @EntityGraph(value = "graph.role.permissions")
@@ -74,10 +69,7 @@ public interface IRoleRepository extends JpaRepository<Role, Long> {
 
     /**
      * Find the role with its permissions
-     *
-     * @param pId
-     *            role identifier
-     * @return
+     * @param pId role identifier
      */
     @EntityGraph(value = "graph.role.permissions")
     Role findOneById(Long pId);
@@ -85,40 +77,29 @@ public interface IRoleRepository extends JpaRepository<Role, Long> {
     /**
      * Find the all {@link Role}s where <code>name</code> is in passed collection.<br>
      * Custom query auto-implemented by JPA thanks to the method naming convention.
-     *
-     * @param pNames
-     *            The {@link Collection} of <code>name</code>
+     * @param pNames The {@link Collection} of <code>name</code>
      * @return The {@link List} of found {@link Role}s
      */
     List<Role> findByNameIn(Collection<String> pNames);
 
     /**
-     *
      * Find all roles which parent role is the given name.
-     *
-     * @param pName
-     *            name of the parent role
+     * @param pName name of the parent role
      * @return a {@link List} of {@link Role}
-     * @since 1.0-SNAPSHOT
      */
     @Query("select distinct r from Role r left join fetch r.permissions where r.parentRole.name=:pName")
     Set<Role> findByParentRoleName(@Param("pName") final String pName);
 
     /**
      * Find all {@link Role} all load the permissions attributes.
-     *
      * @return a {@link List} of {@link Role}
      */
     @Query("select distinct r from Role r left join fetch r.permissions")
     Set<Role> findAllDistinctLazy();
 
     /**
-     *
      * Find all roles associated to given ResourceAccess Id
-     *
-     * @param pPermissionId
      * @return a {@link Set} of {@link Role}
-     * @since 1.0-SNAPSHOT
      */
     Set<Role> findByPermissionsId(Long pPermissionId);
 

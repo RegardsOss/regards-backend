@@ -37,7 +37,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * Stub class for administration service client.
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 public class ProjectConnectionClientStub implements IProjectConnectionClient {
 

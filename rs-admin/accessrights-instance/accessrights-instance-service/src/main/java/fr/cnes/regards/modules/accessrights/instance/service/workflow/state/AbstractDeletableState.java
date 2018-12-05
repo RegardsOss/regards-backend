@@ -178,7 +178,7 @@ abstract class AbstractDeletableState implements IAccountTransitions {
         LOGGER.info("Deleting unlock tokens associated to account {} from instance.", pAccount.getEmail());
         accountUnlockTokenService.deleteAllByAccount(pAccount);
         LOGGER.info("Deleting account {} from instance.", pAccount.getEmail());
-        accountRepository.delete(pAccount.getId());
+        accountRepository.deleteById(pAccount.getId());
     }
 
     /**

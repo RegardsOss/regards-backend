@@ -22,12 +22,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.transaction.BeforeTransaction;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -43,22 +48,35 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
+import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
+import fr.cnes.regards.modules.emails.client.IEmailClient;
 
 /**
- *
  * Class LocalAuthoritiesProviderTest
  *
  * Test for administration local AuthoritiesProvider
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 @RunWith(RegardsSpringRunner.class)
 @SpringBootTest
 @EnableAutoConfiguration
-@ContextConfiguration(classes = { AuthoritiesTestConfiguration.class })
+@ContextConfiguration(classes = { AuthoritiesTestConfiguration.class, LocalAuthoritiesProviderTest.Config.class })
 @MultitenantTransactional
+@ActiveProfiles("test")
 public class LocalAuthoritiesProviderTest {
+
+    @Configuration
+    public static class Config {
+        @Bean
+        public IEmailClient emailClient() {
+            return Mockito.mock(IEmailClient.class);
+        }
+
+        @Bean
+        public IAccountSettingsClient accountSettingsClient() {
+            return Mockito.mock(IAccountSettingsClient.class);
+        }
+    }
 
     /**
      * Current microservice name
@@ -93,8 +111,7 @@ public class LocalAuthoritiesProviderTest {
     }
 
     /**
-     * @throws JwtException
-     *             if the token is wrong
+     * @throws JwtException if the token is wrong
      */
     @Before
     public void setUp() {
@@ -115,17 +132,21 @@ public class LocalAuthoritiesProviderTest {
         roleFactory.withParentRole(publicRole);
 
         roleRepository.findOneByName(AuthoritiesTestConfiguration.ROLE_NAME)
-                .ifPresent(role -> roleRepository.delete(role.getId()));
+                .ifPresent(role -> roleRepository.deleteById(role.getId()));
         roleRepository.save(roleFactory.withName(AuthoritiesTestConfiguration.ROLE_NAME).create());
 
-        resourcesAccessRepository.save(new ResourcesAccess(0L, "description", microserviceName, "/resource",
-                "Controller", RequestMethod.GET, DefaultRole.ADMIN));
-        resourcesAccessRepository.save(new ResourcesAccess(0L, "description", microserviceName, "/resource",
-                "Controller", RequestMethod.PUT, DefaultRole.ADMIN));
-        resourcesAccessRepository.save(new ResourcesAccess(0L, "description", microserviceName, "/resource",
-                "Controller", RequestMethod.POST, DefaultRole.ADMIN));
-        resourcesAccessRepository.save(new ResourcesAccess(0L, "description", microserviceName, "/resource",
-                "Controller", RequestMethod.DELETE, DefaultRole.ADMIN));
+        resourcesAccessRepository
+                .save(new ResourcesAccess(0L, "description", microserviceName, "/resource", "Controller",
+                                          RequestMethod.GET, DefaultRole.ADMIN));
+        resourcesAccessRepository
+                .save(new ResourcesAccess(0L, "description", microserviceName, "/resource", "Controller",
+                                          RequestMethod.PUT, DefaultRole.ADMIN));
+        resourcesAccessRepository
+                .save(new ResourcesAccess(0L, "description", microserviceName, "/resource", "Controller",
+                                          RequestMethod.POST, DefaultRole.ADMIN));
+        resourcesAccessRepository
+                .save(new ResourcesAccess(0L, "description", microserviceName, "/resource", "Controller",
+                                          RequestMethod.DELETE, DefaultRole.ADMIN));
     }
 
     @Test

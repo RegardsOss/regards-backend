@@ -32,7 +32,7 @@ import org.springframework.jmx.support.RegistrationPolicy;
  * Configuration class for DAO tests.
  *
  * @author CS
- * @since 1.0-SNAPSHOT
+
  */
 @Configuration
 @EnableAutoConfiguration

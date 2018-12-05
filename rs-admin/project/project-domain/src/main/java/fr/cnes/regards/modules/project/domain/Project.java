@@ -26,21 +26,19 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.executable.ValidateOnExecution;
 
 import org.hibernate.annotations.Type;
-import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 
 /**
  * Class Project Project Entity
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 @ValidateOnExecution
 @InstanceEntity
@@ -130,7 +128,6 @@ public class Project implements IIdentifiable<Long> {
      * Default constructor
      */
     public Project() {
-        super();
         name = "undefined";
         description = "";
         isDeleted = false;
@@ -138,23 +135,24 @@ public class Project implements IIdentifiable<Long> {
         isAccessible = false;
     }
 
-    public Project(final Long pId, final String pDesc, final String pIcon, final boolean pIsPublic,
-            final String pName) {
-        this();
-        id = pId;
-        description = pDesc;
-        icon = pIcon;
-        isPublic = pIsPublic;
-        name = pName;
+    /**
+     * @deprecated don't use this method, giving id is totally nonsense (and is not taken into account)
+     */
+    @Deprecated
+    public Project(Long id, String desc, String icon, boolean isPublic, String name) {
+        this.id = id;
+        description = desc;
+        this.icon = icon;
+        this.isPublic = isPublic;
+        this.name = name;
         isDeleted = false;
     }
 
-    public Project(final String pDesc, final String pIcon, final boolean pIsPublic, final String pName) {
-        this();
-        description = pDesc;
-        icon = pIcon;
-        isPublic = pIsPublic;
-        name = pName;
+    public Project(String desc, String icon, boolean isPublic, String name) {
+        description = desc;
+        this.icon = icon;
+        this.isPublic = isPublic;
+        this.name = name;
         isDeleted = false;
     }
 
@@ -163,8 +161,8 @@ public class Project implements IIdentifiable<Long> {
         return id;
     }
 
-    public void setId(final Long pId) {
-        id = pId;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     /**
@@ -174,40 +172,40 @@ public class Project implements IIdentifiable<Long> {
         return name;
     }
 
-    public void setName(final String pName) {
-        name = pName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(final String pDescription) {
-        description = pDescription;
+    public void setDescription(String desc) {
+        description = desc;
     }
 
     public String getIcon() {
         return icon;
     }
 
-    public void setIcon(final String pIcon) {
-        icon = pIcon;
+    public void setIcon(String icon) {
+        this.icon = icon;
     }
 
     public boolean isPublic() {
         return isPublic;
     }
 
-    public void setPublic(final boolean pIsPublic) {
-        isPublic = pIsPublic;
+    public void setPublic(boolean isPublic) {
+        this.isPublic = isPublic;
     }
 
     public String getLicenceLink() {
         return licenceLink;
     }
 
-    public void setLicenseLink(final String pLicenceLink) {
-        licenceLink = pLicenceLink;
+    public void setLicenseLink(String licenceLink) {
+        this.licenceLink = licenceLink;
     }
 
     public String getCrs() {
@@ -227,18 +225,18 @@ public class Project implements IIdentifiable<Long> {
     }
 
     @Override
-    public boolean equals(final Object pObject) {
-        if (pObject == null) {
+    public boolean equals(Object obj) {
+        if (obj == null) {
             return false;
         }
 
-        if (this.getClass() != pObject.getClass()) {
+        if (this.getClass() != obj.getClass()) {
             return false;
         }
 
-        final Project projectToCompare = (Project) pObject;
+        Project projectToCompare = (Project) obj;
         if ((id != null) && (projectToCompare.getId() != null)) {
-            return (pObject instanceof Project) && (id.equals(((Project) pObject).getId()));
+            return (obj instanceof Project) && (id.equals(((Project) obj).getId()));
         } else {
             return false;
         }
@@ -262,10 +260,9 @@ public class Project implements IIdentifiable<Long> {
 
     /**
      * Set whether the project is deleted or not
-     * @param pIsDeleted
      */
-    public void setDeleted(final boolean pIsDeleted) {
-        isDeleted = pIsDeleted;
+    public void setDeleted(boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 
     /**
@@ -277,10 +274,9 @@ public class Project implements IIdentifiable<Long> {
 
     /**
      * Set the host
-     * @param pHost
      */
-    public void setHost(String pHost) {
-        host = pHost;
+    public void setHost(String host) {
+        this.host = host;
     }
 
     /**
@@ -292,7 +288,6 @@ public class Project implements IIdentifiable<Long> {
 
     /**
      * Set the label
-     * @param label
      */
     public void setLabel(String label) {
         this.label = label;
@@ -307,7 +302,6 @@ public class Project implements IIdentifiable<Long> {
 
     /**
      * Set whether the project is accessible or not
-     * @param accessible
      */
     public void setAccessible(Boolean accessible) {
         isAccessible = accessible;

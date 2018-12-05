@@ -40,7 +40,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  * Feign client for rs-admin Roles controller.
  *
  * @author CS
- * @since 1.0-SNAPSHOT
+
  */
 @RestClient(name = "rs-admin")
 @RequestMapping(value = IRolesClient.TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,

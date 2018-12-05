@@ -66,11 +66,11 @@ import fr.cnes.regards.modules.accessrights.domain.projects.RoleLineageAssembler
 
 /**
  * {@link IRoleService} implementation
- *
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
+ * @author Olivier Rousselot
  */
 @Service
 @MultitenantTransactional
@@ -120,15 +120,15 @@ public class RoleService implements IRoleService {
      */
     private final IAuthenticationResolver authResolver;
 
-    public RoleService(final IRoleRepository pRoleRepository, final IProjectUserRepository pProjectUserRepository,
-            final ITenantResolver pTenantResolver, final IRuntimeTenantResolver pRuntimeTenantResolver,
-            final IPublisher pPublisher, final IAuthenticationResolver authResolver) {
+    public RoleService(IRoleRepository roleRepository, IProjectUserRepository projectUserRepository,
+            ITenantResolver tenantResolver, IRuntimeTenantResolver runtimeTenantResolver, IPublisher publisher,
+            IAuthenticationResolver authResolver) {
         super();
-        roleRepository = pRoleRepository;
-        projectUserRepository = pProjectUserRepository;
-        tenantResolver = pTenantResolver;
-        runtimeTenantResolver = pRuntimeTenantResolver;
-        publisher = pPublisher;
+        this.roleRepository = roleRepository;
+        this.projectUserRepository = projectUserRepository;
+        this.tenantResolver = tenantResolver;
+        this.runtimeTenantResolver = runtimeTenantResolver;
+        this.publisher = publisher;
         this.authResolver = authResolver;
     }
 
@@ -138,7 +138,7 @@ public class RoleService implements IRoleService {
     @PostConstruct
     public void init() {
         // Ensure the existence of default roles.
-        for (final String tenant : tenantResolver.getAllActiveTenants()) {
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
             // Set working tenant
             try {
                 runtimeTenantResolver.forceTenant(tenant);
@@ -151,16 +151,15 @@ public class RoleService implements IRoleService {
 
     /**
      * Init default roles for a specified tenant
-     *
      */
     @Override
     public void initDefaultRoles() {
         // Init factory to create missing roles
-        final RoleFactory roleFactory = new RoleFactory().doNotAutoCreateParents();
+        RoleFactory roleFactory = new RoleFactory().doNotAutoCreateParents();
         // Manage public
-        final Role publicRole = createOrLoadDefaultRole(roleFactory.createPublic(), null);
+        Role publicRole = createOrLoadDefaultRole(roleFactory.createPublic(), null);
         // Manage registered user
-        final Role registeredUserRole = createOrLoadDefaultRole(roleFactory.createRegisteredUser(), publicRole);
+        Role registeredUserRole = createOrLoadDefaultRole(roleFactory.createRegisteredUser(), publicRole);
         // Manage admin
         createOrLoadDefaultRole(roleFactory.createAdmin(), registeredUserRole);
         // Manage project admin
@@ -171,20 +170,16 @@ public class RoleService implements IRoleService {
 
     /**
      * Create or load a default role
-     *
      * @param defaultRole default role to create
      * @param parentRole parent role to attach
      * @return created role
      */
-    private Role createOrLoadDefaultRole(final Role defaultRole, final Role parentRole) {
-
+    private Role createOrLoadDefaultRole(Role defaultRole, Role parentRole) {
         // Retrieve role from database
-        final Optional<Role> role = roleRepository.findOneByName(defaultRole.getName());
-
+        Optional<Role> role = roleRepository.findOneByName(defaultRole.getName());
         if (role.isPresent()) {
             return role.get();
         }
-
         defaultRole.setParentRole(parentRole);
         return roleRepository.save(defaultRole);
     }
@@ -194,10 +189,8 @@ public class RoleService implements IRoleService {
      */
     @Override
     public Set<Role> retrieveRoles() {
-
         List<Role> manageableRoles = new ArrayList<>();
         for (Role role : roleRepository.findAllDistinctLazy()) {
-
             // Instance Admin role is only usable by one user:
             // the project admin configured at install, so we have not to send it back to the front
             if (DefaultRole.INSTANCE_ADMIN.name().equals(role.getName())) {
@@ -223,7 +216,7 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public Role createRole(final Role role) throws EntityException {
+    public Role createRole(Role role) throws EntityException {
         if (existByName(role.getName())) {
             throw new EntityAlreadyExistsException(role.getName());
         }
@@ -233,12 +226,12 @@ public class RoleService implements IRoleService {
         }
 
         // If parent role is a native role. Copy resources from the parent role.
-        final Optional<Role> roleOpt = roleRepository.findOneByName(role.getParentRole().getName());
+        Optional<Role> roleOpt = roleRepository.findOneByName(role.getParentRole().getName());
         if (!roleOpt.isPresent()) {
             throw new EntityNotFoundException(role.getParentRole().getName(), Role.class);
         }
 
-        final Role parentRole = roleOpt.get();
+        Role parentRole = roleOpt.get();
         Role newCreatedRole;
         if (parentRole.isNative()) {
             newCreatedRole = roleRepository.save(role);
@@ -262,65 +255,65 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public Role retrieveRole(final String pRoleName) throws EntityNotFoundException {
-        return roleRepository.findOneByName(pRoleName)
-                .orElseThrow(() -> new EntityNotFoundException(pRoleName, Role.class));
+    public Role retrieveRole(String roleName) throws EntityNotFoundException {
+        return roleRepository.findOneByName(roleName)
+                .orElseThrow(() -> new EntityNotFoundException(roleName, Role.class));
     }
 
     /**
      * Retrieve a role
      */
     @Override
-    public Role retrieveRole(final Long pRoleId) throws EntityNotFoundException {
-        final Role role = roleRepository.findOne(pRoleId);
-        if (role == null) {
-            throw new EntityNotFoundException(pRoleId, Role.class);
+    public Role retrieveRole(Long roleId) throws EntityNotFoundException {
+        Optional<Role> roleOpt = roleRepository.findById(roleId);
+        if (!roleOpt.isPresent()) {
+            throw new EntityNotFoundException(roleId, Role.class);
         }
-        return role;
+        return roleOpt.get();
     }
 
     @Override
-    public Role updateRole(final String pRoleName, final Role pUpdatedRole) throws EntityException {
-        if (!pRoleName.equals(pUpdatedRole.getName())) {
-            throw new EntityInconsistentIdentifierException(pRoleName, pUpdatedRole.getName(), Role.class);
+    public Role updateRole(String roleName, Role updatedRole) throws EntityException {
+        if (!roleName.equals(updatedRole.getName())) {
+            throw new EntityInconsistentIdentifierException(roleName, updatedRole.getName(), Role.class);
         }
-        Role beforeUpdate = roleRepository.findByName(pRoleName)
-                .orElseThrow(() -> new EntityNotFoundException(pRoleName, Role.class));
-        if (beforeUpdate.isNative()
-                && (((beforeUpdate.getParentRole() == null) && (pUpdatedRole.getParentRole() != null))
-                        || (!Objects.equal(beforeUpdate.getParentRole(), pUpdatedRole.getParentRole())))) {
-            throw new EntityOperationForbiddenException(pRoleName, Role.class, "Native role parent cannot be changed");
+        Role beforeUpdate = roleRepository.findByName(roleName)
+                .orElseThrow(() -> new EntityNotFoundException(roleName, Role.class));
+        if (beforeUpdate.isNative() && (
+                ((beforeUpdate.getParentRole() == null) && (updatedRole.getParentRole() != null)) || (!Objects
+                        .equal(beforeUpdate.getParentRole(), updatedRole.getParentRole())))) {
+            throw new EntityOperationForbiddenException(roleName, Role.class, "Native role parent cannot be changed");
         }
-        Role updated = pUpdatedRole;
-        if (!beforeUpdate.isNative() && !beforeUpdate.getParentRole().equals(pUpdatedRole.getParentRole())) {
+        Role updated = updatedRole;
+        if (!beforeUpdate.isNative() && !beforeUpdate.getParentRole().equals(updatedRole.getParentRole())) {
             // if this is a custom role and and the parent has changed: we set the resources of the custom role to the
             // one of its new parent
             // so lets get its parent with its permissions
-            Role newParent = roleRepository.findOneById(pUpdatedRole.getParentRole().getId());
+            Role newParent = roleRepository.findOneById(updatedRole.getParentRole().getId());
             updated = updateRoleResourcesAccess(beforeUpdate.getId(), newParent.getPermissions());
         }
         return saveAndPublish(updated);
     }
 
     @Override
-    public void removeRole(final Long pRoleId) throws EntityException {
-        final Role previous = roleRepository.findOne(pRoleId);
-        if ((previous != null) && previous.isNative()) {
-            throw new EntityOperationForbiddenException(pRoleId.toString(), Role.class, NATIVE_ROLE_NOT_REMOVABLE);
-        } else if (previous == null) {
-            throw new EntityNotFoundException(pRoleId, Role.class);
+    public void removeRole(Long roleId) throws EntityException {
+        Optional<Role> previousOpt = roleRepository.findById(roleId);
+        if ((previousOpt.isPresent()) && previousOpt.get().isNative()) {
+            throw new EntityOperationForbiddenException(roleId.toString(), Role.class, NATIVE_ROLE_NOT_REMOVABLE);
+        } else if (!previousOpt.isPresent()) {
+            throw new EntityNotFoundException(roleId, Role.class);
         } else {
-            deleteAndPublish(previous);
+            deleteAndPublish(previousOpt.get());
         }
     }
 
     @Override
-    public void removeRole(final String pRoleName) throws EntityException {
-        final Optional<Role> role = roleRepository.findOneByName(pRoleName);
+    public void removeRole(String roleName) throws EntityException {
+        Optional<Role> role = roleRepository.findOneByName(roleName);
         if (!role.isPresent()) {
-            throw new EntityNotFoundException(pRoleName, Role.class);
+            throw new EntityNotFoundException(roleName, Role.class);
         } else if (role.get().isNative()) {
-            throw new EntityOperationForbiddenException(pRoleName, Role.class, NATIVE_ROLE_NOT_REMOVABLE);
+            throw new EntityOperationForbiddenException(roleName, Role.class, NATIVE_ROLE_NOT_REMOVABLE);
         } else {
             deleteAndPublish(role.get());
         }
@@ -329,14 +322,13 @@ public class RoleService implements IRoleService {
 
     /**
      * Each role contains all its permission.
-     *
      */
     @Override
-    public Set<ResourcesAccess> retrieveRoleResourcesAccesses(final Long pRoleId) throws EntityNotFoundException {
-        if (!existRole(pRoleId)) {
-            throw new EntityNotFoundException(pRoleId.toString(), Role.class);
+    public Set<ResourcesAccess> retrieveRoleResourcesAccesses(Long roleId) throws EntityNotFoundException {
+        if (!existRole(roleId)) {
+            throw new EntityNotFoundException(roleId.toString(), Role.class);
         }
-        Role role = roleRepository.findOneById(pRoleId);
+        Role role = roleRepository.findOneById(roleId);
         LOGGER.debug("Retrieving resource accesses for role \"{}\"", role.getName());
         Set<ResourcesAccess> accesses = role.getPermissions();
         LOGGER.debug("{} resource accesses found for role \"{}\"", accesses.size(), role.getName());
@@ -344,44 +336,45 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public Role updateRoleResourcesAccess(final Long pRoleId, final Set<ResourcesAccess> pResourcesAccesses)
+    public Role updateRoleResourcesAccess(Long roleId, Set<ResourcesAccess> resourcesAccesses)
             throws EntityException {
-        if (!existRole(pRoleId)) {
-            throw new EntityNotFoundException(pRoleId.toString(), Role.class);
+        Optional<Role> roleOpt = roleRepository.findById(roleId);
+        if (!roleOpt.isPresent()) {
+            throw new EntityNotFoundException(roleId.toString(), Role.class);
         }
-        final Role role = roleRepository.findOne(pRoleId);
-        final Set<ResourcesAccess> permissions = role.getPermissions();
+        Role role = roleOpt.get();
+        Set<ResourcesAccess> permissions = role.getPermissions();
 
         // extract which one are to be removed
-        final Set<ResourcesAccess> toBeRemoved = new HashSet<>(permissions);
-        toBeRemoved.removeAll(pResourcesAccesses);
+        Set<ResourcesAccess> toBeRemoved = new HashSet<>(permissions);
+        toBeRemoved.removeAll(resourcesAccesses);
         // remove them by handling descendancy
-        removeResourcesAccesses(role, toBeRemoved.toArray(new ResourcesAccess[toBeRemoved.size()]));
+        removeResourcesAccesses(role, toBeRemoved.toArray(new ResourcesAccess[0]));
 
         // extract which ResourcesAccess is really new
-        final Set<ResourcesAccess> newOnes = new HashSet<>(pResourcesAccesses);
+        Set<ResourcesAccess> newOnes = new HashSet<>(resourcesAccesses);
         newOnes.removeAll(permissions);
         // add the ResourceAccesses by handling descendancy
-        addResourceAccesses(role, newOnes.toArray(new ResourcesAccess[newOnes.size()]));
+        addResourceAccesses(role, newOnes.toArray(new ResourcesAccess[0]));
 
         return role;
     }
 
     @Override
-    public void addResourceAccesses(final Long pRoleId, final ResourcesAccess... pNewOnes) throws EntityException {
-        final Role role = roleRepository.findOneById(pRoleId);
+    public void addResourceAccesses(Long roleId, ResourcesAccess... newOnes) throws EntityException {
+        Role role = roleRepository.findOneById(roleId);
         if (role == null) {
-            throw new EntityNotFoundException(pRoleId, Role.class);
+            throw new EntityNotFoundException(roleId, Role.class);
         }
-        addResourceAccesses(role, pNewOnes);
+        addResourceAccesses(role, newOnes);
     }
 
     /**
      * Check authenticated user can manage target role resource accesses.
-     * @param pRole target role to manage
+     * @param role target role to manage
      * @throws EntityOperationForbiddenException if operation forbidden
      */
-    private void canManageRole(Role pRole) throws EntityOperationForbiddenException {
+    private void canManageRole(Role role) throws EntityOperationForbiddenException {
 
         String securityRole = authResolver.getRole();
 
@@ -391,8 +384,8 @@ public class RoleService implements IRoleService {
         }
 
         // System role always granted
-        if (RoleAuthority.isSysRole(securityRole) || RoleAuthority.isInstanceAdminRole(securityRole)
-                || RoleAuthority.isProjectAdminRole(securityRole)) {
+        if (RoleAuthority.isSysRole(securityRole) || RoleAuthority.isInstanceAdminRole(securityRole) || RoleAuthority
+                .isProjectAdminRole(securityRole)) {
             LOGGER.debug("Priviledged call granted");
             return;
         }
@@ -400,16 +393,16 @@ public class RoleService implements IRoleService {
         Optional<Role> currentRole = roleRepository.findByName(securityRole);
 
         // Compare with native role
-        Role refRole = pRole;
-        if (!pRole.isNative()) {
-            refRole = pRole.getParentRole();
+        Role refRole = role;
+        if (!role.isNative()) {
+            refRole = role.getParentRole();
         }
 
         // Check if target role is hierarchically inferior so current user can alter it
         if (currentRole.isPresent() && isHierarchicallyInferior(refRole, currentRole.get())) {
 
             LOGGER.debug("User with role {} can add resource accesses to role {}", currentRole.get().getName(),
-                         pRole.getName());
+                         role.getName());
 
         } else if (currentRole.isPresent()) {
             String message = "A user can only add resources on role hierarchically inferior to its own.";
@@ -424,10 +417,9 @@ public class RoleService implements IRoleService {
 
     /**
      * Check authenticated user can add specified resources.
-     * @param pNewOnes resources to add only if they are a subset of use ones.
-     * @throws EntityOperationForbiddenException
+     * @param newOnes resources to add only if they are a subset of use ones.
      */
-    private void canAddResourceAccesses(ResourcesAccess... pNewOnes) throws EntityOperationForbiddenException {
+    private void canAddResourceAccesses(ResourcesAccess... newOnes) throws EntityOperationForbiddenException {
         String securityRole = authResolver.getRole();
 
         if (securityRole == null) {
@@ -436,8 +428,8 @@ public class RoleService implements IRoleService {
         }
 
         // System role always granted
-        if (RoleAuthority.isSysRole(securityRole) || RoleAuthority.isInstanceAdminRole(securityRole)
-                || RoleAuthority.isProjectAdminRole(securityRole)) {
+        if (RoleAuthority.isSysRole(securityRole) || RoleAuthority.isInstanceAdminRole(securityRole) || RoleAuthority
+                .isProjectAdminRole(securityRole)) {
             LOGGER.debug("Priviledged call granted");
             return;
         }
@@ -445,7 +437,7 @@ public class RoleService implements IRoleService {
         Optional<Role> currentRole = roleRepository.findOneByName(securityRole);
 
         Set<ResourcesAccess> resourcesToAdd = new HashSet<>();
-        for (ResourcesAccess ra : pNewOnes) {
+        for (ResourcesAccess ra : newOnes) {
             resourcesToAdd.add(ra);
         }
 
@@ -465,141 +457,137 @@ public class RoleService implements IRoleService {
 
     /**
      * Add a set of accesses to a role and its descendants(according to PM003)
-     *
-     * @param pRole role on which the modification has been made
-     * @param pNewOnes accesses to add
+     * @param role role on which the modification has been made
+     * @param newOnes accesses to add
      * @throws EntityOperationForbiddenException if error occurs!
      */
-    private void addResourceAccesses(final Role pRole, final ResourcesAccess... pNewOnes)
-            throws EntityOperationForbiddenException {
+    private void addResourceAccesses(Role role, ResourcesAccess... newOnes) throws EntityOperationForbiddenException {
 
         // Check if current user can add resources to specified role
-        canManageRole(pRole);
-        canAddResourceAccesses(pNewOnes);
+        canManageRole(role);
+        canAddResourceAccesses(newOnes);
 
-        if (pRole.isNative()) {
+        if (role.isNative()) {
             // If native role, propagate added resources to all descendants to maintain consistency
-            addAndPropagate(pRole, pNewOnes);
+            addAndPropagate(role, newOnes);
         } else {
             // Add resource access to current role and manage its parent
-            addAndManageParent(pRole, pNewOnes);
+            addAndManageParent(role, newOnes);
         }
     }
 
     /**
      * Add accesses on all inheriting roles
-     *
-     * @param pRole role to manage
-     * @param pResourcesAccesses accesses to add
+     * @param role role to manage
+     * @param resourcesAccesses accesses to add
      */
-    private void addAndPropagate(final Role pRole, final ResourcesAccess... pResourcesAccesses) {
+    private void addAndPropagate(Role role, ResourcesAccess... resourcesAccesses) {
         // Add accesses
-        boolean changed = pRole.getPermissions().addAll(Sets.newHashSet(pResourcesAccesses));
+        boolean changed = role.getPermissions().addAll(Sets.newHashSet(resourcesAccesses));
         // Save changes
-        roleRepository.save(pRole);
+        roleRepository.save(role);
         if (changed) {
             StringJoiner sj = new StringJoiner(", ");
-            Arrays.stream(pResourcesAccesses).forEach(ra -> sj.add(ra.getVerb() + "@" + ra.getResource()));
-            LOGGER.info(ROLE_GAINED_ACCESS, pRole.getName(), sj.toString());
-            publishResourceAccessEvent(pRole.getName(), pResourcesAccesses);
+            Arrays.stream(resourcesAccesses).forEach(ra -> sj.add(ra.getVerb() + "@" + ra.getResource()));
+            LOGGER.info(ROLE_GAINED_ACCESS, role.getName(), sj.toString());
+            publishResourceAccessEvent(role.getName(), resourcesAccesses);
         }
         // Retrieve its descendants
-        final Set<Role> sons = roleRepository.findByParentRoleName(pRole.getName());
+        Set<Role> sons = roleRepository.findByParentRoleName(role.getName());
         // Propagate
-        sons.forEach(son -> addAndPropagate(son, pResourcesAccesses));
+        sons.forEach(son -> addAndPropagate(son, resourcesAccesses));
     }
 
     /**
      * Add accesses on current role only and change parent if required to maintain consistency
-     *
-     * @param pRole role to manage
-     * @param pResourcesAccesses accesses to add
+     * @param role role to manage
+     * @param resourcesAccesses accesses to add
      * @throws EntityOperationForbiddenException if parent cannot be found
      */
-    private void addAndManageParent(final Role pRole, final ResourcesAccess... pResourcesAccesses)
+    private void addAndManageParent(Role role, ResourcesAccess... resourcesAccesses)
             throws EntityOperationForbiddenException {
         // Add accesses
-        boolean changed = pRole.getPermissions().addAll(Sets.newHashSet(pResourcesAccesses));
+        boolean changed = role.getPermissions().addAll(Sets.newHashSet(resourcesAccesses));
         // Save changes
-        roleRepository.save(pRole);
+        roleRepository.save(role);
         if (changed) {
             StringJoiner sj = new StringJoiner(", ");
-            Arrays.stream(pResourcesAccesses).forEach(ra -> sj.add(ra.getVerb() + "@" + ra.getResource()));
-            LOGGER.info(ROLE_GAINED_ACCESS, pRole.getName(), sj.toString());
-            publishResourceAccessEvent(pRole.getName(), pResourcesAccesses);
+            Arrays.stream(resourcesAccesses).forEach(ra -> sj.add(ra.getVerb() + "@" + ra.getResource()));
+            LOGGER.info(ROLE_GAINED_ACCESS, role.getName(), sj.toString());
+            publishResourceAccessEvent(role.getName(), resourcesAccesses);
         }
         // Change parent if required
-        manageParentFromAdmin(pRole);
+        manageParentFromAdmin(role);
     }
 
     /**
      * Inform security starter an (or many) access(es) changed
-     *
-     * @param pResourcesAccesses resource accesses that have changed
+     * @param resourcesAccesses resource accesses that have changed
      */
-    private void publishResourceAccessEvent(String roleName, final ResourcesAccess... pResourcesAccesses) {
+    private void publishResourceAccessEvent(String roleName, ResourcesAccess... resourcesAccesses) {
 
         // Compute concerned microservices
-        final Set<String> microservices = new HashSet<>();
-        for (final ResourcesAccess ra : pResourcesAccesses) {
+        Set<String> microservices = new HashSet<>();
+        for (ResourcesAccess ra : resourcesAccesses) {
             microservices.add(ra.getMicroservice());
         }
         // Publish an event for each concerned microservice
-        for (final String microservice : microservices) {
-            final ResourceAccessEvent raEvent = new ResourceAccessEvent(microservice, roleName);
+        for (String microservice : microservices) {
+            ResourceAccessEvent raEvent = new ResourceAccessEvent(microservice, roleName);
             publisher.publish(raEvent);
         }
     }
 
     @Override
-    public void clearRoleResourcesAccess(final Long pRoleId) throws EntityNotFoundException {
-        if (!existRole(pRoleId)) {
-            throw new EntityNotFoundException(pRoleId.toString(), Role.class);
+    public void clearRoleResourcesAccess(Long roleId) throws EntityNotFoundException {
+        Optional<Role> roleOpt = roleRepository.findById(roleId);
+        if (!roleOpt.isPresent()) {
+            throw new EntityNotFoundException(roleId.toString(), Role.class);
         }
-        final Role role = roleRepository.findOne(pRoleId);
-        role.getPermissions().clear();
-        roleRepository.save(role);
+        roleOpt.get().getPermissions().clear();
+        roleRepository.save(roleOpt.get());
     }
 
     @Override
-    public Page<ProjectUser> retrieveRoleProjectUserList(final Long pRoleId, final Pageable pPageable)
+    public Page<ProjectUser> retrieveRoleProjectUserList(Long roleId, Pageable pageable)
             throws EntityNotFoundException {
-        if (!existRole(pRoleId)) {
-            throw new EntityNotFoundException(pRoleId.toString(), Role.class);
+        Optional<Role> roleOpt = roleRepository.findById(roleId);
+        if (!roleOpt.isPresent()) {
+            throw new EntityNotFoundException(roleId.toString(), Role.class);
         }
-        final Role role = roleRepository.findOne(pRoleId);
-        final Set<Role> roles = retrieveInheritedRoles(role);
-        roles.add(role);
-        final Set<String> roleNames = roles.stream().map(r -> r.getName()).collect(Collectors.toSet());
-        return projectUserRepository.findByRoleNameIn(roleNames, pPageable);
+
+        Set<Role> roles = retrieveInheritedRoles(roleOpt.get());
+        roles.add(roleOpt.get());
+        Set<String> roleNames = roles.stream().map(r -> r.getName()).collect(Collectors.toSet());
+        return projectUserRepository.findByRoleNameIn(roleNames, pageable);
     }
 
     @Override
-    public Page<ProjectUser> retrieveRoleProjectUserList(final String roleName, final Pageable pPageable)
+    public Page<ProjectUser> retrieveRoleProjectUserList(String roleName, Pageable pageable)
             throws EntityNotFoundException {
-        final Optional<Role> role = roleRepository.findOneByName(roleName);
+        Optional<Role> role = roleRepository.findOneByName(roleName);
         if (!role.isPresent()) {
             throw new EntityNotFoundException(roleName.toString(), Role.class);
         }
-        final Set<Role> roles = retrieveInheritedRoles(role.get());
+        Set<Role> roles = retrieveInheritedRoles(role.get());
         roles.add(role.get());
-        final Set<String> roleNames = roles.stream().map(r -> r.getName()).collect(Collectors.toSet());
-        return projectUserRepository.findByRoleNameIn(roleNames, pPageable);
+        Set<String> roleNames = roles.stream().map(r -> r.getName()).collect(Collectors.toSet());
+        return projectUserRepository.findByRoleNameIn(roleNames, pageable);
     }
 
     @Override
-    public boolean existRole(final Long pRoleId) {
-        return roleRepository.exists(pRoleId);
+    public boolean existRole(Long roleId) {
+        return roleRepository.existsById(roleId);
     }
 
     @Override
-    public boolean existRole(final Role pRole) {
-        return roleRepository.exists(pRole.getId());
+    public boolean existRole(Role role) {
+        return this.existRole(role.getId());
     }
 
     @Override
-    public boolean existByName(final String pName) {
-        return roleRepository.findOneByName(pName).isPresent();
+    public boolean existByName(String name) {
+        return roleRepository.findOneByName(name).isPresent();
     }
 
     @Override
@@ -612,15 +600,15 @@ public class RoleService implements IRoleService {
      * @param first role that should be inferior to second
      * @param second role that should not be inferior to first
      * @return FALSE if: <br/>
-     *         <ul>
-     *         <li>second is null</li>
-     *         <li>first is project admin</li>
-     *         <li>first equals second</li>
-     *         <li>first has less privilege than second</li>
-     *         </ul>
+     * <ul>
+     * <li>second is null</li>
+     * <li>first is project admin</li>
+     * <li>first equals second</li>
+     * <li>first has less privilege than second</li>
+     * </ul>
      */
     @Override
-    public boolean isHierarchicallyInferior(final Role first, final Role second) {
+    public boolean isHierarchicallyInferior(Role first, Role second) {
         // we consider that null is hierarchically inferior to anyone
         if (first == null) {
             return true;
@@ -640,8 +628,8 @@ public class RoleService implements IRoleService {
             return false;
         }
         // now lets treat common cases
-        final RoleLineageAssembler roleLineageAssembler = new RoleLineageAssembler();
-        final List<Role> ancestors = roleLineageAssembler.of(second).get();
+        RoleLineageAssembler roleLineageAssembler = new RoleLineageAssembler();
+        List<Role> ancestors = roleLineageAssembler.of(second).get();
         try (Stream<Role> stream = ancestors.stream()) {
             if (first.isNative()) {
                 // if the role is native, then it is into the lineage so we can look for it
@@ -659,20 +647,20 @@ public class RoleService implements IRoleService {
      * @return the role public. Create it if not found
      */
     public Role getRolePublic() {
-        final RoleFactory factory = new RoleFactory();
+        RoleFactory factory = new RoleFactory();
         return roleRepository.findOneByName(DefaultRole.PUBLIC.toString())
                 .orElseGet(() -> roleRepository.save(factory.createPublic()));
     }
 
     @Override
-    public Set<Role> retrieveInheritedRoles(final Role pRole) {
-        final Set<Role> results = new HashSet<>();
-        final Set<Role> inheritedRoles = roleRepository.findByParentRoleName(pRole.getName());
+    public Set<Role> retrieveInheritedRoles(Role inRole) {
+        Set<Role> results = new HashSet<>();
+        Set<Role> inheritedRoles = roleRepository.findByParentRoleName(inRole.getName());
         if (inheritedRoles != null) {
 
             inheritedRoles.forEach(results::add);
 
-            for (final Role role : inheritedRoles) {
+            for (Role role : inheritedRoles) {
                 retrieveInheritedRoles(role).forEach(results::add);
             }
         }
@@ -683,77 +671,74 @@ public class RoleService implements IRoleService {
      * Remove resource accesses from a role
      */
     @Override
-    public void removeResourcesAccesses(final String pRoleName, final ResourcesAccess... pResourcesAccesses)
+    public void removeResourcesAccesses(String roleName, ResourcesAccess... resourcesAccesses)
             throws EntityException {
 
-        final Optional<Role> roleOpt = roleRepository.findByName(pRoleName);
+        Optional<Role> roleOpt = roleRepository.findByName(roleName);
 
         if (!roleOpt.isPresent()) {
-            throw new EntityNotFoundException(pRoleName, Role.class);
+            throw new EntityNotFoundException(roleName, Role.class);
         }
 
         // Check if current user can remove resources to specified role
         canManageRole(roleOpt.get());
 
-        removeResourcesAccesses(roleOpt.get(), pResourcesAccesses);
+        removeResourcesAccesses(roleOpt.get(), resourcesAccesses);
     }
 
-    private void removeResourcesAccesses(Role role, ResourcesAccess[] pResourcesAccesses)
+    private void removeResourcesAccesses(Role role, ResourcesAccess[] resourcesAccesses)
             throws EntityOperationForbiddenException {
         // If PROJECT_ADMIN, nothing to do / removal forbidden
         if (role.getName().equals(DefaultRole.PROJECT_ADMIN.toString())) {
             throw new EntityOperationForbiddenException(role.getName(), Role.class,
-                    "Removing resource accesses from role PROJECT_ADMIN is forbidden!");
+                                                        "Removing resource accesses from role PROJECT_ADMIN is forbidden!");
         }
 
         // Apply changes and publish changes inside removeAndPropagate or RemoveAndManageParent so we are sure that
         // every updates has been published
         if (role.isNative()) {
             // If native role, propagate removal to native ascendants to maintain consistency
-            removeAndPropagate(role, pResourcesAccesses);
+            removeAndPropagate(role, resourcesAccesses);
             // Check non native role parents
             manageParentRoles();
         } else {
             // Else only remove accesses from role and change parent if required (may throw an exception if at least
             // public role cannot be the parent)
-            removeAndManageParent(role, pResourcesAccesses);
+            removeAndManageParent(role, resourcesAccesses);
         }
     }
 
     /**
      * Remove accesses on all inherited roles
-     *
-     * @param pRole role to manage
-     * @param pResourcesAccesses accesses to remove
+     * @param role role to manage
+     * @param resourcesAccesses accesses to remove
      */
-    private void removeAndPropagate(final Role pRole, final ResourcesAccess... pResourcesAccesses) {
+    private void removeAndPropagate(Role role, ResourcesAccess... resourcesAccesses) {
 
-        if (pRole != null) {
+        if (role != null) {
             // Remove accesses
-            boolean changed = pRole.getPermissions().removeAll(Sets.newHashSet(pResourcesAccesses));
+            boolean changed = role.getPermissions().removeAll(Sets.newHashSet(resourcesAccesses));
             // Save changes
-            roleRepository.save(pRole);
+            roleRepository.save(role);
             // publish event
             if (changed) {
                 StringJoiner sj = new StringJoiner(", ");
-                Arrays.stream(pResourcesAccesses).forEach(ra -> sj.add(ra.getVerb() + "@" + ra.getResource()));
-                LOGGER.info(ROLE_LOST_ACCESS, pRole.getName(), sj.toString());
-                publishResourceAccessEvent(pRole.getName(), pResourcesAccesses);
+                Arrays.stream(resourcesAccesses).forEach(ra -> sj.add(ra.getVerb() + "@" + ra.getResource()));
+                LOGGER.info(ROLE_LOST_ACCESS, role.getName(), sj.toString());
+                publishResourceAccessEvent(role.getName(), resourcesAccesses);
             }
             // Propagate
-            removeAndPropagate(pRole.getParentRole(), pResourcesAccesses);
+            removeAndPropagate(role.getParentRole(), resourcesAccesses);
         }
     }
 
     /**
      * Consider all non native roles to update its native parent after native role changes
-     *
-     * @throws EntityOperationForbiddenException
      */
     private void manageParentRoles() throws EntityOperationForbiddenException {
 
-        final Set<Role> roles = retrieveRoles();
-        for (final Role role : roles) {
+        Set<Role> roles = retrieveRoles();
+        for (Role role : roles) {
             if (!role.isNative()) {
                 manageParentFromAdmin(role);
             }
@@ -762,51 +747,48 @@ public class RoleService implements IRoleService {
 
     /**
      * Remove accesses on current role only and change parent if required to maintain consistency
-     *
-     * @param pRole role to manage
-     * @param pResourcesAccesses accesses to remove
+     * @param role role to manage
+     * @param resourcesAccesses accesses to remove
      * @throws EntityOperationForbiddenException if parent cannot be found
      */
-    private void removeAndManageParent(final Role pRole, final ResourcesAccess... pResourcesAccesses)
+    private void removeAndManageParent(Role role, ResourcesAccess... resourcesAccesses)
             throws EntityOperationForbiddenException {
         // Remove accesses
-        boolean changed = pRole.getPermissions().removeAll(Sets.newHashSet(pResourcesAccesses));
+        boolean changed = role.getPermissions().removeAll(Sets.newHashSet(resourcesAccesses));
         // Save changes
-        roleRepository.save(pRole);
+        roleRepository.save(role);
         // publish event
         if (changed) {
             StringJoiner sj = new StringJoiner(", ");
-            Arrays.stream(pResourcesAccesses).forEach(ra -> sj.add(ra.getVerb() + "@" + ra.getResource()));
-            LOGGER.info(ROLE_LOST_ACCESS, pRole.getName(), sj.toString());
-            publishResourceAccessEvent(pRole.getName(), pResourcesAccesses);
+            Arrays.stream(resourcesAccesses).forEach(ra -> sj.add(ra.getVerb() + "@" + ra.getResource()));
+            LOGGER.info(ROLE_LOST_ACCESS, role.getName(), sj.toString());
+            publishResourceAccessEvent(role.getName(), resourcesAccesses);
         }
         // Change parent if required
-        manageParent(pRole, pRole.getParentRole());
+        manageParent(role, role.getParentRole());
     }
 
     /**
      * Found a consistent parent for the current role starting with {@link DefaultRole#ADMIN}, highest available
      * inherited parent.
-     *
      * @param role role to consider
      * @throws EntityOperationForbiddenException if no parent role matches
      */
-    private void manageParentFromAdmin(final Role role) throws EntityOperationForbiddenException {
+    private void manageParentFromAdmin(Role role) throws EntityOperationForbiddenException {
 
         // Retrieve default admin role
-        final Role adminRole = roleRepository.findOneByName(DefaultRole.ADMIN.name()).get();
+        Role adminRole = roleRepository.findOneByName(DefaultRole.ADMIN.name()).get();
         // Manage parent
         manageParent(role, adminRole);
     }
 
     /**
      * Found a consistent parent for the current role
-     *
      * @param role role to consider
      * @param parentRole parent role candidate
      * @throws EntityOperationForbiddenException if no parent role matches
      */
-    private void manageParent(final Role role, final Role parentRole) throws EntityOperationForbiddenException {
+    private void manageParent(Role role, Role parentRole) throws EntityOperationForbiddenException {
 
         // role must not be null
         Assert.notNull(role, "Role cannot be null");
@@ -815,7 +797,7 @@ public class RoleService implements IRoleService {
         // throw exception
         // a role must have a parent and cannot have less accesses than public
         if (parentRole == null) {
-            final String message = String
+            String message = String
                     .format("Role %s cannot have less accesses than public role. Accesses removal cancelled.",
                             role.getName());
             LOGGER.error(message);
@@ -824,8 +806,8 @@ public class RoleService implements IRoleService {
 
         // Check if role is consistent with its parent
         // The parent cannot have more accesses!
-        final Set<ResourcesAccess> rolePermissions = role.getPermissions();
-        final Set<ResourcesAccess> parentPermissions = parentRole.getPermissions();
+        Set<ResourcesAccess> rolePermissions = role.getPermissions();
+        Set<ResourcesAccess> parentPermissions = parentRole.getPermissions();
 
         if (rolePermissions.containsAll(parentPermissions)) {
             // Set parent
@@ -840,19 +822,19 @@ public class RoleService implements IRoleService {
     @Override
     public Set<Role> retrieveBorrowableRoles() {
 
-        final Set<Role> borrowablesRoles = new TreeSet<>(new RoleComparator(this));
+        Set<Role> borrowablesRoles = new TreeSet<>(new RoleComparator(this));
 
-        final String email = authResolver.getUser();
-        final Optional<ProjectUser> optionnalUser = projectUserRepository.findOneByEmail(email);
+        String email = authResolver.getUser();
+        Optional<ProjectUser> optionnalUser = projectUserRepository.findOneByEmail(email);
         if (!optionnalUser.isPresent()) {
             return borrowablesRoles;
         }
 
-        final ProjectUser user = optionnalUser.get();
+        ProjectUser user = optionnalUser.get();
         // get Original Role of the user
-        final Role originalRole = user.getRole();
-        final List<String> roleNamesAllowedToBorrow = Lists.newArrayList(DefaultRole.ADMIN.toString(),
-                                                                         DefaultRole.PROJECT_ADMIN.toString());
+        Role originalRole = user.getRole();
+        List<String> roleNamesAllowedToBorrow = Lists
+                .newArrayList(DefaultRole.ADMIN.toString(), DefaultRole.PROJECT_ADMIN.toString());
         // It is impossible to borrow a role if your original role is not ADMIN or PROJECT_ADMIN or one of their sons
         // To simplify client interraction we returned the actual role of the user even if this role is not borowable.
         // The regards frontend use this role to calculate user ihm rights based on his role.
@@ -877,7 +859,7 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public Set<Role> getDescendants(final Role role) {
+    public Set<Role> getDescendants(Role role) {
         // Role entity hierarchy being inverted, parent of ADMIN is REGISTERED_USER
         // so if we want the descendants of REGISTERED_USER, we need to seek for role which parent is REGISTERED_USER and so on.
         Set<Role> children = roleRepository.findByParentRoleName(role.getName());
@@ -895,13 +877,13 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public Set<Role> getAscendants(final Role pRole) {
-        final Set<Role> ascendants = Sets.newHashSet(pRole);
+    public Set<Role> getAscendants(Role role) {
+        Set<Role> ascendants = Sets.newHashSet(role);
         // if pRole doesn't have parent then it's finished
-        Role parent = pRole.getParentRole();
+        Role parent = role.getParentRole();
         if (parent == null) {
             // except if it's PROJECT_ADMIN
-            if (pRole.getName().equals(DefaultRole.PROJECT_ADMIN.toString())) {
+            if (role.getName().equals(DefaultRole.PROJECT_ADMIN.toString())) {
                 parent = roleRepository.findOneByName(DefaultRole.ADMIN.toString()).get();
             } else {
                 return ascendants;
@@ -918,29 +900,28 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public Set<Role> retrieveRolesWithResource(final Long pResourceId) {
-        return roleRepository.findByPermissionsId(pResourceId);
+    public Set<Role> retrieveRolesWithResource(Long resourceId) {
+        return roleRepository.findByPermissionsId(resourceId);
     }
 
     /**
      * Inform security starter of a role change
-     *
      * @param role role
      */
-    private void publishRoleEvent(final Role role) {
-        final RoleEvent roleEvent = new RoleEvent();
+    private void publishRoleEvent(Role role) {
+        RoleEvent roleEvent = new RoleEvent();
         roleEvent.setRole(role.getName());
         publisher.publish(roleEvent);
     }
 
-    private Role saveAndPublish(final Role role) {
-        final Role savedRole = roleRepository.save(role);
+    private Role saveAndPublish(Role role) {
+        Role savedRole = roleRepository.save(role);
         publishRoleEvent(role);
         return savedRole;
     }
 
-    private void deleteAndPublish(final Role role) {
-        roleRepository.delete(role.getId());
+    private void deleteAndPublish(Role role) {
+        roleRepository.deleteById(role.getId());
         publishRoleEvent(role);
     }
 }

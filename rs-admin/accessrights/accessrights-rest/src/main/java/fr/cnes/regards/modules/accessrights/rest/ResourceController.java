@@ -102,7 +102,7 @@ public class ResourceController implements IResourceController<ResourcesAccess> 
      * @param resourceId resource id
      * @return {@link ResourcesAccess}
      * @throws ModuleException Exception if resource with given id does not exists
-     * @since 1.0-SNAPSHOT
+
      */
     @RequestMapping(method = RequestMethod.GET, value = RESOURCE_MAPPING)
     @ResourceAccess(description = "Retrieve all resource accesses of the REGARDS system", role = DefaultRole.PUBLIC)
@@ -117,7 +117,7 @@ public class ResourceController implements IResourceController<ResourcesAccess> 
      * @param resourceAccessToUpdate Resource access to update
      * @return updated ResourcesAccess
      * @throws ModuleException Exception if resource with given id does not exists
-     * @since 1.0-SNAPSHOT
+
      */
     @RequestMapping(method = RequestMethod.PUT, value = RESOURCE_MAPPING)
     @ResourceAccess(description = "Update access to a given resource", role = DefaultRole.ADMIN)

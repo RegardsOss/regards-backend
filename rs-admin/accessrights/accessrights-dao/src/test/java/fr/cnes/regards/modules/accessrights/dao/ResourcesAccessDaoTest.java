@@ -46,7 +46,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  * Test class for DAO entities ResourcesAccess
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { AccessRightsDaoTestConfiguration.class })
@@ -94,7 +94,7 @@ public class ResourcesAccessDaoTest {
      *
      * Initialize repository datas
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Before
     public void init() {

@@ -52,7 +52,7 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
  *
  * @author Sébastien Binda
  * @author Sylvain Vissiere-Guerinet
- * @since 1.0-SNAPSHOT
+
  */
 public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
 

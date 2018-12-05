@@ -20,12 +20,13 @@ package fr.cnes.regards.modules.project.rest;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.netflix.feign.EnableFeignClients;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -40,15 +41,11 @@ import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
 /**
- *
  * Class ProjectsFeignClientsIT
  *
  * {@link ProjectConnection} feign client test.
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
-@EnableFeignClients(clients = { IProjectConnectionClient.class })
 @ContextConfiguration(classes = { LicenseConfiguration.class })
 public class ProjectConnectionsFeignClientsIT extends AbstractRegardsWebIT {
 
@@ -74,15 +71,13 @@ public class ProjectConnectionsFeignClientsIT extends AbstractRegardsWebIT {
     @Before
     public void init() {
         client = FeignClientBuilder.build(new TokenClientProvider<>(IProjectConnectionClient.class,
-                "http://" + serverAddress + ":" + getPort(), feignSecurityManager));
+                                                                    "http://" + serverAddress + ":" + getPort(),
+                                                                    feignSecurityManager));
         FeignSecurityManager.asSystem();
     }
 
     /**
-     *
      * Check that the projects Feign Client handle the pagination parameters.
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Test
     public void retrieveAllProjectsByPageFromFeignClient() {

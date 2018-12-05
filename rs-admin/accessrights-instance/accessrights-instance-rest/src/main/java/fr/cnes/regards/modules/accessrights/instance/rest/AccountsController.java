@@ -71,7 +71,7 @@ import fr.cnes.regards.modules.accessrights.instance.service.workflow.state.IAcc
  * database
  * @author Sébastien Binda
  * @author Christophe Mertz
- * @since 1.0-SNAPSHOT
+
  */
 @RestController
 @RequestMapping(AccountsController.TYPE_MAPPING)

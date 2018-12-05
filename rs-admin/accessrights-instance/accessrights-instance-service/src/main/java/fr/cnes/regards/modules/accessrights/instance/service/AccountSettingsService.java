@@ -77,7 +77,7 @@ public class AccountSettingsService implements IAccountSettingsService {
      */
     @Override
     public AccountSettings update(final AccountSettings accountSettings) throws EntityNotFoundException {
-        if (!accountSettingsRepository.exists(accountSettings.getId())) {
+        if (!accountSettingsRepository.existsById(accountSettings.getId())) {
             throw new EntityNotFoundException(accountSettings.getId().toString(), AccountSettings.class);
         }
         return accountSettingsRepository.save(accountSettings);

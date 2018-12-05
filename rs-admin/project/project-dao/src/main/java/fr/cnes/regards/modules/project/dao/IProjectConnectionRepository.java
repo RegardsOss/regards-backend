@@ -37,7 +37,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * @author CS
  * @author Xavier-Alexandre Brochard
  * @author Marc Sordi
- * @since 1.0-SNAPSHOT
+
  */
 @InstanceEntity
 public interface IProjectConnectionRepository extends JpaRepository<ProjectConnection, Long> {

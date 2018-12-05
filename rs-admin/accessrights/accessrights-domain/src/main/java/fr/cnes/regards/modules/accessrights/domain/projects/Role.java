@@ -141,7 +141,7 @@ public class Role implements IIdentifiable<Long> {
      *
      * Constructor
      *
-     * @since 1.0-SNAPSHOT
+
      */
     public Role() {
         super();

@@ -22,6 +22,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -135,132 +136,103 @@ public class ProjectUserService implements IProjectUserService {
     }
 
     @Override
-    public ProjectUser retrieveUser(final Long pUserId) throws EntityNotFoundException {
-        final ProjectUser user = projectUserRepository.findOne(pUserId);
+    public ProjectUser retrieveUser(Long userId) throws EntityNotFoundException {
+        Optional<ProjectUser> userOpt = projectUserRepository.findById(userId);
         // Check found
-        if (user == null) {
-            throw new EntityNotFoundException(pUserId.toString(), ProjectUser.class);
+        if (!userOpt.isPresent()) {
+            throw new EntityNotFoundException(userId.toString(), ProjectUser.class);
         }
         // Filter out hidden meta data
-        try (final Stream<MetaData> stream = user.getMetadata().stream()) {
-            user.setMetadata(stream.filter(keepVisibleMetaData).collect(Collectors.toList()));
-        }
+        ProjectUser user = userOpt.get();
+        user.setMetadata(user.getMetadata().stream().filter(keepVisibleMetaData).collect(Collectors.toList()));
         return user;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.service.role.IProjectUserService#retrieveOneByEmail(java.lang.String)
-     */
     @Override
-    public ProjectUser retrieveOneByEmail(final String pUserEmail) throws EntityNotFoundException {
-        final ProjectUser user;
-        if (instanceAdminUserEmail.equals(pUserEmail)) {
-            user = new ProjectUser(pUserEmail, new Role(DefaultRole.INSTANCE_ADMIN.toString(), null), new ArrayList<>(),
+    public ProjectUser retrieveOneByEmail(String userEmail) throws EntityNotFoundException {
+        ProjectUser user;
+        if (instanceAdminUserEmail.equals(userEmail)) {
+            user = new ProjectUser(userEmail, new Role(DefaultRole.INSTANCE_ADMIN.toString(), null), new ArrayList<>(),
                     new ArrayList<>());
         } else {
-            user = projectUserRepository.findOneByEmail(pUserEmail)
-                    .orElseThrow(() -> new EntityNotFoundException(pUserEmail, ProjectUser.class));
+            user = projectUserRepository.findOneByEmail(userEmail)
+                    .orElseThrow(() -> new EntityNotFoundException(userEmail, ProjectUser.class));
             // Filter out hidden meta data
-            try (final Stream<MetaData> stream = user.getMetadata().stream()) {
+            try (Stream<MetaData> stream = user.getMetadata().stream()) {
                 stream.filter(keepVisibleMetaData);
             }
         }
         return user;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.service.role.IProjectUserService#retrieveCurrentUser()
-     */
     @Override
     public ProjectUser retrieveCurrentUser() throws EntityNotFoundException {
-        final String email = authResolver.getUser();
+        String email = authResolver.getUser();
         return projectUserRepository.findOneByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("Current user", ProjectUser.class));
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#retrieveAccessRequestList()
-     */
     @Override
-    public Page<ProjectUser> retrieveAccessRequestList(final Pageable pPageable) {
-        return projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS, pPageable);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#updateUser(java.lang.Long,
-     * fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser)
-     */
-    @Override
-    public ProjectUser updateUser(final Long pUserId, final ProjectUser pUpdatedProjectUser) throws EntityException {
-        if (!pUpdatedProjectUser.getId().equals(pUserId)) {
-            throw new EntityInconsistentIdentifierException(pUserId, pUpdatedProjectUser.getId(), ProjectUser.class);
-        }
-        if (!existUser(pUserId)) {
-            throw new EntityNotFoundException(pUserId.toString(), ProjectUser.class);
-        }
-
-        return save(pUpdatedProjectUser);
+    public Page<ProjectUser> retrieveAccessRequestList(Pageable pageable) {
+        return projectUserRepository.findByStatus(UserStatus.WAITING_ACCESS, pageable);
     }
 
     @Override
-    public ProjectUser updateUserInfos(final Long pUserId, final ProjectUser pUpdatedProjectUser)
+    public ProjectUser updateUser(Long userId, ProjectUser updatedProjectUser) throws EntityException {
+        if (!updatedProjectUser.getId().equals(userId)) {
+            throw new EntityInconsistentIdentifierException(userId, updatedProjectUser.getId(), ProjectUser.class);
+        }
+        if (!existUser(userId)) {
+            throw new EntityNotFoundException(userId.toString(), ProjectUser.class);
+        }
+
+        return save(updatedProjectUser);
+    }
+
+    @Override
+    public ProjectUser updateUserInfos(Long userId, ProjectUser updatedProjectUser)
             throws EntityException {
 
-        if (!pUpdatedProjectUser.getId().equals(pUserId)) {
-            throw new EntityInconsistentIdentifierException(pUserId, pUpdatedProjectUser.getId(), ProjectUser.class);
+        if (!updatedProjectUser.getId().equals(userId)) {
+            throw new EntityInconsistentIdentifierException(userId, updatedProjectUser.getId(), ProjectUser.class);
         }
-        if (!existUser(pUserId)) {
-            throw new EntityNotFoundException(pUserId.toString(), ProjectUser.class);
+        if (!existUser(userId)) {
+            throw new EntityNotFoundException(userId.toString(), ProjectUser.class);
         }
 
-        final ProjectUser user = projectUserRepository.findOne(pUserId);
+        ProjectUser user = projectUserRepository.findById(userId).get();
 
         // Set user role
-        if (pUpdatedProjectUser.getRole() == null) {
+        if (updatedProjectUser.getRole() == null) {
             user.setRole(null);
-        } else if (pUpdatedProjectUser.getRole().getId() != null) {
-            user.setRole(pUpdatedProjectUser.getRole());
-        } else if (pUpdatedProjectUser.getRole().getName() != null) {
-            final Role newRole = roleService.retrieveRole(pUpdatedProjectUser.getRole().getName());
+        } else if (updatedProjectUser.getRole().getId() != null) {
+            user.setRole(updatedProjectUser.getRole());
+        } else if (updatedProjectUser.getRole().getName() != null) {
+            Role newRole = roleService.retrieveRole(updatedProjectUser.getRole().getName());
             if (newRole != null) {
                 user.setRole(newRole);
             } else {
-                throw new EntityNotFoundException(pUpdatedProjectUser.getRole().getName(), Role.class);
+                throw new EntityNotFoundException(updatedProjectUser.getRole().getName(), Role.class);
             }
         }
 
         // Set user new metadata
-        user.setMetadata(pUpdatedProjectUser.getMetadata());
+        user.setMetadata(updatedProjectUser.getMetadata());
         // Set user new permissions
-        user.setPermissions(pUpdatedProjectUser.getPermissions());
+        user.setPermissions(updatedProjectUser.getPermissions());
         // Save new user informations
         return save(user);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#updateUserAccessRights(java.lang.
-     * String, java.util.List)
-     */
     @Override
-    public void updateUserAccessRights(final String pLogin, final List<ResourcesAccess> pUpdatedUserAccessRights)
+    public void updateUserAccessRights(String login, List<ResourcesAccess> updatedUserAccessRights)
             throws EntityNotFoundException {
-        final ProjectUser user = projectUserRepository.findOneByEmail(pLogin)
-                .orElseThrow(() -> new EntityNotFoundException(pLogin, ProjectUser.class));
+        ProjectUser user = projectUserRepository.findOneByEmail(login)
+                .orElseThrow(() -> new EntityNotFoundException(login, ProjectUser.class));
 
-        try (final Stream<ResourcesAccess> previous = user.getPermissions().stream();
-                final Stream<ResourcesAccess> updated = pUpdatedUserAccessRights.stream();
-                final Stream<ResourcesAccess> merged = Stream.concat(updated, previous)) {
+        try (Stream<ResourcesAccess> previous = user.getPermissions().stream();
+                Stream<ResourcesAccess> updated = updatedUserAccessRights.stream();
+                Stream<ResourcesAccess> merged = Stream.concat(updated, previous)) {
             user.setPermissions(merged.filter(RegardsStreamUtils.distinctByKey(r -> r.getId()))
                     .collect(Collectors.toList()));
         }
@@ -268,107 +240,74 @@ public class ProjectUserService implements IProjectUserService {
         save(user);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#removeUserAccessRights(java.lang.
-     * String)
-     */
     @Override
-    public void removeUserAccessRights(final String pLogin) throws EntityNotFoundException {
-        final ProjectUser user = projectUserRepository.findOneByEmail(pLogin)
-                .orElseThrow(() -> new EntityNotFoundException(pLogin, ProjectUser.class));
+    public void removeUserAccessRights(String login) throws EntityNotFoundException {
+        ProjectUser user = projectUserRepository.findOneByEmail(login)
+                .orElseThrow(() -> new EntityNotFoundException(login, ProjectUser.class));
         user.setPermissions(new ArrayList<>());
         save(user);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#retrieveUserMetaData(java.lang.Long)
-     */
     @Override
-    public List<MetaData> retrieveUserMetaData(final Long pUserId) throws EntityNotFoundException {
-        final ProjectUser user = retrieveUser(pUserId);
+    public List<MetaData> retrieveUserMetaData(Long userId) throws EntityNotFoundException {
+        ProjectUser user = retrieveUser(userId);
         return user.getMetadata();
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#updateUserMetaData(java.lang.Long,
-     * java.util.List)
-     */
     @Override
-    public List<MetaData> updateUserMetaData(final Long pUserId, final List<MetaData> pUpdatedUserMetaData)
+    public List<MetaData> updateUserMetaData(Long userId, List<MetaData> updatedUserMetaData)
             throws EntityNotFoundException {
-        final ProjectUser user = retrieveUser(pUserId);
-        user.setMetadata(pUpdatedUserMetaData);
-        final ProjectUser savedUser = save(user);
+        ProjectUser user = retrieveUser(userId);
+        user.setMetadata(updatedUserMetaData);
+        ProjectUser savedUser = save(user);
         return savedUser.getMetadata();
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#removeUserMetaData(java.lang.Long)
-     */
     @Override
-    public void removeUserMetaData(final Long pUserId) throws EntityNotFoundException {
-        final ProjectUser user = retrieveUser(pUserId);
+    public void removeUserMetaData(Long userId) throws EntityNotFoundException {
+        ProjectUser user = retrieveUser(userId);
         user.setMetadata(new ArrayList<>());
         save(user);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#retrieveProjectUserAccessRights(java
-     * .lang.String, java.lang.String)
-     */
     @Override
-    public List<ResourcesAccess> retrieveProjectUserAccessRights(final String pEmail, final String pBorrowedRoleName)
+    public List<ResourcesAccess> retrieveProjectUserAccessRights(String email, String borrowedRoleName)
             throws EntityException {
-        final ProjectUser projectUser = retrieveOneByEmail(pEmail);
-        final Role userRole = projectUser.getRole();
+        ProjectUser projectUser = retrieveOneByEmail(email);
+        Role userRole = projectUser.getRole();
         Role returnedRole = userRole;
 
-        if (pBorrowedRoleName != null) {
-            final Role borrowedRole = roleService.retrieveRole(pBorrowedRoleName);
+        if (borrowedRoleName != null) {
+            Role borrowedRole = roleService.retrieveRole(borrowedRoleName);
             if (roleService.isHierarchicallyInferior(borrowedRole, returnedRole)) {
                 returnedRole = borrowedRole;
             } else {
-                throw new EntityOperationForbiddenException(pBorrowedRoleName, Role.class,
+                throw new EntityOperationForbiddenException(borrowedRoleName, Role.class,
                         "Borrowed role must be hierachically inferior to the project user's role");
             }
         }
 
         // Merge permissions from the project user and from the role
-        final List<ResourcesAccess> merged = new ArrayList<>();
-        final List<ResourcesAccess> fromUser = projectUser.getPermissions();
+        List<ResourcesAccess> merged = new ArrayList<>();
+        List<ResourcesAccess> fromUser = projectUser.getPermissions();
         merged.addAll(fromUser);
         try {
-            final Set<ResourcesAccess> fromRole = roleService.retrieveRoleResourcesAccesses(returnedRole.getId());
+            Set<ResourcesAccess> fromRole = roleService.retrieveRoleResourcesAccesses(returnedRole.getId());
             merged.addAll(fromRole);
-        } catch (final EntityNotFoundException e) {
+        } catch (EntityNotFoundException e) {
             LOG.debug("Could not retrieve permissions from role", e);
         }
         return merged;
     }
 
     @Override
-    public ProjectUser createProjectUser(final AccessRequestDto pDto)
+    public ProjectUser createProjectUser(AccessRequestDto accessRequestDto)
             throws EntityAlreadyExistsException, EntityInvalidException {
         try {
-            ResponseEntity<Resource<Account>> accountResponse = accountsClient.retrieveAccounByEmail(pDto.getEmail());
+            ResponseEntity<Resource<Account>> accountResponse = accountsClient.retrieveAccounByEmail(accessRequestDto.getEmail());
             if (accountResponse.getStatusCode() == HttpStatus.NOT_FOUND) {
-                Account newAccount = new Account(pDto.getEmail(), pDto.getFirstName(), pDto.getLastName(),
-                        pDto.getPassword());
+                Account newAccount = new Account(accessRequestDto.getEmail(), accessRequestDto.getFirstName(), accessRequestDto.getLastName(),
+                        accessRequestDto.getPassword());
                 newAccount.setStatus(AccountStatus.ACTIVE);
                 AccountNPassword newAccountWithPassword = new AccountNPassword(newAccount, newAccount.getPassword());
                 accountsClient.createAccount(newAccountWithPassword);
@@ -378,25 +317,25 @@ public class ProjectUserService implements IProjectUserService {
             throw new EntityInvalidException(errorResponse.getMessages());
         }
 
-        if (!existUser(pDto.getEmail())) {
+        if (!existUser(accessRequestDto.getEmail())) {
             // Get role for projectUser to create
             Role role;
             try {
-                if ((pDto.getRoleName() != null) && !pDto.getRoleName().isEmpty()) {
-                    role = roleService.retrieveRole(pDto.getRoleName());
+                if ((accessRequestDto.getRoleName() != null) && !accessRequestDto.getRoleName().isEmpty()) {
+                    role = roleService.retrieveRole(accessRequestDto.getRoleName());
                 } else {
                     role = roleService.getDefaultRole();
                 }
-            } catch (final EntityNotFoundException e) {
+            } catch (EntityNotFoundException e) {
                 role = roleService.getDefaultRole();
                 LOG.warn("Request role does not exists, the new user is associated to default role");
                 LOG.debug(e.getMessage(), e);
             }
-            final ProjectUser newProjectUser = new ProjectUser();
-            newProjectUser.setEmail(pDto.getEmail());
+            ProjectUser newProjectUser = new ProjectUser();
+            newProjectUser.setEmail(accessRequestDto.getEmail());
             newProjectUser.setRole(role);
-            if (pDto.getMetadata() != null) {
-                newProjectUser.setMetadata(pDto.getMetadata());
+            if (accessRequestDto.getMetadata() != null) {
+                newProjectUser.setMetadata(accessRequestDto.getMetadata());
             }
             newProjectUser.setStatus(UserStatus.ACCESS_GRANTED);
             return save(newProjectUser);
@@ -405,42 +344,32 @@ public class ProjectUserService implements IProjectUserService {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#existUser(java.lang.String)
-     */
     @Override
-    public boolean existUser(final String pEmail) {
-        return projectUserRepository.findOneByEmail(pEmail).isPresent();
+    public boolean existUser(String email) {
+        return projectUserRepository.findOneByEmail(email).isPresent();
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#existUser(java.lang.Long)
-     */
     @Override
-    public boolean existUser(final Long pId) {
-        return projectUserRepository.exists(pId);
+    public boolean existUser(Long id) {
+        return projectUserRepository.existsById(id);
     }
 
     /**
      * Specific on-save operations
-     * @param pProjectUser The user to save
+     * @param projectUser The user to save
      */
-    private ProjectUser save(final ProjectUser pProjectUser) {
-        pProjectUser.setLastUpdate(OffsetDateTime.now());
-        return projectUserRepository.save(pProjectUser);
+    private ProjectUser save(ProjectUser projectUser) {
+        projectUser.setLastUpdate(OffsetDateTime.now());
+        return projectUserRepository.save(projectUser);
     }
 
     @Override
     public void resetLicence() {
-        final List<ProjectUser> everyone = projectUserRepository.findAll();
-        for (final ProjectUser anyone : everyone) {
+        List<ProjectUser> users = projectUserRepository.findAll();
+        for (ProjectUser anyone : users) {
             anyone.setLicenseAccepted(false);
         }
-        projectUserRepository.save(everyone);
+        projectUserRepository.saveAll(users);
     }
 
     @Override
@@ -448,15 +377,9 @@ public class ProjectUserService implements IProjectUserService {
         return projectUserRepository.findByRoleName(role.getName());
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService#delete(fr.cnes.regards.modules.
-     * accessrights.domain.projects.ProjectUser)
-     */
     @Override
-    public void deleteByEmail(String pEmail) throws EntityNotFoundException {
-        ProjectUser projectUser = retrieveOneByEmail(pEmail);
+    public void deleteByEmail(String Email) throws EntityNotFoundException {
+        ProjectUser projectUser = retrieveOneByEmail(Email);
         projectUserRepository.delete(projectUser);
     }
 

@@ -46,7 +46,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  *
  * @author CS
  * @author Xavier-Alexandre Brochard
- * @since 1.0-SNAPSHOT
+
  */
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -154,7 +154,7 @@ public class ProjectDaoIT {
      *
      * Test to create and retrieve projects connections in instance database
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Test to create and retrieve projects connections in instance database.")
@@ -178,7 +178,7 @@ public class ProjectDaoIT {
     /**
      * Test to retrieve projects connections of given project's name in instance database.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose(" Test to retrieve projects connections of given project's name in instance database.")

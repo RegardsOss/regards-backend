@@ -83,7 +83,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve all accounts.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Ignore
     @Test
@@ -102,7 +102,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can create an account.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Ignore
     @Test
@@ -122,7 +122,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can update an account.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     @Ignore
@@ -142,7 +142,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can update an account.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     @Ignore
@@ -160,7 +160,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve an account.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     @Ignore
@@ -178,7 +178,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve an account.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     @Ignore
@@ -196,7 +196,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve an account.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     @Ignore
@@ -214,13 +214,13 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve an account.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     @Ignore
     public void sendAccountCodeFromFeignClient() {
         try {
-            jwtService.injectToken(DEFAULT_TENANT, DefaultRole.REGISTERED_USER.toString(), "", "");
+            jwtService.injectToken(getDefaultTenant(), DefaultRole.REGISTERED_USER.toString(), "", "");
             final ResponseEntity<Void> response = accountsClient.sendAccountCode("email@unkown.fr", CodeType.UNLOCK);
             Assert.assertTrue(response.getStatusCode().equals(HttpStatus.NOT_FOUND));
         } catch (final Exception e) {
@@ -233,7 +233,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve an account.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     public void validatePasswordFromFeignClient() {

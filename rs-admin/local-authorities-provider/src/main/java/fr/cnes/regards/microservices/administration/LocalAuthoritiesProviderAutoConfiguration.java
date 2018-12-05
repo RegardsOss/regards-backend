@@ -20,7 +20,7 @@ public class LocalAuthoritiesProviderAutoConfiguration {
      * {@link IAuthoritiesProvider} implementation for local authorities resolver for administration service
      *
      * @return IAuthoritiesProvider
-     * @since 1.0-SNAPSHOT
+
      */
     @Bean
     @Primary

@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.notification.service;
 
 import java.time.OffsetDateTime;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -67,7 +68,6 @@ import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
 
 /**
  * {@link INotificationService} implementation
- *
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
  * @author Sylvain Vissiere-Guerinet
@@ -114,15 +114,12 @@ public class NotificationService implements INotificationService, ApplicationLis
 
     /**
      * Creates a {@link NotificationService} wired to the given {@link INotificationRepository}.
-     *  @param notificationRepository
-     *            Autowired by Spring. Must not be {@literal null}.
-     * @param rolesClient
-     *            Autowired by Spring. Must not be {@literal null}.
-     * @param projectUserClient
-     *            Autowired by Spring. Must not be {@literal null}.
+     * @param notificationRepository Autowired by Spring. Must not be {@literal null}.
+     * @param rolesClient Autowired by Spring. Must not be {@literal null}.
+     * @param projectUserClient Autowired by Spring. Must not be {@literal null}.
      */
-    public NotificationService(final INotificationRepository notificationRepository, final IRolesClient rolesClient,
-            final IProjectUsersClient projectUserClient, final ApplicationEventPublisher applicationEventPublisher,
+    public NotificationService(INotificationRepository notificationRepository, IRolesClient rolesClient,
+            IProjectUsersClient projectUserClient, ApplicationEventPublisher applicationEventPublisher,
             IRuntimeTenantResolver runtimeTenantResolver, IAuthenticationResolver authenticationResolver,
             ISubscriber subscriber,
             @Value("${regards.notification.mode:MULTITENANT}") NotificationMode notificationMode) {
@@ -140,15 +137,16 @@ public class NotificationService implements INotificationService, ApplicationLis
     @Override
     public Page<Notification> retrieveNotifications(Pageable page) throws EntityNotFoundException {
         if (notificationMode == NotificationMode.MULTITENANT) {
-            return notificationRepository.findByRecipientsContaining(authenticationResolver.getUser(),
-                                                                     authenticationResolver.getRole(), page);
+            return notificationRepository
+                    .findByRecipientsContaining(authenticationResolver.getUser(), authenticationResolver.getRole(),
+                                                page);
         } else {
             return notificationRepository.findAll(page);
         }
     }
 
     @Override
-    public Notification createNotification(final NotificationDTO dto) {
+    public Notification createNotification(NotificationDTO dto) {
         Notification notification = new Notification();
         notification.setDate(OffsetDateTime.now());
         notification.setMessage(dto.getMessage());
@@ -174,7 +172,6 @@ public class NotificationService implements INotificationService, ApplicationLis
 
     /**
      * Lets get all roles that should have the notification through the role hierarchy
-     * @param roleRecipients
      * @return all recipient role names
      */
     private Set<String> getAllRecipientRoles(Set<String> roleRecipients) {
@@ -189,20 +186,21 @@ public class NotificationService implements INotificationService, ApplicationLis
     }
 
     @Override
-    public Notification retrieveNotification(final Long pId) throws EntityNotFoundException {
-        if (!notificationRepository.exists(pId)) {
+    public Notification retrieveNotification(Long pId) throws EntityNotFoundException {
+        Optional<Notification> notifOpt = notificationRepository.findById(pId);
+        if (!notifOpt.isPresent()) {
             throw new EntityNotFoundException(pId.toString(), Notification.class);
         }
-        return notificationRepository.findOne(pId);
+        return notifOpt.get();
     }
 
     @Override
-    public Notification updateNotificationStatus(final Long pId, final NotificationStatus pStatus)
-            throws EntityNotFoundException {
-        if (!notificationRepository.exists(pId)) {
+    public Notification updateNotificationStatus(Long pId, NotificationStatus pStatus) throws EntityNotFoundException {
+        Optional<Notification> notifOpt = notificationRepository.findById(pId);
+        if (!notifOpt.isPresent()) {
             throw new EntityNotFoundException(pId.toString(), Notification.class);
         }
-        final Notification notification = notificationRepository.findOne(pId);
+        Notification notification = notifOpt.get();
         notification.setStatus(pStatus);
         return notificationRepository.save(notification);
     }
@@ -215,11 +213,11 @@ public class NotificationService implements INotificationService, ApplicationLis
     }
 
     @Override
-    public void deleteNotification(final Long pId) throws EntityNotFoundException {
-        if (!notificationRepository.exists(pId)) {
+    public void deleteNotification(Long pId) throws EntityNotFoundException {
+        if (!notificationRepository.existsById(pId)) {
             throw new EntityNotFoundException(pId.toString(), Notification.class);
         }
-        notificationRepository.delete(pId);
+        notificationRepository.deleteById(pId);
     }
 
     @Override
@@ -228,26 +226,25 @@ public class NotificationService implements INotificationService, ApplicationLis
     }
 
     @Override
-    public Stream<String> findRecipients(final Notification pNotification) {
+    public Stream<String> findRecipients(Notification pNotification) {
         // With the stream of role recipients and project users recipients
-        try (final Stream<String> rolesStream = pNotification.getRoleRecipients().stream();
-                final Stream<String> usersStream = pNotification.getProjectUserRecipients().stream()) {
+        try (Stream<String> rolesStream = pNotification.getRoleRecipients().stream();
+                Stream<String> usersStream = pNotification.getProjectUserRecipients().stream()) {
 
             // Merge the two streams
-            return Stream.concat(usersStream, rolesStream.flatMap(// Define a function mapping each role to its project users by
-                                                                  // calling the roles client
-                                                                  r -> HateoasUtils
-                                                                          .retrieveAllPages(100,
-                                                                                            pageable -> retrieveRoleProjectUserList(r,
-                                                                                                                                    pageable))
-                                                                          .stream().map(ProjectUser::getEmail)))
-                    .distinct();
+            return Stream.concat(usersStream,
+                                 rolesStream.flatMap(// Define a function mapping each role to its project users by
+                                                     // calling the roles client
+                                                     r -> HateoasUtils.retrieveAllPages(100,
+                                                                                        pageable -> retrieveRoleProjectUserList(
+                                                                                                r, pageable)).stream()
+                                                             .map(ProjectUser::getEmail))).distinct();
         }
     }
 
     private ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUserList(String pRole,
             Pageable pPageable) {
-        final ResponseEntity<PagedResources<Resource<ProjectUser>>> response = projectUserClient
+        ResponseEntity<PagedResources<Resource<ProjectUser>>> response = projectUserClient
                 .retrieveRoleProjectUsersList(pRole, pPageable.getPageNumber(), pPageable.getPageSize());
 
         if (!response.getStatusCode().equals(HttpStatus.OK) || response.getBody() == null) {
@@ -259,24 +256,24 @@ public class NotificationService implements INotificationService, ApplicationLis
 
     @Override
     public void removeReceiver(String email) {
-        Pageable page = new PageRequest(0, 500);
+        Pageable page = PageRequest.of(0, 500);
         Page<Notification> notifications;
         do {
             notifications = notificationRepository.findAllByProjectUserRecipientsContaining(email, page);
             notifications.forEach(notification -> notification.getProjectUserRecipients().remove(email));
-            notificationRepository.save(notifications);
+            notificationRepository.saveAll(notifications);
             page = notifications.nextPageable();
         } while (notifications.hasNext());
     }
 
     @Override
     public void removeRoleReceiver(String role) {
-        Pageable page = new PageRequest(0, 500);
+        Pageable page = PageRequest.of(0, 500);
         Page<Notification> notifications;
         do {
             notifications = notificationRepository.findAllByRoleRecipientsContaining(role, page);
             notifications.forEach(notification -> notification.getRoleRecipients().remove(role));
-            notificationRepository.save(notifications);
+            notificationRepository.saveAll(notifications);
             page = notifications.nextPageable();
         } while (notifications.hasNext());
     }
