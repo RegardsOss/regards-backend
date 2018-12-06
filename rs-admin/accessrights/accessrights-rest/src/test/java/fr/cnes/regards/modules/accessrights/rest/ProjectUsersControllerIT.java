@@ -53,21 +53,13 @@ import fr.cnes.regards.modules.accessrights.service.role.RoleService;
 
 /**
  * Integration tests for ProjectUsers REST Controller.
- *
  * @author svissier
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
-
  */
 @MultitenantTransactional
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
 public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
-
-    /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(ProjectUsersControllerIT.class);
-
     /**
      * An email
      */
@@ -121,41 +113,31 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Purpose("Check that the system allows to retrieve all user on a project.")
     public void getAllUsers() {
-        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(ProjectUsersController.TYPE_MAPPING, requestBuilder, errorMessage);
+        performDefaultGet(ProjectUsersController.TYPE_MAPPING, customizer().expectStatusOk(), errorMessage);
     }
 
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Purpose("Check that the system allows to retrieve a single user on a project.")
-    public void getUser() throws UnsupportedEncodingException {
+    public void getUser() {
         String apiUserEmail = ProjectUsersController.TYPE_MAPPING + "/email/{user_email}";
 
-        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(apiUserEmail, requestBuilder, errorMessage, EMAIL);
+        performDefaultGet(apiUserEmail, customizer().expectStatusOk(), errorMessage, EMAIL);
 
-        requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isNotFound());
-        performDefaultGet(apiUserEmail, requestBuilder, errorMessage, "user@invalid.fr");
+        performDefaultGet(apiUserEmail, customizer().expectStatusNotFound(), errorMessage, "user@invalid.fr");
     }
 
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_330")
     @Purpose("Check that the system allows to retrieve a user's metadata.")
     public void getUserMetaData() {
-        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(ProjectUserMetadataController.REQUEST_MAPPING_ROOT, requestBuilder, errorMessage,
-                          projectUser.getId());
+        performDefaultGet(ProjectUserMetadataController.REQUEST_MAPPING_ROOT, customizer().expectStatusOk(),
+                          errorMessage, projectUser.getId());
     }
 
     /**
      * Check that the system allows a user to connect using a hierarchically inferior role.
-     *
-     * @throws EntityNotFoundException
-     *             not found
+     * @throws EntityNotFoundException not found
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_270")
@@ -165,27 +147,23 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         String apiUserPermissionsBorrowedRole = UserResourceController.TYPE_MAPPING + "?borrowedRoleName=";
 
         // Prepare a project user with role admin
-        final Role roleAdmin = roleService.retrieveRole(DefaultRole.ADMIN.toString());
+        Role roleAdmin = roleService.retrieveRole(DefaultRole.ADMIN.toString());
         projectUser.setRole(roleAdmin);
         projectUserRepository.save(projectUser);
 
         // Get the borrowed role
-        final String borrowedRoleName = DefaultRole.REGISTERED_USER.toString();
-        final Role borrowedRole = roleService.retrieveRole(borrowedRoleName);
+        String borrowedRoleName = DefaultRole.REGISTERED_USER.toString();
+        Role borrowedRole = roleService.retrieveRole(borrowedRoleName);
 
         // Borrowing a hierarchically inferior role
         Assert.assertTrue(roleService.isHierarchicallyInferior(borrowedRole, roleAdmin));
-        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(apiUserPermissionsBorrowedRole + borrowedRoleName, requestBuilder, errorMessage,
-                          projectUser.getEmail());
+        performDefaultGet(apiUserPermissionsBorrowedRole + borrowedRoleName, customizer().expectStatusOk(),
+                          errorMessage, projectUser.getEmail());
     }
 
     /**
      * Check that the system prevents a user to connect using a hierarchically superior role.
-     *
-     * @throws EntityNotFoundException
-     *             not found
+     * @throws EntityNotFoundException not found
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_270")
@@ -205,9 +183,8 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
 
         // Borrowing a hierarchically superior role
         Assert.assertTrue(!roleService.isHierarchicallyInferior(borrowedRole, roleAdmin));
-        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isForbidden());
-        performDefaultGet(apiUserPermissionsBorrowedRole + borrowedRoleName, requestBuilder, errorMessage,
+        performDefaultGet(apiUserPermissionsBorrowedRole + borrowedRoleName,
+                          customizer().expect(MockMvcResultMatchers.status().isForbidden()), errorMessage,
                           projectUser.getEmail());
     }
 
@@ -219,10 +196,8 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         newPermissionList.add(metaDataRepository.save(new MetaData()));
         newPermissionList.add(metaDataRepository.save(new MetaData()));
 
-        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultPut(ProjectUserMetadataController.REQUEST_MAPPING_ROOT, newPermissionList, requestBuilder,
-                          errorMessage, projectUser.getId());
+        performDefaultPut(ProjectUserMetadataController.REQUEST_MAPPING_ROOT, newPermissionList,
+                          customizer().expectStatusOk(), errorMessage, projectUser.getId());
     }
 
     @Test
@@ -231,32 +206,30 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     public void updateUserPermissions() {
         final List<ResourcesAccess> newPermissionList = new ArrayList<>();
         newPermissionList.add(resourcesAccessRepository
-                .save(new ResourcesAccess("desc0", "ms0", "res0", "Controller", RequestMethod.GET, DefaultRole.ADMIN)));
+                                      .save(new ResourcesAccess("desc0", "ms0", "res0", "Controller", RequestMethod.GET,
+                                                                DefaultRole.ADMIN)));
         newPermissionList.add(resourcesAccessRepository.save(new ResourcesAccess("desc1", "ms1", "res1", "Controller",
-                RequestMethod.DELETE, DefaultRole.ADMIN)));
+                                                                                 RequestMethod.DELETE,
+                                                                                 DefaultRole.ADMIN)));
 
-        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultPut(UserResourceController.TYPE_MAPPING, newPermissionList, requestBuilder, errorMessage, EMAIL);
+        performDefaultPut(UserResourceController.TYPE_MAPPING, newPermissionList, customizer().expectStatusOk(),
+                          errorMessage, EMAIL);
     }
 
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_330")
     @Purpose("Check that the system allows to delete a user's metadata.")
     public void deleteUserMetaData() {
-        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultDelete(ProjectUserMetadataController.REQUEST_MAPPING_ROOT, requestBuilder, errorMessage,
-                             projectUser.getId());
+        performDefaultDelete(ProjectUserMetadataController.REQUEST_MAPPING_ROOT, customizer().expectStatusOk(),
+                             errorMessage, projectUser.getId());
     }
 
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_230")
     @Purpose("Check that the system allows to delete a user's permissions.")
     public void deleteUserPermissions() {
-        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultDelete(UserResourceController.TYPE_MAPPING, requestBuilder, errorMessage, projectUser.getEmail());
+        performDefaultDelete(UserResourceController.TYPE_MAPPING, customizer().expectStatusOk(), errorMessage,
+                             projectUser.getEmail());
     }
 
     @Test
@@ -268,14 +241,10 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         projectUser.setEmail("new@email.com");
 
         // Same id
-        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultPut(apiUserId, projectUser, requestBuilder, errorMessage, projectUser.getId());
+        performDefaultPut(apiUserId, projectUser, customizer().expectStatusOk(), errorMessage, projectUser.getId());
 
         // Wrong id (99L)
-        requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isBadRequest());
-        performDefaultPut(apiUserId, projectUser, requestBuilder, errorMessage, 99L);
+        performDefaultPut(apiUserId, projectUser, customizer().expectStatusBadRequest(), errorMessage, 99L);
     }
 
     @Test
@@ -284,9 +253,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     public void deleteUser() {
         String apiUserId = ProjectUsersController.TYPE_MAPPING + "/{user_id}";
 
-        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultDelete(apiUserId, requestBuilder, errorMessage, projectUser.getId());
+        performDefaultDelete(apiUserId, customizer().expectStatusOk(), errorMessage, projectUser.getId());
     }
 
     @Test
@@ -298,10 +265,8 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
 
         String apiUserId = ProjectUsersController.TYPE_MAPPING + ProjectUsersController.USER_ID_RELATIVE_PATH;
 
-        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilder.addExpectation(MockMvcResultMatchers.jsonPath("$.links.[4].rel", Matchers.is("accept")));
-        performDefaultGet(apiUserId, requestBuilder, errorMessage, projectUser.getId());
+        performDefaultGet(apiUserId, customizer().expectStatusOk().expectValue("$.links.[4].rel", "accept"),
+                          errorMessage, projectUser.getId());
     }
 
     @Test
@@ -313,14 +278,8 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
 
         String apiUserId = ProjectUsersController.TYPE_MAPPING + ProjectUsersController.USER_ID_RELATIVE_PATH;
 
-        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilder.addExpectation(MockMvcResultMatchers.jsonPath("$.links.[5].rel", Matchers.is("deny")));
-        performDefaultGet(apiUserId, requestBuilder, errorMessage, projectUser.getId());
+        performDefaultGet(apiUserId, customizer().expectStatusOk().expectValue("$.links.[5].rel", "deny"), errorMessage,
+                          projectUser.getId());
     }
 
-    @Override
-    protected Logger getLogger() {
-        return LOG;
-    }
 }

@@ -148,7 +148,7 @@ public interface IAccountsClient {
      * @throws EntityNotFoundException
      */
     @RequestMapping(value = "/{account_email}/resetPassword", method = RequestMethod.POST)
-    public ResponseEntity<Void> requestResetPassword(@PathVariable("account_email") final String pAccountEmail,
+    ResponseEntity<Void> requestResetPassword(@PathVariable("account_email") final String pAccountEmail,
             @Valid @RequestBody final RequestResetPasswordDto pDto);
 
     /**

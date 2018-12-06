@@ -40,23 +40,15 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
 /**
- *
  * Class ResourceControllerIT
  *
  * Test class to check access to {@link ResourcesAccess} entities. Those entities are used to configure the authroized
  * access to microservices endpoints.
- *
  * @author Sébastien Binda
-
  */
 @MultitenantTransactional
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
 public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
-
-    /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(ResourceControllerIT.class);
 
     /**
      * Default endpoint url configured for this test
@@ -95,101 +87,69 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
     private String instanceAdminToken;
 
     /**
-     *
      * Initialize all datas for this unit tests
-     *
-     * @throws EntityNotFoundException
-     *             test error
-
+     * @throws EntityNotFoundException test error
      */
     @Before
-    public void initResources() throws EntityNotFoundException {
+    public void initResources() {
 
-        final JWTService service = new JWTService();
+        JWTService service = new JWTService();
         service.setSecret("123456789");
         publicToken = service.generateToken(getDefaultTenant(), getDefaultUserEmail(), DefaultRole.PUBLIC.toString());
-        projectAdminToken = service.generateToken(getDefaultTenant(), getDefaultUserEmail(),
-                                                  DefaultRole.PROJECT_ADMIN.toString());
-        instanceAdminToken = service.generateToken(getDefaultTenant(), getDefaultUserEmail(),
-                                                   DefaultRole.INSTANCE_ADMIN.toString());
+        projectAdminToken = service
+                .generateToken(getDefaultTenant(), getDefaultUserEmail(), DefaultRole.PROJECT_ADMIN.toString());
+        instanceAdminToken = service
+                .generateToken(getDefaultTenant(), getDefaultUserEmail(), DefaultRole.INSTANCE_ADMIN.toString());
     }
 
     /**
-     *
      * Check that the microservice allow to retrieve all resource endpoints configurations as PUBLIC
-     *
-
      */
     @Test
     @Purpose("Check that the microservice allows to retrieve all resource endpoints configurations")
     public void getAllResourceAccessesAsPublicTest() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isArray());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty());
-        performGet(ResourceController.TYPE_MAPPING, publicToken, requestBuilderCustomizer,
+        performGet(ResourceController.TYPE_MAPPING, publicToken,
+                   customizer().expectStatusOk().expectIsArray(JSON_PATH_CONTENT).expectIsNotEmpty(JSON_PATH_CONTENT),
                    "Error retrieving endpoints");
     }
 
     /**
-     *
      * Check that the microservice allow to retrieve all resource endpoints configurations as PROJECT_ADMIN
-     *
-
      */
     @Test
     @Purpose("Check that the microservice allows to retrieve all resource endpoints configurations")
     public void getAllResourceAccessesAsProjectAdminTest() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isArray());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty());
-        performGet(ResourceController.TYPE_MAPPING, projectAdminToken, requestBuilderCustomizer,
+        performGet(ResourceController.TYPE_MAPPING, projectAdminToken,
+                   customizer().expectStatusOk().expectIsArray(JSON_PATH_CONTENT).expectIsNotEmpty(JSON_PATH_CONTENT),
                    "Error retrieving endpoints");
     }
 
     /**
-     *
      * Check that the microservice allow to retrieve all resource endpoints configurations as INSTANCE_ADMIN
-     *
-
      */
     @Test
     @Purpose("Check that the microservice allows to retrieve all resource endpoints configurations for instance admin")
     public void getAllResourceAccessesAsInstanceAdminTest() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isArray());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT).isNotEmpty());
-        performGet(ResourceController.TYPE_MAPPING, instanceAdminToken, requestBuilderCustomizer,
+        performGet(ResourceController.TYPE_MAPPING, instanceAdminToken,
+                   customizer().expectStatusOk().expectIsArray(JSON_PATH_CONTENT).expectIsNotEmpty(JSON_PATH_CONTENT),
                    "Error retrieving endpoints");
     }
 
     /**
-     *
      * Check that the microservice allow to retrieve all resource endpoints configurations
-     *
-
      */
     @Test
     public void getResourceAccessTest() {
         ResourcesAccess resource = new ResourcesAccess("description", DEFAULT_MICROSERVICE, CONFIGURED_ENDPOINT_URL,
-                DEFAULT_CONTROLLER, RequestMethod.GET, DefaultRole.ADMIN);
+                                                       DEFAULT_CONTROLLER, RequestMethod.GET, DefaultRole.ADMIN);
         resourcesAccessRepository.save(resource);
-        final Role adminRole = roleRepository.findOneByName(DefaultRole.ADMIN.toString()).get();
+        Role adminRole = roleRepository.findOneByName(DefaultRole.ADMIN.toString()).get();
         adminRole.addPermission(resource);
         roleRepository.save(adminRole);
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         performGet(ResourceController.TYPE_MAPPING + ResourceController.RESOURCE_MAPPING, publicToken,
-                   requestBuilderCustomizer, "Error retrieving endpoints", resource.getId());
-    }
-
-    @Override
-    protected Logger getLogger() {
-        return LOG;
+                   customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT), "Error retrieving endpoints",
+                   resource.getId());
     }
 
 }

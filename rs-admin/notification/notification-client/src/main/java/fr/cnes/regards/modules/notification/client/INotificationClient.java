@@ -33,11 +33,11 @@ import fr.cnes.regards.modules.notification.domain.dto.NotificationSettingsDTO;
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface INotificationClient {
 
-    public static final String NOTIFICATION_PATH = "/notifications";
+    String NOTIFICATION_PATH = "/notifications";
 
-    public static final String NOTIFICATION_ID_PATH = "/{notification_id}";
+    String NOTIFICATION_ID_PATH = "/{notification_id}";
 
-    public static final String NOTIFICATION_SETTINGS = "/settings";
+    String NOTIFICATION_SETTINGS = "/settings";
 
     /**
      * Define the endpoint for retrieving the list of notifications for the logged user
@@ -45,7 +45,7 @@ public interface INotificationClient {
      * @return A {@link List} of {@link Notification} wrapped in a {@link ResponseEntity}
      */
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<Notification>> retrieveNotifications();
+    ResponseEntity<List<Notification>> retrieveNotifications();
 
     /**
      * Define the endpoint for creating a new notification in db for later sending by a scheluder.
@@ -55,7 +55,7 @@ public interface INotificationClient {
      * @return The sent notification as {@link Notification} wrapped in a {@link ResponseEntity}
      */
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<Notification> createNotification(@RequestBody final NotificationDTO pDto);
+    ResponseEntity<Notification> createNotification(@RequestBody final NotificationDTO pDto);
 
     /**
      * Define the endpoint for retrieving a notification
@@ -65,7 +65,7 @@ public interface INotificationClient {
      * @return The {@link Notification} wrapped in a {@link ResponseEntity}
      */
     @RequestMapping(value = NOTIFICATION_ID_PATH, method = RequestMethod.GET)
-    public ResponseEntity<Notification> retrieveNotification(@PathVariable("notification_id") final Long pId);
+    ResponseEntity<Notification> retrieveNotification(@PathVariable("notification_id") final Long pId);
 
     /**
      * Define the endpoint for updating the {@link Notification#status}
@@ -78,7 +78,7 @@ public interface INotificationClient {
      *
      */
     @RequestMapping(value = NOTIFICATION_ID_PATH, method = RequestMethod.PUT)
-    public ResponseEntity<Notification> updateNotificationStatus(@PathVariable("notification_id") final Long pId,
+    ResponseEntity<Notification> updateNotificationStatus(@PathVariable("notification_id") final Long pId,
             @RequestBody final NotificationStatus pStatus);
 
     /**
@@ -89,7 +89,7 @@ public interface INotificationClient {
      * @return void
      */
     @RequestMapping(value = NOTIFICATION_ID_PATH, method = RequestMethod.DELETE)
-    public ResponseEntity<Void> deleteNotification(@PathVariable("notification_id") final Long pId);
+    ResponseEntity<Void> deleteNotification(@PathVariable("notification_id") final Long pId);
 
     /**
      * Define the endpoint for retrieving the notification configuration parameters for the logged user
@@ -97,7 +97,7 @@ public interface INotificationClient {
      * @return The {@link NotificationSettings} wrapped in a {@link ResponseEntity}
      */
     @RequestMapping(value = NOTIFICATION_SETTINGS, method = RequestMethod.GET)
-    public ResponseEntity<NotificationSettings> retrieveNotificationSettings();
+    ResponseEntity<NotificationSettings> retrieveNotificationSettings();
 
     /**
      * Define the endpoint for updating the {@link Notification#status}
@@ -107,7 +107,7 @@ public interface INotificationClient {
      * @return The updated {@link NotificationSettings} wrapped in a {@link ResponseEntity}
      */
     @RequestMapping(value = NOTIFICATION_SETTINGS, method = RequestMethod.PUT)
-    public ResponseEntity<NotificationSettings> updateNotificationSettings(
+    ResponseEntity<NotificationSettings> updateNotificationSettings(
             @RequestBody NotificationSettingsDTO pNotificationSettings);
 
     /**
@@ -136,7 +136,7 @@ public interface INotificationClient {
             MimeType mimeType, DefaultRole... roles) {
         createNotification(new NotificationDTO(message,
                                                Sets.newHashSet(),
-                                               Arrays.stream(roles).map(r -> r.name()).collect(Collectors.toSet()),
+                                               Arrays.stream(roles).map(Enum::name).collect(Collectors.toSet()),
                                                sender,
                                                title,
                                                notificationType,

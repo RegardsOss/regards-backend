@@ -31,7 +31,9 @@ import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
+import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
@@ -43,7 +45,7 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 @Configuration
 @ComponentScan("fr.cnes.regards.modules")
 @PropertySource("classpath:application-test.properties")
-@EnableAutoConfiguration(exclude = LocalAuthoritiesProviderAutoConfiguration.class)
+@EnableAutoConfiguration
 public class AuthoritiesTestConfiguration {
 
     /**
@@ -103,5 +105,15 @@ public class AuthoritiesTestConfiguration {
     @Bean
     public IInstanceSubscriber mockInstanceSubscriber() {
         return Mockito.mock(IInstanceSubscriber.class);
+    }
+
+    @Bean
+    public IEmailClient emailClient() {
+        return Mockito.mock(IEmailClient.class);
+    }
+
+    @Bean
+    public IAccountSettingsClient accountSettingsClient() {
+        return Mockito.mock(IAccountSettingsClient.class);
     }
 }

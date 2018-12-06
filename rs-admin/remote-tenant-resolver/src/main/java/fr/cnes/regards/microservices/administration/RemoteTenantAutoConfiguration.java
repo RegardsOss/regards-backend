@@ -31,12 +31,7 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.DataSourcesAutoConfiguration;
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.MultitenantJpaAutoConfiguration;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
-import fr.cnes.regards.modules.accessrights.client.IMicroserviceResourceClient;
-import fr.cnes.regards.modules.accessrights.client.IRoleResourceClient;
-import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.project.client.rest.ITenantClient;
 import fr.cnes.regards.modules.project.client.rest.ITenantConnectionClient;
 

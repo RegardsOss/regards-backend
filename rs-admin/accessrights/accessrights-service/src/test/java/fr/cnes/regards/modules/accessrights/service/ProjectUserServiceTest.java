@@ -256,7 +256,7 @@ public class ProjectUserServiceTest {
         expected.add(projectUser);
         projectUser.setStatus(UserStatus.ACCESS_GRANTED);
 
-        final Pageable pageable = new PageRequest(0, 100);
+        final Pageable pageable = PageRequest.of(0, 100);
         final Page<ProjectUser> expectedPage = new PageImpl<>(expected, pageable, 1);
 
         // Mock the repository returned value
@@ -286,7 +286,7 @@ public class ProjectUserServiceTest {
         expected.add(projectUser);
         projectUser.setStatus(UserStatus.ACCESS_GRANTED);
 
-        final Pageable pageable = new PageRequest(0, 100);
+        final Pageable pageable = PageRequest.of(0, 100);
         final Page<ProjectUser> expectedPage = new PageImpl<>(expected, pageable, 1);
 
         // Mock the repository returned value
@@ -426,7 +426,7 @@ public class ProjectUserServiceTest {
         accessRequests.add(new ProjectUser(null, null, null, null));
         accessRequests.add(new ProjectUser(null, null, null, null));
 
-        final Pageable pageable = new PageRequest(0, 100);
+        final Pageable pageable = PageRequest.of(0, 100);
 
         try (final Stream<ProjectUser> stream = accessRequests.stream()) {
             // Prepare the list of expect values

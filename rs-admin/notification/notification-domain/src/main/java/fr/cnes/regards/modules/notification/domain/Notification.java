@@ -31,12 +31,11 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.Set;
 
-import org.hibernate.validator.constraints.NotBlank;
-import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
 

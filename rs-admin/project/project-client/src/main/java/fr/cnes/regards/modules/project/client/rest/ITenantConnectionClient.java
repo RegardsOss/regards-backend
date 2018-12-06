@@ -50,7 +50,7 @@ public interface ITenantConnectionClient {
      * @return registered connection
      */
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<TenantConnection> addTenantConnection(@PathVariable("microservice") String microservice,
+    ResponseEntity<TenantConnection> addTenantConnection(@PathVariable("microservice") String microservice,
             @Valid @RequestBody TenantConnection tenantConnection);
 
     /**
@@ -60,7 +60,7 @@ public interface ITenantConnectionClient {
      * @return updated connection
      */
     @RequestMapping(method = RequestMethod.PUT)
-    public ResponseEntity<TenantConnection> updateState(@PathVariable("microservice") String microservice,
+    ResponseEntity<TenantConnection> updateState(@PathVariable("microservice") String microservice,
             @Valid @RequestBody TenantConnection tenantConnection);
 
     /**
@@ -69,7 +69,6 @@ public interface ITenantConnectionClient {
      * @return list of connections
      */
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<TenantConnection>> getTenantConnections(
-            @PathVariable("microservice") String microservice);
+    ResponseEntity<List<TenantConnection>> getTenantConnections(@PathVariable("microservice") String microservice);
 
 }

@@ -57,7 +57,7 @@ public class RemoteTenantConnectionResolver extends AbstractInstanceDiscoveryCli
     }
 
     @Override
-    public List<TenantConnection> getTenantConnections(String microserviceName) throws JpaMultitenantException {
+    public List<TenantConnection> getTenantConnections(String microserviceName) {
 
         try {
             FeignSecurityManager.asSystem();
@@ -70,8 +70,7 @@ public class RemoteTenantConnectionResolver extends AbstractInstanceDiscoveryCli
     }
 
     @Override
-    public void addTenantConnection(String microserviceName, final TenantConnection pTenantConnection)
-            throws JpaMultitenantException {
+    public void addTenantConnection(String microserviceName, final TenantConnection pTenantConnection) {
         try {
             FeignSecurityManager.asSystem();
             tenantConnectionClient.addTenantConnection(microserviceName, pTenantConnection);
@@ -88,7 +87,7 @@ public class RemoteTenantConnectionResolver extends AbstractInstanceDiscoveryCli
      */
     @Override
     public void updateState(String microservice, String tenant, TenantConnectionState state,
-            Optional<String> errorCause) throws JpaMultitenantException {
+            Optional<String> errorCause) {
         try {
             FeignSecurityManager.asSystem();
             TenantConnection connection = new TenantConnection();

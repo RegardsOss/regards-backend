@@ -98,7 +98,7 @@ public class ProjectService implements IProjectService {
         projectRepository = pProjectRepository;
         this.tenantResolver = tenantResolver;
         this.instancePublisher = instancePublisher;
-        this.defaultTenants = Arrays.stream(defaultTenants.split(",")).map(tenant -> tenant.trim())
+        this.defaultTenants = Arrays.stream(defaultTenants.split(",")).map(String::trim)
                 .collect(Collectors.toSet());
         this.defaultTenantHost = defaultTenantHost;
     }

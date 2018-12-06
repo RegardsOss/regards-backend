@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.accessrights.service.role;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -437,9 +438,7 @@ public class RoleService implements IRoleService {
         Optional<Role> currentRole = roleRepository.findOneByName(securityRole);
 
         Set<ResourcesAccess> resourcesToAdd = new HashSet<>();
-        for (ResourcesAccess ra : newOnes) {
-            resourcesToAdd.add(ra);
-        }
+        Collections.addAll(resourcesToAdd, newOnes);
 
         // Check if current user has itself the resource accesses he wants to add
         if (currentRole.isPresent() && currentRole.get().getPermissions().containsAll(resourcesToAdd)) {
@@ -558,7 +557,7 @@ public class RoleService implements IRoleService {
 
         Set<Role> roles = retrieveInheritedRoles(roleOpt.get());
         roles.add(roleOpt.get());
-        Set<String> roleNames = roles.stream().map(r -> r.getName()).collect(Collectors.toSet());
+        Set<String> roleNames = roles.stream().map(Role::getName).collect(Collectors.toSet());
         return projectUserRepository.findByRoleNameIn(roleNames, pageable);
     }
 
@@ -567,11 +566,11 @@ public class RoleService implements IRoleService {
             throws EntityNotFoundException {
         Optional<Role> role = roleRepository.findOneByName(roleName);
         if (!role.isPresent()) {
-            throw new EntityNotFoundException(roleName.toString(), Role.class);
+            throw new EntityNotFoundException(roleName, Role.class);
         }
         Set<Role> roles = retrieveInheritedRoles(role.get());
         roles.add(role.get());
-        Set<String> roleNames = roles.stream().map(r -> r.getName()).collect(Collectors.toSet());
+        Set<String> roleNames = roles.stream().map(Role::getName).collect(Collectors.toSet());
         return projectUserRepository.findByRoleNameIn(roleNames, pageable);
     }
 
@@ -658,7 +657,7 @@ public class RoleService implements IRoleService {
         Set<Role> inheritedRoles = roleRepository.findByParentRoleName(inRole.getName());
         if (inheritedRoles != null) {
 
-            inheritedRoles.forEach(results::add);
+            results.addAll(inheritedRoles);
 
             for (Role role : inheritedRoles) {
                 retrieveInheritedRoles(role).forEach(results::add);

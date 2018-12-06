@@ -88,13 +88,13 @@ public class SimpleEmailService extends AbstractEmailService {
     }
 
     @Override
-    public Email retrieveEmail(final Long id) throws ModuleException {
+    public Email retrieveEmail(final Long id) {
         // Mail are not saved
         return null;
     }
 
     @Override
-    public void resendEmail(final Long id) throws ModuleException {
+    public void resendEmail(final Long id) {
         // Mail are not saved
     }
 

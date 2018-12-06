@@ -19,10 +19,6 @@
 package fr.cnes.regards.modules.accessrights.rest;
 
 import org.junit.Test;
-import org.mockito.Mockito;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -32,40 +28,25 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
  * Test {@link LicenseController}
- *
  * @author Marc Sordi
- *
  */
 @MultitenantTransactional
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=license" })
-@ContextConfiguration(classes = { LicenseControllerIT.LicenseConfiguration.class })
 public class LicenseControllerIT extends AbstractRegardsTransactionalIT {
-
-    @Configuration
-    static class LicenseConfiguration {
-
-        @Bean
-        public IProjectsClient projectClient() {
-            return Mockito.mock(IProjectsClient.class);
-        }
-    }
 
     @Test
     @Purpose("Check license agreement can be reset by an ADMIN")
     public void resetLicense() {
 
-        String customToken = jwtService.generateToken(getDefaultTenant(), getDefaultUserEmail(),
-                                                      DefaultRole.ADMIN.toString());
+        String customToken = jwtService
+                .generateToken(getDefaultTenant(), getDefaultUserEmail(), DefaultRole.ADMIN.toString());
         authService.setAuthorities(getDefaultTenant(), LicenseController.PATH_LICENSE + LicenseController.PATH_RESET,
                                    "osef", RequestMethod.PUT, DefaultRole.ADMIN.toString());
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
         performPut(LicenseController.PATH_LICENSE + LicenseController.PATH_RESET, customToken, null,
-                   requestBuilderCustomizer, "Error retrieving endpoints", getDefaultTenant());
+                   customizer().expectStatusNoContent(), "Error retrieving endpoints", getDefaultTenant());
     }
 }

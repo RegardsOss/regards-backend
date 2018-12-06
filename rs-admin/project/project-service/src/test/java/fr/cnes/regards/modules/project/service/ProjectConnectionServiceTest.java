@@ -29,17 +29,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.context.ContextConfiguration;
 
 import fr.cnes.regards.framework.encryption.AESEncryptionService;
 import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
-import fr.cnes.regards.framework.jpa.autoconfigure.NeverUseFlywayAutoConfiguration;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -168,7 +164,7 @@ public class ProjectConnectionServiceTest extends AbstractRegardsServiceIT {
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Test creation of a new database connection for a given project and a given microservice.")
     @Test
-    public void createProjectConnection() throws ModuleException, BadPaddingException, IllegalBlockSizeException {
+    public void createProjectConnection() throws ModuleException {
 
         Project project1 = projectService.retrieveProject(PROJECT_TEST_1);
 
@@ -238,7 +234,7 @@ public class ProjectConnectionServiceTest extends AbstractRegardsServiceIT {
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Test updating of a database connection for a given project and a given microservice.")
     @Test
-    public void updateProjectConnection() throws BadPaddingException, IllegalBlockSizeException {
+    public void updateProjectConnection() {
 
         final String updateUserName = "newUser";
         final String errorUpdate = "Error the update should be in error. The entity doest not exists.";
@@ -251,7 +247,7 @@ public class ProjectConnectionServiceTest extends AbstractRegardsServiceIT {
         connection.setUserName(updateUserName);
         try {
             connection = projectConnectionService.updateProjectConnection(connection.getId(), connection);
-            Assert.assertTrue("Error updating project connection.", connection.getUserName().equals(updateUserName));
+            Assert.assertEquals("Error updating project connection.", connection.getUserName(), updateUserName);
         } catch (ModuleException e1) {
             Assert.fail(e1.getMessage());
         }
@@ -287,7 +283,7 @@ public class ProjectConnectionServiceTest extends AbstractRegardsServiceIT {
     @Purpose(" Test to retrieve projects connections of given project's name in instance database.")
     @Test
     public void testRetrieveProjectsConnectionsByProject() {
-        final Pageable pageable = new PageRequest(0, 100);
+        final Pageable pageable = PageRequest.of(0, 100);
 
         // Call tested method
         final Page<ProjectConnection> actual = projectConnectionService

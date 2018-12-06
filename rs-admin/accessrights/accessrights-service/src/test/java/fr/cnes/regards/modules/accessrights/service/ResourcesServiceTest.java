@@ -146,7 +146,7 @@ public class ResourcesServiceTest {
     public void testEmptyResourcesToCollect() throws ModuleException {
         resourcesRepo.deleteAll();
         Mockito.when(discoveryClientMock.getServices()).thenReturn(new ArrayList<>());
-        final Page<ResourcesAccess> resultPage = resourcesService.retrieveRessources(null, new PageRequest(0, 20));
+        final Page<ResourcesAccess> resultPage = resourcesService.retrieveRessources(null, PageRequest.of(0, 20));
         Assert.assertNotNull(resultPage);
         Assert.assertEquals(resultPage.getNumberOfElements(), 0);
         Assert.assertTrue(resultPage.getContent().isEmpty());
@@ -170,7 +170,7 @@ public class ResourcesServiceTest {
                                                       RequestMethod.GET, DefaultRole.ADMIN);
         roleAdmin.addPermission(raTest4);
 
-        final Page<ResourcesAccess> page = resourcesService.retrieveRessources(ms, new PageRequest(0, 20));
+        final Page<ResourcesAccess> page = resourcesService.retrieveRessources(ms, PageRequest.of(0, 20));
         Assert.assertNotNull(page);
         Assert.assertNotNull(page.getContent());
         Assert.assertEquals(4, page.getContent().size());

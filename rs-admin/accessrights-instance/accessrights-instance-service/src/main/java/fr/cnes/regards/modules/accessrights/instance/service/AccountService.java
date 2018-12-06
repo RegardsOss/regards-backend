@@ -228,9 +228,7 @@ public class AccountService implements IAccountService {
         Account accountToValidate = toValidate.get();
 
         // Check password validity and account active status.
-        boolean activeAccount = checkAccountValidity ?
-                accountToValidate.getStatus().equals(AccountStatus.ACTIVE) :
-                true;
+        boolean activeAccount = !checkAccountValidity || accountToValidate.getStatus().equals(AccountStatus.ACTIVE);
         boolean validPassword = accountToValidate.getPassword().equals(EncryptionUtils.encryptPassword(password));
 
         // If password is invalid

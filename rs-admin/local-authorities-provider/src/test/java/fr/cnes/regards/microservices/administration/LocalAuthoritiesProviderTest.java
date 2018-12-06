@@ -22,16 +22,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.transaction.BeforeTransaction;
@@ -48,8 +44,6 @@ import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
-import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
-import fr.cnes.regards.modules.emails.client.IEmailClient;
 
 /**
  * Class LocalAuthoritiesProviderTest
@@ -60,23 +54,10 @@ import fr.cnes.regards.modules.emails.client.IEmailClient;
 @RunWith(RegardsSpringRunner.class)
 @SpringBootTest
 @EnableAutoConfiguration
-@ContextConfiguration(classes = { AuthoritiesTestConfiguration.class, LocalAuthoritiesProviderTest.Config.class })
+@ContextConfiguration(classes = { AuthoritiesTestConfiguration.class })
 @MultitenantTransactional
 @ActiveProfiles("test")
 public class LocalAuthoritiesProviderTest {
-
-    @Configuration
-    public static class Config {
-        @Bean
-        public IEmailClient emailClient() {
-            return Mockito.mock(IEmailClient.class);
-        }
-
-        @Bean
-        public IAccountSettingsClient accountSettingsClient() {
-            return Mockito.mock(IAccountSettingsClient.class);
-        }
-    }
 
     /**
      * Current microservice name
@@ -118,15 +99,15 @@ public class LocalAuthoritiesProviderTest {
         resourcesAccessRepository.deleteAll();
         roleRepository.deleteAll();
 
-        final List<String> addresses = new ArrayList<>();
+        List<String> addresses = new ArrayList<>();
         addresses.add("127.0.0.1");
         addresses.add("127.0.0.2");
         addresses.add("127.0.0.3");
-        final RoleFactory roleFactory = new RoleFactory();
+        RoleFactory roleFactory = new RoleFactory();
 
         roleFactory.withId(0L).withAuthorizedAddresses(addresses).withDefault(false).withNative(true);
 
-        final Role publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString())
+        Role publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString())
                 .orElseGet(() -> roleRepository.save(roleFactory.createPublic()));
 
         roleFactory.withParentRole(publicRole);

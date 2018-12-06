@@ -148,7 +148,7 @@ public interface IProjectUsersClient {
      */
     @ResponseBody
     @RequestMapping(value = "/roles/{role_id}", method = RequestMethod.GET)
-    public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUserList(
+    ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUserList(
             @PathVariable("role_id") final Long pRoleId, @RequestParam("page") int pPage,
             @RequestParam("size") int pSize);
 

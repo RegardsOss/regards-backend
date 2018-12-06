@@ -30,18 +30,18 @@ import fr.cnes.regards.modules.accessrights.domain.projects.LicenseDTO;
  */
 public interface ILicenseService {
 
-    public LicenseDTO retrieveLicenseState() throws EntityNotFoundException;
+    LicenseDTO retrieveLicenseState() throws EntityNotFoundException;
 
     /**
      * Accept the license of the current project for the current user
      * @return {@link LicenseDTO}
      * @throws EntityException
      */
-    public LicenseDTO acceptLicense() throws EntityException;
+    LicenseDTO acceptLicense() throws EntityException;
 
     /**
      * Reset the license state for all users of the current project
      */
-    public void resetLicence();
+    void resetLicence();
 
 }

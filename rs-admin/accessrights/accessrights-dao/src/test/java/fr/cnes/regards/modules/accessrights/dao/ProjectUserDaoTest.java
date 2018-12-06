@@ -43,11 +43,8 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.domain.projects.RoleFactory;
 
 /**
- *
  * Test class for {@link ProjectUser} DAO module
- *
  * @author Xavier-Alexandre Brochard
-
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { AccessRightsDaoTestConfiguration.class })
@@ -116,17 +113,24 @@ public class ProjectUserDaoTest {
         projectUserRepository.save(user3);
         projectUserRepository.save(user4);
 
-        Page<ProjectUser> result = projectUserRepository.findAll(ProjectUserSpecification.search(null, "user"), new PageRequest(0, 4));
-        Assert.assertEquals("search of users which email starts with \"user\" should return 4 user", 4, result.getContent().size());
+        Page<ProjectUser> result = projectUserRepository
+                .findAll(ProjectUserSpecification.search(null, "user"), PageRequest.of(0, 4));
+        Assert.assertEquals("search of users which email starts with \"user\" should return 4 user", 4,
+                            result.getContent().size());
 
-        result = projectUserRepository.findAll(ProjectUserSpecification.search(null, "user4"), new PageRequest(0, 4));
-        Assert.assertEquals("search of users which email starts with \"user4\" should return 1 user", 1, result.getContent().size());
+        result = projectUserRepository.findAll(ProjectUserSpecification.search(null, "user4"), PageRequest.of(0, 4));
+        Assert.assertEquals("search of users which email starts with \"user4\" should return 1 user", 1,
+                            result.getContent().size());
 
-        result = projectUserRepository.findAll(ProjectUserSpecification.search(null, null), new PageRequest(0, 4));
-        Assert.assertEquals("search of users which email starts with NOTHING should return ALL user", projectUserRepository.findAll().size(), result.getContent().size());
+        result = projectUserRepository.findAll(ProjectUserSpecification.search(null, null), PageRequest.of(0, 4));
+        Assert.assertEquals("search of users which email starts with NOTHING should return ALL user",
+                            projectUserRepository.findAll().size(), result.getContent().size());
 
-        result = projectUserRepository.findAll(ProjectUserSpecification.search(UserStatus.WAITING_ACCOUNT_ACTIVE.toString(), null), new PageRequest(0, 4));
-        Assert.assertEquals("search of users which email starts with NOTHING should return ALL user", projectUserRepository.findAll().size(), result.getContent().size());
+        result = projectUserRepository
+                .findAll(ProjectUserSpecification.search(UserStatus.WAITING_ACCOUNT_ACTIVE.toString(), null),
+                         PageRequest.of(0, 4));
+        Assert.assertEquals("search of users which email starts with NOTHING should return ALL user",
+                            projectUserRepository.findAll().size(), result.getContent().size());
     }
 
 }

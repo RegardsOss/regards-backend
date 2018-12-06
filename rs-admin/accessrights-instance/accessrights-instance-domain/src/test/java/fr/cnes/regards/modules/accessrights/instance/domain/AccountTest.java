@@ -72,7 +72,7 @@ public class AccountTest {
     public void testAccountFull() {
         final Account account = new Account(email, firstName, lastName, password);
 
-        Assert.assertEquals(null, account.getId());
+        Assert.assertNull(account.getId());
         Assert.assertEquals(email, account.getEmail());
         Assert.assertEquals(firstName, account.getFirstName());
         Assert.assertEquals(lastName, account.getLastName());
@@ -177,7 +177,7 @@ public class AccountTest {
      */
     @Test
     public void testGetId() {
-        Assert.assertEquals(null, accountTest.getId());
+        Assert.assertNull(accountTest.getId());
     }
 
     /**
@@ -196,10 +196,10 @@ public class AccountTest {
     @Test
     public void testEqualsObject() {
         Account otherAccount = new Account(email, "otherFirstName", "otherLastName", "otherPassword");
-        Assert.assertTrue(accountTest.equals(otherAccount));
+        Assert.assertEquals(accountTest, otherAccount);
 
         otherAccount = new Account("otherMail", firstName, lastName, password);
-        Assert.assertFalse(accountTest.equals(otherAccount));
+        Assert.assertNotEquals(accountTest, otherAccount);
     }
 
 }

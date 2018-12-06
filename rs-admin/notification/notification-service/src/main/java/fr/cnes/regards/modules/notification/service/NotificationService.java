@@ -135,7 +135,7 @@ public class NotificationService implements INotificationService, ApplicationLis
     }
 
     @Override
-    public Page<Notification> retrieveNotifications(Pageable page) throws EntityNotFoundException {
+    public Page<Notification> retrieveNotifications(Pageable page) {
         if (notificationMode == NotificationMode.MULTITENANT) {
             return notificationRepository
                     .findByRecipientsContaining(authenticationResolver.getUser(), authenticationResolver.getRole(),
@@ -333,7 +333,7 @@ public class NotificationService implements INotificationService, ApplicationLis
         if (state != null) {
             if (notificationMode == NotificationMode.MULTITENANT) {
                 return notificationRepository
-                        .findByStatusAndRecipientsContaining(state.toString(), authenticationResolver.getUser(),
+                        .findByStatusAndRecipientsContaining(state, authenticationResolver.getUser(),
                                                              authenticationResolver.getRole(), page);
             } else {
                 return notificationRepository.findByStatus(state, page);

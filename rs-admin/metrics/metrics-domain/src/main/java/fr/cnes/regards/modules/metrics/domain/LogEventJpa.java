@@ -228,9 +228,7 @@ public class LogEventJpa extends LogEvent {
             return false;
         }
         if (getUserName() == null) {
-            if (other.getUserName() != null) {
-                return false;
-            }
+            return other.getUserName() == null;
         } else if (!getUserName().equals(other.getUserName())) {
             return false;
         }

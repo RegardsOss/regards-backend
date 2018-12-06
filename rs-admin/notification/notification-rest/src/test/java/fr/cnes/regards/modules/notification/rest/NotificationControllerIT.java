@@ -9,7 +9,6 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -109,9 +108,8 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
         Mockito.when(rolesClient.retrieveRoleDescendants(roleName))
                 .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(roleName)), HttpStatus.OK));
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
-        performDefaultPost(NotificationController.NOTIFICATION_PATH, notif, requestBuilderCustomizer, "error");
+        performDefaultPost(NotificationController.NOTIFICATION_PATH, notif, customizer().expectStatusCreated(),
+                           "error");
         sendingScheduler.sendDaily();
     }
 
@@ -140,35 +138,25 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
                 Sets.newHashSet(), Sets.newHashSet(roleName), "microservice", "test", NotificationType.INFO,
                 MimeTypeUtils.TEXT_PLAIN);
         notificationService.createNotification(notif);
-        RequestBuilderCustomizer requestCustomizer = getNewRequestBuilderCustomizer();
-        requestCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT, Matchers.hasSize(0)));
-        requestCustomizer.customizeRequestParam().param("state", NotificationStatus.READ.toString());
         String token = jwtService.generateToken(getDefaultTenant(), "project.admin@test.fr", roleName);
-        performGet(NotificationController.NOTIFICATION_PATH, token, requestCustomizer,
+        performGet(NotificationController.NOTIFICATION_PATH, token,
+                   customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 0)
+                           .addParameter("state", NotificationStatus.READ.toString()),
                    "Could not retrieve notifications");
 
-        requestCustomizer = getNewRequestBuilderCustomizer();
-        requestCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT, Matchers.hasSize(4)));
-        performGet(NotificationController.NOTIFICATION_PATH, token, requestCustomizer,
+        performGet(NotificationController.NOTIFICATION_PATH, token,
+                   customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 4),
                    "Could not retrieve notifications");
 
-        requestCustomizer = getNewRequestBuilderCustomizer();
-        requestCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT, Matchers.hasSize(4)));
-        requestCustomizer.customizeRequestParam().param("state", NotificationStatus.UNREAD.toString());
-        performGet(NotificationController.NOTIFICATION_PATH, token, requestCustomizer,
+        performGet(NotificationController.NOTIFICATION_PATH, token,
+                   customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 4)
+                           .addParameter("state", NotificationStatus.UNREAD.toString()),
                    "Could not retrieve notifications");
 
-        requestCustomizer = getNewRequestBuilderCustomizer();
-        requestCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT, Matchers.hasSize(2)));
-        requestCustomizer.customizeRequestParam().param("state", NotificationStatus.UNREAD.toString());
-        requestCustomizer.customizeRequestParam().param("page", "0");
-        requestCustomizer.customizeRequestParam().param("size", "2");
-        performGet(NotificationController.NOTIFICATION_PATH, token, requestCustomizer,
-                   "Could not retrieve notifications");
+        performGet(NotificationController.NOTIFICATION_PATH, token,
+                   customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 2)
+                           .addParameter("state", NotificationStatus.UNREAD.toString()).addParameter("page", "0")
+                           .addParameter("size", "2"), "Could not retrieve notifications");
     }
 
     @Test
@@ -184,10 +172,9 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
         Mockito.when(rolesClient.retrieveRoleDescendants(roleName))
                 .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(roleName)), HttpStatus.OK));
         Notification notification = notificationService.createNotification(notificationDTO);
-        RequestBuilderCustomizer requestCustomizer = getNewRequestBuilderCustomizer();
-        requestCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         performDefaultPut(NotificationController.NOTIFICATION_PATH + NotificationController.NOTIFICATION_READ_PATH,
-                          null, requestCustomizer, "Could not set the notification to READ", notification.getId());
+                          null, customizer().expectStatusOk(), "Could not set the notification to READ",
+                          notification.getId());
     }
 
     @Test
@@ -207,22 +194,20 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
         // set the notification to read
         notificationService.updateNotificationStatus(notification.getId(), NotificationStatus.READ);
         // ask to set the notification to unread
-        RequestBuilderCustomizer requestCustomizer = getNewRequestBuilderCustomizer();
-        requestCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         performDefaultPut(NotificationController.NOTIFICATION_PATH + NotificationController.NOTIFICATION_UNREAD_PATH,
-                          null, requestCustomizer, "Could not set the notification to UNREAD", notification.getId());
+                          null, customizer().expectStatusOk(), "Could not set the notification to UNREAD",
+                          notification.getId());
     }
 
     @Test
     public void testRetrieveNotifSetting() {
-        RequestBuilderCustomizer requestCustomizer = getNewRequestBuilderCustomizer();
-        requestCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.id", Matchers.notNullValue(Long.class)));
-        requestCustomizer.addExpectation(
-                MockMvcResultMatchers.jsonPath("$.projectUserEmail", Matchers.notNullValue(Long.class)));
-        requestCustomizer
-                .addExpectation(MockMvcResultMatchers.jsonPath("$.frequency", Matchers.notNullValue(Long.class)));
         performDefaultGet(NotificationController.NOTIFICATION_PATH + NotificationController.NOTIFICATION_SETTINGS,
-                          requestCustomizer, "could not retrieve notification settings");
+                          customizer().expectStatusOk()
+                                  .expect(MockMvcResultMatchers.jsonPath("$.id", Matchers.notNullValue(Long.class)))
+                                  .expect(MockMvcResultMatchers
+                                                  .jsonPath("$.projectUserEmail", Matchers.notNullValue(Long.class)))
+                                  .expect(MockMvcResultMatchers
+                                                  .jsonPath("$.frequency", Matchers.notNullValue(Long.class))),
+                          "could not retrieve notification settings");
     }
 }

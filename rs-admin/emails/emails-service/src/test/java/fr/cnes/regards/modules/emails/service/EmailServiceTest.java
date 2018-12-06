@@ -224,7 +224,7 @@ public class EmailServiceTest {
     @Requirement("REGARDS_DSL_ADM_ADM_440")
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system allows to retrieve a single email.")
-    public void retrieveEmail() throws MessagingException, ModuleException {
+    public void retrieveEmail() throws ModuleException {
         final Long id = 0L;
 
         // Create dummy email
@@ -346,7 +346,7 @@ public class EmailServiceTest {
         // Check mail recipients
         final List<String> expectedRecipients = Arrays.asList(expected.getTo());
         final List<Address> resultAddresses = Arrays.asList(result.getRecipients(RecipientType.TO));
-        final List<String> resultRecipients = resultAddresses.stream().map(a -> a.toString())
+        final List<String> resultRecipients = resultAddresses.stream().map(Address::toString)
                 .collect(Collectors.toList());
         assertThat(expectedRecipients, is(equalTo(resultRecipients)));
     }
@@ -372,7 +372,7 @@ public class EmailServiceTest {
         // Check mail recipients
         final List<String> expectedRecipients = Arrays.asList(expected.getTo());
         final List<Address> resultAddresses = Arrays.asList(result.getRecipients(RecipientType.TO));
-        final List<String> resultRecipients = resultAddresses.stream().map(a -> a.toString())
+        final List<String> resultRecipients = resultAddresses.stream().map(Address::toString)
                 .collect(Collectors.toList());
         assertThat(expectedRecipients, is(equalTo(resultRecipients)));
     }

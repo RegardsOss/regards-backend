@@ -54,19 +54,12 @@ import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
 
 /**
  * Integration tests for the accesses functionalities.
- *
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
-
  */
 @MultitenantTransactional
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
 public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
-
-    /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(RegistrationControllerIT.class);
 
     /**
      * Dummy email
@@ -179,9 +172,7 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Purpose("Check that the system allows to retrieve all access requests for a project.")
     public void getAllAccesses() {
-        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(apiAccessesPending, requestBuilder, errorMessage);
+        performDefaultGet(apiAccessesPending, customizer().expectStatusOk(), errorMessage);
     }
 
     /**
@@ -194,11 +185,12 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check that the system allows the user to request a registration.")
     public void requestAccess() {
         final AccessRequestDto newAccessRequest = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, null,
-                new ArrayList<>(), PASSWORD, ORIGIN_URL, REQUEST_LINK);
+                                                                       new ArrayList<>(), PASSWORD, ORIGIN_URL,
+                                                                       REQUEST_LINK);
 
         //lets mock the feign clients
         Account account = new Account(newAccessRequest.getEmail(), newAccessRequest.getFirstName(),
-                newAccessRequest.getLastName(), newAccessRequest.getPassword());
+                                      newAccessRequest.getLastName(), newAccessRequest.getPassword());
         AccountSettings accountSettings = new AccountSettings();
 
         Mockito.when(accountsClient.retrieveAccounByEmail(newAccessRequest.getEmail()))
@@ -210,13 +202,9 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
         Mockito.when(accountSettingsClient.retrieveAccountSettings())
                 .thenReturn(new ResponseEntity<>(new Resource<>(accountSettings), HttpStatus.OK));
 
-        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isCreated());
-        performDefaultPost(apiAccesses, newAccessRequest, requestBuilder, errorMessage);
+        performDefaultPost(apiAccesses, newAccessRequest, customizer().expectStatusCreated(), errorMessage);
 
-        requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isConflict());
-        performDefaultPost(apiAccesses, newAccessRequest, requestBuilder, errorMessage);
+        performDefaultPost(apiAccesses, newAccessRequest, customizer().expectStatusConflict(), errorMessage);
     }
 
     /**
@@ -233,19 +221,14 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
         projectUser.setStatus(UserStatus.ACCESS_DENIED);
         projectUserRepository.save(projectUser);
 
-        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultPut(apiAccessAccept, null, requestBuilder, errorMessage, projectUser.getId());
+        performDefaultPut(apiAccessAccept, null, customizer().expectStatusOk(), errorMessage, projectUser.getId());
 
         // Now the project user is ACCESS_GRANTED, so trying to re-accept will fail
-        requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isForbidden());
-        performDefaultPut(apiAccessAccept, null, requestBuilder, errorMessage, projectUser.getId());
+        performDefaultPut(apiAccessAccept, null, customizer().expectStatusForbidden(), errorMessage,
+                          projectUser.getId());
 
         // something that does not exist
-        requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isNotFound());
-        performDefaultPut(apiAccessAccept, null, requestBuilder, errorMessage, Long.MAX_VALUE);
+        performDefaultPut(apiAccessAccept, null, customizer().expectStatusNotFound(), errorMessage, Long.MAX_VALUE);
     }
 
     /**
@@ -262,18 +245,12 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
         projectUser.setStatus(UserStatus.WAITING_ACCESS);
         projectUserRepository.save(projectUser);
 
-        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultPut(apiAccessDeny, null, requestBuilder, errorMessage, projectUser.getId());
+        performDefaultPut(apiAccessDeny, null, customizer().expectStatusOk(), errorMessage, projectUser.getId());
 
         // Now the project user is ACCESS_DENIED, so trying to re-deny it will fail
-        requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isForbidden());
-        performDefaultPut(apiAccessDeny, null, requestBuilder, errorMessage, projectUser.getId());
+        performDefaultPut(apiAccessDeny, null, customizer().expectStatusForbidden(), errorMessage, projectUser.getId());
 
-        requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isNotFound());
-        performDefaultPut(apiAccessDeny, null, requestBuilder, errorMessage, Long.MAX_VALUE);
+        performDefaultPut(apiAccessDeny, null, customizer().expectStatusNotFound(), errorMessage, Long.MAX_VALUE);
     }
 
     /**
@@ -289,17 +266,11 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
                 .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));
 
         // Case not found
-        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isNotFound());
-        performDefaultDelete(apiAccessId, requestBuilder, errorMessage, 12345678L);
+        performDefaultDelete(apiAccessId, customizer().expectStatusNotFound(), errorMessage, 12345678L);
 
-        requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultDelete(apiAccessId, requestBuilder, errorMessage, projectUser.getId());
+        performDefaultDelete(apiAccessId, customizer().expectStatusOk(), errorMessage, projectUser.getId());
 
-        requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isNotFound());
-        performDefaultDelete(apiAccessId, requestBuilder, errorMessage, projectUser.getId());
+        performDefaultDelete(apiAccessId, customizer().expectStatusNotFound(), errorMessage, projectUser.getId());
     }
 
     /**
@@ -312,9 +283,7 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
         // Populate
         accessSettingsRepository.save(new AccessSettings());
 
-        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(apiAccessSettings, requestBuilder, errorMessage);
+        performDefaultGet(apiAccessSettings, customizer().expectStatusOk(), errorMessage);
     }
 
     /**
@@ -327,9 +296,7 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
         final AccessSettings settings = new AccessSettings();
         settings.setId(999L);
 
-        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isNotFound());
-        performDefaultPut(apiAccessSettings, settings, requestBuilder, "TODO Error message");
+        performDefaultPut(apiAccessSettings, settings, customizer().expectStatusNotFound(), "TODO Error message");
     }
 
     /**
@@ -347,9 +314,7 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
         // Then update them
         settings.setMode("manual");
 
-        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultPut(apiAccessSettings, settings, requestBuilder, "TODO Error message");
+        performDefaultPut(apiAccessSettings, settings, customizer().expectStatusOk(), "TODO Error message");
     }
 
     /**
@@ -368,18 +333,16 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
 
         //lets mock the feign clients
         Account account = new Account(projectUser.getEmail(), "projectUser.getFirstName()", "projectUser.getLastName()",
-                "projectUser.getPassword()");
+                                      "projectUser.getPassword()");
 
         Mockito.when(accountsClient.retrieveAccounByEmail(projectUser.getEmail()))
                 .thenReturn(new ResponseEntity<>(new Resource<>(account), HttpStatus.OK));
 
         // Endpoint
-        String endpoint = RegistrationController.REQUEST_MAPPING_ROOT
-                + RegistrationController.ACTIVE_ACCESS_RELATIVE_PATH;
+        String endpoint =
+                RegistrationController.REQUEST_MAPPING_ROOT + RegistrationController.ACTIVE_ACCESS_RELATIVE_PATH;
 
-        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultPut(endpoint, null, requestBuilder, errorMessage, projectUser.getId());
+        performDefaultPut(endpoint, null, customizer().expectStatusOk(), errorMessage, projectUser.getId());
     }
 
     /**
@@ -397,16 +360,10 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
         projectUserRepository.save(projectUser);
 
         // Endpoint
-        String endpoint = RegistrationController.REQUEST_MAPPING_ROOT
-                + RegistrationController.INACTIVE_ACCESS_RELATIVE_PATH;
+        String endpoint =
+                RegistrationController.REQUEST_MAPPING_ROOT + RegistrationController.INACTIVE_ACCESS_RELATIVE_PATH;
 
-        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultPut(endpoint, null, requestBuilder, errorMessage, projectUser.getId());
+        performDefaultPut(endpoint, null, customizer().expectStatusOk(), errorMessage, projectUser.getId());
     }
 
-    @Override
-    protected Logger getLogger() {
-        return LOG;
-    }
 }

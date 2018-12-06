@@ -99,11 +99,11 @@ public class RoleTest {
     @Test
     public void testRole() {
         final Role testRole = new Role();
-        Assert.assertEquals(null, testRole.getId());
-        Assert.assertEquals(null, testRole.getName());
-        Assert.assertEquals(false, testRole.isNative());
-        Assert.assertEquals(false, testRole.isDefault());
-        Assert.assertEquals(null, testRole.getParentRole());
+        Assert.assertNull(testRole.getId());
+        Assert.assertNull(testRole.getName());
+        Assert.assertFalse(testRole.isNative());
+        Assert.assertFalse(testRole.isDefault());
+        Assert.assertNull(testRole.getParentRole());
         Assert.assertEquals(new HashSet<>(), testRole.getPermissions());
     }
 
@@ -113,10 +113,10 @@ public class RoleTest {
     @Test
     public void testRoleWithParams() {
         final Role testRole = new Role(name, parentRole);
-        Assert.assertEquals(null, testRole.getId());
+        Assert.assertNull(testRole.getId());
         Assert.assertEquals(name, testRole.getName());
-        Assert.assertEquals(false, testRole.isNative());
-        Assert.assertEquals(false, testRole.isDefault());
+        Assert.assertFalse(testRole.isNative());
+        Assert.assertFalse(testRole.isDefault());
         Assert.assertEquals(parentRole, testRole.getParentRole());
         Assert.assertEquals(new HashSet<>(), testRole.getPermissions());
     }
@@ -223,7 +223,7 @@ public class RoleTest {
      */
     @Test
     public void testSetPermissions() {
-        final Set<ResourcesAccess> newPermissions = new HashSet<ResourcesAccess>();
+        final Set<ResourcesAccess> newPermissions = new HashSet<>();
         final Long localId = 8L;
         newPermissions.add(new ResourcesAccess(localId));
         role.setPermissions(newPermissions);

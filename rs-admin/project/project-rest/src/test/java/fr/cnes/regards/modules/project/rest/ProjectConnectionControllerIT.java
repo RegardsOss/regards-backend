@@ -39,14 +39,11 @@ import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
 /**
- *
  * Class ProjectConnectionControllerIT
  *
  * Tests REST endpoint to access ProjectConnection entities
- *
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
-
  */
 @InstanceTransactional
 @ContextConfiguration(classes = { LicenseConfiguration.class })
@@ -95,21 +92,18 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     }
 
     /**
-     *
      * Initialize token and datas
-     *
-
      */
     @Before
     public void initialize() {
-        instanceAdmintoken = jwtService.generateToken(PROJECT_TEST, "public@regards.fr",
-                                                      DefaultRole.INSTANCE_ADMIN.name());
+        instanceAdmintoken = jwtService
+                .generateToken(PROJECT_TEST, "public@regards.fr", DefaultRole.INSTANCE_ADMIN.name());
 
         Project project = projectRepo.findOneByNameIgnoreCase(PROJECT_TEST);
         project.setLabel("project");
         project = projectRepo.save(project);
         connection = new ProjectConnection(project, MICROSERVICE_TEST, "newUserName", "newPassword", "newDriver",
-                "newUrl");
+                                           "newUrl");
         projectConnRepo.save(connection);
     }
 
@@ -118,93 +112,67 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     @Purpose("Check REST Access to all projects database connections and Hateoas returned links")
     @Test
     public void getAllProjectConnectionsTest() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        requestBuilderCustomizer
-                .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.size", Matchers.is(20)));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                .jsonPath(JSON_PATH_ROOT + ".metadata.totalElements", Matchers.is(1)));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalPages",
-                                                                               Matchers.is(1)));
-        requestBuilderCustomizer
-                .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.number", Matchers.is(0)));
-        requestBuilderCustomizer.customizeRequestParam().param("size","20");
-        performGet(ProjectConnectionController.TYPE_MAPPING, instanceAdmintoken, requestBuilderCustomizer, "error",
+        performGet(ProjectConnectionController.TYPE_MAPPING, instanceAdmintoken,
+                   customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT)
+                           .expectValue(JSON_PATH_ROOT + ".metadata.size", 20)
+                           .expectValue(JSON_PATH_ROOT + ".metadata.totalElements", 1)
+                           .expectValue(JSON_PATH_ROOT + ".metadata.totalPages", 1)
+                           .expectValue(JSON_PATH_ROOT + ".metadata.number", 0).addParameter("size", "20"), "error",
                    PROJECT_TEST);
     }
 
     /**
-     *
      * Check REST Access to get a project connection and Hateoas returned links
-     *
-
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access to get a project connection and Hateoas returned links")
     @Test
     public void getProjectConnectionTest() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         performGet(ProjectConnectionController.TYPE_MAPPING + ProjectConnectionController.RESOURCE_ID_MAPPING,
-                   instanceAdmintoken, requestBuilderCustomizer, "error", PROJECT_TEST, connection.getId());
+                   instanceAdmintoken, customizer().expectStatusOk(), "error", PROJECT_TEST, connection.getId());
     }
 
     /**
-     *
      * Check REST Access to create a project connection and Hateoas returned links
-     *
-
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access to create a project connection and Hateoas returned links")
     @Test
     public void createProjectConnectionTest() {
-        final Project project = projectRepo.findOneByNameIgnoreCase(PROJECT_TEST);
-        final ProjectConnection connection = new ProjectConnection(project, "microservice-test-2", "newUserName",
-                "newPassword", "newDriver", "newUrl");
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        performPost(ProjectConnectionController.TYPE_MAPPING, instanceAdmintoken, connection, requestBuilderCustomizer,
-                    "Error there must be project results", PROJECT_TEST);
+        Project project = projectRepo.findOneByNameIgnoreCase(PROJECT_TEST);
+        ProjectConnection connection = new ProjectConnection(project, "microservice-test-2", "newUserName",
+                                                             "newPassword", "newDriver", "newUrl");
+        performPost(ProjectConnectionController.TYPE_MAPPING, instanceAdmintoken, connection,
+                    customizer().expectStatusOk(), "Error there must be project results", PROJECT_TEST);
     }
 
     /**
-     *
      * Check REST Access to update a project connection and Hateoas returned links
-     *
-
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access to update a project connection and Hateoas returned links")
     @Test
     public void updateProjectConnectionTest() {
-        final ProjectConnection connection = projectConnRepo.findOneByProjectNameAndMicroservice(PROJECT_TEST,
-                                                                                                 MICROSERVICE_TEST);
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        ProjectConnection connection = projectConnRepo
+                .findOneByProjectNameAndMicroservice(PROJECT_TEST, MICROSERVICE_TEST);
         performPut(ProjectConnectionController.TYPE_MAPPING + ProjectConnectionController.RESOURCE_ID_MAPPING,
-                   instanceAdmintoken, connection, requestBuilderCustomizer, "Error there must be project results",
+                   instanceAdmintoken, connection, customizer().expectStatusOk(), "Error there must be project results",
                    PROJECT_TEST, connection.getId());
     }
 
     /**
      * Check REST Access to project connections by id. >>>>>>> 538fc5b3af67db38dc598432cc06e9e4134c9971
-     *
-
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access to update a project connection and Hateoas returned links")
     @Test
     public void deleteProjectConnectionTest() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
         performDelete(ProjectConnectionController.TYPE_MAPPING + ProjectConnectionController.RESOURCE_ID_MAPPING,
-                      instanceAdmintoken, requestBuilderCustomizer, "Error there must be project results", PROJECT_TEST,
-                      connection.getId());
+                      instanceAdmintoken, customizer().expectStatusNoContent(), "Error there must be project results",
+                      PROJECT_TEST, connection.getId());
     }
 }

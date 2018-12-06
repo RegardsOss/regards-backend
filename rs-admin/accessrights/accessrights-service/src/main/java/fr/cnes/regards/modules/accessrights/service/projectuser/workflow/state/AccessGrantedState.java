@@ -64,7 +64,7 @@ public class AccessGrantedState extends AbstractDeletableState {
      * modules.accessrights.domain.projects.ProjectUser)
      */
     @Override
-    public void inactiveAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
+    public void inactiveAccess(final ProjectUser pProjectUser) {
         pProjectUser.setStatus(UserStatus.ACCESS_INACTIVE);
         getProjectUserRepository().save(pProjectUser);
         eventPublisher.publishEvent(new OnInactiveEvent(pProjectUser));

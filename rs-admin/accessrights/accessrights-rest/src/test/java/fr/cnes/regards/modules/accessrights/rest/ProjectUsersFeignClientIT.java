@@ -101,7 +101,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
     @Test
     public void retrieveProjectUserListFromFeignClient() {
         final ResponseEntity<PagedResources<Resource<ProjectUser>>> response = client.retrieveProjectUserList(0, 10);
-        Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
     }
 
     /**
@@ -113,7 +113,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
     @Test
     public void retrieveAccessRequestListFromFeignClient() {
         final ResponseEntity<PagedResources<Resource<ProjectUser>>> response = client.retrieveAccessRequestList(0, 10);
-        Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
     }
 
     /**
@@ -125,7 +125,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
     @Test
     public void retrieveProjectUserByEmailFromFeignClient() {
         final ResponseEntity<Resource<ProjectUser>> response = client.retrieveProjectUserByEmail("unkown@regards.de");
-        Assert.assertTrue(response.getStatusCode().equals(HttpStatus.NOT_FOUND));
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
     }
 
     /**
@@ -138,7 +138,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
     @Test
     public void retrieveProjectUserFromFeignClient() {
         final ResponseEntity<Resource<ProjectUser>> response = client.retrieveProjectUser(1L);
-        Assert.assertTrue(response.getStatusCode().equals(HttpStatus.NOT_FOUND));
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
     }
 
     /**
@@ -149,8 +149,8 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
      */
     @Test
     public void removeProjectUserFromFeignClient() {
-        final ResponseEntity<Void> response = client.removeProjectUser(new Long(150));
-        Assert.assertTrue(response.getStatusCode().equals(HttpStatus.NOT_FOUND));
+        final ResponseEntity<Void> response = client.removeProjectUser(150L);
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
     }
 
     /**
@@ -170,7 +170,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
 
         projectUserService.createProjectUser(accessRequest);
         final ResponseEntity<Boolean> response = client.isAdmin("test@c-s.fr");
-        Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
         Assert.assertTrue(response.getBody());
     }
 

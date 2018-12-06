@@ -55,7 +55,7 @@ public class ProjectUserTest {
     /**
      * Test metaData
      */
-    private final List<MetaData> metaData = new ArrayList<MetaData>();
+    private final List<MetaData> metaData = new ArrayList<>();
 
     /**
      * Test role
@@ -65,7 +65,7 @@ public class ProjectUserTest {
     /**
      * Test permissions
      */
-    private final List<ResourcesAccess> permissions = new ArrayList<ResourcesAccess>();
+    private final List<ResourcesAccess> permissions = new ArrayList<>();
 
     @Before
     public void setUp() {
@@ -80,14 +80,14 @@ public class ProjectUserTest {
     @Test
     public void testProjectUser() {
         final ProjectUser testUser = new ProjectUser();
-        Assert.assertEquals(null, testUser.getId());
+        Assert.assertNull(testUser.getId());
         Assert.assertEquals(new ArrayList<>(), testUser.getPermissions());
         Assert.assertEquals(new ArrayList<>(), testUser.getMetadata());
         Assert.assertEquals(UserStatus.WAITING_ACCOUNT_ACTIVE, testUser.getStatus());
-        Assert.assertEquals(null, testUser.getLastConnection());
-        Assert.assertEquals(null, testUser.getLastUpdate());
-        Assert.assertEquals(null, testUser.getRole());
-        Assert.assertEquals(null, testUser.getEmail());
+        Assert.assertNull(testUser.getLastConnection());
+        Assert.assertNull(testUser.getLastUpdate());
+        Assert.assertNull(testUser.getRole());
+        Assert.assertNull(testUser.getEmail());
     }
 
     /**
@@ -97,9 +97,9 @@ public class ProjectUserTest {
     @Test
     public void testProjectUserWithParams() {
         final ProjectUser testUser = new ProjectUser(email, role, permissions, metaData);
-        Assert.assertEquals(null, testUser.getId());
-        Assert.assertEquals(null, testUser.getLastConnection());
-        Assert.assertEquals(null, testUser.getLastUpdate());
+        Assert.assertNull(testUser.getId());
+        Assert.assertNull(testUser.getLastConnection());
+        Assert.assertNull(testUser.getLastUpdate());
         Assert.assertEquals(UserStatus.WAITING_ACCOUNT_ACTIVE, testUser.getStatus());
         Assert.assertEquals(email, testUser.getEmail());
         Assert.assertEquals(metaData, testUser.getMetadata());
@@ -199,7 +199,7 @@ public class ProjectUserTest {
      */
     @Test
     public void testSetMetaData() {
-        final List<MetaData> newMetaData = new ArrayList<MetaData>();
+        final List<MetaData> newMetaData = new ArrayList<>();
         projectUser.setMetadata(newMetaData);
         Assert.assertEquals(newMetaData, projectUser.getMetadata());
     }
@@ -238,7 +238,7 @@ public class ProjectUserTest {
      */
     @Test
     public void testSetPermissions() {
-        final List<ResourcesAccess> newPermissions = new ArrayList<ResourcesAccess>();
+        final List<ResourcesAccess> newPermissions = new ArrayList<>();
         projectUser.setPermissions(newPermissions);
         Assert.assertEquals(newPermissions, projectUser.getPermissions());
     }

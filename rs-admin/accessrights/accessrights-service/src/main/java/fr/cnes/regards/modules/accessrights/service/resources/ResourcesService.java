@@ -179,11 +179,7 @@ public class ResourcesService implements IResourcesService {
         // Compute map by native roles
         Map<DefaultRole, Set<ResourcesAccess>> accessesByDefaultRole = new EnumMap<>(DefaultRole.class);
         for (ResourcesAccess nra : newResources) {
-            Set<ResourcesAccess> set = accessesByDefaultRole.get(nra.getDefaultRole());
-            if (set == null) {
-                set = new HashSet<>();
-                accessesByDefaultRole.put(nra.getDefaultRole(), set);
-            }
+            Set<ResourcesAccess> set = accessesByDefaultRole.computeIfAbsent(nra.getDefaultRole(), k -> new HashSet<>());
             set.add(nra);
         }
 
@@ -191,7 +187,7 @@ public class ResourcesService implements IResourcesService {
         for (Map.Entry<DefaultRole, Set<ResourcesAccess>> entry : accessesByDefaultRole.entrySet()) {
             Role role = roleService.retrieveRole(entry.getKey().toString());
             roleService.addResourceAccesses(role.getId(),
-                                            entry.getValue().toArray(new ResourcesAccess[entry.getValue().size()]));
+                                            entry.getValue().toArray(new ResourcesAccess[0]));
         }
     }
 

@@ -70,7 +70,7 @@ public class InactiveState extends AbstractDeletableState {
     }
 
     @Override
-    public void activeAccount(final Account pAccount) throws EntityTransitionForbiddenException {
+    public void activeAccount(final Account pAccount) {
         pAccount.setStatus(AccountStatus.ACTIVE);
         pAccount.setInvalidityDate(LocalDateTime.now().plusDays(accountValidityDuration));
         accountRepository.save(pAccount);

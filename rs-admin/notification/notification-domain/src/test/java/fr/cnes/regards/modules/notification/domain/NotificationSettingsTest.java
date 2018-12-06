@@ -22,7 +22,6 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
-import java.util.ArrayList;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -117,11 +116,11 @@ public class NotificationSettingsTest {
     @Requirement("?")
     @Purpose("Check the POJO getters/setters.")
     public void testGettersSetters() {
-        Assert.assertTrue(settings.getId().equals(ID));
-        Assert.assertTrue(settings.getDays().equals(DAYS));
-        Assert.assertTrue(settings.getHours().equals(HOURS));
-        Assert.assertTrue(settings.getFrequency().equals(FREQUENCY));
-        Assert.assertTrue(settings.getProjectUserEmail().equals(user));
+        Assert.assertEquals(settings.getId(), ID);
+        Assert.assertEquals(settings.getDays(), DAYS);
+        Assert.assertEquals(settings.getHours(), HOURS);
+        Assert.assertEquals(settings.getFrequency(), FREQUENCY);
+        Assert.assertEquals(settings.getProjectUserEmail(), user);
     }
 
     /**

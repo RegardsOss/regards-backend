@@ -31,13 +31,10 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 
 /**
- *
  * Class ProjectClientStub
  *
  * Stub to get a test implementation for IProjectsClient
- *
  * @author Sébastien Binda
-
  */
 public class ProjectClientStub implements IProjectsClient {
 
@@ -53,10 +50,11 @@ public class ProjectClientStub implements IProjectsClient {
 
     @Override
     public ResponseEntity<PagedResources<Resource<Project>>> retrieveProjectList(final int pPage, final int pSize) {
-        final List<Resource<Project>> resources = new ArrayList<>();
-        resources.add(new Resource<Project>(PROJECT));
-        final PagedResources<Resource<Project>> page = new PagedResources<>(resources, new PageMetadata(pSize, pPage, 1),
-                new ArrayList<>());
+        List<Resource<Project>> resources = new ArrayList<>();
+        resources.add(new Resource<>(PROJECT));
+        PagedResources<Resource<Project>> page = new PagedResources<>(resources,
+                                                                            new PageMetadata(pSize, pPage, 1),
+                                                                            new ArrayList<>());
         return new ResponseEntity<>(page, HttpStatus.OK);
     }
 
@@ -66,22 +64,22 @@ public class ProjectClientStub implements IProjectsClient {
     }
 
     @Override
-    public ResponseEntity<Resource<Project>> createProject(final Project pNewProject) {
+    public ResponseEntity<Resource<Project>> createProject(Project pNewProject) {
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
-    public ResponseEntity<Resource<Project>> retrieveProject(final String pProjectName) {
-        return new ResponseEntity<>(new Resource<Project>(PROJECT), HttpStatus.OK);
+    public ResponseEntity<Resource<Project>> retrieveProject(String pProjectName) {
+        return new ResponseEntity<>(new Resource<>(PROJECT), HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<Resource<Project>> updateProject(final String pProjectName, final Project pProjectToUpdate) {
+    public ResponseEntity<Resource<Project>> updateProject(String pProjectName, Project pProjectToUpdate) {
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Override
-    public ResponseEntity<Void> deleteProject(final String pProjectName) {
+    public ResponseEntity<Void> deleteProject(String pProjectName) {
         return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
     }
 

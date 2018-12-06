@@ -32,7 +32,7 @@ import javax.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 

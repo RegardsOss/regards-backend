@@ -25,11 +25,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;

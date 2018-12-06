@@ -31,7 +31,6 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.
 
 /**
  * State class of the State Pattern implementing the available actions on a {@link ProjectUser} in status ACCESS_DENIED.
- *
  * @author Xavier-Alexandre Brochard
  * @since 1.1-SNAPSHOT
  */
@@ -56,15 +55,8 @@ public class AccessDeniedState extends AbstractDeletableState {
         eventPublisher = pEventPublisher;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserTransitions#grantAccess(fr.cnes.regards.
-     * modules.accessrights.domain.projects.ProjectUser)
-     */
     @Override
-    public void grantAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
+    public void grantAccess(final ProjectUser pProjectUser) {
         pProjectUser.setStatus(UserStatus.WAITING_EMAIL_VERIFICATION);
         getProjectUserRepository().save(pProjectUser);
         eventPublisher.publishEvent(new OnGrantAccessEvent(pProjectUser));

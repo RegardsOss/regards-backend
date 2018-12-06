@@ -49,7 +49,7 @@ public interface RegardsStreamUtils {
      * @return A predicate
      * @see <a href="http://stackoverflow.com/questions/23699371/java-8-distinct-by-property">distinct by property</a>
      */
-    public static <T> Predicate<T> distinctByKey(final Function<? super T, ?> pKeyExtractor) {
+    static <T> Predicate<T> distinctByKey(final Function<? super T, ?> pKeyExtractor) {
         final Map<Object, Boolean> seen = new ConcurrentHashMap<>();
         return t -> seen.putIfAbsent(pKeyExtractor.apply(t), Boolean.TRUE) == null;
     }

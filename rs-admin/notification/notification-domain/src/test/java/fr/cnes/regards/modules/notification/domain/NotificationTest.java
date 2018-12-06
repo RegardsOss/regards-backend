@@ -137,14 +137,14 @@ public class NotificationTest {
     @Test
     @Purpose("Check the POJO getters/setters.")
     public void testGettersSetters() {
-        Assert.assertTrue(notification.getId().equals(ID));
-        Assert.assertTrue(notification.getMessage().equals(MESSAGE));
-        Assert.assertTrue(notification.getSender().equals(SENDER));
-        Assert.assertTrue(notification.getTitle().equals(TITLE));
-        Assert.assertTrue(notification.getDate().equals(DATE));
-        Assert.assertTrue(notification.getProjectUserRecipients().equals(projectUserRecipients));
-        Assert.assertTrue(notification.getRoleRecipients().equals(roleRecipients));
-        Assert.assertTrue(notification.getStatus().equals(STATUS));
+        Assert.assertEquals(notification.getId(), ID);
+        Assert.assertEquals(notification.getMessage(), MESSAGE);
+        Assert.assertEquals(notification.getSender(), SENDER);
+        Assert.assertEquals(notification.getTitle(), TITLE);
+        Assert.assertEquals(notification.getDate(), DATE);
+        Assert.assertEquals(notification.getProjectUserRecipients(), projectUserRecipients);
+        Assert.assertEquals(notification.getRoleRecipients(), roleRecipients);
+        Assert.assertEquals(notification.getStatus(), STATUS);
     }
 
     /**

@@ -18,9 +18,6 @@
  */
 package fr.cnes.regards.modules.emails.rest;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -29,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.ResultMatcher;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
@@ -40,27 +36,17 @@ import fr.cnes.regards.modules.emails.domain.Email;
 import fr.cnes.regards.modules.emails.service.IEmailService;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Integration tests for the email module
- *
  * @author xbrochar
- *
  */
 @MultitenantTransactional
 @ContextConfiguration(classes = EmailConfiguration.class)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=email_it" })
 public class EmailControllerIT extends AbstractRegardsTransactionalIT {
 
-    /**
-     * Class logger
-     */
     private static final Logger LOG = LoggerFactory.getLogger(EmailControllerIT.class);
-
-    /**
-     * Method authorization service.Autowired by Spring.
-     */
 
     /**
      * Email service handling mailing operations
@@ -75,7 +61,7 @@ public class EmailControllerIT extends AbstractRegardsTransactionalIT {
 
     @Before
     public void setUp() {
-        final Email email = new Email();
+        Email email = new Email();
         email.setSubject("test");
         email.setText("test");
         email.setFrom("regards@noreply.fr");
@@ -91,9 +77,7 @@ public class EmailControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system allows to retrieve the list of sent emails.")
     public void retrieveEmails() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        performDefaultGet("/emails", expectations, "Unable to retrieve the emails list");
+        performDefaultGet("/emails", customizer().expectStatusOk(), "Unable to retrieve the emails list");
     }
 
     /**
@@ -104,10 +88,8 @@ public class EmailControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system allows to send an email to a list of recipients.")
     public void sendEmail() {
-        final SimpleMailMessage message = createDummyMessage();
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isCreated());
-        performDefaultPost("/emails", message, expectations, "Unable to send the email");
+        SimpleMailMessage message = createDummyMessage();
+        performDefaultPost("/emails", message, customizer().expectStatusCreated(), "Unable to send the email");
     }
 
     /**
@@ -120,16 +102,14 @@ public class EmailControllerIT extends AbstractRegardsTransactionalIT {
     public void retrieveEmail() {
         assertTrue(emailService.exists(testEmail.getId()));
 
-        List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        performDefaultGet("/emails/{mail_id}", expectations, "Unable to retrieve email", testEmail.getId());
+        performDefaultGet("/emails/{mail_id}", customizer().expectStatusOk(), "Unable to retrieve email",
+                          testEmail.getId());
 
-        final Long wrongId = 999L;
+        Long wrongId = 999L;
         assertFalse(emailService.exists(wrongId));
 
-        expectations = new ArrayList<>(1);
-        expectations.add(status().isNotFound());
-        performDefaultGet("/emails/{mail_id}", expectations, "Unable to retrieve email", wrongId);
+        performDefaultGet("/emails/{mail_id}", customizer().expectStatusNotFound(), "Unable to retrieve email",
+                          wrongId);
     }
 
     /**
@@ -141,19 +121,16 @@ public class EmailControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check that the system allows to re-send an email and handles fail cases.")
     public void resendEmail() {
         // Retrieve an sent email from the db
-        final Email email = emailService.retrieveEmails().get(0);
-        final Long id = email.getId();
+        Email email = emailService.retrieveEmails().get(0);
+        Long id = email.getId();
 
         // Then re-send it
-        List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        performDefaultPut("/emails/{mail_id}", null, expectations, "Unable to resend the email", id);
+        performDefaultPut("/emails/{mail_id}", null, customizer().expectStatusOk(), "Unable to resend the email", id);
 
-        final Long wrongId = 999L;
+        Long wrongId = 999L;
         assertFalse(emailService.exists(wrongId));
-        expectations = new ArrayList<>(1);
-        expectations.add(status().isNotFound());
-        performDefaultPut("/emails/{mail_id}", null, expectations, "Unable to resend the email", wrongId);
+        performDefaultPut("/emails/{mail_id}", null, customizer().expectStatusNotFound(), "Unable to resend the email",
+                          wrongId);
     }
 
     /**
@@ -166,18 +143,16 @@ public class EmailControllerIT extends AbstractRegardsTransactionalIT {
     public void deleteEmail() {
         assertTrue(emailService.exists(testEmail.getId()));
 
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        performDefaultDelete("/emails/{mail_id}", expectations, "Unable to delete the email", testEmail.getId());
+        performDefaultDelete("/emails/{mail_id}", customizer().expectStatusOk(), "Unable to delete the email",
+                             testEmail.getId());
     }
 
     /**
      * Creates a {@link SimpleMailMessage} with some random values initialized.
-     *
      * @return The mail
      */
     private SimpleMailMessage createDummyMessage() {
-        final SimpleMailMessage message = new SimpleMailMessage();
+        SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("sender@test.com");
         message.setSubject("subject");
         message.setText("message");
@@ -185,8 +160,4 @@ public class EmailControllerIT extends AbstractRegardsTransactionalIT {
         return message;
     }
 
-    @Override
-    protected Logger getLogger() {
-        return LOG;
-    }
 }

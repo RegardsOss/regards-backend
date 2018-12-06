@@ -72,7 +72,7 @@ public class NotificationSettingsService implements INotificationSettingsService
      * @see fr.cnes.regards.modules.notification.service.INotificationService#retrieveNotificationSettings()
      */
     @Override
-    public NotificationSettings retrieveNotificationSettings() throws EntityNotFoundException {
+    public NotificationSettings retrieveNotificationSettings() {
         return retrieveNotificationSettings(authenticationResolver.getUser());
     }
 

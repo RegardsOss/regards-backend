@@ -30,7 +30,6 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.notification.dao.INotificationSettingsRepository;
 import fr.cnes.regards.modules.notification.domain.NotificationFrequency;
 import fr.cnes.regards.modules.notification.domain.NotificationSettings;

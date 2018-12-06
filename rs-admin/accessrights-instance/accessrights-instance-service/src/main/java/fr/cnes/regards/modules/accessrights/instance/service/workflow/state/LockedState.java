@@ -33,7 +33,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;

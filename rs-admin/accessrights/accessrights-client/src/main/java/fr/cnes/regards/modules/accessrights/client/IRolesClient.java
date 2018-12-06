@@ -50,24 +50,24 @@ public interface IRolesClient { // NOSONAR
     /**
      * Root mapping for requests of this rest controller
      */
-    public static final String TYPE_MAPPING = "/roles";
+    String TYPE_MAPPING = "/roles";
 
     /**
      * Mapping for managing a role mapping for requests of this rest controller
      */
-    public static final String ROLE_MAPPING = "/{role_name}";
+    String ROLE_MAPPING = "/{role_name}";
 
-    public static final String ROLE_DESCENDANTS = ROLE_MAPPING + "/descendants";
+    String ROLE_DESCENDANTS = ROLE_MAPPING + "/descendants";
 
     /**
      * Mapping for retrieving borrowable role of the current user
      */
-    public static final String BORROWABLE_MAPPING = "/borrowables";
+    String BORROWABLE_MAPPING = "/borrowables";
 
     /**
      * Mapping for retrieving all roles that can access the specified resource
      */
-    public static final String ROLE_WITH_RESOURCE_MAPPING = "/resources/{resourceId}";
+    String ROLE_WITH_RESOURCE_MAPPING = "/resources/{resourceId}";
 
     /**
      * Define the endpoint for retrieving the list of all roles.
@@ -75,7 +75,7 @@ public interface IRolesClient { // NOSONAR
      * @return A {@link List} of roles as {@link Role} wrapped in an {@link ResponseEntity}
      */
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<Resource<Role>>> getAllRoles();
+    ResponseEntity<List<Resource<Role>>> getAllRoles();
 
     /**
      * Define the endpoint for retrieving the list of borrowable Roles for the current user.
@@ -83,7 +83,7 @@ public interface IRolesClient { // NOSONAR
      * @return list of borrowable roles for current authenticated user
      */
     @RequestMapping(method = RequestMethod.GET, path = BORROWABLE_MAPPING)
-    public ResponseEntity<List<Resource<Role>>> getBorrowableRoles();
+    ResponseEntity<List<Resource<Role>>> getBorrowableRoles();
 
     /**
      * Define the endpoint for retrieving the list of roles that can access the specified resource.
@@ -92,8 +92,7 @@ public interface IRolesClient { // NOSONAR
      * @return list of borrowable roles for current authenticated user
      */
     @RequestMapping(method = RequestMethod.GET, path = ROLE_WITH_RESOURCE_MAPPING)
-    public ResponseEntity<List<Resource<Role>>> getRolesAccesingResource(
-            @PathVariable("resourceId") final Long pResourceId);
+    ResponseEntity<List<Resource<Role>>> getRolesAccesingResource(@PathVariable("resourceId") final Long pResourceId);
 
     /**
      * Define the endpoint for creating a new {@link Role}.
@@ -103,7 +102,7 @@ public interface IRolesClient { // NOSONAR
      * @return The created {@link Role}
      */
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<Resource<Role>> createRole(@RequestBody final Role pNewRole);
+    ResponseEntity<Resource<Role>> createRole(@RequestBody final Role pNewRole);
 
     /**
      * Define the endpoint for retrieving the {@link Role} of passed <code>id</code>.
@@ -113,14 +112,14 @@ public interface IRolesClient { // NOSONAR
      * @return The {@link Role} wrapped in an {@link ResponseEntity}
      */
     @RequestMapping(method = RequestMethod.GET, value = ROLE_MAPPING)
-    public ResponseEntity<Resource<Role>> retrieveRole(@PathVariable("role_name") final String pRoleName);
+    ResponseEntity<Resource<Role>> retrieveRole(@PathVariable("role_name") final String pRoleName);
 
     /**
      * Define the endpoint for retrieving the descendant {@link Role}s of passed role through its name
      * @return the ascendants wrapped into a {@link ResponseEntity}
      */
     @RequestMapping(method = RequestMethod.GET, path = ROLE_DESCENDANTS)
-    public ResponseEntity<Set<Role>> retrieveRoleDescendants(@PathVariable("role_name") String roleName);
+    ResponseEntity<Set<Role>> retrieveRoleDescendants(@PathVariable("role_name") String roleName);
 
     /**
      * Define the endpoint for updating the {@link Role} of id <code>pRoleId</code>.
@@ -132,7 +131,7 @@ public interface IRolesClient { // NOSONAR
      * @return Updated {@link Role}
      */
     @RequestMapping(method = RequestMethod.PUT, value = ROLE_MAPPING)
-    public ResponseEntity<Resource<Role>> updateRole(@PathVariable("role_name") final String pRoleName,
+    ResponseEntity<Resource<Role>> updateRole(@PathVariable("role_name") final String pRoleName,
             @Valid @RequestBody final Role pUpdatedRole);
 
     /**
@@ -143,6 +142,6 @@ public interface IRolesClient { // NOSONAR
      * @return {@link Void} wrapped in an {@link ResponseEntity}
      */
     @RequestMapping(method = RequestMethod.DELETE, value = ROLE_MAPPING)
-    public ResponseEntity<Void> removeRole(@PathVariable("role_name") final String pRoleName);
+    ResponseEntity<Void> removeRole(@PathVariable("role_name") final String pRoleName);
 
 }

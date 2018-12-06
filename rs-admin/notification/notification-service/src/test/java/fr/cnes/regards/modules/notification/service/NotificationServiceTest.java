@@ -493,7 +493,7 @@ public class NotificationServiceTest {
 
         // Compare
         Assert.assertEquals(expected.size(), actual.size());
-        Assert.assertTrue(actual.containsAll(expected.stream().map(pu -> pu.getEmail()).collect(Collectors.toList())));
+        Assert.assertTrue(actual.containsAll(expected.stream().map(ProjectUser::getEmail).collect(Collectors.toList())));
     }
 
     /**

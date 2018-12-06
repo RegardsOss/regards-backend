@@ -40,12 +40,12 @@ public interface IResourcesClient {
     /**
      * Root mapping for requests of this rest controller
      */
-    public static final String TYPE_MAPPING = "/resources";
+    String TYPE_MAPPING = "/resources";
 
     /**
      * Single resource mapping
      */
-    public static final String RESOURCE_MAPPING = "/{resource_id}";
+    String RESOURCE_MAPPING = "/{resource_id}";
 
     /**
      * Retrieve resource accesses available to the user
@@ -57,8 +57,8 @@ public interface IResourcesClient {
      * @return list of user resource accesses
      */
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<PagedResources<Resource<ResourcesAccess>>> getAllResourceAccesses(
-            @RequestParam("page") int pPage, @RequestParam("size") int pSize);
+    ResponseEntity<PagedResources<Resource<ResourcesAccess>>> getAllResourceAccesses(@RequestParam("page") int pPage,
+            @RequestParam("size") int pSize);
 
     /**
      *
@@ -69,8 +69,7 @@ public interface IResourcesClient {
      * @return {@link ResourcesAccess}
      */
     @RequestMapping(method = RequestMethod.GET, value = RESOURCE_MAPPING)
-    public ResponseEntity<Resource<ResourcesAccess>> getResourceAccess(
-            @PathVariable("resource_id") final Long pResourceId);
+    ResponseEntity<Resource<ResourcesAccess>> getResourceAccess(@PathVariable("resource_id") final Long pResourceId);
 
     /**
      *
@@ -83,8 +82,7 @@ public interface IResourcesClient {
      * @return updated ResourcesAccess
      */
     @RequestMapping(method = RequestMethod.PUT, value = RESOURCE_MAPPING)
-    public ResponseEntity<Resource<ResourcesAccess>> updateResourceAccess(
-            @PathVariable("resource_id") final Long pResourceId,
+    ResponseEntity<Resource<ResourcesAccess>> updateResourceAccess(@PathVariable("resource_id") final Long pResourceId,
             @Valid @RequestBody final ResourcesAccess pResourceAccessToUpdate);
 
 }

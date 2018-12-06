@@ -39,7 +39,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 public class AccessRightsModuleManager extends AbstractModuleManager<Void> {
 
     @Override
-    public ModuleConfiguration exportConfiguration() throws ModuleException {
+    public ModuleConfiguration exportConfiguration() {
         List<ModuleConfigurationItem<?>> configurations = new ArrayList<>();
         // Fill list using ModuleConfigurationItem#build
         return ModuleConfiguration.build(info, configurations);

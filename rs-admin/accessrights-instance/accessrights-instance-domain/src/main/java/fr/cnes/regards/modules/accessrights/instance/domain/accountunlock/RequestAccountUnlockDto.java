@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.domain.accountunlock;
 
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 
 /**
  * Dto class wrapping data required for the {@link AccountsController#requestAccountUnlock} endpoint.

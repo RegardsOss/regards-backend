@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.service.projectuser.workflow.listeners;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +34,6 @@ import org.springframework.web.util.UriUtils;
 import feign.FeignException;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;

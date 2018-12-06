@@ -233,7 +233,7 @@ public class ProjectUserService implements IProjectUserService {
         try (Stream<ResourcesAccess> previous = user.getPermissions().stream();
                 Stream<ResourcesAccess> updated = updatedUserAccessRights.stream();
                 Stream<ResourcesAccess> merged = Stream.concat(updated, previous)) {
-            user.setPermissions(merged.filter(RegardsStreamUtils.distinctByKey(r -> r.getId()))
+            user.setPermissions(merged.filter(RegardsStreamUtils.distinctByKey(ResourcesAccess::getId))
                     .collect(Collectors.toList()));
         }
 
@@ -274,8 +274,7 @@ public class ProjectUserService implements IProjectUserService {
     public List<ResourcesAccess> retrieveProjectUserAccessRights(String email, String borrowedRoleName)
             throws EntityException {
         ProjectUser projectUser = retrieveOneByEmail(email);
-        Role userRole = projectUser.getRole();
-        Role returnedRole = userRole;
+        Role returnedRole = projectUser.getRole();
 
         if (borrowedRoleName != null) {
             Role borrowedRole = roleService.retrieveRole(borrowedRoleName);
@@ -288,9 +287,8 @@ public class ProjectUserService implements IProjectUserService {
         }
 
         // Merge permissions from the project user and from the role
-        List<ResourcesAccess> merged = new ArrayList<>();
         List<ResourcesAccess> fromUser = projectUser.getPermissions();
-        merged.addAll(fromUser);
+        List<ResourcesAccess> merged = new ArrayList<>(fromUser);
         try {
             Set<ResourcesAccess> fromRole = roleService.retrieveRoleResourcesAccesses(returnedRole.getId());
             merged.addAll(fromRole);
