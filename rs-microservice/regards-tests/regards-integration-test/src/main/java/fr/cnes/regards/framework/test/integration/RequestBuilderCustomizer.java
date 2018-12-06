@@ -304,6 +304,20 @@ public class RequestBuilderCustomizer {
         return expect(MockMvcResultMatchers.status().isNoContent());
     }
 
+    /**
+     * Add a ResultMatcher status FORBIDDEN to be matched
+     */
+    public RequestBuilderCustomizer expectStatusForbidden() {
+        return expect(MockMvcResultMatchers.status().isForbidden());
+    }
+
+    /**
+     * Add a ResultMatcher status CONFLICT to be matched
+     */
+    public RequestBuilderCustomizer expectStatusConflict() {
+        return expect(MockMvcResultMatchers.status().isConflict());
+    }
+
 
     /**
      * Add a ResultMatcher expecting given contentType to be matched
