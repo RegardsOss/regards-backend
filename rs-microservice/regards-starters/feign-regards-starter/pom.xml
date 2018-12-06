@@ -53,15 +53,15 @@
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>gson-regards-starter</artifactId>
         </dependency>
-       <dependency>
-        	<groupId>fr.cnes.regards.framework</groupId>
-        	<artifactId>security-regards</artifactId>
-        	<exclusions>
-        		<exclusion>
-        			<groupId>org.springframework.security</groupId>
-        			<artifactId>spring-security-web</artifactId>
-        		</exclusion>
-        	</exclusions>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>security-regards</artifactId>
+            <!--<exclusions>-->
+                <!--<exclusion>-->
+                    <!--<groupId>org.springframework.security</groupId>-->
+                    <!--<artifactId>spring-security-web</artifactId>-->
+                <!--</exclusion>-->
+            <!--</exclusions>-->
         </dependency>
         <!-- Starter feign -->
         <dependency>
