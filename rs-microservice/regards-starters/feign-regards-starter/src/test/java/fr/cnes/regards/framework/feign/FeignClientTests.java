@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -43,7 +44,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpServerErrorException;
 
-import com.google.gson.Gson;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -57,7 +57,8 @@ public class FeignClientTests {
 
     private static final String HELLO_MESSAGE = "Hello world";
 
-    private static final Logger LOG = LoggerFactory.getLogger(FeignClientTests.class);
+    @SuppressWarnings("unused")
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeignClientTests.class);
 
     @Autowired
     private ApplicationContext context;
@@ -65,10 +66,7 @@ public class FeignClientTests {
     @Autowired
     private IHelloClient helloClient;
 
-    @Autowired
-    private Gson gson;
-
-    @SpringBootApplication
+    @SpringBootApplication(exclude = SecurityAutoConfiguration.class)
     @RestController
     @EnableFeignClients("unkown.package")
     protected static class Application {
