@@ -106,6 +106,8 @@ public interface IDataFileDao {
 
     Page<StorageDataFile> findPageByChecksumIn(Set<String> checksums, Pageable pageable);
 
+    Page<StorageDataFile> findPageByStateAndChecksumIn(DataFileState stored, Set<String> requestedChecksums, Pageable page);
+
     /**
      * Remove a data file from the database
      * @param data

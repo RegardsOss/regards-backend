@@ -501,7 +501,7 @@ public class AIPService implements IAIPService {
         // Same for accesses
         Set<String> checksumsWithoutAccess = Sets.newHashSet(requestedChecksums);
         Pageable page = new PageRequest(0, 500, Sort.Direction.ASC, "id");
-        Page<StorageDataFile> dataFilePage = dataFileDao.findPageByChecksumIn(requestedChecksums, page);
+        Page<StorageDataFile> dataFilePage = dataFileDao.findPageByStateAndChecksumIn(DataFileState.STORED, requestedChecksums, page);
         while (dataFilePage.hasContent()) {
 
             Set<StorageDataFile> dataFiles = Sets.newHashSet(dataFilePage.getContent());
@@ -529,7 +529,7 @@ public class AIPService implements IAIPService {
             // 2. Check for online files. Online files don't need to be stored in the cache
             // they can be accessed directly where they are stored.
             for (StorageDataFile df : dataFilesWithAccess) {
-                if (df.getPrioritizedDataStorages() != null) {
+                if (df.getPrioritizedDataStorages() != null && !df.getPrioritizedDataStorages().isEmpty()) {
                     Optional<PrioritizedDataStorage> onlinePrioritizedDataStorageOpt = df.getPrioritizedDataStorages()
                             .stream().filter(pds -> pds.getDataStorageType().equals(DataStorageType.ONLINE))
                             .findFirst();
@@ -558,7 +558,7 @@ public class AIPService implements IAIPService {
             dataFilePage = dataFileDao.findPageByChecksumIn(requestedChecksums, page);
 
         }
-        // the if is needed here too because otherwise checksumNotFound being all checksums requested,
+        // the if is needed here too because otherwise checksumNotFound initially being all requested checksums,
         // everything is considered not found
         if (dataFilePage.getTotalElements() != requestedChecksums.size()) {
             // lets logs not found now that we know that remaining checksums are not handled by REGARDS

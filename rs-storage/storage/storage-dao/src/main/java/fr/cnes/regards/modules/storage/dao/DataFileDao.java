@@ -171,6 +171,16 @@ public class DataFileDao implements IDataFileDao {
     }
 
     @Override
+    public Page<StorageDataFile> findPageByStateAndChecksumIn(DataFileState dataFileState, Set<String> checksums,
+            Pageable pageable) {
+        // first lets get the storageDataFile without any join(no graph)
+        Page<Long> ids = repository.findIdPageByStateAndChecksumIn(dataFileState, checksums, pageable);
+        List<StorageDataFile> pageContent = repository.findAllDistinctByIdIn(ids.getContent()).stream()
+                .collect(Collectors.toList());
+        return new PageImpl<>(pageContent, new PageRequest(ids.getNumber(), ids.getSize()), ids.getTotalElements());
+    }
+
+    @Override
     public void remove(StorageDataFile data) {
         repository.delete(data.getId());
     }

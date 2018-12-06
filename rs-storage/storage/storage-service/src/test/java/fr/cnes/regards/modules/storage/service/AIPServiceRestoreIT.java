@@ -101,6 +101,7 @@ import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.CachedFile;
 import fr.cnes.regards.modules.storage.domain.database.CachedFileState;
+import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
@@ -321,8 +322,8 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         fillOnlineDataFileDb(50L);
         AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "1", "2", "3");
         AvailabilityResponse response = aipService.loadFiles(request);
-        Assert.assertTrue("All files should be directly available after AIPService::loadFiles. Cause : files to load are online.",
-                          response.getAlreadyAvailable().size() == 3);
+        Assert.assertEquals("All files should be directly available after AIPService::loadFiles. Cause : files to load are online.",
+                          3, response.getAlreadyAvailable().size());
         Assert.assertTrue("No file should be in error after AIPService::loadFiles. Cause : All files exists !.",
                           response.getErrors().isEmpty());
         LOG.info("End test loadOnlineFilesTest ...");
@@ -341,8 +342,8 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         fillOnlineNNearlineDataFileDb(50L);
         AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "1", "2", "3");
         AvailabilityResponse response = aipService.loadFiles(request);
-        Assert.assertTrue("All files should be directly available after AIPService::loadFiles. Cause : files to load are online.",
-                          response.getAlreadyAvailable().size() == 3);
+        Assert.assertEquals("All files should be directly available after AIPService::loadFiles. Cause : files to load are online.",
+                          3, response.getAlreadyAvailable().size());
         Assert.assertTrue("No file should be in error after AIPService::loadFiles. Cause : All files exists !.",
                           response.getErrors().isEmpty());
         LOG.info("End test loadOnlineNNearlineFilesTest ...");
@@ -921,18 +922,21 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
                 MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), "file1.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(onlineNoRetrieveDataStorageConf);
+        df.setState(DataFileState.STORED);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file2.test").toString());
         df = new StorageDataFile(Sets.newHashSet(url), "2", "MD5", DataType.RAWDATA, fileSize,
                 MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), "file2.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(onlineNoRetrieveDataStorageConf);
+        df.setState(DataFileState.STORED);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file3.test").toString());
         df = new StorageDataFile(Sets.newHashSet(url), "3", "MD5", DataType.RAWDATA, fileSize,
                 MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), "file3.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(onlineNoRetrieveDataStorageConf);
+        df.setState(DataFileState.STORED);
         datafiles.add(df);
         dataFileDao.save(datafiles);
     }
@@ -956,6 +960,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
                 "file1.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(nearlineDataStorageConf);
+        df.setState(DataFileState.STORED);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file2.test").toString());
         urlNearline = new URL("file://PLOP/Node/file2.test");
@@ -963,6 +968,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
                 MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), "file2.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(nearlineDataStorageConf);
+        df.setState(DataFileState.STORED);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file3.test").toString());
         urlNearline = new URL("file://PLOP/Node/file3.test");
@@ -970,6 +976,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
                 MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), "file3.test", null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(nearlineDataStorageConf);
+        df.setState(DataFileState.STORED);
         datafiles.add(df);
         dataFileDao.save(datafiles);
     }
@@ -995,6 +1002,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
                     new AIPEntity(aip, aipSession), fileName, null);
             df.addDataStorageUsed(nearlineDataStorageConf);
             df.addDataStorageUsed(nearlineNoRetrieveDataStorageConf);
+            df.setState(DataFileState.STORED);
             datafiles.add(df);
         }
         nearlineFiles.addAll(dataFileDao.save(datafiles));
