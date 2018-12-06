@@ -334,6 +334,14 @@ public class RequestBuilderCustomizer {
     }
 
     /**
+     * Add a ResultMatcher expecting given jsonPath is empty
+     */
+    public RequestBuilderCustomizer expectIsEmpty(String jsonPath) {
+        return expect(MockMvcResultMatchers.jsonPath(jsonPath).isEmpty());
+    }
+
+
+    /**
      * Add a ResultMatcher expecting given jsonPath is an array
      */
     public RequestBuilderCustomizer expectIsArray(String jsonPath) {
