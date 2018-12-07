@@ -27,7 +27,6 @@ import org.springframework.util.Assert;
 
 /**
  * Plugin parameter type
- *
  * @author Christophe Mertz
  */
 public class PluginParameterType {
@@ -254,9 +253,7 @@ public class PluginParameterType {
 
     /**
      * An enumeration with PRIMITIVE and PLUGIN defaultValue
-     *
      * @author Christophe Mertz
-     *
      */
     public enum ParamType {
 

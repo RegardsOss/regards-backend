@@ -23,9 +23,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Utility methods
- *
  * @author Marc Sordi
- *
  */
 public final class GSONUtils {
 

@@ -28,14 +28,11 @@ import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
- *
  * {@link Publisher} uses {@link IRuntimeTenantResolver} to resolve current thread tenant to publish an event in the
  * multitenant context.
- *
  * @author svissier
  * @author lmieulet
  * @author Marc Sordi
- *
  */
 public class Publisher extends AbstractPublisher implements IPublisher {
 

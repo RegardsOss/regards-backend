@@ -20,9 +20,7 @@ package fr.cnes.regards.framework.amqp.configuration;
 
 /**
  * AMQP utility constants
- *
  * @author Marc Sordi
- *
  */
 public final class AmqpConstants {
 

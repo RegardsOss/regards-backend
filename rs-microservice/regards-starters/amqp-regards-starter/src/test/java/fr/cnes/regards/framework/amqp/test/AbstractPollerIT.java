@@ -40,7 +40,6 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 /**
  * Common poller tests for {@link VirtualHostMode#SINGLE} and {@link VirtualHostMode#MULTI} modes
  * @author Marc Sordi
- *
  */
 public abstract class AbstractPollerIT {
 

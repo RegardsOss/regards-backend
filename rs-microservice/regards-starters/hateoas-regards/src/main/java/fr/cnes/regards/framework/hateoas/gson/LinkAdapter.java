@@ -30,7 +30,6 @@ import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
 
 /**
  * {@link Link} adapter
- *
  * @author Marc Sordi
  */
 @GsonTypeAdapter(adapted = Link.class)
@@ -54,7 +53,8 @@ public class LinkAdapter extends TypeAdapter<Link> {
 
     @Override
     public Link read(JsonReader in) throws IOException {
-        String rel = null, href = null;
+        String rel = null;
+        String href = null;
         in.beginObject();
         while (in.hasNext()) {
             String name = in.nextName();

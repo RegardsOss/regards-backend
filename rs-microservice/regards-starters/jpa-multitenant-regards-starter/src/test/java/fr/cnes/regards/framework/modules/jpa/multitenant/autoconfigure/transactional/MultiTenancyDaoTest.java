@@ -40,13 +40,10 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
- *
  * Class MultiTenancyDaoTest
  *
  * Unit tests for multitenancy DAO
- *
  * @author CS
- * @since 1.0-SNAPSHOT
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { MultiTenancyDaoTestConfiguration.class })
@@ -88,10 +85,9 @@ public class MultiTenancyDaoTest {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
-     *
      * Unit test to check that the spring JPA multitenancy context is loaded successfully
      *
-     * @since 1.0-SNAPSHOTS
+     * S
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Unit test to check that the spring JPA multitenancy context is loaded successfully")
@@ -101,13 +97,7 @@ public class MultiTenancyDaoTest {
     }
 
     /**
-     *
      * Unit test to check JPA foreign keys management
-     *
-     * @throws MissingClaimException
-     * @throws InvalidJwtException
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Unit test to check JPA foreign keys management")
@@ -118,17 +108,11 @@ public class MultiTenancyDaoTest {
         userRepository.deleteAll();
         final Company comp = companyRepository.save(new Company("plop"));
         userRepository.save(new User("name", "lastname", comp));
-        Assert.assertNotNull(userRepository.findAll().iterator().next().getCompany().getId().equals(comp.getId()));
+        Assert.assertTrue(userRepository.findAll().iterator().next().getCompany().getId().equals(comp.getId()));
     }
 
     /**
-     *
      * Unit test to check JPA uses the good tenant through the tenant resolver
-     *
-     * @throws MissingClaimException
-     * @throws InvalidJwtException
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Unit test to check that JPA uses the good tenant through the tenant resolver")
@@ -155,9 +139,10 @@ public class MultiTenancyDaoTest {
 
         // Check results
         Iterable<User> list = userRepository.findAll();
-        list.forEach(user -> results.add(user));
-        Assert.assertTrue("Error, there must be 2 elements in the database associated to the tenant test1 not "
-                + results.size(), results.size() == 2);
+        list.forEach(results::add);
+        Assert.assertEquals(
+                "Error, there must be 2 elements in the database associated to the tenant test1 not " + results.size(),
+                2, results.size());
 
         // Set tenant to project 2
         runtimeTenantResolver.forceTenant(TENANT_TEST_2);
@@ -165,9 +150,10 @@ public class MultiTenancyDaoTest {
         // Check that there is no users added on this project
         list = userRepository.findAll();
         results.clear();
-        list.forEach(user -> results.add(user));
-        Assert.assertTrue("Error, there must be no element in the database associated to the tenant test2 ("
-                + results.size() + ")", results.size() == 0);
+        list.forEach(results::add);
+        Assert.assertEquals(
+                "Error, there must be no element in the database associated to the tenant test2 (" + results.size()
+                        + ")", 0, results.size());
 
         newUser = userRepository.save(newUser);
         LOG.info("id=" + newUser.getId());
@@ -175,9 +161,10 @@ public class MultiTenancyDaoTest {
         // Check results
         list = userRepository.findAll();
         results.clear();
-        list.forEach(user -> results.add(user));
-        Assert.assertTrue("Error, there must be 1 elements in the database associated to the tenant test2 + not "
-                + results.size(), results.size() == 1);
+        list.forEach(results::add);
+        Assert.assertEquals(
+                "Error, there must be 1 elements in the database associated to the tenant test2 + not " + results
+                        .size(), 1, results.size());
 
         // Set tenant to an non existing project
         runtimeTenantResolver.forceTenant(TENANT_INVALID);

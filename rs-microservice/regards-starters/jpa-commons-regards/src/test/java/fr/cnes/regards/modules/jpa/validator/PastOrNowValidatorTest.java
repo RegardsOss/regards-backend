@@ -34,7 +34,6 @@ import fr.cnes.regards.framework.jpa.validator.PastOrNow;
 
 /**
  * @author svissier
- *
  */
 public class PastOrNowValidatorTest {
 

@@ -29,9 +29,7 @@ import fr.cnes.regards.framework.feign.annotation.RestClient;
 
 /**
  * TODO
- *
  * @author Marc Sordi
- *
  */
 @RestClient(name = "localapp", url = "http://localhost:30333")
 public interface IHelloClient {

@@ -22,7 +22,7 @@ package fr.cnes.regards.framework.utils.plugins;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +42,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
 import com.google.common.reflect.TypeToken;
-
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginDestroy;
@@ -110,7 +109,7 @@ public final class PluginUtils {
      * @param reflectionPackage package to scan
      */
     public static void setup(String reflectionPackage) {
-        setup(Arrays.asList(reflectionPackage));
+        setup(Collections.singletonList(reflectionPackage));
     }
 
     /**
@@ -130,10 +129,10 @@ public final class PluginUtils {
             reflections = new Reflections(defaultPackage);
         } else {
             StringJoiner customPackages = new StringJoiner(",");
-            reflectionPackages.forEach(p -> customPackages.add(p));
+            reflectionPackages.forEach(customPackages::add);
             LOGGER.info("System will look for plugins in custom package(s): {}", customPackages.toString());
             Configuration configuration = ConfigurationBuilder
-                    .build(reflectionPackages.toArray(new Object[reflectionPackages.size()]));
+                    .build(reflectionPackages.toArray(new Object[0]));
             reflections = new Reflections(configuration);
         }
 
@@ -267,8 +266,7 @@ public final class PluginUtils {
             // Launch init method if detected
             doInitPlugin(returnPlugin);
 
-        } catch (InstantiationException | IllegalAccessException | NoSuchElementException | IllegalArgumentException
-                | SecurityException | ClassNotFoundException e) {
+        } catch (InstantiationException | IllegalAccessException | NoSuchElementException | IllegalArgumentException | SecurityException | ClassNotFoundException e) {
             throw new PluginUtilsRuntimeException(String.format(CANNOT_INSTANTIATE, pluginClassName), e);
         }
 
@@ -289,8 +287,8 @@ public final class PluginUtils {
         PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pluginClass);
 
         PluginConfiguration pluginConfiguration = new PluginConfiguration(pluginMetadata, "", parameters);
-        return PluginUtils.getPlugin(pluginConfiguration, pluginMetadata, instantiatedPluginMap,
-                                     dynamicPluginParameters);
+        return PluginUtils
+                .getPlugin(pluginConfiguration, pluginMetadata, instantiatedPluginMap, dynamicPluginParameters);
     }
 
     /**
@@ -308,8 +306,7 @@ public final class PluginUtils {
                     method.invoke(pluginInstance);
                 } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                     LOGGER.error(String.format("Exception while invoking destroy method on plugin class <%s>.",
-                                               pluginInstance.getClass()),
-                                 e);
+                                               pluginInstance.getClass()), e);
                     throw new PluginUtilsRuntimeException(e);
                 }
             }
@@ -331,8 +328,7 @@ public final class PluginUtils {
                     method.invoke(pluginInstance);
                 } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                     LOGGER.error(String.format("Exception while invoking init method on plugin class <%s>.",
-                                               pluginInstance.getClass()),
-                                 e);
+                                               pluginInstance.getClass()), e);
                     if (e.getCause() instanceof PluginUtilsRuntimeException) {
                         throw (PluginUtilsRuntimeException) e.getCause();
                     } else {
@@ -410,9 +406,9 @@ public final class PluginUtils {
             // the plugin configuration should not have any reference to plugin parameters that are only dynamic
             // lets check that all remaining parameters are correctly given
             for (PluginParameterType plgParamMeta : pluginParametersFromMeta) {
-                if (!plgParamMeta.isOptional() && !plgParamMeta.getUnconfigurable()
-                        && ((pluginConfiguration.getParameter(plgParamMeta.getName()) == null)
-                                && (plgParamMeta.getDefaultValue() == null))) {
+                if (!plgParamMeta.isOptional() && !plgParamMeta.getUnconfigurable() && (
+                        (pluginConfiguration.getParameter(plgParamMeta.getName()) == null) && (
+                                plgParamMeta.getDefaultValue() == null))) {
                     validationErrors.add(String.format("Plugin Parameter %s is missing.", plgParamMeta.getName()));
                 }
             }

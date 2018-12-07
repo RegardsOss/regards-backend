@@ -23,9 +23,7 @@ import java.util.List;
 
 /**
  * A report for module management
- *
  * @author Marc SORDI
- *
  */
 public class ModuleRestartReport {
 

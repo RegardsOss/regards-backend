@@ -18,6 +18,5 @@
  */
 /**
  * @author svissier
- *
  */
 package fr.cnes.regards.framework.amqp.domain;

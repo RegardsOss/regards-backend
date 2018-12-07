@@ -23,7 +23,6 @@ import java.util.HashMap;
 /**
  * Generic response body containing key value pairs
  * @author Marc Sordi
- *
  */
 @SuppressWarnings("serial")
 public class MapResponseBody extends HashMap<String, Object> {

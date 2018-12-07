@@ -25,7 +25,6 @@ import org.springframework.context.annotation.PropertySource;
 
 /**
  * @author Marc Sordi
- *
  */
 @Configuration
 @ComponentScan(basePackages = { "fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.multitransactional" })

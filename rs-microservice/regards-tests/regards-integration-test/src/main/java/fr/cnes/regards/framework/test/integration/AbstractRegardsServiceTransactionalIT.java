@@ -26,9 +26,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 /**
  * >
  * Add default transactional initialization
- *
  * @author Christophe Mertz
- *
  */
 public abstract class AbstractRegardsServiceTransactionalIT extends AbstractRegardsServiceIT {
 

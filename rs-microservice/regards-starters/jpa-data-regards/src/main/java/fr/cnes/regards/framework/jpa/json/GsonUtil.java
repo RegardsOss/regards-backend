@@ -28,11 +28,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
 
 /**
- *
  * Utility class allowing us to serialize and deserialize object to and from JSON
  *
  * inspired from @Vlad Mihalcea JacksonUtil class
- *
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
  */
@@ -106,6 +104,7 @@ public final class GsonUtil {
      * @param argType {@link Type} of the value type of the map
      * @return a TypeToken representing a Map<K,V>, K and V being dynamicly set
      */
+    @SuppressWarnings("unchecked")
     public static <K, V> TypeToken<Map<K, V>> createMapTypeToken(Type keyArgType, Type argType) {
         return new TypeToken<Map<K, V>>() {
 

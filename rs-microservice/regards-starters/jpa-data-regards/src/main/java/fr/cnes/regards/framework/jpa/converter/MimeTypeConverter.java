@@ -26,7 +26,6 @@ import org.springframework.util.MimeType;
 
 /**
  * @author Léo Mieulet
- *
  */
 @Converter(autoApply = true)
 public class MimeTypeConverter implements AttributeConverter<MimeType, String> {

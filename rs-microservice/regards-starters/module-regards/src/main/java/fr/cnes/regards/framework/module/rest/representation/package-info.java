@@ -17,10 +17,7 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- *
  * Rest response representation package
- *
  * @author Marc Sordi
- *
  */
 package fr.cnes.regards.framework.module.rest.representation;

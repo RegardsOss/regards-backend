@@ -64,9 +64,6 @@ public final class CompressionUtil {
 
     /**
      * Operateur de conversion
-     * @param pFile
-     * @return
-     * @throws CompressionException
      */
     public static CompressionTypeEnum getCompressionType(File pFile) throws CompressionException {
         CompressionTypeEnum type = null;

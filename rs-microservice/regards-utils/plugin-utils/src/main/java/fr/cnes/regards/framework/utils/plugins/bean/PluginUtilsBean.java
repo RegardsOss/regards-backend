@@ -28,7 +28,6 @@ import com.google.gson.Gson;
 
 /**
  * @author Christophe Mertz
- *
  */
 @Component
 public class PluginUtilsBean {

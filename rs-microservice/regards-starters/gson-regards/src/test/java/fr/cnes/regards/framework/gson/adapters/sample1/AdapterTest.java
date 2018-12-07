@@ -31,9 +31,7 @@ import com.google.gson.annotations.JsonAdapter;
 /**
  * Test with {@link JsonAdapter} annotation. This test does not work for serialization! <br/>
  * {@link TypeAdapter} is only used when reading JSON and not writing. (GSON bug maybe)
- *
  * @author Marc Sordi
- *
  */
 public class AdapterTest {
 

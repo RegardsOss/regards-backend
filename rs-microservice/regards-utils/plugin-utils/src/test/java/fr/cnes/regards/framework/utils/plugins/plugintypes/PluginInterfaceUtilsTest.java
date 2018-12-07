@@ -39,7 +39,6 @@ import fr.cnes.regards.framework.utils.plugins.basic.PluginUtilsTestConstants;
 
 /**
  * Unit testing of {@link PluginInterfaceUtils}.
- *
  * @author Christophe Mertz
  */
 public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
@@ -57,9 +56,9 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     /**
      * A {@link List} of package
      */
-    private static final List<String> PLUGIN_PACKAGES = Arrays.asList(PLUGIN_CURRENT_PACKAGE,
-                                                                      "fr.cnes.regards.framework.utils.plugins.bean",
-                                                                      "fr.cnes.regards.framework.utils.plugins");
+    private static final List<String> PLUGIN_PACKAGES = Arrays
+            .asList(PLUGIN_CURRENT_PACKAGE, "fr.cnes.regards.framework.utils.plugins.bean",
+                    "fr.cnes.regards.framework.utils.plugins");
 
     /**
      * A not exiting plugin package
@@ -83,7 +82,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
         PluginUtils.setup(PLUGIN_PACKAGES);
         Set<String> pluginInterfaces = PluginUtils.getPluginInterfaces();
         Assert.assertNotNull(pluginInterfaces);
-        pluginInterfaces.stream().forEach(s -> LOGGER.info(s));
+        pluginInterfaces.forEach(LOGGER::info);
         Assert.assertTrue(pluginInterfaces.size() > 0);
         LOGGER.debug(ENDING + toString());
     }
@@ -112,7 +111,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
         PluginUtils.setup(PLUGIN_CURRENT_PACKAGE);
         Set<String> pluginInterfaces = PluginUtils.getPluginInterfaces();
         Assert.assertNotNull(pluginInterfaces);
-        pluginInterfaces.stream().forEach(s -> LOGGER.info(s));
+        pluginInterfaces.forEach(LOGGER::info);
         Assert.assertTrue(pluginInterfaces.size() > 0);
         LOGGER.debug(ENDING + toString());
     }
@@ -158,10 +157,9 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
                 .addParameter(ComplexPlugin.FIELD_NAME_COEF, PluginInterfaceUtilsTest.CINQ).getParameters();
 
         HashMap<Long, Object> instantiatedPluginMap = new HashMap<>();
-        instantiatedPluginMap.put(pluginConfigurationInterface.getId(),
-                                  PluginUtils.getPlugin(pluginConfigurationInterface,
-                                                        pluginConfigurationInterface.getPluginClassName(),
-                                                        instantiatedPluginMap));
+        instantiatedPluginMap.put(pluginConfigurationInterface.getId(), PluginUtils
+                .getPlugin(pluginConfigurationInterface, pluginConfigurationInterface.getPluginClassName(),
+                           instantiatedPluginMap));
         /*
          * Instantiate the parent plugin
          */
@@ -170,7 +168,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
 
         Assert.assertTrue(complexPlugin.add(PluginInterfaceUtilsTest.CINQ, PluginInterfaceUtilsTest.QUATRE) > 0);
         Assert.assertTrue(complexPlugin.echo(PluginInterfaceUtilsTest.HELLO_WORLD)
-                .contains(PluginInterfaceUtilsTest.HELLO_WORLD));
+                                  .contains(PluginInterfaceUtilsTest.HELLO_WORLD));
 
         LOGGER.info("plugin parameter:" + complexPlugin.echoPluginParameter());
 

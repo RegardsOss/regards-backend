@@ -27,15 +27,13 @@ import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 
 /**
  * Event counter
- *
  * @author Marc Sordi
- *
  */
 public abstract class AbstractReceiver<T> implements IHandler<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractReceiver.class);
 
-    private Integer count = 0;
+    private int count = 0;
 
     @Override
     public void handle(TenantWrapper<T> wrapper) {
@@ -67,7 +65,7 @@ public abstract class AbstractReceiver<T> implements IHandler<T> {
      * @param count count
      * @return true if handler has been reached "count" times
      */
-    public boolean checkCount(Integer count) {
+    public boolean checkCount(int count) {
         if (this.count != count) {
             try {
                 Thread.sleep(1000);
@@ -75,7 +73,7 @@ public abstract class AbstractReceiver<T> implements IHandler<T> {
                 Assert.fail("Thread interrupted");
             }
         }
-        return this.count == count;
+        return (this.count == count);
     }
 
     /**

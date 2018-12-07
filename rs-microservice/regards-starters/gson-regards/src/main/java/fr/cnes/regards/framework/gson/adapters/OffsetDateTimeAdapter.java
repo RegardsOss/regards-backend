@@ -32,7 +32,6 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
 /**
- *
  * ISO 8601 date adapter
  * This TypeAdapter is used in method GsonAutoConfiguration#customizeBuilder.
  * The aim is to be able to read a date time with or without Time zone specified and to format date time with UTC Time
@@ -54,13 +53,13 @@ public class OffsetDateTimeAdapter extends TypeAdapter<OffsetDateTime> {
      * Writing date with UTC ISO 8601 format
      */
     @Override
-    public void write(JsonWriter pOut, OffsetDateTime pValue) throws IOException {
-        pOut.value(pValue.atZoneSameInstant(ZoneOffset.UTC).format(ISO_DATE_TIME_UTC));
+    public void write(JsonWriter out, OffsetDateTime value) throws IOException {
+        out.value(value.atZoneSameInstant(ZoneOffset.UTC).format(ISO_DATE_TIME_UTC));
     }
 
     @Override
-    public OffsetDateTime read(JsonReader pIn) throws IOException {
-        return parse(pIn.nextString());
+    public OffsetDateTime read(JsonReader in) throws IOException {
+        return parse(in.nextString());
     }
 
     public static OffsetDateTime parse(String date) {

@@ -22,30 +22,22 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
  * ISamplePlugin
- *
  * @author Christophe Mertz
- *
  */
 @PluginInterface(description = "hello sample plugin interface")
 public interface ISamplePlugin {
 
     /**
      * method echo
-     *
-     * @param pMessage
-     *            message to display
-     *
+     * @param pMessage message to display
      * @return the message
      */
     String echo(String pMessage);
 
     /**
      * method add
-     *
-     * @param pFirst
-     *            first element
-     * @param pSecond
-     *            second item
+     * @param pFirst first element
+     * @param pSecond second item
      * @return the result
      */
     int add(int pFirst, int pSecond);

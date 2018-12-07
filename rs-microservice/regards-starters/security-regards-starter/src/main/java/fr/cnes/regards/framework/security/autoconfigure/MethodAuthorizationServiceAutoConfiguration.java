@@ -41,9 +41,7 @@ import fr.cnes.regards.framework.security.event.SecurityEventHandler;
 
 /**
  * Method Authorization Service auto configuration
- *
  * @author msordi
- *
  */
 @Configuration
 @ConditionalOnWebApplication
@@ -98,7 +96,8 @@ public class MethodAuthorizationServiceAutoConfiguration {
     }
 
     @Bean
-    public SecurityEventHandler securityEventHandler(final ISubscriber subscriber, MethodAuthorizationService methodAuthorizationService) {
+    public SecurityEventHandler securityEventHandler(final ISubscriber subscriber,
+            MethodAuthorizationService methodAuthorizationService) {
         return new SecurityEventHandler(microserviceName, subscriber, methodAuthorizationService);
     }
 }

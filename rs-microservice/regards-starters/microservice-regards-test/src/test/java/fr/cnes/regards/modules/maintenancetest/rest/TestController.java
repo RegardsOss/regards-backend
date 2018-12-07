@@ -27,11 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
 import fr.cnes.regards.framework.microservice.maintenance.MaintenanceException;
 
 /**
- *
  * RestController test implementation.
- *
  * @author Christophe Mertz
- * @since 1.0-SNAPSHOT
  */
 @RestController
 public class TestController {

@@ -23,7 +23,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- *
  * This annotation is required for all AMQP events.
  *
  * <h1>For {@link ISubscribable} events:</h1>
@@ -52,9 +51,7 @@ import java.lang.annotation.RetentionPolicy;
  * <li>{@link WorkerMode#UNICAST} / {@link Target#ALL} : event can be polled ONCE by
  * the FIRST microservice instance WHATEVER the microservice type.</li>
  * </ul>
- *
  * @author Marc Sordi
- *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @java.lang.annotation.Target(ElementType.TYPE)
@@ -64,7 +61,6 @@ public @interface Event {
      * With {@link ISubscribable} events, all {@link Target} are usable.<br/>
      * With {@link IPollable} events, only {@link Target#ALL} or {@link Target#MICROSERVICE} are.<br/>
      * Look at {@link Event} javadoc for usage.
-     *
      * @return event {@link Target}
      */
     Target target();
@@ -72,7 +68,6 @@ public @interface Event {
     /**
      * This mode is only used for {@link ISubscribable} event.<br/>
      * Look at {@link Event} javadoc for usage.
-     *
      * @return event {@link WorkerMode}
      */
     WorkerMode mode() default WorkerMode.BROADCAST;

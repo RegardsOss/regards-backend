@@ -32,9 +32,7 @@ import fr.cnes.regards.framework.test.report.xls.XlsxHelper;
 
 /**
  * Test XML report marshalling/unmarshalling
- *
  * @author msordi
- *
  */
 public class XmlReportTest {
 

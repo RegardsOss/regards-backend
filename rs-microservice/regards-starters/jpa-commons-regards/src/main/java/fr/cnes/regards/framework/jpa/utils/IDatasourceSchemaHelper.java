@@ -22,19 +22,15 @@ import javax.sql.DataSource;
 import java.util.Map;
 
 /**
- *
  * Datasource schema migration interface
- *
  * @author Marc Sordi
- *
  */
 public interface IDatasourceSchemaHelper {
 
     /**
-    * Migrate datasource
-    *
-    * @param dataSource datasource to migrate
-    */
+     * Migrate datasource
+     * @param dataSource datasource to migrate
+     */
     void migrate(DataSource dataSource);
 
     /**

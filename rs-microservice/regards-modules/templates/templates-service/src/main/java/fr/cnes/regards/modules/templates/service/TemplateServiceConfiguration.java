@@ -101,6 +101,8 @@ public class TemplateServiceConfiguration {
      */
     public static final String NOT_SUBSETTED_DATA_FILES_CODE = "NOT_SUBSETTED_DATA_FILES";
 
+    public static final String UNDELETABLES_DATA_FILES_CODE = "UNDELETABLES_DATA_FILES";
+
     /**
      * List of template bean name
      */
@@ -126,7 +128,6 @@ public class TemplateServiceConfiguration {
     /**
      * The account refused email template as html
      */
-
     private static final String ACCOUNT_REFUSED_TEMPLATE = "template/account-refused-template.html";
 
     /**
@@ -159,6 +160,8 @@ public class TemplateServiceConfiguration {
      */
     private static final String NOT_SUBSETTED_DATA_FILES_TEMPLATE = "template/not_subsetted_data_files_template.html";
 
+    private static final String UNDELETABLES_DATA_FILES_TEMPLATE = "template/undeletable_data_files_template.html";
+
     private static final String REJECTED_SIPS_TEMPLATE = "template/rejected_sips_template.html";
 
     private static final Map<String, TemplatePathSubject> templateCodePathMap = Maps.newHashMap();
@@ -187,6 +190,8 @@ public class TemplateServiceConfiguration {
         templateCodePathMap.put(NOT_SUBSETTED_DATA_FILES_CODE,
                                 new TemplatePathSubject(NOT_SUBSETTED_DATA_FILES_TEMPLATE,
                                                         "Files could not be handled by their data storage"));
+        templateCodePathMap.put(UNDELETABLES_DATA_FILES_CODE, new TemplatePathSubject(UNDELETABLES_DATA_FILES_TEMPLATE,
+                                                                                      "REGARDS - Some files could not be deleted from data storage"));
         templateCodePathMap
                 .put(ACCOUNT_UNLOCK_TEMPLATE_CODE, new TemplatePathSubject(ACCOUNT_UNLOCK_TEMPLATE, "Account Unlock"));
         templateCodePathMap.put(ACCOUNT_REFUSED_TEMPLATE_CODE,
@@ -197,7 +202,6 @@ public class TemplateServiceConfiguration {
 
     /**
      * @return the list of initialized template bean for the current microservice
-     * @throws IOException
      */
     @Bean(name = TEMPLATES)
     public List<Template> templates() throws IOException {
@@ -207,9 +211,7 @@ public class TemplateServiceConfiguration {
             try (InputStream is = resource.getInputStream()) {
                 final String text = inputStreamToString(is);
                 final Map<String, String> dataStructure = new HashMap<>();
-                templates.add(new Template(templateCodePathEntry.getKey(),
-                                           text,
-                                           dataStructure,
+                templates.add(new Template(templateCodePathEntry.getKey(), text, dataStructure,
                                            templateCodePathEntry.getValue().getEmailSubject()));
             } catch (FileNotFoundException fnfe) {
                 // due to code construction, it happens and it is not an error or an issue

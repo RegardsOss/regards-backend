@@ -23,10 +23,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- *
  * This class represents a database module
  * @author Marc Sordi
- *
  */
 public class DatabaseModule {
 
@@ -128,13 +126,9 @@ public class DatabaseModule {
             return false;
         }
         if (name == null) {
-            if (other.name != null) {
-                return false;
-            }
-        } else if (!name.equals(other.name)) {
-            return false;
-        }
-        return true;
+            return other.name == null;
+        } else
+            return name.equals(other.name);
     }
 
     public int getWeight() {

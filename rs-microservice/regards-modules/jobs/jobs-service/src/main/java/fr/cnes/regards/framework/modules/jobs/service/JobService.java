@@ -216,9 +216,12 @@ public class JobService implements IJobService {
     @SuppressWarnings("unchecked")
     public void execute(JobInfo jobInfo) {
         try {
+            // Tenant is forced in all cases even if everything is OK (case when no DB save is done).
+            // Forced tenant is mandatory when updating database so for the following cases:
+            // expired job, aborted job, instantiation errors and job resetting
+            runtimeTenantResolver.forceTenant(jobInfo.getTenant());
             // Case expiration date reached
             if ((jobInfo.getExpirationDate() != null) && jobInfo.getExpirationDate().isBefore(OffsetDateTime.now())) {
-                runtimeTenantResolver.forceTenant(jobInfo.getTenant());
                 jobInfo.updateStatus(JobStatus.FAILED);
                 jobInfo.getStatus().setStackTrace("Expiration date reached");
                 jobInfoService.save(jobInfo);
@@ -259,6 +262,9 @@ public class JobService implements IJobService {
         } catch (JobParameterInvalidException e) {
             LOGGER.error("Invalid parameter", e);
             manageJobInstantiationError(jobInfo, e);
+        }
+        finally {
+            runtimeTenantResolver.clearTenant();
         }
     }
 

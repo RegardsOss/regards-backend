@@ -28,10 +28,8 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 /**
  * {@link Poller} uses {@link IRuntimeTenantResolver} to resolve current thread tenant to poll an event in the
  * multitenant context.
- *
  * @author svissier
  * @author Marc Sordi
- *
  */
 public class Poller extends AbstractPoller implements IPoller {
 

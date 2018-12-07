@@ -32,11 +32,8 @@ import fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.transacti
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
- *
  * Test service for transactionnal DAO actions
- *
  * @author CS
- * @since 1.0-SNAPSHOT
  */
 @Service
 public class DaoUserService {
@@ -69,16 +66,9 @@ public class DaoUserService {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     /**
-     *
      * Test adding a user with error. Rollback must be done.
-     *
-     * @param pTenant
-     *            Tenant or project to use
-     * @throws DaoTestException
-     *             Simulated error always thrown to activate JPA rollback
-     * @throws MissingClaimException
-     * @throws InvalidJwtException
-     * @since 1.0-SNAPSHOT
+     * @param pTenant Tenant or project to use
+     * @throws DaoTestException Simulated error always thrown to activate JPA rollback
      */
     @Transactional(transactionManager = "multitenantsJpaTransactionManager", rollbackFor = DaoTestException.class)
     public void addWithError(final String pTenant) throws DaoTestException {
@@ -95,14 +85,8 @@ public class DaoUserService {
     }
 
     /**
-     *
      * Test adding a user without error
-     *
-     * @param pTenant
-     *            Tenant or project to use
-     * @throws MissingClaimException
-     * @throws InvalidJwtException
-     * @since 1.0-SNAPSHOT
+     * @param pTenant Tenant or project to use
      */
     public void addWithoutError(final String pTenant) {
         runtimeTenantResolver.forceTenant(pTenant);
@@ -111,33 +95,21 @@ public class DaoUserService {
     }
 
     /**
-     *
      * Test getting all users from a given tenant
-     *
-     * @param pTenant
-     *            Tenant or project to use
+     * @param pTenant Tenant or project to use
      * @return Result list of users
-     * @throws MissingClaimException
-     * @throws InvalidJwtException
-     * @since 1.0-SNAPSHOT
      */
     public List<User> getUsers(final String pTenant) {
         runtimeTenantResolver.forceTenant(pTenant);
         final Iterable<User> list = userRepository.findAll();
         final List<User> results = new ArrayList<>();
-        list.forEach(user -> results.add(user));
+        list.forEach(results::add);
         return results;
     }
 
     /**
-     *
      * Test method to delete all users from a given tenant
-     *
-     * @param pTenant
-     *            Tenant or project to use
-     * @throws MissingClaimException
-     * @throws InvalidJwtException
-     * @since 1.0-SNAPSHOT
+     * @param pTenant Tenant or project to use
      */
     public void deleteAll(final String pTenant) {
         runtimeTenantResolver.forceTenant(pTenant);

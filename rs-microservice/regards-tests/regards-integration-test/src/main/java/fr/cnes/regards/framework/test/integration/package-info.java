@@ -18,8 +18,6 @@
  */
 /**
  * Integration test package
- *
  * @author msordi
- *
  */
 package fr.cnes.regards.framework.test.integration;

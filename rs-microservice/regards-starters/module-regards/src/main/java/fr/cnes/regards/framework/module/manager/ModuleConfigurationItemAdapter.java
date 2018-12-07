@@ -33,9 +33,7 @@ import com.google.gson.stream.JsonWriter;
 
 /**
  * Automatic (de)serializer for configuration POJO. Only non generic POJOs are accepted!
- *
  * @author Marc Sordi
- *
  */
 @SuppressWarnings("rawtypes")
 public class ModuleConfigurationItemAdapter extends TypeAdapter<ModuleConfigurationItem> {
@@ -52,7 +50,7 @@ public class ModuleConfigurationItemAdapter extends TypeAdapter<ModuleConfigurat
     }
 
     @Override
-    public void write(JsonWriter out, ModuleConfigurationItem value) throws IOException {
+    public void write(JsonWriter out, ModuleConfigurationItem value) {
         gson.toJson(value, ModuleConfigurationItem.class, out);
     }
 

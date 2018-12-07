@@ -9,7 +9,6 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 /**
  * Spring interceptor that reset {@link FeignSecurityManager} before the request is being handled by the controllers
- *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class FeignHandlerInterceptor extends HandlerInterceptorAdapter {

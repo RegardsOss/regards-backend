@@ -11,7 +11,6 @@ import com.google.gson.stream.JsonWriter;
 
 /**
  * Gson adapter for {@link MimeType}
- *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class MimeTypeAdapter extends TypeAdapter<MimeType> {

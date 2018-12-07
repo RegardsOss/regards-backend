@@ -42,11 +42,8 @@ import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 
 /**
- *
  * Tests for plugin instanciation with complex parameter types
- *
  * @author sbinda
- *
  */
 public class ComplexPluginTest {
 
@@ -72,9 +69,7 @@ public class ComplexPluginTest {
         BlowfishEncryptionService blowfishEncryptionService = new BlowfishEncryptionService();
         blowfishEncryptionService
                 .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "12345678"));
-        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked,
-                                                publisherMocked,
-                                                runtimeTenantResolver,
+        pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, publisherMocked, runtimeTenantResolver,
                                                 blowfishEncryptionService);
         PluginUtils.setup();
     }
@@ -95,20 +90,19 @@ public class ComplexPluginTest {
 
         ppf.addDynamicParameter(TestPlugin.FIELD_NAME_POJO_PARAM, pojo);
 
-        final List<PluginConfiguration> pluginConfs = new ArrayList<>();
-        final PluginConfiguration aPluginConfiguration = new PluginConfiguration(result,
-                                                                                 "a configuration from PluginServiceUtility",
-                                                                                 ppf.getParameters(),
-                                                                                 0);
+        List<PluginConfiguration> pluginConfs = new ArrayList<>();
+        PluginConfiguration aPluginConfiguration = new PluginConfiguration(result,
+                                                                           "a configuration from PluginServiceUtility",
+                                                                           ppf.getParameters(), 0);
         aPluginConfiguration.setId(pPluginConfigurationId);
 
         pluginConfs.add(aPluginConfiguration);
 
         Mockito.when(pluginConfRepositoryMocked.findByPluginIdOrderByPriorityOrderDesc("complexPlugin"))
                 .thenReturn(pluginConfs);
-        Mockito.when(pluginConfRepositoryMocked.findById(aPluginConfiguration.getId()))
+        Mockito.when(pluginConfRepositoryMocked.findCompleteById(aPluginConfiguration.getId()))
                 .thenReturn(aPluginConfiguration);
-        Mockito.when(pluginConfRepositoryMocked.exists(aPluginConfiguration.getId())).thenReturn(true);
+        Mockito.when(pluginConfRepositoryMocked.existsById(aPluginConfiguration.getId())).thenReturn(true);
 
         ITestPlugin plugin = pluginServiceMocked.getPlugin(pPluginConfigurationId);
 

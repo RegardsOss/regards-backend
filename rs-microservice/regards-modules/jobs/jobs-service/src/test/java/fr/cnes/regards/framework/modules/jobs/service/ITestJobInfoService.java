@@ -24,5 +24,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
  * @author oroussel
  */
 public interface ITestJobInfoService {
+
     JobInfo findHighestPriorityQueuedJobAndSetAsToBeRun();
 }

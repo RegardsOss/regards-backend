@@ -19,6 +19,7 @@
 package fr.cnes.regards.framework.multitenant.autoconfigure.tenant;
 
 import javax.annotation.PostConstruct;
+import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -28,9 +29,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 
 /**
  * Resolve tenant base on configuration properties
- *
  * @author msordi
- *
  */
 public class DefaultTenantResolver implements ITenantResolver {
 
@@ -49,9 +48,7 @@ public class DefaultTenantResolver implements ITenantResolver {
     public void init() {
         tenants = new TreeSet<>();
         if (localTenants != null) {
-            for (String tenant : localTenants) {
-                tenants.add(tenant);
-            }
+            Collections.addAll(tenants, localTenants);
         }
     }
 

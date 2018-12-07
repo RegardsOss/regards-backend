@@ -22,7 +22,6 @@ package fr.cnes.regards.framework.module.manager;
  * This class represents a module configuration item. Class representing value may be annotated with
  * {@link ConfigIgnore} in addition to GsonIgnore to avoid specific field serialization.
  * @author Marc Sordi
- *
  */
 public class ModuleConfigurationItem<T> {
 
@@ -52,8 +51,7 @@ public class ModuleConfigurationItem<T> {
     }
 
     public static <T> ModuleConfigurationItem<T> build(T value) {
-        ModuleConfigurationItem<T> mci = new ModuleConfigurationItem<T>(value);
-        return mci;
+        return new ModuleConfigurationItem<T>(value);
     }
 
     public Class<T> getKey() {

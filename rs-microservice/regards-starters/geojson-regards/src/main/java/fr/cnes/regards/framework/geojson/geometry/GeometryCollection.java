@@ -27,9 +27,7 @@ import fr.cnes.regards.framework.geojson.GeoJsonType;
 /**
  * RFC 7946 -August 2016<br/>
  * GeoJson GeometryCollection representation
- *
  * @author Marc Sordi
- *
  */
 public class GeometryCollection extends AbstractGeoJsonObject implements IGeometry {
 
@@ -71,13 +69,9 @@ public class GeometryCollection extends AbstractGeoJsonObject implements IGeomet
         }
         GeometryCollection other = (GeometryCollection) obj;
         if (geometries == null) {
-            if (other.geometries != null) {
-                return false;
-            }
-        } else if (!geometries.equals(other.geometries)) {
-            return false;
-        }
-        return true;
+            return other.geometries == null;
+        } else
+            return geometries.equals(other.geometries);
     }
 
     @Override

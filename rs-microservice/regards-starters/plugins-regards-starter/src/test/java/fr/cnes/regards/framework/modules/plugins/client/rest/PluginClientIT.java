@@ -26,8 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.netflix.feign.support.ResponseEntityDecoder;
-import org.springframework.cloud.netflix.feign.support.SpringMvcContract;
+import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
+import org.springframework.cloud.openfeign.support.SpringMvcContract;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,11 +42,8 @@ import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsWebIT;
 
 /**
- *
  * Check that the plugin Feign Client can contact plugin rest module.
- *
  * @author Sylvain Vissiere-Guerinet
- *
  */
 
 public class PluginClientIT extends AbstractRegardsWebIT {
@@ -62,16 +59,16 @@ public class PluginClientIT extends AbstractRegardsWebIT {
     @Test
     public void testRetrievePluginTypes() {
         try {
-            authService.setAuthorities(DEFAULT_TENANT, IPluginClient.PLUGIN_TYPES, "Controller", RequestMethod.GET,
+            authService.setAuthorities(getDefaultTenant(), IPluginClient.PLUGIN_TYPES, "Controller", RequestMethod.GET,
                                        RoleAuthority.getSysRole(""));
-            jwtService.injectToken(DEFAULT_TENANT, RoleAuthority.getSysRole(""), "", "");
-            final IPluginClient pluginClient = HystrixFeign.builder().contract(new SpringMvcContract())
+            jwtService.injectToken(getDefaultTenant(), RoleAuthority.getSysRole(""), "", "");
+            IPluginClient pluginClient = HystrixFeign.builder().contract(new SpringMvcContract())
                     .encoder(new GsonEncoder()).decoder(new ResponseEntityDecoder(new GsonDecoder()))
                     .target(new TokenClientProvider<>(IPluginClient.class, "http://" + serverAddress + ":" + getPort(),
-                            feignSecurityManager));
-            final ResponseEntity<List<Resource<String>>> pluginTypes = pluginClient.getPluginTypes();
-            Assert.assertTrue(pluginTypes.getStatusCode().equals(HttpStatus.OK));
-        } catch (final Exception e) {
+                                                      feignSecurityManager));
+            ResponseEntity<List<Resource<String>>> pluginTypes = pluginClient.getPluginTypes();
+            Assert.assertEquals(pluginTypes.getStatusCode(), HttpStatus.OK);
+        } catch (Exception e) {
             LOG.error(e.getMessage(), e);
             Assert.fail(e.getMessage());
         }

@@ -54,7 +54,6 @@ import fr.cnes.regards.framework.test.util.JUnitLogRule;
  *
  * annotated method for example or into tests methods.
  * <i>public</i> schema is used.
- *
  * @author svissier
  */
 @RunWith(SpringRunner.class)
@@ -62,20 +61,10 @@ import fr.cnes.regards.framework.test.util.JUnitLogRule;
 @ContextConfiguration(classes = { DefaultTestFeignConfiguration.class, DefaultDaoTestConfiguration.class,
         MockAmqpConfiguration.class })
 @ActiveProfiles({ "default", "test", "noschedule" })
-@TestPropertySource(properties = { "regards.cloud.enabled=false" })
+@TestPropertySource(properties = { "regards.cloud.enabled=false", "spring.flyway.enabled=false" })
 public abstract class AbstractRegardsServiceIT {
 
-    /**
-     * @deprecated Default tenant. Use {@link #getDefaultTenant()} instead.
-     */
-    @Deprecated
-    protected static final String DEFAULT_TENANT = "PROJECT";
-
-    /**
-     * @deprecated Default user email. Use {@link #getDefaultUserEmail()} instead.
-     */
-    @Deprecated
-    protected static final String DEFAULT_USER_EMAIL = "default_user@regards.fr";
+    private static final String DEFAULT_USER_EMAIL = "default_user@regards.fr";
 
     /**
      * Default user role. User {@link #getDefaultRole()} instead.
@@ -109,15 +98,12 @@ public abstract class AbstractRegardsServiceIT {
 
     /**
      * Generate token for default tenant
-     *
-     * @param pName
-     *            user name
-     * @param pRole
-     *            user role
+     * @param name user name
+     * @param role user role
      * @return JWT
      */
-    protected String generateToken(final String pName, final String pRole) {
-        return jwtService.generateToken(getDefaultTenant(), pName, pName, pRole);
+    protected String generateToken(String name, final String role) {
+        return jwtService.generateToken(getDefaultTenant(), name, name, role);
     }
 
     /**

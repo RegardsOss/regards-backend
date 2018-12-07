@@ -22,11 +22,8 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.util.Assert;
 
 /**
- *
  * Utility class to extract annotation information from events.
- *
  * @author Marc Sordi
- *
  */
 public final class EventUtils {
 
@@ -35,9 +32,7 @@ public final class EventUtils {
 
     /**
      * Retrieve annotation {@link Event} from class. This annotation must exist!
-     *
-     * @param eventType
-     *            {@link Event} annotated class
+     * @param eventType {@link Event} annotated class
      * @return {@link Event}
      */
     public static Event getEventProperties(Class<?> eventType) {
@@ -48,8 +43,7 @@ public final class EventUtils {
     }
 
     /**
-     * @param eventType
-     *            {@link Event} annotated class
+     * @param eventType {@link Event} annotated class
      * @return {@link Target}
      */
     public static Target getTargetRestriction(Class<?> eventType) {

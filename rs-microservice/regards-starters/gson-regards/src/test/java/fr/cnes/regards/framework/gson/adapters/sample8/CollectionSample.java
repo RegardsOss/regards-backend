@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.gson.adapters.sample8;
 
 /**
  * @author Marc Sordi
- *
  */
 public class CollectionSample extends AbstractEntitySample {
 

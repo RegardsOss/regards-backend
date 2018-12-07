@@ -17,10 +17,7 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- *
  * REGARDS logback appender to send log as event ona queue.
- * 
  * @author Christophe Mertz
- *
  */
 package fr.cnes.regards.framework.logbackappender;

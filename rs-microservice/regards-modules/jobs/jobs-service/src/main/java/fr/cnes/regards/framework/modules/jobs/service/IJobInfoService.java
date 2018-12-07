@@ -58,7 +58,6 @@ public interface IJobInfoService {
 
     /**
      * Unlock job info, make it candidate for cleaning
-     * @param jobInfo
      * @return the update job info
      */
     JobInfo unlock(JobInfo jobInfo);

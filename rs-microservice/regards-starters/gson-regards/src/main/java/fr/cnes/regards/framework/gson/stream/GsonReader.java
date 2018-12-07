@@ -33,9 +33,7 @@ import fr.cnes.regards.framework.gson.exception.GsonUtilException;
 
 /**
  * GSON reader
- *
  * @author Marc Sordi
- *
  */
 public final class GsonReader {
 
@@ -49,16 +47,11 @@ public final class GsonReader {
 
     /**
      * Read object from input stream
-     *
-     * @param <T>
-     *            object type
-     * @param pInputStream
-     *            input stream
-     * @param pClass
-     *            object type
+     * @param <T> object type
+     * @param pInputStream input stream
+     * @param pClass object type
      * @return object
-     * @throws GsonUtilException
-     *             if error occurs!
+     * @throws GsonUtilException if error occurs!
      */
     public static <T> T read(InputStream pInputStream, Class<T> pClass) throws GsonUtilException {
         final Gson gson = new GsonBuilder().setPrettyPrinting().create();

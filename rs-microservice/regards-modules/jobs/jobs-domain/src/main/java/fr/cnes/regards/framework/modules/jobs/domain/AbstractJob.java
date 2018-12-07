@@ -94,7 +94,6 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
     /**
      * Reject a job because workspace has thrown an IOException
      * @param e thrown exception while setting workspace
-     * @throws JobWorkspaceException
      */
     protected void handleWorkspaceException(IOException e) throws JobWorkspaceException {
         logger.error("Cannot set workspace", e);
@@ -151,12 +150,13 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
         JobParameter parameter = parameters.get(parameterName);
         if (parameter == null) {
             handleMissingParameter(parameterName);
-        }
-        T val = type == null ? parameter.getValue() : parameter.getValue(type);
-        if (val == null) { // NOSONAR : an exception is thrown when calling handleMissingParameter
+        } else if (parameter.getValue() == null) { // NOSONAR : an exception is thrown when calling handleMissingParameter
             handleInvalidParameter(parameterName, "Null value");
+        } else {
+            return parameter.getValue();
         }
-        return val;
+        // Unreachable code (handle... methods throw Exceptions)
+        return null;
     }
 
     protected <T> T getValue(Map<String, JobParameter> parameters, String parameterName)

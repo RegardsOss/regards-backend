@@ -21,12 +21,9 @@ package fr.cnes.regards.framework.oais;
 import javax.validation.constraints.NotNull;
 
 /**
- *
  * OAIS semantic
- *
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
- *
  */
 public class Semantic {
 

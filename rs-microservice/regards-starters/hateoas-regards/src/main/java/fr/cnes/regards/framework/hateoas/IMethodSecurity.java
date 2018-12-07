@@ -22,9 +22,7 @@ import java.lang.reflect.Method;
 
 /**
  * Method security
- *
  * @author msordi
- *
  */
 public interface IMethodSecurity {
 

@@ -29,9 +29,7 @@ import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 
 /**
  * {@link InstanceSubscriber} uses a fixed tenant to subscribe to instance events.
- *
  * @author Marc Sordi
- *
  */
 public class InstanceSubscriber extends AbstractSubscriber implements IInstanceSubscriber {
 

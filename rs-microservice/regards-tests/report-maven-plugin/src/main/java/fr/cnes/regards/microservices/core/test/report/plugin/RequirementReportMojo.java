@@ -34,9 +34,7 @@ import fr.cnes.regards.framework.test.report.xml.XmlRequirements;
 
 /**
  * Scan all microservices file tree to retrieve all requirement reports and generate an aggregated XSLX report.
- *
  * @author msordi
- *
  */
 @Mojo(name = "gen")
 public class RequirementReportMojo extends AbstractMojo {
@@ -60,7 +58,7 @@ public class RequirementReportMojo extends AbstractMojo {
     private String target;
 
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException {
 
         getLog().info("Generating requirement report.");
 

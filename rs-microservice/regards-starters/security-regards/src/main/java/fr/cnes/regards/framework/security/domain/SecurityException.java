@@ -20,10 +20,8 @@ package fr.cnes.regards.framework.security.domain;
 
 /**
  * This exception is thrown when an error occurs during security check process
- *
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
- *
  */
 public class SecurityException extends Exception {
 
@@ -34,11 +32,8 @@ public class SecurityException extends Exception {
 
     /**
      * Constructor
-     *
-     * @param pMessage
-     *            the message
-     * @param pCause
-     *            the cause
+     * @param pMessage the message
+     * @param pCause the cause
      */
     public SecurityException(final String pMessage, final Throwable pCause) {
         super(pMessage, pCause);

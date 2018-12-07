@@ -22,9 +22,7 @@ import org.springframework.test.context.transaction.BeforeTransaction;
 
 /**
  * Add default transactional initialization
- *
  * @author Marc Sordi
- *
  */
 public abstract class AbstractRegardsTransactionalIT extends AbstractRegardsIT {
 
@@ -36,11 +34,8 @@ public abstract class AbstractRegardsTransactionalIT extends AbstractRegardsIT {
     /**
      * Inject token in the security context.<br>
      * Override this method to manage your tenant and role in transaction
-     *
-     * @param pTenant
-     *            tenant
-     * @param pRole
-     *            role
+     * @param pTenant tenant
+     * @param pRole role
      */
     protected void injectToken(String pTenant, String pRole) {
         jwtService.injectMockToken(pTenant, pRole);

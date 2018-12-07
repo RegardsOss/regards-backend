@@ -25,7 +25,7 @@ import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
-import org.springframework.boot.autoconfigure.web.HttpMessageConvertersAutoConfiguration;
+import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -42,7 +42,6 @@ import fr.cnes.regards.framework.gson.GsonProperties;
 
 /**
  * GSON support auto configuration
- *
  * @author Marc Sordi
  */
 @Configuration
@@ -70,7 +69,6 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
 
     /**
      * Configure a builder with GSON adapter for Sprinfox swagger Json object
-     *
      * @return {@link GsonBuilder}
      */
     @Bean
@@ -79,8 +77,8 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
         LOGGER.info("GSON auto configuration enabled with SpringFox support");
         GsonBuilder builder = gsonBuilderFactory.newBuilder();
         try {
-            builder.registerTypeAdapterFactory((TypeAdapterFactory) Class.forName(SPRINGFOX_GSON_FACTORY)
-                    .newInstance());
+            builder.registerTypeAdapterFactory(
+                    (TypeAdapterFactory) Class.forName(SPRINGFOX_GSON_FACTORY).newInstance());
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             final String errorMessage = "Cannot init SpringFox GSON factory";
             LOGGER.error(errorMessage, e);

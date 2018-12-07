@@ -32,18 +32,18 @@ public interface IHandler<T> {
     /**
      * Logger instance
      */
-    static final Logger LOGGER = LoggerFactory.getLogger(IHandler.class);
+    Logger LOGGER = LoggerFactory.getLogger(IHandler.class);
 
-    public default void handleAndLog(TenantWrapper<T> wrapper) {
+    default void handleAndLog(TenantWrapper<T> wrapper) {
         LOGGER.debug("Received {}, From {}", wrapper.getContent().getClass().getSimpleName(), wrapper.getTenant());
         LOGGER.trace("Event received: {}", wrapper.getContent().toString());
         handle(wrapper);
     }
 
-    public void handle(TenantWrapper<T> wrapper);
+    void handle(TenantWrapper<T> wrapper);
 
     @SuppressWarnings("unchecked")
-    public default Class<? extends IHandler<T>> getType() {
+    default Class<? extends IHandler<T>> getType() {
         return (Class<? extends IHandler<T>>) this.getClass();
     }
 }

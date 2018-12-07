@@ -35,7 +35,6 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 public class RegardsOaisUrnValidatorTest {
 

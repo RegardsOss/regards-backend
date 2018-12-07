@@ -22,11 +22,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- *
  * Mock to test Swagger API rendering with GSON starter on the classpath
- * 
  * @author Marc Sordi
- *
  */
 // CHECKSTYLE:OFF
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.framework.swagger.application" })

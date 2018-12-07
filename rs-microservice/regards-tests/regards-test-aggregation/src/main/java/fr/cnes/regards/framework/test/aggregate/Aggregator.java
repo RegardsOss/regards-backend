@@ -39,9 +39,7 @@ import fr.cnes.regards.framework.test.report.xml.XmlRequirements;
  * This class aggregates Junit reports per microservices. Each microservice reports has to be stored in its own
  * directory.<br/>
  * Aggregate reports are written in an XLSX document with each sheet representing a microservice.
- *
  * @author Marc Sordi
- *
  */
 public class Aggregator {
 

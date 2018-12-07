@@ -36,8 +36,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 
 /**
  * Interface for a JPA auto-generated CRUD repository managing Jobs.
- * @author Léo Mieulet
- * @author Christophe Mertz
+ * @author Olivier Rousselot
  */
 public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
 
@@ -56,7 +55,7 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
     }
 
     @EntityGraph(attributePaths = { "parameters" })
-    JobInfo findById(UUID id);
+    JobInfo findCompleteById(UUID id);
 
     @Modifying
     @Query("update JobInfo j set j.status.percentCompleted = ?1, j.status.estimatedCompletion = ?2 where j.id = ?3 "
@@ -103,8 +102,8 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
      * Search failed and aborted jobs since given number of days
      */
     default List<JobInfo> findFailedOrAbortedJobsSince(int days) {
-        return findByStatusStopDateLessThanAndLockedAndStatusStatusIn(OffsetDateTime.now().minusDays((long) days), false,
-                                                                      JobStatus.FAILED, JobStatus.ABORTED);
+        return findByStatusStopDateLessThanAndLockedAndStatusStatusIn(OffsetDateTime.now().minusDays((long) days),
+                                                                      false, JobStatus.FAILED, JobStatus.ABORTED);
     }
 
     /**
@@ -142,6 +141,6 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
      * @param count number of results to retrieve
      */
     default List<JobInfo> findTopUserPendingJobs(String user, int count) {
-        return findByOwnerAndStatusStatusOrderByPriorityDesc(user, JobStatus.PENDING, new PageRequest(0, count));
+        return findByOwnerAndStatusStatusOrderByPriorityDesc(user, JobStatus.PENDING, PageRequest.of(0, count));
     }
 }

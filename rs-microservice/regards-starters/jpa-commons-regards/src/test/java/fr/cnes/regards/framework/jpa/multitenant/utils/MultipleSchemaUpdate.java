@@ -48,11 +48,8 @@ import fr.cnes.regards.framework.jpa.utils.Hbm2ddlDatasourceSchemaHelper;
 import fr.cnes.regards.framework.modules.person.Person;
 
 /**
- *
  * Test updating multiple schema. Just run migration tools
- *
  * @author Marc Sordi
- *
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource("/multipleSchema.properties")
@@ -87,8 +84,8 @@ public class MultipleSchemaUpdate {
 
     @Before
     public void setup() throws PropertyVetoException {
-        dataSource = DataSourceHelper.createPooledDataSource("testperson", url, driver, userName, password, 5, 20,
-                                                             "SELECT 1");
+        dataSource = DataSourceHelper
+                .createPooledDataSource("testperson", url, driver, userName, password, 5, 20, "SELECT 1");
 
         // Set hibernate properties
         hibernateProperties = new HashMap<>();
@@ -113,10 +110,10 @@ public class MultipleSchemaUpdate {
      * @throws JpaException if error occurs!
      */
     @Test
-    public void testWithHbm2ddl() throws JpaException {
+    public void testWithHbm2ddl() {
 
         Hbm2ddlDatasourceSchemaHelper schemaHelper = new Hbm2ddlDatasourceSchemaHelper(hibernateProperties,
-                Entity.class, null);
+                                                                                       Entity.class, null);
 
         schemaHelper.migrate(dataSource, Person.class.getPackage().getName(), "hbm2ddl1");
         schemaHelper.migrate(dataSource, Person.class.getPackage().getName(), "hbm2ddl2");
@@ -152,7 +149,6 @@ public class MultipleSchemaUpdate {
         DatabaseModule entities = new DatabaseModule("entities", plugins, models);
         DatabaseModule dataAccess = new DatabaseModule("dataAccess", plugins, entities);
 
-
         List<DatabaseModule> modules = new ArrayList<>();
         modules.add(models);
         modules.add(entities);
@@ -163,10 +159,10 @@ public class MultipleSchemaUpdate {
             module.computeWeight();
         }
 
-        Assert.assertTrue(plugins.getWeight() == 0);
-        Assert.assertTrue(models.getWeight() == 1);
-        Assert.assertTrue(entities.getWeight() == 2);
-        Assert.assertTrue(dataAccess.getWeight() == 3);
+        Assert.assertEquals(0, plugins.getWeight());
+        Assert.assertEquals(1, models.getWeight());
+        Assert.assertEquals(2, entities.getWeight());
+        Assert.assertEquals(3, dataAccess.getWeight());
 
         Collections.sort(modules, new DatabaseModuleComparator());
 

@@ -28,20 +28,19 @@ import com.google.gson.stream.JsonWriter;
 
 /**
  * @author Christophe Mertz
- *
  */
 public class PathAdapter extends TypeAdapter<Path> {
 
     @Override
-    public void write(JsonWriter pOut, Path pValue) throws IOException {
-        if (pValue != null) {
-            pOut.value(pValue.toString());
+    public void write(JsonWriter out, Path value) throws IOException {
+        if (value != null) {
+            out.value(value.toString());
         }
     }
 
     @Override
-    public Path read(JsonReader pIn) throws IOException {
-        return Paths.get(pIn.nextString());
+    public Path read(JsonReader in) throws IOException {
+        return Paths.get(in.nextString());
     }
 
 }

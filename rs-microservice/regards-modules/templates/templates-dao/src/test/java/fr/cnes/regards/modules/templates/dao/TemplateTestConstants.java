@@ -23,7 +23,6 @@ import java.util.Map;
 
 /**
  * Constants and data for testing all different templates business layers.
- *
  * @author Xavier-Alexandre Brochard
  */
 public final class TemplateTestConstants {

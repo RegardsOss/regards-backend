@@ -30,7 +30,6 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 
 /**
  * Annotation allowing to Validate {@link UniformResourceName} thanks to {@link RegardsOaisUrnValidator}
- *
  * @author Sylvain Vissiere-Guerinet
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -42,7 +41,7 @@ public @interface RegardsOaisUrn {
     /**
      * Class to validate
      */
-    static final String CLASS_NAME = "RegardsOaisUrn.";
+    String CLASS_NAME = "RegardsOaisUrn.";
 
     /**
      * @return error message key

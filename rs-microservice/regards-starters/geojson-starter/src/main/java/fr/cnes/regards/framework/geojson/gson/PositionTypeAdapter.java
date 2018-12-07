@@ -29,9 +29,7 @@ import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
 
 /**
  * Gson adapter for {@link Position}
- *
  * @author Marc Sordi
- *
  */
 @GsonTypeAdapter(adapted = Position.class)
 public class PositionTypeAdapter extends TypeAdapter<Position> {

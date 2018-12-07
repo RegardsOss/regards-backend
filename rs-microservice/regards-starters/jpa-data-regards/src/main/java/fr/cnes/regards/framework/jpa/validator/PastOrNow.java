@@ -29,7 +29,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @Retention(RUNTIME)
 @Target({ FIELD, METHOD, PARAMETER, ANNOTATION_TYPE })
@@ -40,7 +39,7 @@ public @interface PastOrNow {
     /**
      * stored as a constant because could not use this.getClass().getName()
      */
-    static final String CLASS_NAME = "fr.cnes.regards.framework.jpa.validator.PastOrNow.";
+    String CLASS_NAME = "fr.cnes.regards.framework.jpa.validator.PastOrNow.";
 
     String message() default "{" + CLASS_NAME + "message}";
 

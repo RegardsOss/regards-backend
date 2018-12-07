@@ -18,44 +18,31 @@
  */
 package fr.cnes.regards.framework.feign.autoconfigure;
 
-import org.springframework.beans.factory.ListableBeanFactory;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration.EnableWebMvcConfiguration;
-import org.springframework.boot.autoconfigure.web.WebMvcProperties;
-import org.springframework.boot.autoconfigure.web.WebMvcRegistrations;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import fr.cnes.regards.framework.feign.security.FeignHandlerInterceptor;
 
 /**
- *
  * Class WebMvcConfiguration
  *
  * Update Spring Web Mvc configuration to ignore RequestMapping on FeignClient implementations.
- *
  * @author CS
- * @since 1.0-SNAPSHOT
  */
 @Configuration
 @ConditionalOnWebApplication
-public class WebMvcConfiguration extends EnableWebMvcConfiguration {
-
-    public WebMvcConfiguration(final ObjectProvider<WebMvcProperties> pMvcPropertiesProvider,
-            final ObjectProvider<WebMvcRegistrations> pMvcRegistrationsProvider,
-            final ListableBeanFactory pBeanFactory) {
-        super(pMvcPropertiesProvider, pMvcRegistrationsProvider, pBeanFactory);
-    }
+public class WebMvcConfiguration extends WebMvcConfigurationSupport {
 
     @Override
-    protected RequestMappingHandlerMapping createRequestMappingHandlerMapping() {
+    public RequestMappingHandlerMapping createRequestMappingHandlerMapping() {
         return new ExcludeFeignRequestMappingHandler();
     }
 
     @Override
-    protected void addInterceptors(InterceptorRegistry registry) {
+    public void addInterceptors(InterceptorRegistry registry) {
         super.addInterceptors(registry);
         registry.addInterceptor(new FeignHandlerInterceptor());
     }

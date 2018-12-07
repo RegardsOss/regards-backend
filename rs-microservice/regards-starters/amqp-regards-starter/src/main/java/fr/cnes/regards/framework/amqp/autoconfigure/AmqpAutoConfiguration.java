@@ -72,9 +72,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.multitenant.autoconfigure.MultitenantBootstrapProperties;
 
 /**
- *
  * @author svissier
- *
  */
 @Configuration
 @ConditionalOnProperty(prefix = "regards.amqp", name = "enabled", matchIfMissing = true)
@@ -124,10 +122,11 @@ public class AmqpAutoConfiguration {
             final MultitenantSimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory,
             final RestOperations restOperations) {
         return new RabbitVirtualHostAdmin(amqpManagmentProperties.getMode(), pTenantResolver,
-                amqpProperties.getRabbitmqUserName(), amqpProperties.getRabbitmqPassword(),
-                amqpProperties.getAmqpManagementHost(), amqpProperties.getAmqpManagementPort(), restOperations,
-                pSimpleRoutingConnectionFactory, amqpProperties.getRabbitmqAddresses(),
-                bootstrapProperties.getBootstrapTenants());
+                                          amqpProperties.getRabbitmqUserName(), amqpProperties.getRabbitmqPassword(),
+                                          amqpProperties.getAmqpManagementHost(),
+                                          amqpProperties.getAmqpManagementPort(), restOperations,
+                                          pSimpleRoutingConnectionFactory, amqpProperties.getRabbitmqAddresses(),
+                                          bootstrapProperties.getBootstrapTenants());
     }
 
     /**
@@ -233,11 +232,8 @@ public class AmqpAutoConfiguration {
 
     /**
      * This bean is only useful if no {@link PlatformTransactionManager} was provided by a database or else.
-     *
-     * @param pThreadTenantResolver
-     *            runtime tenant resolver
-     * @param pRabbitVirtualHostAdmin
-     *            virtual host admin
+     * @param pThreadTenantResolver runtime tenant resolver
+     * @param pRabbitVirtualHostAdmin virtual host admin
      * @return a {@link RabbitTransactionManager}
      */
     @Bean
@@ -245,7 +241,8 @@ public class AmqpAutoConfiguration {
     public PlatformTransactionManager rabbitTransactionManager(IRuntimeTenantResolver pThreadTenantResolver,
             IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {
         return new MultitenantRabbitTransactionManager(amqpManagmentProperties.getMode(),
-                simpleRoutingConnectionFactory(), pThreadTenantResolver, pRabbitVirtualHostAdmin);
+                                                       simpleRoutingConnectionFactory(), pThreadTenantResolver,
+                                                       pRabbitVirtualHostAdmin);
     }
 
     @Bean

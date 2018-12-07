@@ -30,10 +30,7 @@ import fr.cnes.regards.framework.logbackappender.domain.LogEvent;
 
 /**
  * This class is used to store the {@link LogEvent} received by the subscriber.
- 
- * 
  * @author Christophe Mertz
- *
  */
 @Component
 public class SubscriberLogEvent {

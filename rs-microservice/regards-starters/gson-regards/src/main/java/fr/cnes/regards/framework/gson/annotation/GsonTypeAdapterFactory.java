@@ -28,11 +28,10 @@ import com.google.gson.TypeAdapterFactory;
 
 /**
  * Identify a GSON {@link TypeAdapterFactory} to be added dynamically to the {@link GsonBuilder} at startup
- *
  * @author Marc Sordi
- *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface GsonTypeAdapterFactory {
+
 }

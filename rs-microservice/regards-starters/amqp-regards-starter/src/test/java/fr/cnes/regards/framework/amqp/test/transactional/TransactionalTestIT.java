@@ -34,14 +34,11 @@ import fr.cnes.regards.framework.amqp.test.event.PollableInfo;
 
 /**
  * @author Marc Sordi
- *
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = TransactionalTestConfiguration.class)
-@TestPropertySource(
-        properties = { "regards.amqp.management.mode=MULTI", "regards.tenants=PROJECT, PROJECT1",
-                "regards.tenant=PROJECT", "regards.amqp.internal.transaction=true" },
-        locations = "classpath:amqp.properties")
+@TestPropertySource(properties = { "regards.amqp.management.mode=MULTI", "regards.tenants=PROJECT, PROJECT1",
+        "regards.tenant=PROJECT", "regards.amqp.internal.transaction=true" }, locations = "classpath:amqp.properties")
 public class TransactionalTestIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TransactionalTestIT.class);
@@ -64,7 +61,6 @@ public class TransactionalTestIT {
     /**
      * Test whether polling can be done safely in transaction
      * guaranteeing that a message isn't lost if the transaction failed.
-     *
      */
     @Test
     public void transactionalPoll() {

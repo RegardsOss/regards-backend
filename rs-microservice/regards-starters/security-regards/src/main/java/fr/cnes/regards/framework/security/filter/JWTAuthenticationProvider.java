@@ -29,9 +29,7 @@ import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 
 /**
  * REGARDS JWT provider to authenticate request issuer parsing JWT
- *
  * @author msordi
- *
  */
 public class JWTAuthenticationProvider implements AuthenticationProvider {
 

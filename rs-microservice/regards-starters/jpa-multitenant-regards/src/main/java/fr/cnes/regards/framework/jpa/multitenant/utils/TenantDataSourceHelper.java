@@ -27,11 +27,8 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
 
 /**
- *
  * Help to init tenant data sources
- *
  * @author Marc Sordi
- *
  */
 public final class TenantDataSourceHelper {
 
@@ -40,15 +37,11 @@ public final class TenantDataSourceHelper {
 
     /**
      * Init a tenant data source
-     *
-     * @param pDaoProperties
-     *            {@link MultitenantDaoProperties}
-     * @param pTenantConnection
-     *            tenant connection to create
+     * @param pDaoProperties {@link MultitenantDaoProperties}
+     * @param pTenantConnection tenant connection to create
      * @return a {@link DataSource}
-     * @throws PropertyVetoException
-     *             if paramater not supported
-     * @throws SQLException if connection fails
+     * @throws PropertyVetoException if paramater not supported
+     * @throws SQLException          if connection fails
      */
     public static DataSource initDataSource(MultitenantDaoProperties pDaoProperties, TenantConnection pTenantConnection)
             throws PropertyVetoException, SQLException {
@@ -56,8 +49,8 @@ public final class TenantDataSourceHelper {
         // Bypass configuration if embedded enabled
         if (pDaoProperties.getEmbedded()) {
             // Create an embedded data source
-            dataSource = DataSourceHelper.createEmbeddedDataSource(pTenantConnection.getTenant(),
-                                                                   pDaoProperties.getEmbeddedPath());
+            dataSource = DataSourceHelper
+                    .createEmbeddedDataSource(pTenantConnection.getTenant(), pDaoProperties.getEmbeddedPath());
         } else {
             // Create a pooled data source
             dataSource = DataSourceHelper

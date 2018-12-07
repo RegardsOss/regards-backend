@@ -23,7 +23,6 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
  * ParameterPlugin
- *
  * @author Christophe Mertz
  */
 @Plugin(description = "Parameter plugin test", id = "aParameterPlugin", version = "0.0.1", author = "REGARDS Team",
@@ -40,9 +39,8 @@ public class AParameterPluginImplementation implements IComplexInterfacePlugin {
 
     @Override
     public int mult(final int pFirst, final int pSecond) {
-        final int res = ll.intValue() * (pFirst * pSecond);
 
-        return res;
+        return ll.intValue() * (pFirst * pSecond);
     }
 
 }

@@ -17,10 +17,7 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- *
  * JPA validator package
- * 
  * @author svissier
- *
  */
 package fr.cnes.regards.framework.jpa.validator;

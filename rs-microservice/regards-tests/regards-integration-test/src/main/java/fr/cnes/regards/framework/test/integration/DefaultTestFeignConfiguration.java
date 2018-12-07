@@ -25,7 +25,6 @@ import org.springframework.context.annotation.PropertySource;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @Configuration
 @EnableAutoConfiguration

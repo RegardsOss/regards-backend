@@ -30,7 +30,6 @@ import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
 
 /**
  * @author Marc Sordi
- *
  */
 @SuppressWarnings("rawtypes")
 public class CustomPolymorphicTypeAdapterFactory extends PolymorphicTypeAdapterFactory<AbstractProperty> {
@@ -72,93 +71,84 @@ public class CustomPolymorphicTypeAdapterFactory extends PolymorphicTypeAdapterF
     }
 
     @Override
-    protected JsonElement beforeRead(JsonElement pJsonElement, String pDiscriminator, Class<?> pSubType) {
-        if (pSubType == ObjectProperty.class) {
-            addNamespaceToChildren(pJsonElement, pDiscriminator);
+    protected JsonElement beforeRead(JsonElement jsonElement, String discriminator, Class<?> subType) {
+        if (subType == ObjectProperty.class) {
+            addNamespaceToChildren(jsonElement, discriminator);
         }
-        removeParentNamespace(pJsonElement);
-        return pJsonElement;
+        removeParentNamespace(jsonElement);
+        return jsonElement;
     }
 
     /**
-     * Add namespace to {@link JsonElement} children of {@link ObjectAttribute}
-     *
-     * @param pJsonElement
-     *            {@link JsonElement}
-     * @param pDiscriminator
-     *            discriminator value
+     * Add namespace to {@link JsonElement} children of ObjectAttribute
+     * @param inJsonElement {@link JsonElement}
+     * @param discriminator discriminator value
      */
-    protected void addNamespaceToChildren(JsonElement pJsonElement, String pDiscriminator) {
+    protected void addNamespaceToChildren(JsonElement inJsonElement, String discriminator) {
 
-        if (pJsonElement.isJsonObject()) {
-            final JsonElement children = pJsonElement.getAsJsonObject().get(VALUE_FIELD);
+        if (inJsonElement.isJsonObject()) {
+            final JsonElement children = inJsonElement.getAsJsonObject().get(VALUE_FIELD);
 
             if (children == null) {
-                throw missingFieldException(pJsonElement, VALUE_FIELD);
+                throw missingFieldException(inJsonElement, VALUE_FIELD);
             }
 
             if (children.isJsonArray()) {
-                final Iterator<JsonElement> childrenIter = children.getAsJsonArray().iterator();
-                while (childrenIter.hasNext()) {
-                    addNamespaceToChild(childrenIter.next(), pDiscriminator);
+                for (JsonElement jsonElement : children.getAsJsonArray()) {
+                    addNamespaceToChild(jsonElement, discriminator);
                 }
             } else {
-                throw objectRequiredException(pJsonElement);
+                throw objectRequiredException(inJsonElement);
             }
         } else {
-            throw objectRequiredException(pJsonElement);
+            throw objectRequiredException(inJsonElement);
         }
     }
 
     /**
      * Add namespace to {@link JsonElement} child
-     *
-     * @param pJsonElement
-     *            {@link JsonElement}
-     * @param pDiscriminator
-     *            discriminator value
+     * @param jsonElement {@link JsonElement}
+     * @param discriminator discriminator value
      */
-    protected void addNamespaceToChild(JsonElement pJsonElement, String pDiscriminator) {
+    protected void addNamespaceToChild(JsonElement jsonElement, String discriminator) {
 
-        if (pJsonElement.isJsonObject()) {
+        if (jsonElement.isJsonObject()) {
 
             // Backup for logging
-            String logOriginal = pJsonElement.toString();
-            JsonObject o = pJsonElement.getAsJsonObject();
+            String logOriginal = jsonElement.toString();
+            JsonObject o = jsonElement.getAsJsonObject();
 
             JsonElement originalElement = o.get(DISCRIMINATOR_FIELD_NAME);
             if (originalElement == null) {
-                throw missingFieldException(pJsonElement, DISCRIMINATOR_FIELD_NAME);
+                throw missingFieldException(jsonElement, DISCRIMINATOR_FIELD_NAME);
             }
 
             // Compute and inject name with its namespace
             String originalName = originalElement.getAsString();
-            String nsName = pDiscriminator.concat(NS_SEPARATOR).concat(originalName);
+            String nsName = discriminator.concat(NS_SEPARATOR).concat(originalName);
             o.add(DISCRIMINATOR_FIELD_NAME, new JsonPrimitive(nsName));
 
-            LOGGER.debug(String.format("Namespace added : \"%s\" -> \"%s\"", logOriginal, pJsonElement.toString()));
+            LOGGER.debug(String.format("Namespace added : \"%s\" -> \"%s\"", logOriginal, jsonElement.toString()));
         } else {
-            throw objectRequiredException(pJsonElement);
+            throw objectRequiredException(jsonElement);
         }
     }
 
     /**
      * Remove namespace from {@link JsonElement}
-     *
-     * @param pJsonElement
-     *            target {@link JsonElement}
+     * @param jsonElement target {@link JsonElement}
      */
-    protected void removeParentNamespace(JsonElement pJsonElement) {
+    protected void removeParentNamespace(JsonElement jsonElement) {
 
-        if (pJsonElement.isJsonObject()) {
+        if (jsonElement.isJsonObject()) {
 
             // Backup for logging
-            String logOriginal = pJsonElement.toString();
+            String logOriginal = jsonElement.toString();
 
-            final JsonObject o = pJsonElement.getAsJsonObject();
+            final JsonObject o = jsonElement.getAsJsonObject();
             final JsonElement nsElement = o.get(DISCRIMINATOR_FIELD_NAME);
             if (nsElement == null) {
-                throw missingFieldException(pJsonElement, DISCRIMINATOR_FIELD_NAME);
+                throw missingFieldException(jsonElement, DISCRIMINATOR_FIELD_NAME);
             }
 
             // Compute and inject name without its namespace
@@ -169,26 +159,26 @@ public class CustomPolymorphicTypeAdapterFactory extends PolymorphicTypeAdapterF
             if (LOGGER.isDebugEnabled()) {
                 if (splitNsName.length > 1) {
                     LOGGER.debug(String.format("Namespace removed : \"%s\" -> \"%s\"", logOriginal,
-                                               pJsonElement.toString()));
+                                               jsonElement.toString()));
                 } else {
                     LOGGER.debug(String.format("No namespace to remove : \"%s\" -> \"%s\"", logOriginal,
-                                               pJsonElement.toString()));
+                                               jsonElement.toString()));
                 }
             }
         } else {
-            throw objectRequiredException(pJsonElement);
+            throw objectRequiredException(jsonElement);
         }
     }
 
-    private IllegalArgumentException objectRequiredException(JsonElement pJsonElement) {
-        String errorMessage = String.format("Unexpected JSON element %s. Object required.", pJsonElement.toString());
+    private IllegalArgumentException objectRequiredException(JsonElement jsonElement) {
+        String errorMessage = String.format("Unexpected JSON element %s. Object required.", jsonElement.toString());
         LOGGER.error(errorMessage);
         return new IllegalArgumentException(errorMessage);
     }
 
-    private IllegalArgumentException missingFieldException(JsonElement pJsonElement, String pFieldName) {
-        String errorMessage = String.format("JSON element %s must contains a %s field", pJsonElement.toString(),
-                                            pFieldName);
+    private IllegalArgumentException missingFieldException(JsonElement jsonElement, String fieldName) {
+        String errorMessage = String
+                .format("JSON element %s must contains a %s field", jsonElement.toString(), fieldName);
         LOGGER.error(errorMessage);
         return new IllegalArgumentException(errorMessage);
     }

@@ -36,7 +36,6 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
  * Test class for {@link HateoasUtils}.
- *
  * @author xbrochar
  */
 public class HateoasUtilsTest {
@@ -73,7 +72,7 @@ public class HateoasUtilsTest {
         input.add(object);
 
         final List<Resource<Object>> expected = new ArrayList<>();
-        expected.add(new Resource<Object>(object));
+        expected.add(new Resource<>(object));
 
         Assert.assertEquals(expected, HateoasUtils.wrapList(input));
     }
@@ -113,9 +112,7 @@ public class HateoasUtilsTest {
     }
 
     /**
-     *
      * Test util to retrieve all elements form a paginated endpoints with Hateoas resources
-     *
      * @since 1.0-SNAPHSOT
      */
     @Test
@@ -131,9 +128,8 @@ public class HateoasUtilsTest {
 
             final PageMetadata md = new PageMetadata(pPageable.getPageSize(), pPageable.getPageNumber(), 20);
             final PagedResources<Resource<String>> resources = new PagedResources<>(HateoasUtils.wrapList(entities), md,
-                    new ArrayList<>());
-            final ResponseEntity<PagedResources<Resource<String>>> response = ResponseEntity.ok(resources);
-            return response;
+                                                                                    new ArrayList<>());
+            return ResponseEntity.ok(resources);
         });
 
         Assert.assertNotNull(allResults);
@@ -146,9 +142,8 @@ public class HateoasUtilsTest {
             final List<String> entities = new ArrayList<>();
             final PageMetadata md = new PageMetadata(pPageable.getPageSize(), pPageable.getPageNumber(), 0);
             final PagedResources<Resource<String>> resources = new PagedResources<>(HateoasUtils.wrapList(entities), md,
-                    new ArrayList<>());
-            final ResponseEntity<PagedResources<Resource<String>>> response = ResponseEntity.ok(resources);
-            return response;
+                                                                                    new ArrayList<>());
+            return ResponseEntity.ok(resources);
         });
 
         Assert.assertNotNull(allResults);
@@ -160,9 +155,8 @@ public class HateoasUtilsTest {
             entities.add("value_" + String.valueOf(pPageable.getOffset()));
             final PageMetadata md = new PageMetadata(pPageable.getPageSize(), pPageable.getPageNumber(), 1);
             final PagedResources<Resource<String>> resources = new PagedResources<>(HateoasUtils.wrapList(entities), md,
-                    new ArrayList<>());
-            final ResponseEntity<PagedResources<Resource<String>>> response = ResponseEntity.ok(resources);
-            return response;
+                                                                                    new ArrayList<>());
+            return ResponseEntity.ok(resources);
         });
 
         Assert.assertNotNull(allResults);

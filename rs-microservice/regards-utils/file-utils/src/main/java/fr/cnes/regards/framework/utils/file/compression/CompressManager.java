@@ -21,7 +21,6 @@ package fr.cnes.regards.framework.utils.file.compression;
 import java.io.File;
 
 /**
- *
  * Class CompressManager
  *
  * Gestionnaire de compression

@@ -63,9 +63,7 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
  * <br/>
  * <br/>
  * To define descriptive information, just call {@link IPBuilder#addDescriptiveInformation(String, Object)}.
- *
  * @author Marc Sordi
- *
  */
 public abstract class IPBuilder<T extends AbstractInformationPackage<?>> implements IOAISBuilder<T> {
 
@@ -92,7 +90,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Constructor using an existing information package so it can be updated
-     * @param toBeUpdated
      */
     public IPBuilder(T toBeUpdated) {
         Assert.notNull(toBeUpdated, "Given information package cannot be null!");
@@ -106,7 +103,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
     }
 
     /**
-     * @param properties
      * @return the built information package thanks to the given properties
      */
     public T build(InformationPackageProperties properties) {
@@ -126,7 +122,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Set optional feature bounding box
-     * @param bbox
      */
     public void setBbox(Double[] bbox) {
         setBbox(bbox, null);
@@ -134,7 +129,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Set optional geometry. Use {@link IGeometry} to build a valid geometry.
-     * @param geometry
      */
     public void setGeometry(IGeometry geometry) {
         ip.setGeometry(geometry);
@@ -142,8 +136,8 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * @return builder for building <b>required</b> {@link ContentInformation}. At least one is required. When all
-     *         information is set, you must call {@link IPBuilder#addContentInformation()} to effectively add the
-     *         {@link ContentInformation} to this information package.
+     * information is set, you must call {@link IPBuilder#addContentInformation()} to effectively add the
+     * {@link ContentInformation} to this information package.
      */
     public ContentInformationBuilder getContentInformationBuilder() {
         return ipPropertiesBuilder.getContentInformationBuilder();
@@ -161,8 +155,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Add a new entry in misc informations
-     * @param key
-     * @param value
      */
     public void addMiscInformation(String key, Object value) {
         ipPropertiesBuilder.addMiscInformation(key, value);
@@ -203,8 +195,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Add reference information to the information package
-     * @param key
-     * @param value
      */
     public void addReferenceInformation(String key, String value) {
         ipPropertiesBuilder.addReferenceInformation(key, value);
@@ -212,8 +202,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Add additional provenance information to the information package
-     * @param key
-     * @param value
      */
     public void addAdditionalProvenanceInformation(String key, Object value) {
         ipPropertiesBuilder.addAdditionalProvenanceInformation(key, value);
@@ -221,7 +209,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Set the facility to the information package
-     * @param facility
      */
     public void setFacility(String facility) {
         ipPropertiesBuilder.setFacility(facility);
@@ -229,7 +216,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Set the instrument to the information package
-     * @param instrument
      */
     public void setInstrument(String instrument) {
         ipPropertiesBuilder.setInstrument(instrument);
@@ -237,7 +223,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Set the filter to the information package
-     * @param filter
      */
     public void setFilter(String filter) {
         ipPropertiesBuilder.setFilter(filter);
@@ -245,7 +230,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Set the detector to the information package
-     * @param detector
      */
     public void setDetector(String detector) {
         ipPropertiesBuilder.setDetector(detector);
@@ -253,7 +237,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Set the proposal to the information package
-     * @param proposal
      */
     public void setProposal(String proposal) {
         ipPropertiesBuilder.setProposal(proposal);
@@ -261,7 +244,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Add provenance information events to the information package
-     * @param events
      */
     public void addProvenanceInformationEvents(Event... events) {
         ipPropertiesBuilder.addProvenanceInformationEvents(events);
@@ -269,9 +251,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Add a provenance information event to the information package thanks to the given parameters
-     * @param type
-     * @param comment
-     * @param date
      */
     public void addProvenanceInformationEvent(@Nullable String type, String comment, OffsetDateTime date) {
         ipPropertiesBuilder.addProvenanceInformationEvent(type, comment, date);
@@ -279,8 +258,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Add a provenance information event to the information package thanks to the given parameters
-     * @param comment
-     * @param date
      */
     public void addProvenanceInformationEvent(String comment, OffsetDateTime date) {
         ipPropertiesBuilder.addProvenanceInformationEvent(comment, date);
@@ -288,7 +265,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Add a provenance information event to the information package thanks to the given parameter
-     * @param comment
      */
     public void addProvenanceInformationEvent(String comment) {
         ipPropertiesBuilder.addProvenanceInformationEvent(comment);
@@ -296,8 +272,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Add fixity information to the information package thanks to the given parameters
-     * @param key
-     * @param value
      */
     public void addFixityInformation(String key, Object value) {
         ipPropertiesBuilder.addFixityInformation(key, value);
@@ -305,9 +279,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Set the access right informtaion to the information package thanks to the given parameters
-     * @param licence
-     * @param dataRights
-     * @param publicReleaseDate
      */
     public void setAccessRightInformation(String licence, String dataRights,
             @Nullable OffsetDateTime publicReleaseDate) {
@@ -316,7 +287,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Set access right information to the information package thanks to the given parameter
-     * @param dataRights
      */
     public void setAccessRightInformation(String dataRights) {
         ipPropertiesBuilder.setAccessRightInformation(dataRights);
@@ -387,9 +357,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Set the syntax to the information package thanks to the given parameters
-     * @param mimeName
-     * @param mimeDescription
-     * @param mimeType
      */
     public void setSyntax(String mimeName, String mimeDescription, MimeType mimeType) {
         ipPropertiesBuilder.setSyntax(mimeName, mimeDescription, mimeType);
@@ -397,10 +364,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Set syntax and semantic to the information package thanks to the given parameters
-     * @param mimeName
-     * @param mimeDescription
-     * @param mimeType
-     * @param semanticDescription
      */
     public void setSyntaxAndSemantic(String mimeName, String mimeDescription, MimeType mimeType,
             String semanticDescription) {
@@ -409,8 +372,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Add software environment property to the information package thanks to the given parameters
-     * @param key
-     * @param value
      */
     public void addSoftwareEnvironmentProperty(String key, Object value) {
         ipPropertiesBuilder.addSoftwareEnvironmentProperty(key, value);
@@ -418,8 +379,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Add hardware environment property to the information package thanks to the given parameters
-     * @param key
-     * @param value
      */
     public void addHardwareEnvironmentProperty(String key, Object value) {
         ipPropertiesBuilder.addHardwareEnvironmentProperty(key, value);
@@ -440,7 +399,7 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
      */
     public void addEvents(Collection<Event> events) {
         Assert.notNull(events, "Collection of events cannot be null");
-        addEvents(events.toArray(new Event[events.size()]));
+        addEvents(events.toArray(new Event[0]));
     }
 
     /**
@@ -476,7 +435,6 @@ public abstract class IPBuilder<T extends AbstractInformationPackage<?>> impleme
 
     /**
      * Remove tags from the information package
-     * @param tags
      */
     public void removeTags(String... tags) {
         ipPropertiesBuilder.removeTags(tags);

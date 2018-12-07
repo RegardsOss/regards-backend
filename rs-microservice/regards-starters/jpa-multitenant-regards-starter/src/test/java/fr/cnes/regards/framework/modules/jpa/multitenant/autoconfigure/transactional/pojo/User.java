@@ -30,13 +30,10 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
 /**
- *
  * Class User
  *
  * JPA Company Entity. For projects multitenancy databases.
- *
  * @author CS
- * @since 1.0-SNAPSHOT
  */
 @Entity
 @Table(name = "t_user")
@@ -71,24 +68,16 @@ public class User {
     private Company company;
 
     /**
-     *
      * Constructor
-     *
-     * @since 1.0-SNAPSHOT
      */
     public User() {
 
     }
 
     /**
-     *
      * Constructor
-     *
-     * @param pFirstName
-     *            User first name
-     * @param pLastName
-     *            User last name
-     * @since 1.0-SNAPSHOT
+     * @param pFirstName User first name
+     * @param pLastName User last name
      */
     public User(String pFirstName, String pLastName) {
         super();
@@ -97,16 +86,10 @@ public class User {
     }
 
     /**
-     *
      * Constructor
-     *
-     * @param pFirstName
-     *            User first name
-     * @param pLastName
-     *            User last name
-     * @param pCompany
-     *            User's Company
-     * @since 1.0-SNAPSHOT
+     * @param pFirstName User first name
+     * @param pLastName User last name
+     * @param pCompany User's Company
      */
     public User(String pFirstName, String pLastName, Company pCompany) {
         super();
@@ -117,7 +100,6 @@ public class User {
 
     /**
      * Getter
-     *
      * @return User identifier
      */
     public Long getId() {
@@ -126,9 +108,7 @@ public class User {
 
     /**
      * Setter
-     *
-     * @param pId
-     *            User identifier
+     * @param pId User identifier
      */
     public void setId(Long pId) {
         id = pId;
@@ -136,7 +116,6 @@ public class User {
 
     /**
      * Getter
-     *
      * @return User firstName
      */
     public String getFirstName() {
@@ -145,7 +124,6 @@ public class User {
 
     /**
      * Getter
-     *
      * @return User lastName
      */
     public String getLastName() {
@@ -154,7 +132,6 @@ public class User {
 
     /**
      * Getter
-     *
      * @return User's company
      */
     public Company getCompany() {
@@ -163,9 +140,7 @@ public class User {
 
     /**
      * Setter
-     *
-     * @param pFirstName
-     *            User firstName
+     * @param pFirstName User firstName
      */
     public void setFirstName(String pFirstName) {
         firstName = pFirstName;
@@ -173,9 +148,7 @@ public class User {
 
     /**
      * Setter
-     *
-     * @param pLastName
-     *            User lastName
+     * @param pLastName User lastName
      */
     public void setLastName(String pLastName) {
         lastName = pLastName;
@@ -183,9 +156,7 @@ public class User {
 
     /**
      * Setter
-     *
-     * @param pCompany
-     *            User's company
+     * @param pCompany User's company
      */
     public void setCompany(Company pCompany) {
         company = pCompany;

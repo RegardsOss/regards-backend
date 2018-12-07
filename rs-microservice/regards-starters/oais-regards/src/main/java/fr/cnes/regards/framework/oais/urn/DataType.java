@@ -18,13 +18,10 @@
  */
 package fr.cnes.regards.framework.oais.urn;
 
-
 /**
  * {@link AbstractEntity} types
- *
  * @author lmieulet
  * @author Marc Sordi
- *
  */
 public enum DataType {
 

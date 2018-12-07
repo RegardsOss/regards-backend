@@ -22,9 +22,7 @@ import java.util.List;
 
 /**
  * Module configuration wrapper
- *
  * @author Marc Sordi
- *
  */
 public class ModuleConfiguration {
 

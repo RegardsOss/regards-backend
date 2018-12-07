@@ -25,7 +25,6 @@ import fr.cnes.regards.framework.oais.OAISDataObject;
 
 /**
  * Validate an {@link OAISDataObject}
- *
  * @author Marc Sordi *
  */
 

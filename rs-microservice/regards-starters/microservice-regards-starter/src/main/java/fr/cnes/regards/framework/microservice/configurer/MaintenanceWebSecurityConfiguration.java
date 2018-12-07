@@ -26,12 +26,9 @@ import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfigura
 import fr.cnes.regards.framework.security.filter.CorsFilter;
 
 /**
- *
  * Custom configuration to handle request while in maintenance
- *
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
- *
  */
 public class MaintenanceWebSecurityConfiguration implements ICustomWebSecurityConfiguration {
 

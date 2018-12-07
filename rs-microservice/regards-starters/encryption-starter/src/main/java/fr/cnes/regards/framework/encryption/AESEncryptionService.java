@@ -51,8 +51,8 @@ public class AESEncryptionService implements IEncryptionService {
             LOG.error("There was an issue with encryption using Blowfish", e);
             throw new RsRuntimeException(e);
         } catch (BadPaddingException | IllegalBlockSizeException e) {
-            throw new EncryptionException(String.format("\"%s\" could not be encrypted using %s", toEncrypt,
-                                                        AES_INSTANCE), e);
+            throw new EncryptionException(
+                    String.format("\"%s\" could not be encrypted using %s", toEncrypt, AES_INSTANCE), e);
         }
     }
 
@@ -71,18 +71,16 @@ public class AESEncryptionService implements IEncryptionService {
             LOG.error("There was an issue with encryption using Blowfish", e);
             throw new RsRuntimeException(e);
         } catch (BadPaddingException | IllegalBlockSizeException e) {
-            throw new EncryptionException(String.format("\"%s\" could not be decrypted using %s", toDecrypt,
-                                                        AES_INSTANCE), e);
+            throw new EncryptionException(
+                    String.format("\"%s\" could not be decrypted using %s", toDecrypt, AES_INSTANCE), e);
         }
     }
 
     /**
      * Initialize BlowfishEncryptionService by setting its secret key and initialization vector.
-     *
-     * @param properties
      * @throws InvalidAlgorithmParameterException in case the initialization vector is not valid
-     * @throws InvalidKeyException in case the key is not valid
-     * @throws IOException because of Files.readAllLines
+     * @throws InvalidKeyException                in case the key is not valid
+     * @throws IOException                        because of Files.readAllLines
      */
     public void init(CipherProperties properties)
             throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {

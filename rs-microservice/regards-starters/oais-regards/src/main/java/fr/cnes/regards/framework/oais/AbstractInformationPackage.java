@@ -25,14 +25,14 @@ import java.util.List;
 
 import fr.cnes.regards.framework.geojson.AbstractFeature;
 import fr.cnes.regards.framework.oais.urn.EntityType;
+import fr.cnes.regards.framework.oais.validator.DataWithRawdata;
 
 /**
- *
  * OAIS Information package base structure
- *
  * @author Marc Sordi
  * @author Sylvain Vissiere-Guerinet
  */
+@DataWithRawdata
 public abstract class AbstractInformationPackage<ID> extends AbstractFeature<InformationPackageProperties, ID> {
 
     @NotNull(message = "Information package type is required")
@@ -70,8 +70,6 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
 
     /**
      * Add an event to the information package thanks to the given parameters
-     * @param type
-     * @param comment
      */
     public void addEvent(String type, String comment) {
         addEvent(type, comment, OffsetDateTime.now());
@@ -117,8 +115,7 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
         if (getClass() != obj.getClass()) {
             return false;
         }
-        @SuppressWarnings("rawtypes")
-        AbstractInformationPackage other = (AbstractInformationPackage) obj;
+        @SuppressWarnings("rawtypes") AbstractInformationPackage other = (AbstractInformationPackage) obj;
         return (ipType == other.ipType);
     }
 

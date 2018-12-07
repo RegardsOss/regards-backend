@@ -24,9 +24,7 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 
 /**
  * Manage security for transactional test
- *
  * @author Marc Sordi
- *
  */
 @MultitenantTransactional
 public abstract class AbstractDaoTransactionalTest extends AbstractDaoTest {

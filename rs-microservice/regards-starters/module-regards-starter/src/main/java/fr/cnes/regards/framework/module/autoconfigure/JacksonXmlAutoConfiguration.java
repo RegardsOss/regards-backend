@@ -16,7 +16,6 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 
 /**
  * We have to trick spring so we can access all of jackson xml converters to add jaxb annotation support
- *
  * @author Sylvain VISSIERE-GUERINET
  */
 @Component

@@ -29,9 +29,7 @@ import fr.cnes.regards.framework.geojson.validator.PolygonPositionsConstraints;
 /**
  * Not in RFC 7946 -August 2016<br/>
  * GeoJson set of positions representation for polygon.<br/>
- *
  * @author Marc Sordi
- *
  */
 @SuppressWarnings("serial")
 @PolygonPositionsConstraints
@@ -68,7 +66,7 @@ public class PolygonPositions extends ArrayList<Positions> {
      * holes)
      */
     public double[][][] toArray() {
-        return this.stream().map(Positions::toArray).toArray(n -> new double[n][][]);
+        return this.stream().map(Positions::toArray).toArray(double[][][]::new);
     }
 
     /**

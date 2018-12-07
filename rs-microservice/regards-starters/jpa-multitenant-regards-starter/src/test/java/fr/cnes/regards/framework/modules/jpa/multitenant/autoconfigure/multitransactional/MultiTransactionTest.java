@@ -38,9 +38,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  * Test multi transaction synchronization with AMQP and database transactions.
- *
  * @author Marc Sordi
- *
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { MultiTransactionTestConfiguration.class })
@@ -161,7 +159,6 @@ public class MultiTransactionTest {
 
     /**
      * Generate a {@link Todo} with a random unique label
-     *
      * @return random {@link Todo}
      */
     private Todo genTodo() {

@@ -34,9 +34,7 @@ import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 
 /**
  * Meta annotation to manage multitenant transaction
- *
  * @author msordi
- *
  */
 @Target({ ElementType.METHOD, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
@@ -49,10 +47,8 @@ public @interface MultitenantTransactional {
      * The transaction propagation type.
      * <p>
      * Defaults to {@link Propagation#REQUIRED}.
-     * 
      * @see org.springframework.transaction.interceptor.TransactionAttribute#getPropagationBehavior()
      */
-    @AliasFor(annotation = Transactional.class)
-    Propagation propagation() default Propagation.REQUIRED;
+    @AliasFor(annotation = Transactional.class) Propagation propagation() default Propagation.REQUIRED;
 
 }

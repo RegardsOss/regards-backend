@@ -30,11 +30,8 @@ import fr.cnes.regards.framework.multitenant.autoconfigure.tenant.DefaultTenantR
 import fr.cnes.regards.framework.multitenant.test.SingleRuntimeTenantResolver;
 
 /**
- *
  * Manage tenant resolver bean
- *
  * @author msordi
- *
  */
 @Configuration
 @EnableConfigurationProperties(MultitenantBootstrapProperties.class)
@@ -53,10 +50,8 @@ public class MultitenantAutoConfiguration {
     }
 
     /**
-     *
      * This implementation is intended to be used for development purpose.<br/>
      * In production, an on request dynamic resolver must be set to retrieve request tenant.
-     *
      * @return {@link IRuntimeTenantResolver}
      */
     @ConditionalOnMissingBean

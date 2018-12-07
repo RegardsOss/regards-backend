@@ -16,6 +16,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @Configuration
 @EnableAsync
 public class JobServiceConfiguration implements AsyncConfigurer {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(JobService.class);
 
     @Override

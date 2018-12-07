@@ -28,9 +28,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 
 /**
  * Retrieve thread tenant according to security context
- *
  * @author Marc Sordi
- *
  */
 public class SecureRuntimeTenantResolver implements IRuntimeTenantResolver {
 

@@ -42,10 +42,8 @@ import fr.cnes.regards.framework.amqp.event.WorkerMode;
 
 /**
  * This class manage tenant AMQP administration. Each tenant is hosted in an AMQP virtual host.<br/>
- *
  * @author svissier
  * @author Marc Sordi
- *
  */
 public class RegardsAmqpAdmin implements IAmqpAdmin {
 
@@ -119,7 +117,6 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
 
     /**
      * Unicast exchange name
-     *
      * @return exchange name
      */
     private String getUnicastExchangeName() {
@@ -128,7 +125,6 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
 
     /**
      * Broadcast exchange name by event
-     *
      * @return exchange name
      */
     private String getBroadcastExchangeName(String eventType, Target target) {
@@ -178,7 +174,6 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
      * {@link Target} restriction.<br/>
      * Tenant is used for working queues naming to prevent starvation of a project. Otherwise, some projects may
      * monopolize a single multitenant queue!
-     *
      * @param tenant tenant (useful for queue naming in single virtual host and compatible with multiple virtual hosts)
      * @param eventType event type
      * @param target {@link Target}

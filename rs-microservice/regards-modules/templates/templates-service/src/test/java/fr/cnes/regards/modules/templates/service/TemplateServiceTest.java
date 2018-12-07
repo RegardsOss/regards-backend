@@ -147,7 +147,7 @@ public class TemplateServiceTest {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() {
         template = new Template(CODE, CONTENT, DATA, SUBJECT);
     }
 
@@ -183,8 +183,8 @@ public class TemplateServiceTest {
     @Requirement("REGARDS_DSL_ADM_ADM_460")
     public final void testCreate() {
         // Mock
-        Mockito.when(templateRepository.findOne(ID)).thenReturn(null);
-        Mockito.when(templateRepository.exists(ID)).thenReturn(false);
+        Mockito.when(templateRepository.findById(ID)).thenReturn(Optional.empty());
+        Mockito.when(templateRepository.existsById(ID)).thenReturn(false);
 
         // Call tested method
         templateService.create(template);
@@ -204,15 +204,15 @@ public class TemplateServiceTest {
     @Requirement("REGARDS_DSL_ADM_ADM_460")
     public final void testFindById() throws EntityNotFoundException {
         // Mock
-        Mockito.when(templateRepository.findOne(ID)).thenReturn(template);
-        Mockito.when(templateRepository.exists(ID)).thenReturn(true);
+        Mockito.when(templateRepository.findById(ID)).thenReturn(Optional.of(template));
+        Mockito.when(templateRepository.existsById(ID)).thenReturn(true);
 
         // Trigger expected exception
         final Template actual = templateService.findById(ID);
 
         // Check
         Assert.assertThat(actual, CoreMatchers.is(CoreMatchers.equalTo(template)));
-        Mockito.verify(templateRepository).findOne(ID);
+        Mockito.verify(templateRepository).findById(ID);
     }
 
     /**
@@ -226,8 +226,8 @@ public class TemplateServiceTest {
     @Requirement("REGARDS_DSL_ADM_ADM_460")
     public final void testFindByIdNotFound() throws EntityNotFoundException {
         // Mock
-        Mockito.when(templateRepository.findOne(ID)).thenReturn(null);
-        Mockito.when(templateRepository.exists(ID)).thenReturn(false);
+        Mockito.when(templateRepository.findById(ID)).thenReturn(Optional.empty());
+        Mockito.when(templateRepository.existsById(ID)).thenReturn(false);
 
         // Trigger expected exception
         templateService.findById(ID);
@@ -250,8 +250,8 @@ public class TemplateServiceTest {
         template.setDescription("Updated description");
 
         // Mock
-        Mockito.when(templateRepository.findOne(ID)).thenReturn(template);
-        Mockito.when(templateRepository.exists(ID)).thenReturn(true);
+        Mockito.when(templateRepository.findById(ID)).thenReturn(Optional.of(template));
+        Mockito.when(templateRepository.existsById(ID)).thenReturn(true);
 
         // Call tested method
         templateService.update(ID, template);
@@ -276,8 +276,8 @@ public class TemplateServiceTest {
         template.setId(ID);
 
         // Mock
-        Mockito.when(templateRepository.findOne(ID)).thenReturn(null);
-        Mockito.when(templateRepository.exists(ID)).thenReturn(false);
+        Mockito.when(templateRepository.findById(ID)).thenReturn(Optional.empty());
+        Mockito.when(templateRepository.existsById(ID)).thenReturn(false);
 
         // Trigger expected exception
         templateService.update(ID, template);
@@ -299,8 +299,8 @@ public class TemplateServiceTest {
         template.setId(ID);
 
         // Mock
-        Mockito.when(templateRepository.findOne(ID)).thenReturn(template);
-        Mockito.when(templateRepository.exists(ID)).thenReturn(true);
+        Mockito.when(templateRepository.findById(ID)).thenReturn(Optional.of(template));
+        Mockito.when(templateRepository.existsById(ID)).thenReturn(true);
 
         // Trigger expected exception
         templateService.update(1L, template);
@@ -317,13 +317,13 @@ public class TemplateServiceTest {
     @Requirement("REGARDS_DSL_ADM_ADM_460")
     public final void testDelete() throws EntityNotFoundException {
         // Mock
-        Mockito.when(templateRepository.exists(ID)).thenReturn(true);
+        Mockito.when(templateRepository.existsById(ID)).thenReturn(true);
 
         // Call tested method
         templateService.delete(ID);
 
         // Check
-        Mockito.verify(templateRepository).delete(ID);
+        Mockito.verify(templateRepository).deleteById(ID);
     }
 
     /**
@@ -337,14 +337,14 @@ public class TemplateServiceTest {
     @Requirement("REGARDS_DSL_ADM_ADM_460")
     public final void testDeleteNotFound() throws EntityNotFoundException {
         // Mock
-        Mockito.when(templateRepository.exists(ID)).thenReturn(false);
+        Mockito.when(templateRepository.existsById(ID)).thenReturn(false);
 
         // Trigger expected exception
         templateService.delete(ID);
     }
 
     /**
-     * Test method for {@link SimpleMailMessageTemplateWriter#writeToEmail(Template, Map, String[])}.
+     * Test method for SimpleMailMessageTemplateWriter#writeToEmail(Template, Map, String[]).
      * @throws EntityNotFoundException no template of passed code could be found
      */
     @Test
@@ -354,17 +354,16 @@ public class TemplateServiceTest {
     @Requirement("REGARDS_DSL_ADM_ADM_460")
     public final void testWrite() throws EntityNotFoundException {
         // Mock
-        Mockito.when(templateRepository.findOneByCode(CODE)).thenReturn(Optional.ofNullable(template));
+        Mockito.when(templateRepository.findByCode(CODE)).thenReturn(Optional.ofNullable(template));
 
         // Define expected
-        final String expectedSubject = SUBJECT;
-        final String expectedText = "Hello Defaultname. You are 26 years old and 1.79 m tall.";
+        String expectedText = "Hello Defaultname. You are 26 years old and 1.79 m tall.";
 
         // Define actual
-        final SimpleMailMessage message = templateService.writeToEmail(CODE, DATA, RECIPIENTS);
+        SimpleMailMessage message = templateService.writeToEmail(CODE, DATA, RECIPIENTS);
 
         // Check
-        Assert.assertEquals("[Regards] " + expectedSubject, message.getSubject());
+        Assert.assertEquals("[Regards] " + SUBJECT, message.getSubject());
         Assert.assertEquals(expectedText, message.getText());
         Assert.assertArrayEquals(RECIPIENTS, message.getTo());
     }

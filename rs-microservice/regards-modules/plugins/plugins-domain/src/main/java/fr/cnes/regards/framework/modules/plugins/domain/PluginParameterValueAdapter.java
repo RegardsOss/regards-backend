@@ -33,11 +33,8 @@ import com.google.gson.stream.JsonWriter;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
 
 /**
- *
  * Informs GSON how to (de)serialize {@link PluginParameterValue}.
- *
  * @author Marc Sordi
- *
  */
 @GsonTypeAdapter(adapted = PluginParameterValue.class)
 public class PluginParameterValueAdapter extends TypeAdapter<PluginParameterValue> {

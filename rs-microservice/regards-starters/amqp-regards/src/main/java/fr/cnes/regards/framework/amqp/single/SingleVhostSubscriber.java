@@ -38,10 +38,8 @@ import fr.cnes.regards.framework.amqp.event.WorkerMode;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 
 /**
- *
  * Single virtual host subscriber implementation
  * @author Marc Sordi
- *
  */
 public class SingleVhostSubscriber extends AbstractSubscriber implements ISubscriber {
 
@@ -81,8 +79,8 @@ public class SingleVhostSubscriber extends AbstractSubscriber implements ISubscr
 
                 // Only useful for UNICAST tenant dependent queues
                 if (WorkerMode.UNICAST.equals(workerMode)) {
-                    Optional<Class<? extends IHandler<?>>> handlerType = handler == null ? Optional.empty()
-                            : Optional.of(handler.getType());
+                    Optional<Class<? extends IHandler<?>>> handlerType =
+                            handler == null ? Optional.empty() : Optional.of(handler.getType());
                     String queueNameToRemove = amqpAdmin.getUnicastQueueName(tenant, eventType, target);
                     String virtualHost = resolveVirtualHost(tenant);
 

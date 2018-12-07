@@ -26,11 +26,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import fr.cnes.regards.framework.jpa.utils.MigrationTool;
 
 /**
- *
  * POJO for microservice configuration
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 @ConfigurationProperties("regards.jpa.multitenant")
 public class MultitenantDaoProperties {

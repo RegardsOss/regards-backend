@@ -28,11 +28,8 @@ import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
- *
  * Single virtual host publisher implementation
- *
  * @author Marc Sordi
- *
  */
 public class SingleVhostPublisher extends AbstractPublisher implements IPublisher {
 

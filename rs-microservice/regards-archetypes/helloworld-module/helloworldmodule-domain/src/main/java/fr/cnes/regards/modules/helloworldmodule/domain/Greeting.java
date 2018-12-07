@@ -19,11 +19,8 @@
 package fr.cnes.regards.modules.helloworldmodule.domain;
 
 /**
- *
  * TODO Description
- *
  * @author TODO
- *
  */
 public class Greeting {
 

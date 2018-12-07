@@ -29,11 +29,9 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
- *
  * Class DefaultAuthorityProviderTest
  *
  * Test class for IAuthoritiesProvider default implemetation
- *
  * @author sbinda
  * @since 1.0-SNAPSHT
  */
@@ -48,18 +46,13 @@ public class DefaultAuthorityProviderTest {
     private IAuthoritiesProvider provider;
 
     /**
-     *
      * defaultAuthorityProviderTest
-     *
-     * @throws SecurityException
-     *             when no role with passed name could be found
-     *
-     * @since 1.0-SNAPSHOT
+     * @throws SecurityException when no role with passed name could be found
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify access to all resources access per microservice")
     @Test
-    public void defaultAuthorityProviderTest() throws SecurityException {
+    public void defaultAuthorityProviderTest() {
 
         // TODO
     }

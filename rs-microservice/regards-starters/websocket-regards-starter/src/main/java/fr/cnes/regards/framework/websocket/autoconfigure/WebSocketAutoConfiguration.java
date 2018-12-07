@@ -41,7 +41,6 @@ import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 
 /**
  * @author msordi
- *
  */
 @Configuration
 @ConditionalOnWebApplication
@@ -75,11 +74,8 @@ public class WebSocketAutoConfiguration implements WebSocketMessageBrokerConfigu
     }
 
     /**
-     *
      * TODO
-     *
      * @return DefaultHandshakeHandler
-     * @since 1.0-SNAPSHOT
      */
     @Bean
     public DefaultHandshakeHandler handshakeHandler() {

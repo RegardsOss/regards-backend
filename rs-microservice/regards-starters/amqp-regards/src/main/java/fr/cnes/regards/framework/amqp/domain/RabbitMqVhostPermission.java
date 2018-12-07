@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.amqp.domain;
 
 /**
  * @author svissier
- *
  */
 public class RabbitMqVhostPermission {
 

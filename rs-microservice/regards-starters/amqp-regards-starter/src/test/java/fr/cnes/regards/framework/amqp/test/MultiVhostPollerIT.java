@@ -25,15 +25,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Single virtual host tests
- *
  * @author Marc Sordi
- *
  */
 @RunWith(SpringRunner.class)
 @EnableAutoConfiguration
-@TestPropertySource(
-        properties = { "regards.amqp.management.mode=MULTI", "regards.tenants=PROJECT, PROJECT1",
-                "regards.tenant=PROJECT", "regards.amqp.internal.transaction=true" },
+@TestPropertySource(properties = { "regards.amqp.management.mode=MULTI", "regards.tenants=PROJECT, PROJECT1",
+        "regards.tenant=PROJECT", "regards.amqp.internal.transaction=true", "spring.jmx.enabled=false" },
         locations = "classpath:amqp.properties")
 public class MultiVhostPollerIT extends AbstractPollerIT {
 

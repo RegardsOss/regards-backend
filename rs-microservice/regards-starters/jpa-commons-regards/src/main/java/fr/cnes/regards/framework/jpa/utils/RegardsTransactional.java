@@ -23,14 +23,13 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 @Transactional
 public @interface RegardsTransactional {
 
-    @AliasFor(annotation = Transactional.class)
-    String transactionManager() default "";
+    @AliasFor(annotation = Transactional.class) String transactionManager() default "";
 
     /**
      * @see Transactional#rollbackFor()
      * Defaults to ModuleException and runtimes
      */
-    @AliasFor(annotation = Transactional.class)
-    Class<? extends Throwable>[] rollbackFor() default {ModuleException.class};
+    @AliasFor(annotation = Transactional.class) Class<? extends Throwable>[] rollbackFor() default {
+            ModuleException.class };
 
 }

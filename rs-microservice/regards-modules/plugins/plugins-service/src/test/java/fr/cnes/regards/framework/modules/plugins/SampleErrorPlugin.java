@@ -27,7 +27,6 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
  * SampleErrorPlugin
- *
  * @author Christophe Mertz
  */
 @Plugin(description = "Sample plugin test", id = "aSampleErrorPlugin", version = "0.0.1", author = "REGARDS Team",
@@ -62,12 +61,12 @@ public class SampleErrorPlugin implements ISamplePlugin {
 
     @Override
     public String echo(final String pMessage) {
-        final StringBuffer str = new StringBuffer();
+        final StringBuilder str = new StringBuilder();
         if (isActive) {
-            str.append(this.getClass().getName() + " -> " + pMessage + suffix);
+            str.append(this.getClass().getName()).append(" -> ").append(pMessage).append(suffix);
         } else {
 
-            str.append(this.getClass().getName() + ":is not active");
+            str.append(this.getClass().getName()).append(":is not active");
         }
         return str.toString();
     }
@@ -85,7 +84,7 @@ public class SampleErrorPlugin implements ISamplePlugin {
     @PluginInit
     private void aInit() {
         LOGGER.info("Init method call : " + this.getClass().getName() + "suffixe:" + suffix + "|active:" + isActive
-                + "|coeff:" + coef);
+                            + "|coeff:" + coef);
         throw new IllegalArgumentException();
     }
 

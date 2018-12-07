@@ -2,7 +2,6 @@ package fr.cnes.regards.framework.module.rest.utils;
 
 /**
  * Utility class to send back to the front a boolean representing the validity of something
- *
  * @author Sylvain VISSIERE-GUERINET
  */
 public final class Validity {
@@ -17,7 +16,6 @@ public final class Validity {
 
     /**
      * Constructor setting the validity
-     * @param pValidity
      */
     public Validity(final Boolean pValidity) {
         validity = pValidity;
@@ -32,7 +30,6 @@ public final class Validity {
 
     /**
      * Set the validity
-     * @param pValidity
      */
     public void setValidity(final Boolean pValidity) {
         validity = pValidity;

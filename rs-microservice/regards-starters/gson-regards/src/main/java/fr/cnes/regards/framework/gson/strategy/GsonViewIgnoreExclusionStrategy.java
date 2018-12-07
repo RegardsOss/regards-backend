@@ -26,9 +26,7 @@ import fr.cnes.regards.framework.gson.annotation.GsonViewIgnore;
 /**
  * Alternative exclusion strategy to {@link GsonIgnore}. This strategy must be used with a specific GSON instance built
  * on top of a {@link GsonBuilder}.
- *
  * @author Marc Sordi
- *
  */
 public class GsonViewIgnoreExclusionStrategy extends SerializationExclusionStrategy<GsonViewIgnore> {
 

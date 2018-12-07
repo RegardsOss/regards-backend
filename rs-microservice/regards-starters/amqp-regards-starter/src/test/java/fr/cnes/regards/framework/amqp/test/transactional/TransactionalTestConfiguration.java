@@ -24,7 +24,6 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * @author Marc Sordi
- *
  */
 @Configuration
 @ComponentScan(basePackageClasses = { PollableService.class, PublishService.class })

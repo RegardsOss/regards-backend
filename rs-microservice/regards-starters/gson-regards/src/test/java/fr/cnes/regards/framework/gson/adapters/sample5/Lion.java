@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.gson.adapters.sample5;
 
 /**
  * @author Marc Sordi
- *
  */
 public class Lion extends Animal {
 

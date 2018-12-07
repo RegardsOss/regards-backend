@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.amqp.exception;
 
 /**
  * @author svissier
- *
  */
 public class AddingRabbitMQVhostPermissionException extends RabbitMQVhostException {
 
@@ -31,7 +30,6 @@ public class AddingRabbitMQVhostPermissionException extends RabbitMQVhostExcepti
 
     /**
      * Constructor setting the exception message
-     * @param pMessage
      */
     public AddingRabbitMQVhostPermissionException(String pMessage) {
         super(pMessage);

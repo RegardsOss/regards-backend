@@ -32,13 +32,10 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
- *
  * Class JWTAuthenticationProviderTest
  *
  * Test class for JWT Filter
- *
  * @author sbinda
- * @since 1.0-SNAPSHOT
  */
 public class JWTAuthenticationProviderTest {
 
@@ -48,10 +45,7 @@ public class JWTAuthenticationProviderTest {
     private static final Logger LOG = LoggerFactory.getLogger(JWTAuthenticationProviderTest.class);
 
     /**
-     *
      * "Check security filter with Jwt access token
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Purpose("Check security filter with Jwt access token")

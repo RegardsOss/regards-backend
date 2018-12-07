@@ -20,30 +20,25 @@ package fr.cnes.regards.framework.microservice.web;
 
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- *
  * Class MicroserviceWebConfiguration
  *
  * Configuration class for Spring Web Mvc.
- *
  * @author Sébastien Binda
  * @author Marc Sordi
- * @since 1.0-SNAPSHOT
  */
-public class MicroserviceWebConfiguration extends WebMvcConfigurerAdapter {
+public class MicroserviceWebConfiguration implements WebMvcConfigurer {
 
     @Override
-    public void configurePathMatch(final PathMatchConfigurer pConfigurer) {
-        pConfigurer.setUseSuffixPatternMatch(false);
-        super.configurePathMatch(pConfigurer);
+    public void configurePathMatch(PathMatchConfigurer configurer) {
+        configurer.setUseSuffixPatternMatch(false);
     }
 
     @Override
-    public void configureContentNegotiation(final ContentNegotiationConfigurer pConfigurer) {
+    public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
         // Avoid to match uri path extension with a content negociator.
-        pConfigurer.favorPathExtension(false);
-        super.configureContentNegotiation(pConfigurer);
+        configurer.favorPathExtension(false);
     }
 }

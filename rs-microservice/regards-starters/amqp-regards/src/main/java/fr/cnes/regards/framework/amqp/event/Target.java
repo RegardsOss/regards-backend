@@ -20,9 +20,7 @@ package fr.cnes.regards.framework.amqp.event;
 
 /**
  * See {@link Event} for usage.
- *
  * @author Marc Sordi
- *
  */
 public enum Target {
 
@@ -31,5 +29,5 @@ public enum Target {
      */
     ALL,
     MICROSERVICE,
-    ONE_PER_MICROSERVICE_TYPE;
+    ONE_PER_MICROSERVICE_TYPE
 }
