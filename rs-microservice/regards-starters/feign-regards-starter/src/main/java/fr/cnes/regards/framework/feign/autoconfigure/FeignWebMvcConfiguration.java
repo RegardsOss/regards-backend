@@ -27,15 +27,19 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import fr.cnes.regards.framework.feign.security.FeignHandlerInterceptor;
 
 /**
- * Class WebMvcConfiguration
+ * Class FeignWebMvcConfiguration
  *
- * Update Spring Web Mvc configuration to ignore RequestMapping on FeignClient implementations.
+ * Update Spring Web Mvc configuration to ignore RequestMapping on FeignClient implementations and to manage
+ * FeignSecurity through an interceptor
  * @author CS
  */
 @Configuration
 @ConditionalOnWebApplication
-public class WebMvcConfiguration extends WebMvcConfigurationSupport {
+public class FeignWebMvcConfiguration extends WebMvcConfigurationSupport {
 
+    /**
+     * Note : the slightly same method exists into module-regards-starter through WebMvcConfiguration
+     */
     @Override
     public RequestMappingHandlerMapping createRequestMappingHandlerMapping() {
         return new ExcludeFeignRequestMappingHandler();
