@@ -110,9 +110,8 @@ public abstract class AbstractPublisher implements IPublisherContract {
 
         try {
             rabbitVirtualHostAdmin.bind(virtualHost);
-            Queue queue = amqpAdmin
-                    .declareQueue(tenant, eventType, WorkerMode.UNICAST, EventUtils.getTargetRestriction(eventType),
-                                  Optional.empty());
+            Queue queue = amqpAdmin.declareQueue(tenant, eventType, WorkerMode.UNICAST,
+                                                 EventUtils.getTargetRestriction(eventType), Optional.empty());
             amqpAdmin.purgeQueue(queue.getName(), false);
         } finally {
             rabbitVirtualHostAdmin.unbind();

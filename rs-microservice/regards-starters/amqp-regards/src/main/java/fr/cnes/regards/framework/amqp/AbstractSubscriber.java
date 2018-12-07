@@ -283,6 +283,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         // Init container
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
+        container.setChannelTransacted(true);
 
         MessageListenerAdapter messageListener = new MessageListenerAdapter(handler, DEFAULT_HANDLING_METHOD);
         messageListener.setMessageConverter(messageConverter);

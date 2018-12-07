@@ -29,8 +29,10 @@ import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Exchange;
+import org.springframework.amqp.core.ExchangeBuilder;
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -102,10 +104,11 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
         Exchange exchange;
         switch (workerMode) {
             case UNICAST:
-                exchange = new DirectExchange(getUnicastExchangeName(), true, false);
+                exchange = ExchangeBuilder.directExchange(getUnicastExchangeName()).durable(true).build();
                 break;
             case BROADCAST:
-                exchange = new FanoutExchange(getBroadcastExchangeName(eventType.getName(), target), true, false);
+                exchange = ExchangeBuilder.fanoutExchange(getBroadcastExchangeName(eventType.getName(), target))
+                        .durable(true).build();
                 break;
             default:
                 throw new EnumConstantNotPresentException(WorkerMode.class, workerMode.name());
@@ -151,12 +154,14 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
         switch (workerMode) {
             case UNICAST:
                 // Useful for publishing unicast event and subscribe to a unicast exchange
-                queue = new Queue(getUnicastQueueName(tenant, eventType, target), true, false, false, args);
+                queue = QueueBuilder.durable(getUnicastQueueName(tenant, eventType, target)).withArguments(args)
+                        .build();
                 break;
             case BROADCAST:
                 // Allows to subscribe to a broadcast exchange
                 if (handlerType.isPresent()) {
-                    queue = new Queue(getSubscriptionQueueName(handlerType.get(), target), true, false, false, args);
+                    queue = QueueBuilder.durable(getSubscriptionQueueName(handlerType.get(), target))
+                            .withArguments(args).build();
                 } else {
                     throw new IllegalArgumentException("Missing event handler for broadcasted event");
                 }
