@@ -18,15 +18,17 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.utils;
 
-import javax.persistence.Entity;
-import javax.sql.DataSource;
 import java.beans.PropertyVetoException;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.persistence.Entity;
+import javax.sql.DataSource;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -83,9 +85,9 @@ public class MultipleSchemaUpdate {
     private Map<String, Object> hibernateProperties;
 
     @Before
-    public void setup() throws PropertyVetoException {
-        dataSource = DataSourceHelper
-                .createPooledDataSource("testperson", url, driver, userName, password, 5, 20, "SELECT 1");
+    public void setup() throws PropertyVetoException, IOException {
+        dataSource = DataSourceHelper.createHikariDataSource("testperson", url, driver, userName, password, 5, 20,
+                                                             "SELECT 1");
 
         // Set hibernate properties
         hibernateProperties = new HashMap<>();
@@ -113,7 +115,7 @@ public class MultipleSchemaUpdate {
     public void testWithHbm2ddl() {
 
         Hbm2ddlDatasourceSchemaHelper schemaHelper = new Hbm2ddlDatasourceSchemaHelper(hibernateProperties,
-                                                                                       Entity.class, null);
+                Entity.class, null);
 
         schemaHelper.migrate(dataSource, Person.class.getPackage().getName(), "hbm2ddl1");
         schemaHelper.migrate(dataSource, Person.class.getPackage().getName(), "hbm2ddl2");

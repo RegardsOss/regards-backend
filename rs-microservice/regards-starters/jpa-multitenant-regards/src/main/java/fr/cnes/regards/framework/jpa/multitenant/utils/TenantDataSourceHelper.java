@@ -18,9 +18,11 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.utils;
 
-import javax.sql.DataSource;
 import java.beans.PropertyVetoException;
+import java.io.IOException;
 import java.sql.SQLException;
+
+import javax.sql.DataSource;
 
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
@@ -40,21 +42,21 @@ public final class TenantDataSourceHelper {
      * @param pDaoProperties {@link MultitenantDaoProperties}
      * @param pTenantConnection tenant connection to create
      * @return a {@link DataSource}
-     * @throws PropertyVetoException if paramater not supported
+     * @throws PropertyVetoException if parameter not supported
      * @throws SQLException          if connection fails
      */
     public static DataSource initDataSource(MultitenantDaoProperties pDaoProperties, TenantConnection pTenantConnection)
-            throws PropertyVetoException, SQLException {
+            throws PropertyVetoException, SQLException, IOException {
         DataSource dataSource;
         // Bypass configuration if embedded enabled
         if (pDaoProperties.getEmbedded()) {
             // Create an embedded data source
-            dataSource = DataSourceHelper
-                    .createEmbeddedDataSource(pTenantConnection.getTenant(), pDaoProperties.getEmbeddedPath());
+            dataSource = DataSourceHelper.createEmbeddedDataSource(pTenantConnection.getTenant(),
+                                                                   pDaoProperties.getEmbeddedPath());
         } else {
             // Create a pooled data source
             dataSource = DataSourceHelper
-                    .createPooledDataSource(pTenantConnection.getTenant(), pTenantConnection.getUrl(),
+                    .createHikariDataSource(pTenantConnection.getTenant(), pTenantConnection.getUrl(),
                                             pTenantConnection.getDriverClassName(), pTenantConnection.getUserName(),
                                             pTenantConnection.getPassword(), pDaoProperties.getMinPoolSize(),
                                             pDaoProperties.getMaxPoolSize(), pDaoProperties.getPreferredTestQuery());

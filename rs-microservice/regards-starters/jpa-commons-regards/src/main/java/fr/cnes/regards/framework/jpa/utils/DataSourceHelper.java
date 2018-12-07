@@ -18,10 +18,13 @@
  */
 package fr.cnes.regards.framework.jpa.utils;
 
-import javax.sql.DataSource;
 import java.beans.PropertyVetoException;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Properties;
+
+import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +32,8 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import com.mchange.v2.c3p0.DataSources;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
 /**
  * Class DataSourceHelper
@@ -89,8 +94,7 @@ public final class DataSourceHelper {
         final DriverManagerDataSource dmDataSource = new DriverManagerDataSource();
         dmDataSource.setDriverClassName(EMBEDDED_HSQL_DRIVER_CLASS);
         dmDataSource.setUrl(EMBEDDED_HSQL_URL + pEmbeddedPath + DataSourceHelper.EMBEDDED_URL_SEPARATOR + pTenant
-                                    + DataSourceHelper.EMBEDDED_URL_SEPARATOR
-                                    + DataSourceHelper.EMBEDDED_URL_BASE_NAME);
+                + DataSourceHelper.EMBEDDED_URL_SEPARATOR + DataSourceHelper.EMBEDDED_URL_BASE_NAME);
 
         LOGGER.info("\n{}\nCreating an EMBEDDED datasource for tenant {} with path {}\n{}", HR, pTenant, pEmbeddedPath,
                     HR);
@@ -126,6 +130,26 @@ public final class DataSourceHelper {
         LOGGER.info("\n{}\nCreating a POOLED datasource for tenant {} with url {}\n{}", HR, pTenant, pUrl, HR);
 
         return cpds;
+    }
+
+    public static DataSource createHikariDataSource(String tenant, String url, String driverClassName, String userName,
+            String password, Integer minPoolSize, Integer maxPoolSize, String preferredTestQuery) throws IOException {
+
+        LOGGER.info("\n{}\nCreating a HIKARI POOLED datasource for tenant {} with url {}\n{}", HR, tenant, url, HR);
+
+        // Loading static properties
+        Properties properties = new Properties();
+        properties.load(DataSourceHelper.class.getResourceAsStream("hikari.properties"));
+
+        HikariConfig config = new HikariConfig(properties);
+        config.setJdbcUrl(url);
+        config.setUsername(userName);
+        config.setPassword(password);
+        // For maximum performance, HikariCP does not recommend setting this value so minimumIdle = maximumPoolSize
+        //        config.setMinimumIdle(minPoolSize);
+        config.setMaximumPoolSize(maxPoolSize);
+
+        return new HikariDataSource(config);
     }
 
     /**

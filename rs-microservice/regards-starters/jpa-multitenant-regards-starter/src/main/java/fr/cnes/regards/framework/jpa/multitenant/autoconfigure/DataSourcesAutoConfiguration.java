@@ -18,13 +18,15 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.autoconfigure;
 
-import javax.persistence.Entity;
-import javax.sql.DataSource;
 import java.beans.PropertyVetoException;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.persistence.Entity;
+import javax.sql.DataSource;
 
 import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
 import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
@@ -164,7 +166,7 @@ public class DataSourcesAutoConfiguration {
         Map<String, Object> hibernateProperties = getHibernateProperties();
         if (MigrationTool.HBM2DDL.equals(daoProperties.getMigrationTool())) {
             Hbm2ddlDatasourceSchemaHelper helper = new Hbm2ddlDatasourceSchemaHelper(hibernateProperties, Entity.class,
-                                                                                     InstanceEntity.class);
+                    InstanceEntity.class);
             // Set output file, may be null.
             helper.setOutputFile(daoProperties.getOutputFile());
             return helper;
@@ -186,8 +188,7 @@ public class DataSourcesAutoConfiguration {
             @Qualifier(DATASOURCE_SCHEMA_HELPER_BEAN_NAME) IDatasourceSchemaHelper datasourceSchemaHelper,
             @Qualifier(DataSourcesAutoConfiguration.DATA_SOURCE_BEAN_NAME) Map<String, DataSource> dataSources) {
         return new MultitenantJpaEventHandler(microserviceName, dataSources, daoProperties, datasourceSchemaHelper,
-                                              instanceSubscriber, multitenantResolver, localPublisher(),
-                                              encryptionService);
+                instanceSubscriber, multitenantResolver, localPublisher(), encryptionService);
     }
 
     /**
@@ -223,7 +224,8 @@ public class DataSourcesAutoConfiguration {
                     }
                     // Register data source
                     existingDataSources.put(tenantConnection.getTenant(), dataSource);
-                } catch (PropertyVetoException | JpaMultitenantException | JpaException | SQLException e) {
+                } catch (PropertyVetoException | JpaMultitenantException | JpaException | SQLException
+                        | IOException e) {
                     // Do not block all tenants if for an inconsistent data source
                     LOGGER.error("Cannot create datasource for tenant {}", tenantConnection.getTenant());
                     LOGGER.error(e.getMessage(), e);
@@ -246,7 +248,7 @@ public class DataSourcesAutoConfiguration {
     public DataSource projectsDataSource(
             @Qualifier(DataSourcesAutoConfiguration.DATA_SOURCE_BEAN_NAME) Map<String, DataSource> dataSources) {
         DataSource datasource = null;
-        if ((dataSources != null) && !dataSources.isEmpty()) {
+        if (dataSources != null && !dataSources.isEmpty()) {
             datasource = dataSources.values().iterator().next();
         } else {
             LOGGER.error("No datasource defined for MultitenantJpaAutoConfiguration !");

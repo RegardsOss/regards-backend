@@ -69,6 +69,10 @@
             <groupId>com.mchange</groupId>
             <artifactId>c3p0</artifactId>
         </dependency>
+        <dependency>
+        	<groupId>com.zaxxer</groupId>
+        	<artifactId>HikariCP</artifactId>
+        </dependency>
         <!-- To remove when we upgrade hibernate-core to 5.2.0 -->
         <dependency>
             <groupId>org.hibernate</groupId>
