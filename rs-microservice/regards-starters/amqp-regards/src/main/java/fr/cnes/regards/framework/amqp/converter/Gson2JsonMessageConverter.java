@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
-import org.springframework.amqp.support.converter.AbstractJsonMessageConverter;
+import org.springframework.amqp.support.converter.AbstractMessageConverter;
 import org.springframework.amqp.support.converter.MessageConversionException;
 
 import com.google.common.reflect.TypeParameter;
@@ -44,11 +44,13 @@ import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
  * @author Marc SORDI
  *
  */
-public class Gson2JsonMessageConverter extends AbstractJsonMessageConverter {
+public class Gson2JsonMessageConverter extends AbstractMessageConverter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Gson2JsonMessageConverter.class);
 
     public static final String WRAPPED_TYPE_HEADER = "__gson_wrapped_type__";
+
+    public static final String DEFAULT_CHARSET = "UTF-8";
 
     private Gson gson;
 
@@ -60,7 +62,7 @@ public class Gson2JsonMessageConverter extends AbstractJsonMessageConverter {
     protected Message createMessage(Object object, MessageProperties messageProperties) {
         byte[] bytes = gson.toJson(object).getBytes();
         messageProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
-        messageProperties.setContentEncoding(getDefaultCharset());
+        messageProperties.setContentEncoding(DEFAULT_CHARSET);
         messageProperties.setContentLength(bytes.length);
         return new Message(bytes, messageProperties);
     }

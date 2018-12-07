@@ -74,6 +74,10 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
+        <dependency>
+        	<groupId>fr.cnes.regards.framework</groupId>
+        	<artifactId>gson-regards</artifactId>
+        </dependency>
         <!-- Tests -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
