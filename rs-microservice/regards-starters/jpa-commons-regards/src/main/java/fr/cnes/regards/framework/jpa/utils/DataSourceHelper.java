@@ -135,7 +135,7 @@ public final class DataSourceHelper {
     public static DataSource createHikariDataSource(String tenant, String url, String driverClassName, String userName,
             String password, Integer minPoolSize, Integer maxPoolSize, String preferredTestQuery) throws IOException {
 
-        LOGGER.info("\n{}\nCreating a HIKARI POOLED datasource for tenant {} with url {}\n{}", HR, tenant, url, HR);
+        LOGGER.info("\n{}\nCreating a HIKARI CP datasource for tenant {} with url {}\n{}", HR, tenant, url, HR);
 
         // Loading static properties
         Properties properties = new Properties();

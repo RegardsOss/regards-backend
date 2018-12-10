@@ -19,21 +19,26 @@
 package fr.cnes.regards.framework.gson;
 
 import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 
+import org.reflections.Configuration;
 import org.reflections.Reflections;
+import org.reflections.util.ConfigurationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
+
 import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
 import fr.cnes.regards.framework.gson.annotation.GsonDiscriminator;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
 import fr.cnes.regards.framework.gson.annotation.Gsonable;
-import fr.cnes.regards.framework.gson.utils.GSONUtils;
 
 /**
  * Dynamic custom Gson annotation processor
@@ -47,30 +52,56 @@ public final class GsonAnnotationProcessor {
     }
 
     /**
-     * Process all object annotated with {@link Gsonable} to dynamically create
-     * {@link PolymorphicTypeAdapterFactory}.<br/>
-     * Process all {@link GsonTypeAdapterFactory} and {@link GsonTypeAdapter} to register this factories.
-     * @param pBuilder {@link GsonBuilder}
-     * @param pPrefix base package to scan
+     * Utility method for building reflection context
      */
-    public static void process(GsonBuilder pBuilder, String pPrefix) {
-        processGsonable(pBuilder, pPrefix);
-        processGsonAdapterFactory(pBuilder, pPrefix);
-        processGsonAdapter(pBuilder, pPrefix);
+    private static Reflections getReflections(List<String> reflectionPackages) {
+
+        // Initialize reflection tool
+        Reflections reflections;
+        if (reflectionPackages == null || reflectionPackages.isEmpty()) {
+            String defaultPackage = "fr.cnes.regards";
+            LOGGER.info("System will look for GSON adapters and factories in default package: {}", defaultPackage);
+            reflections = new Reflections(defaultPackage);
+        } else {
+            StringJoiner customPackages = new StringJoiner(",");
+            reflectionPackages.forEach(customPackages::add);
+            LOGGER.info("System will look for GSON adapters and factories in default package: {}",
+                        customPackages.toString());
+            Configuration configuration = ConfigurationBuilder.build(reflectionPackages.toArray(new Object[0]));
+            reflections = new Reflections(configuration);
+        }
+        return reflections;
     }
 
     /**
-     * Process all object annotated with {@link Gsonable} to dynamically create {@link PolymorphicTypeAdapterFactory}.
-     * @param pBuilder {@link GsonBuilder}
-     * @param pPrefix base package to scan
+     * Customize GSON builder by reflection
+     * @param builder {@link GsonBuilder}
+     * @param reflectionPackages packages to scan
      */
-    public static void processGsonable(GsonBuilder pBuilder, String pPrefix) {
-        GSONUtils.assertNotNull(pBuilder, "GSON builder is required");
-        GSONUtils.assertNotNullOrEmpty(pPrefix, "Prefix package to scan is required");
+    public static void process(GsonBuilder builder, List<String> reflectionPackages) {
+        Reflections reflections = getReflections(reflectionPackages);
+        processGsonable(builder, reflections);
+        processGsonAdapterFactory(builder, reflections);
+        processGsonAdapter(builder, reflections);
+    }
 
-        // Scan for Gsonable
-        final Reflections reflections = new Reflections(pPrefix);
-        final Set<Class<?>> gsonables = reflections.getTypesAnnotatedWith(Gsonable.class, true);
+    public static void process(GsonBuilder builder, String reflectionPackage) {
+        process(builder, Collections.singletonList(reflectionPackage));
+    }
+
+    /**
+    * Process all object annotated with {@link Gsonable} to dynamically create {@link PolymorphicTypeAdapterFactory}.
+    */
+    public static void processGsonable(GsonBuilder builder, String reflectionPackage) {
+        processGsonable(builder, getReflections(Collections.singletonList(reflectionPackage)));
+    }
+
+    /**
+    * Process all object annotated with {@link Gsonable} to dynamically create {@link PolymorphicTypeAdapterFactory}.
+    */
+    private static void processGsonable(GsonBuilder builder, Reflections reflections) {
+
+        Set<Class<?>> gsonables = reflections.getTypesAnnotatedWith(Gsonable.class, true);
 
         if (gsonables != null) {
             for (Class<?> gsonable : gsonables) {
@@ -101,7 +132,7 @@ public final class GsonAnnotationProcessor {
 
                 if (registerSubtypes(reflections, typeAdapterFactory, gsonable)) {
                     // Only register type with sub types
-                    pBuilder.registerTypeAdapterFactory(typeAdapterFactory);
+                    builder.registerTypeAdapterFactory(typeAdapterFactory);
                 }
             }
         }
@@ -109,19 +140,19 @@ public final class GsonAnnotationProcessor {
 
     /**
      * Register all sub types of the base type
-     * @param pReflections scanner
-     * @param pTypeAdapterFactory current factory
-     * @param pBaseType base hierarchy type
+     * @param reflections scanner
+     * @param typeAdapterFactory current factory
+     * @param baseType base hierarchy type
      * @return true if sub types are registered else false
      */
-    private static boolean registerSubtypes(Reflections pReflections,
-            PolymorphicTypeAdapterFactory<?> pTypeAdapterFactory, Class<?> pBaseType) {
+    private static boolean registerSubtypes(Reflections reflections,
+            PolymorphicTypeAdapterFactory<?> typeAdapterFactory, Class<?> baseType) {
 
-        final Set<?> subTypes = pReflections.getSubTypesOf(pBaseType);
+        final Set<?> subTypes = reflections.getSubTypesOf(baseType);
 
-        if ((subTypes == null) || subTypes.isEmpty()) {
+        if (subTypes == null || subTypes.isEmpty()) {
             // Skip registration
-            LOGGER.warn("Skip registration of \"{}\". No sub type found!", pBaseType);
+            LOGGER.warn("Skip registration of \"{}\". No sub type found!", baseType);
             return false;
         }
 
@@ -134,9 +165,9 @@ public final class GsonAnnotationProcessor {
 
             if (discriminator == null) {
                 // Register subtype without value - See registerSubtype for value computation
-                pTypeAdapterFactory.registerSubtype(subClass);
+                typeAdapterFactory.registerSubtype(subClass);
             } else {
-                pTypeAdapterFactory.registerSubtype(subClass, discriminator.value());
+                typeAdapterFactory.registerSubtype(subClass, discriminator.value());
             }
         }
 
@@ -146,14 +177,20 @@ public final class GsonAnnotationProcessor {
     /**
      * Process all object annotated with {@link GsonTypeAdapterFactory} to dynamically register
      * {@link TypeAdapterFactory}.
-     * @param pBuilder {@link GsonBuilder}
+     */
+    public static void processGsonAdapterFactory(GsonBuilder builder, String reflectionPackage) {
+        processGsonAdapterFactory(builder, getReflections(Collections.singletonList(reflectionPackage)));
+    }
+
+    /**
+     * Process all object annotated with {@link GsonTypeAdapterFactory} to dynamically register
+     * {@link TypeAdapterFactory}.
+     * @param builder {@link GsonBuilder}
      * @param pPrefix base package to scan
      */
-    public static void processGsonAdapterFactory(GsonBuilder pBuilder, String pPrefix) {
+    private static void processGsonAdapterFactory(GsonBuilder builder, Reflections reflections) {
 
-        // Scan for Gsonable
-        final Reflections reflections = new Reflections(pPrefix);
-        final Set<Class<?>> factoryTypes = reflections.getTypesAnnotatedWith(GsonTypeAdapterFactory.class, true);
+        Set<Class<?>> factoryTypes = reflections.getTypesAnnotatedWith(GsonTypeAdapterFactory.class, true);
 
         if (factoryTypes != null) {
             for (Class<?> factoryType : factoryTypes) {
@@ -170,7 +207,7 @@ public final class GsonAnnotationProcessor {
                 Class<? extends TypeAdapterFactory> factoryClass = (Class<? extends TypeAdapterFactory>) factoryType;
                 try {
                     TypeAdapterFactory factory = factoryClass.newInstance();
-                    pBuilder.registerTypeAdapterFactory(factory);
+                    builder.registerTypeAdapterFactory(factory);
                 } catch (InstantiationException | IllegalAccessException e) {
                     String format = "Factory %s cannot be instanciated. No arg public constructor must exist.";
                     final String errorMessage = String.format(format, factoryClass);
@@ -184,21 +221,25 @@ public final class GsonAnnotationProcessor {
     /**
      * Process all object annotated with {@link GsonTypeAdapterFactory} to dynamically register
      * {@link TypeAdapterFactory}.
-     * @param pBuilder {@link GsonBuilder}
-     * @param pPrefix base package to scan
      */
-    public static void processGsonAdapter(GsonBuilder pBuilder, String pPrefix) {
+    public static void processGsonAdapter(GsonBuilder builder, String reflectionPackage) {
+        processGsonAdapter(builder, getReflections(Collections.singletonList(reflectionPackage)));
+    }
 
-        // Scan for Gsonable
-        final Reflections reflections = new Reflections(pPrefix);
-        final Set<Class<?>> factoryTypes = reflections.getTypesAnnotatedWith(GsonTypeAdapter.class, true);
+    /**
+     * Process all object annotated with {@link GsonTypeAdapterFactory} to dynamically register
+     * {@link TypeAdapterFactory}.
+     */
+    private static void processGsonAdapter(GsonBuilder builder, Reflections reflections) {
+
+        Set<Class<?>> factoryTypes = reflections.getTypesAnnotatedWith(GsonTypeAdapter.class, true);
 
         if (factoryTypes != null) {
             for (Class<?> factoryType : factoryTypes) {
 
                 if (!TypeAdapter.class.isAssignableFrom(factoryType)) {
-                    final String errorMessage = String
-                            .format("Factory %s must be an implementation of %s", factoryType, TypeAdapter.class);
+                    final String errorMessage = String.format("Factory %s must be an implementation of %s", factoryType,
+                                                              TypeAdapter.class);
                     LOGGER.error(errorMessage);
                     throw new IllegalArgumentException(errorMessage);
                 }
@@ -209,7 +250,7 @@ public final class GsonAnnotationProcessor {
                 GsonTypeAdapter annotation = typeAdapterClass.getAnnotation(GsonTypeAdapter.class);
                 try {
                     TypeAdapter<?> adapter = typeAdapterClass.newInstance();
-                    pBuilder.registerTypeAdapter(annotation.adapted(), adapter);
+                    builder.registerTypeAdapter(annotation.adapted(), adapter);
                 } catch (InstantiationException | IllegalAccessException e) {
                     String format = "Factory %s cannot be instanciated. No arg public constructor must exist.";
                     final String errorMessage = String.format(format, typeAdapterClass);
