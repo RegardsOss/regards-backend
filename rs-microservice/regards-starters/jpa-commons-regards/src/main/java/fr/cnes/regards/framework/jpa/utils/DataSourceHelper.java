@@ -103,6 +103,8 @@ public final class DataSourceHelper {
     }
 
     /**
+     * @deprecated use {@link DataSourceHelper#createHikariDataSource(String, String, String, String, String, Integer, Integer, String)} instead.
+     *
      * Create a pooled {@link DataSource} using {@link ComboPooledDataSource}.
      * @param pTenant related tenant, only useful for login purpose
      * @param pUrl data source URL
@@ -114,7 +116,8 @@ public final class DataSourceHelper {
      * @param pPreferredTestQuery preferred test query
      * @throws PropertyVetoException See {@link PropertyVetoException}
      */
-    public static DataSource createPooledDataSource(final String pTenant, final String pUrl,
+    @Deprecated
+    private static DataSource createPooledDataSource(final String pTenant, final String pUrl,
             final String pDriverClassName, final String pUserName, final String pPassword, Integer pMinPoolSize,
             Integer pMaxPoolSize, String pPreferredTestQuery) throws PropertyVetoException {
         ComboPooledDataSource cpds = new ComboPooledDataSource();
