@@ -63,9 +63,7 @@
         <multitenant.starter.version>4.0.0-SNAPSHOT</multitenant.starter.version>
         <security.starter.version>4.0.0-SNAPSHOT</security.starter.version>
         <swagger.starter.version>4.0.0-SNAPSHOT</swagger.starter.version>
-        <websocket.starter.version>4.0.0-SNAPSHOT</websocket.starter.version>
         <plugins.docs.version>4.0.0-SNAPSHOT</plugins.docs.version>
-        <plugins.starter.version>4.0.0-SNAPSHOT</plugins.starter.version>
         <oais.docs.version>4.0.0-SNAPSHOT</oais.docs.version>
         <oais.starter.version>4.0.0-SNAPSHOT</oais.starter.version>
         <encryption.starter.version>4.0.0-SNAPSHOT</encryption.starter.version>
@@ -417,11 +415,6 @@
                 <artifactId>swagger-regards-starter</artifactId>
                 <version>${swagger.starter.version}</version>
             </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework</groupId>
-                <artifactId>websocket-regards-starter</artifactId>
-                <version>${websocket.starter.version}</version>
-            </dependency>
 
             <!-- Test dependencies -->
             <dependency>
@@ -526,11 +519,6 @@
                 <groupId>fr.cnes.regards.framework.utils</groupId>
                 <artifactId>plugin-utils</artifactId>
                 <version>${fr.cnes.regards.utils.plugin-utils.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework</groupId>
-                <artifactId>plugins-regards-starter</artifactId>
-                <version>${plugins.starter.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework</groupId>
