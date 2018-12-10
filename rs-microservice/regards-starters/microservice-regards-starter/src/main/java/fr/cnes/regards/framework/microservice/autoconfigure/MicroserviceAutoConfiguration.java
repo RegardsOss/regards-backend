@@ -32,6 +32,7 @@ import fr.cnes.regards.framework.microservice.configurer.MaintenanceWebSecurityC
 import fr.cnes.regards.framework.microservice.maintenance.MaintenanceHealthIndicator;
 import fr.cnes.regards.framework.microservice.manager.DefaultApplicationManager;
 import fr.cnes.regards.framework.microservice.manager.IApplicationManager;
+import fr.cnes.regards.framework.microservice.web.ControllerHandlingConfiguration;
 import fr.cnes.regards.framework.microservice.web.MicroserviceWebConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfiguration;
@@ -61,6 +62,11 @@ public class MicroserviceAutoConfiguration {
     @Bean
     public MicroserviceWebConfiguration webConfig() {
         return new MicroserviceWebConfiguration();
+    }
+
+    @Bean
+    public ControllerHandlingConfiguration ControllerHandlingConfiguration() {
+        return new ControllerHandlingConfiguration();
     }
 
     @Bean

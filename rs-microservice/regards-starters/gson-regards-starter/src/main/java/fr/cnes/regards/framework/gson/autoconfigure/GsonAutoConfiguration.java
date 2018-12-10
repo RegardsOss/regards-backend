@@ -49,9 +49,6 @@ import fr.cnes.regards.framework.gson.GsonProperties;
 @AutoConfigureBefore({ HttpMessageConvertersAutoConfiguration.class })
 public class GsonAutoConfiguration implements ApplicationContextAware {
 
-    /**
-     * Class logger
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(GsonAutoConfiguration.class);
 
     /**
@@ -77,8 +74,8 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
         LOGGER.info("GSON auto configuration enabled with SpringFox support");
         GsonBuilder builder = gsonBuilderFactory.newBuilder();
         try {
-            builder.registerTypeAdapterFactory(
-                    (TypeAdapterFactory) Class.forName(SPRINGFOX_GSON_FACTORY).newInstance());
+            builder.registerTypeAdapterFactory((TypeAdapterFactory) Class.forName(SPRINGFOX_GSON_FACTORY)
+                    .newInstance());
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             final String errorMessage = "Cannot init SpringFox GSON factory";
             LOGGER.error(errorMessage, e);

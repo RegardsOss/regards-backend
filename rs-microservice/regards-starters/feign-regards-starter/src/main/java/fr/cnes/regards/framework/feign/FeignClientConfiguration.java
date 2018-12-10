@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.framework.feign;
 
-import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.google.gson.Gson;
+
 import feign.Contract;
 import feign.Feign;
 import feign.Logger;
@@ -43,9 +42,6 @@ import feign.gson.GsonEncoder;
  */
 @Configuration
 public class FeignClientConfiguration {
-
-    @Autowired
-    private ObjectFactory<HttpMessageConverters> messageConverters;
 
     /**
      * Basic log

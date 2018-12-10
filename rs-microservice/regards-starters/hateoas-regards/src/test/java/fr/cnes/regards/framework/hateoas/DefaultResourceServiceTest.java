@@ -18,16 +18,15 @@
  */
 package fr.cnes.regards.framework.hateoas;
 
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.validation.Valid;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
 import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.access.AccessDeniedException;
@@ -48,11 +47,6 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  * @author msordi
  */
 public class DefaultResourceServiceTest {
-
-    /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(DefaultResourceServiceTest.class);
 
     /**
      * Tenant

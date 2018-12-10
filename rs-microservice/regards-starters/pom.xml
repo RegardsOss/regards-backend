@@ -56,11 +56,9 @@
     </developers>
 
     <modules>
-        <module>amqp-monitoring-regards-starter</module>
         <module>amqp-regards</module>
         <module>amqp-regards-starter</module>
         <module>swagger-regards-starter</module>
-        <module>websocket-regards-starter</module>
         <module>security-regards-starter</module>
         <module>security-regards</module>
         <module>cloud-regards-starter</module>
@@ -78,7 +76,6 @@
         <module>module-regards</module>
         <module>microservice-regards-test</module>
         <module>jpa-multitenant-regards-test</module>
-        <module>plugins-regards-starter</module>
         <module>plugins-docs</module>
         <module>gson-regards-starter</module>
         <module>gson-regards</module>

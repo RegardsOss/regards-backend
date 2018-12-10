@@ -36,7 +36,9 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-@TestPropertySource(locations = { "classpath:workspace-monitoring.properties" })
+@TestPropertySource(properties = { "regards.cipher.key-location=src/test/resources/testKey",
+        "regards.cipher.iv=1234567812345678", "regards.workspace.occupation.threshold=0",
+        "regards.workspace.critical.occupation.threshold=0", "spring.datasource.type=" })
 public class WorkspaceServiceMonitoringIT extends AbstractRegardsServiceIT {
 
     @Autowired
@@ -52,8 +54,8 @@ public class WorkspaceServiceMonitoringIT extends AbstractRegardsServiceIT {
     public void testMonitor() {
         IWorkspaceNotifier spiedNotifier = Mockito.spy(notifier);
         workspaceService.monitor(getDefaultTenant());
-        Mockito.verify(spiedNotifier, Mockito.times(1))
-                .sendErrorNotification(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+        Mockito.verify(spiedNotifier, Mockito.times(1)).sendErrorNotification(Mockito.any(), Mockito.any(),
+                                                                              Mockito.any(), Mockito.any());
         Assert.assertTrue(MaintenanceManager.getMaintenance(getDefaultTenant()));
     }
 

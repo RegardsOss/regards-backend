@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.jayway.jsonpath.JsonPath;
+
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
@@ -84,8 +85,8 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
 
         // With dynamic parameter
         String dynValue = "toto";
-        PluginParametersFactory dynParametersFactory = PluginParametersFactory.build()
-                .addDynamicParameter("pString", dynValue);
+        PluginParametersFactory dynParametersFactory = PluginParametersFactory.build().addDynamicParameter("pString",
+                                                                                                           dynValue);
         plugin = pluginService.getFirstPluginByType(IParamTestPlugin.class, dynParametersFactory.asArray());
         Assert.assertNotNull(plugin);
 
@@ -143,8 +144,8 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
                              "Configuration mustn't have been deleted", "InnerParamTestPlugin", innerConfigId);
 
         // Update Inner Plugin with a different version (2.0.0)
-        json = readJsonContract("innerConfUpdatedVersion.json")
-                .replace("\"id\":0", "\"id\":" + innerConfigId.toString());
+        json = readJsonContract("innerConfUpdatedVersion.json").replace("\"id\":0",
+                                                                        "\"id\":" + innerConfigId.toString());
         performDefaultPut(PluginController.PLUGINS_PLUGINID_CONFIGID, json,
                           customizer().expect(MockMvcResultMatchers.status().isUnprocessableEntity()),
                           "Configuration should be saved!", "InnerParamTestPlugin", innerConfigId);
@@ -172,6 +173,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         repository.save(pluginConf);
 
         // Try load it
+        @SuppressWarnings("unused")
         InnerParamTestPlugin plugin = pluginService.getPlugin(pluginConf.getId());
     }
 }

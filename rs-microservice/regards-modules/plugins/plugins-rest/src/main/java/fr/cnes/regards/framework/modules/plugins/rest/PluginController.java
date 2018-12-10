@@ -18,10 +18,11 @@
  */
 package fr.cnes.regards.framework.modules.plugins.rest;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,8 +95,8 @@ public class PluginController implements IResourceController<PluginConfiguration
     /**
      * REST mapping resource : /plugins/{pluginId}/config/{configId}
      */
-    public static final String PLUGINS_PLUGINID_CONFIGID =
-            PLUGINS_PLUGINID_CONFIGS + "/{" + REQUEST_PARAM_CONFIG_ID + "}";
+    public static final String PLUGINS_PLUGINID_CONFIGID = PLUGINS_PLUGINID_CONFIGS + "/{" + REQUEST_PARAM_CONFIG_ID
+            + "}";
 
     /**
      * REST mapping resource : /plugins/configs/{configId}
@@ -172,7 +173,7 @@ public class PluginController implements IResourceController<PluginConfiguration
     @ResourceAccess(description = "Get all the plugin types (ie interface annotated with @PluginInterface)")
     public ResponseEntity<List<Resource<String>>> getPluginTypes(
             @RequestParam(name = "available", required = false) Boolean available) {
-        if ((available != null) && available) {
+        if (available != null && available) {
             Set<String> types = pluginService.getAvailablePluginTypes();
             List<Resource<String>> resources = types.stream().map(Resource::new).collect(Collectors.toList());
             return new ResponseEntity<>(resources, HttpStatus.OK);
@@ -244,7 +245,7 @@ public class PluginController implements IResourceController<PluginConfiguration
     /**
      * Create a new {@link PluginConfiguration}.
      * @param pluginConf a {@link PluginConfiguration}
-     * @return the {@link PluginConfiguration] created
+     * @return the created {@link PluginConfiguration}
      * @throws ModuleException if problem occurs
      */
     @RequestMapping(value = PLUGINS_PLUGINID_CONFIGS, method = RequestMethod.POST,
@@ -254,7 +255,7 @@ public class PluginController implements IResourceController<PluginConfiguration
             @Valid @RequestBody PluginConfiguration pluginConf) throws ModuleException {
         try {
             return new ResponseEntity<>(toResource(pluginService.savePluginConfiguration(pluginConf)),
-                                        HttpStatus.CREATED);
+                    HttpStatus.CREATED);
         } catch (final ModuleException e) {
             LOGGER.error("Cannot create the plugin configuration : <" + pluginConf.getPluginId() + ">", e);
             throw e;
@@ -307,7 +308,7 @@ public class PluginController implements IResourceController<PluginConfiguration
 
         if (!pluginId.equals(pluginConf.getPluginId())) {
             LOGGER.error("The plugin configuration is incoherent with the requests param : plugin id= <" + pluginId
-                                 + ">- config id= <" + configId + ">");
+                    + ">- config id= <" + configId + ">");
             throw new EntityNotFoundException(pluginId, PluginConfiguration.class);
         }
 
@@ -354,7 +355,7 @@ public class PluginController implements IResourceController<PluginConfiguration
     @Override
     public Resource<PluginConfiguration> toResource(PluginConfiguration element, Object... extras) {
         Resource<PluginConfiguration> resource = null;
-        if ((element != null) && (element.getId() != null)) {
+        if (element != null && element.getId() != null) {
             resource = resourceService.toResource(element);
             resourceService.addLink(resource, this.getClass(), "getPluginConfiguration", LinkRels.SELF,
                                     MethodParamFactory.build(String.class, element.getPluginId()),
