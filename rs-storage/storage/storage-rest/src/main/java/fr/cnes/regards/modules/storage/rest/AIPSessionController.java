@@ -18,16 +18,8 @@
  */
 package fr.cnes.regards.modules.storage.rest;
 
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.hateoas.LinkRels;
-import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.modules.storage.domain.database.AIPSession;
-import fr.cnes.regards.modules.storage.domain.job.AIPQueryFilters;
-import fr.cnes.regards.modules.storage.service.IAIPService;
 import java.time.OffsetDateTime;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,6 +34,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
+import fr.cnes.regards.modules.storage.domain.job.AIPQueryFilters;
+import fr.cnes.regards.modules.storage.service.IAIPService;
 
 /**
  * @author Léo Mieulet
@@ -70,7 +73,7 @@ public class AIPSessionController implements IResourceController<AIPSession> {
      * @param to
      * @param pageable
      * @param pAssembler
-     * @return
+     * @return {@link AIPSession}s
      */
     @ResourceAccess(description = "Search for SIPSession with optional criterion.")
     @RequestMapping(method = RequestMethod.GET)
@@ -89,11 +92,12 @@ public class AIPSessionController implements IResourceController<AIPSession> {
     /**
      * Return a single AIPSession using its id (name)
      * @param id
-     * @return
+     * @return {@link AIPSession}s
      */
     @ResourceAccess(description = "Get one session using its name.")
     @RequestMapping(value = ID_PATH, method = RequestMethod.GET)
-    public ResponseEntity<Resource<AIPSession>> getAipSession(@PathVariable(name = "id") String id) {
+    public ResponseEntity<Resource<AIPSession>> getAipSession(@PathVariable(name = "id") String id)
+            throws EntityNotFoundException {
         AIPSession session = aipService.getSessionWithStats(id);
         return new ResponseEntity<>(toResource(session), HttpStatus.OK);
     }
@@ -111,11 +115,11 @@ public class AIPSessionController implements IResourceController<AIPSession> {
     public Resource<AIPSession> toResource(AIPSession sipSession, Object... pExtras) {
         final Resource<AIPSession> resource = resourceService.toResource(sipSession);
         resourceService.addLink(resource, this.getClass(), "getAipSession", LinkRels.SELF,
-                MethodParamFactory.build(String.class, sipSession.getId()));
+                                MethodParamFactory.build(String.class, sipSession.getId()));
         // If the session has some deletable AIPS, add the delete key
-        if (sipSession.getStoredAipsCount() + sipSession.getQueuedAipsCount() > 0) {
+        if ((sipSession.getStoredAipsCount() + sipSession.getQueuedAipsCount()) > 0) {
             resourceService.addLink(resource, this.getClass(), "deleteAipEntityBySessionId", LinkRels.DELETE,
-                    MethodParamFactory.build(String.class, sipSession.getId()));
+                                    MethodParamFactory.build(String.class, sipSession.getId()));
         }
         return resource;
     }

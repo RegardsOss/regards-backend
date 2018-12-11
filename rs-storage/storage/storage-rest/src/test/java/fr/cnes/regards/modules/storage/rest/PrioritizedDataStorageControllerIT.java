@@ -1,3 +1,21 @@
+/*
+ * Copyright 2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.storage.rest;
 
 import java.io.IOException;
@@ -181,8 +199,8 @@ public class PrioritizedDataStorageControllerIT extends AbstractRegardsTransacti
         performDefaultPut(PrioritizedDataStorageController.BASE_PATH + PrioritizedDataStorageController.UP_PATH, "",
                           requestBuilderCustomizer, "could not increase the priority of created2", created2.getId());
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        created1 = prioritizedDataStorageRepository.findOne(created1.getId());
-        created2 = prioritizedDataStorageRepository.findOne(created2.getId());
+        created1 = prioritizedDataStorageRepository.findById(created1.getId()).get();
+        created2 = prioritizedDataStorageRepository.findById(created2.getId()).get();
         Assert.assertEquals("created2 should now has a priority of 0", 0L, created2.getPriority().longValue());
         Assert.assertEquals("created1 should now has a priority of 1", 1L, created1.getPriority().longValue());
     }
@@ -202,8 +220,8 @@ public class PrioritizedDataStorageControllerIT extends AbstractRegardsTransacti
         performDefaultPut(PrioritizedDataStorageController.BASE_PATH + PrioritizedDataStorageController.DOWN_PATH, "",
                           requestBuilderCustomizer, "could not decrease the priority of created1", created1.getId());
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        created1 = prioritizedDataStorageRepository.findOne(created1.getId());
-        created2 = prioritizedDataStorageRepository.findOne(created2.getId());
+        created1 = prioritizedDataStorageRepository.findById(created1.getId()).get();
+        created2 = prioritizedDataStorageRepository.findById(created2.getId()).get();
         Assert.assertEquals("created2 should now has a priority of 0", 0L, created2.getPriority().longValue());
         Assert.assertEquals("created1 should now has a priority of 1", 1L, created1.getPriority().longValue());
     }

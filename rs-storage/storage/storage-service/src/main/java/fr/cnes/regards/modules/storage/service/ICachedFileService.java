@@ -88,7 +88,7 @@ public interface ICachedFileService {
 
     /**
      * Restore all files waiting for restoring
-     * @returnnumber of restoration scheduled
+     * @return number of restoration scheduled
      */
     int restoreQueued();
 

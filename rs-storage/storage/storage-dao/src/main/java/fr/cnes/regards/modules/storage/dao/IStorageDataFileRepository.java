@@ -1,11 +1,10 @@
 package fr.cnes.regards.modules.storage.dao;
 
+import javax.persistence.LockModeType;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
-import javax.persistence.LockModeType;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -106,6 +105,10 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
     @Query("select sdf.id from StorageDataFile sdf where sdf.checksum IN :checksums")
     Page<Long> findIdPageByChecksumIn(@Param("checksums") Set<String> checksums, Pageable pageable);
 
+    @Query("select sdf.id from StorageDataFile sdf where sdf.checksum IN :checksums and sdf.state = :dataFileState")
+    Page<Long> findIdPageByStateAndChecksumIn(@Param("dataFileState") DataFileState dataFileState,
+            @Param("checksums") Set<String> checksums, Pageable pageable);
+
     /**
      * Find all data files which state is the provided one and that are associated to at least one of the provided aip entities
      * @param dataFileState
@@ -150,4 +153,9 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
     long countByStateAndAipEntitySessionId(DataFileState stored, String session);
 
     long countByAipEntitySessionId(String id);
+
+    long countByAipEntityAndState(AIPEntity aipEntity, DataFileState dataFileState);
+
+    @EntityGraph(value = "graph.datafile.full")
+    Set<StorageDataFile> findAllByAipEntityAipIdIn(Collection<String> ipIds);
 }

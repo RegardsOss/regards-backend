@@ -184,23 +184,23 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
         StorageDataFile validDF = new StorageDataFile(
                 Sets.newHashSet(new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data.txt")),
                 "538b3f98063b77e50f78b51f1a6acd8c", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"),
-                new AIPEntity(aip, aipSession), aipSession, "data.txt", null);
+                new AIPEntity(aip, aipSession), "data.txt", null);
         // valid file to get a call to progressManager.storageSucceed
         StorageDataFile validDFWithProvidedDirectory = new StorageDataFile(
                 Sets.newHashSet(new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data2.txt")),
                 "36fc2e44e266cd50f1f9dbc5b9767138", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"),
-                new AIPEntity(aip, aipSession), aipSession, "data2.txt", "/provided/directory");
+                new AIPEntity(aip, aipSession), "data2.txt", "/provided/directory");
         // file that does not exist to get a call to progressManager.storageFailed
         StorageDataFile ghostDF = new StorageDataFile(
                 Sets.newHashSet(new URL("file", "",
                         System.getProperty("user.dir") + "/src/test/resources/data_do_not_exist.txt")),
-                "unknown", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), new AIPEntity(aip, aipSession),
-                aipSession, "data_do_not_exist.txt", null);
+                "unknown", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"),
+                new AIPEntity(aip, aipSession), "data_do_not_exist.txt", null);
         // invalid checksum to check call to progressManager.storageFailed
         StorageDataFile invalidDF = new StorageDataFile(
                 Sets.newHashSet(new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data.txt")),
                 "01234567890123456789012345678901", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"),
-                new AIPEntity(aip, aipSession), aipSession, "data.txt", null);
+                new AIPEntity(aip, aipSession), "data.txt", null);
         Set<StorageDataFile> dataFiles = Sets.newHashSet(validDF, validDFWithProvidedDirectory, ghostDF, invalidDF);
         LocalWorkingSubset workingSubSet = new LocalWorkingSubset(dataFiles);
         storagePlugin.store(workingSubSet, false, progressManager);

@@ -6,10 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.util.MimeType;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.modules.notification.domain.NotificationType;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.domain.event.StorageAction;
@@ -26,6 +23,9 @@ public interface IDataStorageService {
 
     /**
      * Retrieve monitoring information on each and every one of IDataStorage plugin which are active.
+     * @return {@link PluginStorageInfo}s
+     * @throws ModuleException
+     * @throws IOException
      */
     Collection<PluginStorageInfo> getMonitoringInfos() throws ModuleException, IOException;
 
@@ -49,16 +49,14 @@ public interface IDataStorageService {
     void handleDeletionAction(StorageEventType type, DataStorageEvent event);
 
     /**
-     * Use the notification module in admin to create a notification for admins
-     */
-    void notifyAdmins(String title, String message, NotificationType type, MimeType mimeType);
-
-    /**
      * Method called when a SUCCESSFULL {@link DataStorageEvent} {@link StorageAction#DELETION} event is received.
      * @param dataFileDeleted {@link StorageDataFile} deleted.
+     * @param deletedUrl
      * @param checksumOfDeletedFile {@link String} checksum of the deleted {@link StorageDataFile}
+     * @param dataStorageConfId
      */
-    void handleDeletionSuccess(StorageDataFile dataFileDeleted, URL deletedUrl, String checksumOfDeletedFile);
+    void handleDeletionSuccess(StorageDataFile dataFileDeleted, URL deletedUrl, String checksumOfDeletedFile,
+            Long dataStorageConfId);
 
     /**
      * Handle {@link DataStorageEvent} events for {@link StorageAction#STORE} type.
@@ -70,6 +68,12 @@ public interface IDataStorageService {
     /**
      * Method called when a SUCCESSFULL {@link DataStorageEvent} {@link StorageAction#STORE} event is received.
      * @param storedDataFile {@link StorageDataFile} successfully stored
+     * @param storedFileChecksum
+     * @param storedFileNewURL
+     * @param storedFileSize
+     * @param dataStoragePluginConfId
+     * @param dataWidth
+     * @param dataHeight
      */
     void handleStoreSuccess(StorageDataFile storedDataFile, String storedFileChecksum, URL storedFileNewURL,
             Long storedFileSize, Long dataStoragePluginConfId, Integer dataWidth, Integer dataHeight);

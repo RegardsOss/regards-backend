@@ -116,8 +116,6 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
     /**
      * Check that the given job parameters contains required parameters and that they are valid.
      *
-     * @return a map which keys are the job parameter name and its value the job parameter. This map contains no entry
-     *         if there is no parameter provided.
      * @throws JobParameterMissingException
      * @throws JobParameterInvalidException
      */
@@ -264,7 +262,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
 
     private void setQuicklookProperties(StorageDataFile storageDataFile) throws IOException, NoSuchAlgorithmException {
         // first to get the quicklook properties(height and width), we need to download it.
-        // unless it is already on filesystem
+        // unless it is already on filesystem TODO: use StorageDataFileUtils in place of lambda
         Optional<URL> dataFileUrlOpt = storageDataFile.getUrls().stream()
                 .filter(url -> url.getProtocol().equals("file")).findAny();
         if (!dataFileUrlOpt.isPresent()) {

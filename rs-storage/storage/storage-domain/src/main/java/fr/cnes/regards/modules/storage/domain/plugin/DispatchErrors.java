@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
  */
 public class DispatchErrors {
 
-    private class DispatchError {
+    private static class DispatchError {
 
         private final StorageDataFile fileInError;
 

@@ -175,9 +175,9 @@ public class CDPPStoreTest extends AbstractMultitenantServiceTest {
         int loops = 120;
         do {
             Thread.sleep(1_000);
-            storedAIP = aipRepository.findAllByStateIn(AIPState.STORED, new PageRequest(0, 100)).getTotalElements();
+            storedAIP = aipRepository.findAllByStateIn(AIPState.STORED, PageRequest.of(0, 100)).getTotalElements();
             loops--;
-        } while ((storedAIP != expected) && (loops != 0));
+        } while (storedAIP != expected && loops != 0);
 
         long stopTime = System.currentTimeMillis();
         LOGGER.info("Time elapsed : {}", stopTime - startTime);

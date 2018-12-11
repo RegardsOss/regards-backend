@@ -95,6 +95,7 @@ public class AIPEntity {
     /**
      * Whether to retry storage after a storage error
      */
+    @Column
     private boolean retry;
 
     /**
@@ -145,6 +146,7 @@ public class AIPEntity {
         this.submissionDate = aip.getSubmissionEvent().getDate();
         this.aip = aip;
         this.session = aipSession;
+        this.retry = aip.isRetry();
     }
 
     /**

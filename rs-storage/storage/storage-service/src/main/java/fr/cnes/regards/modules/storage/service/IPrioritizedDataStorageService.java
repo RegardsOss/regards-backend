@@ -48,6 +48,7 @@ public interface IPrioritizedDataStorageService {
     /**
      * Deletes the given
      * @param pluginConfId
+     * @throws ModuleException
      */
     void delete(Long pluginConfId) throws ModuleException;
 

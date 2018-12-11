@@ -50,7 +50,7 @@
     <parent>
         <groupId>fr.cnes.regards.modules</groupId>
         <artifactId>storage</artifactId>
-        <version>3.0.0-SNAPSHOT</version>
+        <version>4.0.0-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -86,10 +86,10 @@
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>amqp-regards-starter</artifactId>
         </dependency>
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>plugins-regards-starter</artifactId>
-        </dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
+    		<artifactId>plugins-service</artifactId>
+		</dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
             <artifactId>jobs-service</artifactId>
@@ -110,6 +110,11 @@
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
             <artifactId>regards-integration-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>hateoas-regards-starter</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

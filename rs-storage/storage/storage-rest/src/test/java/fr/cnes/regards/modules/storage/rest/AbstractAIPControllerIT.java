@@ -1,6 +1,55 @@
+/*
+ * Copyright 2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.storage.rest;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.OffsetDateTime;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.apache.commons.compress.utils.Lists;
+import org.junit.After;
+import org.junit.Before;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.MimeType;
+
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -36,34 +85,6 @@ import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultAllocat
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.service.DataStorageEventHandler;
 import fr.cnes.regards.modules.storage.service.IPrioritizedDataStorageService;
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import org.apache.commons.compress.utils.Lists;
-import org.junit.After;
-import org.junit.Before;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.util.MimeType;
 
 /**
  * @author Léo Mieulet
@@ -72,15 +93,15 @@ import org.springframework.util.MimeType;
 @ActiveProfiles("testAmqp")
 public abstract class AbstractAIPControllerIT extends AbstractRegardsTransactionalIT {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractAIPControllerIT.class);
+    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private static final String ALLOCATION_CONF_LABEL = "AIPControllerIT_ALLOCATION";
+    protected static final String ALLOCATION_CONF_LABEL = "AIPControllerIT_ALLOCATION";
 
-    private static final String DATA_STORAGE_CONF_LABEL = "AIPControllerIT_DATA_STORAGE";
+    protected static final String DATA_STORAGE_CONF_LABEL = "AIPControllerIT_DATA_STORAGE";
 
-    private static final String CATALOG_SECURITY_DELEGATION_LABEL = "AIPControllerIT_SECU_DELEG";
+    protected static final String CATALOG_SECURITY_DELEGATION_LABEL = "AIPControllerIT_SECU_DELEG";
 
-    private static final String SESSION = "Session123";
+    protected static final String SESSION = "Session123";
 
     @Autowired
     private IPluginService pluginService;
@@ -92,13 +113,13 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
     protected IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private ISubscriber subscriber;
+    protected ISubscriber subscriber;
 
     @Autowired
-    private IPluginConfigurationRepository pluginRepo;
+    protected IPluginConfigurationRepository pluginRepo;
 
     @Autowired
-    private IJobInfoRepository jobInfoRepo;
+    protected IJobInfoRepository jobInfoRepo;
 
     @Autowired
     protected IDataFileDao dataFileDao;
@@ -116,12 +137,12 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
     protected IAIPSessionRepository aipSessionRepo;
 
     @Autowired
-    private IPrioritizedDataStorageService prioritizedDataStorageService;
+    protected IPrioritizedDataStorageService prioritizedDataStorageService;
 
     @Autowired
-    private IPrioritizedDataStorageRepository prioritizedDataStorageRepository;
+    protected IPrioritizedDataStorageRepository prioritizedDataStorageRepository;
 
-    private URL baseStorageLocation;
+    protected URL baseStorageLocation;
 
     protected AIP aip;
 
@@ -163,9 +184,9 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
     public void cleanUp(boolean haveFailed) throws URISyntaxException, IOException, InterruptedException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         subscriber.purgeQueue(DataStorageEvent.class, DataStorageEventHandler.class);
-        LOG.info("Waiting for current jobs finished ....");
+        logger.info("Waiting for current jobs finished ....");
         waitForJobsFinished(10, true);
-        LOG.info("All current jobs finished !");
+        logger.info("All current jobs finished !");
         subscriber.purgeQueue(DataStorageEvent.class, DataStorageEventHandler.class);
         try {
             jobInfoRepo.deleteAll();
@@ -175,7 +196,7 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
             prioritizedDataStorageRepository.deleteAll();
             pluginRepo.deleteAll();
         } catch (DataIntegrityViolationException e) {
-            LOG.warn("Something went wrong while cleaning up database",e.getMessage());
+            logger.warn("Something went wrong while cleaning up database", e.getMessage());
             // Sometimes there is a problem to clean up entities stored in the database,
             // so if that's occurs, let's try another time
             if (!haveFailed) {
@@ -227,7 +248,7 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
         return aipBuilder.build();
     }
 
-    private void waitForJobsFinished(int nbMaxSeconds, boolean forceStop) throws InterruptedException {
+    protected void waitForJobsFinished(int nbMaxSeconds, boolean forceStop) throws InterruptedException {
         List<JobInfo> jobs = Lists.newArrayList();
         Set<JobInfo> unfinishedJobs;
         int cpt = 0;
@@ -238,11 +259,11 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
                             && !f.getStatus().getStatus().equals(JobStatus.FAILED)
                             && !f.getStatus().getStatus().equals(JobStatus.ABORTED))
                     .collect(Collectors.toSet());
-            LOG.info("[TEST CLEAN] Waiting for {} Unfinished jobs", unfinishedJobs.size());
+            logger.info("[TEST CLEAN] Waiting for {} Unfinished jobs", unfinishedJobs.size());
             if (forceStop) {
                 unfinishedJobs.forEach(j -> {
-                    LOG.info("[TEST CLEAN] Trying to stop running job {}-{} [{}]", j.getClassName(), j.getId(),
-                             j.getStatus());
+                    logger.info("[TEST CLEAN] Trying to stop running job {}-{} [{}]", j.getClassName(), j.getId(),
+                                j.getStatus());
                     jobInfoService.stopJob(j.getId());
                 });
             }

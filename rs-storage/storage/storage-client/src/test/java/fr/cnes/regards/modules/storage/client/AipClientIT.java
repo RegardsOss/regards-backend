@@ -49,10 +49,8 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.hateoas.PagedResources;
@@ -160,9 +158,6 @@ public class AipClientIT extends AbstractRegardsWebIT {
     private PluginConfiguration catalogSecuDelegConf;
 
     @Autowired
-    private ObjectFactory<HttpMessageConverters> messageConverters;
-
-    @Autowired
     private IPrioritizedDataStorageService prioritizedDataStorageService;
 
     @BeforeClass
@@ -177,7 +172,7 @@ public class AipClientIT extends AbstractRegardsWebIT {
 
     @Before
     public void init() throws ModuleException, IOException, URISyntaxException {
-        if ((baseStorageLocation != null) && Paths.get(baseStorageLocation.toURI()).toFile().exists()) {
+        if (baseStorageLocation != null && Paths.get(baseStorageLocation.toURI()).toFile().exists()) {
             Files.walk(Paths.get(baseStorageLocation.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile)
                     .forEach(File::delete);
         }
@@ -186,7 +181,6 @@ public class AipClientIT extends AbstractRegardsWebIT {
             Files.walk(downloadDir).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
         }
         Files.createDirectories(downloadDir);
-        FeignClientBuilder.setMessageConverters(messageConverters);
         client = FeignClientBuilder.build(
                                           new TokenClientProvider<>(IAipClient.class,
                                                   "http://" + serverAddress + ":" + getPort(), feignSecurityManager),

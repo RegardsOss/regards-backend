@@ -49,6 +49,8 @@ import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 @ContextConfiguration(classes = DAOTestConfiguration.class)
 public class DataFileRepoIT extends AbstractDaoTransactionalTest {
 
+    private static final String SESSION = "SESSION_1";
+
     @Autowired
     private IStorageDataFileRepository dataFileRepository;
 
@@ -84,8 +86,6 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
     private Long dataStorage3UsedSize = 0L;
 
     private AIP aip3;
-
-    private static final String SESSION = "SESSION_1";
 
     @Before
     public void init() throws MalformedURLException, NoSuchAlgorithmException {
@@ -153,7 +153,6 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
             dataStorage3UsedSize += df.getFileSize();
         }
         dataFiles.addAll(dataFilesAip);
-        dataFileDao.save(dataFiles);
         // lets test with a file stored into two archives ( 1 and 2 )
         AIP aip12 = generateRandomAIP();
         aip12 = aipDao.save(aip12, aipSession);
@@ -186,7 +185,8 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
 
     @Test
     public void testFindTopByPDS() {
-        Set<StorageDataFile> possibleResults = StorageDataFile.extractDataFiles(aip3, aipSessionRepo.findOne(SESSION));
+        Set<StorageDataFile> possibleResults = StorageDataFile.extractDataFiles(aip3,
+                                                                                aipSessionRepo.findById(SESSION).get());
         StorageDataFile result = dataFileRepository.findTopByPrioritizedDataStoragesId(dataStorage3Id);
         Assert.assertNotNull("There should be a data file stored by dataStorage3", result);
         Assert.assertTrue("Result should be one of aip3 data files", possibleResults.contains(result));
@@ -237,7 +237,7 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
         int listSize = random.nextInt(listMaxSize) + 1;
         for (int i = 0; i < listSize; i++) {
             ippBuilder.getContentInformationBuilder().setDataObject(DataType.OTHER, "blah", "SHA1", sha1("blahblah"),
-                                                                    new Long((new Random()).nextInt(10000000)),
+                                                                    new Long(new Random().nextInt(10000000)),
                                                                     new URL("ftp://bla"));
             ippBuilder.getContentInformationBuilder().setSyntaxAndSemantic("NAME", "SYNTAX_DESCRIPTION",
                                                                            MimeType.valueOf("application/name"),

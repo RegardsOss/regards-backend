@@ -1,3 +1,21 @@
+/*
+ * Copyright 2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
 package fr.cnes.regards.modules.storage.rest;
 
 import java.net.MalformedURLException;
@@ -16,8 +34,9 @@ import org.hamcrest.core.IsCollectionContaining;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.internal.matchers.NotNull;
 import org.springframework.http.MediaType;
+import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.restdocs.payload.PayloadDocumentation;
 import org.springframework.restdocs.request.RequestDocumentation;
 import org.springframework.restdocs.snippet.Attributes;
 import org.springframework.test.annotation.DirtiesContext;
@@ -33,6 +52,7 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.utils.HttpConstants;
+import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -45,6 +65,8 @@ import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.job.AIPQueryFilters;
 import fr.cnes.regards.modules.storage.domain.job.AddAIPTagsFilters;
+import fr.cnes.regards.modules.storage.domain.job.DataStorageRemovalAIPFilters;
+import fr.cnes.regards.modules.storage.domain.job.RemoveAIPTagsFilters;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -159,18 +181,13 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
     @Ignore
     public void testRetrieveDeletedAip() throws InterruptedException {
         testDelete();
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        // first we expect that the aip has a DELETION event in its history
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                .jsonPath("$.properties.pdi.provenanceInformation.history[*].type",
-                          IsCollectionContaining.hasItem(EventType.DELETION.name())));
-        // now we expect that those events does have a date
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                .jsonPath("$.properties.pdi.provenanceInformation.history[?(@.type == \"" + EventType.DELETION.name()
-                        + "\")].date", NotNull.NOT_NULL));
-        performDefaultGet(AIPController.AIP_PATH + AIPController.AIP_ID_PATH, requestBuilderCustomizer,
-                          "we should have the aip", aip.getId().toString());
+
+        performDefaultGet(AIPController.AIP_PATH + AIPController.AIP_ID_PATH, customizer().expectStatusOk()
+                .expect(MockMvcResultMatchers.jsonPath("$.properties.pdi.provenanceInformation.history[*].type",
+                                                       IsCollectionContaining.hasItem(EventType.DELETION.name())))
+                .expect(MockMvcResultMatchers.jsonPath("$.properties.pdi.provenanceInformation.history[?(@.type == \""
+                        + EventType.DELETION.name() + "\")].date").isNotEmpty()), "we should have the aip",
+                          aip.getId().toString());
     }
 
     @Test
@@ -205,6 +222,27 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
 
         performDefaultGet(AIPController.AIP_PATH + AIPController.TAG, requestBuilderCustomizer,
                           "we should have the aips", aip.getId().toString(), "tag");
+    }
+
+    @Test
+    public void testDeleteFilesFromSingleDS() throws MalformedURLException, InterruptedException {
+        testStore();
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        int wait = 0;
+        // lets wait for this AIP to be stored
+        while (aipDao.findOneByAipId(aip.getId().toString()).get().getState() != AIPState.STORED && wait < MAX_WAIT) {
+            Thread.sleep(1000);
+            wait += 1000;
+        }
+        Assert.assertTrue("AIP was not fully stored in time: " + wait, wait < MAX_WAIT);
+        DataStorageRemovalAIPFilters requestParam = new DataStorageRemovalAIPFilters();
+        Long dataStorageId = pluginRepo.findOneByLabel(DATA_STORAGE_CONF_LABEL).getId();
+        requestParam.getDataStorageIds().add(dataStorageId);
+        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
+        performDefaultPost(AIPController.AIP_PATH + AIPController.FILES_DELETE_PATH, requestParam,
+                           requestBuilderCustomizer,
+                           "There should be any error on REST call as return value is" + " not conditional.");
     }
 
     @Test
@@ -343,7 +381,7 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
                                             .value("Available values: " + Arrays.stream(AIPState.values())
                                                     .map(aipState -> aipState.name())
                                                     .reduce((first, second) -> first + ", " + second).get()))
-                        .optional(), RequestDocumentation.parameterWithName("from").description("date after which the aip should have been added to the system").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName()), Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Should respect UTC format")).optional(), RequestDocumentation.parameterWithName("to").description("date before which the aip should have been added to the system").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName()), Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Should respect UTC format")).optional(), RequestDocumentation.parameterWithName("session").description("search aips contained in the provided session").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName())), RequestDocumentation.parameterWithName("tags").description("search aips tagged with one of provided tags").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(List.class.getSimpleName())).optional()));
+                        .optional(), RequestDocumentation.parameterWithName("from").description("date after which the aip should have been added to the system").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName()), Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Should respect UTC format")).optional(), RequestDocumentation.parameterWithName("to").description("date before which the aip should have been added to the system").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName()), Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Should respect UTC format")).optional(), RequestDocumentation.parameterWithName("session").description("search aips contained in the provided session").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName())).optional(), RequestDocumentation.parameterWithName("providerId").description("search aips having the provided provider id").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName())).optional(), RequestDocumentation.parameterWithName("tags").description("search aips tagged with one of provided tags").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(List.class.getSimpleName())).optional()));
 
         performDefaultGet(AIPController.AIP_PATH, requestBuilderCustomizer, "There should be some AIP to show");
     }
@@ -382,6 +420,8 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         int nbTags = 4;
         List<String> resultingTags = Arrays.asList("tag4", "tag2", "tag1", "tag3");
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer
+                .addDocumentationSnippet(PayloadDocumentation.requestFields(AIPControllerIT.documentQueryFilters()));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(nbTags)));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
@@ -416,6 +456,8 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         requestParam.getTagsToAdd().add("FSB");
 
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+        requestBuilderCustomizer.addDocumentationSnippet(PayloadDocumentation
+                .requestFields(AIPControllerIT.documentAddTagsQueryFilters()));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         performDefaultPost(AIPController.AIP_PATH + AIPController.TAG_MANAGEMENT_PATH, requestParam,
                            requestBuilderCustomizer, "should set tags to AIPS");
@@ -426,7 +468,7 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
     public void testDeleteTagFromAIPsByQuery() throws MalformedURLException {
         List<AIP> aips = createSeveralAips();
 
-        AddAIPTagsFilters requestParam = new AddAIPTagsFilters();
+        RemoveAIPTagsFilters requestParam = new RemoveAIPTagsFilters();
         requestParam.setFrom(OffsetDateTime.now().minusDays(40));
         requestParam.setTo(OffsetDateTime.now());
         requestParam.setState(AIPState.STORED);
@@ -439,14 +481,17 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         requestParam.getAipIdsExcluded().add(aips.get(1).getId().toString());
         requestParam.getAipIdsExcluded().add(aips.get(4).getId().toString());
         // Add these tags to AIPs
-        requestParam.getTagsToAdd().add("tag5353");
-        requestParam.getTagsToAdd().add("tag8");
-        requestParam.getTagsToAdd().add("tag5");
+        requestParam.getTagsToRemove().add("tag5353");
+        requestParam.getTagsToRemove().add("tag8");
+        requestParam.getTagsToRemove().add("tag5");
 
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+
+        requestBuilderCustomizer.addDocumentationSnippet(PayloadDocumentation
+                .requestFields(AIPControllerIT.documentRemoveTagsQueryFilters()));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultPost(AIPController.AIP_PATH + AIPController.TAG_MANAGEMENT_PATH, requestParam,
-                           requestBuilderCustomizer, "should set tags to AIPS");
+        performDefaultPost(AIPController.AIP_PATH + AIPController.TAG_DELETION_PATH, requestParam,
+                           requestBuilderCustomizer, "should remove tags to AIPS");
     }
 
     public List<AIP> createSeveralAips() throws MalformedURLException {
@@ -492,4 +537,65 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         newAIPs.add(aipDeleted11);
         return newAIPs;
     }
+
+    public static List<FieldDescriptor> documentQueryFilters() {
+
+        ConstrainedFields constrainedFields = new ConstrainedFields(AIPQueryFilters.class);
+        List<FieldDescriptor> descriptors = new ArrayList<>();
+
+        descriptors.add(
+                        constrainedFields
+                                .withPath("state", "state", "State of the AIP",
+                                          "Available values: " + Arrays.stream(AIPState.values())
+                                                  .map(type -> type.name()).collect(Collectors.joining(", ")))
+                                .optional());
+
+        descriptors.add(constrainedFields
+                .withPath("session", "session", "Retrieves AIPs with a submission date before the provided value")
+                .type(String.class.getSimpleName()));
+        descriptors.add(constrainedFields.withPath("providerId", "providerId", "Provider id").optional()
+                .type(String.class.getSimpleName()));
+
+        descriptors.add(constrainedFields
+                .withPath("from", "from", "Retrieves AIPs with a submission date above the provided value").optional()
+                .type(OffsetDateTime.class.getSimpleName()));
+
+        descriptors.add(constrainedFields
+                .withPath("to", "to", "Retrieves AIPs with a submission date before the provided value").optional()
+                .type(OffsetDateTime.class.getSimpleName()));
+
+        descriptors.add(constrainedFields.withPath("aipIds", "aipIds", "A set of AIPs id (included)").optional()
+                .type(Set.class.getSimpleName()));
+
+        descriptors.add(constrainedFields.withPath("aipIdsExcluded", "to", "A set of AIPs id excluded").optional()
+                .type(Set.class.getSimpleName()));
+
+        descriptors.add(constrainedFields.withPath("tags", "tags", "List of tags that AIPs must have to be included")
+                .optional().type(List.class.getSimpleName()));
+
+        return descriptors;
+    }
+
+    public static List<FieldDescriptor> documentAddTagsQueryFilters() {
+        List<FieldDescriptor> fieldDescriptors = AIPControllerIT.documentQueryFilters();
+
+        ConstrainedFields constrainedFields = new ConstrainedFields(AddAIPTagsFilters.class);
+
+        fieldDescriptors.add(constrainedFields.withPath("tagsToAdd", "tagsToAdd", "Tags to add to AIPs")
+                .type(List.class.getSimpleName()));
+
+        return fieldDescriptors;
+    }
+
+    public static List<FieldDescriptor> documentRemoveTagsQueryFilters() {
+        List<FieldDescriptor> fieldDescriptors = AIPControllerIT.documentQueryFilters();
+
+        ConstrainedFields constrainedFields = new ConstrainedFields(RemoveAIPTagsFilters.class);
+
+        fieldDescriptors.add(constrainedFields.withPath("tagsToRemove", "tagsToRemove", "Tags to remove to AIPs")
+                .type(List.class.getSimpleName()));
+
+        return fieldDescriptors;
+    }
+
 }

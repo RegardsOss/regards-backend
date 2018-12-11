@@ -76,7 +76,7 @@ public class DataFileDao implements IDataFileDao {
         Page<Long> ids = repository.findIdPageByState(state, pageable);
         Set<StorageDataFile> pageContent = repository.findAllDistinctByIdIn(ids.getContent());
         return new PageImpl<>(pageContent.stream().collect(Collectors.toList()),
-                new PageRequest(ids.getNumber(), ids.getSize()), ids.getTotalElements());
+                PageRequest.of(ids.getNumber(), ids.getSize()), ids.getTotalElements());
     }
 
     @Override
@@ -128,7 +128,7 @@ public class DataFileDao implements IDataFileDao {
                 dataFile.setAipEntity(aipDatabase.get());
             }
         }
-        return repository.save(dataFiles);
+        return repository.saveAll(dataFiles);
     }
 
     @Override
@@ -167,12 +167,22 @@ public class DataFileDao implements IDataFileDao {
         Page<Long> ids = repository.findIdPageByChecksumIn(checksums, pageable);
         List<StorageDataFile> pageContent = repository.findAllDistinctByIdIn(ids.getContent()).stream()
                 .collect(Collectors.toList());
-        return new PageImpl<>(pageContent, new PageRequest(ids.getNumber(), ids.getSize()), ids.getTotalElements());
+        return new PageImpl<>(pageContent, PageRequest.of(ids.getNumber(), ids.getSize()), ids.getTotalElements());
+    }
+
+    @Override
+    public Page<StorageDataFile> findPageByStateAndChecksumIn(DataFileState dataFileState, Set<String> checksums,
+            Pageable pageable) {
+        // first lets get the storageDataFile without any join(no graph)
+        Page<Long> ids = repository.findIdPageByStateAndChecksumIn(dataFileState, checksums, pageable);
+        List<StorageDataFile> pageContent = repository.findAllDistinctByIdIn(ids.getContent()).stream()
+                .collect(Collectors.toList());
+        return new PageImpl<>(pageContent, PageRequest.of(ids.getNumber(), ids.getSize()), ids.getTotalElements());
     }
 
     @Override
     public void remove(StorageDataFile data) {
-        repository.delete(data.getId());
+        repository.deleteById(data.getId());
     }
 
     @Override
@@ -221,7 +231,22 @@ public class DataFileDao implements IDataFileDao {
     }
 
     @Override
+    public long countByAipAndByState(AIP aip, DataFileState dataFileState) {
+        Optional<AIPEntity> fromDbOpt = getAipDataBase(aip);
+        if (fromDbOpt.isPresent()) {
+            return repository.countByAipEntityAndState(fromDbOpt.get(), dataFileState);
+        } else {
+            return 0;
+        }
+    }
+
+    @Override
     public long findAllByAipSession(String id) {
         return repository.countByAipEntitySessionId(id);
+    }
+
+    @Override
+    public Set<StorageDataFile> findAllByAipIpIdIn(Collection<String> ipIds) {
+        return repository.findAllByAipEntityAipIdIn(ipIds);
     }
 }

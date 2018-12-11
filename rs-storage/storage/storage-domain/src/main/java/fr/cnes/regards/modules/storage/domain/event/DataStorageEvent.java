@@ -152,7 +152,7 @@ public class DataStorageEvent implements ISubscribable {
 
     /**
      * Set the new url
-     * @param newUrl
+     * @param url
      */
     public void setHandledUrl(URL url) {
         this.handledUrl = url;

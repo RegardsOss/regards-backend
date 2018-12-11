@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.storage.service;
 
-import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
@@ -25,6 +24,8 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
+import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -36,9 +37,9 @@ import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.EventType;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.notification.domain.NotificationType;
-import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -241,7 +242,8 @@ public class DataStorageService implements IDataStorageService {
                             LOGGER.error(message);
                             notifyAdmins("Data storage " + activeDataStorageConf.getLabel() + " is almost full",
                                          message,
-                                         NotificationType.ERROR, MimeTypeUtils.TEXT_PLAIN);
+                                         NotificationType.ERROR,
+                                         MimeTypeUtils.TEXT_PLAIN);
                             MaintenanceManager.setMaintenance(runtimeTenantResolver.getTenant());
                             return;
                         }
@@ -256,7 +258,8 @@ public class DataStorageService implements IDataStorageService {
                             LOGGER.warn(message);
                             notifyAdmins("Data storage " + activeDataStorageConf.getLabel() + " is almost full",
                                          message,
-                                         NotificationType.WARNING, MimeTypeUtils.TEXT_PLAIN);
+                                         NotificationType.WARNING,
+                                         MimeTypeUtils.TEXT_PLAIN);
                         }
                     }
 
@@ -272,17 +275,10 @@ public class DataStorageService implements IDataStorageService {
     /**
      * Use the notification module in admin to create a notification for admins
      */
-    @Override
-    public void notifyAdmins(String title, String message, NotificationType type, MimeType mimeType) {
+    private void notifyAdmins(String title, String message, NotificationType type, MimeType mimeType) {
         FeignSecurityManager.asSystem();
         try {
-            NotificationDTO notif = new NotificationDTO(message,
-                                                        Sets.newHashSet(),
-                                                        Sets.newHashSet(DefaultRole.ADMIN.name()),
-                                                        applicationName,
-                                                        title,
-                                                        type, mimeType);
-            notificationClient.createNotification(notif);
+            notificationClient.notifyRoles(message, title, applicationName, type, mimeType, DefaultRole.ADMIN);
         } finally {
             FeignSecurityManager.reset();
         }
@@ -312,21 +308,39 @@ public class DataStorageService implements IDataStorageService {
     @Override
     public void handleDeletionAction(StorageEventType type, DataStorageEvent event) {
         // Check that the given StorageDataFile id is associated to an existing StorageDataFile from db.
-        Optional<StorageDataFile> data = dataFileDao.findLockedOneById(event.getDataFileId());
-        if (data.isPresent()) {
+        Optional<StorageDataFile> oData = dataFileDao.findLockedOneById(event.getDataFileId());
+        Long dataStorageConfId = event.getStorageConfId();
+        if (oData.isPresent()) {
+            StorageDataFile data = oData.get();
             switch (type) {
                 case SUCCESSFULL:
-                    handleDeletionSuccess(data.get(), event.getHandledUrl(), event.getChecksum());
+                    handleDeletionSuccess(data, event.getHandledUrl(), event.getChecksum(), dataStorageConfId);
                     break;
                 case FAILED:
                 default:
+                    PrioritizedDataStorage storageConf = null;
+                    try {
+                        storageConf = prioritizedDataStorageService.retrieve(dataStorageConfId);
+                    } catch (EntityNotFoundException e) {
+                        LOGGER.error(e.getMessage(), e);
+                    }
+                    // In case we were on a partial deletion, lets reset data storage removed by IAIPService#deleteFilesFromDataStorage(Collection, Long)
+                    if (data.getState() == DataFileState.PARTIAL_DELETION_PENDING) {
+                        data.getPrioritizedDataStorages().add(storageConf);
+                    }
                     // IDataStorage plugin used to delete the file is not able to delete the file right now.
-                    // Maybe the file can be deleted later. So do nothing and just notify administrator.
-                    String message = String.format("Error deleting file (id: %s, checksum: %s).",
+                    // Notify administrator and set data file to STORED, because it is its real state for now.
+                    String message = String.format("Error deleting file (id: %s, checksum: %s).%n"
+                                                           + "Data Storage configuration: %s(%s)%n" + "Error:%s",
                                                    event.getDataFileId(),
-                                                   event.getChecksum());
-                    data.get().setState(DataFileState.TO_BE_DELETED);
-                    dataFileDao.save(data.get());
+                                                   event.getChecksum(),
+                                                   event.getStorageConfId(),
+                                                   storageConf == null ?
+                                                           null :
+                                                           storageConf.getDataStorageConfiguration().getLabel(),
+                                                   event.getFailureCause());
+                    data.setState(DataFileState.STORED);
+                    dataFileDao.save(data);
                     LOGGER.error(message);
                     notifyAdmins("File deletion error", message, NotificationType.INFO, MimeTypeUtils.TEXT_PLAIN);
                     break;
@@ -339,21 +353,20 @@ public class DataStorageService implements IDataStorageService {
     }
 
     @Override
-    public void handleDeletionSuccess(StorageDataFile dataFileDeleted, URL deletedUrl, String checksumOfDeletedFile) {
+    public void handleDeletionSuccess(StorageDataFile dataFileDeleted, URL deletedUrl, String checksumOfDeletedFile,
+            Long dataStorageConfId) {
         // Get the associated AIP of the deleted StorageDataFile from db
         Optional<AIP> optionalAssociatedAIP = aipDao.findOneByAipId(dataFileDeleted.getAip().getId().toString());
         // Verify that deleted file checksum match StorageDataFile checksum
         if (optionalAssociatedAIP.isPresent() && dataFileDeleted.getChecksum().equals(checksumOfDeletedFile)) {
             AIP associatedAIP = optionalAssociatedAIP.get();
             // 1. Remove deleted file location from AIP.
-            removeDeletedUrlFromDataFile(dataFileDeleted, deletedUrl, associatedAIP);
+            removeDeletedUrlFromDataFile(dataFileDeleted, deletedUrl, associatedAIP, dataStorageConfId);
             if (DataType.AIP.equals(dataFileDeleted.getDataType()) && (!associatedAIP.getState()
                     .equals(AIPState.DELETED))) {
                 // Do not delete the dataFileDeleted from db. At this time in db the file is the new one that has
-                // been
-                // stored previously to replace the deleted one. This is a special case for AIP metadata file
-                // because,
-                // at any time we want to ensure that there is only one StorageDataFile of AIP type for a given AIP.
+                // been stored previously to replace the deleted one. This is a special case for AIP metadata file
+                // because, at any time we want to ensure that there is only one StorageDataFile of AIP type for a given AIP.
                 LOGGER.info("[DELETE FILE SUCCESS] AIP metadata file replaced.",
                             dataFileDeleted.getAip().getId().toString());
                 associatedAIP.addEvent(EventType.UPDATE.name(), METADATA_UPDATED_SUCCESSFULLY);
@@ -372,8 +385,10 @@ public class DataStorageService implements IDataStorageService {
      * @param dataFileDeleted {@link StorageDataFile}
      * @param urlToRemove location deleted.
      * @param associatedAIP {@link AIP} associated to the given {@link StorageDataFile}
+     * @param dataStorageConfId
      */
-    private void removeDeletedUrlFromDataFile(StorageDataFile dataFileDeleted, URL urlToRemove, AIP associatedAIP) {
+    private void removeDeletedUrlFromDataFile(StorageDataFile dataFileDeleted, URL urlToRemove, AIP associatedAIP,
+            Long dataStorageConfId) {
 
         // If dataFile to delete contains given url to remove, remove URL from it and update associated AIP to add
         // URL remove event.
@@ -382,6 +397,7 @@ public class DataStorageService implements IDataStorageService {
                         dataFileDeleted.getName(),
                         urlToRemove);
             associatedAIP.getProperties().getContentInformations().stream()
+                    .filter(ci -> !ci.getDataObject().isReference())
                     .filter(ci -> dataFileDeleted.getChecksum().equals(ci.getDataObject().getChecksum()))
                     .forEach(ci -> ci.getDataObject().getUrls().remove(urlToRemove));
             String message = String.format(DATAFILE_URL_DELETED_SUCCESSFULLY, urlToRemove, dataFileDeleted.getName());
@@ -389,6 +405,43 @@ public class DataStorageService implements IDataStorageService {
             LOGGER.info(message);
             aipService.save(associatedAIP, false);
             dataFileDeleted.getUrls().remove(urlToRemove);
+            // lets handle partial deletion specificity
+            if (dataFileDeleted.getState() == DataFileState.PARTIAL_DELETION_PENDING) {
+                try {
+                    dataFileDeleted.decreaseNotYetDeletedBy();
+                } catch (EntityOperationForbiddenException e) {
+                    // in case it is deleted from 1 more data storage than expected it is not blocking as aip will be
+                    // updated to take that into account.
+                    LOGGER.error(String.format(
+                            "Data file %s has been successfuly deleted one more time than expected from IDataStorage"
+                                    + " plugin configuration (id: %s).",
+                            dataFileDeleted.getId(),
+                            dataStorageConfId), e);
+                }
+                // if there is no more partial deletion, lets set the state back to stored
+                if (dataFileDeleted.getNotYetDeletedBy() == 0) {
+                    dataFileDeleted.setState(DataFileState.STORED);
+                    // if there is no more datafile being partially deleted for this AIP, lets update it so information
+                    // stored on other data storages reflects the partial deletion.
+                    if (dataFileDao.countByAipAndByState(associatedAIP, DataFileState.PARTIAL_DELETION_PENDING) == 0) {
+                        try {
+                            aipService.updateAip(associatedAIP.getId().toString(),
+                                                 associatedAIP,
+                                                 "Deletion of files on specific data storages is done.");
+                        } catch (EntityNotFoundException | EntityInconsistentIdentifierException e) {
+                            Optional<String> oSipId = associatedAIP.getSipId();
+                            String msg = String
+                                    .format("AIP (ipId: %s, sipId: %s, providerId: %s, state: %s) could not be updated after "
+                                                    + "partial deletion because it has been deleted somewhere else.",
+                                            associatedAIP.getId().toString(),
+                                            oSipId.isPresent() ? oSipId.get() : "undefinied",
+                                            associatedAIP.getProviderId());
+                            LOGGER.error(msg, e);
+                            throw new RsRuntimeException(msg, e);
+                        }
+                    }
+                }
+            }
             dataFileDao.save(dataFileDeleted);
         } else if (urlToRemove != null) {
             LOGGER.warn("Removed URL {} is not associated to the StorageDataFile to delete {}",
@@ -407,6 +460,7 @@ public class DataStorageService implements IDataStorageService {
             LOGGER.info(message);
             // Remove content information from aip
             Set<ContentInformation> ciToRemove = associatedAIP.getProperties().getContentInformations().stream()
+                    .filter(ci -> !ci.getDataObject().isReference())
                     .filter(ci -> dataFileDeleted.getChecksum().equals(ci.getDataObject().getChecksum()))
                     .collect(Collectors.toSet());
             ciToRemove.forEach(ci -> associatedAIP.getProperties().getContentInformations().remove(ci));
@@ -551,6 +605,7 @@ public class DataStorageService implements IDataStorageService {
             Optional<ContentInformation> ci =
                     associatedAIP.getProperties().getContentInformations()
                         .stream()
+                        .filter(contentInformation -> !contentInformation.getDataObject().isReference())
                         .filter(contentInformation -> contentInformation.getDataObject().getChecksum().equals(storedDataFileFinal.getChecksum()))
                         .findFirst();
             // @formatter:on
@@ -578,6 +633,8 @@ public class DataStorageService implements IDataStorageService {
             AIP associatedAIP = optionalAssociatedAip.get();
             // update data status
             storeFailFile.setState(DataFileState.ERROR);
+            // reset notYetStoredBy to avoid issue during retry
+            storeFailFile.resetNotYetStoredBy();
             storeFailFile.addFailureCause(failureCause);
             dataFileDao.save(storeFailFile);
             // Update associated AIP in db
@@ -598,7 +655,9 @@ public class DataStorageService implements IDataStorageService {
                             storeFailFile.getAip().getProviderId(),
                             storageConf == null ? null : storageConf.getDataStorageConfiguration().getLabel(),
                             failureCause);
-            notifyAdmins("Storage of file " + storeFailFile.getName() + " failed", notifMsg, NotificationType.INFO,
+            notifyAdmins("Storage of file " + storeFailFile.getName() + " failed",
+                         notifMsg,
+                         NotificationType.INFO,
                          MimeTypeUtils.TEXT_PLAIN);
             publisher.publish(new AIPEvent(associatedAIP));
         } else {

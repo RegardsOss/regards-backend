@@ -138,11 +138,11 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
         aipSession.setLastActivationDate(OffsetDateTime.now());
 
         dataFile1 = new StorageDataFile(Sets.newHashSet(new URL("file", "", "fichier1.json")), "checksum", "MD5",
-                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, new AIPEntity(aip, aipSession), aipSession,
+                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, new AIPEntity(aip, aipSession),
                 "fichier1", null);
         dataFiles.add(dataFile1);
         dataFile2 = new StorageDataFile(Sets.newHashSet(new URL("file", "", "fichier2.json")), "checksum2", "MD5",
-                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, new AIPEntity(aip, aipSession), aipSession,
+                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, new AIPEntity(aip, aipSession),
                 "fichier2", null);
         dataFiles.add(dataFile2);
     }

@@ -90,7 +90,14 @@ public class StorageDataFile {
      */
     @Column(columnDefinition = "text")
     @Convert(converter = SetURLCsvConverter.class)
-    private Set<URL> urls;
+    private Set<URL> urls = new HashSet<>();
+
+    /**
+     * File origin urls
+     */
+    @Column(columnDefinition = "text", name = "origin_urls")
+    @Convert(converter = SetURLCsvConverter.class)
+    private Set<URL> originUrls = new HashSet<>();
 
     /**
      * File name
@@ -176,6 +183,15 @@ public class StorageDataFile {
     private Long notYetStoredBy = 0L;
 
     /**
+     * Indicates the number of archives that have to delete this data file. Archives <=> IDataStorage configurations.
+     * This attribute is only used with state {@link DataFileState#PARTIAL_DELETION_PENDING}. In case of total deletion,
+     * this value is irrelevant.
+     */
+    @Column(name = "not_yet_deleted_by")
+    @Min(value = 0, message = "Attribute notYetDeletedBy cannot be negative. Actual value : ${validatedValue}")
+    private Long notYetDeletedBy = 0L;
+
+    /**
      * Default constructor
      */
     @SuppressWarnings("unused")
@@ -187,11 +203,11 @@ public class StorageDataFile {
      * Initialize the data file from the parameters
      * @param file
      * @param mimeType
-     * @param aip
+     * @param aipEntity
      */
-    public StorageDataFile(OAISDataObject file, MimeType mimeType, AIPEntity aipEntity, AIPSession aipSession) {
+    public StorageDataFile(OAISDataObject file, MimeType mimeType, AIPEntity aipEntity) {
         this(file.getUrls(), file.getChecksum(), file.getAlgorithm(), file.getRegardsDataType(), file.getFileSize(),
-             mimeType, aipEntity, aipSession, null, null);
+             mimeType, aipEntity, null, null);
         String name = file.getFilename();
         if (Strings.isNullOrEmpty(name)) {
             String[] pathParts = file.getUrls().iterator().next().getPath().split("/");
@@ -208,12 +224,14 @@ public class StorageDataFile {
      * @param type
      * @param fileSize
      * @param mimeType
-     * @param aip
+     * @param aipEntity
      * @param name
      */
     public StorageDataFile(Set<URL> urls, String checksum, String algorithm, DataType type, Long fileSize,
-            MimeType mimeType, AIPEntity aipEntity, AIPSession aipSession, String name, String storageDirectory) {
-        this.urls = urls;
+            MimeType mimeType, AIPEntity aipEntity, String name, String storageDirectory) {
+        if(urls != null) {
+            this.urls.addAll(urls);
+        }
         this.checksum = checksum;
         this.algorithm = algorithm;
         this.dataType = type;
@@ -230,18 +248,17 @@ public class StorageDataFile {
      * @return extracted data files
      */
     public static Set<StorageDataFile> extractDataFiles(AIP aip, AIPSession aipSession) {
-        return extractDataFilesForExistingAIP(aip, new AIPEntity(aip, aipSession), aipSession);
+        return extractDataFilesForExistingAIP(aip, new AIPEntity(aip, aipSession));
     }
 
-    public static Set<StorageDataFile> extractDataFilesForExistingAIP(AIP aip, AIPEntity aipEntity,
-            AIPSession aipSession) {
+    public static Set<StorageDataFile> extractDataFilesForExistingAIP(AIP aip, AIPEntity aipEntity) {
         Set<StorageDataFile> dataFiles = Sets.newHashSet();
         for (ContentInformation ci : aip.getProperties().getContentInformations()) {
             OAISDataObject file = ci.getDataObject();
             if ((file != null) && !file.isReference()) {
                 // Only non reference data object is managed by storage
                 MimeType mimeType = ci.getRepresentationInformation().getSyntax().getMimeType();
-                dataFiles.add(new StorageDataFile(file, mimeType, aipEntity, aipSession));
+                dataFiles.add(new StorageDataFile(file, mimeType, aipEntity));
             }
         }
         return dataFiles;
@@ -478,10 +495,8 @@ public class StorageDataFile {
         return notYetStoredBy;
     }
 
-    public void setNotYetStoredBy(Long notYetStoredBy) {
-        if (notYetStoredBy != null) {
-            this.notYetStoredBy = notYetStoredBy;
-        }
+    public Long getNotYetDeletedBy() {
+        return notYetDeletedBy;
     }
 
     public String getStorageDirectory() {
@@ -537,6 +552,19 @@ public class StorageDataFile {
         }
     }
 
+    public void increaseNotYetDeletedBy() {
+        notYetDeletedBy++;
+    }
+
+    public void decreaseNotYetDeletedBy() throws EntityOperationForbiddenException {
+        if (notYetDeletedBy > 0L) {
+            notYetDeletedBy--;
+        } else {
+            throw new EntityOperationForbiddenException(
+                    String.format("Forbidden decrease <notYetDeletedBy> for dataFile %s - %s", this.id, this.name));
+        }
+    }
+
     public void emptyFailureCauses() {
         this.failureCauses.clear();
     }
@@ -549,5 +577,17 @@ public class StorageDataFile {
         if (failureCause != null) {
             this.failureCauses.add(failureCause);
         }
+    }
+
+    public Set<URL> getOriginUrls() {
+        return originUrls;
+    }
+
+    public void setOriginUrls(Set<URL> originUrls) {
+        this.originUrls = originUrls;
+    }
+
+    public void resetNotYetStoredBy() {
+        notYetStoredBy = 0L;
     }
 }

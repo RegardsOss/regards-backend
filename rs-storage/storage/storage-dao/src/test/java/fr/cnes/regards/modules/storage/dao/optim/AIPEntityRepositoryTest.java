@@ -93,13 +93,13 @@ public class AIPEntityRepositoryTest extends AbstractDaoTest {
             if (i % bulk == 0) {
                 concurrentlyUpdatedEntities.add(entities.get(0));
                 LOGGER.info("Save {} entities of {}", bulk, i);
-                aipEntityRepo.save(entities);
+                aipEntityRepo.saveAll(entities);
                 entities = new ArrayList<>();
                 state = state == AIPState.VALID ? AIPState.STORED : AIPState.VALID;
             }
         }
         if (!entities.isEmpty()) {
-            aipEntityRepo.save(entities);
+            aipEntityRepo.saveAll(entities);
         }
 
         // Launch concurrent transactions
@@ -116,7 +116,7 @@ public class AIPEntityRepositoryTest extends AbstractDaoTest {
     public void findAllOnlyTest() {
         long startTime = System.currentTimeMillis();
         Page<AIPEntity> page = aipEntityRepo.findAllByState(AIPState.VALID,
-                                                            new PageRequest(0, 100, Direction.ASC, "id"));
+                                                            PageRequest.of(0, 100, Direction.ASC, "id"));
         LOGGER.info("Request took {}ms", System.currentTimeMillis() - startTime);
         Assert.assertNotNull(page);
     }
