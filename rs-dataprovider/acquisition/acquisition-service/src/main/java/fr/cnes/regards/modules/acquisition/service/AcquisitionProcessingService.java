@@ -343,7 +343,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     private void checkProcessingChainMode(AcquisitionProcessingChain processingChain) throws ModuleException {
 
         if (AcquisitionProcessingChainMode.AUTO.equals(processingChain.getMode())
-                && (processingChain.getPeriodicity() == null)) {
+                && processingChain.getPeriodicity() == null) {
             throw new EntityInvalidException("Missing periodicity for automatic acquisition processing chain");
         }
     }
@@ -359,7 +359,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         }
 
         Page<Product> products;
-        Pageable pageable = new PageRequest(0, AcquisitionProperties.WORKING_UNIT);
+        Pageable pageable = PageRequest.of(0, AcquisitionProperties.WORKING_UNIT);
         do {
             products = productService.findChainProducts(processingChain, pageable);
             if (products.hasNext()) {
@@ -417,7 +417,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
         // Stop all active jobs for current processing chain
         JobInfo jobInfo = processingChain.getLastProductAcquisitionJobInfo();
-        if ((jobInfo != null) && !jobInfo.getStatus().getStatus().isFinished()) {
+        if (jobInfo != null && !jobInfo.getStatus().getStatus().isFinished()) {
             jobInfoService.stopJob(jobInfo.getId());
         }
         productService.stopProductJobs(processingChain);
@@ -427,7 +427,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     public boolean isChainJobStoppedAndCleaned(Long processingChainId) throws ModuleException {
         AcquisitionProcessingChain processingChain = getChain(processingChainId);
         JobInfo jobInfo = processingChain.getLastProductAcquisitionJobInfo();
-        boolean acqJobStopped = (jobInfo == null) || jobInfo.getStatus().getStatus().isFinished();
+        boolean acqJobStopped = jobInfo == null || jobInfo.getStatus().getStatus().isFinished();
         return acqJobStopped && productService.isProductJobStoppedAndCleaned(processingChain);
     }
 
@@ -467,7 +467,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         for (AcquisitionProcessingChain processingChain : processingChains) {
 
             // Check periodicity
-            if ((processingChain.getLastActivationDate() != null) && processingChain.getLastActivationDate()
+            if (processingChain.getLastActivationDate() != null && processingChain.getLastActivationDate()
                     .plusSeconds(processingChain.getPeriodicity()).isAfter(OffsetDateTime.now())) {
                 LOGGER.debug("Acquisition processing chain \"{}\" will not be started due to periodicity",
                              processingChain.getLabel());
@@ -669,7 +669,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         Page<AcquisitionFile> page = acqFileRepository
                 .findByStateAndFileInfoInOrderByAcqDateAsc(AcquisitionFileState.IN_PROGRESS,
                                                            processingChain.getFileInfos(),
-                                                           new PageRequest(0, AcquisitionProperties.WORKING_UNIT));
+                                                           PageRequest.of(0, AcquisitionProperties.WORKING_UNIT));
         LOGGER.debug("Managing next new {} registered files (of {})", page.getNumberOfElements(),
                      page.getTotalElements());
         long startTime = System.currentTimeMillis();
@@ -743,21 +743,25 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     @Override
     public void handleProductAcquisitionError(JobInfo jobInfo) {
         Long chainId = jobInfo.getParametersAsMap().get(ProductAcquisitionJob.CHAIN_PARAMETER_ID).getValue();
-        AcquisitionProcessingChain acqChain = acqChainRepository.findOne(chainId);
-        for (AcquisitionFileInfo fileInfo : acqChain.getFileInfos()) {
-            while (handleProductAcquisitionErrorByPage(fileInfo)) {
+        Optional<AcquisitionProcessingChain> acqChain = acqChainRepository.findById(chainId);
+        if (acqChain.isPresent()) {
+            for (AcquisitionFileInfo fileInfo : acqChain.get().getFileInfos()) {
+                while (handleProductAcquisitionErrorByPage(fileInfo)) {
+                }
             }
+        } else {
+            LOGGER.warn("Cannot handle product acquisition error because acquisition chain {} does not exist", chainId);
         }
     }
 
     private boolean handleProductAcquisitionErrorByPage(AcquisitionFileInfo fileInfo) {
         Page<AcquisitionFile> page = acqFileRepository
                 .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.IN_PROGRESS, fileInfo,
-                                                    new PageRequest(0, AcquisitionProperties.WORKING_UNIT));
+                                                    PageRequest.of(0, AcquisitionProperties.WORKING_UNIT));
         for (AcquisitionFile acqFile : page) {
             acqFile.setState(AcquisitionFileState.ERROR);
         }
-        acqFileRepository.save(page);
+        acqFileRepository.saveAll(page);
         return page.hasNext();
     }
 
@@ -782,7 +786,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                                         Arrays.asList(AcquisitionFileState.IN_PROGRESS, AcquisitionFileState.VALID)));
 
         // Handle job summary
-        if ((chain.getLastProductAcquisitionJobInfo() != null)
+        if (chain.getLastProductAcquisitionJobInfo() != null
                 && !chain.getLastProductAcquisitionJobInfo().getStatus().getStatus().isFinished()) {
             summary.setNbProductAcquisitionJob(1);
         }
