@@ -153,7 +153,7 @@ public abstract class AbstractJob<R> extends Observable implements IJob<R> {
         } else if (parameter.getValue() == null) { // NOSONAR : an exception is thrown when calling handleMissingParameter
             handleInvalidParameter(parameterName, "Null value");
         } else {
-            return parameter.getValue();
+            return type == null ? parameter.getValue() : parameter.getValue(type);
         }
         // Unreachable code (handle... methods throw Exceptions)
         return null;

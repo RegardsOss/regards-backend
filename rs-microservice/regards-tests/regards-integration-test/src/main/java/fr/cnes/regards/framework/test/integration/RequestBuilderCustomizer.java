@@ -1,5 +1,10 @@
 package fr.cnes.regards.framework.test.integration;
 
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.removeHeaders;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
@@ -28,8 +34,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
 import fr.cnes.regards.framework.security.utils.HttpConstants;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 
 /**
  * Allow to customize the request done thanks to {@link MockMvc}.
@@ -185,8 +191,8 @@ public class RequestBuilderCustomizer {
     protected MockHttpServletRequestBuilder getRequestBuilder(String authToken, HttpMethod httpMethod,
             String urlTemplate, Object... urlVars) {
         checkCustomizationCoherence(httpMethod);
-        MockHttpServletRequestBuilder requestBuilder = RestDocumentationRequestBuilders
-                .request(httpMethod, urlTemplate, urlVars);
+        MockHttpServletRequestBuilder requestBuilder = RestDocumentationRequestBuilders.request(httpMethod, urlTemplate,
+                                                                                                urlVars);
         addSecurityHeader(requestBuilder, authToken);
 
         requestBuilder.headers(getHeaders());
@@ -272,6 +278,13 @@ public class RequestBuilderCustomizer {
     /**
      * Add a ResultMatcher status OK to be matched
      */
+    public RequestBuilderCustomizer expectStatus(HttpStatus status) {
+        return expect(MockMvcResultMatchers.status().is(status.value()));
+    }
+
+    /**
+     * Add a ResultMatcher status OK to be matched
+     */
     public RequestBuilderCustomizer expectStatusOk() {
         return expect(MockMvcResultMatchers.status().isOk());
     }
@@ -318,7 +331,6 @@ public class RequestBuilderCustomizer {
         return expect(MockMvcResultMatchers.status().isConflict());
     }
 
-
     /**
      * Add a ResultMatcher expecting given contentType to be matched
      */
@@ -339,7 +351,6 @@ public class RequestBuilderCustomizer {
     public RequestBuilderCustomizer expectIsEmpty(String jsonPath) {
         return expect(MockMvcResultMatchers.jsonPath(jsonPath).isEmpty());
     }
-
 
     /**
      * Add a ResultMatcher expecting given jsonPath is an array
@@ -368,7 +379,6 @@ public class RequestBuilderCustomizer {
     public RequestBuilderCustomizer expectToHaveToString(String jsonPath, String expectedToString) {
         return expect(MockMvcResultMatchers.jsonPath(jsonPath, Matchers.hasToString(expectedToString)));
     }
-
 
     /**
      * Add {@link ResultMatcher} to the already present matchers
@@ -412,9 +422,8 @@ public class RequestBuilderCustomizer {
                                                                                                "Content-Length"));
                 OperationResponsePreprocessor respPreprocessor = preprocessResponse(prettyPrint(),
                                                                                     removeHeaders("Content-Length"));
-                request.andDo(MockMvcRestDocumentation
-                                      .document("{ClassName}/{methodName}", reqPreprocessor, respPreprocessor,
-                                                docSnippets.toArray(new Snippet[0])));
+                request.andDo(MockMvcRestDocumentation.document("{ClassName}/{methodName}", reqPreprocessor,
+                                                                respPreprocessor, docSnippets.toArray(new Snippet[0])));
             }
             return request;
         } catch (Exception e) { // NOSONAR
