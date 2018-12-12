@@ -152,7 +152,7 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
 
         // Check registered files
         Page<AcquisitionFile> inProgressFiles = acqFileRepository
-                .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.IN_PROGRESS, fileInfo, new PageRequest(0, 1));
+                .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.IN_PROGRESS, fileInfo, PageRequest.of(0, 1));
         Assert.assertTrue(inProgressFiles.getTotalElements() == 4);
 
         processingService.manageRegisteredFiles(processingChain);
@@ -160,15 +160,15 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         // Check registered files
         inProgressFiles = acqFileRepository.findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.IN_PROGRESS,
                                                                                processingChain.getFileInfos().get(0),
-                                                                               new PageRequest(0, 1));
+                                                                               PageRequest.of(0, 1));
         Assert.assertTrue(inProgressFiles.getTotalElements() == 0);
 
         Page<AcquisitionFile> validFiles = acqFileRepository
-                .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.VALID, fileInfo, new PageRequest(0, 1));
+                .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.VALID, fileInfo, PageRequest.of(0, 1));
         Assert.assertTrue(validFiles.getTotalElements() == 0);
 
         Page<AcquisitionFile> acquiredFiles = acqFileRepository
-                .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.ACQUIRED, fileInfo, new PageRequest(0, 1));
+                .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.ACQUIRED, fileInfo, PageRequest.of(0, 1));
         Assert.assertTrue(acquiredFiles.getTotalElements() == 4);
 
         // Find product to schedule
@@ -198,7 +198,7 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
                                                              Arrays.asList(AcquisitionFileState.ERROR)) == 0);
 
         Page<AcquisitionProcessingChainMonitor> monitor = processingService
-                .buildAcquisitionProcessingChainSummaries(null, null, null, new PageRequest(0, 10));
+                .buildAcquisitionProcessingChainSummaries(null, null, null, PageRequest.of(0, 10));
         Assert.assertTrue(!monitor.getContent().isEmpty());
         Assert.assertTrue(monitor.getContent().get(0).getNbFileErrors() == 0);
         Assert.assertTrue(monitor.getContent().get(0).getNbFiles() == 4);

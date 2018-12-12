@@ -164,7 +164,7 @@ public class ProductService implements IProductService {
 
     @Override
     public void delete(Long id) {
-        productRepository.delete(id);
+        productRepository.deleteById(id);
     }
 
     @Override
@@ -263,7 +263,7 @@ public class ProductService implements IProductService {
 
             try {
                 String productName = productPlugin.getProductName(validFile.getFilePath());
-                if ((productName != null) && !productName.isEmpty()) {
+                if (productName != null && !productName.isEmpty()) {
                     productNames.add(productName);
                     validFilesByProductName.put(productName, validFile);
                 } else {
@@ -311,9 +311,9 @@ public class ProductService implements IProductService {
             fulfillProduct(validFilesByProductName.get(productName), currentProduct, processingChain);
 
             // Store for scheduling
-            if ((currentProduct.getSipState() == ProductSIPState.NOT_SCHEDULED)
-                    && ((currentProduct.getState() == ProductState.COMPLETED)
-                            || (currentProduct.getState() == ProductState.FINISHED))) {
+            if (currentProduct.getSipState() == ProductSIPState.NOT_SCHEDULED
+                    && (currentProduct.getState() == ProductState.COMPLETED
+                            || currentProduct.getState() == ProductState.FINISHED)) {
                 LOGGER.trace("Product {} is candidate for SIP generation", currentProduct.getProductName());
                 productsToSchedule.add(currentProduct);
             }
@@ -454,7 +454,7 @@ public class ProductService implements IProductService {
     public boolean isProductJobStoppedAndCleaned(AcquisitionProcessingChain processingChain) throws ModuleException {
         // Handle SIP generation jobs
         Page<Product> products;
-        Pageable pageable = new PageRequest(0, AcquisitionProperties.WORKING_UNIT);
+        Pageable pageable = PageRequest.of(0, AcquisitionProperties.WORKING_UNIT);
         do {
             products = productRepository.findWithLockByProcessingChainAndSipStateOrderByIdAsc(processingChain,
                                                                                               ProductSIPState.SCHEDULED,
@@ -473,31 +473,6 @@ public class ProductService implements IProductService {
             }
         } while (products.hasNext());
 
-        // Submission cannot be stop as schedule is going on ...
-        // Handle SIP submission jobs
-        //        pageable = new PageRequest(0, defaultPageSize);
-        //        do {
-        //            products = productRepository
-        //                    .findWithLockByProcessingChainAndSipStateOrderByIdAsc(processingChain,
-        //                                                                          ProductSIPState.SUBMISSION_SCHEDULED,
-        //                                                                          pageable);
-        //            if (products.hasNext()) {
-        //                pageable = products.nextPageable();
-        //            }
-        //            for (Product product : products) {
-        //                if (!product.getLastSIPSubmissionJobInfo().getStatus().getStatus().isFinished()) {
-        //                    return false;
-        //                } else {
-        //                    // Clean product state
-        //                    product.setSipState(ProductSIPState.GENERATED);
-        //                    LOGGER.debug("Saving product \"{}\" \"{}\" with IP ID \"{}\" and SIP state \"{}\"",
-        //                                 product.getProductName(), product.getSip().getId(), product.getIpId(),
-        //                                 product.getSipState());
-        //                    save(product);
-        //                }
-        //            }
-        //        } while (products.hasNext());
-
         return true;
     }
 
@@ -506,7 +481,7 @@ public class ProductService implements IProductService {
 
         Page<Product> products = productRepository
                 .findByProcessingChainAndSipStateOrderByIdAsc(processingChain, ProductSIPState.SCHEDULED_INTERRUPTED,
-                                                              new PageRequest(0, AcquisitionProperties.WORKING_UNIT));
+                                                              PageRequest.of(0, AcquisitionProperties.WORKING_UNIT));
         // Schedule SIP generation
         if (products.hasContent()) {
             LOGGER.debug("Restarting interrupted SIP generation for {} product(s)", products.getContent().size());
@@ -520,7 +495,7 @@ public class ProductService implements IProductService {
 
         Page<Product> products = productRepository
                 .findByProcessingChainAndSipStateOrderByIdAsc(processingChain, ProductSIPState.GENERATION_ERROR,
-                                                              new PageRequest(0, AcquisitionProperties.WORKING_UNIT));
+                                                              PageRequest.of(0, AcquisitionProperties.WORKING_UNIT));
         // Schedule SIP generation
         if (products.hasContent()) {
             LOGGER.debug("Retrying SIP generation for {} product(s)", products.getContent().size());

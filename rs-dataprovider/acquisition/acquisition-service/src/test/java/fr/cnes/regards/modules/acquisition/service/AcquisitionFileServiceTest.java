@@ -215,24 +215,24 @@ public class AcquisitionFileServiceTest extends AbstractMultitenantServiceTest {
 
     @Test
     public void testSearchFiles() {
-        Page<AcquisitionFile> results = fileService.search("file", null, null, null, null, new PageRequest(0, 100));
+        Page<AcquisitionFile> results = fileService.search("file", null, null, null, null, PageRequest.of(0, 100));
         Assert.assertTrue(results.getNumberOfElements() == AcquisitionFileState.values().length * 2);
 
-        results = fileService.search("/other", null, null, null, null, new PageRequest(0, 100));
+        results = fileService.search("/other", null, null, null, null, PageRequest.of(0, 100));
         Assert.assertTrue(results.getNumberOfElements() == 0);
 
-        results = fileService.search("file1", null, null, processingChain.getId(), null, new PageRequest(0, 100));
+        results = fileService.search("file1", null, null, processingChain.getId(), null, PageRequest.of(0, 100));
         Assert.assertTrue(results.getNumberOfElements() == 1);
 
-        results = fileService.search(null, null, null, processingChain.getId(), null, new PageRequest(0, 100));
+        results = fileService.search(null, null, null, processingChain.getId(), null, PageRequest.of(0, 100));
         Assert.assertTrue(results.getNumberOfElements() == AcquisitionFileState.values().length);
 
-        results = fileService.search(null, null, null, processingChain2.getId(), null, new PageRequest(0, 100));
+        results = fileService.search(null, null, null, processingChain2.getId(), null, PageRequest.of(0, 100));
         Assert.assertTrue(results.getNumberOfElements() == AcquisitionFileState.values().length);
 
         results = fileService.search("file", Arrays.asList(AcquisitionFileState.ACQUIRED), product.getId(),
                                      processingChain.getId(), OffsetDateTime.now().minusDays(1),
-                                     new PageRequest(0, 100));
+                                     PageRequest.of(0, 100));
         Assert.assertTrue(results.getNumberOfElements() == 1);
     }
 

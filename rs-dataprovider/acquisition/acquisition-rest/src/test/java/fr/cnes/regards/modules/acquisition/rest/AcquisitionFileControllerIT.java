@@ -34,7 +34,6 @@ import org.springframework.restdocs.request.ParameterDescriptor;
 import org.springframework.restdocs.request.RequestDocumentation;
 import org.springframework.restdocs.snippet.Attributes;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -73,8 +72,7 @@ public class AcquisitionFileControllerIT extends AbstractRegardsTransactionalIT 
 
     @Test
     public void searchAllFiles() throws ModuleException {
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         documentRequestParameters(requestBuilderCustomizer);
 
         requestBuilderCustomizer
@@ -87,11 +85,10 @@ public class AcquisitionFileControllerIT extends AbstractRegardsTransactionalIT 
 
     @Test
     public void searchFilesByState() throws ModuleException {
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk()
+                .addParameter(AcquisitionFileController.REQUEST_PARAM_STATE,
+                              AcquisitionFileState.IN_PROGRESS.toString());
         documentRequestParameters(requestBuilderCustomizer);
-        requestBuilderCustomizer.customizeRequestParam().param(AcquisitionFileController.REQUEST_PARAM_STATE,
-                                                               AcquisitionFileState.IN_PROGRESS.toString());
         performDefaultGet(AcquisitionFileController.TYPE_PATH, requestBuilderCustomizer, "Should retrieve files");
     }
 
