@@ -8,7 +8,6 @@ import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -122,7 +121,7 @@ public class AIPEntity {
      * The REGARDS session identifier used while creating this entity
      */
     @NotNull(message = "Session is required")
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "session", foreignKey = @ForeignKey(name = "fk_aip_session"))
     private AIPSession session;
 

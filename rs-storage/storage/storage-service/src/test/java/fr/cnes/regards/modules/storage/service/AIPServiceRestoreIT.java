@@ -65,7 +65,6 @@ import com.google.gson.Gson;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
-import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -1070,12 +1069,6 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         public INotificationClient notificationClient() {
             return Mockito.mock(INotificationClient.class);
         }
-
-        @Bean
-        public IResourceService resourceService() {
-            return Mockito.mock(IResourceService.class);
-        }
-
     }
 
 }
