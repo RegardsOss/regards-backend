@@ -119,7 +119,7 @@ public class SIPService implements ISIPService {
                 if (isDeletableWithoutAips(sip)) {
                     Set<AIPEntity> aips = aipRepository.findBySip(sip);
                     if (!aips.isEmpty()) {
-                        aipRepository.delete(aips);
+                        aipRepository.deleteAll(aips);
                     }
                     sipRepository.updateSIPEntityState(SIPState.DELETED, sip.getId());
                 } else {

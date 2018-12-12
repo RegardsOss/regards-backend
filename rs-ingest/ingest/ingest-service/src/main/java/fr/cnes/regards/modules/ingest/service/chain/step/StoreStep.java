@@ -23,6 +23,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
@@ -44,7 +45,11 @@ public class StoreStep extends AbstractIngestStep<List<AIP>, Void> {
 
     @Override
     protected Void doExecute(List<AIP> aips) throws ProcessingStepException {
-        this.job.getIngestProcessingService().saveAndSubmitAIP(this.job.getCurrentEntity(), aips);
+        try {
+            this.job.getIngestProcessingService().saveAndSubmitAIP(this.job.getCurrentEntity(), aips);
+        } catch (EntityNotFoundException e) {
+            throw new ProcessingStepException(e);
+        }
         return null;
     }
 

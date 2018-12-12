@@ -109,7 +109,6 @@ public class SIPServiceTest extends AbstractSIPTest {
     private SIPEntity sipWithOneAIP = null;
 
     @Override
-    @SuppressWarnings("unchecked")
     public void doInit() throws NoSuchAlgorithmException, IOException, InterruptedException, ModuleException {
         handler.clearEvents();
         subscriber.subscribeTo(SIPEvent.class, handler);
@@ -200,8 +199,8 @@ public class SIPServiceTest extends AbstractSIPTest {
             // microservice
             simulateAipDeletionFromStorage(getSipSimulatedAIPs(sipWithManyAIPs.getSipId().toString()).get(0).getId());
             // 2.1 SIP should be in INCOMPLETE state as there is another AIP to delete
-            Assert.assertTrue("SIP should be in INCOMPLETE state",
-                              SIPState.INCOMPLETE.equals(sipRepository.findOne(sipWithManyAIPs.getId()).getState()));
+            Assert.assertTrue("SIP should be in INCOMPLETE state", SIPState.INCOMPLETE
+                    .equals(sipRepository.findById(sipWithManyAIPs.getId()).get().getState()));
             // 2.2 A SIPevent associated should have been sent
             Assert.assertTrue("A SIPEvent should had been sent with incomplete state for SIP",
                               handler.getReceivedEvents().stream()
@@ -210,7 +209,7 @@ public class SIPServiceTest extends AbstractSIPTest {
             // 3 . Simulate the other AIP deleted by the archival storage microservice
             simulateAipDeletionFromStorage(getSipSimulatedAIPs(sipWithManyAIPs.getSipId().toString()).get(1).getId());
             // 3.1 All AIP has been deleted, SIP should be in DELETED STATE
-            SIPEntity deletedSip = sipRepository.findOne(sipWithManyAIPs.getId());
+            SIPEntity deletedSip = sipRepository.findById(sipWithManyAIPs.getId()).get();
             LOGGER.debug("Deleted SIP state : {}", deletedSip.getState());
             Assert.assertTrue("SIP should be in DELETED state", SIPState.DELETED.equals(deletedSip.getState()));
             // 3.2 A SIPevent associated should have been sent
@@ -251,7 +250,7 @@ public class SIPServiceTest extends AbstractSIPTest {
             // microservice
             simulateAipDeletionFromStorage(getSipSimulatedAIPs(sipWithOneAIP.getSipId().toString()).get(0).getId());
             // 2.1 All AIP has been deleted, SIP should be in DELETED STATE
-            SIPEntity deletedSip = sipRepository.findOne(sipWithOneAIP.getId());
+            SIPEntity deletedSip = sipRepository.findById(sipWithOneAIP.getId()).get();
             Assert.assertEquals(SIPState.DELETED, deletedSip.getState());
             // 2.1 A SIPevent associated should have been sent
             Assert.assertTrue("A SIPEvent should had been sent with delete SIP sipId",
@@ -297,7 +296,7 @@ public class SIPServiceTest extends AbstractSIPTest {
                 // microservice
                 simulateAipDeletionFromStorage(getSipSimulatedAIPs(sip.getSipId()).get(0).getId());
                 // 2.1 All AIP has been deleted, SIP should be in DELETED STATE
-                SIPEntity deletedSip = sipRepository.findOne(sip.getId());
+                SIPEntity deletedSip = sipRepository.findById(sip.getId()).get();
                 LOGGER.debug("Deleted SIP state : {}", deletedSip.getState());
                 Assert.assertEquals("SIP should be in DELETED state", SIPState.DELETED, deletedSip.getState());
                 // 2.1 A SIPevent associated should have been sent
@@ -321,7 +320,7 @@ public class SIPServiceTest extends AbstractSIPTest {
     public void searchSip() {
         // Check search by state
         Page<SIPEntity> results = sipService.search(null, null, null, null, Lists.newArrayList(SIPState.AIP_GEN_ERROR),
-                                                    null, new PageRequest(0, 100));
+                                                    null, PageRequest.of(0, 100));
         Assert.assertTrue("There should be only two AIPs with AIP_GEN_ERROR state", results.getTotalElements() == 2);
     }
 
@@ -341,7 +340,7 @@ public class SIPServiceTest extends AbstractSIPTest {
     @Test
     public void checkSessions() {
         // Check retrieve sessions
-        Page<SIPSession> result = sipSessionService.search(null, null, null, new PageRequest(0, 100));
+        Page<SIPSession> result = sipSessionService.search(null, null, null, PageRequest.of(0, 100));
         Assert.assertTrue(result.getTotalElements() == 5);
         SIPSession prevSession = null;
         // Check order by last activation date.
@@ -387,8 +386,7 @@ public class SIPServiceTest extends AbstractSIPTest {
         // Check that not stored SIP are already in DELETED state
         // Not stored state are CREATED, AIP_CREATED, INVALID, AIP_GEN_ERROR, REJECTED, DELETED
         Page<SIPEntity> results = sipService.search(null, COMPLEX_SESSION_ID, null, null,
-                                                    Lists.newArrayList(SIPState.DELETED), null,
-                                                    new PageRequest(0, 100));
+                                                    Lists.newArrayList(SIPState.DELETED), null, PageRequest.of(0, 100));
         Assert.assertEquals(26, results.getTotalElements());
 
     }

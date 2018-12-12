@@ -206,7 +206,7 @@ public class AIPService implements IAIPService {
             sipService.saveSIPEntity(sip);
             LOGGER.info("SIP \"{}\" is now indexed.", sip.getSipId());
             // AIPs are no longer useful here we can delete them
-            aipRepository.delete(sipAips);
+            aipRepository.deleteAll(sipAips);
         }
         return aip;
     }
@@ -271,7 +271,7 @@ public class AIPService implements IAIPService {
     @Override
     public void askForAipsDeletion() {
         List<RejectedSip> rejectedSips = new ArrayList<>();
-        Page<SIPEntity> deletableSips = sipRepository.findPageByState(SIPState.TO_BE_DELETED, new PageRequest(0, 100));
+        Page<SIPEntity> deletableSips = sipRepository.findPageByState(SIPState.TO_BE_DELETED, PageRequest.of(0, 100));
         if (deletableSips.hasContent()) {
             ResponseEntity<List<RejectedSip>> response;
             long askForAipDeletionStart = System.currentTimeMillis();

@@ -57,7 +57,7 @@ public class IngestProcessingServiceTest extends AbstractRegardsServiceTransacti
     @Test
     public void checkDefaultProcessingChain() {
         Page<IngestProcessingChain> results = ingestProcessingService
-                .searchChains(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, new PageRequest(0, 100));
+                .searchChains(IngestProcessingChain.DEFAULT_INGEST_CHAIN_LABEL, PageRequest.of(0, 100));
         Assert.assertEquals(1, results.getTotalElements());
     }
 

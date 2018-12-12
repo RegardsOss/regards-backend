@@ -47,7 +47,7 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
 
     @Override
     @EntityGraph("graph.sip.entity.complete")
-    SIPEntity findOne(Long id);
+    Optional<SIPEntity> findById(Long id);
 
     /**
      * Retrieve all {@link SIPEntity} for the given ids

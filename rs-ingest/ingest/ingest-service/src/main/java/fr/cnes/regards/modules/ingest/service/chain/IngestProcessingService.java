@@ -204,7 +204,7 @@ public class IngestProcessingService implements IIngestProcessingService {
     }
 
     @Override
-    public SIPEntity saveAndSubmitAIP(SIPEntity entity, List<AIP> aips) {
+    public SIPEntity saveAndSubmitAIP(SIPEntity entity, List<AIP> aips) throws EntityNotFoundException {
         // Store generated AIP(s) in with raw json object.
         for (AIP aip : aips) {
             createAIP(entity.getId(), aip);
@@ -220,8 +220,12 @@ public class IngestProcessingService implements IIngestProcessingService {
     }
 
     @Override
-    public SIPEntity getSIPEntity(Long pId) {
-        return sipRepository.findOne(pId);
+    public SIPEntity getSIPEntity(Long pId) throws EntityNotFoundException {
+        Optional<SIPEntity> sipEntity = sipRepository.findById(pId);
+        if (sipEntity.isPresent()) {
+            return sipEntity.get();
+        }
+        throw new EntityNotFoundException(pId, SIPEntity.class);
     }
 
     @Override
@@ -230,8 +234,8 @@ public class IngestProcessingService implements IIngestProcessingService {
     }
 
     @Override
-    public AIPEntity createAIP(Long sipEntityId, AIP aip) {
-        SIPEntity sip = sipRepository.findOne(sipEntityId);
+    public AIPEntity createAIP(Long sipEntityId, AIP aip) throws EntityNotFoundException {
+        SIPEntity sip = getSIPEntity(sipEntityId);
         return aipRepository.save(AIPEntityBuilder.build(sip, SipAIPState.CREATED, aip));
     }
 

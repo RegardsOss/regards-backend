@@ -20,7 +20,8 @@ package fr.cnes.regards.modules.ingest.domain;
 
 import java.util.Optional;
 
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
+
 import org.springframework.util.Assert;
 
 /**

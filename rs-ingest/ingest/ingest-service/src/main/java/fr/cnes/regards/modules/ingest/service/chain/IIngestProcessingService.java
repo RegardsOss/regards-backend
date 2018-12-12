@@ -27,6 +27,7 @@ import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
@@ -62,12 +63,12 @@ public interface IIngestProcessingService {
     /**
      * After AIP(s) generation, save the context and submit AIP(s) in the AIP data flow (within the same transaction)
      */
-    SIPEntity saveAndSubmitAIP(SIPEntity entity, List<AIP> aips);
+    SIPEntity saveAndSubmitAIP(SIPEntity entity, List<AIP> aips) throws EntityNotFoundException;
 
     /**
      * Return {@link SIPEntity} for the given id
      */
-    SIPEntity getSIPEntity(Long id);
+    SIPEntity getSIPEntity(Long id) throws EntityNotFoundException;
 
     /**
      *
@@ -78,7 +79,7 @@ public interface IIngestProcessingService {
     /**
      * Create AIP
      */
-    AIPEntity createAIP(Long sipEntityId, AIP aip);
+    AIPEntity createAIP(Long sipEntityId, AIP aip) throws EntityNotFoundException;
 
     /**
      * Create a new {@link IngestProcessingChain}
