@@ -43,7 +43,7 @@ public class ControllerHandlingConfiguration implements WebMvcRegistrations {
             @Override
             protected boolean isHandler(Class<?> beanType) {
                 return AnnotatedElementUtils.hasAnnotation(beanType, Controller.class)
-                        || AnnotatedElementUtils.hasAnnotation(beanType, RequestMapping.class);
+                        && AnnotatedElementUtils.hasAnnotation(beanType, RequestMapping.class);
             }
         };
     }
