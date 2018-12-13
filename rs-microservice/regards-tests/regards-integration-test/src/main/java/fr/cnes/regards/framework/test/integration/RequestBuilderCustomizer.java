@@ -77,7 +77,7 @@ public class RequestBuilderCustomizer {
     /**
      * Request parameter builder
      */
-    private final RequestParamBuilder requestParamBuilder = RequestParamBuilder.build();
+    private final RequestParamBuilder requestParamBuilder = new RequestParamBuilder();
 
     /**
      * Documentation snippets

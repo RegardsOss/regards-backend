@@ -29,9 +29,13 @@ public final class RequestParamBuilder {
      */
     private final MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
 
-    private RequestParamBuilder() {
+    protected RequestParamBuilder() {
     }
 
+    /**
+     * Use {@link RequestBuilderCustomizer#addParameter(String, String...)} instead.
+     */
+    @Deprecated
     public static RequestParamBuilder build() {
         return new RequestParamBuilder();
     }

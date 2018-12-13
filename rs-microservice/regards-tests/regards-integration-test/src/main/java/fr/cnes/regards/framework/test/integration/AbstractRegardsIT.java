@@ -45,6 +45,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
+
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 
 /**
@@ -154,7 +155,7 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * @deprecated Deprecated in favor of
-     * {@link AbstractRegardsIT#performGet(String, String, RequestBuilderCustomizer, String, Object...)}
+     * {@link AbstractRegardsIT#performDefaultGet(String, String, RequestBuilderCustomizer, String, Object...)}
      */
     @Deprecated
     protected ResultActions performDefaultGet(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
@@ -164,8 +165,8 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectations(matchers);
         for (Map.Entry<String, List<String>> requestParam : requestParams.getParameters().entrySet()) {
-            requestBuilderCustomizer.customizeRequestParam().param(requestParam.getKey(), requestParam.getValue()
-                    .toArray(new String[0]));
+            requestBuilderCustomizer.customizeRequestParam().param(requestParam.getKey(),
+                                                                   requestParam.getValue().toArray(new String[0]));
         }
         return performGet(urlTemplate, jwt, requestBuilderCustomizer, errorMsg, urlVariables);
     }
@@ -175,9 +176,9 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
      */
     protected ResultActions performDefaultGet(String urlTemplate, RequestBuilderCustomizer requestBuilderCustomizer,
             String errorMsg, Object... urlVariables) {
-        return performGet(urlTemplate,
-                          manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.GET, getDefaultUserEmail(),
-                                         getDefaultRole()), requestBuilderCustomizer, errorMsg, urlVariables);
+        return performGet(urlTemplate, manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.GET,
+                                                      getDefaultUserEmail(), getDefaultRole()),
+                          requestBuilderCustomizer, errorMsg, urlVariables);
     }
 
     /**
@@ -238,9 +239,9 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
      */
     protected ResultActions performDefaultPost(String urlTemplate, Object content,
             RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
-        return performPost(urlTemplate,
-                           manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.POST, getDefaultUserEmail(),
-                                          getDefaultRole()), content, requestBuilderCustomizer, errorMsg, urlVariables);
+        return performPost(urlTemplate, manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.POST,
+                                                       getDefaultUserEmail(), getDefaultRole()),
+                           content, requestBuilderCustomizer, errorMsg, urlVariables);
     }
 
     /**
@@ -270,9 +271,9 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
      */
     protected ResultActions performDefaultPut(String urlTemplate, Object content,
             RequestBuilderCustomizer requestBuilderCustomizer, String errorMsg, Object... urlVariables) {
-        return performPut(urlTemplate,
-                          manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.PUT, getDefaultUserEmail(),
-                                         getDefaultRole()), content, requestBuilderCustomizer, errorMsg, urlVariables);
+        return performPut(urlTemplate, manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.PUT,
+                                                      getDefaultUserEmail(), getDefaultRole()),
+                          content, requestBuilderCustomizer, errorMsg, urlVariables);
     }
 
     /**
@@ -326,8 +327,9 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
      */
     protected ResultActions performDefaultDelete(String urlTemplate, RequestBuilderCustomizer requestBuilderCustomizer,
             String errorMsg, Object... urlVariables) {
-        return performDelete(urlTemplate, manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.DELETE,
-                                                         getDefaultUserEmail(), getDefaultRole()),
+        return performDelete(urlTemplate,
+                             manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.DELETE,
+                                            getDefaultUserEmail(), getDefaultRole()),
                              requestBuilderCustomizer, errorMsg, urlVariables);
     }
 
