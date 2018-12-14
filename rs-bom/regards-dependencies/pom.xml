@@ -63,9 +63,7 @@
         <multitenant.starter.version>4.0.0-SNAPSHOT</multitenant.starter.version>
         <security.starter.version>4.0.0-SNAPSHOT</security.starter.version>
         <swagger.starter.version>4.0.0-SNAPSHOT</swagger.starter.version>
-        <websocket.starter.version>4.0.0-SNAPSHOT</websocket.starter.version>
         <plugins.docs.version>4.0.0-SNAPSHOT</plugins.docs.version>
-        <plugins.starter.version>4.0.0-SNAPSHOT</plugins.starter.version>
         <oais.docs.version>4.0.0-SNAPSHOT</oais.docs.version>
         <oais.starter.version>4.0.0-SNAPSHOT</oais.starter.version>
         <encryption.starter.version>4.0.0-SNAPSHOT</encryption.starter.version>
@@ -146,20 +144,29 @@
         <fr.cnes.regards.storages.noop.version>4.0.0-SNAPSHOT</fr.cnes.regards.storages.noop.version>
 
         <!-- COTS -->
-        <flyway.version>4.2.0</flyway.version>
+        <!-- Flywaydb dependency from spring-boot -->
+        <flyway.version>5.2.1</flyway.version>
         <io.jsonwebtoken.jjwt.version>0.7.0</io.jsonwebtoken.jjwt.version>
         <io.springfox.springfox-swagger2.version>2.7.0</io.springfox.springfox-swagger2.version>
         <io.springfox.springfox-swagger-ui.version>2.7.0</io.springfox.springfox-swagger-ui.version>
         <org.hibernate.javax.persistence.version>1.0.0.Final</org.hibernate.javax.persistence.version>
-        <hsqldb.hsqldb.version>1.8.0.7</hsqldb.hsqldb.version>
-        <!-- ClassNotFOundException : FilterRegistrationBean with Brixton version -->
-        <org.springframework.cloud.spring-cloud-dependencies.version>Dalston.SR3</org.springframework.cloud.spring-cloud-dependencies.version>
+        <!-- hsqldb is into spring-boot dependencies with version 2.4.1, but some dao use it without spring-boot -->
+        <hsqldb.hsqldb.version>2.4.1</hsqldb.hsqldb.version>
+        <!-- Finchley.SR2 is compatible with Spring Boot 2.0.X, Greenwich for 2.1.X but Greenwich doesn't seem to be
+        released yet -->
+        <org.springframework.cloud.spring-cloud-dependencies.version>Finchley.SR2</org.springframework.cloud.spring-cloud-dependencies.version>
         <!-- Last version of feign : https://mvnrepository.com/artifact/com.netflix.feign/feign-core -->
-        <com.netflix.feign.version>8.18.0</com.netflix.feign.version>
+        <!--<com.netflix.feign.version>8.18.0</com.netflix.feign.version>-->
         <!-- Take a version that retrieve a version of Hibernate that correctly
             manage uk naming while inheriting classes with JOINED strategy -->
-        <org.springframework.boot.spring-boot-dependencies.version>1.5.15.RELEASE</org.springframework.boot.spring-boot-dependencies.version>
-        <org.springframework.spring-core.version>4.3.18.RELEASE</org.springframework.spring-core.version>
+        <org.springframework.boot.spring-boot-dependencies.version>2.1.0.RELEASE</org.springframework.boot.spring-boot-dependencies.version>
+        <!-- Spring OAuth is no more into spring-boot, only client is (From what i understood) -->
+        <org.springframework.security.oauth.version>2.3.4.RELEASE</org.springframework.security.oauth.version>
+        <org.springframework.security.jwt.version>1.0.9.RELEASE</org.springframework.security.jwt.version>
+        <!-- use same version the one provided by spring-boot. This is mandatory, i don't know why but hateoas-spring
+         override spring-core version given by spring-boot -->
+        <org.springframework.spring-core.version>5.1.2.RELEASE</org.springframework.spring-core.version>
+        <org.springframework.spring-restdocs.version>2.0.2.RELEASE</org.springframework.spring-restdocs.version>
         <org.apache.poi.poi-ooxml.version>3.15</org.apache.poi.poi-ooxml.version>
         <org.apache.maven.maven-plugin-api.version>3.0</org.apache.maven.maven-plugin-api.version>
         <org.apache.maven.plugin-tools.maven-plugin-annotations.version>3.4</org.apache.maven.plugin-tools.maven-plugin-annotations.version>
@@ -170,20 +177,20 @@
         <org.elasticsearch.version>6.5.0</org.elasticsearch.version>
         <!-- Specify version to avoid incompatibility between elasticsearch and
             spring bring ones -->
-        <io.netty.version>4.1.6.Final</io.netty.version>
+        <io.netty.version>4.1.29.Final</io.netty.version>
         <org.locationtech.jts.version>1.16.0</org.locationtech.jts.version>
         <org.locationtech.spatial4j.version>0.7</org.locationtech.spatial4j.version>
-        <com.google.guava.version>21.0</com.google.guava.version>
+        <com.google.guava.version>27.0.1-jre</com.google.guava.version>
+        <com.google.code.gson.version>2.8.5</com.google.code.gson.version>
         <com.mchange.c3p0.version>0.9.5.2</com.mchange.c3p0.version>
         <org.mockftpserver.version>2.7.1</org.mockftpserver.version>
         <!-- Permit to use same Hibernate version as which spring use -->
         <spring.hibernate.version>${hibernate.version}</spring.hibernate.version>
         <logback-ext-spring.version>0.1.4</logback-ext-spring.version>
-        <jts.version>1.13</jts.version>
         <log4j.version>1.2.17</log4j.version>
-        <org.apache.commons.compress.version>1.14</org.apache.commons.compress.version>
-        <org.apache.commons.lang3.version>3.6</org.apache.commons.lang3.version>
-        <org.apache.commons.io.version>1.3.2</org.apache.commons.io.version>
+        <org.apache.commons.compress.version>1.18</org.apache.commons.compress.version>
+        <org.apache.commons.lang3.version>3.8.1</org.apache.commons.lang3.version>
+        <org.apache.commons.io.version>2.6</org.apache.commons.io.version>
         <org.hipparchus.version>1.3</org.hipparchus.version>
         <org.geotools.version>19.1</org.geotools.version>
     </properties>
@@ -408,11 +415,6 @@
                 <artifactId>swagger-regards-starter</artifactId>
                 <version>${swagger.starter.version}</version>
             </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework</groupId>
-                <artifactId>websocket-regards-starter</artifactId>
-                <version>${websocket.starter.version}</version>
-            </dependency>
 
             <!-- Test dependencies -->
             <dependency>
@@ -458,22 +460,12 @@
             <!-- Jobs -->
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
-                <artifactId>jobs-client</artifactId>
-                <version>${fr.cnes.regards.framework.modules.jobs.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
                 <artifactId>jobs-dao</artifactId>
                 <version>${fr.cnes.regards.framework.modules.jobs.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
                 <artifactId>jobs-domain</artifactId>
-                <version>${fr.cnes.regards.framework.modules.jobs.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework.modules.jobs</groupId>
-                <artifactId>jobs-rest</artifactId>
                 <version>${fr.cnes.regards.framework.modules.jobs.version}</version>
             </dependency>
             <dependency>
@@ -527,11 +519,6 @@
                 <groupId>fr.cnes.regards.framework.utils</groupId>
                 <artifactId>plugin-utils</artifactId>
                 <version>${fr.cnes.regards.utils.plugin-utils.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework</groupId>
-                <artifactId>plugins-regards-starter</artifactId>
-                <version>${plugins.starter.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework</groupId>
@@ -1110,7 +1097,7 @@
                 <version>${org.hibernate.javax.persistence.version}</version>
             </dependency>
             <dependency>
-                <groupId>hsqldb</groupId>
+                <groupId>org.hsqldb</groupId>
                 <artifactId>hsqldb</artifactId>
                 <version>${hsqldb.hsqldb.version}</version>
             </dependency>
@@ -1129,25 +1116,35 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>com.netflix.feign</groupId>
-                <artifactId>feign-core</artifactId>
-                <version>${com.netflix.feign.version}</version>
+                <groupId>org.springframework.security.oauth</groupId>
+                <artifactId>spring-security-oauth2</artifactId>
+                <version>${org.springframework.security.oauth.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.netflix.feign</groupId>
-                <artifactId>feign-gson</artifactId>
-                <version>${com.netflix.feign.version}</version>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-jwt</artifactId>
+                <version>${org.springframework.security.jwt.version}</version>
             </dependency>
-            <dependency>
-                <groupId>com.netflix.feign</groupId>
-                <artifactId>feign-hystrix</artifactId>
-                <version>${com.netflix.feign.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.netflix.feign</groupId>
-                <artifactId>feign-slf4j</artifactId>
-                <version>${com.netflix.feign.version}</version>
-            </dependency>
+            <!--<dependency>-->
+                <!--<groupId>com.netflix.feign</groupId>-->
+                <!--<artifactId>feign-core</artifactId>-->
+                <!--<version>${com.netflix.feign.version}</version>-->
+            <!--</dependency>-->
+            <!--<dependency>-->
+                <!--<groupId>com.netflix.feign</groupId>-->
+                <!--<artifactId>feign-gson</artifactId>-->
+                <!--<version>${com.netflix.feign.version}</version>-->
+            <!--</dependency>-->
+            <!--<dependency>-->
+                <!--<groupId>com.netflix.feign</groupId>-->
+                <!--<artifactId>feign-hystrix</artifactId>-->
+                <!--<version>${com.netflix.feign.version}</version>-->
+            <!--</dependency>-->
+            <!--<dependency>-->
+                <!--<groupId>com.netflix.feign</groupId>-->
+                <!--<artifactId>feign-slf4j</artifactId>-->
+                <!--<version>${com.netflix.feign.version}</version>-->
+            <!--</dependency>-->
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-core</artifactId>
@@ -1183,18 +1180,18 @@
             <dependency>
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>
-                <version>2.8.0</version>
+                <version>${com.google.code.gson.version}</version>
             </dependency>
             <!-- Spring REST docs -->
             <dependency>
                   <groupId>org.springframework.restdocs</groupId>
                   <artifactId>spring-restdocs-core</artifactId>
-                  <version>1.2.4.RELEASE</version>
+                  <version>${org.springframework.spring-restdocs.version}</version>
             </dependency>
             <dependency> 
             	<groupId>org.springframework.restdocs</groupId>
             	<artifactId>spring-restdocs-mockmvc</artifactId>
-            	<version>1.2.4.RELEASE</version>
+            	<version>${org.springframework.spring-restdocs.version}</version>
             </dependency>
             <!-- Maven plugins -->
             <dependency>
@@ -1284,11 +1281,6 @@
                 <groupId>com.mchange</groupId>
                 <artifactId>c3p0</artifactId>
                 <version>${com.mchange.c3p0.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.vividsolutions</groupId>
-                <artifactId>jts</artifactId>
-                <version>${jts.version}</version>
             </dependency>
             <dependency>
                 <groupId>log4j</groupId>
