@@ -18,15 +18,12 @@
  */
 package fr.cnes.regards.modules.authentication.plugins;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.directory.api.ldap.model.cursor.ClosureMonitor;
-import org.apache.directory.api.ldap.model.cursor.CursorException;
 import org.apache.directory.api.ldap.model.cursor.EntryCursor;
 import org.apache.directory.api.ldap.model.entry.Entry;
-import org.apache.directory.api.ldap.model.exception.LdapException;
 import org.apache.directory.api.ldap.model.message.SearchResultDone;
 
 /**

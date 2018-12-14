@@ -113,7 +113,7 @@ public class Oauth2AutoConfiguration {
     @Bean
     public Oauth2AuthorizationServerConfigurer authorizationServer() {
         return new Oauth2AuthorizationServerConfigurer(resourceId, jwtSecret, clientUser, clientSecret, grantType,
-                                                       authenticationManager(), jwtService);
+                authenticationManager(), jwtService);
     }
 
     /**

@@ -25,7 +25,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -57,8 +56,8 @@ public class BorrowRoleITConfiguration {
         roleProjectAdmin.setNative(true);
         IRolesClient roleClient = Mockito.mock(IRolesClient.class);
         List<Role> borrowables = Lists.newArrayList(roleAdmin, roleRegisteredUser, rolePublic);
-        Mockito.when(roleClient.getBorrowableRoles()).thenReturn(
-                new ResponseEntity<>(HateoasUtils.wrapList(borrowables), HttpStatus.OK));
+        Mockito.when(roleClient.getBorrowableRoles())
+                .thenReturn(new ResponseEntity<>(HateoasUtils.wrapList(borrowables), HttpStatus.OK));
         return roleClient;
     }
 

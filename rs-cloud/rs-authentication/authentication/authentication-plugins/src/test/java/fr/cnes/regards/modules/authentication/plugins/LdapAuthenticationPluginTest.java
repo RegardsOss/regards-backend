@@ -151,8 +151,6 @@ public class LdapAuthenticationPluginTest {
 
     /**
      * Test error authentication throught LDAP plugin
-     * @throws LdapException test error.
-     * @throws IOException   test error.
      */
     @Purpose("Test error authentication throught LDAP plugin")
     @Test
@@ -238,9 +236,9 @@ public class LdapAuthenticationPluginTest {
             final EntryCursorStub entry = new EntryCursorStub();
             entry.setEntries(entries);
 
-            Mockito.when(mockedConnection
-                                 .search(Mockito.anyString(), Mockito.anyString(), Mockito.any(SearchScope.class),
-                                         Mockito.anyString())).thenReturn(entry);
+            Mockito.when(mockedConnection.search(Mockito.anyString(), Mockito.anyString(),
+                                                 Mockito.any(SearchScope.class), Mockito.anyString()))
+                    .thenReturn(entry);
         } catch (LdapException | IOException e) {
             Assert.fail(e.getMessage());
         }

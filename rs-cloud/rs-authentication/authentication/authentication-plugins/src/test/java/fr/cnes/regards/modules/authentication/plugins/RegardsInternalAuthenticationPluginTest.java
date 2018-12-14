@@ -32,7 +32,6 @@ import org.springframework.http.ResponseEntity;
 
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -76,7 +75,6 @@ public class RegardsInternalAuthenticationPluginTest {
 
     /**
      * Check a valid authentication throught the Regards internal authentication system
-     * @throws EntityNotFoundException test error.
      */
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Requirement("REGARDS_DSL_ADM_ADM_620")
@@ -125,7 +123,7 @@ public class RegardsInternalAuthenticationPluginTest {
             final ResponseEntity<Boolean> response = new ResponseEntity<>(Boolean.TRUE, HttpStatus.OK);
             Mockito.when(client.validatePassword(Mockito.anyString(), Mockito.anyString())).thenReturn(response);
             final ResponseEntity<Resource<Account>> accountResponse = new ResponseEntity<>(new Resource<>(extAccount),
-                                                                                           HttpStatus.OK);
+                    HttpStatus.OK);
             Mockito.when(client.retrieveAccounByEmail(email)).thenReturn(accountResponse);
 
             privateField = RegardsInternalAuthenticationPlugin.class.getDeclaredField("accountsClient");
@@ -146,7 +144,6 @@ public class RegardsInternalAuthenticationPluginTest {
 
     /**
      * Check a authentication throught the Regards internal authentication system with error
-     * @throws EntityNotFoundException test error.
      */
     @Purpose("Check a authentication throught the Regards internal authentication system with error")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
@@ -211,7 +208,6 @@ public class RegardsInternalAuthenticationPluginTest {
 
     /**
      * Check a authentication throught the Regards internal authentication system with error
-     * @throws EntityNotFoundException test error
      */
     @Purpose("Check a authentication throught the Regards internal authentication system with error")
     @Requirement("REGARDS_DSL_SYS_SEC_100")

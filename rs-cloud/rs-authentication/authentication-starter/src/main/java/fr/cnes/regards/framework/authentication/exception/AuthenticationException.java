@@ -26,6 +26,7 @@ import fr.cnes.regards.framework.authentication.internal.AuthenticationStatus;
  * Class AuthenticationException
  * @author Sébastien Binda
  */
+@SuppressWarnings("serial")
 public class AuthenticationException extends OAuth2Exception {
 
     /**

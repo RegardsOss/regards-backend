@@ -23,9 +23,7 @@
 
     <groupId>fr.cnes.regards.microservices.authentication</groupId>
     <artifactId>bootstrap-authentication</artifactId>
-    <version>4.0.0-SNAPSHOT</version>
     <description>REGARDS Authentication bootstrap</description>
-    <packaging>jar</packaging>
 
     <parent>
         <groupId>fr.cnes.regards</groupId>
@@ -61,16 +59,6 @@
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>cloud-regards-starter</artifactId>
-        </dependency>
-        <!-- Enable plugin features -->
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>plugins-regards-starter</artifactId>
-        </dependency>
-        <!-- Enable monitoring features -->
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>amqp-monitoring-regards-starter</artifactId>
         </dependency>
         <!-- Enable remote tenant management -->
         <dependency>

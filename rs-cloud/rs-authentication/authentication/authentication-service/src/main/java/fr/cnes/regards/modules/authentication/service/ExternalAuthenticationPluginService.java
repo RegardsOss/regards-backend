@@ -27,7 +27,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -134,8 +133,7 @@ public class ExternalAuthenticationPluginService implements IExternalAuthenticat
                 final ResponseEntity<Resource<ProjectUser>> userResponse = projectUsersClient
                         .retrieveProjectUserByEmail(userDetails.getEmail());
 
-                if (userResponse.getStatusCode().equals(HttpStatus.OK) && (userResponse.getBody().getContent()
-                        != null)) {
+                if (userResponse.getStatusCode().equals(HttpStatus.OK) && userResponse.getBody().getContent() != null) {
                     jwtService.generateToken(pAuthInformations.getProject(), pAuthInformations.getUserName(),
                                              userResponse.getBody().getContent().getEmail(),
                                              userResponse.getBody().getContent().getRole().getName());

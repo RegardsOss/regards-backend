@@ -35,8 +35,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import fr.cnes.regards.framework.authentication.exception.AuthenticationException;
 import fr.cnes.regards.framework.authentication.internal.AuthenticationStatus;
 import fr.cnes.regards.framework.authentication.internal.Oauth2AuthenticationManager;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
@@ -110,7 +108,6 @@ public class Oauth2AuthenticationManagerTest {
 
     /**
      * Mocks initialization
-     * @throws EntityException test error.
      */
     @BeforeClass
     public static void init() {
