@@ -40,13 +40,10 @@ import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
 /**
- *
  * Class TenantControllerIT
  *
  * Tests for REST endpoints to access tenant entities.
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 @InstanceTransactional
 @ContextConfiguration(classes = { LicenseConfiguration.class })
@@ -71,8 +68,8 @@ public class TenantControllerIT extends AbstractRegardsIT {
 
     @Before
     public void initialize() {
-        instanceAdmintoken = jwtService.generateToken("test1", getDefaultUserEmail(),
-                                                      DefaultRole.INSTANCE_ADMIN.name());
+        instanceAdmintoken = jwtService
+                .generateToken("test1", getDefaultUserEmail(), DefaultRole.INSTANCE_ADMIN.name());
 
         Project activeProject = new Project("description", "icon", true, ACTIVE_PROJECT_NAME);
         activeProject.setLabel("label");
@@ -81,10 +78,10 @@ public class TenantControllerIT extends AbstractRegardsIT {
         deletedProject.setLabel("label");
 
         ProjectConnection rsTestConnection = new ProjectConnection(activeProject, TEST_MS, "user", "password", "driver",
-                "url");
+                                                                   "url");
         rsTestConnection.setState(TenantConnectionState.ENABLED);
         ProjectConnection rsTestConnection2 = new ProjectConnection(deletedProject, TEST_MS, "user", "password",
-                "driver", "url");
+                                                                    "driver", "url");
         rsTestConnection2.setState(TenantConnectionState.DISABLED);
 
         projectRepository.save(activeProject);
@@ -100,24 +97,18 @@ public class TenantControllerIT extends AbstractRegardsIT {
     }
 
     /**
-     *
      * Check REST Access to project resources and Hateoas returned links
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_ADM_INST_130")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access to project resources and returned Hateoas links")
     @Test
     public void retrievePublicProjectsTest() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT, Matchers.hasSize(1)));
-        requestBuilderCustomizer
-                .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT, Matchers.contains(ACTIVE_PROJECT_NAME)));
         performGet(TenantController.BASE_PATH + TenantController.MICROSERVICE_PATH, instanceAdmintoken,
-                   requestBuilderCustomizer, "error", TEST_MS);
+                   customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT).expectToHaveSize(JSON_PATH_ROOT, 1)
+                           .expect(MockMvcResultMatchers
+                                           .jsonPath(JSON_PATH_ROOT, Matchers.contains(ACTIVE_PROJECT_NAME))), "error",
+                   TEST_MS);
     }
 
 }

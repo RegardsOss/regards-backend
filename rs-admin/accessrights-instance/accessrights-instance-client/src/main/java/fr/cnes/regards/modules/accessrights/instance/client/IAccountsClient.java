@@ -43,7 +43,7 @@ import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.Reques
  *
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
- * @since 1.0-SNAPSHOT
+
  */
 @RestClient(name = "rs-admin-instance")
 @RequestMapping(path = "/accounts", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
@@ -148,7 +148,7 @@ public interface IAccountsClient {
      * @throws EntityNotFoundException
      */
     @RequestMapping(value = "/{account_email}/resetPassword", method = RequestMethod.POST)
-    public ResponseEntity<Void> requestResetPassword(@PathVariable("account_email") final String pAccountEmail,
+    ResponseEntity<Void> requestResetPassword(@PathVariable("account_email") final String pAccountEmail,
             @Valid @RequestBody final RequestResetPasswordDto pDto);
 
     /**

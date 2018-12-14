@@ -35,7 +35,7 @@ public final class ProjectUserSpecification {
                 predicates.add(cb.like(root.get("email"), emailStart + "%"));
             }
             query.orderBy(cb.asc(root.get("email")));
-            return cb.and(predicates.toArray(new Predicate[predicates.size()]));
+            return cb.and(predicates.toArray(new Predicate[0]));
         };
     }
 }

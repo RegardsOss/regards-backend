@@ -52,7 +52,7 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
  * Test configuratiob class
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @Configuration
 @EnableAutoConfiguration(exclude = { RemoteClientAutoConfiguration.class, DataSourceAutoConfiguration.class })
@@ -63,7 +63,7 @@ public class JpaTenantConnectionConfiguration {
      * Stub administration client
      *
      * @return IProjectsClient
-     * @since 1.0-SNAPSHOT
+
      */
     @Bean
     @Qualifier("initProjectConnectionsClient")
@@ -85,7 +85,7 @@ public class JpaTenantConnectionConfiguration {
      * Stub administration client
      *
      * @return IProjectsClient
-     * @since 1.0-SNAPSHOT
+
      */
     @Bean
     @Primary
@@ -98,7 +98,7 @@ public class JpaTenantConnectionConfiguration {
      * Stub administration client
      *
      * @return {@link IProjectsClient}
-     * @since 1.0-SNAPSHOT
+
      */
     @Bean
     @Primary
@@ -113,7 +113,7 @@ public class JpaTenantConnectionConfiguration {
      * Mock AMQP Publisher
      *
      * @return {@link IPublisher}
-     * @since 1.0-SNAPSHOT
+
      */
     @Bean
     IPublisher publisher() {
@@ -125,7 +125,7 @@ public class JpaTenantConnectionConfiguration {
      * Mock AMQP Subscriber
      *
      * @return {@link ISubscriber}
-     * @since 1.0-SNAPSHOT
+
      */
     @Bean
     ISubscriber subsriber() {
@@ -137,22 +137,22 @@ public class JpaTenantConnectionConfiguration {
      * Stub administration client
      *
      * @return IProjectsClient
-     * @since 1.0-SNAPSHOT
+
      */
     @Bean
     @Primary
     public IMicroserviceResourceClient resourceClient() {
         final ResponseEntity<Void> response = ResponseEntity.ok(null);
         final IMicroserviceResourceClient mock = Mockito.mock(IMicroserviceResourceClient.class);
-        Mockito.stub(mock.registerMicroserviceEndpoints(Mockito.anyString(), Mockito.any())).toReturn(response);
+        Mockito.when(mock.registerMicroserviceEndpoints(Mockito.anyString(), Mockito.any())).thenReturn(response);
 
         final PageMetadata md = new PageMetadata(0, 0, 0);
         final PagedResources<Resource<ResourcesAccess>> pagedResources = new PagedResources<>(new ArrayList<>(), md,
                 new ArrayList<>());
         final ResponseEntity<PagedResources<Resource<ResourcesAccess>>> resourcesResponse = ResponseEntity
                 .ok(pagedResources);
-        Mockito.stub(mock.getAllResourceAccessesByMicroservice(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
-                .toReturn(resourcesResponse);
+        Mockito.when(mock.getAllResourceAccessesByMicroservice(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
+                .thenReturn(resourcesResponse);
         return mock;
     }
 

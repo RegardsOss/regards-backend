@@ -95,62 +95,62 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve all accounts.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Ignore
     @Test
     public void retrieveProjectUserListFromFeignClient() {
         final ResponseEntity<PagedResources<Resource<ProjectUser>>> response = client.retrieveProjectUserList(0, 10);
-        Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
     }
 
     /**
      *
      * Check that the accounts Feign Client can retrieve all accounts.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     public void retrieveAccessRequestListFromFeignClient() {
         final ResponseEntity<PagedResources<Resource<ProjectUser>>> response = client.retrieveAccessRequestList(0, 10);
-        Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
     }
 
     /**
      *
      * Check that the accounts Feign Client can retrieve all accounts.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     public void retrieveProjectUserByEmailFromFeignClient() {
         final ResponseEntity<Resource<ProjectUser>> response = client.retrieveProjectUserByEmail("unkown@regards.de");
-        Assert.assertTrue(response.getStatusCode().equals(HttpStatus.NOT_FOUND));
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
     }
 
     /**
      *
      * Check that the accounts Feign Client can retrieve all accounts.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Ignore
     @Test
     public void retrieveProjectUserFromFeignClient() {
         final ResponseEntity<Resource<ProjectUser>> response = client.retrieveProjectUser(1L);
-        Assert.assertTrue(response.getStatusCode().equals(HttpStatus.NOT_FOUND));
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
     }
 
     /**
      *
      * Check that the accounts Feign Client can retrieve all accounts.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     public void removeProjectUserFromFeignClient() {
-        final ResponseEntity<Void> response = client.removeProjectUser(new Long(150));
-        Assert.assertTrue(response.getStatusCode().equals(HttpStatus.NOT_FOUND));
+        final ResponseEntity<Void> response = client.removeProjectUser(150L);
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
     }
 
     /**
@@ -160,7 +160,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
      * @throws EntityInvalidException
      * @throws EntityAlreadyExistsException
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     @Ignore
@@ -170,7 +170,7 @@ public class ProjectUsersFeignClientIT extends AbstractRegardsWebIT {
 
         projectUserService.createProjectUser(accessRequest);
         final ResponseEntity<Boolean> response = client.isAdmin("test@c-s.fr");
-        Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
         Assert.assertTrue(response.getBody());
     }
 

@@ -44,7 +44,7 @@ import fr.cnes.regards.modules.project.service.ProjectService;
  * connections are read from the instance database through the ProjectService.
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 public class LocalTenantConnectionResolver implements ITenantConnectionResolver {
 
@@ -71,7 +71,7 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
      *            the {@link ProjectService}
      * @param pProjectConnectionService
      *            the  {@link ProjectConnectionService}
-     * @since 1.0-SNAPSHOT
+
      */
     public LocalTenantConnectionResolver(final IProjectService pProjectService,
             final IProjectConnectionService pProjectConnectionService) {

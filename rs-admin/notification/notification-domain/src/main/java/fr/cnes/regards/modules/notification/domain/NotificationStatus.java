@@ -33,6 +33,6 @@ public enum NotificationStatus {
     /**
      * Unread status notification
      */
-    UNREAD;
+    UNREAD
 
 }

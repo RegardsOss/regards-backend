@@ -77,10 +77,10 @@ public class ResourcesAccessTest {
     public void testResourcesAccess() {
         final ResourcesAccess testResources = new ResourcesAccess();
 
-        Assert.assertEquals(null, testResources.getId());
-        Assert.assertEquals(null, testResources.getDescription());
-        Assert.assertEquals(null, testResources.getMicroservice());
-        Assert.assertEquals(null, testResources.getResource());
+        Assert.assertNull(testResources.getId());
+        Assert.assertNull(testResources.getDescription());
+        Assert.assertNull(testResources.getMicroservice());
+        Assert.assertNull(testResources.getResource());
         Assert.assertEquals(RequestMethod.GET, testResources.getVerb());
     }
 
@@ -93,9 +93,9 @@ public class ResourcesAccessTest {
         final ResourcesAccess testResources = new ResourcesAccess(id);
 
         Assert.assertEquals(id, testResources.getId());
-        Assert.assertEquals(null, testResources.getDescription());
-        Assert.assertEquals(null, testResources.getMicroservice());
-        Assert.assertEquals(null, testResources.getResource());
+        Assert.assertNull(testResources.getDescription());
+        Assert.assertNull(testResources.getMicroservice());
+        Assert.assertNull(testResources.getResource());
         Assert.assertEquals(RequestMethod.GET, testResources.getVerb());
     }
 
@@ -122,7 +122,7 @@ public class ResourcesAccessTest {
         final ResourcesAccess testResources = new ResourcesAccess(description, microservice, resource, controller, verb,
                 DefaultRole.ADMIN);
 
-        Assert.assertEquals(null, testResources.getId());
+        Assert.assertNull(testResources.getId());
         Assert.assertEquals(description, testResources.getDescription());
         Assert.assertEquals(microservice, testResources.getMicroservice());
         Assert.assertEquals(resource, testResources.getResource());

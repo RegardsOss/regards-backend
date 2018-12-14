@@ -51,7 +51,7 @@ public interface IUserResourceClient {
     /**
      * Controller base mapping
      */
-    public static final String TYPE_MAPPING = "/users/{user_email}/resources";
+    String TYPE_MAPPING = "/users/{user_email}/resources";
 
     /**
      * Retrieve the {@link List} of {@link ResourcesAccess} for the account of passed <code>email</code>.
@@ -64,7 +64,7 @@ public interface IUserResourceClient {
      *
      */
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveProjectUserResources(
+    ResponseEntity<List<Resource<ResourcesAccess>>> retrieveProjectUserResources(
             @PathVariable("user_email") final String pUserLogin,
             @RequestParam(value = "borrowedRoleName", required = false) final String pBorrowedRoleName);
 
@@ -79,7 +79,7 @@ public interface IUserResourceClient {
      */
     @RequestMapping(method = RequestMethod.PUT)
     @ResourceAccess(description = "Update the list of specific user accesses", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> updateProjectUserResources(@PathVariable("user_email") final String pLogin,
+    ResponseEntity<Void> updateProjectUserResources(@PathVariable("user_email") final String pLogin,
             @Valid @RequestBody final List<ResourcesAccess> pUpdatedUserAccessRights);
 
     /**
@@ -91,5 +91,5 @@ public interface IUserResourceClient {
      */
     @RequestMapping(method = RequestMethod.DELETE)
     @ResourceAccess(description = "Remove all specific user accesses", role = DefaultRole.PROJECT_ADMIN)
-    public ResponseEntity<Void> removeProjectUserResources(@PathVariable("user_email") final String pUserLogin);
+    ResponseEntity<Void> removeProjectUserResources(@PathVariable("user_email") final String pUserLogin);
 }

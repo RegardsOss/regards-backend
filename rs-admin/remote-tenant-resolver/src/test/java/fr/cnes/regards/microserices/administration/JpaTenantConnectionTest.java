@@ -40,7 +40,7 @@ import fr.cnes.regards.microservices.administration.RemoteTenantAutoConfiguratio
  * Test with jpa multitenant starter database creation.
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @Ignore("Cannot reach an admin microservice instance in unit test.")
 @RunWith(SpringRunner.class)
@@ -52,7 +52,7 @@ public class JpaTenantConnectionTest {
      *
      * Check for multitenant resolver throught administration microservice client
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Check for multitenant resolver throught administration microservice client")

@@ -53,7 +53,6 @@ import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.dao.ITemplateRepository;
-import fr.cnes.regards.modules.templates.service.ITemplateService;
 
 /**
  * This class test that the system can invalidate an account.
@@ -63,6 +62,31 @@ import fr.cnes.regards.modules.templates.service.ITemplateService;
 @ContextConfiguration(classes = { AccountServiceIT.Config.class })
 @PropertySource("classpath:application-test.properties")
 public class AccountServiceIT extends AbstractRegardsIT {
+
+    @Configuration
+    public static class Config {
+
+        @Bean
+        public ITemplateRepository templateRepository() {
+            return Mockito.mock(ITemplateRepository.class);
+        }
+
+//        @Bean
+//        public ITemplateService templateService() {
+//            return Mockito.mock(ITemplateService.class);
+//        }
+
+        @Bean
+        public IEmailClient emailClient() {
+            return Mockito.mock(IEmailClient.class);
+        }
+
+        @Bean
+        public IProjectUsersClient projectUsersClient() {
+            return Mockito.mock(IProjectUsersClient.class);
+        }
+    }
+
 
     private static final Logger LOG = LoggerFactory.getLogger(AccountServiceIT.class);
 
@@ -95,12 +119,12 @@ public class AccountServiceIT extends AbstractRegardsIT {
     private Account account;
 
     @Before
-    public void init() throws IOException, ModuleException, URISyntaxException, InterruptedException {
-        tenantResolver.forceTenant(DEFAULT_TENANT);
+    public void init() throws IOException, ModuleException, URISyntaxException {
+        tenantResolver.forceTenant(getDefaultTenant());
         initDb();
     }
 
-    private void initDb() throws ModuleException, IOException, URISyntaxException {
+    private void initDb() {
         clearDb();
         account = new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSWORD);
         account.setInvalidityDate(LocalDateTime.now().plusDays(10));
@@ -136,9 +160,9 @@ public class AccountServiceIT extends AbstractRegardsIT {
         // lets test now that everything is in place
         accountService.checkAccountValidity();
 
-        accountValid = accountRepository.findOne(accountValid.getId());
-        accountInvalid = accountRepository.findOne(accountInvalid.getId());
-        accountPasswordInvalid = accountRepository.findOne(accountPasswordInvalid.getId());
+        accountValid = accountRepository.findById(accountValid.getId()).get();
+        accountInvalid = accountRepository.findById(accountInvalid.getId()).get();
+        accountPasswordInvalid = accountRepository.findById(accountPasswordInvalid.getId()).get();
 
         LOG.info("account :                <{}> - {} - {}", account.getStatus(), account.getInvalidityDate(),
                  account.getPasswordUpdateDate());
@@ -173,7 +197,7 @@ public class AccountServiceIT extends AbstractRegardsIT {
 
         // lets test now that everything is in place
         accountService.checkAccountValidity();
-        accountPasswordInvalid = accountRepository.findOne(accountPasswordInvalid.getId());
+        accountPasswordInvalid = accountRepository.findById(accountPasswordInvalid.getId()).get();
 
         LOG.info("accountPasswordInvalid : <{}> - {} - {}", accountPasswordInvalid.getStatus(),
                  accountPasswordInvalid.getInvalidityDate(), accountPasswordInvalid.getPasswordUpdateDate());
@@ -188,7 +212,7 @@ public class AccountServiceIT extends AbstractRegardsIT {
         }
 
         accountService.checkAccountValidity();
-        accountPasswordInvalid = accountRepository.findOne(accountPasswordInvalid.getId());
+        accountPasswordInvalid = accountRepository.findById(accountPasswordInvalid.getId()).get();
         
         LOG.info("accountPasswordInvalid : <{}> - {} - {}", accountPasswordInvalid.getStatus(),
                  accountPasswordInvalid.getInvalidityDate(), accountPasswordInvalid.getPasswordUpdateDate());
@@ -196,7 +220,7 @@ public class AccountServiceIT extends AbstractRegardsIT {
     }
 
     @After
-    public void cleanUp() throws URISyntaxException, IOException {
+    public void cleanUp() {
         clearDb();
     }
 
@@ -205,28 +229,5 @@ public class AccountServiceIT extends AbstractRegardsIT {
         accountRepository.deleteAll();
     }
 
-    @Configuration
-    public static class Config {
-
-        @Bean
-        public ITemplateRepository templateRepository() {
-            return Mockito.mock(ITemplateRepository.class);
-        }
-
-        @Bean
-        public ITemplateService templateService() {
-            return Mockito.mock(ITemplateService.class);
-        }
-
-        @Bean
-        public IEmailClient emailClient() {
-            return Mockito.mock(IEmailClient.class);
-        }
-
-        @Bean
-        public IProjectUsersClient projectUsersClient() {
-            return Mockito.mock(IProjectUsersClient.class);
-        }
-    }
 
 }

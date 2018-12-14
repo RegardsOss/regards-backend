@@ -41,7 +41,6 @@
 		<module>emails-rest</module>
 		<module>emails-service</module>
 		<module>emails-client</module>
-		<module>emails-test</module>
 	</modules>
 
 	<dependencyManagement>

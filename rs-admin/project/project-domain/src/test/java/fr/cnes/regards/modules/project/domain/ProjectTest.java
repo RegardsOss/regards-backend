@@ -29,12 +29,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- *
  * Unit testing of {@link ProjectTest}
- *
  * @author Sebastien Binda
  * @author Maxime Bouveron
- *
  */
 public class ProjectTest {
 
@@ -89,10 +86,10 @@ public class ProjectTest {
         final Project project = new Project();
         project.setLabel(project.getName());
 
-        Assert.assertEquals(null, project.getId());
+        Assert.assertNull(project.getId());
         Assert.assertNotEquals(null, project.getDescription());
-        Assert.assertEquals(null, project.getIcon());
-        Assert.assertEquals(false, project.isPublic());
+        Assert.assertNull(project.getIcon());
+        Assert.assertFalse(project.isPublic());
         Assert.assertNotEquals(null, project.getName());
 
         final Set<ConstraintViolation<Project>> constraintViolations = validator.validate(project);
@@ -325,7 +322,7 @@ public class ProjectTest {
     @Test
     public void testEqualsObjectTrue() {
         final Project project = new Project(id, description, icon, ispublic, name);
-        Assert.assertTrue(projectTest.equals(project));
+        Assert.assertEquals(projectTest, project);
     }
 
     /**
@@ -334,7 +331,7 @@ public class ProjectTest {
     @Test
     public void testEqualsObjectFalse() {
         final Project project = new Project(3L, description, icon, ispublic, name);
-        Assert.assertFalse(projectTest.equals(project));
+        Assert.assertNotEquals(projectTest, project);
     }
 
     /**

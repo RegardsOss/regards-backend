@@ -25,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -40,15 +39,11 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 
 /**
- *
  * Class ProjectsFeignClientsIT
  *
  * Project feign clients.
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
-@EnableFeignClients(clients = { IProjectsClient.class })
 @ContextConfiguration(classes = { LicenseConfiguration.class })
 public class ProjectsFeignClientsIT extends AbstractRegardsWebIT {
 
@@ -73,21 +68,19 @@ public class ProjectsFeignClientsIT extends AbstractRegardsWebIT {
 
     @Before
     public void init() {
-        client = FeignClientBuilder.build(new TokenClientProvider<>(IProjectsClient.class,
-                "http://" + serverAddress + ":" + getPort(), feignSecurityManager));
+        client = FeignClientBuilder
+                .build(new TokenClientProvider<>(IProjectsClient.class, "http://" + serverAddress + ":" + getPort(),
+                                                 feignSecurityManager));
         FeignSecurityManager.asSystem();
     }
 
     /**
-     *
      * Check that the projects Feign Client handle the pagination parameters.
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Test
     public void retrieveAllProjectsByPageFromFeignClient() {
         final ResponseEntity<PagedResources<Resource<Project>>> projects = client.retrieveProjectList(0, 10);
-        Assert.assertTrue(projects.getStatusCode().equals(HttpStatus.OK));
+        Assert.assertEquals(projects.getStatusCode(), HttpStatus.OK);
     }
 
     @Override

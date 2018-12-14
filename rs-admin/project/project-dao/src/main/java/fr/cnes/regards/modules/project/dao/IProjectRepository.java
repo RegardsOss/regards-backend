@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.project.dao;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,32 +29,25 @@ import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.project.domain.Project;
 
 /**
- *
  * Class IProjectRepository
  *
  * JPA Repository to access Project entities
- *
  * @author CS
- * @since 1.0-SNAPSHOT
  */
 @InstanceEntity
 public interface IProjectRepository extends JpaRepository<Project, Long> {
 
     /**
      * Find a project in the database by its name without taking care of the case
-     * @param pName
      * @return the project or null if none found
      */
-    Project findOneByNameIgnoreCase(String pName);
+    Project findOneByNameIgnoreCase(String name);
 
-    Page<Project> findByIsPublicTrue(Pageable pPageable);
+    Page<Project> findByIsPublicTrue(Pageable pageable);
 
     /**
-     *
      * Retrieve all active project (not deleted)
-     *
      * @return active {@link Project}s
-     * @since 1.0-SNAPSHOT
      */
     List<Project> findByIsDeletedFalse();
 
@@ -63,7 +57,7 @@ public interface IProjectRepository extends JpaRepository<Project, Long> {
      * @return true if it's active
      */
     default boolean isActiveProject(Long id) {
-        Project one = findOne(id);
-        return (one != null) && !one.isDeleted();
+        Optional<Project> projectOpt = findById(id);
+        return projectOpt.isPresent() && !projectOpt.get().isDeleted();
     }
 }

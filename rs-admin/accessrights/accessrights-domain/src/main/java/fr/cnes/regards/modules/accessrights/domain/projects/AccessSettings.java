@@ -32,7 +32,6 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
 /**
  * Models the different access settings.<br>
  * Instead of using a list of values, each field of this POJO defines a specific setting.
- *
  * @author Xavier-Alexandre Brochard
  */
 @Entity
@@ -65,14 +64,6 @@ public class AccessSettings implements IIdentifiable<Long> {
     @Column(name = "mode")
     private String mode = AUTO_ACCEPT_MODE;
 
-    //    /**
-    //     * Create an access setting with empty fields
-    //     */
-    //    public AccessSettings() {
-    //        super();
-    //        mode = AUTO_ACCEPT_MODE;
-    //    }
-
     @Override
     public Long getId() {
         return id;
@@ -80,7 +71,6 @@ public class AccessSettings implements IIdentifiable<Long> {
 
     /**
      * Get <code>mode</code>
-     *
      * @return The acceptance mode
      */
     public String getMode() {
@@ -89,42 +79,28 @@ public class AccessSettings implements IIdentifiable<Long> {
 
     /**
      * Set <code>id</code>
-     *
-     * @param pId
-     *            The id
+     * @param pId The id
      */
-    public void setId(final Long pId) {
+    public void setId(Long pId) {
         id = pId;
     }
 
     /**
      * Set <code>mode</code>
-     *
-     * @param pMode
-     *            The acceptance mode
+     * @param mode The acceptance mode
      */
-    public void setMode(final String pMode) {
-        mode = pMode;
+    public void setMode(String mode) {
+        this.mode = mode;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
-    public boolean equals(final Object pObj) {
-        return (pObj instanceof AccessSettings) && (((AccessSettings) pObj).getMode() == mode);
+    public boolean equals(Object obj) {
+        return (obj instanceof AccessSettings) && (((AccessSettings) obj).getMode().equals(mode));
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#hashCode()
-     */
     @Override
     public int hashCode() {
-        final int prime = 31;
+        int prime = 31;
         int result = 1;
 
         result = prime * result;

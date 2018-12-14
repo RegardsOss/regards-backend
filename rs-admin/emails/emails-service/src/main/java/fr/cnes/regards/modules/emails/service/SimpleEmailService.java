@@ -39,7 +39,7 @@ import fr.cnes.regards.modules.emails.domain.Email;
  * Simple mail service doesn't persist mail entities in database. To persist entities use EmailService.
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @Service
 public class SimpleEmailService extends AbstractEmailService {
@@ -88,13 +88,13 @@ public class SimpleEmailService extends AbstractEmailService {
     }
 
     @Override
-    public Email retrieveEmail(final Long id) throws ModuleException {
+    public Email retrieveEmail(final Long id) {
         // Mail are not saved
         return null;
     }
 
     @Override
-    public void resendEmail(final Long id) throws ModuleException {
+    public void resendEmail(final Long id) {
         // Mail are not saved
     }
 

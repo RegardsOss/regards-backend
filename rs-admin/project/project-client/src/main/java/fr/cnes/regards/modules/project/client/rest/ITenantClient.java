@@ -40,8 +40,8 @@ import fr.cnes.regards.framework.feign.annotation.RestClient;
 public interface ITenantClient {
 
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<Set<String>> getAllTenants();
+    ResponseEntity<Set<String>> getAllTenants();
 
     @RequestMapping(method = RequestMethod.GET, value = "/{pMicroserviceName}")
-    public ResponseEntity<Set<String>> getAllActiveTenants(@PathVariable("pMicroserviceName") String pMicroserviceName);
+    ResponseEntity<Set<String>> getAllActiveTenants(@PathVariable("pMicroserviceName") String pMicroserviceName);
 }

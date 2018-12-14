@@ -43,7 +43,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
@@ -141,7 +141,7 @@ public class Role implements IIdentifiable<Long> {
      *
      * Constructor
      *
-     * @since 1.0-SNAPSHOT
+
      */
     public Role() {
         super();
@@ -303,13 +303,9 @@ public class Role implements IIdentifiable<Long> {
         }
         final Role other = (Role) obj;
         if (name == null) {
-            if (other.name != null) {
-                return false;
-            }
-        } else if (!name.equals(other.name)) {
-            return false;
-        }
-        return true;
+            return other.name == null;
+        } else
+            return name.equals(other.name);
     }
 
     @Override

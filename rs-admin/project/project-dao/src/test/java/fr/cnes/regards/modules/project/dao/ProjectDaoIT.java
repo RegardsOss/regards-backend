@@ -46,7 +46,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  *
  * @author CS
  * @author Xavier-Alexandre Brochard
- * @since 1.0-SNAPSHOT
+
  */
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
@@ -139,9 +139,9 @@ public class ProjectDaoIT {
         // Check results
         final Iterable<Project> projects = projectRepository.findAll();
         final List<Project> results = new ArrayList<>();
-        projects.forEach(p -> results.add(p));
-        Assert.assertTrue(String.format("There must be 2 projects in database not %d", results.size()),
-                          results.size() == 2);
+        projects.forEach(results::add);
+        Assert.assertEquals(String.format("There must be 2 projects in database not %d", results.size()), 2,
+                            results.size());
 
         // Create new projects connections
         projectConnectionRepository.save(new ProjectConnection(project, MICROSERVICE_1, COMMON_PROJECT_USER_NAME,
@@ -154,7 +154,7 @@ public class ProjectDaoIT {
      *
      * Test to create and retrieve projects connections in instance database
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Test to create and retrieve projects connections in instance database.")
@@ -164,27 +164,27 @@ public class ProjectDaoIT {
         // Check results
         final Iterable<ProjectConnection> connections = projectConnectionRepository.findAll();
         final List<ProjectConnection> cresults = new ArrayList<>();
-        connections.forEach(c -> cresults.add(c));
-        Assert.assertTrue(String.format("There must be 2 project connection in database not %d", cresults.size()),
-                          cresults.size() == 2);
+        connections.forEach(cresults::add);
+        Assert.assertEquals(String.format("There must be 2 project connection in database not %d", cresults.size()), 2,
+                            cresults.size());
         final ProjectConnection conn = projectConnectionRepository
                 .findOneByProjectNameAndMicroservice(project.getName(), MICROSERVICE_1);
         final String errorMessage = "Error retreiving project connection for project name %s and microservice %s";
         Assert.assertNotNull(String.format(errorMessage, project.getName(), MICROSERVICE_1), conn);
-        Assert.assertTrue("Error retreiving project connection for project name %s and microservice %s.",
-                          conn.getMicroservice().equals(MICROSERVICE_1));
+        Assert.assertEquals("Error retreiving project connection for project name %s and microservice %s.",
+                            conn.getMicroservice(), MICROSERVICE_1);
     }
 
     /**
      * Test to retrieve projects connections of given project's name in instance database.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose(" Test to retrieve projects connections of given project's name in instance database.")
     @Test
     public void testFindByProjectName() {
-        final Pageable pageable = new PageRequest(0, 100);
+        final Pageable pageable = PageRequest.of(0, 100);
 
         final Page<ProjectConnection> result = projectConnectionRepository.findByProjectName(COMMON_PROJECT_NAME_1,
                                                                                              pageable);

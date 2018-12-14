@@ -39,13 +39,13 @@ public interface ILicenseClient {
     /**
      * Controller base path
      */
-    public static final String PATH_LICENSE = "/license";
+    String PATH_LICENSE = "/license";
 
     /**
      * Controller path to reset the license
      */
-    public static final String PATH_RESET = "/reset";
+    String PATH_RESET = "/reset";
 
     @RequestMapping(method = RequestMethod.PUT, path = PATH_RESET)
-    public ResponseEntity<Void> resetLicense();
+    ResponseEntity<Void> resetLicense();
 }

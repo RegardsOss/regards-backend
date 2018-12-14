@@ -47,7 +47,7 @@ import fr.cnes.regards.modules.accessrights.service.registration.IRegistrationSe
  * Endpoints to handle Users registration for a project.
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
- * @since 1.0-SNAPSHOT
+
  */
 @RestController
 @RequestMapping(RegistrationController.REQUEST_MAPPING_ROOT)

@@ -78,7 +78,7 @@ public class AccessSettingsServiceTest {
     @Test
     @Requirement("?")
     @Purpose("Check that the system allows to retrieve the access settings.")
-    public void retrieve() throws EntityNotFoundException {
+    public void retrieve() {
         // Define expected
         final AccessSettings expected = new AccessSettings();
         expected.setId(0L);
@@ -116,13 +116,13 @@ public class AccessSettingsServiceTest {
         settings.setMode(MANUAL);
 
         // Mock the repository returned value
-        Mockito.when(accessSettingsRepository.exists(id)).thenReturn(false);
+        Mockito.when(accessSettingsRepository.existsById(id)).thenReturn(false);
 
         // Trigger the exception
         accessSettingsService.update(settings);
 
         // Check that the repository's method was called with right arguments
-        Mockito.verify(accessSettingsRepository).exists(id);
+        Mockito.verify(accessSettingsRepository).existsById(id);
     }
 
     /**
@@ -144,7 +144,7 @@ public class AccessSettingsServiceTest {
         // Mock the repository returned value
         final List<AccessSettings> asList = new ArrayList<>();
         asList.add(expected);
-        Mockito.when(accessSettingsRepository.exists(id)).thenReturn(true);
+        Mockito.when(accessSettingsRepository.existsById(id)).thenReturn(true);
         Mockito.when(accessSettingsRepository.findAll()).thenReturn(asList);
 
         // Perform the update
@@ -157,7 +157,7 @@ public class AccessSettingsServiceTest {
         Assert.assertEquals(expected, actual);
 
         // Check that the repository's method was called with right arguments
-        Mockito.verify(accessSettingsRepository).exists(id);
+        Mockito.verify(accessSettingsRepository).existsById(id);
     }
 
 }

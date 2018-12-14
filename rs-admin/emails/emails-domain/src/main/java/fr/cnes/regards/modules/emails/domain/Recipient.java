@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.emails.domain;
 
-import org.hibernate.validator.constraints.Email;
+import javax.validation.constraints.Email;
 
 /**
  * Simple class wrapping an email address. Its only purpose it to enable the use of Hibernate Validator's {@link @Email}

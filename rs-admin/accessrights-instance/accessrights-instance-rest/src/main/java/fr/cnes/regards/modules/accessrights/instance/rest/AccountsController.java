@@ -71,7 +71,7 @@ import fr.cnes.regards.modules.accessrights.instance.service.workflow.state.IAcc
  * database
  * @author Sébastien Binda
  * @author Christophe Mertz
- * @since 1.0-SNAPSHOT
+
  */
 @RestController
 @RequestMapping(AccountsController.TYPE_MAPPING)
@@ -339,7 +339,7 @@ public class AccountsController implements IResourceController<Account> {
         final Account toReset = accountService.retrieveAccountByEmail(accountEmail);
         if (!authResolver.getUser().equals(accountEmail)
                 && !accountService.validatePassword(accountEmail, changePasswordDto.getOldPassword(), false)) {
-            return new ResponseEntity<Void>(HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         accountService.validPassword(changePasswordDto.getNewPassword());
         accountService.changePassword(toReset.getId(),

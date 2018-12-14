@@ -25,7 +25,6 @@ import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
@@ -84,7 +83,7 @@ public class PendingState extends AbstractDeletableState {
      * accessrights.domain.instance.Account)
      */
     @Override
-    public void acceptAccount(final Account pAccount) throws EntityException {
+    public void acceptAccount(final Account pAccount) {
         pAccount.setStatus(AccountStatus.ACTIVE);
         Account account = accountRepository.save(pAccount);
         instancePublisher.publish(new AccountAcceptedEvent(account));

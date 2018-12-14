@@ -56,7 +56,7 @@ public interface IRoleService {
      * @return The {@link Role}'s
      * @throws EntityNotFoundException
      *             when no role with passed name could be found
-     * @since 1.0-SNAPSHOT
+
      */
     Role retrieveRole(String pRoleName) throws EntityNotFoundException;
 
@@ -101,7 +101,7 @@ public interface IRoleService {
      *            new {@link @Role} to create
      * @return {@link Role} created
      * @throws EntityException
-     * @since 1.0-SNAPSHOT
+
      */
     Role createRole(Role role) throws EntityException;
 
@@ -234,7 +234,7 @@ public interface IRoleService {
      * @param pRole
      *            role to retrieve inherited roles
      * @return list of {@link Role}
-     * @since 1.0-SNAPSHOT
+
      */
     Set<Role> retrieveInheritedRoles(Role pRole);
 
@@ -284,7 +284,7 @@ public interface IRoleService {
      *
      * @param pResourceId
      * @return list of {@link Role}
-     * @since 1.0-SNAPSHOT
+
      */
     Set<Role> retrieveRolesWithResource(Long pResourceId);
 

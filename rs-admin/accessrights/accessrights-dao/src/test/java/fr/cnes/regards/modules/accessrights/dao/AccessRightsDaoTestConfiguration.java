@@ -36,7 +36,7 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
  * Test Configuration class
  *
  * @author CS
- * @since 1.0-SNAPSHOT
+
  */
 @Configuration
 @EnableAutoConfiguration
@@ -48,7 +48,7 @@ public class AccessRightsDaoTestConfiguration {
      * Mock AMQP
      *
      * @return {@link IPublisher}
-     * @since 1.0-SNAPSHOT
+
      */
     @Bean
     public IPublisher eventPublisher() {
@@ -60,7 +60,7 @@ public class AccessRightsDaoTestConfiguration {
      * Mock AMQP
      *
      * @return {@link ISubscriber}
-     * @since 1.0-SNAPSHOT
+
      */
     @Bean
     public ISubscriber eventSubscriber() {
@@ -72,7 +72,7 @@ public class AccessRightsDaoTestConfiguration {
      * Mock AMQP
      *
      * @return {@link IPublisher}
-     * @since 1.0-SNAPSHOT
+
      */
     @Bean
     public IInstanceSubscriber eventInstanceSubscriber() {
@@ -84,7 +84,7 @@ public class AccessRightsDaoTestConfiguration {
      * Mock AMQP
      *
      * @return {@link IPublisher}
-     * @since 1.0-SNAPSHOT
+
      */
     @Bean
     public IInstancePublisher eventInstancePublisher() {

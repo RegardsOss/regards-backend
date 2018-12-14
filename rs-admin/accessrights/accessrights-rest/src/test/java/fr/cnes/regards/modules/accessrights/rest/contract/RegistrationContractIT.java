@@ -41,7 +41,6 @@ import fr.cnes.regards.modules.accessrights.rest.RegistrationController;
 
 /**
  * @author Marc Sordi
- *
  */
 @MultitenantTransactional
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
@@ -52,11 +51,6 @@ public class RegistrationContractIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private IAccountSettingsClient accountSettingsClient;
-
-    /**
-     * Class logger
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(RegistrationContractIT.class);
 
     @SuppressWarnings("unchecked")
     @Test
@@ -77,14 +71,8 @@ public class RegistrationContractIT extends AbstractRegardsTransactionalIT {
 
         String accessRequest = readJsonContract("request-access.json");
 
-        RequestBuilderCustomizer requestBuilder = getNewRequestBuilderCustomizer();
-        requestBuilder.addExpectation(MockMvcResultMatchers.status().isCreated());
-        performDefaultPost(RegistrationController.REQUEST_MAPPING_ROOT, accessRequest, requestBuilder,
-                           "Access request error!");
+        performDefaultPost(RegistrationController.REQUEST_MAPPING_ROOT, accessRequest,
+                           customizer().expectStatusCreated(), "Access request error!");
     }
 
-    @Override
-    protected Logger getLogger() {
-        return LOGGER;
-    }
 }

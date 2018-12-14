@@ -45,13 +45,10 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
 /**
  * @author Marc Sordi
- *
  */
 @MultitenantTransactional
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
 public class UserResourceControllerIT extends AbstractRegardsTransactionalIT {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserResourceControllerIT.class);
 
     @Autowired
     private IRoleRepository roleRepository;
@@ -74,25 +71,17 @@ public class UserResourceControllerIT extends AbstractRegardsTransactionalIT {
 
         // Create a new resource
         ResourcesAccess resource = new ResourcesAccess(null, "microservice", "/to/user", "controller",
-                RequestMethod.GET, DefaultRole.ADMIN);
+                                                       RequestMethod.GET, DefaultRole.ADMIN);
         resourcesAccessRepository.save(resource);
 
         // Add access to user
         user.setPermissions(Lists.newArrayList(resource));
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(UserResourceController.TYPE_MAPPING, requestBuilderCustomizer,
+        performDefaultGet(UserResourceController.TYPE_MAPPING, customizer().expectStatusOk(),
                           "Error retrieving resourcesAccess for user.", user.getEmail());
 
-        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNotFound());
-        performDefaultGet(UserResourceController.TYPE_MAPPING, requestBuilderCustomizer,
+        performDefaultGet(UserResourceController.TYPE_MAPPING, customizer().expectStatusNotFound(),
                           "The user does not exists. There should be an error 404", "wrongEmail");
     }
 
-    @Override
-    protected Logger getLogger() {
-        return LOGGER;
-    }
 }

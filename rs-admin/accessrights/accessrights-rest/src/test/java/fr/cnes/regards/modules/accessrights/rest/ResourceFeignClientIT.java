@@ -50,7 +50,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
  * Test that all endpoints of the ResourceController are accessible with Feign clients
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
 public class ResourceFeignClientIT extends AbstractRegardsWebIT {
@@ -90,14 +90,14 @@ public class ResourceFeignClientIT extends AbstractRegardsWebIT {
         final List<ResourceMapping> resources = new ArrayList<>();
         resources.add(new ResourceMapping("/register/test", "Controller", RequestMethod.GET));
         final ResponseEntity<Void> response = client.registerMicroserviceEndpoints("rs-test", resources);
-        Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
     }
 
     @Test
     public void retrieveMicroserviceResourcesFromFeignClient() {
         final ResponseEntity<PagedResources<Resource<ResourcesAccess>>> response = client
                 .getAllResourceAccessesByMicroservice("rs-test", 0, 20);
-        Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
     }
 
     @Override

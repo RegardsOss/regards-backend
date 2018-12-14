@@ -27,7 +27,7 @@
  * admin <- microservice
  * @author Sylvain VISSIERE-GUERINET
  * @author Marc SORDI
- * @see https://jenkins.io/doc/book/pipeline/jenkinsfile/
+ * @see 'https://jenkins.io/doc/book/pipeline/jenkinsfile/'
  */
 @Library('regards/standardPipeline') _
 

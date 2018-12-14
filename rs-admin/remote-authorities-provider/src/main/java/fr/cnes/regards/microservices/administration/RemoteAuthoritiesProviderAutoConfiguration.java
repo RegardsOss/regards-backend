@@ -29,7 +29,7 @@ public class RemoteAuthoritiesProviderAutoConfiguration {
      * @param resourcesClient
      *            Feign client to query administration service for resources
      * @return IAuthoritiesProvider
-     * @since 1.0-SNAPSHOT
+
      */
     @Bean
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)

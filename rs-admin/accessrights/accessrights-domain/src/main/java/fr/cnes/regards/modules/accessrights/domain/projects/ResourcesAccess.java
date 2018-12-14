@@ -30,7 +30,7 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Type;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
@@ -45,7 +45,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
  *
  * @author Sébastien Binda
  * @author Christophe Mertz
- * @since 1.0-SNAPSHOT
+
  */
 @Entity
 @Table(name = "t_resources_access")
@@ -197,10 +197,7 @@ public class ResourcesAccess implements IIdentifiable<Long> {
         } else if (!resource.equals(other.resource)) {
             return false;
         }
-        if (verb != other.verb) {
-            return false;
-        }
-        return true;
+        return verb == other.verb;
     }
 
     public void setId(final Long pId) {

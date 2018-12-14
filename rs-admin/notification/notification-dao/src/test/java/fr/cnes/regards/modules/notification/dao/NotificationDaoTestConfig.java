@@ -42,7 +42,7 @@ public class NotificationDaoTestConfig {
      * Subscriber mock
      *
      * @return {@link ISubscriber}
-     * @since 1.0-SNAPSHOT
+
      */
     @Bean
     public ISubscriber eventSubscriber() {
@@ -54,7 +54,7 @@ public class NotificationDaoTestConfig {
      * Publisher mock
      *
      * @return {@link IPublisher}
-     * @since 1.0-SNAPSHOT
+
      */
     @Bean
     public IPublisher eventPublisher() {

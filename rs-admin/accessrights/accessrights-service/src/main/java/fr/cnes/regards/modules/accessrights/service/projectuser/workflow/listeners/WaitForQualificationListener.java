@@ -117,7 +117,7 @@ public class WaitForQualificationListener
     public void onAccountActivation(String email) {
         // Retrieve the project user
         Optional<ProjectUser> optional = projectUserRepository.findOneByEmail(email);
-        ProjectUser projectUser = optional.isPresent() ? optional.get() : null;
+        ProjectUser projectUser = optional.orElse(null);
         if (projectUser != null) {
             // Change state
             try {

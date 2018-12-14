@@ -23,28 +23,26 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.PropertySource;
 
-import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
-import fr.cnes.regards.modules.project.service.stub.ProjectRepositoryStub;
 
 /**
- *
  * Class ProjectServiceTest
  *
  * Project business service tests
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
-public class ProjectServiceTest {
+@PropertySource("classpath:application-test.properties")
+public class ProjectServiceTest extends AbstractRegardsServiceIT {
 
     /**
      * Common string value for project creation.
@@ -66,51 +64,51 @@ public class ProjectServiceTest {
      */
     private static final String PROJECT_TEST_2 = "project-test-2";
 
-    /**
-     * Project service to test.
-     */
-    private ProjectService projectService;
+    @Autowired
+    private IProjectService projectService;
 
-    /**
-     *
-     * Initializa DAO Stub and inline entities for tests
-     *
-     * @since 1.0-SNAPSHOT
-     */
+    @Autowired
+    private IProjectRepository projectRepo;
+
+    @Autowired
+    private IProjectConnectionRepository projectConRepo;
+
+    private Project project1;
+
+    private Project project2;
+
     @Before
     public void init() {
+        projectConRepo.deleteAll();
+        projectRepo.deleteAll();
 
-        // use a stub repository, to be able to only test the service
-        final IProjectRepository projectRepoStub = new ProjectRepositoryStub();
-        projectService = new ProjectService(projectRepoStub, Mockito.mock(ITenantResolver.class),
-                Mockito.mock(IInstancePublisher.class), "default-project-test",
-                "http://localhost/default-project-test");
+        project1 = new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_1);
+        project1.setLabel("project1");
+        projectRepo.save(project1);
 
-        projectRepoStub.save(new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_1));
-        projectRepoStub.save(new Project(1L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, false, PROJECT_TEST_2));
+        project2 = new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, false, PROJECT_TEST_2);
+        project2.setLabel("project2");
+        projectRepo.save(project2);
     }
 
     /**
-     *
      * Check that the system allows to create a project.
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_INST_100")
     @Purpose("Check that the system allows to create a project.")
     public void createProjectTest() {
-        final long newProjectId = 2L;
-        Project projectToCreate = new Project(newProjectId, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, false,
-                PROJECT_TEST_1);
+        Project projectToCreate = new Project(project1.getId(), COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, false,
+                                              PROJECT_TEST_1);
         try {
             projectService.createProject(projectToCreate);
             Assert.fail("Project already exists there must be an exception thrown here");
         } catch (final ModuleException e) {
             /// Nothing to do
         }
-        projectToCreate = new Project(newProjectId, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, false,
-                "new-project-test");
+        projectToCreate = new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, false,
+                                      "new-project-test");
+        projectToCreate.setLabel("projectToCreate");
         try {
             projectService.createProject(projectToCreate);
         } catch (final ModuleException e) {
@@ -119,10 +117,7 @@ public class ProjectServiceTest {
     }
 
     /**
-     *
      * Check that the system allows to retrieve all projects for an instance.
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_INST_130")
@@ -133,10 +128,7 @@ public class ProjectServiceTest {
     }
 
     /**
-     *
      * Check that the system allows to retrieve a project on an instance and handle fail cases.
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_INST_100")
@@ -156,10 +148,7 @@ public class ProjectServiceTest {
     }
 
     /**
-     *
      * Check that the system allows to update a project on an instance and handle fail cases.
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_INST_100")
@@ -168,7 +157,7 @@ public class ProjectServiceTest {
 
         final String invalidProjectName = "project-invalid-update";
         final Project invalidProject = new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, false,
-                invalidProjectName);
+                                                   invalidProjectName);
         try {
             projectService.updateProject(invalidProjectName, invalidProject);
         } catch (final ModuleException e) {

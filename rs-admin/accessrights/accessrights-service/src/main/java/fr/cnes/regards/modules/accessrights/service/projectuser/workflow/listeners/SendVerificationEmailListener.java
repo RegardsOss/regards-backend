@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.service.projectuser.workflow.listeners;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +34,6 @@ import org.springframework.web.util.UriUtils;
 import feign.FeignException;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
@@ -48,7 +46,6 @@ import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 
 /**
  * Listen to {@link OnGrantAccessEvent} in order to warn the user its account request was refused.
- *
  * @author Xavier-Alexandre Brochard
  */
 @Component
@@ -96,9 +93,7 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
 
     /**
      * Send a password reset email based on information stored in the passed event
-     *
-     * @param pEvent
-     *            the init event
+     * @param pEvent the init event
      */
     @Override
     public void onApplicationEvent(final OnGrantAccessEvent pEvent) {
@@ -143,21 +138,16 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
         } else {
             linkUrlTemplate = "%s?origin_url=%s&token=%s&account_email=%s";
         }
-        String confirmationUrl;
-        try {
-            confirmationUrl = String.format(linkUrlTemplate, token.getRequestLink(),
-                                            UriUtils.encode(token.getOriginUrl(), StandardCharsets.UTF_8.name()),
-                                            token.getToken(), address);
-            data.put("confirmationUrl", confirmationUrl);
-        } catch (UnsupportedEncodingException e) {
-            LOGGER.error("This system does not support UTF-8", e);
-            throw new RsRuntimeException(e);
-        }
+        String confirmationUrl = String.format(linkUrlTemplate, token.getRequestLink(),
+                                               UriUtils.encode(token.getOriginUrl(), StandardCharsets.UTF_8.name()),
+                                               token.getToken(), address);
+        data.put("confirmationUrl", confirmationUrl);
 
         SimpleMailMessage email;
         try {
-            email = templateService.writeToEmail(TemplateServiceConfiguration.EMAIL_ACCOUNT_VALIDATION_TEMPLATE_CODE,
-                                                 data, recipients);
+            email = templateService
+                    .writeToEmail(TemplateServiceConfiguration.EMAIL_ACCOUNT_VALIDATION_TEMPLATE_CODE, data,
+                                  recipients);
         } catch (final EntityNotFoundException e) {
             LOGGER.warn("Could not find the template for registration confirmation. Falling back to default template.",
                         e);
@@ -180,8 +170,8 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
         SimpleMailMessage email = new SimpleMailMessage();
         email.setTo(recipients);
         email.setSubject("REGARDS - Registration Confirmation");
-        email.setText("Please click on the following link to confirm your registration: "
-                + data.get("confirmationUrl"));
+        email.setText(
+                "Please click on the following link to confirm your registration: " + data.get("confirmationUrl"));
         return email;
     }
 

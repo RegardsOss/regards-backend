@@ -18,9 +18,7 @@
  */
 package fr.cnes.regards.modules.notification.domain.dto;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -115,11 +113,11 @@ public class NotificationDTOTest {
     @Requirement("?")
     @Purpose("Check the POJO getters/setters.")
     public void testGettersSetters() {
-        Assert.assertTrue(dto.getMessage().equals(MESSAGE));
-        Assert.assertTrue(dto.getSender().equals(SENDER));
-        Assert.assertTrue(dto.getTitle().equals(TITLE));
-        Assert.assertTrue(dto.getProjectUserRecipients().equals(projectUserRecipients));
-        Assert.assertTrue(dto.getRoleRecipients().equals(roleRecipients));
+        Assert.assertEquals(dto.getMessage(), MESSAGE);
+        Assert.assertEquals(dto.getSender(), SENDER);
+        Assert.assertEquals(dto.getTitle(), TITLE);
+        Assert.assertEquals(dto.getProjectUserRecipients(), projectUserRecipients);
+        Assert.assertEquals(dto.getRoleRecipients(), roleRecipients);
     }
 
 }

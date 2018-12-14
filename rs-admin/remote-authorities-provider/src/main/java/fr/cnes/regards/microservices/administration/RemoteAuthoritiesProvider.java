@@ -57,7 +57,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  *
  * @author Sébastien Binda
  * @author Sylvain Vissiere-Guerinet
- * @since 1.0-SNAPSHOT
+
  */
 public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChecker implements IAuthoritiesProvider {
 
@@ -93,7 +93,7 @@ public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChe
      *            Feign client to query administration service for resources
      * @param runtimeTenantResolver
      *            runtime tenant resolver
-     * @since 1.0-SNAPSHOT
+
      */
     public RemoteAuthoritiesProvider(final DiscoveryClient discoveryClient,
             final IMicroserviceResourceClient pResourcesclient, final IRolesClient pRolesClient,
@@ -172,7 +172,7 @@ public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChe
      * @param pRole
      *            role to convert to RoleAuthority
      * @return {@link RoleAuthority}
-     * @since 1.0-SNAPSHOT
+
      */
     private RoleAuthority createRoleAuthority(final Role pRole) {
         final RoleAuthority roleAuth = new RoleAuthority(pRole.getName());

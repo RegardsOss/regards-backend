@@ -51,7 +51,7 @@ public class WaitingAccountActiveState extends AbstractDeletableState {
      * @see fr.cnes.regards.modules.accessrights.workflow.projectuser.AbstractProjectUserState#makeProjectUserWaitForQualification(fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser)
      */
     @Override
-    public void makeWaitForQualification(ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
+    public void makeWaitForQualification(ProjectUser pProjectUser) {
         pProjectUser.setStatus(UserStatus.WAITING_ACCESS);
         getProjectUserRepository().save(pProjectUser);
     }

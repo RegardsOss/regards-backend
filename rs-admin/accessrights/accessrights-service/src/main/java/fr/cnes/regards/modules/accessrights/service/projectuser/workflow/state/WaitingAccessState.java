@@ -63,7 +63,7 @@ public class WaitingAccessState extends AbstractDeletableState {
      * @see fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.AbstractDeletableState#removeAccess(fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser)
      */
     @Override
-    public void removeAccess(ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
+    public void removeAccess(ProjectUser pProjectUser) {
         doDelete(pProjectUser);
     }
 
@@ -71,7 +71,7 @@ public class WaitingAccessState extends AbstractDeletableState {
      * @see fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.AbstractProjectUserState#denyAccess(fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser)
      */
     @Override
-    public void denyAccess(ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
+    public void denyAccess(ProjectUser pProjectUser) {
         pProjectUser.setStatus(UserStatus.ACCESS_DENIED);
         getProjectUserRepository().save(pProjectUser);
         eventPublisher.publishEvent(new OnDenyEvent(pProjectUser));
@@ -81,7 +81,7 @@ public class WaitingAccessState extends AbstractDeletableState {
      * @see fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state.AbstractProjectUserState#grantAccess(fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser)
      */
     @Override
-    public void grantAccess(ProjectUser pProjectUser) throws EntityException {
+    public void grantAccess(ProjectUser pProjectUser) {
         pProjectUser.setStatus(UserStatus.WAITING_EMAIL_VERIFICATION);
         getProjectUserRepository().save(pProjectUser);
         eventPublisher.publishEvent(new OnGrantAccessEvent(pProjectUser));

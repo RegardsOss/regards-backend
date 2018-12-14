@@ -18,13 +18,11 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.rest;
 
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
-import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 
 /**

@@ -44,6 +44,6 @@ public enum AccountStatus {
     /**
      * Account request is pending
      */
-    PENDING;
+    PENDING
 
 }

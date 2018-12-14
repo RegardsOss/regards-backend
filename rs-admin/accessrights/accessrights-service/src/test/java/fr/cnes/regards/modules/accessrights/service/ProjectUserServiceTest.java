@@ -43,7 +43,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -70,7 +69,6 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
  * Test class for {@link ProjectUserService}.
- *
  * @author xbrochar
  */
 public class ProjectUserServiceTest {
@@ -152,10 +150,12 @@ public class ProjectUserServiceTest {
         projectUser.setStatus(STATUS);
         projectUser.setMetadata(META_DATA);
         projectUser.setPermissions(PERMISSIONS);
-        projectUser.getPermissions().add(new ResourcesAccess(0L, "desc0", "ms0", "res0", "Controller",
-                RequestMethod.GET, DefaultRole.ADMIN));
-        projectUser.getPermissions().add(new ResourcesAccess(1L, "desc1", "ms1", "res1", "Controller",
-                RequestMethod.PUT, DefaultRole.ADMIN));
+        projectUser.getPermissions()
+                .add(new ResourcesAccess(0L, "desc0", "ms0", "res0", "Controller", RequestMethod.GET,
+                                         DefaultRole.ADMIN));
+        projectUser.getPermissions()
+                .add(new ResourcesAccess(1L, "desc1", "ms1", "res1", "Controller", RequestMethod.PUT,
+                                         DefaultRole.ADMIN));
         projectUser.setRole(ROLE);
 
         // Mock untested services & repos
@@ -166,7 +166,7 @@ public class ProjectUserServiceTest {
 
         // Construct the tested service
         projectUserService = new ProjectUserService(authResolver, projectUserRepository, roleService, accountsClient,
-                "instance_admin@regards.fr", new Gson());
+                                                    "instance_admin@regards.fr", new Gson());
     }
 
     @Test
@@ -178,7 +178,8 @@ public class ProjectUserServiceTest {
         Mockito.when(roleService.retrieveRole("roleName")).thenReturn(new Role());
 
         final AccessRequestDto accessRequest = new AccessRequestDto("test@regards.fr", "pFirstName", "pLastName",
-                "roleName", null, "pPassword", "pOriginUrl", "pRequestLink");
+                                                                    "roleName", null, "pPassword", "pOriginUrl",
+                                                                    "pRequestLink");
 
         try {
             projectUserService.createProjectUser(accessRequest);
@@ -202,7 +203,8 @@ public class ProjectUserServiceTest {
         Mockito.when(roleService.retrieveRole("roleName")).thenReturn(new Role());
 
         final AccessRequestDto accessRequest = new AccessRequestDto("test@regards.fr", "pFirstName", "pLastName",
-                "roleName", null, "pPassword", "pOriginUrl", "pRequestLink");
+                                                                    "roleName", null, "pPassword", "pOriginUrl",
+                                                                    "pRequestLink");
 
         try {
             projectUserService.createProjectUser(accessRequest);
@@ -228,7 +230,8 @@ public class ProjectUserServiceTest {
         Mockito.when(roleService.retrieveRole("roleName")).thenReturn(new Role());
 
         final AccessRequestDto accessRequest = new AccessRequestDto("test@regards.fr", "pFirstName", "pLastName",
-                "roleName", null, "pPassword", "pOriginUrl", "pRequestLink");
+                                                                    "roleName", null, "pPassword", "pOriginUrl",
+                                                                    "pRequestLink");
 
         try {
             projectUserService.createProjectUser(accessRequest);
@@ -253,7 +256,7 @@ public class ProjectUserServiceTest {
         expected.add(projectUser);
         projectUser.setStatus(UserStatus.ACCESS_GRANTED);
 
-        final Pageable pageable = new PageRequest(0, 100);
+        final Pageable pageable = PageRequest.of(0, 100);
         final Page<ProjectUser> expectedPage = new PageImpl<>(expected, pageable, 1);
 
         // Mock the repository returned value
@@ -261,8 +264,8 @@ public class ProjectUserServiceTest {
                 .thenReturn(expectedPage);
 
         // Retrieve actual value
-        final Page<ProjectUser> actual = projectUserService.retrieveUserList(UserStatus.ACCESS_GRANTED.toString(), null,
-                                                                             pageable);
+        final Page<ProjectUser> actual = projectUserService
+                .retrieveUserList(UserStatus.ACCESS_GRANTED.toString(), null, pageable);
 
         // Check that the expected and actual role have same values
         Assert.assertEquals(expectedPage, actual);
@@ -283,7 +286,7 @@ public class ProjectUserServiceTest {
         expected.add(projectUser);
         projectUser.setStatus(UserStatus.ACCESS_GRANTED);
 
-        final Pageable pageable = new PageRequest(0, 100);
+        final Pageable pageable = PageRequest.of(0, 100);
         final Page<ProjectUser> expectedPage = new PageImpl<>(expected, pageable, 1);
 
         // Mock the repository returned value
@@ -299,9 +302,7 @@ public class ProjectUserServiceTest {
 
     /**
      * Check that the system allows to retrieve a specific user without exposing hidden meta data.
-     *
-     * @throws EntityNotFoundException
-     *             When no user with passed id could be found
+     * @throws EntityNotFoundException When no user with passed id could be found
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_300")
@@ -335,7 +336,7 @@ public class ProjectUserServiceTest {
         expected.setMetadata(visibleMetaData);
 
         // Mock the repository returned value
-        Mockito.when(projectUserRepository.findOne(ID)).thenReturn(projectUser);
+        Mockito.when(projectUserRepository.findById(ID)).thenReturn(Optional.of(projectUser));
 
         // Retrieve actual value
         final ProjectUser actual = projectUserService.retrieveUser(ID);
@@ -344,14 +345,12 @@ public class ProjectUserServiceTest {
         Assert.assertThat(actual, Matchers.samePropertyValuesAs(expected));
 
         // Check that the repository's method was called with right arguments
-        Mockito.verify(projectUserRepository).findOne(ID);
+        Mockito.verify(projectUserRepository).findById(ID);
     }
 
     /**
      * Check that the system allows to retrieve a specific user by email.
-     *
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
+     * @throws EntityNotFoundException Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_300")
@@ -374,9 +373,7 @@ public class ProjectUserServiceTest {
 
     /**
      * Check that the system fails when trying to retrieve a user with unknown email.
-     *
-     * @throws EntityNotFoundException
-     *             Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
+     * @throws EntityNotFoundException Thrown when no {@link ProjectUser} with passed <code>id</code> could be found
      */
     @Test(expected = EntityNotFoundException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_300")
@@ -393,9 +390,7 @@ public class ProjectUserServiceTest {
 
     /**
      * Check that the system allows to retrieve the current logged user.
-     *
-     * @throws EntityNotFoundException
-     *             thrown when no current user could be found
+     * @throws EntityNotFoundException thrown when no current user could be found
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_300")
@@ -431,7 +426,7 @@ public class ProjectUserServiceTest {
         accessRequests.add(new ProjectUser(null, null, null, null));
         accessRequests.add(new ProjectUser(null, null, null, null));
 
-        final Pageable pageable = new PageRequest(0, 100);
+        final Pageable pageable = PageRequest.of(0, 100);
 
         try (final Stream<ProjectUser> stream = accessRequests.stream()) {
             // Prepare the list of expect values
@@ -457,8 +452,6 @@ public class ProjectUserServiceTest {
 
     /**
      * Check that the system fails when trying to update a non existing project user.
-     *
-     * @throws EntityException
      */
     @Test(expected = EntityNotFoundException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_300")
@@ -467,7 +460,7 @@ public class ProjectUserServiceTest {
     @Purpose("Check that the system fails when trying to update a non existing project user.")
     public void updateUserEntityNotFound() throws EntityException {
         // Mock the repository returned value
-        Mockito.when(projectUserRepository.exists(ID)).thenReturn(false);
+        Mockito.when(projectUserRepository.existsById(ID)).thenReturn(false);
 
         // Trigger the exception
         projectUserService.updateUser(ID, projectUser);
@@ -475,8 +468,6 @@ public class ProjectUserServiceTest {
 
     /**
      * Check that the system fails when user id differs from the passe id.
-     *
-     * @throws EntityException
      */
     @Test(expected = EntityInconsistentIdentifierException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_300")
@@ -485,7 +476,7 @@ public class ProjectUserServiceTest {
     @Purpose("Check that the system fails when user id differs from the passed id.")
     public void updateUserInvalidValue() throws EntityException {
         // Mock the repository returned value
-        Mockito.when(projectUserRepository.exists(ID)).thenReturn(true);
+        Mockito.when(projectUserRepository.existsById(ID)).thenReturn(true);
 
         // Trigger the exception
         projectUserService.updateUser(1L, projectUser);
@@ -493,8 +484,6 @@ public class ProjectUserServiceTest {
 
     /**
      * Check that the system allows to update a project user.
-     *
-     * @throws EntityException
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_300")
@@ -503,7 +492,7 @@ public class ProjectUserServiceTest {
     @Purpose("Check that the system allows to update a project user.")
     public void updateUser() throws EntityException {
         // Mock repository
-        Mockito.when(projectUserRepository.exists(ID)).thenReturn(true);
+        Mockito.when(projectUserRepository.existsById(ID)).thenReturn(true);
 
         // Try to update a user
         projectUserService.updateUser(ID, projectUser);
@@ -514,9 +503,7 @@ public class ProjectUserServiceTest {
 
     /**
      * Check that the system fails when trying to override a not exisiting user's access rights.
-     *
-     * @throws EntityNotFoundException
-     *             Thrown when no user of passed login could be found
+     * @throws EntityNotFoundException Thrown when no user of passed login could be found
      */
     @Test(expected = EntityNotFoundException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_230")
@@ -532,9 +519,7 @@ public class ProjectUserServiceTest {
 
     /**
      * Check that the system allows to override role's access rights for a user.
-     *
-     * @throws EntityNotFoundException
-     *             Thrown when no user of passed login could be found
+     * @throws EntityNotFoundException Thrown when no user of passed login could be found
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_230")
@@ -548,11 +533,12 @@ public class ProjectUserServiceTest {
         final List<ResourcesAccess> input = new ArrayList<>();
         // Updating an existing one
         final ResourcesAccess updatedPermission = new ResourcesAccess(0L, "updated desc0", "updated ms0",
-                "updated res0", "Controller", RequestMethod.POST, DefaultRole.ADMIN);
+                                                                      "updated res0", "Controller", RequestMethod.POST,
+                                                                      DefaultRole.ADMIN);
         input.add(updatedPermission);
         // Adding a new permission
         final ResourcesAccess newPermission = new ResourcesAccess(2L, "desc2", "ms2", "res2", "Controller",
-                RequestMethod.GET, DefaultRole.ADMIN);
+                                                                  RequestMethod.GET, DefaultRole.ADMIN);
         input.add(newPermission);
 
         // Define expected result
@@ -578,9 +564,7 @@ public class ProjectUserServiceTest {
 
     /**
      * Check that the system fail when trying to retrieve a user's permissions using a role not hierarchically inferior.
-     *
-     * @throws EntityException
-     *             various exceptions
+     * @throws EntityException various exceptions
      */
     @Test(expected = EntityOperationForbiddenException.class)
     @Requirement("REGARDS_DSL_ADM_ADM_260")
@@ -603,9 +587,7 @@ public class ProjectUserServiceTest {
 
     /**
      * Check that the system allows to retrieve all permissions a of user using a borrowed role.
-     *
-     * @throws EntityException
-     *             various exceptions
+     * @throws EntityException various exceptions
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_260")
@@ -637,8 +619,8 @@ public class ProjectUserServiceTest {
         expected.addAll(projectUser.getPermissions());
 
         // Define actual result
-        final List<ResourcesAccess> actual = projectUserService.retrieveProjectUserAccessRights(EMAIL,
-                                                                                                borrowedRoleName);
+        final List<ResourcesAccess> actual = projectUserService
+                .retrieveProjectUserAccessRights(EMAIL, borrowedRoleName);
 
         // Check
         Assert.assertTrue(actual.containsAll(expected));
@@ -647,9 +629,7 @@ public class ProjectUserServiceTest {
 
     /**
      * Check that the system allows to retrieve all permissions a of user.
-     *
-     * @throws EntityException
-     *             various exceptions
+     * @throws EntityException various exceptions
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_260")

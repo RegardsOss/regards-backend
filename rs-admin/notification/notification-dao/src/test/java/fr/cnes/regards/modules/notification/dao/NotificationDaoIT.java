@@ -50,7 +50,7 @@ public class NotificationDaoIT extends AbstractDaoTransactionalTest {
 
     @Test
     public void createNotification() {
-        Assert.assertTrue(notificationRepository.count() == 0);
+        Assert.assertEquals(0, notificationRepository.count());
 
         // create a new Notification
         final Notification notif = getNotification("Hello world!", "Bob", NotificationStatus.UNREAD);
@@ -66,12 +66,12 @@ public class NotificationDaoIT extends AbstractDaoTransactionalTest {
 
         // Save the notification
         final Notification notifSaved = notificationRepository.save(notif);
-        Assert.assertTrue(notificationRepository.count() == 1);
+        Assert.assertEquals(1, notificationRepository.count());
 
         Assert.assertNotNull(notifSaved);
         Assert.assertNotNull(notifSaved.getId());
 
-        Assert.assertNotNull(notificationRepository.findOne(notifSaved.getId()));
+        Assert.assertTrue(notificationRepository.findById(notifSaved.getId()).isPresent());
 
         // create a second notification
         final Notification secondNotif = getNotification("Hello Paris!", "jack", NotificationStatus.UNREAD);
@@ -84,7 +84,7 @@ public class NotificationDaoIT extends AbstractDaoTransactionalTest {
 
         // Save the notification
         notificationRepository.save(secondNotif);
-        Assert.assertTrue(notificationRepository.count() == 2);
+        Assert.assertEquals(2, notificationRepository.count());
 
     }
 

@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.accessrights.domain.projects;
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -30,7 +31,7 @@ import java.util.List;
  * Convert from List<String> to String for database access
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @Converter
 public class RoleAuthorizedAdressesConverter implements AttributeConverter<List<String>, String> {
@@ -62,9 +63,7 @@ public class RoleAuthorizedAdressesConverter implements AttributeConverter<List<
         if (pValue != null) {
             final String[] listOfValues = pValue.split(SPLIT_CAR);
             if (listOfValues.length > 0) {
-                for (final String value : listOfValues) {
-                    result.add(value);
-                }
+                Collections.addAll(result, listOfValues);
             }
         }
         return result;

@@ -47,7 +47,7 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
  * @author Sébastien Binda
  * @author Christophe Mertz
  *
- * @since 1.0-SNAPSHOT
+
  */
 @RestClient(name = TARGET_NAME)
 @RequestMapping(value = "/users", produces = MediaType.APPLICATION_JSON_UTF8_VALUE,
@@ -144,11 +144,11 @@ public interface IProjectUsersClient {
      * @param pSize
      *            page size
      * @return {@link PagedResources} of {@link ProjectUser}
-     * @since 1.0-SNAPSHOT
+
      */
     @ResponseBody
     @RequestMapping(value = "/roles/{role_id}", method = RequestMethod.GET)
-    public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUserList(
+    ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUserList(
             @PathVariable("role_id") final Long pRoleId, @RequestParam("page") int pPage,
             @RequestParam("size") int pSize);
 

@@ -45,14 +45,11 @@ import fr.cnes.regards.modules.accessrights.service.resources.IResourcesService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
- *
  * Class AuhtoritiesProvider
  *
  * Authorities provider for internal administration microservice access
- *
  * @author Sébastien Binda
  * @author Sylvain Vissiere-Guerinet
- * @since 1.0-SNAPSHOT
  */
 public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
 
@@ -76,16 +73,16 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
      */
     private final IRuntimeTenantResolver runtimeTenantResolver;
 
-    public LocalAuthoritiesProvider(final IRoleService pRoleService, final IResourcesService pResourcesService,
-            final IRuntimeTenantResolver runtimeTenantResolver) {
+    public LocalAuthoritiesProvider(IRoleService roleService, IResourcesService resourcesService,
+            IRuntimeTenantResolver runtimeTenantResolver) {
         super();
-        roleService = pRoleService;
-        resourcesService = pResourcesService;
+        this.roleService = roleService;
+        this.resourcesService = resourcesService;
         this.runtimeTenantResolver = runtimeTenantResolver;
     }
 
     @Override
-    public void registerEndpoints(String microserviceName, String tenant, final List<ResourceMapping> localEndpoints)
+    public void registerEndpoints(String microserviceName, String tenant, List<ResourceMapping> localEndpoints)
             throws SecurityException {
 
         // Specified the working tenant
@@ -99,29 +96,24 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
         }
     }
 
-    private ResourceMapping buildResourceMapping(final ResourcesAccess pRa, final Collection<Role> pRoles) {
-        final ResourceMapping mapping = new ResourceMapping(
-                ResourceAccessAdapter.createResourceAccess(pRa.getDescription(), null), pRa.getResource(),
-                pRa.getControllerSimpleName(), RequestMethod.valueOf(pRa.getVerb().toString()));
-        mapping.setAutorizedRoles(pRoles.stream().map(role -> new RoleAuthority(role.getName()))
-                .collect(Collectors.toList()));
+    private ResourceMapping buildResourceMapping(ResourcesAccess resourcesAccess, Collection<Role> roles) {
+        ResourceMapping mapping = new ResourceMapping(
+                ResourceAccessAdapter.createResourceAccess(resourcesAccess.getDescription(), null),
+                resourcesAccess.getResource(), resourcesAccess.getControllerSimpleName(),
+                RequestMethod.valueOf(resourcesAccess.getVerb().toString()));
+        mapping.setAutorizedRoles(
+                roles.stream().map(role -> new RoleAuthority(role.getName())).collect(Collectors.toList()));
         return mapping;
     }
 
     @Override
     public List<RoleAuthority> getRoleAuthorities(String microserviceName, String tenant) throws SecurityException {
-
         // Specified the working tenant
         runtimeTenantResolver.forceTenant(tenant);
         LOGGER.debug("Retrieving role authorities for tenant {}", tenant);
 
-        final List<RoleAuthority> results = new ArrayList<>();
-        final Set<Role> roles = roleService.retrieveRoles();
-        for (final Role role : roles) {
-            final RoleAuthority roleAuth = new RoleAuthority(role.getName());
-            results.add(roleAuth);
-        }
-        return results;
+        return roleService.retrieveRoles().stream().map(role -> new RoleAuthority(role.getName()))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -129,7 +121,7 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
         runtimeTenantResolver.forceTenant(tenant);
 
         try {
-            final Role role = roleService.retrieveRole(roleName);
+            Role role = roleService.retrieveRole(roleName);
             return role.getPermissions().stream()
                     .filter(resource -> resource.getMicroservice().equals(microserviceName))
                     .map(resource -> buildResourceMapping(resource, Collections.singleton(role)))

@@ -26,6 +26,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -108,11 +109,11 @@ public class EmailService extends AbstractEmailService {
 
     @Override
     public Email retrieveEmail(final Long id) throws ModuleException {
-        final Email email = emailRepository.findOne(id);
-        if (email == null) {
+        Optional<Email> emailOpt = emailRepository.findById(id);
+        if (!emailOpt.isPresent()) {
             throw new EntityNotFoundException(id, Email.class);
         }
-        return email;
+        return emailOpt.get();
     }
 
     @Override
@@ -124,12 +125,12 @@ public class EmailService extends AbstractEmailService {
 
     @Override
     public void deleteEmail(final Long id) {
-        emailRepository.delete(id);
+        emailRepository.deleteById(id);
     }
 
     @Override
     public boolean exists(final Long id) {
-        return emailRepository.exists(id);
+        return emailRepository.existsById(id);
     }
 
     /**

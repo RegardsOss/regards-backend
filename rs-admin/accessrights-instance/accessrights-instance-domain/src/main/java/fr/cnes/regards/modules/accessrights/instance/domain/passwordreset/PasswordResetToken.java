@@ -201,20 +201,14 @@ public class PasswordResetToken {
             return false;
         }
         if (account == null) {
-            if (other.account != null) {
-                return false;
-            }
-        } else if (!account.equals(other.account)) {
-            return false;
-        }
-        return true;
+            return other.account == null;
+        } else
+            return account.equals(other.account);
     }
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("Token [String=").append(token).append("]").append("[Expires").append(expiryDate).append("]");
-        return builder.toString();
+        return "Token [String=" + token + "]" + "[Expires" + expiryDate + "]";
     }
 
 }
