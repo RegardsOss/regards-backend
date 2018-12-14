@@ -30,9 +30,7 @@ import fr.cnes.regards.framework.geojson.geometry.LineString;
 
 /**
  * {@link LineString} validation annotation
- *
  * @author Marc Sordi
- *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE })
@@ -40,7 +38,7 @@ import fr.cnes.regards.framework.geojson.geometry.LineString;
 @Documented
 public @interface MultiLineStringConstraints {
 
-    static final String CLASS_NAME = "fr.cnes.regards.framework.geojson.geometry.MultiLineString.";
+    String CLASS_NAME = "fr.cnes.regards.framework.geojson.geometry.MultiLineString.";
 
     String message() default "{" + CLASS_NAME + "message}";
 

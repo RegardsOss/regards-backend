@@ -26,9 +26,7 @@ import org.springframework.restdocs.request.RequestParametersSnippet;
 
 /**
  * REGARDS customization of {@link RequestParametersSnippet}.
- *
  * @author Marc Sordi
- *
  */
 public class RegardsRequestParametersSnippet extends RequestParametersSnippet {
 

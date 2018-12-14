@@ -39,7 +39,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
  * Common module configuration manager
- *
  * @author Marc Sordi
  */
 public abstract class AbstractModuleManager<S> implements IModuleManager<S> {
@@ -94,7 +93,6 @@ public abstract class AbstractModuleManager<S> implements IModuleManager<S> {
     /**
      * Import is applicable if module info id and version are equivalent.<br/>
      * This implementation may be override to handle configuration breaking changes between configuration.
-     *
      */
     @Override
     public boolean isApplicable(ModuleConfiguration configuration) {
@@ -113,13 +111,11 @@ public abstract class AbstractModuleManager<S> implements IModuleManager<S> {
             logger.warn(importError);
         }
         return new ModuleImportReport(info, importErrors,
-                importErrors.size() == configuration.getConfiguration().size());
+                                      importErrors.size() == configuration.getConfiguration().size());
     }
 
     /**
      * This method being called by {@link #importConfigurationAndLog(ModuleConfiguration)}, you do not need to logs import errors.
-     *
-     * @param configuration
      * @return Errors for each configuration element that could not be imported
      */
     protected abstract Set<String> importConfiguration(ModuleConfiguration configuration);

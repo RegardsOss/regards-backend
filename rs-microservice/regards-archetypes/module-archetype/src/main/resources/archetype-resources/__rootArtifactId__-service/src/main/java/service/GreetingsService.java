@@ -24,12 +24,9 @@ import org.springframework.stereotype.Service;
         package ${package}.service;
         {package}.domain.Greeting;
 
-
 /**
- * 
  * TODO Description
  * @author TODO
- *
  */
 @Service
 public class GreetingsService implements IGreetingsService {

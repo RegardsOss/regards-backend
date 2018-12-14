@@ -18,95 +18,92 @@
  along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.framework</groupId>
-	<artifactId>regards-starters</artifactId>
-	<version>4.0.0-SNAPSHOT</version>
-	<description>REGARDS starters</description>
-	<packaging>pom</packaging>
+    <groupId>fr.cnes.regards.framework</groupId>
+    <artifactId>regards-starters</artifactId>
+    <version>4.0.0-SNAPSHOT</version>
+    <description>REGARDS starters</description>
+    <packaging>pom</packaging>
 
-	<parent>
-		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-parent</artifactId>
-		<version>4.0.0-SNAPSHOT</version>
-		<relativePath />
-	</parent>
+    <parent>
+        <groupId>fr.cnes.regards</groupId>
+        <artifactId>regards-parent</artifactId>
+        <version>4.0.0-SNAPSHOT</version>
+        <relativePath/>
+    </parent>
 
-	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
-	<inceptionYear>2016</inceptionYear>
-	<licenses>
-		<license>
-			<name>GNU General Public License (GNU GPL)</name>
-			<url>http://www.gnu.org/licenses/gpl.html</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-	<organization>
-		<name>CNES</name>
-		<url>https://cnes.fr/fr</url>
-	</organization>
-	<developers>
-		<developer>
-			<name>REGARDS Team</name>
-			<organization>CS Systèmes d'Information</organization>
-			<organizationUrl>http://www.c-s.fr</organizationUrl>
-		</developer>
-	</developers>
+    <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
+    <inceptionYear>2016</inceptionYear>
+    <licenses>
+        <license>
+            <name>GNU General Public License (GNU GPL)</name>
+            <url>http://www.gnu.org/licenses/gpl.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <organization>
+        <name>CNES</name>
+        <url>https://cnes.fr/fr</url>
+    </organization>
+    <developers>
+        <developer>
+            <name>REGARDS Team</name>
+            <organization>CS Systèmes d'Information</organization>
+            <organizationUrl>http://www.c-s.fr</organizationUrl>
+        </developer>
+    </developers>
 
-	<modules>
-		<module>amqp-monitoring-regards-starter</module>
-		<module>amqp-regards</module>
-		<module>amqp-regards-starter</module>
-		<module>swagger-regards-starter</module>
-		<module>websocket-regards-starter</module>
-		<module>security-regards-starter</module>
-		<module>security-regards</module>
-		<module>cloud-regards-starter</module>
-		<module>jpa-multitenant-regards</module>
-		<module>jpa-multitenant-regards-starter</module>
-		<module>jpa-instance-regards</module>
-		<module>jpa-instance-regards-starter</module>
-		<module>multitenant-regards</module>
-		<module>multitenant-regards-starter</module>
-		<module>hateoas-regards-starter</module>
-		<module>hateoas-regards</module>
-		<module>microservice-regards-starter</module>
-		<module>microservice-regards</module>
-		<module>module-regards-starter</module>
-		<module>module-regards</module>
-		<module>microservice-regards-test</module>
-		<module>jpa-multitenant-regards-test</module>
-		<module>plugins-regards-starter</module>
-		<module>plugins-docs</module>
-		<module>gson-regards-starter</module>
-		<module>gson-regards</module>
-		<module>feign-regards-starter</module>
-		<module>security-config</module>
-		<module>oais-starter</module>
-		<module>oais-regards</module>
-		<module>oais-docs</module>
-		<module>geojson-starter</module>
-		<module>geojson-docs</module>
-		<module>geojson-regards</module>
-		<module>microservice-core-starter</module>
-		<module>authentication-regards</module>
-		<module>authentication-regards-starter</module>
-		<module>jpa-commons-regards</module>
-		<module>jpa-data-regards</module>
+    <modules>
+        <module>amqp-regards</module>
+        <module>amqp-regards-starter</module>
+        <module>swagger-regards-starter</module>
+        <module>security-regards-starter</module>
+        <module>security-regards</module>
+        <module>cloud-regards-starter</module>
+        <module>jpa-multitenant-regards</module>
+        <module>jpa-multitenant-regards-starter</module>
+        <module>jpa-instance-regards</module>
+        <module>jpa-instance-regards-starter</module>
+        <module>multitenant-regards</module>
+        <module>multitenant-regards-starter</module>
+        <module>hateoas-regards-starter</module>
+        <module>hateoas-regards</module>
+        <module>microservice-regards-starter</module>
+        <module>microservice-regards</module>
+        <module>module-regards-starter</module>
+        <module>module-regards</module>
+        <module>microservice-regards-test</module>
+        <module>jpa-multitenant-regards-test</module>
+        <module>plugins-docs</module>
+        <module>gson-regards-starter</module>
+        <module>gson-regards</module>
+        <module>feign-regards-starter</module>
+        <module>security-config</module>
+        <module>oais-starter</module>
+        <module>oais-regards</module>
+        <module>oais-docs</module>
+        <module>geojson-starter</module>
+        <module>geojson-docs</module>
+        <module>geojson-regards</module>
+        <module>microservice-core-starter</module>
+        <module>authentication-regards</module>
+        <module>authentication-regards-starter</module>
+        <module>jpa-commons-regards</module>
+        <module>jpa-data-regards</module>
         <module>encryption-starter</module>
-		<module>microservice-logger</module>
-	</modules>
+        <module>microservice-logger</module>
+    </modules>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-autoconfigure</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-validator</artifactId>
-		</dependency>
-	</dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+        </dependency>
+    </dependencies>
 </project>

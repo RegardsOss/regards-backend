@@ -22,9 +22,7 @@ import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
 
 /**
  * class regrouping all sources of properties used for our amqp client
- *
  * @author svissier
- *
  */
 public class AmqpProperties {
 
@@ -44,12 +42,9 @@ public class AmqpProperties {
     private final AmqpManagementProperties amqpManagementProperties;
 
     /**
-     * @param pRabbitProperties
-     *            spring properties
-     * @param pAmqpManagmentProperties
-     *            management properties
-     * @param pAmqpMicroserviceProperties
-     *            microservice properties
+     * @param pRabbitProperties spring properties
+     * @param pAmqpManagmentProperties management properties
+     * @param pAmqpMicroserviceProperties microservice properties
      */
     public AmqpProperties(RabbitProperties pRabbitProperties, AmqpManagementProperties pAmqpManagmentProperties,
             AmqpMicroserviceProperties pAmqpMicroserviceProperties) {

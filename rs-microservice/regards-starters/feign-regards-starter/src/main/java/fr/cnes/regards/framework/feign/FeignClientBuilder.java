@@ -18,11 +18,10 @@
  */
 package fr.cnes.regards.framework.feign;
 
-import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
-import org.springframework.cloud.netflix.feign.support.ResponseEntityDecoder;
+import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
 
 import com.google.gson.Gson;
+
 import feign.Feign;
 import feign.Target;
 import feign.gson.GsonDecoder;
@@ -30,23 +29,16 @@ import feign.gson.GsonEncoder;
 
 /**
  * Helper class for building Feign client programmatically
- *
  * @author Marc Sordi
- *
  */
 public final class FeignClientBuilder {
-
-    private static ObjectFactory<HttpMessageConverters> messageConverters;
 
     private FeignClientBuilder() {
     }
 
     /**
-     *
      * Generate client
-     *
-     * @param pTarget
-     *            Target to add informations in header like Autorization.
+     * @param pTarget Target to add informations in header like Autorization.
      * @return IResourcesClient a client instance
      */
     public static <T> T build(final Target<T> pTarget) {
@@ -57,21 +49,14 @@ public final class FeignClientBuilder {
     }
 
     /**
-    *
-    * Generate client
-    *
-    * @param pTarget
-    *            Target to add informations in header like Autorization.
-    * @return IResourcesClient a client instance
-    */
+     * Generate client
+     * @param pTarget Target to add informations in header like Autorization.
+     * @return IResourcesClient a client instance
+     */
     public static <T> T build(final Target<T> pTarget, Gson gson) {
         return Feign.builder() // Feign customization
                 .encoder(new GsonEncoder(gson)).decoder(new ResponseEntityDecoder(new GsonDecoder(gson)))
                 .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
                 .target(pTarget);
-    }
-
-    public static void setMessageConverters(ObjectFactory<HttpMessageConverters> messageConverters) {
-        FeignClientBuilder.messageConverters = messageConverters;
     }
 }

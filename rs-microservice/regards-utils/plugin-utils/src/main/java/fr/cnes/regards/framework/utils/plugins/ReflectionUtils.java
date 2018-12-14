@@ -27,9 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- *
  * Utility class used in reflections
- *
  * @author Christophe Mertz
  */
 public final class ReflectionUtils {
@@ -42,11 +40,8 @@ public final class ReflectionUtils {
     }
 
     /**
-     *
      * Make a field accessible
-     *
-     * @param field
-     *            the field to check
+     * @param field the field to check
      */
     public static void makeAccessible(Field field) {
         if ((!Modifier.isPublic(field.getModifiers()) || !Modifier.isPublic(field.getDeclaringClass().getModifiers())
@@ -56,11 +51,8 @@ public final class ReflectionUtils {
     }
 
     /**
-     *
      * Make a method accessible
-     *
-     * @param method
-     *            the field to check
+     * @param method the field to check
      */
     public static void makeAccessible(Method method) {
         if ((!Modifier.isPublic(method.getModifiers()) || !Modifier.isPublic(method.getDeclaringClass().getModifiers())
@@ -73,8 +65,7 @@ public final class ReflectionUtils {
      * Retrieve all declared fields of the class including inherited ones
      */
     public static List<Field> getAllDeclaredFields(Class<?> clazz) {
-        List<Field> fields = new ArrayList<>();
-        fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
+        List<Field> fields = new ArrayList<>(Arrays.asList(clazz.getDeclaredFields()));
         if (clazz.getSuperclass() != null) {
             fields.addAll(getAllDeclaredFields(clazz.getSuperclass()));
         }
@@ -85,8 +76,7 @@ public final class ReflectionUtils {
      * Retrieve all declared methods of the class including inherited ones
      */
     public static List<Method> getAllDeclaredMethods(Class<?> clazz) {
-        List<Method> methods = new ArrayList<>();
-        methods.addAll(Arrays.asList(clazz.getDeclaredMethods()));
+        List<Method> methods = new ArrayList<>(Arrays.asList(clazz.getDeclaredMethods()));
         if (clazz.getSuperclass() != null) {
             methods.addAll(getAllDeclaredMethods(clazz.getSuperclass()));
         }

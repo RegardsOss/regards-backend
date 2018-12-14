@@ -33,9 +33,7 @@ import com.google.gson.GsonBuilder;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 
 /**
- *
  * @author Marc Sordi
- *
  */
 public class AdapterTest {
 

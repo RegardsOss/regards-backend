@@ -41,14 +41,13 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 
 /**
  * REST module controller
- * 
- * TODO Description
-  * 
-* @author TODO
  *
+ * TODO Description
+ * @author TODO
  */
 @RestController
-@ModuleInfo(name="${parentArtifactId}-rest", version="${version}", author="REGARDS", legalOwner="CS", documentation="http://test")
+@ModuleInfo(name = "${parentArtifactId}-rest", version = "${version}", author = "REGARDS", legalOwner = "CS",
+        documentation = "http://test")
 @RequestMapping("/api")
 public class GreetingsController implements IResourceController<Greeting> {
 

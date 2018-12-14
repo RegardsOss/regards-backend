@@ -27,11 +27,9 @@ import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.IModuleManager;
 
 /**
+ * @author Marc Sordi
  * @deprecated You have to create a file "module.properties" in association with your
  * {@link IModuleManager}. You can see {@link AbstractModuleManager} for required content.
- *
- * @author Marc Sordi
- *
  */
 @Deprecated
 @Target(ElementType.TYPE)
@@ -39,37 +37,31 @@ import fr.cnes.regards.framework.module.manager.IModuleManager;
 public @interface ModuleInfo {
 
     /**
-     *
      * @return name of the module
      */
     String name();
 
     /**
-     *
      * @return description of the module
      */
     String description() default "";
 
     /**
-     *
      * @return version of the module
      */
     String version();
 
     /**
-     *
      * @return author of the module
      */
     String author();
 
     /**
-     *
      * @return legal owner of the module
      */
     String legalOwner();
 
     /**
-     *
      * @return link to the documentation of the module
      */
     String documentation();

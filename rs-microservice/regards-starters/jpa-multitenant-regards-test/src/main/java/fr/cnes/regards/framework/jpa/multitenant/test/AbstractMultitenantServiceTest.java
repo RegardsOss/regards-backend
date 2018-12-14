@@ -61,7 +61,6 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  * <br/>
  * The test is launched enabling auto configuration and scanning all components inside
  * <code>fr.cnes.regards.modules</code> base package.
- *
  * @author Marc Sordi
  */
 @ContextConfiguration(classes = { AbstractMultitenantServiceTest.ScanningConfiguration.class })
@@ -73,13 +72,13 @@ public abstract class AbstractMultitenantServiceTest extends AbstractDaoTest {
     @Configuration
     @ComponentScan(basePackages = { "fr.cnes.regards.modules" })
     public static class ScanningConfiguration {
+
     }
 
     /**
      * If inheriting class is annotated with transactional, the default tenant will be automatically injected<br/>
      * The method simply uses an {@link Autowired} {@link IRuntimeTenantResolver} to force the tenant on the current
      * thread.
-     *
      */
     @BeforeTransaction
     public void beforeTransaction() {

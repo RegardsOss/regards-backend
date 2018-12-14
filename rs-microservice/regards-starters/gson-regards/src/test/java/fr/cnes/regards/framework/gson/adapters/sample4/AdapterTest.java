@@ -29,12 +29,9 @@ import fr.cnes.regards.framework.gson.GsonAnnotationProcessor;
 import fr.cnes.regards.framework.gson.annotation.Gsonable;
 
 /**
- *
  * Test with {@link Gsonable} identifying an existing declaration field annotation and
  * {@link GsonAnnotationProcessor} processing.
- *
  * @author Marc Sordi
- *
  */
 public class AdapterTest {
 

@@ -28,9 +28,7 @@ import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
 
 /**
  * Gson adapter for {@link GeoJsonType}
- *
  * @author Marc Sordi
- *
  */
 @GsonTypeAdapter(adapted = GeoJsonType.class)
 public class GeoJsonTypeAdapter extends TypeAdapter<GeoJsonType> {

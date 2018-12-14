@@ -22,9 +22,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
  * Exception to be thrown when a parameter required for a job execution is not valid
- *
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @SuppressWarnings("serial")
 public class JobParameterInvalidException extends ModuleException {

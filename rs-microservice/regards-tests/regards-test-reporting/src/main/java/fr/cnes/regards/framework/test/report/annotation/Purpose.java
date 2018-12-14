@@ -26,7 +26,6 @@ import java.lang.annotation.Target;
 
 /**
  * @author msordi
- *
  */
 @Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
@@ -34,7 +33,6 @@ import java.lang.annotation.Target;
 public @interface Purpose {
 
     /**
-     *
      * @return the purpose of the test
      */
     String value();

@@ -23,10 +23,8 @@ import java.io.Serializable;
 /**
  * This object store REGARDS security principal<br/>
  * After request authentication, this object can be retrieved calling {@link JWTAuthentication#getPrincipal()}
- *
  * @author msordi
  * @author Christophe Mertz
- *
  */
 public class UserDetails implements Serializable {
 
@@ -87,7 +85,6 @@ public class UserDetails implements Serializable {
 
     /**
      * Set the tenant
-     * @param pTenant
      */
     public void setTenant(String pTenant) {
         tenant = pTenant;

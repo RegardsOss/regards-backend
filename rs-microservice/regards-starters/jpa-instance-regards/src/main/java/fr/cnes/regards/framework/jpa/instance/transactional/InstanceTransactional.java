@@ -30,9 +30,7 @@ import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 
 /**
  * Meta annotation to manage instance transaction
- *
  * @author Sébastien Binda
- *
  */
 @Target({ ElementType.METHOD, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)

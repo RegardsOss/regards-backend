@@ -23,7 +23,6 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
  * ISamplePlugin
- *
  * @author Christophe Mertz
  */
 @Plugin(description = "Complex plugin test", id = "aComplexErrorPlugin", version = "0.0.1", author = "REGARDS Team",
@@ -47,14 +46,12 @@ public class ComplexErrorPlugin implements ISamplePlugin {
     private INotInterfacePlugin interfacePlugin;
 
     @Override
-    public String echo(String pMessage) {
-        final StringBuffer str = new StringBuffer();
-        str.append(this.getClass().getName() + "-" + pMessage + interfacePlugin.toString());
-        return str.toString();
+    public String echo(String message) {
+        return this.getClass().getName() + "-" + message + interfacePlugin.toString();
     }
 
     @Override
-    public int add(int pFist, int pSecond) {
+    public int add(int first, int second) {
         return 0;
     }
 

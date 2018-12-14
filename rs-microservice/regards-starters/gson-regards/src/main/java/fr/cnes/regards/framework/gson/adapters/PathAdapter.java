@@ -28,7 +28,6 @@ import com.google.gson.stream.JsonWriter;
 
 /**
  * @author Christophe Mertz
- *
  */
 public class PathAdapter extends TypeAdapter<Path> {
 

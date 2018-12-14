@@ -39,9 +39,7 @@ import fr.cnes.regards.framework.security.utils.endpoint.ISystemAccessVoter;
 
 /**
  * This class autoconfigures required voters based on configuration.
- *
  * @author Marc Sordi
- *
  */
 @Configuration
 @ConditionalOnWebApplication
@@ -58,7 +56,6 @@ public class SecurityVoterAutoConfiguration {
 
     /**
      * Give full access for internal system call between microservices
-     *
      * @return {@link ISystemAccessVoter}
      */
     @ConditionalOnMissingBean
@@ -71,7 +68,6 @@ public class SecurityVoterAutoConfiguration {
 
     /**
      * Give full access for instance admin call
-     *
      * @return {@link IInstanceAdminAccessVoter}
      */
     @ConditionalOnMissingBean
@@ -84,7 +80,6 @@ public class SecurityVoterAutoConfiguration {
 
     /**
      * Give access to public endpoints for instance public call
-     *
      * @return {@link IInstancePublicAccessVoter}
      */
     @ConditionalOnMissingBean
@@ -97,7 +92,6 @@ public class SecurityVoterAutoConfiguration {
 
     /**
      * Give full access for project admin call
-     *
      * @return {@link IInstanceAdminAccessVoter}
      */
     @ConditionalOnMissingBean
@@ -110,7 +104,6 @@ public class SecurityVoterAutoConfiguration {
 
     /**
      * Manage dynamic endpoint security based on roles
-     *
      * @return {@link ResourceAccessVoter}
      */
     @ConditionalOnMissingBean

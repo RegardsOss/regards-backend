@@ -28,23 +28,17 @@ import com.netflix.loadbalancer.ILoadBalancer;
 import com.netflix.loadbalancer.ZoneAwareLoadBalancer;
 
 /**
- *
  * Class RibbonClientConfiguration
  *
  * Configuration class for Ribbon clients.
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 @Configuration
 public class RibbonClientConfiguration {
 
     /**
-     *
      * Ribbon Properties configuration
-     *
      * @return IClientConfig
-     * @since 1.0-SNAPSHOT
      */
     @Bean
     public IClientConfig config() {
@@ -55,11 +49,8 @@ public class RibbonClientConfiguration {
     }
 
     /**
-     *
      * Configure ribbon load balancer
-     *
      * @return ILoadBalancer
-     * @since 1.0-SNAPSHOT
      */
     @Bean
     public ILoadBalancer loadBalancerConfig() {

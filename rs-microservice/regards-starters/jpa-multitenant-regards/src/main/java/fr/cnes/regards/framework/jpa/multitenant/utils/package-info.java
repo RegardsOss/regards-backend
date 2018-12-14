@@ -17,10 +17,7 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- *
  * Utility package
- * 
  * @author Marc Sordi
- *
  */
 package fr.cnes.regards.framework.jpa.multitenant.utils;

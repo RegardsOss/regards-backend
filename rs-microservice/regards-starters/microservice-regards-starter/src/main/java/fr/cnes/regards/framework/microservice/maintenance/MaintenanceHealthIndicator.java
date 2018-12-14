@@ -17,7 +17,6 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 
 /**
  * Health indicator allowing us to know when was the last shift between maintenance mode and standard mode
- *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class MaintenanceHealthIndicator extends AbstractHealthIndicator
@@ -42,7 +41,6 @@ public class MaintenanceHealthIndicator extends AbstractHealthIndicator
 
     /**
      * Constructor setting the runtime tenant resolver
-     * @param runtimeTenantResolver
      */
     public MaintenanceHealthIndicator(IRuntimeTenantResolver runtimeTenantResolver) {
         super();
@@ -50,7 +48,7 @@ public class MaintenanceHealthIndicator extends AbstractHealthIndicator
     }
 
     @Override
-    protected void doHealthCheck(Health.Builder builder) throws Exception {
+    protected void doHealthCheck(Health.Builder builder) {
         MaintenanceInfo info = MaintenanceManager.getMaintenanceMap().get(runtimeTenantResolver.getTenant());
         builder.withDetail("lastUpdate", info.getLastUpdate());
         if (info.getActive()) {

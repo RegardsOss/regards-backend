@@ -23,9 +23,7 @@ import java.util.Optional;
 /**
  * RFC 7946 -August 2016<br/>
  * GeoJson geometry position representation
- *
  * @author Marc Sordi
- *
  */
 public class Position {
 
@@ -106,13 +104,9 @@ public class Position {
             return false;
         }
         if (longitude == null) {
-            if (other.longitude != null) {
-                return false;
-            }
-        } else if (!longitude.equals(other.longitude)) {
-            return false;
-        }
-        return true;
+            return other.longitude == null;
+        } else
+            return longitude.equals(other.longitude);
     }
 
     @Override

@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.module.rest.exception;
 
 /**
  * Exception indicating that an entity is not found according to the given identifier
- *
  * @author Marc Sordi
  */
 public class EntityNotFoundException extends EntityException {

@@ -23,7 +23,6 @@ import fr.cnes.regards.framework.amqp.test.event.Info;
 
 /**
  * @author Marc Sordi
- *
  */
 public class AbstractInfoReceiver extends AbstractReceiver<Info> {
 

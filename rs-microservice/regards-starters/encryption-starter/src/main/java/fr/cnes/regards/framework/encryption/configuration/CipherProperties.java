@@ -1,15 +1,14 @@
 package fr.cnes.regards.framework.encryption.configuration;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.nio.file.Path;
 
-import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
 /**
  * Properties class for ciphers in regards
- *
  * @author Sylvain VISSIERE-GUERINET
  */
 @Validated

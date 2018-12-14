@@ -24,9 +24,7 @@ import fr.cnes.regards.framework.amqp.configuration.VirtualHostMode;
 
 /**
  * class regrouping the properties about managment of the broker
- *
  * @author svissier
- *
  */
 @ConfigurationProperties(prefix = "regards.amqp.management")
 public class AmqpManagementProperties {
@@ -52,7 +50,6 @@ public class AmqpManagementProperties {
 
     /**
      * Set the management host
-     * @param pAmqpManagementHost
      */
     public void setHost(String pAmqpManagementHost) {
         host = pAmqpManagementHost;
@@ -67,7 +64,6 @@ public class AmqpManagementProperties {
 
     /**
      * Set the management port
-     * @param pAmqpManagementPort
      */
     public void setPort(Integer pAmqpManagementPort) {
         port = pAmqpManagementPort;

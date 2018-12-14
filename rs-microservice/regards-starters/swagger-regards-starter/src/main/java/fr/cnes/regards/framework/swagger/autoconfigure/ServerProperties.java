@@ -23,13 +23,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 /**
  * Check that spring boot server is already configured
- *
  * @author msordi
- *
  */
 public class ServerProperties extends AllNestedConditions {
 
-	/**
+    /**
      * Class constructor
      */
     public ServerProperties() {

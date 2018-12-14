@@ -32,11 +32,8 @@ import org.springframework.web.util.UriTemplate;
 import fr.cnes.regards.framework.hateoas.DefaultResourceService;
 
 /**
- *
  * Mock default resource service to avoid bad servlet context issue *
- *
  * @author msordi
- *
  */
 public class MockDefaultResourceService extends DefaultResourceService {
 

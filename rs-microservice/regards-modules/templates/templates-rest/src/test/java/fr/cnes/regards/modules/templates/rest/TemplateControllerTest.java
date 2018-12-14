@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.templates.rest;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Assert;
@@ -43,7 +43,6 @@ import fr.cnes.regards.modules.templates.test.TemplateTestConstants;
 
 /**
  * Templates controller unit test
- *
  * @author Xavier-Alexandre Brochard
  */
 public class TemplateControllerTest {
@@ -72,7 +71,7 @@ public class TemplateControllerTest {
     public void setUp() {
         // Init a template
         template = new Template(TemplateTestConstants.CODE, TemplateTestConstants.CONTENT, TemplateTestConstants.DATA,
-                null);
+                                null);
         template.setId(TemplateTestConstants.ID);
 
         // Mock stuff
@@ -94,7 +93,7 @@ public class TemplateControllerTest {
     @Requirement("REGARDS_DSL_ADM_ADM_460")
     public final void testFindAll() {
         // Mock service
-        final List<Template> templates = Arrays.asList(template);
+        final List<Template> templates = Collections.singletonList(template);
         Mockito.when(templateService.findAll()).thenReturn(templates);
 
         // Define actual
@@ -134,9 +133,7 @@ public class TemplateControllerTest {
 
     /**
      * Test method for {@link fr.cnes.regards.modules.templates.rest.TemplateController#findById(java.lang.Long)}.
-     *
-     * @throws EntityNotFoundException
-     *             if no template with passed id could be found
+     * @throws EntityNotFoundException if no template with passed id could be found
      */
     @Test
     @Purpose("Check that the system allows to retrieve a single template.")
@@ -158,9 +155,7 @@ public class TemplateControllerTest {
 
     /**
      * Test method for {@link fr.cnes.regards.modules.templates.rest.TemplateController#findById(java.lang.Long)}.
-     *
-     * @throws EntityNotFoundException
-     *             if no template with passed id could be found
+     * @throws EntityNotFoundException if no template with passed id could be found
      */
     @SuppressWarnings("unchecked")
     @Test(expected = EntityNotFoundException.class)
@@ -179,11 +174,9 @@ public class TemplateControllerTest {
     /**
      * Test method for
      * {@link fr.cnes.regards.modules.templates.rest.TemplateController#update(java.lang.Long, fr.cnes.regards.modules.templates.domain.Template)}.
-     *
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityNotFoundException} if no template with passed id could be found<br>
-     *             {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
+     * @throws EntityException <br>
+     *                         {@link EntityNotFoundException} if no template with passed id could be found<br>
+     *                         {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
      */
     @Test
     @Purpose("Check that the system allows to update a template.")
@@ -202,11 +195,9 @@ public class TemplateControllerTest {
     /**
      * Test method for
      * {@link fr.cnes.regards.modules.templates.rest.TemplateController#update(java.lang.Long, fr.cnes.regards.modules.templates.domain.Template)}.
-     *
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityNotFoundException} if no template with passed id could be found<br>
-     *             {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
+     * @throws EntityException <br>
+     *                         {@link EntityNotFoundException} if no template with passed id could be found<br>
+     *                         {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
      */
     @Test(expected = EntityNotFoundException.class)
     @Purpose("Check that the system handles the case of updating an not existing template.")
@@ -224,11 +215,9 @@ public class TemplateControllerTest {
     /**
      * Test method for
      * {@link fr.cnes.regards.modules.templates.rest.TemplateController#update(java.lang.Long, fr.cnes.regards.modules.templates.domain.Template)}.
-     *
-     * @throws EntityException
-     *             <br>
-     *             {@link EntityNotFoundException} if no template with passed id could be found<br>
-     *             {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
+     * @throws EntityException <br>
+     *                         {@link EntityNotFoundException} if no template with passed id could be found<br>
+     *                         {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
      */
     @Test(expected = EntityInconsistentIdentifierException.class)
     @Purpose("Check that the system allows the case of inconsistency of ids in the request.")
@@ -246,9 +235,7 @@ public class TemplateControllerTest {
 
     /**
      * Test method for {@link fr.cnes.regards.modules.templates.rest.TemplateController#delete(java.lang.Long)}.
-     *
-     * @throws EntityNotFoundException
-     *             if no template with passed id could be found
+     * @throws EntityNotFoundException if no template with passed id could be found
      */
     @Test
     @Purpose("Check that the system allows to delete a single template.")
@@ -265,9 +252,7 @@ public class TemplateControllerTest {
 
     /**
      * Test method for {@link fr.cnes.regards.modules.templates.rest.TemplateController#delete(java.lang.Long)}.
-     *
-     * @throws EntityNotFoundException
-     *             if no template with passed id could be found
+     * @throws EntityNotFoundException if no template with passed id could be found
      */
     @Test(expected = EntityNotFoundException.class)
     @Purpose("Check that the system handles the case of deleting an inexistent template.")

@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.templates.service;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
- *
  * @author Xavier-Alexandre Brochard
  */
 public class TemplateWriterException extends ModuleException {

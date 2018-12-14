@@ -24,7 +24,6 @@ import java.util.ArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cloud.netflix.feign.support.SpringDecoder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,10 +37,10 @@ import feign.codec.ErrorDecoder;
 /**
  * Intercept Feign error to write custom log and decode the body into an object
  * in case the return type is defined as a {@link ResponseEntity}&lt;SOMETHING>.
- * It will deserialize the body, using {@link SpringDecoder}, into a SOMETHING instance accessible
+ * It will deserialize the body, using {@link org.springframework.cloud.openfeign.support.SpringDecoder}, into a
+ * SOMETHING instance accessible
  * into the {@link FeignResponseDecodedException} thrown.
  * @author CS
- * @since 1.0-SNAPSHOT
  */
 public class ClientErrorDecoder extends ErrorDecoder.Default implements ErrorDecoder {
 
@@ -55,7 +54,7 @@ public class ClientErrorDecoder extends ErrorDecoder.Default implements ErrorDec
         LOGGER.error(String.format("Remote call to %s. Response is : %d - %s", methodKey, response.status(),
                                    response.reason()));
         HttpHeaders responseHeaders = new HttpHeaders();
-        response.headers().entrySet().stream()
+        response.headers().entrySet()
                 .forEach(entry -> responseHeaders.put(entry.getKey(), new ArrayList<>(entry.getValue())));
 
         byte[] responseBody;

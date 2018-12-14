@@ -29,7 +29,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * @author Gary Russell
- *
  */
 @Configuration
 @EnableTransactionManagement

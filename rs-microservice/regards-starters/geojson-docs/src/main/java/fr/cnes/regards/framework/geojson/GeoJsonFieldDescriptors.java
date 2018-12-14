@@ -29,9 +29,7 @@ import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 
 /**
  * Builds the description of all fields found in {@link AbstractFeatureCollection}.
- *  
  * @author Christophe Mertz
- *
  */
 public class GeoJsonFieldDescriptors {
 
@@ -48,7 +46,7 @@ public class GeoJsonFieldDescriptors {
     }
 
     public List<FieldDescriptor> build() {
-        List<FieldDescriptor> lfd = new ArrayList<FieldDescriptor>();
+        List<FieldDescriptor> lfd = new ArrayList<>();
 
         ConstrainedFields fieldsCollection = new ConstrainedFields(AbstractFeatureCollection.class);
 
@@ -57,8 +55,9 @@ public class GeoJsonFieldDescriptors {
         ConstrainedFields fieldsFeature = new ConstrainedFields(AbstractFeature.class);
 
         lfd.add(fieldsFeature.withPath(addPrefix("id"), "SIP id"));
-        lfd.add(fieldsFeature.withPath(addPrefix("ipType"), "type",
-                                       "GeoJson type representation - RFC 7946 -August 2016", null));
+        lfd.add(fieldsFeature
+                        .withPath(addPrefix("ipType"), "type", "GeoJson type representation - RFC 7946 -August 2016",
+                                  null));
         lfd.add(fieldsFeature.withPath(addPrefix("geometry"),
                                        "GeoJson base feature representation - RFC 7946 -August 2016"));
         lfd.add(fieldsFeature.withPath(addPrefix("bbox"), "An optional bounding box"));

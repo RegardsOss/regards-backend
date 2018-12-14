@@ -31,11 +31,8 @@ import fr.cnes.regards.framework.geojson.geometry.IGeometry;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
 
 /**
- *
  * Gson adapter factory for {@link AbstractFeature}
- *
  * @author Marc Sordi
- *
  */
 @GsonTypeAdapterFactory
 public class FeatureTypeAdapterFactory implements TypeAdapterFactory {
@@ -61,8 +58,7 @@ public class FeatureTypeAdapterFactory implements TypeAdapterFactory {
             @SuppressWarnings("unchecked")
             @Override
             public T read(JsonReader in) throws IOException {
-                @SuppressWarnings("rawtypes")
-                AbstractFeature feature = (AbstractFeature) delegate.read(in);
+                @SuppressWarnings("rawtypes") AbstractFeature feature = (AbstractFeature) delegate.read(in);
                 // Set feature unlocated if geometry is null
                 if (feature.getGeometry() == null) {
                     feature.setGeometry(IGeometry.unlocated());

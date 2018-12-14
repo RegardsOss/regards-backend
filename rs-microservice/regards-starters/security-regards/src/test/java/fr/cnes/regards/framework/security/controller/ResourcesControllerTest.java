@@ -32,13 +32,10 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
- *
  * Class ResourcesControllerTest
  *
  * Tests for resources controller
- *
  * @author CS
- * @since 1.0-SNAPSHOT
  */
 public class ResourcesControllerTest {
 
@@ -49,10 +46,7 @@ public class ResourcesControllerTest {
             new MethodAuthorizationService());
 
     /**
-     *
      * Check the /resources common endpoint that retrieves all resources of a microservice.
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_ADM_ADM_240")
     @Requirement("REGARDS_DSL_SYS_SEC_200")
@@ -61,15 +55,15 @@ public class ResourcesControllerTest {
     public void resourcesTest() {
 
         final ResponseEntity<List<ResourceMapping>> response = controller.getAllResources();
-        Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
+        Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
 
-        Assert.assertTrue("There should be 2 resources", response.getBody().size() == 2);
+        Assert.assertEquals("There should be 2 resources", 2, response.getBody().size());
         for (ResourceMapping mapping : response.getBody()) {
             if (RequestMethod.GET.equals(mapping.getMethod())) {
-                Assert.assertTrue(mapping.getFullPath().equals("/tests/endpoint"));
+                Assert.assertEquals("/tests/endpoint", mapping.getFullPath());
             }
             if (RequestMethod.POST.equals(mapping.getMethod())) {
-                Assert.assertTrue(mapping.getFullPath().equals("/tests/endpoint/post"));
+                Assert.assertEquals("/tests/endpoint/post", mapping.getFullPath());
             }
         }
     }

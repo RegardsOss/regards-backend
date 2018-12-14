@@ -19,10 +19,6 @@
 
 package fr.cnes.regards.framework.modules.plugins.domain;
 
-import java.net.URL;
-import java.util.Collection;
-import java.util.Set;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -38,15 +34,17 @@ import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.net.URL;
+import java.util.Collection;
+import java.util.Set;
 
-import org.hibernate.validator.constraints.NotBlank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converter.SetStringCsvConverter;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
@@ -58,9 +56,8 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
  * @author oroussel
  */
 @Entity
-@Table(name = "t_plugin_configuration",
-        indexes = { @Index(name = "idx_plugin_configuration", columnList = "pluginId"),
-                @Index(name = "idx_plugin_configuration_label", columnList = "label") },
+@Table(name = "t_plugin_configuration", indexes = { @Index(name = "idx_plugin_configuration", columnList = "pluginId"),
+        @Index(name = "idx_plugin_configuration_label", columnList = "label") },
         uniqueConstraints = @UniqueConstraint(name = "uk_plugin_configuration_label", columnNames = { "label" }))
 @SequenceGenerator(name = "pluginConfSequence", initialValue = 1, sequenceName = "seq_plugin_conf")
 public class PluginConfiguration implements IIdentifiable<Long> {
@@ -203,7 +200,6 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
      * Constructor initializing a new plugin configuration from an other one
-     * @param other
      */
     public PluginConfiguration(PluginConfiguration other) {
         active = other.active;
@@ -275,18 +271,14 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      */
     public void logParams() {
         LOGGER.info("===> parameters <===");
-        LOGGER.info("  ---> number of dynamic parameters : "
-                + getParameters().stream().filter(p -> p.isDynamic()).count());
+        LOGGER.info(
+                "  ---> number of dynamic parameters : " + getParameters().stream().filter(PluginParameter::isDynamic).count());
 
-        getParameters().stream().filter(p -> p.isDynamic()).forEach(p -> {
-            logParam(p, "  ---> dynamic parameter : ");
-        });
+        getParameters().stream().filter(PluginParameter::isDynamic).forEach(p -> logParam(p, "  ---> dynamic parameter : "));
 
-        LOGGER.info("  ---> number of no dynamic parameters : "
-                + getParameters().stream().filter(p -> !p.isDynamic()).count());
-        getParameters().stream().filter(p -> !p.isDynamic()).forEach(p -> {
-            logParam(p, "  ---> parameter : ");
-        });
+        LOGGER.info("  ---> number of no dynamic parameters : " + getParameters().stream().filter(p -> !p.isDynamic())
+                .count());
+        getParameters().stream().filter(p -> !p.isDynamic()).forEach(p -> logParam(p, "  ---> parameter : "));
     }
 
     /**
@@ -301,47 +293,46 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         }
     }
 
-    public final String getLabel() {
+    public String getLabel() {
         return label;
     }
 
-    public final void setLabel(String pLabel) {
+    public void setLabel(String pLabel) {
         label = pLabel;
     }
 
-    public final String getVersion() {
+    public String getVersion() {
         return version;
     }
 
     /**
      * This setter <b>must</b> only be used while TESTING
-     * @param version
      */
-    public final void setVersion(String version) {
+    public void setVersion(String version) {
         this.version = version;
     }
 
-    public final String getPluginId() {
+    public String getPluginId() {
         return pluginId;
     }
 
-    public final void setPluginId(String pluginId) {
+    public void setPluginId(String pluginId) {
         this.pluginId = pluginId;
     }
 
-    public final Integer getPriorityOrder() {
+    public Integer getPriorityOrder() {
         return priorityOrder;
     }
 
-    public final void setPriorityOrder(Integer order) {
+    public void setPriorityOrder(Integer order) {
         priorityOrder = order;
     }
 
-    public final Set<PluginParameter> getParameters() {
+    public Set<PluginParameter> getParameters() {
         return parameters;
     }
 
-    public final void setParameters(Set<PluginParameter> parameters) {
+    public void setParameters(Set<PluginParameter> parameters) {
         this.parameters.clear();
         if ((parameters != null) && !parameters.isEmpty()) {
             this.parameters.addAll(parameters);
@@ -373,7 +364,6 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
      * Set the interface names
-     * @param interfaceNames
      */
     public void setInterfaceNames(Set<String> interfaceNames) {
         this.interfaceNames = interfaceNames;
@@ -431,13 +421,9 @@ public class PluginConfiguration implements IIdentifiable<Long> {
             return false;
         }
         if (pluginId == null) {
-            if (other.pluginId != null) {
-                return false;
-            }
-        } else if (!pluginId.equals(other.pluginId)) {
-            return false;
-        }
-        return true;
+            return other.pluginId == null;
+        } else
+            return pluginId.equals(other.pluginId);
     }
 
     @Override

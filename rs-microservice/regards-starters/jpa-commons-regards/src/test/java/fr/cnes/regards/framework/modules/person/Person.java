@@ -28,9 +28,7 @@ import javax.persistence.Table;
 
 /**
  * {@link Person} test entity with a generated sequence
- *
  * @author Marc Sordi
- *
  */
 @Entity
 @Table(name = "t_person")

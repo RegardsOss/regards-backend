@@ -36,13 +36,10 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
- *
  * Class DaoTransactionTest
  *
  * Test for transactionnal DAO actions
- *
  * @author CS
- * @since 1.0-SNAPSHOT
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { DaoTransactionTestConfiguration.class })
@@ -61,10 +58,7 @@ public class DaoTransactionTest {
     private DaoUserService service;
 
     /**
-     *
      * Test for multitenant transactions.
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Test multitenant transactions operations in database")
@@ -99,7 +93,7 @@ public class DaoTransactionTest {
         service.addWithoutError(testTenant);
         users.clear();
         users = service.getUsers(testTenant);
-        Assert.assertTrue("There must be 1 element !", users.size() == 1);
+        Assert.assertEquals(1, users.size());
         LOG.info("Insert correctly done and commited ! ");
 
         // Test for second tenant

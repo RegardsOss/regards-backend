@@ -18,8 +18,10 @@
  */
 package fr.cnes.regards.framework.jpa.instance.autoconfigure;
 
-import javax.sql.DataSource;
 import java.beans.PropertyVetoException;
+import java.io.IOException;
+
+import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -32,13 +34,10 @@ import fr.cnes.regards.framework.jpa.instance.properties.InstanceDaoProperties;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
 
 /**
- *
  * Class InstanceDataSourceConfiguration
  *
  * JPA Properties for instance datasource
- *
  * @author CS
- * @since 1.0-SNAPSHOT
  */
 @Configuration
 @EnableConfigurationProperties(InstanceDaoProperties.class)
@@ -52,17 +51,11 @@ public class InstanceDataSourceConfiguration {
     private InstanceDaoProperties daoProperties;
 
     /**
-     *
      * Default data source for persistence unit instance.
-     *
-     * @return datasource
-     * @throws PropertyVetoException
-     *             if error occurs
-     * @since 1.0-SNAPSHOT
      */
     @Bean
     @Primary
-    public DataSource instanceDataSource() throws PropertyVetoException {
+    public DataSource instanceDataSource() throws PropertyVetoException, IOException {
 
         String tenant = "instance";
         DataSource datasource;
@@ -72,14 +65,12 @@ public class InstanceDataSourceConfiguration {
         } else {
             // this datasource does not need to be encrypted because it doesn't live in any database,
             // just into the configuration file which is not encrypted but accesses are restricted.
-            datasource = DataSourceHelper.createPooledDataSource(tenant,
-                                                                 daoProperties.getDatasource().getUrl(),
-                                                                 daoProperties.getDatasource().getDriverClassName(),
-                                                                 daoProperties.getDatasource().getUsername(),
-                                                                 daoProperties.getDatasource().getPassword(),
-                                                                 daoProperties.getMinPoolSize(),
-                                                                 daoProperties.getMaxPoolSize(),
-                                                                 daoProperties.getPreferredTestQuery());
+            datasource = DataSourceHelper
+                    .createHikariDataSource(tenant, daoProperties.getDatasource().getUrl(),
+                                            daoProperties.getDatasource().getDriverClassName(),
+                                            daoProperties.getDatasource().getUsername(),
+                                            daoProperties.getDatasource().getPassword(), daoProperties.getMinPoolSize(),
+                                            daoProperties.getMaxPoolSize(), daoProperties.getPreferredTestQuery());
         }
         return datasource;
     }

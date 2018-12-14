@@ -27,7 +27,5 @@
  * <li>{@link fr.cnes.regards.framework.security.endpoint.voter.ResourceAccessVoter} to filter endpoint
  * according to authorization</li>
  * </ul>
- *
- *
  */
 package fr.cnes.regards.framework.security.endpoint;

@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
  * @author Marc Sordi
- *
  */
 @Event(target = Target.ALL)
 public class TodoEvent implements IPollable {

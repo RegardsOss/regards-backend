@@ -24,9 +24,7 @@ import fr.cnes.regards.framework.geojson.coordinates.Position;
 /**
  * RFC 7946 -August 2016<br/>
  * GeoJson Point representation
- *
  * @author Marc Sordi
- *
  */
 public class Point extends AbstractGeometry<Position> {
 

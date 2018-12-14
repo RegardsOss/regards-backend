@@ -22,7 +22,6 @@ import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 
 /**
  * Common processing step applied to job execution
- *
  * @param <I> input object
  * @param <0> output object
  * @param <J> associated processing job
@@ -59,7 +58,6 @@ public abstract class AbstractProcessingStep<I, O, J extends IJob<?>> implements
      * Override this method to implement step execution algorithm
      * @param in input object
      * @return output object
-     * @throws ProcessingStepException
      */
     protected abstract O doExecute(I in) throws ProcessingStepException;
 

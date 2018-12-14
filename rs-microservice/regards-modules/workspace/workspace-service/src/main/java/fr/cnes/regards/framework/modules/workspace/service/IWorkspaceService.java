@@ -26,46 +26,35 @@ import fr.cnes.regards.framework.modules.workspace.domain.WorkspaceMonitoringInf
 
 /**
  * Allows to use a workspace inside the application. This workspace should be separated by tenant.
- *
  * @author svissier
- *
  */
 public interface IWorkspaceService {
 
     /**
      * Writes the {@link InputStream} content to the workspace into a file named fileName.
-     * @param is
-     * @param fileName
-     * @throws IOException
      */
     void setIntoWorkspace(InputStream is, String fileName) throws IOException;
 
     /**
      * Retrieves the file which name is fileName from the workspace. Take care that the returned InputStream is to be
      * closed by the caller.
-     * @param fileName
      * @return new input stream from the file into the workspace.
-     * @throws IOException
      */
     InputStream retrieveFromWorkspace(String fileName) throws IOException;
 
     /**
      * Removes the file which name is fileName from the workspace.
-     * @param fileName
-     * @throws IOException
      */
     void removeFromWorkspace(String fileName) throws IOException;
 
     /**
      * @return a newly created directory inside the workspace that you have to fully handle. Adding files into it should
-     *         be done manually.
-     * @throws IOException
+     * be done manually.
      */
     Path getPrivateDirectory() throws IOException;
 
     /**
      * @return Monitoring information on the workspace.
-     * @throws IOException
      */
     WorkspaceMonitoringInformation getMonitoringInformation() throws IOException;
 
@@ -78,7 +67,6 @@ public interface IWorkspaceService {
 
     /**
      * Allows to get the path of the given file in the workspace of the current tenant.
-     * @param fileName
      * @return the path of the given file in the workspace of the current tenant
      */
     Path getFilePath(String fileName) throws IOException;

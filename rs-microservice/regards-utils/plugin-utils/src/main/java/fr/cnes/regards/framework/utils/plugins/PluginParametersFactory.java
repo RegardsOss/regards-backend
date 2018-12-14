@@ -206,6 +206,6 @@ public class PluginParametersFactory {
         if (parameters == null) {
             return null;
         }
-        return parameters.toArray(new PluginParameter[parameters.size()]);
+        return parameters.toArray(new PluginParameter[0]);
     }
 }

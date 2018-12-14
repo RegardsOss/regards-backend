@@ -22,7 +22,6 @@ import org.springframework.security.access.AccessDecisionVoter;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 public interface IProjectAdminAccessVoter extends AccessDecisionVoter<Object> {
 

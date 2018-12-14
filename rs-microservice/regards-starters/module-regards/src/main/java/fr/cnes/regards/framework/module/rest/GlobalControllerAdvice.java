@@ -96,7 +96,6 @@ import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
  * <br/>
  * if no handler is specified for a {@link ModuleException}, an {@link HttpStatus#INTERNAL_SERVER_ERROR} response is
  * sent.
- *
  * @author CS SI
  * @author Marc Sordi
  * @author Sébastien Binda
@@ -149,7 +148,6 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
     /**
      * Exception handler returning the code 400 when the identifier in url path doesn't match identifier in request
      * body.
-     *
      * @param exception {@link EntityInconsistentIdentifierException}
      * @return {@link ResponseEntity}
      */
@@ -161,7 +159,6 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
 
     /**
      * Exception returning 400 when a datasource connection is invalid
-     *
      * @param exception {@link InvalidConnectionException}
      * @return {@link ResponseEntity}
      */
@@ -177,7 +174,6 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
 
     /**
      * Exception handler returning the code 403 when an operation on an entity is forbidden.<br>
-     *
      * @param exception {@link EntityOperationForbiddenException}
      * @return {@link ResponseEntity}
      */
@@ -189,7 +185,6 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
 
     /**
      * Exception handler returning the code 403 when a transition on a state-managed entity is forbidden.<br>
-     *
      * @param exception {@link EntityTransitionForbiddenException}
      * @return {@link ResponseEntity}
      */
@@ -232,7 +227,6 @@ public class GlobalControllerAdvice extends ResponseEntityExceptionHandler {
 
     /**
      * Exception handler returning the code 413 when a search is cancelled due to too many results.
-     *
      * @param pException {@link TooManyResultsException}
      * @return {@link ResponseEntity}
      */

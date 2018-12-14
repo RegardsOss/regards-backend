@@ -38,14 +38,13 @@ import fr.cnes.regards.modules.helloworldmodule.service.GreetingsService;
 
 /**
  * REST module controller
- * 
- * TODO Description
-  * 
-* @author TODO
  *
+ * TODO Description
+ * @author TODO
  */
 @RestController
-@ModuleInfo(name="helloworldmodule-rest", version="1.0.0-SNAPSHOT", author="REGARDS", legalOwner="CS", documentation="http://test")
+@ModuleInfo(name = "helloworldmodule-rest", version = "1.0.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
+        documentation = "http://test")
 @RequestMapping("/api")
 public class GreetingsController implements IResourceController<Greeting> {
 
@@ -60,7 +59,7 @@ public class GreetingsController implements IResourceController<Greeting> {
     @ResourceAccess(description = "send 'greeting' as response")
     public HttpEntity<Resource<Greeting>> greeting(@RequestParam(value = "name", defaultValue = "World") String pName) {
         Greeting greeting = myService.getGreeting(pName);
-        return new ResponseEntity<>(new Resource<Greeting>(greeting), HttpStatus.OK);
+        return new ResponseEntity<>(new Resource<>(greeting), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/me", method = RequestMethod.GET)
@@ -68,7 +67,7 @@ public class GreetingsController implements IResourceController<Greeting> {
     @ResourceAccess(description = "send 'me' as response")
     public HttpEntity<Resource<Greeting>> me(@RequestParam(value = "name", defaultValue = "me") String pName) {
         Greeting greeting = myService.getGreeting(pName);
-        return new ResponseEntity<>(new Resource<Greeting>(greeting), HttpStatus.OK);
+        return new ResponseEntity<>(new Resource<>(greeting), HttpStatus.OK);
     }
 
     @Override

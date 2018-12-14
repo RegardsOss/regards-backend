@@ -21,9 +21,7 @@ package fr.cnes.regards.framework.geojson;
 /**
  * RFC 7946 -August 2016<br/>
  * All availble GeoJson types
- *
  * @author Marc Sordi
- *
  */
 public enum GeoJsonType {
 
@@ -42,7 +40,7 @@ public enum GeoJsonType {
 
     private String type;
 
-    private GeoJsonType(String name) {
+    GeoJsonType(String name) {
         this.type = name;
     }
 

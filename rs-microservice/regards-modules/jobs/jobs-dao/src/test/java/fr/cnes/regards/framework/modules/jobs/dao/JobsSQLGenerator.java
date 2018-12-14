@@ -26,7 +26,6 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTes
  * machine !!!</b>
  * <b>Please, use generator from order-dao (for example) and stick relative script lines from it.</b>
  * @author Marc Sordi
- *
  */
 public class JobsSQLGenerator extends AbstractScriptGeneratorTest {
 

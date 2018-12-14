@@ -35,9 +35,7 @@ import fr.cnes.regards.framework.logbackappender.domain.LogEvent;
 
 /**
  * Default Amqp Regards Appender test configuration
- *
  * @author Christophe Mertz
- *
  */
 @Configuration
 @EnableAutoConfiguration
@@ -53,7 +51,7 @@ public class DefaultTestConfiguration {
         return new LogEventHandlerTest();
     }
 
-    @Bean(name="receiverLogEvent")
+    @Bean(name = "receiverLogEvent")
     public SubscriberLogEvent createSubscriberLogEvent() {
         return new SubscriberLogEvent();
     }
@@ -63,16 +61,15 @@ public class DefaultTestConfiguration {
 
     /**
      * This class is used to test the publish and subscribe of the {@link LogEvent}.
-     * 
      * @author Christophe Mertz
-     *
      */
     private class LogEventHandlerTest implements ILogEventHandler {
 
         private Boolean lock = Boolean.TRUE;
 
         public void handle(TenantWrapper<LogEvent> pWrapper) {
-            LOGGER.debug("a new event received : [" + pWrapper.getTenant() + "] - <" + pWrapper.getContent().getMsg()+">");
+            LOGGER.debug(
+                    "a new event received : [" + pWrapper.getTenant() + "] - <" + pWrapper.getContent().getMsg() + ">");
             receiverLogEvent.addLogEvent(pWrapper);
         }
 

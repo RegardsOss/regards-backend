@@ -20,9 +20,7 @@ package fr.cnes.regards.framework.authentication;
 
 /**
  * In a request context, this resolver allows to retrieve authentication information. This resolver must be thread safe.
- *
  * @author Marc Sordi
- *
  */
 public interface IAuthenticationResolver {
 

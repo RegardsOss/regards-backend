@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.stream.Collectors;
 
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
+import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.InformationPackageProperties;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.DataType;
@@ -33,7 +34,7 @@ public class DataWithRawdataValidator implements ConstraintValidator<DataWithRaw
                 return true;
             }
             Iterator<OAISDataObject> oaisDataObjectIterator = properties.getContentInformations().stream()
-                    .map(ci -> ci.getDataObject()).collect(Collectors.toList()).iterator();
+                    .map(ContentInformation::getDataObject).collect(Collectors.toList()).iterator();
             while (!hasRawData && oaisDataObjectIterator.hasNext()) {
                 OAISDataObject oaisDataObject = oaisDataObjectIterator.next();
                 if (oaisDataObject.getRegardsDataType() == DataType.RAWDATA) {

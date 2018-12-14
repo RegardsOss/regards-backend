@@ -23,7 +23,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.core.annotation.AliasFor;
 
 import feign.Headers;
@@ -31,13 +31,10 @@ import fr.cnes.regards.framework.feign.FeignClientConfiguration;
 import fr.cnes.regards.framework.feign.security.FeignSecurityConfiguration;
 
 /**
- *
  * Class RestClient
  *
  * Annotation for all microservice clients
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 @FeignClient(configuration = { FeignClientConfiguration.class, FeignSecurityConfiguration.class })
 @Headers({ "Accept: application/json", "Content-Type: application/json" })
@@ -46,28 +43,19 @@ import fr.cnes.regards.framework.feign.security.FeignSecurityConfiguration;
 public @interface RestClient {
 
     /**
-     *
      * Name of the microservice as it is registered in the eureka server.
-     *
      * @return name
-     * @since 1.0-SNAPSHOT
      */
-    @AliasFor(annotation = FeignClient.class)
-    String name();
+    @AliasFor(annotation = FeignClient.class) String name();
 
     /**
-     *
      * Fallback class implementation for the client
-     *
      * @return Class
-     * @since 1.0-SNAPSHOT
      */
-    @AliasFor(annotation = FeignClient.class)
-    Class<?> fallback() default void.class;
+    @AliasFor(annotation = FeignClient.class) Class<?> fallback() default void.class;
 
     /**
      * An absolute URL or resolvable hostname (the protocol is optional).
      */
-    @AliasFor(annotation = FeignClient.class)
-    String url() default "";
+    @AliasFor(annotation = FeignClient.class) String url() default "";
 }

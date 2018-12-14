@@ -38,7 +38,6 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
  * API REST allowing to manually handle maintenances
  *
  * TODO: verification on pTenant(it's one of the project or instance)
- *
  * @author Sylvain Vissiere-Guerinet
  * @since 1.0
  */
@@ -70,7 +69,6 @@ public class MaintenanceController {
 
     /**
      * Set the given tenant in maintenance mode
-     * @param pTenant
      */
     @RequestMapping(method = RequestMethod.PUT, value = MAINTENANCE_ACTIVATE_URL)
     @ResourceAccess(description = "set this tenant into maintenance mode")
@@ -81,7 +79,6 @@ public class MaintenanceController {
 
     /**
      * Set the given tenant not in maintenance mode
-     * @param pTenant
      */
     @RequestMapping(method = RequestMethod.PUT, value = MAINTENANCE_DESACTIVATE_URL)
     @ResourceAccess(description = "unset this tenant from maintenance mode")

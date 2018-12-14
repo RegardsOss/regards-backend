@@ -27,7 +27,6 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
  * @author Marc Sordi
- *
  */
 @Plugin(author = "REGARDS Team", description = "Plugin with string collection parameter",
         id = "PluginWithStringCollection", version = "1.0.0", contact = "regards@c-s.fr", licence = "GPLv3",
@@ -43,7 +42,7 @@ public class PluginWithStringCollection implements IPluginWithGenerics {
     @Override
     public void doIt() {
         Assert.assertNotNull(infos);
-        Assert.assertTrue(infos.size() == 3);
+        Assert.assertEquals(3, infos.size());
         for (String info : infos) {
             Assert.assertTrue(info instanceof String);
         }

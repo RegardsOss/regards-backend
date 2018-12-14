@@ -30,9 +30,7 @@ import springfox.documentation.spring.web.json.Json;
 
 /**
  * SpringFox factory
- *
  * @author Marc Sordi
- *
  */
 public class SpringFoxTypeFactory implements TypeAdapterFactory {
 
@@ -51,7 +49,7 @@ public class SpringFoxTypeFactory implements TypeAdapterFactory {
             }
 
             @Override
-            public T read(JsonReader pIn) throws IOException {
+            public T read(JsonReader pIn) {
                 throw new UnsupportedOperationException();
             }
         };

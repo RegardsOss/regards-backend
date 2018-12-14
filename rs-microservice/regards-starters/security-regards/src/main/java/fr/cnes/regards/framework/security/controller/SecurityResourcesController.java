@@ -30,13 +30,10 @@ import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 
 /**
- *
  * Class ResourcesController
  *
  * Common Resources RestController. This Controller manage the endpoint to retrieve all Resources of a microservice.
- *
  * @author CS
- * @since 1.0-SNAPSHOT
  */
 @RestController
 @RequestMapping("/security")
@@ -48,23 +45,16 @@ public class SecurityResourcesController {
     private final MethodAuthorizationService service;
 
     /**
-     *
      * Constructor
-     *
-     * @param pService
-     *            MethodeAutorizationService autowired by spring
-     * @since 1.0-SNAPSHOT
+     * @param pService MethodeAutorizationService autowired by spring
      */
     public SecurityResourcesController(final MethodAuthorizationService pService) {
         service = pService;
     }
 
     /**
-     *
      * Retrieve all enpoints annoted with @ResourceAccess
-     *
      * @return List<ResourceMapping>
-     * @since 1.0-SNAPSHOT
      */
     @RequestMapping(value = "resources", method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<List<ResourceMapping>> getAllResources() {

@@ -40,11 +40,8 @@ import org.springframework.util.Assert;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 
 /**
- *
  * Default resource service based on security starter
- *
  * @author msordi
- *
  */
 public class DefaultResourceService implements IResourceService {
 
@@ -59,12 +56,8 @@ public class DefaultResourceService implements IResourceService {
     private final AccessDecisionManager accessDecisionManager;
 
     /**
-     *
      * Constructor
-     *
-     * @param pAccessDecisionManager
-     *            {@link AccessDecisionManager} for deciding that an access is granted or denied
-     * @since 1.0-SNAPSHOT
+     * @param pAccessDecisionManager {@link AccessDecisionManager} for deciding that an access is granted or denied
      */
     public DefaultResourceService(AccessDecisionManager pAccessDecisionManager) {
         super();
@@ -180,8 +173,7 @@ public class DefaultResourceService implements IResourceService {
             } else {
                 invoke = method.invoke(proxyControllerInstance);
             }
-            Link link = ControllerLinkBuilder.linkTo(invoke).withRel(rel);
-            return link;
+            return ControllerLinkBuilder.linkTo(invoke).withRel(rel);
         } catch (MethodException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             // Do not insert link
             LOGGER.trace("HATEOAS link skipped silently due to introspection error or access denied", e);
@@ -191,16 +183,11 @@ public class DefaultResourceService implements IResourceService {
 
     /**
      * Retrieve a method from a class
-     *
-     * @param pController
-     *            class
-     * @param pMethodName
-     *            method name
-     * @param pParameterTypes
-     *            parameter types
+     * @param pController class
+     * @param pMethodName method name
+     * @param pParameterTypes parameter types
      * @return associated {@link Method}
-     * @throws MethodException
-     *             if method cannot be retrieved
+     * @throws MethodException if method cannot be retrieved
      */
     private Method getMethod(final Class<?> pController, final String pMethodName, final Class<?>... pParameterTypes)
             throws MethodException {
@@ -209,13 +196,14 @@ public class DefaultResourceService implements IResourceService {
             checkAuthorization(method);
             return method;
         } catch (final NoSuchMethodException e) {
-            final String message = MessageFormat.format("No such method {0} in controller {1}.", pMethodName,
-                                                        pController.getCanonicalName());
+            final String message = MessageFormat
+                    .format("No such method {0} in controller {1}.", pMethodName, pController.getCanonicalName());
             LOGGER.error(message, e);
             throw new MethodException(message);
         } catch (final SecurityException e) {
-            final String message = MessageFormat.format("Security exception accessing method {0} in controller {1}.",
-                                                        pMethodName, pController.getCanonicalName());
+            final String message = MessageFormat
+                    .format("Security exception accessing method {0} in controller {1}.", pMethodName,
+                            pController.getCanonicalName());
             LOGGER.error(message, e);
             throw new MethodException(message);
         }
@@ -223,11 +211,8 @@ public class DefaultResourceService implements IResourceService {
 
     /**
      * Check if method is accessible regarding security authorities
-     *
-     * @param pMethod
-     *            method to check
-     * @throws MethodException
-     *             if method not authorized
+     * @param pMethod method to check
+     * @throws MethodException if method not authorized
      */
     private void checkAuthorization(final Method pMethod) throws MethodException {
         final JWTAuthentication auth = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();

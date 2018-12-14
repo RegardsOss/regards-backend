@@ -25,9 +25,7 @@ import java.util.stream.Collectors;
 /**
  * Not in RFC 7946 -August 2016<br/>
  * GeoJson consistent set of positions representation.<br/>
- *
  * @author Marc Sordi
- *
  */
 @SuppressWarnings("serial")
 public class Positions extends ArrayList<Position> {
@@ -65,7 +63,7 @@ public class Positions extends ArrayList<Position> {
      * Return positions as double[][] (array of positions as double[] { longitude, latitude })
      */
     public double[][] toArray() {
-        return this.stream().map(Position::toArray).toArray(n -> new double[n][]);
+        return this.stream().map(Position::toArray).toArray(double[][]::new);
     }
 
     /**

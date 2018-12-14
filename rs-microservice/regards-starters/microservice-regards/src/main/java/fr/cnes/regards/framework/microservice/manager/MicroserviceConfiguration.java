@@ -24,11 +24,8 @@ import java.util.List;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 
 /**
- *
  * Microservice configuration wrapper
- *
  * @author Marc Sordi
- *
  */
 public class MicroserviceConfiguration {
 

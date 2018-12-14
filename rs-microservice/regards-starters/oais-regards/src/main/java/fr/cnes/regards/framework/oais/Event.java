@@ -18,23 +18,21 @@
  */
 package fr.cnes.regards.framework.oais;
 
-import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Embeddable;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 
 import org.hibernate.annotations.Type;
-import org.hibernate.validator.constraints.NotBlank;
+
+import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 
 /**
- *
  * OAIS event representation
- *
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
- *
  */
 @Embeddable
 public class Event {

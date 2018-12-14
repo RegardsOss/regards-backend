@@ -40,9 +40,7 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 
 /**
  * Information package properties builder
- *
  * @author Marc Sordi
- *
  */
 public class InformationPackagePropertiesBuilder implements IOAISBuilder<InformationPackageProperties> {
 
@@ -90,7 +88,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     /**
      * Constructor initializing the builder with the given properties
-     * @param properties
      */
     public InformationPackagePropertiesBuilder(InformationPackageProperties properties) {
         this.ip = properties;
@@ -133,8 +130,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     /**
      * Add misc information to the information package thanks to the given parameters
-     * @param key
-     * @param value
      */
     public void addMiscInformation(String key, Object value) {
         Assert.hasLength(key, "Misc information key is required");
@@ -144,8 +139,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     /**
      * Add description information to the information package thanks to the given parameters
-     * @param key
-     * @param value
      */
     public void addDescriptiveInformation(String key, Object value) {
         Assert.hasLength(key, "Descriptive information key is required");
@@ -169,7 +162,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     /**
      * Add tags to the information package
-     * @param tags
      */
     public void addTags(String... tags) {
         pdiBuilder.addTags(tags);
@@ -177,8 +169,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     /**
      * Add context information to the information package thanks to the given properties
-     * @param key
-     * @param value
      */
     public void addContextInformation(String key, Object value) {
         pdiBuilder.addContextInformation(key, value);
@@ -186,8 +176,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     /**
      * Add reference information to the information package thanks to the given properties
-     * @param key
-     * @param value
      */
     public void addReferenceInformation(String key, String value) {
         pdiBuilder.addReferenceInformation(key, value);
@@ -195,8 +183,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     /**
      * Add additional provenance information to the information package thanks to the given properties
-     * @param key
-     * @param value
      */
     public void addAdditionalProvenanceInformation(String key, Object value) {
         pdiBuilder.addAdditionalProvenanceInformation(key, value);
@@ -204,7 +190,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     /**
      * Set the facility to the information package
-     * @param facility
      */
     public void setFacility(String facility) {
         pdiBuilder.setFacility(facility);
@@ -212,7 +197,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     /**
      * Set the instrument to the information package
-     * @param instrument
      */
     public void setInstrument(String instrument) {
         pdiBuilder.setInstrument(instrument);
@@ -220,7 +204,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     /**
      * Set the filter to the information package
-     * @param filter
      */
     public void setFilter(String filter) {
         pdiBuilder.setFilter(filter);
@@ -228,7 +211,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     /**
      * Set the detector to the information package
-     * @param detector
      */
     public void setDetector(String detector) {
         pdiBuilder.setDetector(detector);
@@ -236,7 +218,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     /**
      * Set the proposal to the information package
-     * @param proposal
      */
     public void setProposal(String proposal) {
         pdiBuilder.setProposal(proposal);
@@ -244,7 +225,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     /**
      * Add provenance information events to the information package
-     * @param events
      */
     public void addProvenanceInformationEvents(Event... events) {
         pdiBuilder.addProvenanceInformationEvents(events);
@@ -252,9 +232,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     /**
      * Add provenance information event to the information package thanks to the given parameters
-     * @param type
-     * @param comment
-     * @param date
      */
     public void addProvenanceInformationEvent(@Nullable String type, String comment, OffsetDateTime date) {
         pdiBuilder.addProvenanceInformationEvent(type, comment, date);
@@ -262,8 +239,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     /**
      * Add provenance information event to the information package thanks to the given parameters
-     * @param comment
-     * @param date
      */
     public void addProvenanceInformationEvent(String comment, OffsetDateTime date) {
         pdiBuilder.addProvenanceInformationEvent(comment, date);
@@ -271,7 +246,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     /**
      * Add provenance information event to the information package thanks to the given parameter
-     * @param comment
      */
     public void addProvenanceInformationEvent(String comment) {
         pdiBuilder.addProvenanceInformationEvent(comment);
@@ -279,8 +253,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     /**
      * Add fixity information to the information package thanks to the given parameters
-     * @param key
-     * @param value
      */
     public void addFixityInformation(String key, Object value) {
         pdiBuilder.addFixityInformation(key, value);
@@ -288,9 +260,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     /**
      * Set the access right information to the information package thanks to the given parameters
-     * @param licence
-     * @param dataRights
-     * @param publicReleaseDate
      */
     public void setAccessRightInformation(String licence, String dataRights,
             @Nullable OffsetDateTime publicReleaseDate) {
@@ -299,7 +268,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     /**
      * Set the access right information to the information package thanks to the given parameter
-     * @param dataRights
      */
     public void setAccessRightInformation(String dataRights) {
         pdiBuilder.setAccessRightInformation(dataRights);
@@ -370,9 +338,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     /**
      * Set the syntax to the information package thanks to the given parameters
-     * @param mimeName
-     * @param mimeDescription
-     * @param mimeType
      */
     public void setSyntax(String mimeName, String mimeDescription, MimeType mimeType) {
         contentInformationBuilder.setSyntax(mimeName, mimeDescription, mimeType);
@@ -380,10 +345,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     /**
      * Set the syntax and semantic to the information package thanks to the given parameters
-     * @param mimeName
-     * @param mimeDescription
-     * @param mimeType
-     * @param semanticDescription
      */
     public void setSyntaxAndSemantic(String mimeName, String mimeDescription, MimeType mimeType,
             String semanticDescription) {
@@ -392,8 +353,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     /**
      * Add software environment property to the information package thanks to the given parameters
-     * @param key
-     * @param value
      */
     public void addSoftwareEnvironmentProperty(String key, Object value) {
         contentInformationBuilder.addSoftwareEnvironmentProperty(key, value);
@@ -401,8 +360,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     /**
      * Add hardware environment property to the information package thanks to the given parameters
-     * @param key
-     * @param value
      */
     public void addHardwareEnvironmentProperty(String key, Object value) {
         contentInformationBuilder.addHardwareEnvironmentProperty(key, value);
@@ -410,7 +367,6 @@ public class InformationPackagePropertiesBuilder implements IOAISBuilder<Informa
 
     /**
      * Remove tags from the information package
-     * @param tags
      */
     public void removeTags(String... tags) {
         pdiBuilder.removeTags(tags);

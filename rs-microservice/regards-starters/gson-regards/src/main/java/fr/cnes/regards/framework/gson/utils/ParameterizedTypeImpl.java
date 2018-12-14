@@ -23,9 +23,7 @@ import java.lang.reflect.Type;
 
 /**
  * An {@link ParameterizedType} implementation
- *
  * @author Marc Sordi
- *
  */
 public class ParameterizedTypeImpl implements ParameterizedType {
 

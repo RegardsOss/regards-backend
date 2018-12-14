@@ -19,11 +19,13 @@
 package fr.cnes.regards.framework.module.rest.utils;
 
 import com.google.common.net.HttpHeaders;
+
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.http.HttpStatus;
 
 /**
@@ -52,15 +54,15 @@ public final class HttpUtils {
         return (pHttpStatus.value() / HTTP_CODE_CLASS_MULTIPLIER) == 2;
     }
 
-
     /**
      * Build the public URL of the given endpoint by extracting headers from an user request
-     * @param request      Request receive by a REST endpoint
+     * @param request Request receive by a REST endpoint
      * @param endpointPath the endpoint you want to get the link
-     * @param queryParams  Params to add after endpointPath
+     * @param queryParams Params to add after endpointPath
      * @return A public URL (with the gateway address instead of this µService adress) that user can contact
      */
-    public static URI retrievePublicURI(HttpServletRequest request, String endpointPath, String queryParams) throws MalformedURLException, URISyntaxException {
+    public static URI retrievePublicURI(HttpServletRequest request, String endpointPath, String queryParams)
+            throws MalformedURLException, URISyntaxException {
         // Save the current URL
         URL url = new URL(request.getRequestURL().toString());
         String userInfo = url.getUserInfo();

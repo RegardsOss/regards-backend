@@ -19,11 +19,8 @@
 package fr.cnes.regards.framework.gson.exception;
 
 /**
- *
  * Gson util exception
- *
  * @author Marc Sordi
- *
  */
 public class GsonUtilException extends Exception {
 

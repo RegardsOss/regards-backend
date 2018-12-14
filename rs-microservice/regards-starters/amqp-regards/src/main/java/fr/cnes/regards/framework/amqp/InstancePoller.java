@@ -26,15 +26,13 @@ import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 
 /**
  * {@link InstancePoller} uses a fixed tenant to poll instance events.
- *
  * @author Marc Sordi
- *
  */
 public class InstancePoller extends AbstractPoller implements IInstancePoller {
 
-    public InstancePoller(IRabbitVirtualHostAdmin pVirtualHostAdmin, RabbitTemplate pRabbitTemplate,
+    public InstancePoller(IRabbitVirtualHostAdmin pVirtualHostAdmin, RabbitTemplate rabbitTemplate,
             IAmqpAdmin amqpAdmin) {
-        super(pVirtualHostAdmin, pRabbitTemplate, amqpAdmin);
+        super(pVirtualHostAdmin, rabbitTemplate, amqpAdmin);
     }
 
     @Override

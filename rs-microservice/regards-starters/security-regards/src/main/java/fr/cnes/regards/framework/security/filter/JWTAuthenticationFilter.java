@@ -42,9 +42,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
  * Stateless JWT filter set in the SPRING security chain to authenticate request issuer.<br/>
  * Use {@link JWTAuthenticationProvider} to do it through {@link AuthenticationManager} and its default implementation
  * that delegated authentication to {@link AuthenticationProvider}.
- *
  * @author msordi
- *
  */
 public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
@@ -77,7 +75,9 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
             if (CorsFilter.OPTIONS_REQUEST_TYPE.equals(request.getMethod())) {
                 CorsFilter.allowCorsRequest(request, response, filterChain);
             } else {
-                final String message = String.format("[REGARDS JWT FILTER] Missing authentication token on %s@%s", request.getServletPath(), request.getMethod());
+                final String message = String
+                        .format("[REGARDS JWT FILTER] Missing authentication token on %s@%s", request.getServletPath(),
+                                request.getMethod());
                 LOGGER.error(message);
                 response.sendError(HttpStatus.UNAUTHORIZED.value(), message);
             }
@@ -85,7 +85,9 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
             // Extract JWT from retrieved header
             if (!jwt.startsWith(HttpConstants.BEARER)) {
-                final String message = String.format("[REGARDS JWT FILTER] Invalid authentication token on %s@%s", request.getServletPath(), request.getMethod());
+                final String message = String
+                        .format("[REGARDS JWT FILTER] Invalid authentication token on %s@%s", request.getServletPath(),
+                                request.getMethod());
                 LOGGER.error(message);
                 response.sendError(HttpStatus.UNAUTHORIZED.value(), message);
             } else {

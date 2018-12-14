@@ -46,7 +46,7 @@ public class PluginServiceUtility {
     /**
      * An id constant {@link String}
      */
-    protected static final Long AN_ID = new Long(33);
+    protected static final Long AN_ID = 33L;
 
     /**
      * Version
@@ -139,25 +139,29 @@ public class PluginServiceUtility {
      * A {@link PluginConfiguration}
      */
     private final PluginConfiguration pluginConfiguration1 = new PluginConfiguration(getPluginMetaData(),
-            "a configuration from PluginServiceUtility", INTERFACEPARAMETERS, 0);
+                                                                                     "a configuration from PluginServiceUtility",
+                                                                                     INTERFACEPARAMETERS, 0);
 
     /**
      * A list of {@link PluginParameter} with a dynamic {@link PluginParameter}.
      */
     private final PluginConfiguration pluginConfiguration2 = new PluginConfiguration(getPluginMetaData(),
-            "second configuration from PluginServiceUtility", DYNAMICPARAMETERS, 0);
+                                                                                     "second configuration from PluginServiceUtility",
+                                                                                     DYNAMICPARAMETERS, 0);
 
     /**
      * A list of {@link PluginParameter} without parameters.
      */
     private final PluginConfiguration pluginConfiguration3 = new PluginConfiguration(getPluginMetaData(),
-            "third configuration from PluginServiceUtility", CINQ);
+                                                                                     "third configuration from PluginServiceUtility",
+                                                                                     CINQ);
 
     /**
      * A list of {@link PluginParameter} with a dynamic {@link PluginParameter}.
      */
     private final PluginConfiguration pluginConfiguration4 = new PluginConfiguration(getPluginMetaData(),
-            "fourth configuration", DYNAMICPARAMETERS_TO_UPDATE, 0);
+                                                                                     "fourth configuration",
+                                                                                     DYNAMICPARAMETERS_TO_UPDATE, 0);
 
     protected PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();

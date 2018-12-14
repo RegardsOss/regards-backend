@@ -24,10 +24,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 
 /**
- * 
  * Start microservice helloworld-microservice
  * @author TODO
- *
  */
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.contrib" })
 @MicroserviceInfo(name = "helloworld-microservice", version = "1.0.0-SNAPSHOT")
@@ -35,9 +33,7 @@ public class Application {
 
     /**
      * Microservice bootstrap method
-     *
-     * @param pArgs
-     *            microservice bootstrap arguments
+     * @param pArgs microservice bootstrap arguments
      */
     public static void main(final String[] pArgs) {
         SpringApplication.run(Application.class, pArgs); // NOSONAR

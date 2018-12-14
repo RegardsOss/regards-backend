@@ -27,12 +27,9 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.oais.adapter.InformationPackageMap;
 
 /**
- *
  * OAIS Preservation Description Information object
- *
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
- *
  */
 public class PreservationDescriptionInformation {
 

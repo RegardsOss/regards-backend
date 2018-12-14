@@ -24,9 +24,7 @@ import fr.cnes.regards.framework.geojson.coordinates.Positions;
 /**
  * RFC 7946 -August 2016<br/>
  * GeoJson MultiPoint representation
- *
  * @author Marc Sordi
- *
  */
 public class MultiPoint extends AbstractGeometry<Positions> {
 

@@ -26,11 +26,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import fr.cnes.regards.framework.jpa.utils.MigrationTool;
 
 /**
- *
  * POJO for microservice configuration
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 @ConfigurationProperties("regards.jpa.multitenant")
 public class MultitenantDaoProperties {
@@ -73,7 +70,7 @@ public class MultitenantDaoProperties {
     /**
      * For pooled data source, max available connections
      */
-    private Integer maxPoolSize = 15;
+    private Integer maxPoolSize = 5;
 
     /**
      * Default test query

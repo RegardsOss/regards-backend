@@ -20,9 +20,7 @@ package fr.cnes.regards.framework.amqp.event.tenant;
 
 /**
  * Represent the common information for a tenant event
- *
  * @author Marc Sordi
- *
  */
 public abstract class AbstractTenantEvent {
 

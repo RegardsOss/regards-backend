@@ -32,33 +32,31 @@ public final class Beans {
      */
     @SuppressWarnings("rawtypes")
     public static boolean areEqual(final Object pO1, final Object pO2, String... gettersToForget) {
-        Object o1 = pO1;
-        Object o2 = pO2;
-        if ((o1 == null) && (o2 == null)) {
+        if ((pO1 == null) && (pO2 == null)) {
             return true;
-        } else if ((o1 == null) || (o2 == null)) {
+        } else if ((pO1 == null) || (pO2 == null)) {
             LOGGER.warn("Objects differ : one is null, not the other");
             return false;
         }
 
-        if (o1.getClass().isArray() && (o2.getClass().isArray())) {
-            return Arrays.equals((Object[]) o1, (Object[]) o2);
+        if (pO1.getClass().isArray() && (pO2.getClass().isArray())) {
+            return Arrays.equals((Object[]) pO1, (Object[]) pO2);
         }
-        if (!Objects.equal(o1, o2)) {
-            LOGGER.warn("Objects differ : {} vs {}", o1, o2);
+        if (!Objects.equal(pO1, pO2)) {
+            LOGGER.warn("Objects differ : {} vs {}", pO1, pO2);
             return false;
         }
 
-        if (o1.getClass() != o2.getClass()) {
+        if (pO1.getClass() != pO2.getClass()) {
             throw new IllegalArgumentException("Both objects must be of same class");
         }
         // Particular case of "base" types
-        if ((o1 instanceof Number) || (o1 instanceof String) || (o1 instanceof Character)) {
-            return o1.equals(o2);
+        if ((pO1 instanceof Number) || (pO1 instanceof String) || (pO1 instanceof Character)) {
+            return pO1.equals(pO2);
         }
         // Find all properties
         try {
-            BeanInfo info1 = Introspector.getBeanInfo(o1.getClass(), Object.class);
+            BeanInfo info1 = Introspector.getBeanInfo(pO1.getClass(), Object.class);
             if ((info1.getMethodDescriptors() == null) || (info1.getMethodDescriptors().length == 0)) {
                 return true;
             }
@@ -66,17 +64,17 @@ public final class Beans {
             for (MethodDescriptor methodDesc : info1.getMethodDescriptors()) {
                 Method method = methodDesc.getMethod();
                 // if it is a read property method (starting by get or is and without any parameter)
-                if ((method.getParameterCount() == 0)
-                        && (method.getName().startsWith("get") || method.getName().startsWith("is"))) {
+                if ((method.getParameterCount() == 0) && (method.getName().startsWith("get") || method.getName()
+                        .startsWith("is"))) {
                     if (contains(gettersToForget, method.getName())) {
                         continue;
                     }
-                    Object v1 = method.invoke(o1, new Object[0]);
-                    Object v2 = method.invoke(o2, new Object[0]);
+                    Object v1 = method.invoke(pO1, new Object[0]);
+                    Object v2 = method.invoke(pO2, new Object[0]);
                     if (v1 != null) {
                         if (v1.getClass().getName().startsWith("fr.cnes")) {
                             if (!Beans.areEqual(v1, v2, gettersToForget)) {
-                                LOGGER.warn("Objects differ : {}.{} : {} vs {}.{} : {}", o1, method.getName(), v1, o2,
+                                LOGGER.warn("Objects differ : {}.{} : {} vs {}.{} : {}", pO1, method.getName(), v1, pO2,
                                             method.getName(), v2);
                                 return false;
                             }
@@ -89,7 +87,7 @@ public final class Beans {
                             }
                         } else {
                             if (!v1.equals(v2)) {
-                                LOGGER.warn("Objects differ : {}.{} : {} vs {}.{} : {}", o1, method.getName(), v1, o2,
+                                LOGGER.warn("Objects differ : {}.{} : {} vs {}.{} : {}", pO1, method.getName(), v1, pO2,
                                             method.getName(), v2);
                                 return false;
                             }

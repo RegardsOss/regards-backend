@@ -38,19 +38,20 @@ import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.VirtualHostMode;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
+import fr.cnes.regards.framework.amqp.test.event.GsonInfo;
 import fr.cnes.regards.framework.amqp.test.event.Info;
 import fr.cnes.regards.framework.amqp.test.event.MicroserviceInfo;
 import fr.cnes.regards.framework.amqp.test.event.OnePerMicroserviceInfo;
 import fr.cnes.regards.framework.amqp.test.event.UnicastInfo;
 import fr.cnes.regards.framework.amqp.test.handler.AbstractInfoReceiver;
 import fr.cnes.regards.framework.amqp.test.handler.AbstractReceiver;
+import fr.cnes.regards.framework.amqp.test.handler.GsonInfoHandler;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
  * Common subscriber tests for {@link VirtualHostMode#SINGLE} and {@link VirtualHostMode#MULTI} modes
  * @author Marc Sordi
- *
  */
 public abstract class AbstractSubscriberIT {
 
@@ -80,7 +81,6 @@ public abstract class AbstractSubscriberIT {
      * <pre>
      * E ----------------> H
      * </pre>
-     *
      */
     @Requirement("REGARDS_DSL_CMP_ARC_030")
     @Requirement("REGARDS_DSL_CMP_ARC_160")
@@ -88,10 +88,22 @@ public abstract class AbstractSubscriberIT {
     @Test
     public void publishInfo() {
         AbstractInfoReceiver infoSubscriber = new AbstractInfoReceiver() {
+
         };
         subscriber.subscribeTo(Info.class, infoSubscriber, true);
         publisher.publish(new Info());
         infoSubscriber.assertCount(1);
+    }
+
+    @Requirement("REGARDS_DSL_CMP_ARC_030")
+    @Requirement("REGARDS_DSL_CMP_ARC_160")
+    @Purpose("Publish and receive a broadcast event without restriction with GSON message converter")
+    @Test
+    public void publishInfoWithGson() {
+        GsonInfoHandler handler = new GsonInfoHandler();
+        subscriber.subscribeTo(GsonInfo.class, handler, true);
+        publisher.publish(new GsonInfo());
+        handler.assertCount(1);
     }
 
     @Requirement("REGARDS_DSL_CMP_ARC_030")
@@ -109,6 +121,7 @@ public abstract class AbstractSubscriberIT {
     }
 
     private class MicroserviceReceiver extends AbstractReceiver<MicroserviceInfo> {
+
     }
 
     /**
@@ -124,10 +137,12 @@ public abstract class AbstractSubscriberIT {
     @Test
     public void publishInfoMultipleReceiver() {
         AbstractInfoReceiver subscriberOne = new AbstractInfoReceiver() {
+
         };
         subscriber.subscribeTo(Info.class, subscriberOne, true);
 
         AbstractInfoReceiver subscriberTwo = new AbstractInfoReceiver() {
+
         };
         subscriber.subscribeTo(Info.class, subscriberTwo, true);
 
@@ -149,10 +164,12 @@ public abstract class AbstractSubscriberIT {
     @Test
     public void publishInfoSingleTarget() {
         AbstractReceiver<UnicastInfo> handler1 = new AbstractReceiver<UnicastInfo>() {
+
         };
         subscriber.subscribeTo(UnicastInfo.class, handler1, true);
 
         AbstractReceiver<UnicastInfo> handler2 = new AbstractReceiver<UnicastInfo>() {
+
         };
         subscriber.subscribeTo(UnicastInfo.class, handler2, true);
 
@@ -184,10 +201,11 @@ public abstract class AbstractSubscriberIT {
         // Retrieve listener
         Map<String, SimpleMessageListenerContainer> listeners2 = abstractSubscriber.getListeners(receiver);
         Assert.assertNotNull(listeners);
-        listeners2.forEach((k, v) -> Assert.assertTrue(refListeners.get(k) == v.hashCode()));
+        listeners2.forEach((k, v) -> Assert.assertEquals((int) refListeners.get(k), v.hashCode()));
     }
 
     private class Receiver extends AbstractReceiver<Info> {
+
     }
 
     @Test
@@ -226,8 +244,10 @@ public abstract class AbstractSubscriberIT {
     }
 
     private class SingleReceiverA extends AbstractReceiver<OnePerMicroserviceInfo> {
+
     }
 
     private class SingleReceiverB extends AbstractReceiver<OnePerMicroserviceInfo> {
+
     }
 }

@@ -22,12 +22,9 @@ import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 
 /**
- *
  * OAIS Access Right Information object
- *
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
- *
  */
 public class AccessRightInformation {
 
@@ -91,13 +88,9 @@ public class AccessRightInformation {
             return false;
         }
         if (publicReleaseDate == null) {
-            if (other.publicReleaseDate != null) {
-                return false;
-            }
-        } else if (!publicReleaseDate.equals(other.publicReleaseDate)) {
-            return false;
-        }
-        return true;
+            return other.publicReleaseDate == null;
+        } else
+            return publicReleaseDate.equals(other.publicReleaseDate);
     }
 
 }

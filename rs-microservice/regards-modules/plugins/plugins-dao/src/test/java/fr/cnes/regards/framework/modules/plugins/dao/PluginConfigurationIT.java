@@ -77,17 +77,18 @@ public class PluginConfigurationIT extends PluginDaoUtility {
         Assert.assertEquals(getPlgConfWithParameters().getPluginClassName(), jpaConf.getPluginClassName());
         Assert.assertEquals(getPlgConfWithParameters().getParameters().size(), paramRepository.count());
         Assert.assertEquals(getPlgConfWithParameters().getPriorityOrder(), jpaConf.getPriorityOrder());
-        getPlgConfWithParameters().getParameters()
-                .forEach(p -> Assert.assertEquals(getPlgConfWithParameters().getParameterConfiguration(p.getName()),
-                                                  jpaConf.getParameterConfiguration(p.getName())));
+        getPlgConfWithParameters().getParameters().forEach(p -> Assert
+                .assertEquals(getPlgConfWithParameters().getParameterConfiguration(p.getName()),
+                              jpaConf.getParameterConfiguration(p.getName())));
 
         // persist a PluginConfiguration
         resetId();
         plgRepository.save(getPlgConfWithDynamicParameter());
 
         Assert.assertEquals(2, plgRepository.count());
-        Assert.assertEquals(getPlgConfWithParameters().getParameters().size()
-                + getPlgConfWithDynamicParameter().getParameters().size(), paramRepository.count());
+        Assert.assertEquals(
+                getPlgConfWithParameters().getParameters().size() + getPlgConfWithDynamicParameter().getParameters()
+                        .size(), paramRepository.count());
     }
 
     /**
@@ -169,31 +170,31 @@ public class PluginConfigurationIT extends PluginDaoUtility {
     @Test
     public void deletePluginConfigurationWithParameters() {
         // save a plugin configuration
-        final PluginConfiguration aPluginConf = plgRepository.save(getPlgConfWithParameters());
+        PluginConfiguration pluginConf = plgRepository.save(getPlgConfWithParameters());
         Assert.assertEquals(getPlgConfWithParameters().getParameters().size(), paramRepository.count());
         Assert.assertEquals(1, plgRepository.count());
 
         Assert.assertEquals(getPlgConfWithParameters().getParameters().size(), paramRepository.count());
 
         // delete it
-        plgRepository.delete(aPluginConf.getId());
+        plgRepository.deleteById(pluginConf.getId());
 
         Assert.assertEquals(0, plgRepository.count());
         Assert.assertEquals(0, paramRepository.count());
     }
 
     @Test
-    public void deleteAPluginParameter() {
+    public void deletePluginParameter() {
         // save a plugin configuration
-        PluginConfiguration aPluginConf = plgRepository.save(getPlgConfWithParameters());
-        Assert.assertEquals(aPluginConf.getParameters().size(), paramRepository.count());
+        PluginConfiguration pluginConf = plgRepository.save(getPlgConfWithParameters());
+        Assert.assertEquals(pluginConf.getParameters().size(), paramRepository.count());
         Assert.assertEquals(1, plgRepository.count());
 
         // delete a parameter
-        paramRepository.delete(aPluginConf.getParameters().stream().findFirst().get());
+        paramRepository.delete(pluginConf.getParameters().stream().findFirst().get());
 
         Assert.assertEquals(1, plgRepository.count());
-        Assert.assertEquals(aPluginConf.getParameters().size() - 1, paramRepository.count());
+        Assert.assertEquals(pluginConf.getParameters().size() - 1, paramRepository.count());
     }
 
     @Test

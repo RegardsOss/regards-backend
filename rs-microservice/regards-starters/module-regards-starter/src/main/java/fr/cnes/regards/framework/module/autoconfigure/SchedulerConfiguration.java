@@ -13,7 +13,6 @@ import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 /**
  * Configure scheduling for the whole application.
- *
  * @author Sylvain VISSIERE-GUERINET
  */
 @Configuration
@@ -22,7 +21,7 @@ import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 public class SchedulerConfiguration implements SchedulingConfigurer {
 
     @Value("${regards.scheduler.pool.size:1}")
-    private  int schedulerPoolSize;
+    private int schedulerPoolSize;
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {

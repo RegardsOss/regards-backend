@@ -61,11 +61,11 @@ public abstract class AbstractPoller implements IPollerContract {
      */
     private final IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
 
-    public AbstractPoller(IRabbitVirtualHostAdmin pVirtualHostAdmin, RabbitTemplate pRabbitTemplate,
+    public AbstractPoller(IRabbitVirtualHostAdmin pVirtualHostAdmin, RabbitTemplate rabbitTemplate,
             IAmqpAdmin amqpAdmin) {
         super();
         this.rabbitVirtualHostAdmin = pVirtualHostAdmin;
-        rabbitTemplate = pRabbitTemplate;
+        this.rabbitTemplate = rabbitTemplate;
         this.amqpAdmin = amqpAdmin;
     }
 
@@ -112,6 +112,7 @@ public abstract class AbstractPoller implements IPollerContract {
             Queue queue = amqpAdmin.declareQueue(tenant, eventType, workerMode, target, Optional.empty());
             amqpAdmin.declareBinding(queue, exchange, workerMode);
 
+            // routing key is unnecessary for fanout exchanges but is for direct exchanges
             return (TenantWrapper<T>) rabbitTemplate.receiveAndConvert(queue.getName(), 0);
         } finally {
             rabbitVirtualHostAdmin.unbind();

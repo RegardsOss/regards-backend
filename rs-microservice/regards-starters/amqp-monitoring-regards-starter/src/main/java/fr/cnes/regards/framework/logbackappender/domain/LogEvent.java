@@ -24,9 +24,7 @@ import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
  * This class allows to represent an event send for the monitoring of REGARDS microservices.
- * 
  * @author Christophe Mertz
- *
  */
 @Event(target = Target.ALL)
 public class LogEvent implements ISubscribable {
@@ -72,19 +70,12 @@ public class LogEvent implements ISubscribable {
 
     /**
      * Default constructor with all members
-     * 
-     * @param msg
-     *            The message sends with the event
-     * @param microServiceName
-     *            The microservice name that send the event
-     * @param caller
-     *            The class name that sends the event
-     * @param method
-     *            The method name that sends the event
-     * @param date
-     *            The event's date
-     * @param level
-     *            The log level
+     * @param msg The message sends with the event
+     * @param microServiceName The microservice name that send the event
+     * @param caller The class name that sends the event
+     * @param method The method name that sends the event
+     * @param date The event's date
+     * @param level The log level
      */
     public LogEvent(String msg, String microserviceName, String caller, String method, String date, String level,
             String user) {

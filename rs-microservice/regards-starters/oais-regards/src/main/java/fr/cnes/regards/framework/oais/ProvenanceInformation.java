@@ -28,10 +28,8 @@ import java.util.Map;
 
 /**
  * OAIS Preservation Description Information object
- *
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
- *
  */
 public class ProvenanceInformation {
 
@@ -101,7 +99,6 @@ public class ProvenanceInformation {
 
     /**
      * Set the instrument
-     * @param instrument
      */
     public void setInstrument(String instrument) {
         this.instrument = instrument;
@@ -116,7 +113,6 @@ public class ProvenanceInformation {
 
     /**
      * Set the filter
-     * @param filter
      */
     public void setFilter(String filter) {
         this.filter = filter;
@@ -131,7 +127,6 @@ public class ProvenanceInformation {
 
     /**
      * Set the detector
-     * @param detector
      */
     public void setDetector(String detector) {
         this.detector = detector;
@@ -146,7 +141,6 @@ public class ProvenanceInformation {
 
     /**
      * Set the proposal
-     * @param proposal
      */
     public void setProposal(String proposal) {
         this.proposal = proposal;
@@ -161,7 +155,6 @@ public class ProvenanceInformation {
 
     /**
      * Set the Regards session id linked to this IP
-     * @param session
      */
     public void setSession(String session) {
         this.session = session;

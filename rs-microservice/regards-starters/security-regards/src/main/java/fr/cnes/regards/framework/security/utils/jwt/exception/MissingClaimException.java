@@ -20,9 +20,7 @@ package fr.cnes.regards.framework.security.utils.jwt.exception;
 
 /**
  * This exception is thrown when JWT signature is invalid so token cannot be trusted.
- *
  * @author msordi
- *
  */
 public class MissingClaimException extends JwtException {
 

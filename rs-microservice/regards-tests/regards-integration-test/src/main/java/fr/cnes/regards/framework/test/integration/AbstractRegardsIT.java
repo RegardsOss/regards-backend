@@ -51,7 +51,6 @@ import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 /**
  * Base class to realize integration tests using JWT and MockMvc and mocked Cots. Should hold all the configurations to
  * be considered by any of its children.
- *
  * @author svissier
  * @author Sébastien Binda
  */
@@ -126,7 +125,7 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * @deprecated Deprecated in favor of
-     *             {@link AbstractRegardsIT#performPost(String, String, Object, RequestBuilderCustomizer, String, Object...)}
+     * {@link AbstractRegardsIT#performPost(String, String, Object, RequestBuilderCustomizer, String, Object...)}
      */
     @Deprecated
     protected ResultActions performPostWithContentType(String urlTemplate, String authToken, Object content,
@@ -140,7 +139,7 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * @deprecated Deprecated in favor of
-     *             {@link AbstractRegardsIT#performPut(String, String, Object, RequestBuilderCustomizer, String, Object...)}
+     * {@link AbstractRegardsIT#performPut(String, String, Object, RequestBuilderCustomizer, String, Object...)}
      */
     @Deprecated
     protected ResultActions performPutWithContentType(String urlTemplate, String authToken, Object content,
@@ -156,7 +155,7 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * @deprecated Deprecated in favor of
-     *             {@link AbstractRegardsIT#performGet(String, String, RequestBuilderCustomizer, String, Object...)}
+     * {@link AbstractRegardsIT#performDefaultGet(String, String, RequestBuilderCustomizer, String, Object...)}
      */
     @Deprecated
     protected ResultActions performDefaultGet(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
@@ -166,9 +165,8 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectations(matchers);
         for (Map.Entry<String, List<String>> requestParam : requestParams.getParameters().entrySet()) {
-            requestBuilderCustomizer.customizeRequestParam()
-                    .param(requestParam.getKey(),
-                           requestParam.getValue().toArray(new String[requestParam.getValue().size()]));
+            requestBuilderCustomizer.customizeRequestParam().param(requestParam.getKey(),
+                                                                   requestParam.getValue().toArray(new String[0]));
         }
         return performGet(urlTemplate, jwt, requestBuilderCustomizer, errorMsg, urlVariables);
     }
@@ -193,7 +191,7 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * @deprecated Deprecated in favor of
-     *             {@link AbstractRegardsIT#performGet(String, String, RequestBuilderCustomizer, String, Object...)}
+     * {@link AbstractRegardsIT#performDefaultGet(String, RequestBuilderCustomizer, String, Object...)}
      */
     @Deprecated
     protected ResultActions performDefaultGet(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
@@ -207,7 +205,7 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * @deprecated Deprecated in favor of
-     *             {@link AbstractRegardsIT#performDefaultGet(String, RequestBuilderCustomizer, String, Object...)}
+     * {@link AbstractRegardsIT#performDefaultGet(String, RequestBuilderCustomizer, String, Object...)}
      */
     @Deprecated
     protected ResultActions performDefaultGet(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
@@ -224,7 +222,7 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * @deprecated Deprecated in favor of
-     *             {@link AbstractRegardsIT#performDefaultPost(String, Object, RequestBuilderCustomizer, String, Object...)}
+     * {@link AbstractRegardsIT#performDefaultPost(String, Object, RequestBuilderCustomizer, String, Object...)}
      */
     @Deprecated
     protected ResultActions performDefaultPost(String urlTemplate, Object content, List<ResultMatcher> matchers,
@@ -256,7 +254,7 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * @deprecated Deprecated in favor of
-     *             {@link AbstractRegardsIT#performDefaultPut(String, Object, RequestBuilderCustomizer, String, Object...)}
+     * {@link AbstractRegardsIT#performDefaultPut(String, Object, RequestBuilderCustomizer, String, Object...)}
      */
     @Deprecated
     protected ResultActions performDefaultPut(String urlTemplate, Object content, List<ResultMatcher> matchers,
@@ -288,7 +286,7 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * @deprecated Deprecated in favor of
-     *             {@link AbstractRegardsIT#performDefaultPost(String, Object, RequestBuilderCustomizer, String, Object...)}
+     * {@link AbstractRegardsIT#performDefaultPost(String, Object, RequestBuilderCustomizer, String, Object...)}
      */
     @Deprecated
     protected ResultActions performDefaultPostWithContentType(String urlTemplate, Object content, String contentType,
@@ -300,7 +298,7 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * @deprecated Deprecated in favor of
-     *             {@link AbstractRegardsIT#performDefaultPut(String, Object, RequestBuilderCustomizer, String, Object...)}
+     * {@link AbstractRegardsIT#performDefaultPut(String, Object, RequestBuilderCustomizer, String, Object...)}
      */
     @Deprecated
     protected ResultActions performDefaultPutWithContentType(String urlTemplate, Object content, String contentType,
@@ -312,7 +310,7 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * @deprecated Deprecated in favor of
-     *             {@link AbstractRegardsIT#performDefaultDelete(String, RequestBuilderCustomizer, String, Object...)}
+     * {@link AbstractRegardsIT#performDefaultDelete(String, RequestBuilderCustomizer, String, Object...)}
      */
     @Deprecated
     protected ResultActions performDefaultDelete(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
@@ -345,7 +343,7 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * @deprecated Deprecated in favor of
-     *             {@link AbstractRegardsIT#performDefaultFileUpload(String, Path, RequestBuilderCustomizer, String, Object...)}
+     * {@link AbstractRegardsIT#performDefaultFileUpload(String, Path, RequestBuilderCustomizer, String, Object...)}
      */
     @Deprecated
     protected ResultActions performDefaultFileUpload(String urlTemplate, Path pFilePath, List<ResultMatcher> matchers,
@@ -369,7 +367,7 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * @deprecated Deprecated in favor of
-     *             {@link AbstractRegardsIT#performDefaultFileUpload(String, List, RequestBuilderCustomizer, String, Object...)}
+     * {@link AbstractRegardsIT#performDefaultFileUpload(String, List, RequestBuilderCustomizer, String, Object...)}
      */
     @Deprecated
     protected ResultActions performDefaultFileUpload(String urlTemplate, List<MockMultipartFile> pFileList,
@@ -440,13 +438,19 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
     /**
      * Allow to get a request builder customizer to make a request to the server
      * @return a new instance of {@link RequestBuilderCustomizer}
+     * @deprecated prefer use {@link #customizer()} which is a lot more synthetic
      */
+    @Deprecated
     protected RequestBuilderCustomizer getNewRequestBuilderCustomizer() {
+        return customizer();
+    }
+
+    /**
+     * @return a new RequestBuilderCustomizer
+     */
+    protected RequestBuilderCustomizer customizer() {
         return new RequestBuilderCustomizer(gsonBuilder);
     }
-    // CHECKSTYLE:ON
-
-    // CHECKSTYLE:OFF
 
     /**
      * Set authorities for specified tenant
@@ -492,35 +496,6 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
     }
 
     /**
-     * Use #man
-     * @param pUrlPath
-     * @param pMethod
-     * @param email
-     * @param roleName
-     * @return
-     */
-    @Deprecated
-    protected String manageSecurity(String pUrlPath, RequestMethod pMethod, String email, String roleName) {
-        return manageSecurity(getDefaultTenant(), pUrlPath, pMethod, email, roleName);
-    }
-
-    /**
-     * Use {@link #manageSecurity(String, String, RequestMethod, String, String)} instead.
-     */
-    @Deprecated
-    protected String manageDefaultSecurity(String pUrlPath, RequestMethod pMethod) {
-        return manageDefaultSecurity(getDefaultUserEmail(), pUrlPath, pMethod);
-    }
-
-    /**
-     * Use {@link #manageSecurity(String, String, RequestMethod, String, String)} instead.
-     */
-    @Deprecated
-    protected String manageDefaultSecurity(String userEmail, String pUrlPath, RequestMethod pMethod) {
-        return manageSecurity(getDefaultTenant(), pUrlPath, pMethod, userEmail, getDefaultRole());
-    }
-
-    /**
      * Utility method to read an external JSON file and get it as a string to perform a HTTP request
      * @param pJSonFileName JSON file contract in {@link AbstractRegardsIT#CONTRACT_REPOSITORY}
      * @return JSON as string
@@ -547,7 +522,6 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
 
     /**
      * Allows to jsonify an object thanks to GSON
-     * @param object
      * @return jsonified object
      */
     protected String gson(Object object) {

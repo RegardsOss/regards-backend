@@ -34,9 +34,7 @@ import fr.cnes.regards.framework.utils.plugins.generics.PluginWithBoolean;
 
 /**
  * Free plugin tests
- *
  * @author Marc Sordi
- *
  */
 public class PluginFreeTest {
 
@@ -56,8 +54,8 @@ public class PluginFreeTest {
         dynParametersFactory.addParameter(PluginWithBoolean.FIELD_NAME_STRING, "string1");
 
         PluginUtils.setup(this.getClass().getPackage().getName());
-        IFreePlugin plugin = PluginUtils.getPlugin(parameters, FreePluginWithString.class, null,
-                                                   dynParametersFactory.asArray());
+        IFreePlugin plugin = PluginUtils
+                .getPlugin(parameters, FreePluginWithString.class, null, dynParametersFactory.asArray());
         Assert.assertNotNull(plugin);
         plugin.doIt();
     }

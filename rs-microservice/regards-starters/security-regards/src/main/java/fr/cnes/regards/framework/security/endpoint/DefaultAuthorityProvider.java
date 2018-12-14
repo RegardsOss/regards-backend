@@ -36,6 +36,7 @@ package fr.cnes.regards.framework.security.endpoint;
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -51,13 +52,10 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 
 /**
- *
  * Class DefaultAuthorityProvider
  *
  * Default Authorities provider. Provide default values for endpoints configuration and Roles.
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 public class DefaultAuthorityProvider implements IAuthoritiesProvider {
 
@@ -86,7 +84,7 @@ public class DefaultAuthorityProvider implements IAuthoritiesProvider {
     @Override
     public void registerEndpoints(String microserviceName, String tenant, final List<ResourceMapping> pLocalEndpoints) {
         LOG.warn("No authority provider defined. Default one is used."
-                + " The local endpoints are not registered to administration service. Only the default configuration is available");
+                         + " The local endpoints are not registered to administration service. Only the default configuration is available");
         if (authorities != null) {
             LOG.debug("Initializing granted authorities from property file");
             for (final String auth : authorities) {
@@ -99,8 +97,8 @@ public class DefaultAuthorityProvider implements IAuthoritiesProvider {
 
         // Add default roles to returned endpoints
         pLocalEndpoints.forEach(endpoint -> {
-            if ((endpoint != null) && (endpoint.getResourceAccess() != null)
-                    && (endpoint.getResourceAccess().role() != null)) {
+            if ((endpoint != null) && (endpoint.getResourceAccess() != null) && (endpoint.getResourceAccess().role()
+                    != null)) {
                 endpoint.addAuthorizedRole(new RoleAuthority(endpoint.getResourceAccess().role().name()));
             }
         });
@@ -125,18 +123,14 @@ public class DefaultAuthorityProvider implements IAuthoritiesProvider {
     @Override
     public Set<ResourceMapping> getResourceMappings(String microserviceName, String tenant, String roleName) {
         LOG.warn("No authority provider defined. Default one is used."
-                + " The local endpoints are not registered to administration service. Only the default configuration is available");
+                         + " The local endpoints are not registered to administration service. Only the default configuration is available");
         return new HashSet<>(resources);
     }
 
     /**
-     *
      * createResourceMapping
-     *
-     * @param pAuthority
-     *            authority
+     * @param pAuthority authority
      * @return ResourceMapping
-     * @since 1.0-SNAPSHOT
      */
     private ResourceMapping createResourceMapping(final String pAuthority) {
         ResourceMapping result = null;

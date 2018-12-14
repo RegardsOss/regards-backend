@@ -49,13 +49,10 @@ import fr.cnes.regards.framework.security.filter.RequestLogFilter;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
 /**
- *
  * Web security auto configuration
- *
  * @author msordi
  * @author Sylvain Vissiere-Guerinet
  * @author Christophe Mertz
- *
  */
 @Configuration
 @EnableWebSecurity
@@ -136,7 +133,7 @@ public class WebSecurityAutoConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Override
-    public void configure(final WebSecurity pWeb) throws Exception {
+    public void configure(final WebSecurity pWeb) {
         pWeb.ignoring().antMatchers("/favicon", "/webjars/springfox-swagger-ui/**/*", "/swagger-resources",
                                     "/swagger-resources/**/*", "/v2/**/*", "/swagger-ui.html");
     }

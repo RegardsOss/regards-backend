@@ -34,7 +34,6 @@ import fr.cnes.regards.framework.microservice.manager.IApplicationManager;
 
 /**
  * @author svissier
- *
  */
 @RestController
 @RequestMapping("/")

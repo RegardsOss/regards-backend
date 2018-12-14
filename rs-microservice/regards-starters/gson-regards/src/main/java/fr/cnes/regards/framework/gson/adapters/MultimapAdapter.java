@@ -40,7 +40,7 @@ public class MultimapAdapter implements JsonDeserializer<Multimap<?, ?>>, JsonSe
         return context.serialize(map);
     }
 
-    private <KK,V> Type multimapTypeToMapType(Type type) {
+    private <KK, V> Type multimapTypeToMapType(Type type) {
         final Type[] typeArguments = ((ParameterizedType) type).getActualTypeArguments();
         assert typeArguments.length == 2;
         @SuppressWarnings("unchecked")

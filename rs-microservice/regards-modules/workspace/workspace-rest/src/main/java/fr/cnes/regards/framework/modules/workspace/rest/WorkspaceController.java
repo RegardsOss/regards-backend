@@ -41,7 +41,6 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**
  * REST controller allowing to get workspace monitoring information.
- *
  * @author svissier
  */
 @RestController
@@ -69,7 +68,6 @@ public class WorkspaceController implements IResourceController<WorkspaceMonitor
 
     /**
      * @return workspace monitoring information wrapped into a {@link Resource}
-     * @throws IOException
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody

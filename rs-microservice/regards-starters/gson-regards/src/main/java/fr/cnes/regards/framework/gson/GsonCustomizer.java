@@ -47,9 +47,7 @@ import fr.cnes.regards.framework.gson.strategy.GsonIgnoreExclusionStrategy;
 
 /**
  * Static Gson customizer
- *
  * @author Marc Sordi
- *
  */
 public final class GsonCustomizer {
 
@@ -81,7 +79,6 @@ public final class GsonCustomizer {
     /**
      * Add {@link TypeAdapterFactory} annotated with {@link GsonTypeAdapterFactory} and {@link TypeAdapter} annotated
      * with {@link GsonTypeAdapter}
-     *
      * @param builder GSON builder to customize
      * @param properties optional Gson properties
      */
@@ -93,7 +90,6 @@ public final class GsonCustomizer {
 
     /**
      * Add {@link TypeAdapterFactory} annotated with {@link GsonTypeAdapterFactoryBean} with Spring support.
-     *
      * @param builder GSON builder to customize
      * @param applicationContext optional application context
      */
@@ -112,18 +108,17 @@ public final class GsonCustomizer {
 
     /**
      * Add {@link TypeAdapter} annotated with {@link GsonTypeAdapterBean} to GSON
-     *
      * @param builder GSON builder to customize
      * @param applicationContext optional application context
      */
     private static void addBeanAdapters(GsonBuilder builder, Optional<ApplicationContext> applicationContext) {
 
         if (applicationContext.isPresent()) {
-            @SuppressWarnings("rawtypes")
-            Map<String, TypeAdapter> beanFactories = applicationContext.get().getBeansOfType(TypeAdapter.class);
+            @SuppressWarnings("rawtypes") Map<String, TypeAdapter> beanFactories = applicationContext.get()
+                    .getBeansOfType(TypeAdapter.class);
             if (beanFactories != null) {
-                for (@SuppressWarnings("rawtypes")
-                Map.Entry<String, TypeAdapter> beanFactory : beanFactories.entrySet()) {
+                for (@SuppressWarnings("rawtypes") Map.Entry<String, TypeAdapter> beanFactory : beanFactories
+                        .entrySet()) {
                     TypeAdapter<?> current = beanFactory.getValue();
                     // Retrieve custom annotation
                     GsonTypeAdapterBean annot = current.getClass().getAnnotation(GsonTypeAdapterBean.class);

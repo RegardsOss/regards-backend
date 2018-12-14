@@ -25,11 +25,8 @@ import org.springframework.context.annotation.Configuration;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 
 /**
- *
  * Manage authentication bean
- *
  * @author msordi
- *
  */
 @Configuration
 public class AuthenticationAutoConfiguration {
