@@ -18,18 +18,20 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
-import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
-import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.modules.storage.domain.AIP;
+import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
+import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 
 /**
  * DAO to access {@link AIP} entities by requesting {@link AIPEntity}.
@@ -122,12 +124,8 @@ public interface IAIPDao {
      */
     Set<AIP> findAllBySipId(String sipId);
 
-
     /**
      * Allow to make a research
-     * @param query A SQL query
-     * @param pageable
-     * @return
      */
     Page<AIP> findAll(String query, Pageable pageable);
 

@@ -18,6 +18,29 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.OffsetDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+import java.util.UUID;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.util.MimeType;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.EventType;
@@ -33,27 +56,6 @@ import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.time.OffsetDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.UUID;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.util.MimeType;
 
 /**
  * @author Sylvain Vissiere-Guerinet
@@ -214,7 +216,7 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         int listSize = random.nextInt(listMaxSize) + 1;
         for (int i = 0; i < listSize; i++) {
             ippBuilder.getContentInformationBuilder().setDataObject(DataType.OTHER, "bla", "SHA1", sha1("blahblah"),
-                                                                    new Long((new Random()).nextInt(10000000)),
+                                                                    new Long(new Random().nextInt(10000000)),
                                                                     new URL("ftp://bla"));
             ippBuilder.getContentInformationBuilder().setSyntaxAndSemantic("NAME", "SYNTAX_DESCRIPTION",
                                                                            MimeType.valueOf("application/name"),
@@ -270,35 +272,35 @@ public class DaoIT extends AbstractDaoTransactionalTest {
     @Test
     public void testFindByState() {
 
-        Page<AIP> result = dao.findAllByState(AIPState.DELETED, new PageRequest(0, 10));
+        Page<AIP> result = dao.findAllByState(AIPState.DELETED, PageRequest.of(0, 10));
         Assert.assertFalse(result.getContent().contains(aip1));
         Assert.assertFalse(result.getContent().contains(aip2));
         Assert.assertTrue(result.getContent().contains(aip3));
         Assert.assertFalse(result.getContent().contains(aip4));
         Assert.assertFalse(result.getContent().contains(aip5));
 
-        result = dao.findAllByState(AIPState.PENDING, new PageRequest(0, 10));
+        result = dao.findAllByState(AIPState.PENDING, PageRequest.of(0, 10));
         Assert.assertFalse(result.getContent().contains(aip1));
         Assert.assertTrue(result.getContent().contains(aip2));
         Assert.assertFalse(result.getContent().contains(aip3));
         Assert.assertFalse(result.getContent().contains(aip4));
         Assert.assertFalse(result.getContent().contains(aip5));
 
-        result = dao.findAllByState(AIPState.STORAGE_ERROR, new PageRequest(0, 10));
+        result = dao.findAllByState(AIPState.STORAGE_ERROR, PageRequest.of(0, 10));
         Assert.assertFalse(result.getContent().contains(aip1));
         Assert.assertFalse(result.getContent().contains(aip2));
         Assert.assertFalse(result.getContent().contains(aip3));
         Assert.assertTrue(result.getContent().contains(aip4));
         Assert.assertFalse(result.getContent().contains(aip5));
 
-        result = dao.findAllByState(AIPState.STORED, new PageRequest(0, 10));
+        result = dao.findAllByState(AIPState.STORED, PageRequest.of(0, 10));
         Assert.assertFalse(result.getContent().contains(aip1));
         Assert.assertFalse(result.getContent().contains(aip2));
         Assert.assertFalse(result.getContent().contains(aip3));
         Assert.assertFalse(result.getContent().contains(aip4));
         Assert.assertTrue(result.getContent().contains(aip5));
 
-        result = dao.findAllByState(AIPState.VALID, new PageRequest(0, 10));
+        result = dao.findAllByState(AIPState.VALID, PageRequest.of(0, 10));
         Assert.assertTrue(result.getContent().contains(aip1));
         Assert.assertFalse(result.getContent().contains(aip2));
         Assert.assertFalse(result.getContent().contains(aip3));
@@ -312,7 +314,7 @@ public class DaoIT extends AbstractDaoTransactionalTest {
     public void testFindAllByIpIdStartingWith() {
         String ipIdWithoutVersion = aip1.getId().toString();
         ipIdWithoutVersion = ipIdWithoutVersion.substring(0, ipIdWithoutVersion.indexOf(":V"));
-        Page<AIP> aips = dao.findAllByIpIdStartingWith(ipIdWithoutVersion, new PageRequest(0, 100));
+        Page<AIP> aips = dao.findAllByIpIdStartingWith(ipIdWithoutVersion, PageRequest.of(0, 100));
         Assert.assertTrue(aips.getContent().contains(aip1));
         Assert.assertTrue(aips.getContent().contains(aip12));
         Assert.assertFalse(aips.getContent().contains(aip2));
@@ -325,7 +327,7 @@ public class DaoIT extends AbstractDaoTransactionalTest {
     public void testFindAllByTags() {
         // aips have been generated with there own ipId as tag(except for aip12 which is tagged by aip1 ipId), lets
         // retrieve them according to there ipId
-        Page<AIP> aips = dao.findAllByTag(aip1.getId().toString(), new PageRequest(0, 100));
+        Page<AIP> aips = dao.findAllByTag(aip1.getId().toString(), PageRequest.of(0, 100));
         Assert.assertTrue(aips.getContent().contains(aip1));
         Assert.assertTrue(aips.getContent().contains(aip12));
         Assert.assertFalse(aips.getContent().contains(aip2));
@@ -333,7 +335,7 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         Assert.assertFalse(aips.getContent().contains(aip4));
         Assert.assertFalse(aips.getContent().contains(aip5));
 
-        aips = dao.findAllByTag(aip2.getId().toString(), new PageRequest(0, 100));
+        aips = dao.findAllByTag(aip2.getId().toString(), PageRequest.of(0, 100));
         Assert.assertFalse(aips.getContent().contains(aip1));
         Assert.assertFalse(aips.getContent().contains(aip12));
         Assert.assertTrue(aips.getContent().contains(aip2));
@@ -341,7 +343,7 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         Assert.assertFalse(aips.getContent().contains(aip4));
         Assert.assertFalse(aips.getContent().contains(aip5));
 
-        aips = dao.findAllByTag(aip3.getId().toString(), new PageRequest(0, 100));
+        aips = dao.findAllByTag(aip3.getId().toString(), PageRequest.of(0, 100));
         Assert.assertFalse(aips.getContent().contains(aip1));
         Assert.assertFalse(aips.getContent().contains(aip12));
         Assert.assertFalse(aips.getContent().contains(aip2));
@@ -349,7 +351,7 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         Assert.assertFalse(aips.getContent().contains(aip4));
         Assert.assertFalse(aips.getContent().contains(aip5));
 
-        aips = dao.findAllByTag(aip4.getId().toString(), new PageRequest(0, 100));
+        aips = dao.findAllByTag(aip4.getId().toString(), PageRequest.of(0, 100));
         Assert.assertFalse(aips.getContent().contains(aip1));
         Assert.assertFalse(aips.getContent().contains(aip12));
         Assert.assertFalse(aips.getContent().contains(aip2));
@@ -357,7 +359,7 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         Assert.assertTrue(aips.getContent().contains(aip4));
         Assert.assertFalse(aips.getContent().contains(aip5));
 
-        aips = dao.findAllByTag(aip5.getId().toString(), new PageRequest(0, 100));
+        aips = dao.findAllByTag(aip5.getId().toString(), PageRequest.of(0, 100));
         Assert.assertFalse(aips.getContent().contains(aip1));
         Assert.assertFalse(aips.getContent().contains(aip12));
         Assert.assertFalse(aips.getContent().contains(aip2));
@@ -371,11 +373,10 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         List<String> tags = Arrays.asList("aip", "aip1", "aip12");
 
         Page<AIP> aips = dao.findAll(
-                // test at least one tag
-                AIPQueryGenerator.searchAIPContainingAtLeastOneTag(null, null, null, tags,
-                    null, null,null, null),
-                new PageRequest(0, 100)
-        );
+                                     // test at least one tag
+                                     AIPQueryGenerator.searchAIPContainingAtLeastOneTag(null, null, null, tags, null,
+                                                                                        null, null, null),
+                                     PageRequest.of(0, 100));
         Assert.assertTrue(aips.getContent().contains(aip1));
         Assert.assertTrue(aips.getContent().contains(aip12));
         Assert.assertTrue(aips.getContent().contains(aip2));
@@ -389,11 +390,10 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         List<String> tags = Arrays.asList("aip", "aip1", "aip12");
 
         Page<AIP> aips = dao.findAll(
-                // test at least one tag
-                AIPQueryGenerator.searchAIPContainingAtLeastOneTag(AIPState.STORED, null, null, tags,
-                        null , null,null, null),
-                new PageRequest(0, 100)
-        );
+                                     // test at least one tag
+                                     AIPQueryGenerator.searchAIPContainingAtLeastOneTag(AIPState.STORED, null, null,
+                                                                                        tags, null, null, null, null),
+                                     PageRequest.of(0, 100));
         Assert.assertFalse(aips.getContent().contains(aip1));
         Assert.assertFalse(aips.getContent().contains(aip12));
         Assert.assertFalse(aips.getContent().contains(aip2));
@@ -402,17 +402,15 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         Assert.assertTrue(aips.getContent().contains(aip5));
     }
 
-
     @Test
     public void testCustomQueryContainingAllTags() {
         List<String> tags = Arrays.asList("aip", "aip1");
 
         Page<AIP> aips = dao.findAll(
-                // test at least one tag
-                AIPQueryGenerator.searchAIPContainingAllTags(AIPState.VALID, null, null, tags,
-                        null , null,null, null),
-                new PageRequest(0, 100)
-        );
+                                     // test at least one tag
+                                     AIPQueryGenerator.searchAIPContainingAllTags(AIPState.VALID, null, null, tags,
+                                                                                  null, null, null, null),
+                                     PageRequest.of(0, 100));
         Assert.assertTrue(aips.getContent().contains(aip1));
         Assert.assertTrue(aips.getContent().contains(aip12));
         Assert.assertFalse(aips.getContent().contains(aip2));
@@ -425,11 +423,10 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         List<String> tags = Arrays.asList("aip");
 
         List<String> aips = dao.findAllByCustomQuery(
-            // test at least one tag
-            AIPQueryGenerator.searchAipTagsUsingSQL(AIPState.VALID, null, null, tags,
-                    null, null, null,
-                    null)
-        );
+                                                     // test at least one tag
+                                                     AIPQueryGenerator.searchAipTagsUsingSQL(AIPState.VALID, null, null,
+                                                                                             tags, null, null, null,
+                                                                                             null));
 
         Assert.assertTrue(aips.containsAll(aip1.getTags()));
         Assert.assertTrue(aips.containsAll(aip12.getTags()));

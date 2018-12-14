@@ -223,7 +223,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     private void checkDiskDBCoherence(String tenant) throws IOException {
         runtimeTenantResolver.forceTenant(tenant);
         Page<CachedFile> shouldBeAvailableSet;
-        Pageable page = new PageRequest(0, filesIterationLimit, Direction.ASC, "id");
+        Pageable page = PageRequest.of(0, filesIterationLimit, Direction.ASC, "id");
         do {
             shouldBeAvailableSet = cachedFileRepository.findAllByState(CachedFileState.AVAILABLE, page);
             for (CachedFile shouldBeAvailable : shouldBeAvailableSet) {
@@ -234,7 +234,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
             page = page.next();
         } while (shouldBeAvailableSet.hasNext());
 
-        page = new PageRequest(0, filesIterationLimit, Direction.ASC, "id");
+        page = PageRequest.of(0, filesIterationLimit, Direction.ASC, "id");
         Page<CachedFile> availableFiles;
         do {
             availableFiles = cachedFileRepository.findAllByState(CachedFileState.AVAILABLE, page);
@@ -468,7 +468,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     private int purgeExpiredCachedFiles() {
         int nbPurged = 0;
         LOGGER.debug("Deleting expired files from cache. Current date : {}", OffsetDateTime.now().toString());
-        Pageable page = new PageRequest(0, filesIterationLimit, Direction.ASC, "id");
+        Pageable page = PageRequest.of(0, filesIterationLimit, Direction.ASC, "id");
         Page<CachedFile> files;
         do {
             files = cachedFileRepository.findByExpirationBefore(OffsetDateTime.now(), page);
@@ -491,15 +491,15 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         Long cacheSizePurgeUpperThresholdInOctets = cacheSizePurgeUpperThreshold * 1024;
         Long cacheSizePurgeLowerThresholdInOctets = cacheSizePurgeLowerThreshold * 1024;
         // If cache is over upper threshold size then delete older files to reached the lower threshold.
-        if ((cacheCurrentSize > cacheSizePurgeUpperThresholdInOctets)
-                && (cacheSizePurgeUpperThreshold > cacheSizePurgeLowerThreshold)) {
+        if (cacheCurrentSize > cacheSizePurgeUpperThresholdInOctets
+                && cacheSizePurgeUpperThreshold > cacheSizePurgeLowerThreshold) {
             // If files are in queued mode, so delete older files if there minimum time to live (minTtl) is reached.
             // This limit is configurable is sprinf properties of the current microservice.
             if (cachedFileRepository.countByState(CachedFileState.QUEUED) > 0) {
                 LOGGER.warn("Cache is overloaded.({}Mo) Deleting older files from cache to reached lower threshold ({}Mo). ",
                             cacheCurrentSize / (1024 * 1024), cacheSizePurgeLowerThresholdInOctets / (1024 * 1024));
                 Long filesTotalSizeToDelete = cacheCurrentSize - cacheSizePurgeLowerThresholdInOctets;
-                Pageable page = new PageRequest(0, filesIterationLimit, Direction.ASC, "id");
+                Pageable page = PageRequest.of(0, filesIterationLimit, Direction.ASC, "id");
                 Page<CachedFile> allOlderDeletableCachedFiles;
                 do {
                     allOlderDeletableCachedFiles = cachedFileRepository
@@ -510,7 +510,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
                     Long fileSizesSum = 0L;
                     Set<CachedFile> filesToDelete = Sets.newHashSet();
                     Iterator<CachedFile> it = allOlderDeletableCachedFiles.iterator();
-                    while ((fileSizesSum < filesTotalSizeToDelete) && it.hasNext()) {
+                    while (fileSizesSum < filesTotalSizeToDelete && it.hasNext()) {
                         CachedFile fileToDelete = it.next();
                         filesToDelete.add(fileToDelete);
                         fileSizesSum += fileToDelete.getFileSize();
@@ -527,7 +527,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     @Override
     public int restoreQueued() {
         int nbScheduled = 0;
-        Pageable page = new PageRequest(0, filesIterationLimit, Direction.ASC, "id");
+        Pageable page = PageRequest.of(0, filesIterationLimit, Direction.ASC, "id");
         Page<CachedFile> queuedFilesToCache;
         do {
             queuedFilesToCache = cachedFileRepository.findAllByState(CachedFileState.QUEUED, page);
@@ -615,7 +615,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
             for (StorageDataFile fileToRestore : dataFilesToRestore) {
                 Long fileSize = fileToRestore.getFileSize();
                 boolean fileAlreadyHandled = checksums.contains(fileToRestore.getChecksum());
-                if (fileAlreadyHandled || ((totalFileSizesToHandle + fileSize) < availableCacheSize)) {
+                if (fileAlreadyHandled || totalFileSizesToHandle + fileSize < availableCacheSize) {
                     restorableFiles.add(fileToRestore);
                     if (!fileAlreadyHandled) {
                         checksums.add(fileToRestore.getChecksum());

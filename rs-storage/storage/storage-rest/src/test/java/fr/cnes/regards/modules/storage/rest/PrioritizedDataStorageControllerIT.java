@@ -199,8 +199,8 @@ public class PrioritizedDataStorageControllerIT extends AbstractRegardsTransacti
         performDefaultPut(PrioritizedDataStorageController.BASE_PATH + PrioritizedDataStorageController.UP_PATH, "",
                           requestBuilderCustomizer, "could not increase the priority of created2", created2.getId());
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        created1 = prioritizedDataStorageRepository.findOne(created1.getId());
-        created2 = prioritizedDataStorageRepository.findOne(created2.getId());
+        created1 = prioritizedDataStorageRepository.findById(created1.getId()).get();
+        created2 = prioritizedDataStorageRepository.findById(created2.getId()).get();
         Assert.assertEquals("created2 should now has a priority of 0", 0L, created2.getPriority().longValue());
         Assert.assertEquals("created1 should now has a priority of 1", 1L, created1.getPriority().longValue());
     }
@@ -220,8 +220,8 @@ public class PrioritizedDataStorageControllerIT extends AbstractRegardsTransacti
         performDefaultPut(PrioritizedDataStorageController.BASE_PATH + PrioritizedDataStorageController.DOWN_PATH, "",
                           requestBuilderCustomizer, "could not decrease the priority of created1", created1.getId());
         runtimeTenantResolver.forceTenant(getDefaultTenant());
-        created1 = prioritizedDataStorageRepository.findOne(created1.getId());
-        created2 = prioritizedDataStorageRepository.findOne(created2.getId());
+        created1 = prioritizedDataStorageRepository.findById(created1.getId()).get();
+        created2 = prioritizedDataStorageRepository.findById(created2.getId()).get();
         Assert.assertEquals("created2 should now has a priority of 0", 0L, created2.getPriority().longValue());
         Assert.assertEquals("created1 should now has a priority of 1", 1L, created1.getPriority().longValue());
     }

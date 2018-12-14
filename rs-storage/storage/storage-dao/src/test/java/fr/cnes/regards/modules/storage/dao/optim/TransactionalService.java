@@ -48,13 +48,13 @@ public class TransactionalService {
     private IAIPEntityRepository aipEntityRepo;
 
     public Page<AIPEntity> search(AIPState state) {
-        Page<AIPEntity> page = aipEntityRepo.findAllByState(state, new PageRequest(0, 100, Direction.ASC, "id"));
+        Page<AIPEntity> page = aipEntityRepo.findAllByState(state, new PageRequest(0, 10, Direction.ASC, "id"));
         return page;
     }
 
-    public List<AIPEntity> findFirst100(AIPState state) {
-        List<AIPEntity> first100 = aipEntityRepo.findFirst100ByState(state);
-        return first100;
+    public List<AIPEntity> searchWithoutCount(AIPState state) {
+        List<AIPEntity> page = aipEntityRepo.findAllNoCountByState(state, new PageRequest(0, 10, Direction.ASC, "id"));
+        return page;
     }
 
     public AIPEntity update(AIPEntity entity) {

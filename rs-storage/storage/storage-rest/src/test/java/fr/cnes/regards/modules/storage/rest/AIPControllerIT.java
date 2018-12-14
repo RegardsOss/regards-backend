@@ -18,9 +18,34 @@
  */
 package fr.cnes.regards.modules.storage.rest;
 
+import java.net.MalformedURLException;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.hamcrest.Matchers;
+import org.hamcrest.core.IsCollectionContaining;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.springframework.http.MediaType;
+import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.restdocs.payload.PayloadDocumentation;
+import org.springframework.restdocs.request.RequestDocumentation;
+import org.springframework.restdocs.snippet.Attributes;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.oais.EventType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -42,32 +67,11 @@ import fr.cnes.regards.modules.storage.domain.job.AIPQueryFilters;
 import fr.cnes.regards.modules.storage.domain.job.AddAIPTagsFilters;
 import fr.cnes.regards.modules.storage.domain.job.DataStorageRemovalAIPFilters;
 import fr.cnes.regards.modules.storage.domain.job.RemoveAIPTagsFilters;
-import java.net.MalformedURLException;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import org.hamcrest.Matchers;
-import org.hamcrest.core.IsCollectionContaining;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.mockito.internal.matchers.NotNull;
-import org.springframework.http.MediaType;
-import org.springframework.restdocs.payload.FieldDescriptor;
-import org.springframework.restdocs.payload.PayloadDocumentation;
-import org.springframework.restdocs.request.RequestDocumentation;
-import org.springframework.restdocs.snippet.Attributes;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
+@DirtiesContext
 public class AIPControllerIT extends AbstractAIPControllerIT {
 
     private static final int MAX_WAIT = 60000;
@@ -83,9 +87,7 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isUnprocessableEntity());
         requestBuilderCustomizer.customizeHeaders().putAll(getHeaders());
         // perform request
-        performDefaultPost(AIPController.AIP_PATH,
-                           new AIPCollection(aip),
-                           requestBuilderCustomizer,
+        performDefaultPost(AIPController.AIP_PATH, new AIPCollection(aip), requestBuilderCustomizer,
                            "AIP storage should have been schedule properly");
     }
 
@@ -96,9 +98,7 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
         requestBuilderCustomizer.customizeHeaders().putAll(getHeaders());
         // perform request
-        performDefaultPost(AIPController.AIP_PATH,
-                           new AIPCollection(aip),
-                           requestBuilderCustomizer,
+        performDefaultPost(AIPController.AIP_PATH, new AIPCollection(aip), requestBuilderCustomizer,
                            "AIP storage should have been schedule properly");
     }
 
@@ -111,9 +111,7 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isUnprocessableEntity());
         requestBuilderCustomizer.customizeHeaders().putAll(getHeaders());
         // perform request
-        performDefaultPost(AIPController.AIP_PATH,
-                           new AIPCollection(aip),
-                           requestBuilderCustomizer,
+        performDefaultPost(AIPController.AIP_PATH, new AIPCollection(aip), requestBuilderCustomizer,
                            "Same AIP cannot be stored twice");
     }
 
@@ -128,9 +126,7 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         AIP aip2 = getAIP();
 
         // perform request
-        performDefaultPost(AIPController.AIP_PATH,
-                           new AIPCollection(aip, aip2),
-                           requestBuilderCustomizer,
+        performDefaultPost(AIPController.AIP_PATH, new AIPCollection(aip, aip2), requestBuilderCustomizer,
                            "Success should be partial, aip cannot be re stored but aip2 can be stored");
     }
 
@@ -155,17 +151,12 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         Set<String> dataFilesChecksum = dataFiles.stream().map(df -> df.getChecksum()).collect(Collectors.toSet());
         // ask for availability
         AvailabilityRequest availabilityRequest = new AvailabilityRequest(OffsetDateTime.now().plusDays(2),
-                                                                          dataFilesChecksum
-                                                                                  .toArray(new String[dataFilesChecksum
-                                                                                          .size()]));
+                dataFilesChecksum.toArray(new String[dataFilesChecksum.size()]));
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.content()
-                                                        .json(gson.toJson(new AvailabilityResponse(Sets.newHashSet(),
-                                                                                                   dataFiles,
-                                                                                                   Sets.newHashSet()))));
-        performDefaultPost(AIPController.AIP_PATH + AIPController.PREPARE_DATA_FILES,
-                           availabilityRequest,
+                .json(gson.toJson(new AvailabilityResponse(Sets.newHashSet(), dataFiles, Sets.newHashSet()))));
+        performDefaultPost(AIPController.AIP_PATH + AIPController.PREPARE_DATA_FILES, availabilityRequest,
                            requestBuilderCustomizer,
                            "data should already be available as they are in an online data storage");
     }
@@ -190,18 +181,13 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
     @Ignore
     public void testRetrieveDeletedAip() throws InterruptedException {
         testDelete();
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        // first we expect that the aip has a DELETION event in its history
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(
-                "$.properties.pdi.provenanceInformation.history[*].type",
-                IsCollectionContaining.hasItem(EventType.DELETION.name())));
-        // now we expect that those events does have a date
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                .jsonPath("$.properties.pdi.provenanceInformation.history[?(@.type == \"" + EventType.DELETION.name()
-                        + "\")].date", NotNull.NOT_NULL));
-        performDefaultGet(AIPController.AIP_PATH + AIPController.AIP_ID_PATH, requestBuilderCustomizer,
-                          "we should have the aip", aip.getId().toString());
+
+        performDefaultGet(AIPController.AIP_PATH + AIPController.AIP_ID_PATH, customizer().expectStatusOk()
+                .expect(MockMvcResultMatchers.jsonPath("$.properties.pdi.provenanceInformation.history[*].type",
+                                                       IsCollectionContaining.hasItem(EventType.DELETION.name())))
+                .expect(MockMvcResultMatchers.jsonPath("$.properties.pdi.provenanceInformation.history[?(@.type == \""
+                        + EventType.DELETION.name() + "\")].date").isNotEmpty()), "we should have the aip",
+                          aip.getId().toString());
     }
 
     @Test
@@ -211,10 +197,8 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         testStore();
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultPost(AIPController.AIP_PATH + AIPController.AIP_BULK,
-                           Sets.newHashSet(aip.getId().toString()),
-                           requestBuilderCustomizer,
-                           "we should have the aips");
+        performDefaultPost(AIPController.AIP_PATH + AIPController.AIP_BULK, Sets.newHashSet(aip.getId().toString()),
+                           requestBuilderCustomizer, "we should have the aips");
     }
 
     @Test
@@ -246,8 +230,7 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         int wait = 0;
         // lets wait for this AIP to be stored
-        while ((aipDao.findOneByAipId(aip.getId().toString()).get().getState() != AIPState.STORED)
-                && (wait < MAX_WAIT)) {
+        while (aipDao.findOneByAipId(aip.getId().toString()).get().getState() != AIPState.STORED && wait < MAX_WAIT) {
             Thread.sleep(1000);
             wait += 1000;
         }
@@ -258,8 +241,8 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
         performDefaultPost(AIPController.AIP_PATH + AIPController.FILES_DELETE_PATH, requestParam,
-                           requestBuilderCustomizer, "There should be any error on REST call as return value is"
-                                   + " not conditional.");
+                           requestBuilderCustomizer,
+                           "There should be any error on REST call as return value is" + " not conditional.");
     }
 
     @Test
@@ -268,8 +251,7 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         int wait = 0;
         // lets wait for this AIP to be stored
-        while ((aipDao.findOneByAipId(aip.getId().toString()).get().getState() != AIPState.STORED)
-                && (wait < MAX_WAIT)) {
+        while (aipDao.findOneByAipId(aip.getId().toString()).get().getState() != AIPState.STORED && wait < MAX_WAIT) {
             Thread.sleep(1000);
             wait += 1000;
         }
@@ -391,29 +373,15 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         requestBuilderCustomizer
                 .addExpectation(MockMvcResultMatchers.jsonPath("$.content", Matchers.not(Matchers.empty())));
         requestBuilderCustomizer
-                .addDocumentationSnippet(RequestDocumentation.requestParameters(
-                        RequestDocumentation.parameterWithName("state").description("state the aips should be in")
-                            .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                .addDocumentationSnippet(RequestDocumentation.requestParameters(RequestDocumentation
+                        .parameterWithName("state").description("state the aips should be in")
+                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
                                 .value(String.class.getSimpleName()),
                                     Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
                                             .value("Available values: " + Arrays.stream(AIPState.values())
                                                     .map(aipState -> aipState.name())
                                                     .reduce((first, second) -> first + ", " + second).get()))
-                        .optional(),
-                        RequestDocumentation.parameterWithName("from").description("date after which the aip should have been added to the system")
-                            .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
-                                    .value(String.class.getSimpleName()), Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                    .value("Should respect UTC format")).optional(),
-                        RequestDocumentation.parameterWithName("to").description("date before which the aip should have been added to the system")
-                                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
-                                    .value(String.class.getSimpleName()), Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                    .value("Should respect UTC format")).optional(),
-                        RequestDocumentation.parameterWithName("session").description("search aips contained in the provided session")
-                                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName())).optional(),
-                        RequestDocumentation.parameterWithName("providerId").description("search aips having the provided provider id")
-                                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName())).optional(),
-                        RequestDocumentation.parameterWithName("tags").description("search aips tagged with one of provided tags")
-                                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(List.class.getSimpleName())).optional()));
+                        .optional(), RequestDocumentation.parameterWithName("from").description("date after which the aip should have been added to the system").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName()), Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Should respect UTC format")).optional(), RequestDocumentation.parameterWithName("to").description("date before which the aip should have been added to the system").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName()), Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Should respect UTC format")).optional(), RequestDocumentation.parameterWithName("session").description("search aips contained in the provided session").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName())).optional(), RequestDocumentation.parameterWithName("providerId").description("search aips having the provided provider id").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName())).optional(), RequestDocumentation.parameterWithName("tags").description("search aips tagged with one of provided tags").attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(List.class.getSimpleName())).optional()));
 
         performDefaultGet(AIPController.AIP_PATH, requestBuilderCustomizer, "There should be some AIP to show");
     }
@@ -452,7 +420,8 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         int nbTags = 4;
         List<String> resultingTags = Arrays.asList("tag4", "tag2", "tag1", "tag3");
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addDocumentationSnippet(PayloadDocumentation.requestFields(AIPControllerIT.documentQueryFilters()));
+        requestBuilderCustomizer
+                .addDocumentationSnippet(PayloadDocumentation.requestFields(AIPControllerIT.documentQueryFilters()));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(nbTags)));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
@@ -487,7 +456,8 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         requestParam.getTagsToAdd().add("FSB");
 
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addDocumentationSnippet(PayloadDocumentation.requestFields(AIPControllerIT.documentAddTagsQueryFilters()));
+        requestBuilderCustomizer.addDocumentationSnippet(PayloadDocumentation
+                .requestFields(AIPControllerIT.documentAddTagsQueryFilters()));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         performDefaultPost(AIPController.AIP_PATH + AIPController.TAG_MANAGEMENT_PATH, requestParam,
                            requestBuilderCustomizer, "should set tags to AIPS");
@@ -517,7 +487,8 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
 
         RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
 
-        requestBuilderCustomizer.addDocumentationSnippet(PayloadDocumentation.requestFields(AIPControllerIT.documentRemoveTagsQueryFilters()));
+        requestBuilderCustomizer.addDocumentationSnippet(PayloadDocumentation
+                .requestFields(AIPControllerIT.documentRemoveTagsQueryFilters()));
         requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         performDefaultPost(AIPController.AIP_PATH + AIPController.TAG_DELETION_PATH, requestParam,
                            requestBuilderCustomizer, "should remove tags to AIPS");
@@ -572,51 +543,35 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         ConstrainedFields constrainedFields = new ConstrainedFields(AIPQueryFilters.class);
         List<FieldDescriptor> descriptors = new ArrayList<>();
 
-        descriptors.add(constrainedFields
-            .withPath("state", "state", "State of the AIP","Available values: " + Arrays.stream(AIPState.values())
-                    .map(type -> type.name()).collect(Collectors.joining(", ")))
-            .optional()
-        );
+        descriptors.add(
+                        constrainedFields
+                                .withPath("state", "state", "State of the AIP",
+                                          "Available values: " + Arrays.stream(AIPState.values())
+                                                  .map(type -> type.name()).collect(Collectors.joining(", ")))
+                                .optional());
 
         descriptors.add(constrainedFields
-            .withPath("session", "session", "Retrieves AIPs with a submission date before the provided value")
-            .type(String.class.getSimpleName())
-        );
-        descriptors.add(constrainedFields
-            .withPath("providerId", "providerId", "Provider id")
-            .optional()
-            .type(String.class.getSimpleName())
-        );
+                .withPath("session", "session", "Retrieves AIPs with a submission date before the provided value")
+                .type(String.class.getSimpleName()));
+        descriptors.add(constrainedFields.withPath("providerId", "providerId", "Provider id").optional()
+                .type(String.class.getSimpleName()));
 
         descriptors.add(constrainedFields
-            .withPath("from", "from", "Retrieves AIPs with a submission date above the provided value")
-            .optional()
-            .type(OffsetDateTime.class.getSimpleName())
-        );
+                .withPath("from", "from", "Retrieves AIPs with a submission date above the provided value").optional()
+                .type(OffsetDateTime.class.getSimpleName()));
 
         descriptors.add(constrainedFields
-            .withPath("to", "to", "Retrieves AIPs with a submission date before the provided value")
-            .optional()
-            .type(OffsetDateTime.class.getSimpleName())
-        );
+                .withPath("to", "to", "Retrieves AIPs with a submission date before the provided value").optional()
+                .type(OffsetDateTime.class.getSimpleName()));
 
-        descriptors.add(constrainedFields
-            .withPath("aipIds", "aipIds", "A set of AIPs id (included)")
-            .optional()
-            .type(Set.class.getSimpleName())
-        );
+        descriptors.add(constrainedFields.withPath("aipIds", "aipIds", "A set of AIPs id (included)").optional()
+                .type(Set.class.getSimpleName()));
 
-        descriptors.add(constrainedFields
-            .withPath("aipIdsExcluded", "to", "A set of AIPs id excluded")
-            .optional()
-            .type(Set.class.getSimpleName())
-        );
+        descriptors.add(constrainedFields.withPath("aipIdsExcluded", "to", "A set of AIPs id excluded").optional()
+                .type(Set.class.getSimpleName()));
 
-        descriptors.add(constrainedFields
-            .withPath("tags", "tags", "List of tags that AIPs must have to be included")
-            .optional()
-            .type(List.class.getSimpleName())
-        );
+        descriptors.add(constrainedFields.withPath("tags", "tags", "List of tags that AIPs must have to be included")
+                .optional().type(List.class.getSimpleName()));
 
         return descriptors;
     }
@@ -626,10 +581,8 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
 
         ConstrainedFields constrainedFields = new ConstrainedFields(AddAIPTagsFilters.class);
 
-        fieldDescriptors.add(constrainedFields
-                .withPath("tagsToAdd", "tagsToAdd", "Tags to add to AIPs")
-                .type(List.class.getSimpleName())
-        );
+        fieldDescriptors.add(constrainedFields.withPath("tagsToAdd", "tagsToAdd", "Tags to add to AIPs")
+                .type(List.class.getSimpleName()));
 
         return fieldDescriptors;
     }
@@ -639,10 +592,8 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
 
         ConstrainedFields constrainedFields = new ConstrainedFields(RemoveAIPTagsFilters.class);
 
-        fieldDescriptors.add(constrainedFields
-                .withPath("tagsToRemove", "tagsToRemove", "Tags to remove to AIPs")
-                .type(List.class.getSimpleName())
-        );
+        fieldDescriptors.add(constrainedFields.withPath("tagsToRemove", "tagsToRemove", "Tags to remove to AIPs")
+                .type(List.class.getSimpleName()));
 
         return fieldDescriptors;
     }

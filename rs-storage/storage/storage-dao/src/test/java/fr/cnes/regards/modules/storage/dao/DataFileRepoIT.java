@@ -22,6 +22,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.MimeType;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -184,7 +185,8 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
 
     @Test
     public void testFindTopByPDS() {
-        Set<StorageDataFile> possibleResults = StorageDataFile.extractDataFiles(aip3, aipSessionRepo.findOne(SESSION));
+        Set<StorageDataFile> possibleResults = StorageDataFile.extractDataFiles(aip3,
+                                                                                aipSessionRepo.findById(SESSION).get());
         StorageDataFile result = dataFileRepository.findTopByPrioritizedDataStoragesId(dataStorage3Id);
         Assert.assertNotNull("There should be a data file stored by dataStorage3", result);
         Assert.assertTrue("Result should be one of aip3 data files", possibleResults.contains(result));
@@ -192,16 +194,10 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
 
     public AIP generateRandomAIP() throws NoSuchAlgorithmException, MalformedURLException {
 
-        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP,
-                                                            EntityType.COLLECTION,
-                                                            "tenant",
-                                                            UUID.randomUUID(),
-                                                            1);
-        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP,
-                                                            EntityType.COLLECTION,
-                                                            "tenant",
-                                                            sipId.getEntityId(),
-                                                            1);
+        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP, EntityType.COLLECTION, "tenant",
+                UUID.randomUUID(), 1);
+        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.COLLECTION, "tenant",
+                sipId.getEntityId(), 1);
 
         String providerId = String.valueOf(generateRandomString(new Random(), 40));
 
@@ -240,14 +236,10 @@ public class DataFileRepoIT extends AbstractDaoTransactionalTest {
         Random random = new Random();
         int listSize = random.nextInt(listMaxSize) + 1;
         for (int i = 0; i < listSize; i++) {
-            ippBuilder.getContentInformationBuilder().setDataObject(DataType.OTHER,
-                                                                    "blah",
-                                                                    "SHA1",
-                                                                    sha1("blahblah"),
-                                                                    new Long((new Random()).nextInt(10000000)),
+            ippBuilder.getContentInformationBuilder().setDataObject(DataType.OTHER, "blah", "SHA1", sha1("blahblah"),
+                                                                    new Long(new Random().nextInt(10000000)),
                                                                     new URL("ftp://bla"));
-            ippBuilder.getContentInformationBuilder().setSyntaxAndSemantic("NAME",
-                                                                           "SYNTAX_DESCRIPTION",
+            ippBuilder.getContentInformationBuilder().setSyntaxAndSemantic("NAME", "SYNTAX_DESCRIPTION",
                                                                            MimeType.valueOf("application/name"),
                                                                            "DESCRIPTION");
             ippBuilder.addContentInformation();
