@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.assertj.core.util.Lists;
 import org.hamcrest.Matchers;
@@ -243,6 +244,15 @@ public class RequestBuilderCustomizer {
     /**
      * Set or add given value to associated header name values
      */
+    public RequestBuilderCustomizer addHeader(String name, String value) {
+        headers.add(name, value);
+        return this;
+    }
+
+    /**
+     * Set or add given value to associated header name values. Use {@link #addHeader(String, String)} instead.
+     */
+    @Deprecated
     public RequestBuilderCustomizer addHeaderValue(String name, String value) {
         headers.add(name, value);
         return this;
@@ -251,8 +261,25 @@ public class RequestBuilderCustomizer {
     /**
      * Set or replace given values to associated header name values
      */
+    public RequestBuilderCustomizer addHeader(String name, List<String> values) {
+        headers.put(name, values);
+        return this;
+    }
+
+    /**
+     * Set or replace given values to associated header name values.  Use {@link #addHeader(String, List)} instead.
+     */
+    @Deprecated
     public RequestBuilderCustomizer addHeaderValues(String name, List<String> values) {
         headers.put(name, values);
+        return this;
+    }
+
+    /**
+     * Set or replace given values to associated header name values
+     */
+    public RequestBuilderCustomizer addHeaders(Map<String, List<String>> headers) {
+        headers.putAll(headers);
         return this;
     }
 
