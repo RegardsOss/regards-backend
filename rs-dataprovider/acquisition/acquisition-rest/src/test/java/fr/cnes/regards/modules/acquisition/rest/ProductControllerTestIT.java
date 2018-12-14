@@ -32,7 +32,6 @@ import org.springframework.restdocs.request.ParameterDescriptor;
 import org.springframework.restdocs.request.RequestDocumentation;
 import org.springframework.restdocs.snippet.Attributes;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -66,7 +65,7 @@ public class ProductControllerTestIT extends AbstractRegardsTransactionalIT {
 
     @Before
     public void init() throws ModuleException {
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         // Init processing chain
         AcquisitionProcessingChain processingChain = AcquisitionTestUtils.getNewChain("laChaine");
         acqService.createChain(processingChain);
@@ -85,15 +84,14 @@ public class ProductControllerTestIT extends AbstractRegardsTransactionalIT {
 
     @Test
     public void searchForProductsTest() throws ModuleException {
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         performDefaultGet(ProductController.TYPE_PATH, requestBuilderCustomizer, "Should retrieve products");
         documentRequestParameters(requestBuilderCustomizer);
 
         requestBuilderCustomizer.addDocumentationSnippet(PayloadDocumentation.relaxedResponseFields(Attributes
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE).value("Product")), documentProduct()));
 
-        requestBuilderCustomizer.customizeRequestParam().param("sipState", "NOT_SCHEDULED", "QUEUED");
+        requestBuilderCustomizer.addParameter("sipState", "NOT_SCHEDULED", "QUEUED");
         performDefaultGet(ProductController.TYPE_PATH, requestBuilderCustomizer, "Should retrieve products");
     }
 

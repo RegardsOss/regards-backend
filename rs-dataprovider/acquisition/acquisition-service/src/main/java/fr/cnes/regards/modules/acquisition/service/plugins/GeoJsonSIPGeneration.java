@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;

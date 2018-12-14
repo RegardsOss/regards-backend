@@ -54,25 +54,9 @@ public class ScheduledDataProviderTasks {
     @Autowired
     private IAcquisitionProcessingService chainService;
 
-    @Autowired
-    private IProductService productService;
-
     @Bean
     public TaskScheduler taskScheduler() {
         return new ConcurrentTaskScheduler();
-    }
-
-    @Scheduled(fixedDelayString = "${regards.acquisition.process.new.sip.ingest.delay:60000}", initialDelay = 10000)
-    public void processSipSubmission() {
-        LOGGER.trace("Process new SIP bulk request to ingest");
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
-            try {
-                runtimeTenantResolver.forceTenant(tenant);
-                productService.scheduleProductSIPSubmission();
-            } finally {
-                runtimeTenantResolver.clearTenant();
-            }
-        }
     }
 
     @Scheduled(fixedDelayString = "${regards.acquisition.process.run.chains.delay:60000}", initialDelay = 10000)
