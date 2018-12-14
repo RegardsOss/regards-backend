@@ -51,7 +51,6 @@ import fr.cnes.regards.modules.catalog.services.domain.annotations.GetCatalogSer
 import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDto;
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
 import fr.cnes.regards.modules.catalog.services.plugins.AbstractCatalogServicePlugin;
-import fr.cnes.regards.modules.catalog.services.plugins.SampleServicePlugin;
 import fr.cnes.regards.modules.catalog.services.service.link.ILinkPluginsDatasetsService;
 
 /**
@@ -84,7 +83,7 @@ public class ServiceManager implements IServiceManager {
      * Builds a pedicate telling if the passed {@link PluginConfiguration} is applicable on passed {@link ServiceScope}.
      * Returns <code>true</code> if passed <code>pServiceScope</code> is <code>null</code>.
      */
-    private static final Function<List<ServiceScope>, Predicate<PluginConfiguration>> IS_APPLICABLE_ON = pServiceScope -> configuration -> (pServiceScope == null)
+    private static final Function<List<ServiceScope>, Predicate<PluginConfiguration>> IS_APPLICABLE_ON = pServiceScope -> configuration -> pServiceScope == null
             || Arrays.asList(GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(configuration).applicationModes())
                     .containsAll(pServiceScope);
 
@@ -100,15 +99,13 @@ public class ServiceManager implements IServiceManager {
             final ILinkPluginsDatasetsService pLinkPluginsDatasetsService) {
         pluginService = pPluginService;
         linkPluginsDatasetsService = pLinkPluginsDatasetsService;
-        pluginService.addPluginPackage(IService.class.getPackage().getName());
-        pluginService.addPluginPackage(SampleServicePlugin.class.getPackage().getName());
     }
 
     @Override
     public List<PluginConfigurationDto> retrieveServices(List<String> pDatasetIds, List<ServiceScope> pServiceScopes) {
         Set<PluginConfiguration> allServices = getServicesAssociatedToAllDatasets();
 
-        if ((pDatasetIds != null) && !pDatasetIds.isEmpty()) {
+        if (pDatasetIds != null && !pDatasetIds.isEmpty()) {
             Set<PluginConfiguration> datasetsCommonServices = Sets.newHashSet();
             boolean first = true;
             // Get all services associated to each dataset given
@@ -172,7 +169,7 @@ public class ServiceManager implements IServiceManager {
         // 2. Get all plugin conf with the applyToAllDataset parameter set to true.
         for (PluginConfiguration conf : confs) {
             PluginParameter param = conf.getParameter(AbstractCatalogServicePlugin.APPLY_TO_ALL_DATASETS_PARAM);
-            if ((param != null) && Boolean.parseBoolean(param.getValue())) {
+            if (param != null && Boolean.parseBoolean(param.getValue())) {
                 allServices.add(conf);
             }
         }

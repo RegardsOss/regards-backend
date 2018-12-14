@@ -64,8 +64,8 @@ import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServic
 import fr.cnes.regards.modules.catalog.services.domain.plugins.IEntitiesServicePlugin;
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory;
 import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFactory.CatalogPluginResponseType;
-import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.catalog.services.helper.IServiceHelper;
+import fr.cnes.regards.modules.dam.domain.entities.DataObject;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseException;
 
@@ -108,9 +108,8 @@ public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements
 
     @PluginInit
     public void init() {
-        proxy = (Strings.isNullOrEmpty(proxyHost)) ?
-                Proxy.NO_PROXY :
-                new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+        proxy = Strings.isNullOrEmpty(proxyHost) ? Proxy.NO_PROXY
+                : new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
     }
 
     @Override
@@ -128,11 +127,11 @@ public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements
             results = serviceHelper.getDataObjects(pOpenSearchQuery, 0, 10000);
             return apply(results.getContent(), response);
         } catch (OpenSearchParseException e) {
-            String message = String
-                    .format("Error applying service. OpenSearchQuery is not a valid query : %s", pOpenSearchQuery);
+            String message = String.format("Error applying service. OpenSearchQuery is not a valid query : %s",
+                                           pOpenSearchQuery);
             LOGGER.error(message, e);
-            return CatalogPluginResponseFactory
-                    .createSuccessResponse(response, CatalogPluginResponseType.JSON, message);
+            return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
+                                                                      message);
         }
 
     }
@@ -145,7 +144,7 @@ public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements
     private ResponseEntity<StreamingResponseBody> apply(List<DataObject> dataObjects, HttpServletResponse response) {
         // Retrieve all onlines files from each DataObject
         Map<DataObject, Set<DataFile>> toDownloadFilesMap = Maps.newHashMap();
-        if ((dataObjects != null) && !dataObjects.isEmpty()) {
+        if (dataObjects != null && !dataObjects.isEmpty()) {
             dataObjects.forEach(dataObject -> toDownloadFilesMap.put(dataObject, getOnlineFiles(dataObject)));
         }
 
@@ -154,10 +153,10 @@ public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements
         // If files number exceed maximum configured, return a JSON message with the error.
         LOGGER.debug(String.format("Number of files to download : %d", nbFiles));
         if (nbFiles > maxFilesToDownload) {
-            return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
-                                                                      String.format(
-                                                                              "Number of files to download %d exceed maximum allowed of %d",
-                                                                              nbFiles, maxFilesToDownload));
+            return CatalogPluginResponseFactory
+                    .createSuccessResponse(response, CatalogPluginResponseType.JSON,
+                                           String.format("Number of files to download %d exceed maximum allowed of %d",
+                                                         nbFiles, maxFilesToDownload));
         }
 
         // Check for maximum file size limit
@@ -166,23 +165,22 @@ public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements
                 .sum();
         LOGGER.debug(String.format("Total size of files to download : %d", filesSizeInBytes));
         // If size exceed maximum configured, return a JSON message with the error.
-        if (filesSizeInBytes > (maxFilesSizeToDownload * 1024 * 1024)) {
-            return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
-                                                                      String.format(
-                                                                              "Total size of selected files exceeded maximum allowed of %d (Mo)",
-                                                                              maxFilesToDownload));
+        if (filesSizeInBytes > maxFilesSizeToDownload * 1024 * 1024) {
+            return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON, String
+                    .format("Total size of selected files exceeded maximum allowed of %d (Mo)", maxFilesToDownload));
         }
 
         // If tere is no file downloadable, return a JSON message.
         if (nbFiles == 0) {
-            return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
-                                                                      "None of the selected files are available for download");
+            return CatalogPluginResponseFactory
+                    .createSuccessResponse(response, CatalogPluginResponseType.JSON,
+                                           "None of the selected files are available for download");
         }
 
         // Create and stream the ZIP archive containg all downloadable files
-        return CatalogPluginResponseFactory
-                .createStreamSuccessResponse(response, getFilesAsZip(toDownloadFilesMap), getArchiveName(),
-                                             MediaType.APPLICATION_OCTET_STREAM);
+        return CatalogPluginResponseFactory.createStreamSuccessResponse(response, getFilesAsZip(toDownloadFilesMap),
+                                                                        getArchiveName(),
+                                                                        MediaType.APPLICATION_OCTET_STREAM);
     }
 
     /**
@@ -204,9 +202,9 @@ public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements
      */
     private Set<DataFile> getOnlineFiles(DataObject dataObject) {
         Set<DataFile> files = Sets.newHashSet();
-        if ((dataObject != null) && (dataObject.getFiles() != null)) {
+        if (dataObject != null && dataObject.getFiles() != null) {
             dataObject.getFiles().forEach((type, file) -> {
-                if (DataType.RAWDATA.equals(type) && Boolean.TRUE.equals(file.getOnline()) && (file.getUri() != null)) {
+                if (DataType.RAWDATA.equals(type) && Boolean.TRUE.equals(file.isOnline()) && file.getUri() != null) {
                     files.add(file);
                 }
             });
@@ -273,9 +271,8 @@ public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements
      * @return String fileName
      */
     private String getDataObjectFileNameForDownload(DataObject dataobject, DataFile datafile) {
-        String fileName = datafile.getFilename() != null ?
-                datafile.getFilename() :
-                FilenameUtils.getName(datafile.asUri().getPath());
+        String fileName = datafile.getFilename() != null ? datafile.getFilename()
+                : FilenameUtils.getName(datafile.asUri().getPath());
         String dataObjectName = dataobject.getLabel() != null ? dataobject.getLabel().replaceAll(" ", "") : "files";
         return String.format("%s/%s", dataObjectName, fileName);
     }

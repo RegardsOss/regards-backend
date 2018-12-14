@@ -141,10 +141,10 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
     @Override
     public void deleteConf(Long confId) throws ModuleException {
         SearchEngineConfiguration confToDelete = retrieveConf(confId);
-        repository.delete(confId);
+        repository.deleteById(confId);
         // If after deleting conf, no other reference the associated pluginConf so delete it too.
         Page<SearchEngineConfiguration> otherConfs = repository
-                .findByConfigurationId(confToDelete.getConfiguration().getId(), new PageRequest(0, 1));
+                .findByConfigurationId(confToDelete.getConfiguration().getId(), PageRequest.of(0, 1));
         if (otherConfs.getContent().isEmpty()) {
             pluginService.deletePluginConfiguration(confToDelete.getConfiguration().getId());
         }
@@ -153,11 +153,11 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
 
     @Override
     public SearchEngineConfiguration retrieveConf(Long confId) throws ModuleException {
-        SearchEngineConfiguration conf = repository.findOne(confId);
-        if (conf == null) {
+        Optional<SearchEngineConfiguration> conf = repository.findById(confId);
+        if (!conf.isPresent()) {
             throw new EntityNotFoundException(confId, SearchEngineConfiguration.class);
         }
-        return addDatasetLabel(conf, Lists.newArrayList());
+        return addDatasetLabel(conf.get(), Lists.newArrayList());
     }
 
     @Override
@@ -198,7 +198,7 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
                     .findByDatasetUrnIsNullAndConfigurationPluginId(conf.getConfiguration().getPluginId());
         }
 
-        if ((foundConf != null) && (!foundConf.getId().equals(conf.getId()))) {
+        if (foundConf != null && !foundConf.getId().equals(conf.getId())) {
             throw new EntityInvalidException(
                     String.format("Search engine already defined for engine <%s> and dataset <%s>",
                                   conf.getConfiguration().getPluginId(), conf.getDatasetUrn()));
@@ -234,8 +234,7 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
                 // Retrieve dataset from dam
                 try {
                     ResponseEntity<Resource<Dataset>> response = datasetClient.retrieveDataset(conf.getDatasetUrn());
-                    if ((response != null) && (response.getBody() != null)
-                            && (response.getBody().getContent() != null)) {
+                    if (response != null && response.getBody() != null && response.getBody().getContent() != null) {
                         conf.setDataset(response.getBody().getContent());
                         // Add new retrieved dataset into cached ones
                         cachedDatasets.add(response.getBody().getContent());
@@ -257,11 +256,11 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
 
         @Override
         public void handle(final TenantWrapper<BroadcastEntityEvent> pWrapper) {
-            if ((pWrapper.getContent() != null) && EventType.DELETE.equals(pWrapper.getContent().getEventType())) {
+            if (pWrapper.getContent() != null && EventType.DELETE.equals(pWrapper.getContent().getEventType())) {
                 runtimeTenantResolver.forceTenant(pWrapper.getTenant());
                 for (final UniformResourceName ipId : pWrapper.getContent().getAipIds()) {
                     List<SearchEngineConfiguration> confs = repository.findByDatasetUrn(ipId.toString());
-                    if ((confs != null) && !confs.isEmpty()) {
+                    if (confs != null && !confs.isEmpty()) {
                         confs.forEach(repository::delete);
                     }
                 }

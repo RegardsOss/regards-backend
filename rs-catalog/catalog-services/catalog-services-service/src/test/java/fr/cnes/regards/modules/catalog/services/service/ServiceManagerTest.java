@@ -102,24 +102,7 @@ public class ServiceManagerTest {
 
     /**
      * Test method for
-     * {@link fr.cnes.regards.modules.catalog.services.service.ServiceManager#retrieveServices(java.lang.Long, fr.cnes.regards.modules.catalog.services.domain.ServiceScope)}.
-     *
-     * @throws EntityNotFoundException
-     */
-    @SuppressWarnings("unchecked")
-    @Test(expected = EntityNotFoundException.class)
-    public final void testRetrieveServices_shouldThrowEntityNotFoundException() throws EntityNotFoundException {
-        // Prepare test
-        Mockito.when(linkPluginsDatasetsService.retrieveLink(Mockito.anyString()))
-                .thenThrow(EntityNotFoundException.class);
-
-        // Trigger exception
-        serviceManager.retrieveServices(Arrays.asList("test"), Arrays.asList(ServiceScope.ONE));
-    }
-
-    /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.catalog.services.service.ServiceManager#retrieveServices(java.lang.Long, fr.cnes.regards.modules.catalog.services.domain.ServiceScope)}.
+     * {@link fr.cnes.regards.modules.catalog.services.service.ServiceManager#retrieveServices(List, List)}.
      *
      * @throws EntityNotFoundException
      */
@@ -136,7 +119,7 @@ public class ServiceManagerTest {
 
     /**
      * Test method for
-     * {@link fr.cnes.regards.modules.catalog.services.service.ServiceManager#retrieveServices(java.lang.Long, fr.cnes.regards.modules.catalog.services.domain.ServiceScope)}.
+     * {@link fr.cnes.regards.modules.catalog.services.service.ServiceManager#retrieveServices(List, List)}.
      */
     @Test
     public final void testRetrieveServices() {

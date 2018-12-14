@@ -94,10 +94,6 @@
 			<artifactId>indexer-service</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.dam</groupId>
-			<artifactId>dam-client</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>hateoas-regards-starter</artifactId>
 		</dependency>

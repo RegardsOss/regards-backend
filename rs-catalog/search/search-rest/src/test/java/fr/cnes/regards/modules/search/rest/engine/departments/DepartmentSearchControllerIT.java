@@ -87,7 +87,7 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
     private Gson gson;
 
     @Autowired(required = false)
-    private List<IModuleManager> managers;
+    private List<IModuleManager<?>> managers;
 
     @Autowired
     private GsonBuilderFactory gsonBuilderFactory;
@@ -110,7 +110,7 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
 
         // - Manage attribute model retrieval
         Mockito.when(modelAttrAssocClientMock.getModelAttrAssocsFor(Mockito.any())).thenAnswer(invocation -> {
-            EntityType type = invocation.getArgumentAt(0, EntityType.class);
+            EntityType type = invocation.getArgument(0);
             return ResponseEntity.ok(modelService.getModelAttrAssocsFor(type));
         });
         Mockito.when(modelAttrAssocClientMock.getModelAttrAssocsForDataInDataset(Mockito.any()))

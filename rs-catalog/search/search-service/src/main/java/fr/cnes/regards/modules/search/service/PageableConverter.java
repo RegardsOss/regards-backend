@@ -53,7 +53,7 @@ public class PageableConverter implements IPageableConverter {
 
     @Override
     public Pageable convert(Pageable pageable) throws OpenSearchUnknownParameter {
-        if ((pageable != null) && (pageable.getSort() != null)) {
+        if (pageable != null && pageable.getSort() != null) {
             // Do conversion
             Iterator<Order> orders = pageable.getSort().iterator();
             List<Order> convertedOrders = new ArrayList<>();
@@ -62,7 +62,7 @@ public class PageableConverter implements IPageableConverter {
                 AttributeModel attModel = finder.findByName(order.getProperty());
                 convertedOrders.add(new Order(order.getDirection(), attModel.getFullJsonPath()));
             }
-            return new PageRequest(pageable.getPageNumber(), pageable.getPageSize(), new Sort(convertedOrders));
+            return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(convertedOrders));
         }
 
         // Nothing to do

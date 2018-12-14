@@ -260,7 +260,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
         // - Manage attribute model retrieval
         Mockito.when(modelAttrAssocClientMock.getModelAttrAssocsFor(Mockito.any())).thenAnswer(invocation -> {
-            EntityType type = invocation.getArgumentAt(0, EntityType.class);
+            EntityType type = invocation.getArgument(0);
             return ResponseEntity.ok(modelService.getModelAttrAssocsFor(type));
         });
         Mockito.when(modelAttrAssocClientMock.getModelAttrAssocsForDataInDataset(Mockito.any()))
