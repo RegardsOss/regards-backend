@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
@@ -111,8 +112,9 @@ public class SearchClientITConfiguration {
         return Mockito.mock(IModelAttrAssocClient.class);
     }
 
+    @Primary
     @Bean
-    public ProjectGeoSettings projectGeoSettings() {
+    public ProjectGeoSettings mockProjectGeoSettings() {
         return Mockito.mock(ProjectGeoSettings.class);
     }
 }
