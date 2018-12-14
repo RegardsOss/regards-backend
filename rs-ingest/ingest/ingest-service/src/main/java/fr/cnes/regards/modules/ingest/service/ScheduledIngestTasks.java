@@ -42,10 +42,7 @@ import fr.cnes.regards.modules.ingest.service.store.IAIPService;
 @EnableScheduling
 public class ScheduledIngestTasks {
 
-    /**
-     * Class logger.
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(ScheduledIngestTasks.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ScheduledIngestTasks.class);
 
     /**
      * Resolver to know all existing tenants of the current REGARDS instance.
@@ -66,20 +63,9 @@ public class ScheduledIngestTasks {
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void processNewSips() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
-            LOG.info("Scheduled task : Process new SIPs ingest for tenant {}", tenant);
+            LOGGER.trace("Scheduled task : Process new SIPs ingest for tenant {}", tenant);
             runtimeTenantResolver.forceTenant(tenant);
             ingestProcessingService.ingest();
-            runtimeTenantResolver.clearTenant();
-        }
-    }
-
-    @Scheduled(fixedRateString = "${regards.ingest.process.new.aips.storage.delay:30000}")
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void processNewAipsBulkRequest() {
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
-            LOG.info("Scheduled task : Process new AIP bulk request to archival storage for tenant {}", tenant);
-            runtimeTenantResolver.forceTenant(tenant);
-            aipBulkRequestService.scheduleAIPStorageBulkRequest();
             runtimeTenantResolver.clearTenant();
         }
     }
@@ -87,7 +73,7 @@ public class ScheduledIngestTasks {
     @Scheduled(fixedRateString = "${regards.ingest.ask.for.aips.deletion.rate:60000}")
     public void askForAipsDeletion() {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
-            LOG.info("Scheduled task : Process new AIP bulk request to archival storage for tenant {}", tenant);
+            LOGGER.trace("Scheduled task : Process new AIP bulk request to archival storage for tenant {}", tenant);
             runtimeTenantResolver.forceTenant(tenant);
             aipBulkRequestService.askForAipsDeletion();
             runtimeTenantResolver.clearTenant();

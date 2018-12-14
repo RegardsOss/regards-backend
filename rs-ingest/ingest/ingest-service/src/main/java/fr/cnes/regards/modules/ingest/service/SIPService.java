@@ -119,7 +119,7 @@ public class SIPService implements ISIPService {
                 if (isDeletableWithoutAips(sip)) {
                     Set<AIPEntity> aips = aipRepository.findBySip(sip);
                     if (!aips.isEmpty()) {
-                        aipRepository.delete(aips);
+                        aipRepository.deleteAll(aips);
                     }
                     sipRepository.updateSIPEntityState(SIPState.DELETED, sip.getId());
                 } else {
@@ -145,8 +145,8 @@ public class SIPService implements ISIPService {
     @Override
     public boolean validatedVersionExists(String providerId) {
         return sipRepository.countByProviderIdAndStateIn(providerId, SIPState.VALID, SIPState.AIP_CREATED,
-                                                         SIPState.SUBMISSION_ERROR, SIPState.STORE_ERROR,
-                                                         SIPState.STORED, SIPState.INDEXED, SIPState.INCOMPLETE) > 0;
+                                                         SIPState.AIP_SUBMITTED, SIPState.STORE_ERROR, SIPState.STORED,
+                                                         SIPState.INDEXED, SIPState.INCOMPLETE) > 0;
     }
 
     @Override
@@ -187,7 +187,7 @@ public class SIPService implements ISIPService {
             case AIP_GEN_ERROR:
             case REJECTED:
             case STORED:
-            case SUBMISSION_ERROR:
+            case AIP_SUBMITTED:
             case STORE_ERROR:
             case INCOMPLETE:
             case INDEXED:

@@ -22,16 +22,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
-import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
+import fr.cnes.regards.modules.ingest.service.ISIPService;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.storage.domain.AIP;
 
@@ -49,23 +51,35 @@ public interface IIngestProcessingService {
     void ingest();
 
     /**
-     * Update state of given SIPEntity
-     * @param id of {@link SIPEntity} to update
-     * @param newState new {@link SIPState}
-     * @param processingErrors processing errors (may be null)
-     * @return updated {@link SIPEntity}
+     * Really build ingestion job and schedule it in transaction.
      */
-    SIPEntity updateSIPEntityState(Long id, SIPState newState, List<String> processingErrors);
+    void scheduleIngestProcessingJob(Set<Long> entityIdsToProcess, String processingChain);
+
+    /**
+     *  {@link ISIPService} delegated method, save and publish entity
+     */
+    SIPEntity updateSIPEntity(SIPEntity sip);
+
+    /**
+     * After AIP(s) generation, save the context and submit AIP(s) in the AIP data flow (within the same transaction)
+     */
+    SIPEntity saveAndSubmitAIP(SIPEntity entity, List<AIP> aips) throws EntityNotFoundException;
 
     /**
      * Return {@link SIPEntity} for the given id
      */
-    SIPEntity getSIPEntity(Long id);
+    SIPEntity getSIPEntity(Long id) throws EntityNotFoundException;
+
+    /**
+     *
+     * Return all {@link SIPEntity}s for the given ids
+     */
+    Set<SIPEntity> getAllSipEntities(Set<Long> ids);
 
     /**
      * Create AIP
      */
-    AIPEntity createAIP(Long sipEntityId, SipAIPState aipState, AIP aip);
+    AIPEntity createAIP(Long sipEntityId, AIP aip) throws EntityNotFoundException;
 
     /**
      * Create a new {@link IngestProcessingChain}

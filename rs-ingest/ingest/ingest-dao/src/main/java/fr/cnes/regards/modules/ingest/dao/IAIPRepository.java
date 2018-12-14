@@ -24,7 +24,6 @@ import java.util.Set;
 import javax.persistence.LockModeType;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -72,12 +71,7 @@ public interface IAIPRepository extends JpaRepository<AIPEntity, Long> {
     @Query("select id from AIPEntity a where a.state= ?1")
     Set<Long> findIdByState(IAipState state);
 
-    default boolean isAlreadyWorking(String processingChain) {
-        Page<AIPEntity> page = findWithLockBySipProcessingAndState(processingChain, SipAIPState.SUBMISSION_SCHEDULED,
-                                                                   new PageRequest(0, 1));
-        return page.hasContent();
-    }
-
+    @Deprecated // Do not use lock
     @Lock(LockModeType.PESSIMISTIC_READ)
     Page<AIPEntity> findWithLockBySipProcessingAndState(String processingChain, IAipState state, Pageable pageable);
 

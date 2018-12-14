@@ -48,18 +48,6 @@ public enum SipAIPState implements IAipState {
      */
     CREATED,
     /**
-     * SIP submission has been scheduled
-     */
-    SUBMISSION_SCHEDULED,
-    /**
-     * An error occurs during submission job
-     */
-    SUBMISSION_ERROR,
-    /**
-     * AIP has been rejected by storage
-     */
-    REJECTED,
-    /**
      * AIP is indexed
      */
     INDEXED,

@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
-import javax.persistence.EntityManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Optional;
+
+import javax.persistence.EntityManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,7 @@ import org.springframework.validation.Validator;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -115,13 +117,9 @@ public class IngestService implements IIngestService {
     public Collection<SIPDto> ingest(SIPCollection sips) throws ModuleException {
         Collection<SIPDto> dtos = new ArrayList<>();
 
-        // Validate metadata
-        IngestMetadata metadata = sips.getMetadata();
-        validateIngestMetadata(metadata);
-
         // Process SIPs
         for (SIP sip : sips.getFeatures()) {
-            dtos.add(store(sip, metadata));
+            dtos.add(store(sip, sips.getMetadata(), authResolver.getUser(), false));
         }
 
         return dtos;
@@ -181,29 +179,25 @@ public class IngestService implements IIngestService {
                 case DELETED:
                     sipRepository.updateSIPEntityState(SIPState.CREATED, sip.getId());
                     break;
-                case SUBMISSION_ERROR:
+                case AIP_SUBMITTED:
                 case STORE_ERROR:
                 case STORED:
-                    throw new EntityOperationForbiddenException(sipId.toString(),
-                                                                SIPEntity.class,
-                                                                "SIP ingest process is already successully done");
+                    throw new EntityOperationForbiddenException(sipId.toString(), SIPEntity.class,
+                            "SIP ingest process is already successully done");
                 case REJECTED:
-                    throw new EntityOperationForbiddenException(sipId.toString(),
-                                                                SIPEntity.class,
-                                                                "SIP format is not valid");
+                    throw new EntityOperationForbiddenException(sipId.toString(), SIPEntity.class,
+                            "SIP format is not valid");
                 case VALID:
                 case QUEUED:
                 case CREATED:
                 case AIP_CREATED:
-                    throw new EntityOperationForbiddenException(sipId.toString(),
-                                                                SIPEntity.class,
-                                                                "SIP ingest is already running");
+                    throw new EntityOperationForbiddenException(sipId.toString(), SIPEntity.class,
+                            "SIP ingest is already running");
                 default:
-                    throw new EntityOperationForbiddenException(sipId.toString(),
-                                                                SIPEntity.class,
-                                                                "SIP is in undefined state for ingest retry");
+                    throw new EntityOperationForbiddenException(sipId.toString(), SIPEntity.class,
+                            "SIP is in undefined state for ingest retry");
             }
-            return sipRepository.findOne(sip.getId()).toDto();
+            return sip.toDto();
         } else {
             throw new EntityNotFoundException(sipId.toString(), SIPEntity.class);
         }
@@ -231,7 +225,8 @@ public class IngestService implements IIngestService {
      * @param metadata bulk ingest metadata
      * @return a {@link SIPEntity} ready to be processed saved in database or a rejected one not saved in database
      */
-    private SIPDto store(SIP sip, IngestMetadata metadata) {
+    @Override
+    public SIPDto store(SIP sip, IngestMetadata metadata, String owner, boolean publishRejected) {
 
         LOGGER.info("Handling new SIP {}", sip.getId());
         // Manage version
@@ -240,14 +235,24 @@ public class IngestService implements IIngestService {
         // Manage session
         SIPSession session = sipSessionService.getSession(metadata.getSession().orElse(null), true);
 
-        SIPEntity entity = SIPEntityBuilder.build(runtimeTenantResolver.getTenant(),
-                                                  session,
-                                                  sip,
-                                                  metadata.getProcessing(),
-                                                  authResolver.getUser(),
-                                                  version,
-                                                  SIPState.CREATED,
+        SIPEntity entity = SIPEntityBuilder.build(runtimeTenantResolver.getTenant(), session, sip,
+                                                  metadata.getProcessing(), owner, version, SIPState.CREATED,
                                                   EntityType.DATA);
+
+        // Validate metadata
+        try {
+            validateIngestMetadata(metadata);
+        } catch (EntityInvalidException e) {
+            // Invalid SIP
+            entity.setState(SIPState.REJECTED);
+            String errorMessage = String.format("Ingest processing chain \"%s\" not found!", metadata.getProcessing());
+            LOGGER.warn("SIP rejected because : {}", errorMessage);
+            entity.getRejectionCauses().add(errorMessage);
+            if (publishRejected) {
+                publisher.publish(new SIPEvent(entity));
+            }
+            return entity.toDto();
+        }
 
         // Validate SIP
         Errors errors = new MapBindingResult(new HashMap<>(), "sip");
@@ -258,38 +263,41 @@ public class IngestService implements IIngestService {
             errors.getAllErrors().forEach(error -> {
                 if (error instanceof FieldError) {
                     FieldError fieldError = (FieldError) error;
-                    entity.getRejectionCauses().add(String.format("%s at %s: rejected value [%s].",
-                                                                  fieldError.getDefaultMessage(),
-                                                                  fieldError.getField(),
-                                                                  ObjectUtils.nullSafeToString(fieldError
-                                                                                                       .getRejectedValue())));
+                    entity.getRejectionCauses()
+                            .add(String.format("%s at %s: rejected value [%s].", fieldError.getDefaultMessage(),
+                                               fieldError.getField(),
+                                               ObjectUtils.nullSafeToString(fieldError.getRejectedValue())));
                 } else {
                     entity.getRejectionCauses().add(error.getDefaultMessage());
                 }
                 LOGGER.warn("SIP {} error : {}", entity.getProviderId(), error.toString());
             });
-            LOGGER.warn("SIP {} rejected cause invalid", entity.getProviderId());
+            LOGGER.warn("SIP {} rejected because invalid", entity.getProviderId());
+            if (publishRejected) {
+                publisher.publish(new SIPEvent(entity));
+            }
             return entity.toDto();
         }
 
         try {
             // Compute checksum
-            LOGGER.info("Handling new SIP {} -> MD5 sum ....", sip.getId());
             String checksum = SIPEntityBuilder.calculateChecksum(gson, sip, MD5_ALGORITHM);
             entity.setChecksum(checksum);
-            LOGGER.info("Handling new SIP {} -> MD5 sum ok", sip.getId());
 
             // Prevent SIP from being ingested twice
             if (sipRepository.isAlreadyIngested(checksum)) {
                 entity.setState(SIPState.REJECTED);
                 entity.getRejectionCauses().add("SIP already submitted");
+                if (publishRejected) {
+                    publisher.publish(new SIPEvent(entity));
+                }
                 LOGGER.warn("SIP {} rejected cause already submitted", entity.getProviderId());
             } else {
                 // Entity is persisted only if all properties properly set
                 // And SIP not already stored with a same checksum
                 sipService.saveSIPEntity(entity);
                 publisher.publish(new SIPEvent(entity));
-                LOGGER.info("SIP {} saved, ready for asynchronous processing", entity.getProviderId());
+                LOGGER.debug("SIP {} saved, ready for asynchronous processing", entity.getProviderId());
             }
 
         } catch (NoSuchAlgorithmException | IOException e) {
@@ -297,9 +305,12 @@ public class IngestService implements IIngestService {
             LOGGER.error("Exception occurs!", e);
             entity.setState(SIPState.REJECTED);
             entity.getRejectionCauses().add("Not able to generate internal SIP checksum");
+            if (publishRejected) {
+                publisher.publish(new SIPEvent(entity));
+            }
         }
 
-        // Ensure permformance by flushing transaction cache
+        // Ensure performance by flushing transaction cache
         em.flush();
         em.clear();
 

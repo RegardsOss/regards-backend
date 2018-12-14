@@ -16,25 +16,23 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.ingest.service.job;
+package fr.cnes.regards.modules.ingest.service;
 
 /**
- * Ingest jobs priority management
- * @author Marc Sordi
+ * Global ingest properties
+ *
+ * @author Marc SORDI
  *
  */
-public enum IngestJobPriority {
+public final class IngestProperties {
 
     /**
-     * One SIP, one job!
+     * All transactions only manage at most {@link #WORKING_UNIT} entities at a time
+     * in order to take care of the memory consumption and potential tenant starvation.
      */
-    INGEST_PROCESSING_JOB_PRIORITY {
+    public static final Integer WORKING_UNIT = 100;
 
-        @Override
-        public int getPriority() {
-            return 0;
-        }
-    };
-
-    public abstract int getPriority();
+    private IngestProperties() {
+        // Nothing to do
+    }
 }

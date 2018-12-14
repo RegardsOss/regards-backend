@@ -27,13 +27,13 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.gson.Gson;
 
+import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.DataType;
@@ -46,8 +46,9 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPCollectionBuilder;
  *
  */
 @RunWith(SpringRunner.class)
-@EnableAutoConfiguration(exclude = { JpaRepositoriesAutoConfiguration.class })
-@TestPropertySource(properties = { "regards.cipher.iv=1234567812345678", "regards.cipher.keyLocation=src/test/resources/testKey"})
+@ContextConfiguration(classes = GsonAutoConfiguration.class)
+@TestPropertySource(
+        properties = { "regards.cipher.iv=1234567812345678", "regards.cipher.keyLocation=src/test/resources/testKey" })
 public class SIPBuilderTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPBuilderTest.class);
