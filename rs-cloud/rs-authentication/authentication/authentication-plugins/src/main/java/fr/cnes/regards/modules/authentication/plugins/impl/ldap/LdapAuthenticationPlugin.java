@@ -29,11 +29,9 @@ import fr.cnes.regards.modules.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPluginResponse;
 
 /**
- *
  * Class LdapAuthenticationPlugin
  *
  * LDAP Authentication plugin.
- *
  * @author Sébastien Binda
  * @since 1.0
  */
@@ -169,34 +167,22 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
     }
 
     /**
-     *
      * Retrieve LDAP connection
-     *
-     * @param pHost
-     *            ldap server host
-     * @param pPort
-     *            ldap server port
+     * @param pHost ldap server host
+     * @param pPort ldap server port
      * @return LdapConnection
-     * @since 1.0-SNAPSHOT
      */
     public LdapConnection getLdapConnection(final String pHost, final Integer pPort) {
         return new LdapNetworkConnection(pHost, pPort);
     }
 
     /**
-     *
      * Retrieve user name from ldap server
-     *
-     * @param pLdapContext
-     *            ldap connection
-     * @param pDn
-     *            ldap dn
-     * @param pLogin
-     *            User login
+     * @param pLdapContext ldap connection
+     * @param pDn ldap dn
+     * @param pLogin User login
      * @return user email
-     * @throws LdapException
-     *             error during LDAP transation
-     * @since 1.0-SNAPSHOT
+     * @throws LdapException error during LDAP transation
      */
     private String getEmail(final LdapConnection pLdapContext, final String pDn, final String pLogin)
             throws LdapException {

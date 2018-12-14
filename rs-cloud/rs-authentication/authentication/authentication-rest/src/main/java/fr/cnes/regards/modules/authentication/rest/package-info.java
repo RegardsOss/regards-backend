@@ -17,10 +17,7 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- *
  * Authentication API
- *
  * @author Marc Sordi
- *
  */
 package fr.cnes.regards.modules.authentication.rest;

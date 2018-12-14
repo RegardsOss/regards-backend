@@ -56,13 +56,10 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 
 /**
- *
  * Class Oauth2AuthenticationManagerTest
  *
  * Test Regards Oauth2 authentication process
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 public class Oauth2AuthenticationManagerTest {
 
@@ -112,16 +109,11 @@ public class Oauth2AuthenticationManagerTest {
     private static ProjectUser validUser;
 
     /**
-     *
      * Mocks initialization
-     *
-     * @throws EntityException
-     *             test error.
-     * @throws EntityNotFoundException
-     * @since 1.0-SNAPSHOT
+     * @throws EntityException test error.
      */
     @BeforeClass
-    public static void init() throws EntityNotFoundException, EntityException {
+    public static void init() {
 
         // Create mock for default authentication plugin
         plugin = Mockito.mock(IAuthenticationPlugin.class);
@@ -171,8 +163,7 @@ public class Oauth2AuthenticationManagerTest {
 
         projectUsersClientMock = Mockito.mock(IProjectUsersClient.class);
         final Resource<ProjectUser> resourceUser = new Resource<>(validUser);
-        final ResponseEntity<Resource<ProjectUser>> resp = new ResponseEntity<Resource<ProjectUser>>(resourceUser,
-                HttpStatus.OK);
+        final ResponseEntity<Resource<ProjectUser>> resp = new ResponseEntity<>(resourceUser, HttpStatus.OK);
         Mockito.when(projectUsersClientMock.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(resp);
         Mockito.when(beanFactoryMock.getBean(IProjectUsersClient.class)).thenReturn(projectUsersClientMock);
 
@@ -186,17 +177,12 @@ public class Oauth2AuthenticationManagerTest {
     }
 
     /**
-     *
      * Check that an account is created after success authentication by plugin if account does not exits
-     *
-     * @throws EntityException
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Purpose("Check that an account is created after success authentication by plugin if account does not exits")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Test
-    public void testNewAccountAuthentication() throws EntityException {
+    public void testNewAccountAuthentication() {
         auth = Mockito.mock(JWTAuthentication.class);
         Mockito.when(auth.getName()).thenReturn("name");
         Mockito.when(auth.getCredentials()).thenReturn("password");
@@ -221,10 +207,7 @@ public class Oauth2AuthenticationManagerTest {
     }
 
     /**
-     *
      * Check error during oauth2 authentication process using default authentication plugin
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Purpose("Check valid authentication process.")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
@@ -241,8 +224,7 @@ public class Oauth2AuthenticationManagerTest {
 
         // Mock a valid project user
         final Resource<ProjectUser> resourceUser = new Resource<>(validUser);
-        final ResponseEntity<Resource<ProjectUser>> resp = new ResponseEntity<Resource<ProjectUser>>(resourceUser,
-                HttpStatus.OK);
+        final ResponseEntity<Resource<ProjectUser>> resp = new ResponseEntity<>(resourceUser, HttpStatus.OK);
         Mockito.when(projectUsersClientMock.retrieveProjectUserByEmail(Mockito.anyString())).thenReturn(resp);
 
         // Mock a valid account
@@ -255,10 +237,7 @@ public class Oauth2AuthenticationManagerTest {
     }
 
     /**
-     *
      * Check error during oauth2 authentication process using default authentication plugin
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Purpose("Check error authentication process with projectUser not defined.")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
@@ -288,10 +267,7 @@ public class Oauth2AuthenticationManagerTest {
     }
 
     /**
-     *
      * Check error during oauth2 authentication process using default authentication plugin
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Purpose("Check error authentication process with projectUser not validated yet.")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
@@ -327,10 +303,7 @@ public class Oauth2AuthenticationManagerTest {
     }
 
     /**
-     *
      * Check error during oauth2 authentication process using default authentication plugin
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Purpose("Error during oauth2 authentication. Default authentication plugin. Invalid authentication parameters.")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
@@ -353,11 +326,8 @@ public class Oauth2AuthenticationManagerTest {
     }
 
     /**
-     *
      * Check error during oauth2 authentication process using default authentication plugin. Invalid authentication
      * parameters.
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Purpose("Error during oauth2 authentication. Default authentication plugin. Invalid authentication parameters.")
     @Requirement("REGARDS_DSL_SYS_SEC_100")
@@ -380,11 +350,8 @@ public class Oauth2AuthenticationManagerTest {
     }
 
     /**
-     *
      * Check error during oauth2 authentication process using default authentication plugin. Invalid authentication
      * parameters.
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Purpose("Error during oauth2 authentication. Default authentication plugin. No authentication parameters.")
     @Requirement("REGARDS_DSL_SYS_SEC_100")

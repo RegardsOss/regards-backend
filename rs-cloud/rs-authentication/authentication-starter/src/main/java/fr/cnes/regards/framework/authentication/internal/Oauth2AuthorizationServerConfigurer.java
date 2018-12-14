@@ -38,13 +38,11 @@ import fr.cnes.regards.framework.security.filter.CorsFilter;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
 /**
- *
  * Class AuthorizationServerConfiguration
  *
  * Spring Oauth2 Authorization server configuration. Configuration to authenticate users and get tokens.
- *
  * @author Sébastien Binda
- * @since 1.0-SNPASHOT
+
  */
 public class Oauth2AuthorizationServerConfigurer extends AuthorizationServerConfigurerAdapter {
 
@@ -97,33 +95,24 @@ public class Oauth2AuthorizationServerConfigurer extends AuthorizationServerConf
     }
 
     /**
-     *
      * Create custom token enhancer to add custom claims in the JWT token generated.
-     *
      * @return CustomTokenEnhancer
-     * @since 1.0-SNAPSHOT
      */
     private TokenEnhancer tokenEnhancer() {
         return new CustomTokenEnhancer(jwtService);
     }
 
     /**
-     *
      * Create token store for spring JWT manager
-     *
      * @return TokenStore
-     * @since 1.0-SNAPSHOT
      */
     private TokenStore tokenStore() {
         return new JwtTokenStore(accessTokenConverter());
     }
 
     /**
-     *
      * Create the Oauth2 token to JWT Token converter
-     *
      * @return JwtAccessTokenConverter
-     * @since 1.0-SNAPSHOT
      */
     private JwtAccessTokenConverter accessTokenConverter() {
         final JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
@@ -132,7 +121,7 @@ public class Oauth2AuthorizationServerConfigurer extends AuthorizationServerConf
     }
 
     @Override
-    public void configure(final AuthorizationServerEndpointsConfigurer pEndpoints) throws Exception {
+    public void configure(final AuthorizationServerEndpointsConfigurer pEndpoints) {
         final TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
         tokenEnhancerChain.setTokenEnhancers(Arrays.asList(tokenEnhancer(), accessTokenConverter()));
 
@@ -147,16 +136,13 @@ public class Oauth2AuthorizationServerConfigurer extends AuthorizationServerConf
     }
 
     @Override
-    public void configure(final AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
+    public void configure(final AuthorizationServerSecurityConfigurer oauthServer) {
         oauthServer.addTokenEndpointAuthenticationFilter(new CorsFilter());
     }
 
     /**
-     *
      * Create token services
-     *
      * @return DefaultTokenServices
-     * @since 1.0-SNAPSHOT
      */
     @Bean
     @Primary

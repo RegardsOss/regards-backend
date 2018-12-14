@@ -45,13 +45,10 @@ import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPlugi
 import fr.cnes.regards.modules.authentication.plugins.impl.ldap.LdapAuthenticationPlugin;
 
 /**
- *
  * Class LdapAuthenticationPluginTest
  *
  * Test authentication through LDAP server
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 public class LdapAuthenticationPluginTest {
 
@@ -66,10 +63,7 @@ public class LdapAuthenticationPluginTest {
     private static LdapAuthenticationPlugin plugin;
 
     /**
-     *
      * Initialize LDAP Authentication plugin thought plugin utilities.
-     *
-     * @since 1.0-SNAPSHOT
      */
     @BeforeClass
     public static void init() {
@@ -94,10 +88,7 @@ public class LdapAuthenticationPluginTest {
     }
 
     /**
-     *
      * Test valid authentication throught LDAP plugin
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Purpose("Test valid authentication throught LDAP plugin")
     @Test
@@ -113,19 +104,14 @@ public class LdapAuthenticationPluginTest {
         final AuthenticationPluginResponse response = spy.authenticate("login", "password", "project");
         Assert.assertNotNull("Response should not be null", response);
         Assert.assertTrue("Error authentication. Access should be granted.", response.getAccessGranted());
-        Assert.assertTrue("Error authentication. Email is not valid", response.getEmail().equals(EMAIL));
+        Assert.assertEquals("Error authentication. Email is not valid", response.getEmail(), EMAIL);
 
     }
 
     /**
-     *
      * Test error authentication throught LDAP plugin
-     *
-     * @throws LdapException
-     *             test error.
-     * @throws IOException
-     *             test error.
-     * @since 1.0-SNAPSHOT
+     * @throws LdapException test error.
+     * @throws IOException   test error.
      */
     @Purpose("Test error authentication throught LDAP plugin")
     @Test
@@ -143,14 +129,9 @@ public class LdapAuthenticationPluginTest {
     }
 
     /**
-     *
      * Test error authentication throught LDAP plugin
-     *
-     * @throws LdapException
-     *             test error.
-     * @throws IOException
-     *             test error.
-     * @since 1.0-SNAPSHOT
+     * @throws LdapException test error.
+     * @throws IOException   test error.
      */
     @Purpose("Test error authentication throught LDAP plugin")
     @Test
@@ -169,18 +150,13 @@ public class LdapAuthenticationPluginTest {
     }
 
     /**
-     *
      * Test error authentication throught LDAP plugin
-     *
-     * @throws LdapException
-     *             test error.
-     * @throws IOException
-     *             test error.
-     * @since 1.0-SNAPSHOT
+     * @throws LdapException test error.
+     * @throws IOException   test error.
      */
     @Purpose("Test error authentication throught LDAP plugin")
     @Test
-    public void testErrorInvalidEmail() throws LdapException, IOException {
+    public void testErrorInvalidEmail() {
         Mockito.mock(LdapNetworkConnection.class);
 
         final LdapAuthenticationPlugin spy = Mockito.spy(plugin);
@@ -194,14 +170,9 @@ public class LdapAuthenticationPluginTest {
     }
 
     /**
-     *
      * Test error authentication throught LDAP plugin
-     *
-     * @throws LdapException
-     *             test error.
-     * @throws IOException
-     *             test error.
-     * @since 1.0-SNAPSHOT
+     * @throws LdapException test error.
+     * @throws IOException   test error.
      */
     @Purpose("Test error authentication throught LDAP plugin")
     @Test
@@ -220,14 +191,9 @@ public class LdapAuthenticationPluginTest {
     }
 
     /**
-     *
      * Test error authentication throught LDAP plugin
-     *
-     * @throws LdapException
-     *             test error.
-     * @throws IOException
-     *             test error.
-     * @since 1.0-SNAPSHOT
+     * @throws LdapException test error.
+     * @throws IOException   test error.
      */
     @Purpose("Test error authentication throught LDAP plugin")
     @Test
@@ -246,13 +212,9 @@ public class LdapAuthenticationPluginTest {
     }
 
     /**
-     *
      * Create LDAP connection mock for test
-     *
-     * @param pValidEmail
-     *            does the LDAP mock connection return a valid email or not
+     * @param pValidEmail does the LDAP mock connection return a valid email or not
      * @return LdapConnection
-     * @since 1.0-SNAPSHOT
      */
     private LdapConnection getMockedLdapConnection(final boolean pValidEmail) {
 
@@ -262,7 +224,7 @@ public class LdapAuthenticationPluginTest {
             Mockito.when(mockedConnection.connect()).thenReturn(true);
             Mockito.when(mockedConnection.isAuthenticated()).thenReturn(true);
 
-            final List<Entry> entries = new ArrayList<Entry>();
+            final List<Entry> entries = new ArrayList<>();
 
             final Attribute mockedAttribute = Mockito.mock(Attribute.class);
             if (pValidEmail) {
@@ -276,9 +238,9 @@ public class LdapAuthenticationPluginTest {
             final EntryCursorStub entry = new EntryCursorStub();
             entry.setEntries(entries);
 
-            Mockito.when(mockedConnection.search(Mockito.anyString(), Mockito.anyString(),
-                                                 Mockito.any(SearchScope.class), Mockito.anyString()))
-                    .thenReturn(entry);
+            Mockito.when(mockedConnection
+                                 .search(Mockito.anyString(), Mockito.anyString(), Mockito.any(SearchScope.class),
+                                         Mockito.anyString())).thenReturn(entry);
         } catch (LdapException | IOException e) {
             Assert.fail(e.getMessage());
         }

@@ -29,13 +29,10 @@ import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 
 /**
- *
  * This class is a Zuul proxy filter. It aims to log the HTTP method and the URL.</br>
  * It adds to the request header the X-Forwarded-For field.
- *
  * @author Sébastien Binda
  * @author Christophe Mertz
- * @since 1.0-SNAPSHOT
  */
 @Component
 public class ZuulLogFilter extends ZuulFilter {
