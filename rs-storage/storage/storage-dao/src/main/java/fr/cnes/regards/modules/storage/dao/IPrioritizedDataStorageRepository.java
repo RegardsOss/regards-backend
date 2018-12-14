@@ -5,6 +5,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import fr.cnes.regards.modules.storage.domain.database.DataStorageType;
 import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
@@ -44,4 +46,10 @@ public interface IPrioritizedDataStorageRepository extends JpaRepository<Priorit
             DataStorageType dataStorageType, boolean pluginConfActivity);
 
     PrioritizedDataStorage findOneByDataStorageTypeAndPriority(DataStorageType dataStorageType, long priority);
+
+    @Query(value = "SELECT data_storage_conf_id FROM {h-schema}ta_data_file_plugin_conf WHERE data_file_id IN ("
+            + "SELECT id FROM {h-schema}t_data_file WHERE aip_ip_id IN (:aipQuery))", nativeQuery = true)
+    Set<Long> findAllIdUsedByAipInQuery(@Param("aipQuery") String aipQuery);
+
+    Set<PrioritizedDataStorage> findAllByIdIn(Set<Long> allIdUsedByAipInQuery);
 }

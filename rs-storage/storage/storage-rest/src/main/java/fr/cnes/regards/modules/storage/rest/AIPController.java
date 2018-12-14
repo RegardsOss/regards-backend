@@ -80,7 +80,9 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPCollection;
+import fr.cnes.regards.modules.storage.domain.AIPPageWithDataStorages;
 import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.AIPWithDataStorageIds;
 import fr.cnes.regards.modules.storage.domain.AipDataFiles;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
@@ -101,6 +103,8 @@ import fr.cnes.regards.modules.storage.service.IAIPService;
 @RestController
 @RequestMapping(AIPController.AIP_PATH)
 public class AIPController implements IResourceController<AIP> {
+
+    public static final String FILES_DELETE_PATH = "/files/delete";
 
     /**
      * Controller path for retries
@@ -194,8 +198,6 @@ public class AIPController implements IResourceController<AIP> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPController.class);
 
-    public static final String FILES_DELETE_PATH = "/files/delete";
-
     /**
      * {@link IResourceService} instance
      */
@@ -258,6 +260,17 @@ public class AIPController implements IResourceController<AIP> {
             PagedResourcesAssembler<AIP> assembler) throws ModuleException {
         Page<AIP> aips = aipService.retrieveAIPs(state, from, to, tags, session, providerId, pageable);
         return new ResponseEntity<>(toPagedResources(aips, assembler), HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.GET)
+    @ResponseBody
+    @ResourceAccess(description = "send a page of aips")
+    public ResponseEntity<AIPPageWithDataStorages> retrieveAIPWithDataStorages(
+            AIPQueryFilters filters,
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            PagedResourcesAssembler<AIPWithDataStorageIds> assembler) throws ModuleException {
+        AIPPageWithDataStorages aipPage = aipService.retrieveAIPWithDataStorageIds(filters, pageable);
+        return new ResponseEntity<>(aipPage, HttpStatus.OK);
     }
 
     /**

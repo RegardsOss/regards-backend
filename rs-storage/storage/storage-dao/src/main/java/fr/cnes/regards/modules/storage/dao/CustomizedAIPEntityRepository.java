@@ -63,7 +63,8 @@ public class CustomizedAIPEntityRepository implements ICustomizedAIPEntityReposi
         return result;
     }
 
-    private Long countNumberOfResults(String sqlQuery) {
+    @Override
+    public Long countNumberOfResults(String sqlQuery) {
         StringBuilder request = new StringBuilder("SELECT COUNT(*) as total FROM (").append(sqlQuery)
                 .append(") as sub");
         Query qCount = entityManager.createNativeQuery(request.toString());

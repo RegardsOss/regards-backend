@@ -28,8 +28,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -100,7 +102,9 @@ import fr.cnes.regards.modules.storage.dao.IPrioritizedDataStorageRepository;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AIPCollection;
+import fr.cnes.regards.modules.storage.domain.AIPPageWithDataStorages;
 import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.AIPWithDataStorageIds;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
@@ -108,6 +112,7 @@ import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
+import fr.cnes.regards.modules.storage.domain.job.AIPQueryFilters;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultMultipleAllocationStrategy;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
 import fr.cnes.regards.modules.storage.service.plugins.CatalogSecurityDelegationTestPlugin;
@@ -124,6 +129,15 @@ import fr.cnes.regards.modules.storage.service.plugins.CatalogSecurityDelegation
 @DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE, classMode = ClassMode.BEFORE_CLASS)
 @EnableAsync
 public class AIPServiceIT extends AbstractRegardsIT {
+
+    @Configuration
+    static class Config {
+
+        @Bean
+        public INotificationClient notificationClient() {
+            return Mockito.mock(INotificationClient.class);
+        }
+    }
 
     private static final Logger LOG = LoggerFactory.getLogger(AIPServiceIT.class);
 
@@ -550,11 +564,12 @@ public class AIPServiceIT extends AbstractRegardsIT {
                             AIPState.STORAGE_ERROR,
                             beforeRetry.getState());
         // Lets fix it so we can retry by changing the data file origin url
-        StorageDataFile errorSDF = dataFileDao.findAllByStateAndAip(DataFileState.ERROR, aip).stream().findFirst().get();
+        StorageDataFile errorSDF = dataFileDao.findAllByStateAndAip(DataFileState.ERROR, aip).stream().findFirst()
+                .get();
         errorSDF.setOriginUrls(Sets.newHashSet(new URL("file",
-                                                 "",
-                                                 Paths.get("src", "test", "resources", "data.txt").toFile()
-                                                         .getAbsolutePath())));
+                                                       "",
+                                                       Paths.get("src", "test", "resources", "data.txt").toFile()
+                                                               .getAbsolutePath())));
         dataFileDao.save(errorSDF);
         Set<String> aipIpIds = Sets.newHashSet(aip.getId().toString());
         List<RejectedAip> rejectedAips = aipService.applyRetryChecks(aipIpIds);
@@ -1035,6 +1050,34 @@ public class AIPServiceIT extends AbstractRegardsIT {
                             updatedAip.getHistory().size());
     }
 
+    @Test
+    @Requirement("")
+    public void testRetrieveAIPWithDataStorageIds()
+            throws MalformedURLException, InterruptedException, ModuleException {
+        // first lets store the aip before getting it.
+        storeAIP(aip, true);
+        // lets create a filter corresponding to this aip
+        AIPQueryFilters filters = new AIPQueryFilters();
+        filters.setSession(aip.getSession());
+        filters.setFrom(aip.getSubmissionEvent().getDate());
+        filters.setProviderId(aip.getProviderId());
+        filters.setState(AIPState.STORED);
+        filters.setTo(aip.getSubmissionEvent().getDate().plus(1, ChronoUnit.MINUTES));
+        AIPPageWithDataStorages aipPageWithDataStorages = aipService
+                .retrieveAIPWithDataStorageIds(filters, new PageRequest(0, 10));
+        // This page should have only 1 element
+        Assert.assertEquals(1, aipPageWithDataStorages.getMetadata().getSize());
+        // There should be 2 data storages because this aip is stored on 2 data storages
+        Assert.assertEquals(2, aipPageWithDataStorages.getDataStorages().size());
+        // This page element should have the 2  data storage ids
+        Set<Long> expected = new HashSet<>();
+        expected.add(pluginRepo.findOneByLabel(DATA_STORAGE_1_CONF_LABEL).getId());
+        expected.add(pluginRepo.findOneByLabel(DATA_STORAGE_2_CONF_LABEL).getId());
+        for(AIPWithDataStorageIds aipWithDataStorageIds: aipPageWithDataStorages.getContent()) {
+            Assert.assertEquals(expected, aipPageWithDataStorages.getDataStorages());
+        }
+    }
+
     private AIP getAIP() throws MalformedURLException {
 
         UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP,
@@ -1079,15 +1122,6 @@ public class AIPServiceIT extends AbstractRegardsIT {
         prioritizedDataStorageRepository.deleteAll();
         pluginRepo.deleteAll();
         sessionRepo.deleteAll();
-    }
-
-    @Configuration
-    static class Config {
-
-        @Bean
-        public INotificationClient notificationClient() {
-            return Mockito.mock(INotificationClient.class);
-        }
     }
 
 }

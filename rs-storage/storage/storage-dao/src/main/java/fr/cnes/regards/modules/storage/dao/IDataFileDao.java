@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.storage.dao;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -131,4 +132,6 @@ public interface IDataFileDao {
     Set<StorageDataFile> findAllByAipIpIdIn(Collection<String> ipId);
 
     long countByAipAndByState(AIP aip, DataFileState dataFileState);
+
+    List<StorageDataFile> findAllByAipInQuery(String aipQuery);
 }
