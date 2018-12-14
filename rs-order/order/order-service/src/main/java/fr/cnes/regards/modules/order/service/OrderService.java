@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
@@ -238,7 +237,7 @@ public class OrderService implements IOrderService {
         LOGGER.info("OrderService created/refreshed with storageBucketSize: {}, orderValidationPeriodDays: {}"
                 + ", daysBeforeSendingNotifEmail: {}...", storageBucketSize, orderValidationPeriodDays,
                     daysBeforeSendingNotifEmail);
-        proxy = (Strings.isNullOrEmpty(proxyHost)) ? Proxy.NO_PROXY
+        proxy = Strings.isNullOrEmpty(proxyHost) ? Proxy.NO_PROXY
                 : new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
 
     }
@@ -337,7 +336,7 @@ public class OrderService implements IOrderService {
             }
             // In case order contains only external files, percent completion can be set to 100%, else completion is
             // computed when files are available (even if some external files exist, this case will not (often) occur
-            if ((internalFilesCount == 0) && (externalFilesCount > 0)) {
+            if (internalFilesCount == 0 && externalFilesCount > 0) {
                 // Because external files haven't size set (files.size isn't allowed to be mapped on DatasourcePlugins
                 // other than AipDatasourcePlugin which manage only internal files), these will not be taken into
                 // account by {@see OrderService#updateCurrentOrdersComputedValues}
@@ -375,7 +374,7 @@ public class OrderService implements IOrderService {
         // Remove basket only if order has been well-created
         if (order.getStatus() != OrderStatus.FAILED) {
             LOGGER.info("Basket emptied");
-            basketRepository.delete(basket.getId());
+            basketRepository.deleteById(basket.getId());
         }
     }
 
@@ -551,7 +550,7 @@ public class OrderService implements IOrderService {
     public void pause(Long id) throws CannotPauseOrderException {
         Order order = repos.findCompleteById(id);
         // Only a pending or running order can be paused
-        if ((order.getStatus() != OrderStatus.PENDING) && (order.getStatus() != OrderStatus.RUNNING)) {
+        if (order.getStatus() != OrderStatus.PENDING && order.getStatus() != OrderStatus.RUNNING) {
             throw new CannotPauseOrderException();
         }
         // Ask for all jobInfos abortion
@@ -614,8 +613,8 @@ public class OrderService implements IOrderService {
      */
     private boolean orderEffectivelyInPause(Order order) {
         // No associated jobInfo or all associated jobs finished
-        return (order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
-                .filter(ft -> ft.getJobInfo() != null).count() == 0)
+        return order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
+                .filter(ft -> ft.getJobInfo() != null).count() == 0
                 || order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
                         .map(ft -> ft.getJobInfo().getStatus().getStatus()).allMatch(JobStatus::isFinished);
     }
@@ -652,7 +651,7 @@ public class OrderService implements IOrderService {
                 // REMOVED is a final state (order no more exists, this state is unreachable)
                 throw new CannotRemoveOrderException();
         }
-        repos.delete(order.getId());
+        repos.deleteById(order.getId());
     }
 
     @Override
@@ -734,13 +733,13 @@ public class OrderService implements IOrderService {
                                 + sw.toString());
                     }
                     // Unable to download file from storage
-                    if ((response == null) || (response.status() != HttpStatus.OK.value())) {
+                    if (response == null || response.status() != HttpStatus.OK.value()) {
                         downloadErrorFiles.add(dataFile);
                         i.remove();
                         LOGGER.warn("Cannot retrieve data file from storage (aip : {}, checksum : {})", aip,
                                     dataFile.getChecksum());
                         dataFile.setDownloadError("Cannot retrieve data file from storage, feign downloadFile method returns "
-                                + ((response == null) ? "null" : response.toString()));
+                                + (response == null ? "null" : response.toString()));
                         continue;
                     } else { // Download ok
                         try (InputStream is = response.body().asInputStream()) {
@@ -825,7 +824,7 @@ public class OrderService implements IOrderService {
         // For all data files
         for (OrderDataFile file : files) {
             FileType xmlFile = factory.createFileType();
-            String filename = (file.getFilename() != null) ? file.getFilename()
+            String filename = file.getFilename() != null ? file.getFilename()
                     : file.getUrl().substring(file.getUrl().lastIndexOf('/') + 1);
             xmlFile.setIdentity(filename);
             xmlFile.setName(filename);
@@ -879,13 +878,7 @@ public class OrderService implements IOrderService {
     }
 
     private static String encode4Uri(String str) {
-        try {
-            return new String(UriUtils.encode(str, Charset.defaultCharset().name()).getBytes(),
-                    StandardCharsets.US_ASCII);
-        } catch (UnsupportedEncodingException e) {
-            // Will never occurs
-            throw new RsRuntimeException(e);
-        }
+        return new String(UriUtils.encode(str, Charset.defaultCharset().name()).getBytes(), StandardCharsets.US_ASCII);
     }
 
     @Override
@@ -902,14 +895,14 @@ public class OrderService implements IOrderService {
     public void updateTenantOrdersComputations() {
         Set<Order> orders = dataFileService.updateCurrentOrdersComputedValues();
         if (!orders.isEmpty()) {
-            repos.save(orders);
+            repos.saveAll(orders);
         }
         // Because previous method (updateCurrentOrdersComputedValues) takes care of CURRENT jobs, it is necessary
         // to update finished ones ie setting availableFilesCount to 0 for finished jobs not waiting for user
         List<Order> finishedOrders = repos.findFinishedOrdersToUpdate();
         if (!finishedOrders.isEmpty()) {
             finishedOrders.forEach(o -> o.setAvailableFilesCount(0));
-            repos.save(finishedOrders);
+            repos.saveAll(finishedOrders);
         }
     }
 
@@ -956,7 +949,7 @@ public class OrderService implements IOrderService {
             FeignSecurityManager.reset();
             // Update order availableUpdateDate to avoid another microservice instance sending notification emails
             entry.getValue().forEach(order -> order.setAvailableUpdateDate(now));
-            repos.save(entry.getValue());
+            repos.saveAll(entry.getValue());
         }
     }
 

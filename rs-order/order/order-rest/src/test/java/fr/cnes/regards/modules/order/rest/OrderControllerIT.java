@@ -41,10 +41,11 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.restdocs.payload.FieldDescriptor;
@@ -149,7 +150,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
 
         Project project = new Project();
         project.setHost("regards.org");
-        Mockito.when(projectsClient.retrieveProject(Matchers.anyString()))
+        Mockito.when(projectsClient.retrieveProject(ArgumentMatchers.anyString()))
                 .thenReturn(ResponseEntity.ok(new Resource<>(project)));
         Mockito.when(authResolver.getUser()).thenReturn(getDefaultUserEmail());
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
@@ -162,63 +163,51 @@ public class OrderControllerIT extends AbstractRegardsIT {
         Basket basket = new Basket();
         basket.setOwner(getDefaultUserEmail());
         basketRepos.save(basket);
-
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
-
         // Test POST with empty order => 201, an order creation cannot fail
-        performDefaultPost(OrderController.USER_ROOT_PATH, new OrderController.OrderRequest(), customizer, "error");
+        performDefaultPost(OrderController.USER_ROOT_PATH, new OrderController.OrderRequest(),
+                           customizer().expectStatusCreated(), "error");
     }
 
     @Test
     public void testPause() throws URISyntaxException {
         Order order = createOrderAsPending();
-
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         // Pause Order
-        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer, "error", order.getId());
+        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer().expectStatusOk(), "error",
+                          order.getId());
     }
 
     @Test
     public void testPauseFailed() throws URISyntaxException {
         Order order = createOrderAsPending();
 
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-
         // Pause Order
-        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer, "error", order.getId());
+        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer().expectStatusOk(), "error",
+                          order.getId());
 
         // Re-pause Order => fail
-        customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isUnauthorized());
-        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer, "error", order.getId());
+        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer().expectStatus(HttpStatus.UNAUTHORIZED),
+                          "error", order.getId());
     }
 
     @Test
     public void testResume() throws URISyntaxException {
         Order order = createOrderAsPending();
 
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         // Pause Order
-        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer, "error", order.getId());
+        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer().expectStatusOk(), "error",
+                          order.getId());
 
-        customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         // Pause Order
-        performDefaultPut(OrderController.RESUME_ORDER_PATH, null, customizer, "error", order.getId());
+        performDefaultPut(OrderController.RESUME_ORDER_PATH, null, customizer().expectStatusOk(), "error",
+                          order.getId());
     }
 
     @Test
     public void testResumeFailed() throws URISyntaxException {
         Order order = createOrderAsPending();
-
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isUnauthorized());
         // Pause Order
-        performDefaultPut(OrderController.RESUME_ORDER_PATH, null, customizer, "error", order.getId());
+        performDefaultPut(OrderController.RESUME_ORDER_PATH, null, customizer().expectStatus(HttpStatus.UNAUTHORIZED),
+                          "error", order.getId());
     }
 
     @Requirement("REGARDS_DSL_STO_CMD_450")
@@ -226,35 +215,30 @@ public class OrderControllerIT extends AbstractRegardsIT {
     public void testDelete() throws URISyntaxException, InterruptedException {
         Order order = createOrderAsPending();
 
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         // Pause Order
-        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer, "error", order.getId());
+        performDefaultPut(OrderController.PAUSE_ORDER_PATH, null, customizer().expectStatusOk(), "error",
+                          order.getId());
 
         Thread.sleep(1000);
 
         // Delete Order
-        performDefaultDelete(OrderController.DELETE_ORDER_PATH, customizer, "error", order.getId());
+        performDefaultDelete(OrderController.DELETE_ORDER_PATH, customizer().expectStatusOk(), "error", order.getId());
     }
 
     @Test
     public void testDeleteFailed() throws URISyntaxException {
         Order order = createOrderAsPending();
-
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isUnauthorized());
         // Pause Order
-        performDefaultDelete(OrderController.DELETE_ORDER_PATH, customizer, "error", order.getId());
+        performDefaultDelete(OrderController.DELETE_ORDER_PATH, customizer().expectStatus(HttpStatus.UNAUTHORIZED),
+                             "error", order.getId());
     }
 
     @Test
     public void testRemoveFailed() throws URISyntaxException {
         Order order = createOrderAsRunning();
-
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isUnauthorized());
         // Pause Order
-        performDefaultDelete(OrderController.REMOVE_ORDER_PATH, customizer, "error", order.getId());
+        performDefaultDelete(OrderController.REMOVE_ORDER_PATH, customizer().expectStatus(HttpStatus.UNAUTHORIZED),
+                             "error", order.getId());
     }
 
     @Requirement("REGARDS_DSL_STO_CMD_450")
@@ -262,16 +246,13 @@ public class OrderControllerIT extends AbstractRegardsIT {
     public void testRemove() throws URISyntaxException {
         Order order = createOrderAsPending();
 
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         // Delete Order
-        performDefaultDelete(OrderController.REMOVE_ORDER_PATH, customizer, "error", order.getId());
+        performDefaultDelete(OrderController.REMOVE_ORDER_PATH, customizer().expectStatusOk(), "error", order.getId());
     }
 
     @Test
     public void testCreateNOK() {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
+        RequestBuilderCustomizer customizer = customizer().expectStatusNoContent();
 
         // Add doc
         ConstrainedFields constrainedFields = new ConstrainedFields(OrderController.OrderRequest.class);
@@ -291,10 +272,9 @@ public class OrderControllerIT extends AbstractRegardsIT {
     public void testGetOrder() throws URISyntaxException {
         Order order = createOrderAsRunning();
 
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        // Add Doc
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
 
+        // Add Doc
         ConstrainedFields constrainedFields = new ConstrainedFields(BasketSelectionRequest.class);
         List<FieldDescriptor> fields = new ArrayList<>();
         fields.add(constrainedFields.withPath("content", "order object").optional().type(JSON_OBJECT_TYPE));
@@ -306,22 +286,17 @@ public class OrderControllerIT extends AbstractRegardsIT {
 
     @Test
     public void testGetNotFoundOrder() {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isNotFound());
-
-        performDefaultGet(OrderController.GET_ORDER_PATH, customizer, "error", -12);
+        performDefaultGet(OrderController.GET_ORDER_PATH, customizer().expectStatusNotFound(), "error", -12);
     }
 
     @Test
     public void testDownloadMetalinkFile() throws IOException, URISyntaxException {
         Order order = createOrderAsRunning();
-        DatasetTask ds1Task = order.getDatasetTasks().first();
+        order.getDatasetTasks().first();
 
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-
-        ResultActions resultActions = performDefaultGet(OrderController.METALINK_DOWNLOAD_PATH, customizer,
-                                                        "Should return result", order.getId());
+        ResultActions resultActions = performDefaultGet(OrderController.METALINK_DOWNLOAD_PATH,
+                                                        customizer().expectStatusOk(), "Should return result",
+                                                        order.getId());
         Assert.assertEquals("application/metalink+xml", resultActions.andReturn().getResponse().getContentType());
         File resultFileMl = File.createTempFile("ORDER_", ".metalink");
         resultFileMl.deleteOnExit();
@@ -344,11 +319,9 @@ public class OrderControllerIT extends AbstractRegardsIT {
         Order order = createOrderAsRunning();
 
         // Download metalink file
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-
-        ResultActions resultActions = performDefaultGet(OrderController.METALINK_DOWNLOAD_PATH, customizer,
-                                                        "Should return result", order.getId());
+        ResultActions resultActions = performDefaultGet(OrderController.METALINK_DOWNLOAD_PATH,
+                                                        customizer().expectStatusOk(), "Should return result",
+                                                        order.getId());
         Assert.assertEquals("application/metalink+xml", resultActions.andReturn().getResponse().getContentType());
         File resultFileMl = File.createTempFile("ORDER_", ".metalink");
         resultFileMl.deleteOnExit();
@@ -379,9 +352,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
         // Stop at "scope=PROJECT"
         String token = urlParts[5].substring(urlParts[5].indexOf('=') + 1, urlParts[5].indexOf('&'));
 
-        customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.customizeRequestParam().param("orderToken", token);
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.addParameter("orderToken", token);
         // request parameters
         customizer.addDocumentationSnippet(RequestDocumentation
                 .relaxedRequestParameters(RequestDocumentation.parameterWithName("orderToken").optional()
@@ -403,14 +375,12 @@ public class OrderControllerIT extends AbstractRegardsIT {
             SAXException, ParserConfigurationException {
         Order order = createOrderAsRunning();
 
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-
         //////////////////////////////////
         // Then download order Zip file //
         //////////////////////////////////
-        ResultActions resultActions = performDefaultGet(OrderController.ZIP_DOWNLOAD_PATH, customizer,
-                                                        "Should return result", order.getId());
+        ResultActions resultActions = performDefaultGet(OrderController.ZIP_DOWNLOAD_PATH,
+                                                        customizer().expectStatusOk(), "Should return result",
+                                                        order.getId());
         assertMediaType(resultActions, MediaType.APPLICATION_OCTET_STREAM);
         File resultFile = File.createTempFile("ZIP_ORDER_", ".zip");
         resultFile.deleteOnExit();
@@ -431,10 +401,9 @@ public class OrderControllerIT extends AbstractRegardsIT {
 
         order = orderRepository.findCompleteById(order.getId());
 
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.customizeRequestParam().param("page", "0");
-        customizer.customizeRequestParam().param("size", "20");
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.addParameter("page", "0");
+        customizer.addParameter("size", "20");
         // request parameters
         customizer.addDocumentationSnippet(RequestDocumentation
                 .relaxedRequestParameters(RequestDocumentation.parameterWithName("page").optional()
@@ -472,14 +441,12 @@ public class OrderControllerIT extends AbstractRegardsIT {
             SAXException, ParserConfigurationException {
         Order order = createOrderAsRunning();
 
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-
         ////////////////////////////////////////
         // First Download metalink order file //
         ////////////////////////////////////////
-        ResultActions resultActions = performDefaultGet(OrderController.METALINK_DOWNLOAD_PATH, customizer,
-                                                        "Should return result", order.getId());
+        ResultActions resultActions = performDefaultGet(OrderController.METALINK_DOWNLOAD_PATH,
+                                                        customizer().expectStatusOk(), "Should return result",
+                                                        order.getId());
         Assert.assertEquals("application/metalink+xml", resultActions.andReturn().getResponse().getContentType());
         File resultFileMl = File.createTempFile("ORDER_", ".metalink");
         resultFileMl.deleteOnExit();
@@ -494,13 +461,11 @@ public class OrderControllerIT extends AbstractRegardsIT {
         Assert.assertTrue(resultFileMl.length() > 8000l); // 14 files listed into metalink file (size is
         // slightely different into jenkins)
 
-        customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
         //////////////////////////////////
         // Then download order Zip file //
         //////////////////////////////////
-        resultActions = performDefaultGet("/user/orders/{orderId}/download", customizer, "Should return result",
-                                          order.getId());
+        resultActions = performDefaultGet("/user/orders/{orderId}/download", customizer().expectStatusOk(),
+                                          "Should return result", order.getId());
         assertMediaType(resultActions, MediaType.APPLICATION_OCTET_STREAM);
         File resultFile = File.createTempFile("ZIP_ORDER_", ".zip");
         resultFile.deleteOnExit();
@@ -556,9 +521,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
             if (i > 5) {
                 continue;
             }
-            customizer = getNewRequestBuilderCustomizer();
-            customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-            customizer.customizeRequestParam().param("orderToken", token);
+            RequestBuilderCustomizer customizer = customizer().expectStatusOk().addParameter("orderToken", token);
 
             customizer.addDocumentationSnippet(RequestDocumentation
                     .relaxedRequestParameters(RequestDocumentation.parameterWithName("orderToken").optional()
@@ -599,14 +562,12 @@ public class OrderControllerIT extends AbstractRegardsIT {
     public void testDownloadNotYetAvailableFile() throws URISyntaxException, IOException, JAXBException {
         Order order = createOrderAsRunning();
 
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-
         ////////////////////////////////////////
         // First Download metalink order file //
         ////////////////////////////////////////
-        ResultActions resultActions = performDefaultGet(OrderController.METALINK_DOWNLOAD_PATH, customizer,
-                                                        "Should return result", order.getId());
+        ResultActions resultActions = performDefaultGet(OrderController.METALINK_DOWNLOAD_PATH,
+                                                        customizer().expectStatusOk(), "Should return result",
+                                                        order.getId());
         Assert.assertEquals("application/metalink+xml", resultActions.andReturn().getResponse().getContentType());
         File resultFileMl = File.createTempFile("ORDER_", ".metalink");
         resultFileMl.deleteOnExit();
@@ -662,10 +623,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
             }
         }
         // Attempt to download not yet available data file
-        customizer = getNewRequestBuilderCustomizer();
-        // 202
-        customizer.addExpectation(MockMvcResultMatchers.status().isAccepted());
-        customizer.customizeRequestParam().param("orderToken", lastDataFileToken);
+        RequestBuilderCustomizer customizer = customizer().expectStatus(HttpStatus.ACCEPTED);
+        customizer.addParameter("orderToken", lastDataFileToken);
         performDefaultGet(OrderDataFileController.ORDERS_AIPS_AIP_ID_FILES_ID, customizer, "Should return result",
                           URLDecoder.decode(lastDataFileAipId, "UTF-8"), lastDataFileId);
     }
@@ -743,9 +702,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
         createSeveralOrdersWithDifferentOwners();
 
         // All orders
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.length()", org.hamcrest.Matchers.is(3)));
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", org.hamcrest.Matchers.is(3)));
         performDefaultGet(OrderController.ADMIN_ROOT_PATH, customizer, "errors");
     }
 
@@ -755,12 +713,11 @@ public class OrderControllerIT extends AbstractRegardsIT {
         createSeveralOrdersWithDifferentOwners();
 
         // All specific user orders
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.length()", org.hamcrest.Matchers.is(1)));
-        customizer.customizeRequestParam().param("user", "other.user2@regards.fr");
-        customizer.customizeRequestParam().param("page", "0");
-        customizer.customizeRequestParam().param("size", "20");
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", org.hamcrest.Matchers.is(1)));
+        customizer.addParameter("user", "other.user2@regards.fr");
+        customizer.addParameter("page", "0");
+        customizer.addParameter("size", "20");
         // request parameters
         customizer.addDocumentationSnippet(RequestDocumentation
                 .relaxedRequestParameters(RequestDocumentation.parameterWithName("user").optional()
@@ -786,11 +743,10 @@ public class OrderControllerIT extends AbstractRegardsIT {
         createSeveralOrdersWithDifferentOwners();
 
         // All specific user orders
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.length()", org.hamcrest.Matchers.is(1)));
-        customizer.customizeRequestParam().param("page", "0");
-        customizer.customizeRequestParam().param("size", "20");
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", org.hamcrest.Matchers.is(1)));
+        customizer.addParameter("page", "0");
+        customizer.addParameter("size", "20");
         // request parameters
         customizer.addDocumentationSnippet(RequestDocumentation
                 .relaxedRequestParameters(RequestDocumentation.parameterWithName("page").optional()
@@ -832,10 +788,8 @@ public class OrderControllerIT extends AbstractRegardsIT {
     public void testCsv() throws URISyntaxException, UnsupportedEncodingException {
         createSeveralOrdersWithDifferentOwners();
 
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.customizeHeaders().add(HttpConstants.CONTENT_TYPE, "application/json");
-        customizer.customizeHeaders().add(HttpConstants.ACCEPT, "text/csv");
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk()
+                .addHeader(HttpConstants.CONTENT_TYPE, "application/json").addHeader(HttpConstants.ACCEPT, "text/csv");
 
         ResultActions results = performDefaultGet(OrderController.ADMIN_ROOT_PATH + OrderController.CSV, customizer,
                                                   "error");

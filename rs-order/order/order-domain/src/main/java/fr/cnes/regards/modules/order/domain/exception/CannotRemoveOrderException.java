@@ -23,7 +23,9 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 /**
  * @author oroussel
  */
+@SuppressWarnings("serial")
 public class CannotRemoveOrderException extends ModuleException {
+
     public CannotRemoveOrderException() {
         super("ORDER_MUST_NOT_BE_RUNNING");
     }

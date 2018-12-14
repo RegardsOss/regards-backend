@@ -18,9 +18,12 @@
  */
 package fr.cnes.regards.modules.order.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.order.dao.IDatasetTaskRepository;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
 
@@ -34,8 +37,9 @@ public class DatasetTaskService implements IDatasetTaskService {
     private IDatasetTaskRepository repos;
 
     @Override
-    public DatasetTask loadSimple(Long datasetId) {
-        return repos.findOne(datasetId);
+    public DatasetTask loadSimple(Long datasetId) throws EntityNotFoundException {
+        Optional<DatasetTask> task = repos.findById(datasetId);
+        return task.orElseThrow(() -> new EntityNotFoundException(datasetId, DatasetTask.class));
     }
 
     @Override

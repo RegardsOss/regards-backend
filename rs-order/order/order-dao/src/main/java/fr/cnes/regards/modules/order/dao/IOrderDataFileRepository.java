@@ -1,13 +1,14 @@
 package fr.cnes.regards.modules.order.dao;
 
-import javax.persistence.Convert;
-import javax.persistence.Converts;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import javax.persistence.Convert;
+import javax.persistence.Converts;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -89,9 +90,8 @@ public interface IOrderDataFileRepository extends JpaRepository<OrderDataFile, L
     List<Object[]> selectCountFilesByOrderIdAndStates4AllOrders(OffsetDateTime limitDate, Collection<String> states);
 
     default List<Object[]> selectCountFilesByOrderIdAndStates4AllOrders(OffsetDateTime limitDate, FileState... states) {
-        return selectCountFilesByOrderIdAndStates4AllOrders(limitDate,
-                                                            Arrays.asList(states).stream().map(FileState::toString)
-                                                                    .collect(Collectors.toList()));
+        return selectCountFilesByOrderIdAndStates4AllOrders(limitDate, Arrays.asList(states).stream()
+                .map(FileState::toString).collect(Collectors.toList()));
     }
 
     @Modifying

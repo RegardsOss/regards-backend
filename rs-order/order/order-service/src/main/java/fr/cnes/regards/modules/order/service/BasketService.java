@@ -76,7 +76,7 @@ public class BasketService implements IBasketService {
     @Override
     public Basket findOrCreate(String user) {
         Basket basket = repos.findByOwner(user);
-        return (basket == null) ? repos.save(new Basket(user)) : basket;
+        return basket == null ? repos.save(new Basket(user)) : basket;
     }
 
     @Override
@@ -92,7 +92,7 @@ public class BasketService implements IBasketService {
     public void deleteIfExists(String user) {
         Basket basket = repos.findByOwner(user);
         if (basket != null) {
-            repos.delete(basket.getId());
+            repos.deleteById(basket.getId());
         }
     }
 

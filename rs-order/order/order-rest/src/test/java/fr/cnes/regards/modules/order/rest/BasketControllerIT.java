@@ -28,15 +28,15 @@ import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.PayloadDocumentation;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -131,7 +131,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
 
         Project project = new Project();
         project.setHost("regards.org");
-        Mockito.when(projectsClient.retrieveProject(Matchers.anyString()))
+        Mockito.when(projectsClient.retrieveProject(ArgumentMatchers.anyString()))
                 .thenReturn(ResponseEntity.ok(new Resource<>(project)));
         Mockito.when(authResolver.getUser()).thenReturn(getDefaultUserEmail());
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.REGISTERED_USER.toString());
@@ -139,18 +139,8 @@ public class BasketControllerIT extends AbstractRegardsIT {
 
     @Test
     public void testAddBadSelection() {
-        BasketSelectionRequest request = new BasketSelectionRequest();
-
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isUnprocessableEntity());
-
-        try {
-            performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, request, customizer,
-                               "error");
-        } catch (AssertionError e) {
-            e.printStackTrace();
-            throw e;
-        }
+        performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, new BasketSelectionRequest(),
+                           customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY), "error");
     }
 
     @Test
@@ -161,10 +151,8 @@ public class BasketControllerIT extends AbstractRegardsIT {
         request.setEntityIdsToInclude(Collections
                 .singleton("URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1"));
 
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
-
-        performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, request, customizer, "error");
+        performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, request,
+                           customizer().expectStatusNoContent(), "error");
     }
 
     @Test
@@ -175,10 +163,8 @@ public class BasketControllerIT extends AbstractRegardsIT {
         request.setEntityIdsToInclude(Collections
                 .singleton("URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1"));
 
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
-
-        performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, request, customizer, "error");
+        performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, request,
+                           customizer().expectStatusNoContent(), "error");
     }
 
     @Test
@@ -190,8 +176,8 @@ public class BasketControllerIT extends AbstractRegardsIT {
                 .singleton("URN:AIP:DATA:project2:77d75611-fac4-3047-8d3b-e0468fe1063e:V1"));
         request.setDatasetUrn("URN%3AAIP%3ADATASET%3AOlivier%3A4af7fa7f-110e-42c8-b434-7c863c280548%3AV1");
 
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
+        RequestBuilderCustomizer customizer = customizer().expectStatusNoContent();
+
         // Add doc
         ConstrainedFields constrainedFields = new ConstrainedFields(BasketSelectionRequest.class);
         List<FieldDescriptor> fields = new ArrayList<>();
@@ -210,28 +196,19 @@ public class BasketControllerIT extends AbstractRegardsIT {
         parameters.add("q", "MACHIN: BIDULE AND PATATIPATAT: POUET");
         request.setSearchParameters(parameters);
 
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
-
-        performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, request, customizer, "error");
+        performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, request,
+                           customizer().expectStatusNoContent(), "error");
     }
 
     @Test
     public void testGetEmptyBasket() {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
-
-        performDefaultGet(BasketController.ORDER_BASKET, customizer, "error");
+        performDefaultGet(BasketController.ORDER_BASKET, customizer().expectStatusNoContent(), "error");
     }
 
     @Test
     public void testGetBasket() {
         createBasket();
-
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-
-        performDefaultGet(BasketController.ORDER_BASKET, customizer, "error");
+        performDefaultGet(BasketController.ORDER_BASKET, customizer().expectStatusNoContent(), "error");
     }
 
     private Basket createBasket() {
@@ -262,37 +239,25 @@ public class BasketControllerIT extends AbstractRegardsIT {
     @Test
     public void testRemoveDatasetSelection() throws UnsupportedEncodingException {
         Basket basket = createBasket();
-
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-
-        performDefaultDelete(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID, customizer,
-                             "error", basket.getDatasetSelections().first().getId());
+        performDefaultDelete(BasketController.ORDER_BASKET + BasketController.DATASET_DATASET_SELECTION_ID,
+                             customizer().expectStatusOk(), "error", basket.getDatasetSelections().first().getId());
     }
 
     @Test
     public void testRemoveDatedItemSelection() throws UnsupportedEncodingException {
         Basket basket = createBasket();
-
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-
         OffsetDateTime date = basket.getDatasetSelections().first().getItemsSelections().first().getSelectionRequest()
                 .getSelectionDate();
 
         performDefaultDelete(BasketController.ORDER_BASKET
-                + BasketController.DATASET_DATASET_SELECTION_ID_ITEMS_SELECTION_DATE, customizer, "error",
-                             basket.getDatasetSelections().first().getId(), OffsetDateTimeAdapter.format(date),
+                + BasketController.DATASET_DATASET_SELECTION_ID_ITEMS_SELECTION_DATE, customizer().expectStatusOk(),
+                             "error", basket.getDatasetSelections().first().getId(), OffsetDateTimeAdapter.format(date),
                              Charset.defaultCharset().toString());
     }
 
     @Test
     public void testEmptyBasket() {
         createBasket();
-
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
-
-        performDefaultDelete(BasketController.ORDER_BASKET, customizer, "error");
+        performDefaultDelete(BasketController.ORDER_BASKET, customizer().expectStatusNoContent(), "error");
     }
 }

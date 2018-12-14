@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.order.service;
 
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
 
 /**
@@ -25,7 +26,7 @@ import fr.cnes.regards.modules.order.domain.DatasetTask;
  */
 public interface IDatasetTaskService {
 
-    DatasetTask loadSimple(Long datasetId);
+    DatasetTask loadSimple(Long datasetId) throws EntityNotFoundException;
 
     DatasetTask loadComplete(Long datasetId);
 }
