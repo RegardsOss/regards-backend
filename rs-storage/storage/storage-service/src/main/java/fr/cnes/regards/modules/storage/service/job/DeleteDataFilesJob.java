@@ -33,10 +33,11 @@ public class DeleteDataFilesJob extends AbstractStoreFilesJob {
             try {
                 storagePlugin.safeDelete(workingSubset, progressManager);
             } catch (IllegalStateException e) {
-                throw new IllegalStateException(
-                        String.format("Could not delete data for plugin configuration with label: %s",
-                                      pluginService.getPluginConfiguration(confIdToUse).getLabel()),
-                        e);
+                workingSubset.getDataFiles()
+                        .forEach(file -> progressManager.deletionFailed(file, Optional.empty(), e.getMessage()));
+                throw new IllegalStateException(String.format(
+                        "Could not delete data for plugin configuration with label: %s",
+                        pluginService.getPluginConfiguration(confIdToUse).getLabel()), e);
             }
         } catch (ModuleException e) {
             //throwing new runtime allows us to make the job fail.
