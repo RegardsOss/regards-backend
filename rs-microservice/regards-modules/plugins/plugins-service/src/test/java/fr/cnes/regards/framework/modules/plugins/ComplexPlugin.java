@@ -27,7 +27,6 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
  * ISamplePlugin
- *
  * @author Christophe Mertz
  */
 @Plugin(description = "Complex plugin test", id = "aComplexPlugin", version = "0.0.1", author = "REGARDS Team",
@@ -65,12 +64,12 @@ public class ComplexPlugin implements ISamplePlugin {
 
     @Override
     public String echo(final String pMessage) {
-        final StringBuffer str = new StringBuffer();
+        final StringBuilder str = new StringBuilder();
         if (isActive) {
-            str.append(this.getClass().getName() + "-" + pMessage);
+            str.append(this.getClass().getName()).append("-").append(pMessage);
         } else {
 
-            str.append(this.getClass().getName() + ":is not active");
+            str.append(this.getClass().getName()).append(":is not active");
         }
         return str.toString();
     }

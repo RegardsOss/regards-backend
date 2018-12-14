@@ -26,7 +26,7 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
  * <b>By default, equality between 2 entities uses id if both exist else they are considered as different</b>
  * @author oroussel
  */
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({ "rawtypes", "SimplifiableConditionalExpression" })
 @Entity
 @Table(name = "t_task")
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -89,7 +89,7 @@ public abstract class AbstractReliantTask<K extends AbstractReliantTask> impleme
 
         AbstractReliantTask<?> that = (AbstractReliantTask<?>) o;
         // id1 == id2 else false if id1, id2 or both is (are) null
-        return id != null ? id.equals(that.id) : false;
+        return (id != null) && id.equals(that.id);
     }
 
     @Override

@@ -19,12 +19,6 @@
 
 package fr.cnes.regards.framework.modules.plugins.domain;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -39,10 +33,14 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
@@ -148,27 +146,27 @@ public class PluginParameter implements IIdentifiable<Long> {
         this.pluginConfiguration = pluginConfiguration;
     }
 
-    public final String getName() {
+    public String getName() {
         return name;
     }
 
-    public final void setName(final String pName) {
+    public void setName(final String pName) {
         name = pName;
     }
 
-    public final Boolean isDynamic() {
+    public Boolean isDynamic() {
         return dynamic;
     }
 
-    public final void setIsDynamic(Boolean pIsDynamic) {
+    public void setIsDynamic(Boolean pIsDynamic) {
         dynamic = pIsDynamic;
     }
 
-    public final PluginConfiguration getPluginConfiguration() {
+    public PluginConfiguration getPluginConfiguration() {
         return pluginConfiguration;
     }
 
-    public final void setPluginConfiguration(PluginConfiguration pPluginConfiguration) {
+    public void setPluginConfiguration(PluginConfiguration pPluginConfiguration) {
         pluginConfiguration = pPluginConfiguration;
     }
 
@@ -271,24 +269,15 @@ public class PluginParameter implements IIdentifiable<Long> {
         PluginParameter other = (PluginParameter) obj;
 
         if (name == null) {
-            if (other.name != null) {
-                return false;
-            }
-        } else if (!name.equals(other.name)) {
-            return false;
-        }
-        return true;
+            return other.name == null;
+        } else
+            return name.equals(other.name);
     }
 
     @Override
     public String toString() {
-        StringBuilder strBuilder = new StringBuilder();
-        strBuilder.append(name);
-        strBuilder.append(" - ");
-        strBuilder.append(value);
-        strBuilder.append(" - ");
-        strBuilder.append(dynamic.toString());
-        return strBuilder.toString();
+        String strBuilder = name + " - " + value + " - " + dynamic.toString();
+        return strBuilder;
     }
 
     /**

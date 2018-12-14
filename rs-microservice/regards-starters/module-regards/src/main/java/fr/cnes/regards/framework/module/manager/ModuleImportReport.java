@@ -4,7 +4,6 @@ import java.util.Set;
 
 /**
  * Pojo used to know if module configuration import had errors
- *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class ModuleImportReport {

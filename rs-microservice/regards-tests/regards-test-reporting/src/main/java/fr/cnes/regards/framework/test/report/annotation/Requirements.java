@@ -26,9 +26,7 @@ import java.lang.annotation.Target;
 
 /**
  * List of method requirements
- *
  * @author msordi
- *
  */
 @Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
@@ -36,7 +34,6 @@ import java.lang.annotation.Target;
 public @interface Requirements {
 
     /**
-     *
      * @return the list of requirements
      */
     Requirement[] value();

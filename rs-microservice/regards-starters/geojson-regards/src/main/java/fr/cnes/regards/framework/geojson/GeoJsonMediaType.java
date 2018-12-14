@@ -22,9 +22,7 @@ import org.springframework.http.MediaType;
 
 /**
  * Utility class for rfc7946 registered media type
- *
  * @author Marc Sordi
- *
  */
 public final class GeoJsonMediaType {
 

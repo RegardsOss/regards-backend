@@ -2,19 +2,19 @@
 
 * **Code:** {{statusCode}} {{statusReason}}
 
-  **Headers:**
+        **Headers:**
 
-  {{#headers}}
-  `{{name}}: {{value}}`
-  {{/headers}}
+    {{#headers}}
+        `{{name}}:{{value}}`
+    {{/headers}}
 
-  **Content:**
+        **Content:**
 
-{{#responseBody}}
-```json
-{{responseBody}}
-```
-{{/responseBody}}
-{{^responseBody}}
-    None
-{{/responseBody}}
+    {{#responseBody}}
+        ```json
+    {{responseBody}}
+        ```
+    {{/responseBody}}
+    {{^responseBody}}
+        None
+    {{/responseBody}}

@@ -26,8 +26,6 @@ import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 
 /**
  * @author msordi
- *
- *
  * @deprecated could replace {@link MicroserviceInfo} / FIXME
  */
 @Deprecated
@@ -35,21 +33,18 @@ import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 public class MicroserviceProperties {
 
     /**
-     *
      * Name of the microservice
      */
     @NotNull
     private String name;
 
     /**
-     *
      * Version of the microservice
      */
     @NotNull
     private String version;
 
     /**
-     *
      * Dependencies of microservice
      */
     private String[] dependencies;

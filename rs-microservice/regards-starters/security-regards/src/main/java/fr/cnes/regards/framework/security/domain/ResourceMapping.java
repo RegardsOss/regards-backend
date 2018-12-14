@@ -27,11 +27,8 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 
 /**
- *
  * Carries resource endpoint configuration
- *
  * @author msordi
- *
  */
 public class ResourceMapping {
 
@@ -67,15 +64,10 @@ public class ResourceMapping {
 
     /**
      * Constructor
-     *
-     * @param pResourceAccess
-     *            the resource access annotation
-     * @param pFullPath
-     *            the URL path to access resource
-     * @param pMethod
-     *            the called HTTP method
-     * @param pDefaultRole
-     *            default role for resource access
+     * @param pResourceAccess the resource access annotation
+     * @param pFullPath the URL path to access resource
+     * @param pMethod the called HTTP method
+     * @param pDefaultRole default role for resource access
      */
     public ResourceMapping(final ResourceAccess pResourceAccess, final String pFullPath, final RequestMethod pMethod,
             String pSimpleName, final RoleAuthority pDefaultRole) {
@@ -88,13 +80,9 @@ public class ResourceMapping {
 
     /**
      * Constructor
-     *
-     * @param pResourceAccess
-     *            the resource access annotation
-     * @param pFullPath
-     *            the URL path to access resource
-     * @param pMethod
-     *            the called HTTP method
+     * @param pResourceAccess the resource access annotation
+     * @param pFullPath the URL path to access resource
+     * @param pMethod the called HTTP method
      */
     public ResourceMapping(final ResourceAccess pResourceAccess, final String pFullPath,
             final String pControllerSimpleName, final RequestMethod pMethod) {
@@ -106,11 +94,8 @@ public class ResourceMapping {
 
     /**
      * Constructor
-     *
-     * @param pFullPath
-     *            the URL path to access resource
-     * @param pMethod
-     *            the called HTTP method
+     * @param pFullPath the URL path to access resource
+     * @param pMethod the called HTTP method
      */
     public ResourceMapping(final String pFullPath, final String pControllerSimpleName, final RequestMethod pMethod) {
         this(null, pFullPath, pControllerSimpleName, pMethod);
@@ -118,17 +103,12 @@ public class ResourceMapping {
 
     /**
      * Compute resource identifier
-     *
      * @return a unique identifier for the resource access
      */
     public String getResourceMappingId() {
-        final StringBuilder identifier = new StringBuilder();
 
-        identifier.append(fullPath);
-        identifier.append(SEPARATOR);
-        identifier.append(method.toString());
-
-        return identifier.toString();
+        String identifier = fullPath + SEPARATOR + method.toString();
+        return identifier;
     }
 
     /**
@@ -173,7 +153,6 @@ public class ResourceMapping {
 
     /**
      * Set the controller simple name
-     * @param pControllerSimpleName
      */
     public void setControllerSimpleName(String pControllerSimpleName) {
         controllerSimpleName = pControllerSimpleName;

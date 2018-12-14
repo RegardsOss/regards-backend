@@ -28,7 +28,6 @@ import fr.cnes.regards.framework.utils.plugins.basic.ISamplePlugin;
 
 /**
  * SamplePlugin
- *
  * @author Christophe Mertz
  */
 @Plugin(description = "Sample plugin test", id = "SamplePluginWithPojo", version = "0.0.1", author = "REGARDS Team",
@@ -71,12 +70,12 @@ public class SamplePluginWithPojo implements ISamplePlugin {
 
     @Override
     public String echo(final String pMessage) {
-        final StringBuffer str = new StringBuffer();
+        final StringBuilder str = new StringBuilder();
         if (isActive) {
-            str.append(this.getClass().getName() + " -> " + pMessage + " - " + suffix);
+            str.append(this.getClass().getName()).append(" -> ").append(pMessage).append(" - ").append(suffix);
         } else {
 
-            str.append(this.getClass().getName() + ":is not active");
+            str.append(this.getClass().getName()).append(":is not active");
         }
         return str.toString();
     }
@@ -94,7 +93,7 @@ public class SamplePluginWithPojo implements ISamplePlugin {
     @PluginInit
     private void aInit() {
         LOGGER.info("Init method call : " + this.getClass().getName() + "suffixe:" + suffix + "|active:" + isActive
-                + "|coeff:" + coef);
+                            + "|coeff:" + coef);
     }
 
     public TestPojo getPojo() {

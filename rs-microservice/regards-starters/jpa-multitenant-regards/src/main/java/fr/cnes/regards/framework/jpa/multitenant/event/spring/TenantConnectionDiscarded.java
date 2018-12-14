@@ -22,9 +22,7 @@ import org.springframework.context.ApplicationEvent;
 
 /**
  * Event that informs current microservice a connection is discarded on specified tenant.
- *
  * @author Marc Sordi
- *
  */
 @SuppressWarnings("serial")
 public class TenantConnectionDiscarded extends ApplicationEvent {

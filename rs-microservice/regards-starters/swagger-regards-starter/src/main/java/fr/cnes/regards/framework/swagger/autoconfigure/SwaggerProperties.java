@@ -25,9 +25,7 @@ import org.springframework.validation.annotation.Validated;
 
 /**
  * Swagger properties
- *
  * @author msordi
- *
  */
 @Validated
 @ConfigurationProperties(prefix = "regards.swagger")

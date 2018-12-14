@@ -29,11 +29,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.cloud.netflix.feign.EnableFeignClients;
-import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,23 +44,21 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpServerErrorException;
 
-import com.google.gson.Gson;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**
  * @author Marc Sordi
- *
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = FeignClientTests.Application.class, webEnvironment = WebEnvironment.DEFINED_PORT,
-        value = { "spring.application.name=feignclienttest", "server.port=30333",
-                "logging.level.org.springframework.cloud.netflix.feign.valid=DEBUG", "feign.httpclient.enabled=false",
-                "feign.okhttp.enabled=false", "jwt.secret=123456789" })
+@SpringBootTest(classes = FeignClientTests.Application.class, webEnvironment = WebEnvironment.DEFINED_PORT)
 public class FeignClientTests {
 
     private static final String HELLO_MESSAGE = "Hello world";
 
-    private static final Logger LOG = LoggerFactory.getLogger(FeignClientTests.class);
+    @SuppressWarnings("unused")
+    private static final Logger LOGGER = LoggerFactory.getLogger(FeignClientTests.class);
 
     @Autowired
     private ApplicationContext context;
@@ -67,15 +66,13 @@ public class FeignClientTests {
     @Autowired
     private IHelloClient helloClient;
 
-    @Autowired
-    private Gson gson;
-
-    @SpringBootApplication
+    @SpringBootApplication(exclude = SecurityAutoConfiguration.class)
     @RestController
     @EnableFeignClients("unkown.package")
     protected static class Application {
 
         @RequestMapping(method = RequestMethod.GET, value = "/hello")
+        @ResourceAccess(role = DefaultRole.PROJECT_ADMIN, description = "FUCK")
         public ResponseEntity<Hello> getHello() {
             Hello hello = new Hello();
             hello.setMessage(HELLO_MESSAGE);
@@ -90,8 +87,7 @@ public class FeignClientTests {
         }
 
         public static void main(String[] args) {
-            new SpringApplicationBuilder(Application.class)
-                    .properties("spring.application.name=feignclienttest", "management.contextPath=/admin").run(args);
+            new SpringApplicationBuilder(Application.class).run(args);
         }
     }
 
@@ -109,7 +105,7 @@ public class FeignClientTests {
     }
 
     /**
-     * Test {@link FeignClient} are discovered properly
+     * Test {@link org.springframework.cloud.openfeign.FeignClient} are discovered properly
      */
     @Test
     public void testAnnnotations() {

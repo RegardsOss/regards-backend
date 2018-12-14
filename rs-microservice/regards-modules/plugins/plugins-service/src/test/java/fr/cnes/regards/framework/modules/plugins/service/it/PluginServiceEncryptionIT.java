@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 
 /**
  * Integration tests on sensitive plugin parameter handling
- *
  * @author Sylvain VISSIERE-GUERINET
  */
 @TestPropertySource(properties = "spring.jpa.properties.hibernate.default_schema=plugins")

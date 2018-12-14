@@ -15,7 +15,6 @@ import fr.cnes.regards.framework.utils.RsRuntimeException;
 
 /**
  * Converter for {@link Set} of {@link URL}, based on {@link SetStringCsvConverter}.
- *
  * @author Sylvain VISSIERE-GUERINET
  */
 @Converter
@@ -31,17 +30,18 @@ public class SetURLCsvConverter implements AttributeConverter<Set<URL>, String> 
             return null;
         }
         return stringConverter
-                .convertToDatabaseColumn(urls.stream().map(url -> url.toExternalForm()).collect(Collectors.toSet()));
+                .convertToDatabaseColumn(urls.stream().map(URL::toExternalForm).collect(Collectors.toSet()));
     }
 
     @Override
     public Set<URL> convertToEntityAttribute(String dbData) {
         Set<URL> fromDb = new HashSet<>();
-        for(String url : stringConverter.convertToEntityAttribute(dbData)) {
+        for (String url : stringConverter.convertToEntityAttribute(dbData)) {
             try {
                 fromDb.add(new URL(url));
             } catch (MalformedURLException e) {
-                LOG.error(String.format("There was an issue when trying to recover an url from the data base: %s", e.getMessage()), e);
+                LOG.error(String.format("There was an issue when trying to recover an url from the data base: %s",
+                                        e.getMessage()), e);
                 throw new RsRuntimeException(e); // anyway it should never happens
             }
         }

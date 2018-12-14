@@ -38,13 +38,10 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
- *
  * Class ResourceAccessVoterTest
  *
  * Resources Access voter test class
- *
  * @author CS
- * @since 1.0-SNAPSHOT
  */
 public class MethodAuthorizationTest {
 
@@ -54,16 +51,10 @@ public class MethodAuthorizationTest {
     private static final String ENDPOINT = "endpoint";
 
     /**
-     *
      * Verify introspection code to get the informations about endpoint access resources
-     *
-     * @throws NoSuchMethodException
-     *             test error
-     * @throws SecurityException
-     *             test error
-     * @throws ResourceMappingException
-     *             test error
-     * @since 1.0-SNAPSHOT
+     * @throws NoSuchMethodException    test error
+     * @throws SecurityException        test error
+     * @throws ResourceMappingException test error
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify introspection code to get the informations about endpoint access resources")
@@ -77,7 +68,7 @@ public class MethodAuthorizationTest {
          * Test controller
          *
          * @author CS
-         * @since 1.0-SNAPSHOT
+         *
          */
         @RequestMapping("class_level_mapping")
         class Controller {
@@ -92,16 +83,10 @@ public class MethodAuthorizationTest {
     }
 
     /**
-     *
      * Verify introspection code to get the informations about endpoint access resources
-     *
-     * @throws NoSuchMethodException
-     *             test error
-     * @throws SecurityException
-     *             test error
-     * @throws ResourceMappingException
-     *             test error
-     * @since 1.0-SNAPSHOT
+     * @throws NoSuchMethodException    test error
+     * @throws SecurityException        test error
+     * @throws ResourceMappingException test error
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify introspection code to get the informations about endpoint access resources")
@@ -115,7 +100,7 @@ public class MethodAuthorizationTest {
          * Test controller
          *
          * @author CS
-         * @since 1.0-SNAPSHOT
+         *
          */
         @RequestMapping("class_level_mapping")
         class Controller {
@@ -130,16 +115,10 @@ public class MethodAuthorizationTest {
     }
 
     /**
-     *
      * Verify introspection code to get the informations about endpoint access resources
-     *
-     * @throws NoSuchMethodException
-     *             test error
-     * @throws SecurityException
-     *             test error
-     * @throws ResourceMappingException
-     *             test error
-     * @since 1.0-SNAPSHOT
+     * @throws NoSuchMethodException    test error
+     * @throws SecurityException        test error
+     * @throws ResourceMappingException test error
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify introspection code to get the informations about endpoint access resources")
@@ -153,7 +132,7 @@ public class MethodAuthorizationTest {
          * Test controller
          *
          * @author CS
-         * @since 1.0-SNAPSHOT
+         *
          */
         @RequestMapping("class_level_mapping")
         class Controller {
@@ -168,16 +147,10 @@ public class MethodAuthorizationTest {
     }
 
     /**
-     *
      * Verify introspection code to get the informations about endpoint access resources
-     *
-     * @throws NoSuchMethodException
-     *             test error
-     * @throws SecurityException
-     *             test error
-     * @throws ResourceMappingException
-     *             test error
-     * @since 1.0-SNAPSHOT
+     * @throws NoSuchMethodException    test error
+     * @throws SecurityException        test error
+     * @throws ResourceMappingException test error
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify introspection code to get the informations about endpoint access resources")
@@ -191,12 +164,13 @@ public class MethodAuthorizationTest {
          * Test controller
          *
          * @author CS
-         * @since 1.0-SNAPSHOT
+         *
          */
         @RequestMapping("class_level_mapping")
         class Controller {
 
-            @RequestMapping(value = "/method_level_mapping", path = "/other_method_level_mapping", method = RequestMethod.GET)
+            @RequestMapping(value = "/method_level_mapping", path = "/other_method_level_mapping",
+                    method = RequestMethod.GET)
             public Object endpoint() {
                 return null;
             }
@@ -206,16 +180,10 @@ public class MethodAuthorizationTest {
     }
 
     /**
-     *
      * Verify introspection code to get the informations about endpoint access resources
-     *
-     * @throws NoSuchMethodException
-     *             test error
-     * @throws SecurityException
-     *             test error
-     * @throws ResourceMappingException
-     *             test error
-     * @since 1.0-SNAPSHOT
+     * @throws NoSuchMethodException    test error
+     * @throws SecurityException        test error
+     * @throws ResourceMappingException test error
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify introspection code to get the informations about endpoint access resources")
@@ -229,7 +197,7 @@ public class MethodAuthorizationTest {
          * Test controller
          *
          * @author CS
-         * @since 1.0-SNAPSHOT
+         *
          */
         @RequestMapping("class_level_mapping")
         class Controller {
@@ -247,16 +215,10 @@ public class MethodAuthorizationTest {
     }
 
     /**
-     *
      * Verify introspection code to get the informations about endpoint access resources
-     *
-     * @throws NoSuchMethodException
-     *             test error
-     * @throws SecurityException
-     *             test error
-     * @throws ResourceMappingException
-     *             test error
-     * @since 1.0-SNAPSHOT
+     * @throws NoSuchMethodException    test error
+     * @throws SecurityException        test error
+     * @throws ResourceMappingException test error
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify introspection code to get the informations about endpoint access resources")
@@ -270,7 +232,7 @@ public class MethodAuthorizationTest {
          * Test controller
          *
          * @author CS
-         * @since 1.0-SNAPSHOT
+         *
          */
         @RequestMapping("class_level_mapping")
         class Controller {
@@ -288,16 +250,10 @@ public class MethodAuthorizationTest {
     }
 
     /**
-     *
      * Verify introspection code to get the informations about endpoint access resources
-     *
-     * @throws NoSuchMethodException
-     *             test error
-     * @throws SecurityException
-     *             test error
-     * @throws ResourceMappingException
-     *             test error
-     * @since 1.0-SNAPSHOT
+     * @throws NoSuchMethodException    test error
+     * @throws SecurityException        test error
+     * @throws ResourceMappingException test error
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify introspection code to get the informations about endpoint access resources")
@@ -311,7 +267,7 @@ public class MethodAuthorizationTest {
          * Test controller
          *
          * @author CS
-         * @since 1.0-SNAPSHOT
+         *
          */
         @RequestMapping("class_level_mapping")
         class Controller {
@@ -329,16 +285,10 @@ public class MethodAuthorizationTest {
     }
 
     /**
-     *
      * Verify introspection code to get the informations about endpoint access resources
-     *
-     * @throws NoSuchMethodException
-     *             test error
-     * @throws SecurityException
-     *             test error
-     * @throws ResourceMappingException
-     *             test error
-     * @since 1.0-SNAPSHOT
+     * @throws NoSuchMethodException    test error
+     * @throws SecurityException        test error
+     * @throws ResourceMappingException test error
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify introspection code to get the informations about endpoint access resources")
@@ -352,7 +302,7 @@ public class MethodAuthorizationTest {
          * Test controller
          *
          * @author CS
-         * @since 1.0-SNAPSHOT
+         *
          */
         @RequestMapping("class_level_mapping")
         class Controller {
@@ -370,16 +320,10 @@ public class MethodAuthorizationTest {
     }
 
     /**
-     *
      * Verify introspection code to get the informations about endpoint access resources
-     *
-     * @throws NoSuchMethodException
-     *             test error
-     * @throws SecurityException
-     *             test error
-     * @throws ResourceMappingException
-     *             test error
-     * @since 1.0-SNAPSHOT
+     * @throws NoSuchMethodException    test error
+     * @throws SecurityException        test error
+     * @throws ResourceMappingException test error
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify introspection code to get the informations about endpoint access resources")
@@ -393,13 +337,14 @@ public class MethodAuthorizationTest {
          * Test controller
          *
          * @author CS
-         * @since 1.0-SNAPSHOT
+         *
          */
         @RequestMapping("class_level_mapping")
         class Controller {
 
             @ResourceAccess(description = "the description")
-            @RequestMapping(value = "/method_level_mapping", path = "/different_method_level_mapping", method = RequestMethod.GET)
+            @RequestMapping(value = "/method_level_mapping", path = "/different_method_level_mapping",
+                    method = RequestMethod.GET)
             public Object endpoint() {
                 return null;
             }
@@ -409,16 +354,10 @@ public class MethodAuthorizationTest {
     }
 
     /**
-     *
      * Verify introspection code to get the informations about endpoint access resources
-     *
-     * @throws NoSuchMethodException
-     *             test error
-     * @throws SecurityException
-     *             test error
-     * @throws ResourceMappingException
-     *             test error
-     * @since 1.0-SNAPSHOT
+     * @throws NoSuchMethodException    test error
+     * @throws SecurityException        test error
+     * @throws ResourceMappingException test error
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify introspection code to get the informations about endpoint access resources")
@@ -432,7 +371,7 @@ public class MethodAuthorizationTest {
          * Test controller
          *
          * @author CS
-         * @since 1.0-SNAPSHOT
+         *
          */
         @RequestMapping("class_level_mapping")
         class Controller {
@@ -450,16 +389,10 @@ public class MethodAuthorizationTest {
     }
 
     /**
-     *
      * Verify introspection code to get the informations about endpoint access resources
-     *
-     * @throws NoSuchMethodException
-     *             test error
-     * @throws SecurityException
-     *             test error
-     * @throws ResourceMappingException
-     *             test error
-     * @since 1.0-SNAPSHOT
+     * @throws NoSuchMethodException    test error
+     * @throws SecurityException        test error
+     * @throws ResourceMappingException test error
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify introspection code to get the informations about endpoint access resources")
@@ -473,7 +406,7 @@ public class MethodAuthorizationTest {
          * Test controller
          *
          * @author CS
-         * @since 1.0-SNAPSHOT
+         *
          */
         @RequestMapping("class_level_mapping")
         class Controller {
@@ -491,16 +424,10 @@ public class MethodAuthorizationTest {
     }
 
     /**
-     *
      * Verify introspection code to get the informations about endpoint access resources
-     *
-     * @throws NoSuchMethodException
-     *             test error
-     * @throws SecurityException
-     *             test error
-     * @throws ResourceMappingException
-     *             test error
-     * @since 1.0-SNAPSHOT
+     * @throws NoSuchMethodException    test error
+     * @throws SecurityException        test error
+     * @throws ResourceMappingException test error
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify introspection code to get the informations about endpoint access resources")
@@ -514,7 +441,7 @@ public class MethodAuthorizationTest {
          * Test controller
          *
          * @author CS
-         * @since 1.0-SNAPSHOT
+         *
          */
         @RequestMapping("class_level_mapping")
         class Controller {
@@ -532,16 +459,10 @@ public class MethodAuthorizationTest {
     }
 
     /**
-     *
      * Verify introspection code to get the informations about endpoint access resources
-     *
-     * @throws NoSuchMethodException
-     *             test error
-     * @throws SecurityException
-     *             test error
-     * @throws ResourceMappingException
-     *             test error
-     * @since 1.0-SNAPSHOT
+     * @throws NoSuchMethodException    test error
+     * @throws SecurityException        test error
+     * @throws ResourceMappingException test error
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify introspection code to get the informations about endpoint access resources")
@@ -555,7 +476,7 @@ public class MethodAuthorizationTest {
          * Test controller
          *
          * @author CS
-         * @since 1.0-SNAPSHOT
+         *
          */
         @RequestMapping("class_level_mapping")
         class Controller {
@@ -573,16 +494,10 @@ public class MethodAuthorizationTest {
     }
 
     /**
-     *
      * Verify introspection code to get the informations about endpoint access resources
-     *
-     * @throws NoSuchMethodException
-     *             test error
-     * @throws SecurityException
-     *             test error
-     * @throws ResourceMappingException
-     *             test error
-     * @since 1.0-SNAPSHOT
+     * @throws NoSuchMethodException    test error
+     * @throws SecurityException        test error
+     * @throws ResourceMappingException test error
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify introspection code to get the informations about endpoint access resources")
@@ -596,7 +511,7 @@ public class MethodAuthorizationTest {
          * Test controller
          *
          * @author CS
-         * @since 1.0-SNAPSHOT
+         *
          */
         @RequestMapping("class_level_mapping")
         class Controller {
@@ -614,13 +529,10 @@ public class MethodAuthorizationTest {
     }
 
     /**
-     *
      * Class ControllerStub
      *
      * Test class STUB
-     *
      * @author CS
-     * @since 1.0-SNAPSHOT
      */
     @RequestMapping("TheClassLevelRequestMapping")
     class ControllerStub {

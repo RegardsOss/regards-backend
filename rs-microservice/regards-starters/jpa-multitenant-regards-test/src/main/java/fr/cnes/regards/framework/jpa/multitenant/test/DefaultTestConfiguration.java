@@ -32,7 +32,6 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 
 /**
  * Default JPA multitenant test configuration
- *
  * @author Marc Sordi
  */
 @Configuration

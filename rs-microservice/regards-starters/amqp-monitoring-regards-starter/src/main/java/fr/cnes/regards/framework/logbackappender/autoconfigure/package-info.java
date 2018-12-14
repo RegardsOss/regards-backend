@@ -17,10 +17,7 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- *
- * The Spring's autoconfiguration for the REGARDS logback appender. 
- * 
+ * The Spring's autoconfiguration for the REGARDS logback appender.
  * @author Christophe Mertz
- *
  */
 package fr.cnes.regards.framework.logbackappender.autoconfigure;

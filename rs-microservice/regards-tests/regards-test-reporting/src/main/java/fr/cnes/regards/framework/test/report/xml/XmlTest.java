@@ -24,7 +24,6 @@ import javax.xml.bind.annotation.XmlType;
 
 /**
  * @author msordi
- *
  */
 @XmlType(propOrder = { "purpose", "testMethodName", "testClass" })
 @XmlRootElement(name = "test")

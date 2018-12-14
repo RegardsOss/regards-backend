@@ -31,9 +31,7 @@ import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
 
 /**
  * Test with custom {@link GsonTypeAdapterFactory} annotation.
- *
  * @author Marc Sordi
- *
  */
 public class AdapterTest {
 

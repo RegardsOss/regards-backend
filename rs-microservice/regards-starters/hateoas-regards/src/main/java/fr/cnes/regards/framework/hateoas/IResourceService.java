@@ -25,21 +25,15 @@ import org.springframework.hateoas.ResourceSupport;
 import org.springframework.util.Assert;
 
 /**
- *
  * Hypermedia resource service
- *
  * @author msordi
- *
  */
 public interface IResourceService {
 
     /**
      * Convert object to resource
-     *
-     * @param <T>
-     *            element to convert
-     * @param object
-     *            object
+     * @param <T> element to convert
+     * @param object object
      * @return {@link Resource}
      */
     default <T> Resource<T> toResource(T object) {
@@ -55,15 +49,10 @@ public interface IResourceService {
 
     /**
      * Build a link for a single method
-     *
-     * @param controller
-     *            controller
-     * @param methodName
-     *            method name
-     * @param rel
-     *            rel name
-     * @param methodParams
-     *            method parameters
+     * @param controller controller
+     * @param methodName method name
+     * @param rel rel name
+     * @param methodParams method parameters
      */
     Link buildLink(Class<?> controller, String methodName, String rel, MethodParam<?>... methodParams);
 
@@ -85,17 +74,11 @@ public interface IResourceService {
      * For example, an endpoint like getSomething(@RequestParam ComplexEntity entity) mapped to: "/something" will
      * generate a conversion error, telling that it could not find the appropriate converter, even if you defined in
      * your classpath a converter implementing Converter<ComplexEntity, String>
-     *
-     * @param <C>
-     *            controller type
-     * @param controller
-     *            controller
-     * @param methodName
-     *            method name
-     * @param rel
-     *            rel name
-     * @param methodParams
-     *            method parameters
+     * @param <C> controller type
+     * @param controller controller
+     * @param methodName method name
+     * @param rel rel name
+     * @param methodParams method parameters
      */
     <C> Link buildLinkWithParams(Class<C> controller, String methodName, String rel, MethodParam<?>... methodParams);
 }

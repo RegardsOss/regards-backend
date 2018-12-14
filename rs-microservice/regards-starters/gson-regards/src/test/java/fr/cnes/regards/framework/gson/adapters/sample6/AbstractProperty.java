@@ -21,9 +21,8 @@ package fr.cnes.regards.framework.gson.adapters.sample6;
 import fr.cnes.regards.framework.gson.annotation.Gsonable;
 
 /**
+ * @param <T> property type
  * @author Marc Sordi
- * @param <T>
- *            property type
  */
 @Gsonable
 public abstract class AbstractProperty<T> implements IProperty<T> {

@@ -35,7 +35,6 @@ import com.google.common.base.Strings;
 /**
  * Add the allow origin in the response headers to allow CORS requests.
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 public class CorsFilter extends OncePerRequestFilter {
 
@@ -107,7 +106,6 @@ public class CorsFilter extends OncePerRequestFilter {
      * @param pFilterChain Filter chain
      * @throws ServletException Servlet error
      * @throws IOException      Internal error
-     * @since 1.0-SNAPSHOT
      */
     private void doSecurisedFilter(final HttpServletRequest request, final HttpServletResponse response,
             final FilterChain pFilterChain) throws ServletException, IOException {
@@ -131,7 +129,6 @@ public class CorsFilter extends OncePerRequestFilter {
 
     /**
      * Return the addresse of the origine request address
-     * @since 1.0-SNAPSHOT
      */
     private static String getClientOrigin(HttpServletRequest request) {
         String remoteAddr = null;
@@ -149,10 +146,9 @@ public class CorsFilter extends OncePerRequestFilter {
      * @param filterChain Filter chain
      * @throws ServletException Servlet error
      * @throws IOException      Internal error
-     * @since 1.0-SNAPSHOT
      */
     public static void allowCorsRequest(HttpServletRequest request, HttpServletResponse response,
-            FilterChain filterChain) throws IOException, ServletException {
+            FilterChain filterChain) {
         response.setHeader(ALLOW_ORIGIN, "*");
         response.setHeader(ALLOW_METHOD, "POST, PUT, GET, OPTIONS, DELETE");
         response.setHeader(ALLOW_HEADER, "authorization, content-type, scope");

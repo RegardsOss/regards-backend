@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.security.configurer;
 
 /**
  * Exception which indicates an error occurred during the configuration of custom web security.
- *
  * @author Xavier-Alexandre Brochard
  */
 public class CustomWebSecurityConfigurationException extends Exception {

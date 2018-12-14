@@ -53,9 +53,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**
  * Default {@link IWorkspaceService} implementation which dive the workspace per microservice and per tenant.
- *
  * @author svissier
- *
  */
 @Service
 @ConditionalOnMissingBean(value = IWorkspaceService.class)
@@ -171,7 +169,7 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
         long usableSpace = fileStore.getUsableSpace();
         long usedSpace = totalSpace - usableSpace;
         return new WorkspaceMonitoringInformation(fileStore.name(), totalSpace, usedSpace, usableSpace,
-                getMicroserviceWorkspace().toString());
+                                                  getMicroserviceWorkspace().toString());
     }
 
     @Override

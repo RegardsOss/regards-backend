@@ -31,9 +31,7 @@ import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
 /**
  * Test with a programmatic implementation of the {@link PolymorphicTypeAdapterFactory} with explicit sub types
  * declaration.
- *
  * @author Marc Sordi
- *
  */
 public class AdapterTest {
 

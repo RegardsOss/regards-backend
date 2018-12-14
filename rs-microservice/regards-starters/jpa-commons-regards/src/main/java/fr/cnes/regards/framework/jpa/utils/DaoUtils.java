@@ -51,7 +51,6 @@ import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
  * Class DaoUtils
  *
  * Tools class for DAO
- *
  * @author Sébastien Binda
  * @author oroussel
  */
@@ -89,7 +88,6 @@ public final class DaoUtils {
      * This method check that the classPatch is valid. That the scan packages for instance database and the projects
      * database are not in conflict.
      * @param pPackageToScan package name to scan for JPA entities and repositories
-     * @throws MultiDataBasesException
      */
     public static void checkClassPath(final String pPackageToScan) throws MultiDataBasesException {
         LOGGER.info("Checking classpath for conflicts between instance and projects databases ...");

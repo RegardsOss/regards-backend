@@ -27,9 +27,7 @@ import fr.cnes.regards.framework.geojson.geometry.Polygon;
 
 /**
  * Validate {@link Polygon} structure
- *
  * @author Marc Sordi
- *
  */
 public class MultiLineStringValidator implements ConstraintValidator<MultiLineStringConstraints, MultiLineString> {
 

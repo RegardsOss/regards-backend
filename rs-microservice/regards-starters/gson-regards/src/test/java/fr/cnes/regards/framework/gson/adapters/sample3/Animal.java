@@ -21,11 +21,8 @@ package fr.cnes.regards.framework.gson.adapters.sample3;
 import fr.cnes.regards.framework.gson.annotation.Gsonable;
 
 /**
- *
  * Test on animal objects
- *
  * @author Marc Sordi
- *
  */
 @Gsonable
 public class Animal {

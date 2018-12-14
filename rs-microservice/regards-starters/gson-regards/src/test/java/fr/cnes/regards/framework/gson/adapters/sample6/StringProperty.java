@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.gson.adapters.sample6;
 
 /**
  * @author Marc Sordi
- *
  */
 public class StringProperty extends AbstractProperty<String> {
 

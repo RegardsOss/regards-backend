@@ -23,12 +23,9 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
- *
  * This event must be sent when one or more resource access configuration change so security cache needs to be
  * refreshed.
- *
  * @author Marc Sordi
- *
  */
 @Event(target = Target.ALL)
 public class ResourceAccessEvent implements ISubscribable {
@@ -51,8 +48,6 @@ public class ResourceAccessEvent implements ISubscribable {
 
     /**
      * Constructor setting the parameters as attributes
-     * @param microservice
-     * @param roleName
      */
     public ResourceAccessEvent(String microservice, String roleName) {
         this.microservice = microservice;
@@ -68,7 +63,6 @@ public class ResourceAccessEvent implements ISubscribable {
 
     /**
      * Set the role name
-     * @param roleName
      */
     public void setRoleName(String roleName) {
         this.roleName = roleName;
@@ -83,7 +77,6 @@ public class ResourceAccessEvent implements ISubscribable {
 
     /**
      * Set the microservice
-     * @param pMicroservice
      */
     public void setMicroservice(String pMicroservice) {
         microservice = pMicroservice;

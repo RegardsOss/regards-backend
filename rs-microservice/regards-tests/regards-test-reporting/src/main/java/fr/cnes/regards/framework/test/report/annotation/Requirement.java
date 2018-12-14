@@ -27,9 +27,7 @@ import java.lang.annotation.Target;
 
 /**
  * This annotation allows to trace software requirements.
- *
  * @author msordi
- *
  */
 
 @Target({ ElementType.METHOD })
@@ -39,7 +37,6 @@ import java.lang.annotation.Target;
 public @interface Requirement {
 
     /**
-     *
      * @return the requirement reference
      */
     String value();

@@ -27,9 +27,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 
 /**
  * {@link PluginParameter} repository
- *
  * @author Christophe Mertz
- *
  */
 @Repository
 public interface IPluginParameterRepository extends CrudRepository<PluginParameter, Long> {

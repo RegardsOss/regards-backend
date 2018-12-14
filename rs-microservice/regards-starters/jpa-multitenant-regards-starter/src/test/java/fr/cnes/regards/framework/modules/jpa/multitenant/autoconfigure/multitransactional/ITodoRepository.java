@@ -23,7 +23,6 @@ import org.springframework.stereotype.Repository;
 
 /**
  * @author Marc Sordi
- *
  */
 @Repository
 public interface ITodoRepository extends CrudRepository<Todo, Long> {

@@ -21,27 +21,30 @@ import org.springframework.util.MultiValueMap;
 
 /**
  * @author Marc Sordi
- *
  */
 public final class RequestParamBuilder {
 
     /**
      * Request parameters
      */
-    private final MultiValueMap<String, String> parameters = new LinkedMultiValueMap<String, String>();
+    private final MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
 
-    private RequestParamBuilder() {
+    protected RequestParamBuilder() {
     }
 
+    /**
+     * Use {@link RequestBuilderCustomizer#addParameter(String, String...)} instead.
+     */
+    @Deprecated
     public static RequestParamBuilder build() {
         return new RequestParamBuilder();
     }
 
-    public RequestParamBuilder param(String pName, String... pValues) {
-        Assert.hasLength(pName, "'name' must not be empty");
-        Assert.notEmpty(pValues, "'values' must not be empty");
-        for (String value : pValues) {
-            parameters.add(pName, value);
+    public RequestParamBuilder param(String name, String... values) {
+        Assert.hasLength(name, "'name' must not be empty");
+        Assert.notEmpty(values, "'values' must not be empty");
+        for (String value : values) {
+            parameters.add(name, value);
         }
         return this;
     }

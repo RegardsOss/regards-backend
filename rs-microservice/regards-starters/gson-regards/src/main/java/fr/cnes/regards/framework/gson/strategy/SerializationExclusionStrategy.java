@@ -27,11 +27,8 @@ import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 
 /**
- *
  * Annotation based exclusion strategy
- *
  * @author Marc Sordi
- *
  */
 public class SerializationExclusionStrategy<T extends Annotation> implements ExclusionStrategy {
 

@@ -21,7 +21,7 @@ package fr.cnes.regards.framework.amqp;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
+import org.springframework.amqp.support.converter.MessageConverter;
 
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
@@ -29,15 +29,13 @@ import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 
 /**
  * {@link InstanceSubscriber} uses a fixed tenant to subscribe to instance events.
- *
  * @author Marc Sordi
- *
  */
 public class InstanceSubscriber extends AbstractSubscriber implements IInstanceSubscriber {
 
     public InstanceSubscriber(IRabbitVirtualHostAdmin pVirtualHostAdmin, IAmqpAdmin amqpAdmin,
-            Jackson2JsonMessageConverter pJackson2JsonMessageConverter) {
-        super(pVirtualHostAdmin, amqpAdmin, pJackson2JsonMessageConverter);
+            MessageConverter jsonMessageConverters) {
+        super(pVirtualHostAdmin, amqpAdmin, jsonMessageConverters);
     }
 
     @Override

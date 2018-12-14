@@ -31,9 +31,7 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 
 /**
  * Class MockAmqpConfiguration Mock AMQP subscriber and publisher for intergration tests.
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 @Configuration
 @Profile("!testAmqp")
@@ -41,9 +39,7 @@ public class MockAmqpConfiguration {
 
     /**
      * Subscriber mock
-     *
      * @return {@link ISubscriber}
-     * @since 1.0-SNAPSHOT
      */
     @Bean
     @Primary
@@ -53,9 +49,7 @@ public class MockAmqpConfiguration {
 
     /**
      * Subscriber mock
-     *
      * @return {@link IInstanceSubscriber}
-     * @since 1.0-SNAPSHOT
      */
     @Bean
     @Primary
@@ -65,9 +59,7 @@ public class MockAmqpConfiguration {
 
     /**
      * Publisher mock
-     *
      * @return {@link IPublisher}
-     * @since 1.0-SNAPSHOT
      */
     @Bean
     @Primary
@@ -77,9 +69,7 @@ public class MockAmqpConfiguration {
 
     /**
      * Publisher mock
-     *
      * @return {@link IPublisher}
-     * @since 1.0-SNAPSHOT
      */
     @Bean
     @Primary

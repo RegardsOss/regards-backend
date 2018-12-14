@@ -34,7 +34,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 
 /**
  * Plugin management service.
- *
  * @author Christophe Mertz
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
@@ -43,44 +42,37 @@ public interface IPluginService {
 
     /**
      * Return all plugin types detected.
-     *
      * @return Set<String>
      */
     Set<String> getPluginTypes();
 
     /**
      * Return available plugin types i.e. all plugin types which at least one implementation is detected.
-     *
      * @return available plugin types i.e. all plugin types which at least one implementation is detected.
      */
     Set<String> getAvailablePluginTypes();
 
     /**
      * Return all {@link PluginMetaData} available
-     *
      * @return list of {@link PluginMetaData}
      */
     List<PluginMetaData> getPlugins();
 
     /**
      * Return all specific plugin type available {@link PluginMetaData}s.
-     *
      * @param interfacePluginType a specific interface plugin type
      * @return list of {@link PluginMetaData}s
      */
     List<PluginMetaData> getPluginsByType(Class<?> interfacePluginType);
 
     /**
-     * @param pluginConfigurationId
      * @return whether the plugin configured by the given plugin configuration threw its id cna be instantiated or not
-     * @throws ModuleException
      */
     boolean canInstantiate(Long pluginConfigurationId) throws ModuleException;
 
     /**
      * Get a plugin instance for a given configuration. The pReturnInterfaceType attribute indicates the PluginInterface
      * return type.
-     *
      * @param <T> a plugin instance
      * @param pluginConfigurationId the id of a {@link PluginConfiguration}.
      * @param dynamicPluginParameters list of dynamic {@link PluginParameter}
@@ -95,14 +87,12 @@ public interface IPluginService {
      *
      * Note : this method is just a proxy for {@link IPluginService#getPlugin(Long, PluginParameter...)}
      * so plugin configuration is reloaded from database before instanciation.
-     *
-     * @deprecated Use {@link IPluginService#getPlugin(Long, PluginParameter...)} instead.
-     *
      * @param <T> a plugin instance
      * @param pluginConfiguration a {@link PluginConfiguration}.
      * @param dynamicPluginParameters list of dynamic {@link PluginParameter}
      * @return a plugin instance
      * @throws ModuleException thrown if we cannot find any PluginConfiguration corresponding to pId
+     * @deprecated Use {@link IPluginService#getPlugin(Long, PluginParameter...)} instead.
      */
     @Deprecated
     default <T> T getPlugin(PluginConfiguration pluginConfiguration, final PluginParameter... dynamicPluginParameters)
@@ -113,7 +103,6 @@ public interface IPluginService {
     /**
      * Get the first plugin instance of a plugin type. The pReturnInterfaceType attribute indicates the PluginInterface
      * return type.
-     *
      * @param <T> a plugin instance
      * @param interfacePluginType a specific interface plugin type
      * @param pluginParameters an optional list of {@link PluginParameter}
@@ -125,7 +114,6 @@ public interface IPluginService {
 
     /**
      * Get a specific plugin implementation.
-     *
      * @param pluginImplId the id of the specific metadata
      * @return a {@link PluginMetaData} for a specific {@link PluginConfiguration}
      */
@@ -133,19 +121,14 @@ public interface IPluginService {
 
     /**
      * Save a {@link PluginConfiguration} in internal database.
-     *
      * @param pluginConfiguration the plugin configuration to saved
      * @return the saved {@link PluginConfiguration}
-     * @throws EntityInvalidException
-     * @throws EncryptionException
-     * @throws EntityNotFoundException
      */
     PluginConfiguration savePluginConfiguration(PluginConfiguration pluginConfiguration)
             throws EntityInvalidException, EncryptionException, EntityNotFoundException;
 
     /**
      * Delete a {@link PluginConfiguration}.
-     *
      * @param confId a specific configuration
      * @throws ModuleException Entity to delete does not exist
      */
@@ -153,7 +136,6 @@ public interface IPluginService {
 
     /**
      * Update a {@link PluginConfiguration}.
-     *
      * @param plugin the {@link PluginConfiguration} to update
      * @return the updated {@link PluginConfiguration}
      * @throws ModuleException plugin to update does not exists
@@ -162,7 +144,6 @@ public interface IPluginService {
 
     /**
      * Get the {@link PluginConfiguration}.
-     *
      * @param id a plugin identifier
      * @return a specific configuration
      * @throws EntityNotFoundException thrown if we cannot find any PluginConfiguration corresponding to pId
@@ -172,7 +153,7 @@ public interface IPluginService {
     /**
      * Load a PluginConfiguration with all its relations
      * @param id {@link Long}
-     * @return  {@link PluginConfiguration}
+     * @return {@link PluginConfiguration}
      */
     PluginConfiguration loadPluginConfiguration(Long id);
 
@@ -192,7 +173,6 @@ public interface IPluginService {
 
     /**
      * Get all plugin's configuration for a specific plugin type.
-     *
      * @param interfacePluginType a specific interface plugin type
      * @return all the {@link PluginConfiguration} for a specific plugin type.
      */
@@ -200,14 +180,12 @@ public interface IPluginService {
 
     /**
      * Get all plugin's configuration.
-     *
      * @return all the {@link PluginConfiguration}.
      */
     List<PluginConfiguration> getAllPluginConfigurations();
 
     /**
      * Get all plugin's configuration for a specific plugin Id.
-     *
      * @param pluginId a specific plugin Id
      * @return all the {@link PluginConfiguration} for a specific plugin Id
      */
@@ -225,18 +203,16 @@ public interface IPluginService {
      * <code>regards.plugins.packages-to-scan</code>. If not define, default package is used (i.e.
      * <code>fr.cnes.regards</code>)
      * Add a package to scan to find the plugins.
-     *
      * @param pluginPackage A package name to scan to find the plugins.
      */
     @Deprecated
-    default public void addPluginPackage(String pluginPackage) {
+    default void addPluginPackage(String pluginPackage) {
         // Nothing to do
     }
 
     /**
      * Get {@link PluginMetaData} for a plugin of a specific plugin type.</br>
      * If the plugin class name does not match a plugin of the plugin type, an exception is thrown.
-     *
      * @param clazz the plugin type
      * @param pluginClassName a plugin class name
      * @return the {@link PluginMetaData} of the plugin of plugin type
@@ -246,16 +222,13 @@ public interface IPluginService {
 
     /**
      * Get a PluginConfiguration according to its unique label
-     *
      * @param configurationLabel the configuration label
      * @return the plugin configuration
-     * @throws EntityNotFoundException
      */
     PluginConfiguration getPluginConfigurationByLabel(String configurationLabel) throws EntityNotFoundException;
 
     /**
      * Find an optional PluginConfiguration according to its unique label
-     *
      * @param configurationLabel the configuration label
      * @return the plugin configuration
      */
@@ -292,7 +265,6 @@ public interface IPluginService {
     Map<Long, Object> getPluginCache();
 
     /**
-     *
      * @param confId configuration identifier
      * @return tenant plugin instance
      */
@@ -301,12 +273,10 @@ public interface IPluginService {
     /**
      * Return a {@link PluginConfiguration} for a plugin identifier.
      * If it does not exists, the {@link PluginConfiguration} is created.
-     *
      * @param pluginId a pluginidentifier
      * @param interfacePluginType the {@link PluginInterface}
      * @return a {@link PluginConfiguration}
-     * @throws ModuleException
-     *             an error is trhown
+     * @throws ModuleException an error is trhown
      */
     PluginConfiguration getPluginConfiguration(String pluginId, Class<?> interfacePluginType) throws ModuleException;
 

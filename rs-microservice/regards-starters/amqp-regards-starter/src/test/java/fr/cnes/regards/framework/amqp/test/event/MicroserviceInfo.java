@@ -25,7 +25,6 @@ import fr.cnes.regards.framework.amqp.event.Target;
 /**
  * {@link Target#MICROSERVICE} restricted event
  * @author Marc Sordi
- *
  */
 @Event(target = Target.MICROSERVICE)
 public class MicroserviceInfo extends AbstractEvent implements ISubscribable {

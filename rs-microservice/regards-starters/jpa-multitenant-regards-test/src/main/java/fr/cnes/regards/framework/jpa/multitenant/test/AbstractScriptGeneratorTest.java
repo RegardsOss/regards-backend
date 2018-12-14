@@ -27,12 +27,11 @@ import org.springframework.test.context.TestPropertySource;
  * and run the
  * test.<br/>
  * A SQL script should be created in target.
- *
  * @author Marc Sordi
- *
  */
-@TestPropertySource(properties = { "regards.jpa.multitenant.migrationTool=HBM2DDL",
-        "regards.jpa.multitenant.embedded=false", "regards.jpa.multitenant.outputFile=target/project_script.sql" })
+@TestPropertySource(
+        properties = { "regards.jpa.multitenant.migrationTool=HBM2DDL", "regards.jpa.multitenant.embedded=false",
+                "regards.jpa.multitenant.outputFile=target/project_script.sql" })
 public abstract class AbstractScriptGeneratorTest extends AbstractDaoTest {
 
     @Test

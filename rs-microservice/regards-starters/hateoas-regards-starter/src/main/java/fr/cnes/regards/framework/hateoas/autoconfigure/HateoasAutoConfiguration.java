@@ -30,11 +30,8 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.security.autoconfigure.MethodAuthorizationServiceAutoConfiguration;
 
 /**
- *
  * HATEOAS auto configuration
- *
  * @author msordi
- *
  */
 @Configuration
 @AutoConfigureAfter(MethodAuthorizationServiceAutoConfiguration.class)

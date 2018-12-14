@@ -22,9 +22,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
  * Testing purpose contract
- *
  * @author Marc Sordi
- *
  */
 @PluginInterface(description = "Test contract for testing generics")
 public interface IBasicPlugin {

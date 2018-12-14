@@ -35,11 +35,8 @@ import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 /**
- *
  * Auto configuration for swagger
- *
  * @author msordi
- *
  */
 @Configuration
 @ConditionalOnWebApplication

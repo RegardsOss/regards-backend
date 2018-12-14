@@ -26,5 +26,5 @@ public enum PluginServiceAction {
     CREATE,
     UPDATE,
     DISABLE,
-    ACTIVATE;
+    ACTIVATE
 }

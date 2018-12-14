@@ -34,7 +34,6 @@ import fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.sequenceg
 
 /**
  * @author Marc Sordi
- *
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { SequenceGeneratorTestConfiguration.class })

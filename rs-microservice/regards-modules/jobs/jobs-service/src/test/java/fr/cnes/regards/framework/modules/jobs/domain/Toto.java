@@ -7,6 +7,7 @@ import java.util.List;
  * @author oroussel
  */
 public class Toto {
+
     private int i = 0;
 
     private List<Titi> list = new ArrayList<>();

@@ -12,7 +12,6 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 /**
  * Annotation allowing to certifate that a String is a {@link UniformResourceName} thanks to
  * {@link RegardsOaisUrnAsStringValidator}
- *
  * @author Sylvain Vissiere-Guerinet
  */
 @Retention(RetentionPolicy.RUNTIME)

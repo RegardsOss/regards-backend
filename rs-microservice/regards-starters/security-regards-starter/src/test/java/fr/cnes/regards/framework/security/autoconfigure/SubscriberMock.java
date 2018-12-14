@@ -23,13 +23,10 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 
 /**
- *
  * Class SubscriberMock
  *
  * Test class to mock AMQP Subscriber
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 public class SubscriberMock implements ISubscriber {
 

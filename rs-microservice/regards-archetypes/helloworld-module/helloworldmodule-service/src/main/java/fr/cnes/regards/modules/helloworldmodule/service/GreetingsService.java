@@ -22,12 +22,9 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.modules.helloworldmodule.domain.Greeting;
 
-
 /**
- * 
  * TODO Description
  * @author TODO
- *
  */
 @Service
 public class GreetingsService implements IGreetingsService {

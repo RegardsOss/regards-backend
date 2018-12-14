@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.module.rest.exception;
 
 /**
  * Unqualified entity exception
- *
  * @author Marc Sordi
  */
 @SuppressWarnings("serial")

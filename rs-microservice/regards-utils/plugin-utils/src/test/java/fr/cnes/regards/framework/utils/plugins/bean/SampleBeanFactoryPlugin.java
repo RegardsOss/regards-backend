@@ -28,7 +28,6 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
  * SampleBeanFactoryPlugin
- *
  * @author Christophe Mertz
  */
 @Plugin(description = "Sample plugin test", id = "aSamplePlugin", version = "0.0.1", author = "REGARDS Team",
@@ -56,10 +55,8 @@ public class SampleBeanFactoryPlugin implements ISamplePlugin {
 
     @Override
     public String echo(final String pMessage) {
-        final StringBuffer str = new StringBuffer();
-        str.append(this.getClass().getCanonicalName() + " -> " + pMessage + " - " + suffix);
         sampleBeanService.setId("---> add string with PluginService");
-        return str.toString() + sampleBeanService.getId();
+        return this.getClass().getCanonicalName() + " -> " + pMessage + " - " + suffix + sampleBeanService.getId();
     }
 
     /**

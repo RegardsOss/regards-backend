@@ -22,11 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
  * Generic response body with containing a single message and key value pairs
- *
  * @author Marc Sordi
- *
  */
 public class GenericResponseBody {
 

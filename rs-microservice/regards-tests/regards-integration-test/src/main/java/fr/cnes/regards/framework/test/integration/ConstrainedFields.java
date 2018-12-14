@@ -26,9 +26,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * An utility class for field documentation.
- *
  * @author Marc Sordi
- *
  */
 public class ConstrainedFields {
 
@@ -79,8 +77,8 @@ public class ConstrainedFields {
      */
     public FieldDescriptor withPath(String payloadPrefixPath, String payloadPath, String propertyPath,
             String description, String extraConstraints) {
-        StringBuffer constraints = new StringBuffer(StringUtils
-                .collectionToDelimitedString(constraintDescriptions.descriptionsForProperty(propertyPath), ", "));
+        StringBuffer constraints = new StringBuffer(StringUtils.collectionToDelimitedString(
+                constraintDescriptions.descriptionsForProperty(propertyPath), ", "));
         if (extraConstraints != null) {
             if (constraints.length() > 0) {
                 if (!constraints.toString().endsWith(". ")) {

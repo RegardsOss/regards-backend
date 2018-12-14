@@ -29,9 +29,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 
 /**
  * Test plugin with inheritance
- *
  * @author Marc Sordi
- *
  */
 public class InheritanceTests {
 

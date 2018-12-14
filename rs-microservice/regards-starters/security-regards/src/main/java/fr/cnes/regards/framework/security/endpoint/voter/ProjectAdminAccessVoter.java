@@ -29,11 +29,8 @@ import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 
 /**
- *
  * MethodAuthorization voter to accept access to all endpoints for project administrator.
- *
  * @author Sylvain Vissiere-Guerinet
- *
  */
 public class ProjectAdminAccessVoter implements IProjectAdminAccessVoter {
 
@@ -53,8 +50,8 @@ public class ProjectAdminAccessVoter implements IProjectAdminAccessVoter {
         final JWTAuthentication authentication = (JWTAuthentication) pAuthentication;
 
         // If authenticated user is one of the project admins allow all.
-        @SuppressWarnings("unchecked")
-        final List<RoleAuthority> roles = (List<RoleAuthority>) authentication.getAuthorities();
+        @SuppressWarnings("unchecked") final List<RoleAuthority> roles = (List<RoleAuthority>) authentication
+                .getAuthorities();
         if (RoleAuthority.isProjectAdminRole(roles.get(0).getAuthority())) {
             return ACCESS_GRANTED;
         }

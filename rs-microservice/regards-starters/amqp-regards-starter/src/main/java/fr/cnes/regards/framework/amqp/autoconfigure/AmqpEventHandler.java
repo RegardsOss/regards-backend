@@ -32,9 +32,7 @@ import fr.cnes.regards.framework.amqp.event.tenant.TenantDeletedEvent;
 /**
  * This class helps to configure virtual hosts at runtime listening to tenant events. The system uses the AMQP manager
  * virtual host no to be tenant dependent.
- *
  * @author Marc Sordi
- *
  */
 public class AmqpEventHandler {
 
@@ -72,9 +70,7 @@ public class AmqpEventHandler {
 
     /**
      * Handle tenant creation
-     *
      * @author Marc Sordi
-     *
      */
     private class TenantCreationHandler implements IHandler<TenantCreatedEvent> {
 
@@ -88,9 +84,7 @@ public class AmqpEventHandler {
 
     /**
      * Handle tenant deletion
-     *
      * @author Marc Sordi
-     *
      */
     private class TenantDeletionHandler implements IHandler<TenantDeletedEvent> {
 

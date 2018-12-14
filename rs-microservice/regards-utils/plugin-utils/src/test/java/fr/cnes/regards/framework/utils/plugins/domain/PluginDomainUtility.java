@@ -44,7 +44,7 @@ public class PluginDomainUtility {
     /**
      * An id constant {@link Long}
      */
-    protected static final Long AN_ID = new Long(33);
+    protected static final Long AN_ID = 33L;
 
     /**
      * Version
@@ -131,19 +131,22 @@ public class PluginDomainUtility {
      * A {@link PluginConfiguration}
      */
     private final PluginConfiguration pluginConfiguration1 = new PluginConfiguration(getPluginMetaData(),
-            "a configuration from PluginDomainUtility", INTERFACEPARAMETERS, 0);
+                                                                                     "a configuration from PluginDomainUtility",
+                                                                                     INTERFACEPARAMETERS, 0);
 
     /**
      * A list of {@link PluginParameter} with a dynamic {@link PluginParameter}
      */
     private final PluginConfiguration pluginConfiguration2 = new PluginConfiguration(getPluginMetaData(),
-            "second configuration  from PluginDomainUtility", DYNAMICPARAMETERS, 0);
+                                                                                     "second configuration  from PluginDomainUtility",
+                                                                                     DYNAMICPARAMETERS, 0);
 
     /**
      * A list of {@link PluginParameter} without parameters.
      */
     private final PluginConfiguration pluginConfiguration3 = new PluginConfiguration(getPluginMetaData(),
-            "third configuration from PluginDomainUtility", QUATRE);
+                                                                                     "third configuration from PluginDomainUtility",
+                                                                                     QUATRE);
 
     protected PluginMetaData getPluginMetaData() {
         final PluginMetaData pluginMetaData = new PluginMetaData();

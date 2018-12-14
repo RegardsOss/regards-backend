@@ -27,12 +27,9 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**
  * REGARDS authority
- *
  * @author Marc Sordi
  * @author Sébastien Binda
  * @author Sylvain Vissiere-Guerinet
- * @since 1.0-SNAPSHOT
- *
  */
 public class RoleAuthority implements GrantedAuthority {
 
@@ -63,113 +60,85 @@ public class RoleAuthority implements GrantedAuthority {
     private List<String> authorizedIpAdresses = new ArrayList<>();
 
     /**
-     *
      * Constructor
-     *
-     * @param pRoleName
-     *            The role name
-     * @since 1.0-SNAPSHOT
+     * @param roleName The role name
      */
-    public RoleAuthority(final String pRoleName) {
-        if (!pRoleName.startsWith(ROLE_PREFIX)) {
-            autority = getRoleAuthority(pRoleName);
+    public RoleAuthority(String roleName) {
+        if (!roleName.startsWith(ROLE_PREFIX)) {
+            autority = getRoleAuthority(roleName);
         } else {
-            autority = pRoleName;
+            autority = roleName;
         }
     }
 
     /**
-     *
      * Remove Authority ROLE_ prefix to get real role name
-     *
-     * @param pRoleAuthorityName
-     *            Authority role name with ROLE_PREFIX
+     * @param roleAuthorityName Authority role name with ROLE_PREFIX
      * @return role name
-     * @since 1.0-SNAPSHOT
      */
-    public static String getRoleName(final String pRoleAuthorityName) {
-        String roleName = pRoleAuthorityName;
-        if ((pRoleAuthorityName != null) && pRoleAuthorityName.startsWith(ROLE_PREFIX)) {
+    public static String getRoleName(String roleAuthorityName) {
+        String roleName = roleAuthorityName;
+        if ((roleAuthorityName != null) && roleAuthorityName.startsWith(ROLE_PREFIX)) {
             roleName = roleName.substring(ROLE_PREFIX.length());
         }
         return roleName;
     }
 
     /**
-     *
      * Add Authority PREFIX to given Role name if necessary
-     *
-     * @param pRoleName
-     *            The role name
+     * @param roleName The role name
      * @return RoleAuthority
-     * @since 1.0-SNAPSHOT
      */
-    public static String getRoleAuthority(final String pRoleName) {
-        if (pRoleName.startsWith(ROLE_PREFIX)) {
-            return pRoleName;
+    public static String getRoleAuthority(String roleName) {
+        if (roleName.startsWith(ROLE_PREFIX)) {
+            return roleName;
         }
-        return ROLE_PREFIX + pRoleName;
+        return ROLE_PREFIX + roleName;
     }
 
     /**
-     *
      * Retrieve the SYS ROLE for the current microservice. SYS ROLE is a specific role that permit access to all
      * administration endpoints.
-     *
-     * @param pMicroserviceName
-     *            the current microservice name
+     * @param microserviceName the current microservice name
      * @return SYS Role name
-     * @since 1.0-SNAPSHOT
      */
-    public static String getSysRole(final String pMicroserviceName) {
-        return ROLE_PREFIX + SYS_ROLE_PREFIX + pMicroserviceName;
+    public static String getSysRole(String microserviceName) {
+        return ROLE_PREFIX + SYS_ROLE_PREFIX + microserviceName;
     }
 
     /**
-     *
      * Is the given role a system role ?
-     *
-     * @param pRoleName
-     *            The role name
+     * @param roleName The role name
      * @return [true|false]
-     * @since 1.0-SNAPSHOT
      */
-    public static boolean isSysRole(final String pRoleName) {
+    public static boolean isSysRole(String roleName) {
         boolean isSysRole = false;
-        if (getRoleAuthority(pRoleName).startsWith(ROLE_PREFIX + SYS_ROLE_PREFIX)) {
+        if (getRoleAuthority(roleName).startsWith(ROLE_PREFIX + SYS_ROLE_PREFIX)) {
             isSysRole = true;
         }
         return isSysRole;
     }
 
     /**
-     *
      * Is the given role the virtual instance admin role ?
-     *
-     * @param pRoleName
-     *            The role name
+     * @param roleName The role name
      * @return [true|false]
-     * @since 1.0-SNAPSHOT
      */
-    public static boolean isInstanceAdminRole(final String pRoleName) {
+    public static boolean isInstanceAdminRole(String roleName) {
         boolean isInstanceAdminRole = false;
-        if (getRoleAuthority(pRoleName).equals(getRoleAuthority(DefaultRole.INSTANCE_ADMIN.toString()))) {
+        if (getRoleAuthority(roleName).equals(getRoleAuthority(DefaultRole.INSTANCE_ADMIN.toString()))) {
             isInstanceAdminRole = true;
         }
         return isInstanceAdminRole;
     }
 
     /**
-     *
      * Is the given role the virtual project admin role ?
-     *
-     * @param pRoleName
-     *            The role name
+     * @param roleName The role name
      * @return [true|false]
-     * @since 1.0-SNAPSHOT
      */
-    public static boolean isProjectAdminRole(final String pRoleName) {
-        return getRoleAuthority(pRoleName).equals(getRoleAuthority(DefaultRole.PROJECT_ADMIN.toString()));
+    public static boolean isProjectAdminRole(String roleName) {
+        return getRoleAuthority(roleName).equals(getRoleAuthority(DefaultRole.PROJECT_ADMIN.toString()));
     }
 
     @Override
@@ -185,14 +154,14 @@ public class RoleAuthority implements GrantedAuthority {
         return authorizedIpAdresses;
     }
 
-    public void setAuthorizedIpAdresses(final List<String> pAuthorizedIpAdresses) {
-        authorizedIpAdresses = pAuthorizedIpAdresses;
+    public void setAuthorizedIpAdresses(List<String> authorizedIpAdresses) {
+        this.authorizedIpAdresses = authorizedIpAdresses;
     }
 
     @Override
-    public boolean equals(final Object pObj) {
-        if ((pObj != null) && (pObj instanceof RoleAuthority)) {
-            return autority.equals(((RoleAuthority) pObj).getAuthority());
+    public boolean equals(Object obj) {
+        if ((obj instanceof RoleAuthority)) {
+            return autority.equals(((RoleAuthority) obj).getAuthority());
         }
         return false;
     }

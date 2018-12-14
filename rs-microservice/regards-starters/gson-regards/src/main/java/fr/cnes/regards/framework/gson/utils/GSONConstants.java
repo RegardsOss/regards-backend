@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.gson.utils;
 
 /**
  * @author Marc Sordi
- *
  */
 public final class GSONConstants {
 

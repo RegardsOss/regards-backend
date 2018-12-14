@@ -20,9 +20,7 @@ package fr.cnes.regards.framework.modules.plugins.service;
 
 /**
  * POJO to test complex parameter types during plugin instanciation
- *
  * @author sbinda
- *
  */
 public class TestPojo {
 

@@ -27,13 +27,10 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 
 /**
- *
  * Class DefaultPluginResourceManager
  *
  * Default implementation for Plugin resource endpoints management
- *
  * @author CS
- * @since 1.0-SNAPSHOT
  */
 public class DefaultPluginResourceManager implements IPluginResourceManager {
 

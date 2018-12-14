@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.utils.plugins.basic.ISamplePlugin;
 
 /**
  * ISamplePlugin
- *
  * @author Christophe Mertz
  */
 @Plugin(description = "Complex plugin test", id = "aComplexErrorPlugin", version = "0.0.1", author = "REGARDS Team",
@@ -51,9 +50,7 @@ public class ComplexErrorPlugin implements ISamplePlugin {
 
     @Override
     public String echo(String pMessage) {
-        final StringBuffer str = new StringBuffer();
-        str.append(this.getClass().getName() + "-" + pMessage + interfacePlugin.toString());
-        return str.toString();
+        return this.getClass().getName() + "-" + pMessage + interfacePlugin.toString();
     }
 
     @Override

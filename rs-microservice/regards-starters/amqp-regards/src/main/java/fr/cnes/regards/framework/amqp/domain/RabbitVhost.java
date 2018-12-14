@@ -22,7 +22,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * @author svissier
- *
  */
 @JsonIgnoreProperties
 public class RabbitVhost {
@@ -41,7 +40,6 @@ public class RabbitVhost {
 
     /**
      * Set the virtual host name
-     * @param pName
      */
     public void setName(String pName) {
         name = pName;
@@ -49,7 +47,6 @@ public class RabbitVhost {
 
     /**
      * Equals method
-     * @param pOther
      * @return whether pOther is equals to this
      */
     @Override

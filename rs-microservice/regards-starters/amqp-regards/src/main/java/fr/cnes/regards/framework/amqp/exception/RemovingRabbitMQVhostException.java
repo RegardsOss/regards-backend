@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.amqp.exception;
 
 /**
  * @author Marc Sordi
- *
  */
 @SuppressWarnings("serial")
 public class RemovingRabbitMQVhostException extends RabbitMQVhostException {

@@ -34,9 +34,7 @@ import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
 
 /**
  * Gson adapter for GeoJson geometry
- *
  * @author Marc Sordi
- *
  */
 @GsonTypeAdapterFactory
 public class GeometryTypeAdapterFactory extends PolymorphicTypeAdapterFactory<IGeometry> {

@@ -20,9 +20,8 @@ package fr.cnes.regards.framework.utils.plugins.bean;
 
 /**
  * @author Christophe Mertz
- *
  */
 public interface IPluginUtilsBean {
 
-    <T> void processAutowiredBean(final T pPluginInstance) ;
+    <T> void processAutowiredBean(final T pPluginInstance);
 }

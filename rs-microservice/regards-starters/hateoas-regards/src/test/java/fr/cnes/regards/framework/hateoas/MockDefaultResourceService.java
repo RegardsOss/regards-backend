@@ -30,11 +30,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.util.UriTemplate;
 
 /**
- *
  * Mock default resource service to avoid bad servlet context issue *
- *
  * @author msordi
- *
  */
 public class MockDefaultResourceService extends DefaultResourceService {
 

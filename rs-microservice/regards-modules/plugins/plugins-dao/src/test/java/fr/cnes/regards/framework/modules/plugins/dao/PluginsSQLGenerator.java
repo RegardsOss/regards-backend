@@ -23,7 +23,6 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractScriptGeneratorTes
 /**
  * Generate DDL with HBM2DDL
  * @author Marc Sordi
- *
  */
 public class PluginsSQLGenerator extends AbstractScriptGeneratorTest {
 

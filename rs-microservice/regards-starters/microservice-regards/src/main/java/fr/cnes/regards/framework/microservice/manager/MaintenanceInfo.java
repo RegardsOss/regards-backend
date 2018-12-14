@@ -19,8 +19,6 @@ public class MaintenanceInfo {
 
     /**
      * Constructor setting whether the maintenance mode is active or not and the last update date
-     * @param active
-     * @param lastUpdate
      */
     public MaintenanceInfo(Boolean active, OffsetDateTime lastUpdate) {
         this.active = active;
@@ -36,7 +34,6 @@ public class MaintenanceInfo {
 
     /**
      * Set whether the maintenace mode is active or not
-     * @param active
      */
     public void setActive(Boolean active) {
         this.active = active;
@@ -51,7 +48,6 @@ public class MaintenanceInfo {
 
     /**
      * Set the last update date
-     * @param lastUpdate
      */
     public void setLastUpdate(OffsetDateTime lastUpdate) {
         this.lastUpdate = lastUpdate;

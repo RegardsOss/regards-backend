@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author Marc Sordi
- *
  */
 @RestController
 @RequestMapping("/hello")

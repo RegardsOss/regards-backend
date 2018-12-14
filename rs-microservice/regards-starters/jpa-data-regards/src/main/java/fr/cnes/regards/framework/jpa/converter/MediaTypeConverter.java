@@ -26,7 +26,6 @@ import org.springframework.http.MediaType;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @Converter(autoApply = true)
 public class MediaTypeConverter implements AttributeConverter<MediaType, String> {

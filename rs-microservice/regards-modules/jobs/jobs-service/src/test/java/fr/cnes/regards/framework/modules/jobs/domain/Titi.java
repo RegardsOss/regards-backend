@@ -4,6 +4,7 @@ package fr.cnes.regards.framework.modules.jobs.domain;
  * @author oroussel
  */
 public class Titi {
+
     private int j = 0;
 
     public int getJ() {

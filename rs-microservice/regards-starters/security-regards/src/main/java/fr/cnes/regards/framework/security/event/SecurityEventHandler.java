@@ -31,9 +31,7 @@ import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 
 /**
  * This class manages multitenant security event workflow
- *
  * @author Marc Sordi
- *
  */
 public class SecurityEventHandler implements ApplicationListener<ApplicationReadyEvent> {
 
@@ -83,9 +81,7 @@ public class SecurityEventHandler implements ApplicationListener<ApplicationRead
 
     /**
      * Handle {@link ResourceAccessEvent} event to refresh security cache
-     *
      * @author Marc Sordi
-     *
      */
     private class ResourceAccessUpdateHandler implements IHandler<ResourceAccessEvent> {
 
@@ -103,9 +99,7 @@ public class SecurityEventHandler implements ApplicationListener<ApplicationRead
 
     /**
      * Handle {@link ResourceAccessInit} event to register default resource access for a new tenant
-     *
      * @author Marc Sordi
-     *
      */
     private class ResourceAccessInitHandler implements IHandler<ResourceAccessInit> {
 
@@ -124,9 +118,7 @@ public class SecurityEventHandler implements ApplicationListener<ApplicationRead
 
     /**
      * Handle {@link RoleEvent} to refresh security cache
-     *
      * @author Marc Sordi
-     *
      */
     private class RoleEventHandler implements IHandler<RoleEvent> {
 

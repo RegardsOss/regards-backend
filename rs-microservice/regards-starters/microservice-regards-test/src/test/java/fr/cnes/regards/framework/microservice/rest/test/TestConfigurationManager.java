@@ -10,11 +10,9 @@ import fr.cnes.regards.framework.module.manager.AbstractModuleManager;
 import fr.cnes.regards.framework.module.manager.ModuleConfiguration;
 import fr.cnes.regards.framework.module.manager.ModuleConfigurationItem;
 import fr.cnes.regards.framework.module.manager.ModuleReadinessReport;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
  * Some Dummy export/import for test purpose
- *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class TestConfigurationManager extends AbstractModuleManager<Void> {
@@ -24,7 +22,7 @@ public class TestConfigurationManager extends AbstractModuleManager<Void> {
     private boolean partialFail;
 
     @Override
-    public ModuleConfiguration exportConfiguration() throws ModuleException {
+    public ModuleConfiguration exportConfiguration() {
         List<ConfigurationPojo> pojos = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             pojos.add(new ConfigurationPojo("Configuration " + i));
@@ -41,9 +39,9 @@ public class TestConfigurationManager extends AbstractModuleManager<Void> {
         Set<String> importErrors = new HashSet<>();
         List<ModuleConfigurationItem<?>> confElements = configuration.getConfiguration();
         if (totalFail) {
-            for (int i = 0; i < confElements.size(); i++) {
-                if (ConfigurationPojo.class.isAssignableFrom(confElements.get(i).getKey())) {
-                    ConfigurationPojo pojo = confElements.get(i).getTypedValue();
+            for (ModuleConfigurationItem<?> confElement : confElements) {
+                if (ConfigurationPojo.class.isAssignableFrom(confElement.getKey())) {
+                    ConfigurationPojo pojo = confElement.getTypedValue();
                     importErrors.add("Fail for " + pojo.getAttribute());
                 }
             }
@@ -78,6 +76,6 @@ public class TestConfigurationManager extends AbstractModuleManager<Void> {
 
     @Override
     public ModuleReadinessReport<Void> isReady() {
-        return new ModuleReadinessReport<Void>(true, null, null);
+        return new ModuleReadinessReport<>(true, null, null);
     }
 }

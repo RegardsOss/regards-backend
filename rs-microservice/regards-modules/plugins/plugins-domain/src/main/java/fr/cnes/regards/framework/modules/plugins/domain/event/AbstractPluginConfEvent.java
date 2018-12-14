@@ -42,7 +42,6 @@ public abstract class AbstractPluginConfEvent {
 
     /**
      * Set the plugin configuration id
-     * @param pPluginConfId
      */
     public void setPluginConfId(Long pPluginConfId) {
         pluginConfId = pPluginConfId;
@@ -57,7 +56,6 @@ public abstract class AbstractPluginConfEvent {
 
     /**
      * Set the action this event is reflecting
-     * @param pAction
      */
     public void setAction(PluginServiceAction pAction) {
         action = pAction;
@@ -72,7 +70,6 @@ public abstract class AbstractPluginConfEvent {
 
     /**
      * Set the plugin types
-     * @param pPluginTypes
      */
     public void setPluginTypes(Set<String> pPluginTypes) {
         pluginTypes = pPluginTypes;
@@ -107,19 +104,13 @@ public abstract class AbstractPluginConfEvent {
             if (other.pluginConfId != null) {
                 return false;
             }
-        } else
-        if (!pluginConfId.equals(other.pluginConfId)) {
+        } else if (!pluginConfId.equals(other.pluginConfId)) {
             return false;
         }
         if (pluginTypes == null) {
-            if (other.pluginTypes != null) {
-                return false;
-            }
+            return other.pluginTypes == null;
         } else
-        if (!pluginTypes.equals(other.pluginTypes)) {
-            return false;
-        }
-        return true;
+            return pluginTypes.equals(other.pluginTypes);
     }
 
 }

@@ -34,4 +34,5 @@ import fr.cnes.regards.framework.modules.jobs.service.TestJobInfoService;
         ignoreResourceNotFound = true)
 @ComponentScan(basePackageClasses = TestJobInfoService.class)
 public class MultiJobServiceConfiguration {
+
 }

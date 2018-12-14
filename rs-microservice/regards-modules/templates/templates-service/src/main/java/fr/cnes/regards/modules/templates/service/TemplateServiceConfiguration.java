@@ -190,9 +190,8 @@ public class TemplateServiceConfiguration {
         templateCodePathMap.put(NOT_SUBSETTED_DATA_FILES_CODE,
                                 new TemplatePathSubject(NOT_SUBSETTED_DATA_FILES_TEMPLATE,
                                                         "Files could not be handled by their data storage"));
-        templateCodePathMap.put(UNDELETABLES_DATA_FILES_CODE,
-                                new TemplatePathSubject(UNDELETABLES_DATA_FILES_TEMPLATE,
-                                                        "REGARDS - Some files could not be deleted from data storage"));
+        templateCodePathMap.put(UNDELETABLES_DATA_FILES_CODE, new TemplatePathSubject(UNDELETABLES_DATA_FILES_TEMPLATE,
+                                                                                      "REGARDS - Some files could not be deleted from data storage"));
         templateCodePathMap
                 .put(ACCOUNT_UNLOCK_TEMPLATE_CODE, new TemplatePathSubject(ACCOUNT_UNLOCK_TEMPLATE, "Account Unlock"));
         templateCodePathMap.put(ACCOUNT_REFUSED_TEMPLATE_CODE,
@@ -203,7 +202,6 @@ public class TemplateServiceConfiguration {
 
     /**
      * @return the list of initialized template bean for the current microservice
-     * @throws IOException
      */
     @Bean(name = TEMPLATES)
     public List<Template> templates() throws IOException {
@@ -213,9 +211,7 @@ public class TemplateServiceConfiguration {
             try (InputStream is = resource.getInputStream()) {
                 final String text = inputStreamToString(is);
                 final Map<String, String> dataStructure = new HashMap<>();
-                templates.add(new Template(templateCodePathEntry.getKey(),
-                                           text,
-                                           dataStructure,
+                templates.add(new Template(templateCodePathEntry.getKey(), text, dataStructure,
                                            templateCodePathEntry.getValue().getEmailSubject()));
             } catch (FileNotFoundException fnfe) {
                 // due to code construction, it happens and it is not an error or an issue

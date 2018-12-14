@@ -22,22 +22,17 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 
 /**
  * IComplexInterfacePlugin
- *
  * @author Christophe Mertz
- *
  */
 @PluginInterface(description = "hello plugin interface")
 public interface IComplexInterfacePlugin {
 
     /**
      * method mult
-     *
-     * @param pFirst
-     *            first parameter's method
-     * @param pSecond
-     *            second parameter's method
+     * @param pFirst first parameter's method
+     * @param pSecond second parameter's method
      * @return the result
      */
-    public int mult(int pFirst, int pSecond);
+    int mult(int pFirst, int pSecond);
 
 }

@@ -32,9 +32,7 @@ import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 
 /**
- *
  * This class authorizes access to all endpoints for instance administrator.
- *
  * @author Sébastien Binda
  * @author Marc Sordi
  */
@@ -47,9 +45,7 @@ public class InstancePublicAccessVoter implements IInstancePublicAccessVoter {
 
     /**
      * Constructor
-     *
-     * @param pInstanceTenantName
-     *            instance
+     * @param pInstanceTenantName instance
      */
     public InstancePublicAccessVoter(final String pInstanceTenantName) {
         this.instanceTenantName = pInstanceTenantName;

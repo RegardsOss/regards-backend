@@ -15,7 +15,6 @@ import fr.cnes.regards.framework.encryption.IEncryptionService;
 
 /**
  * Auto configuration for ciphers. Default encryption service: {@link AESEncryptionService}
- *
  * @author Sylvain VISSIERE-GUERINET
  */
 @EnableConfigurationProperties({ CipherProperties.class })

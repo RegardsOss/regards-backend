@@ -34,6 +34,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 @Service
 @MultitenantTransactional
 public class TestJobInfoService implements ITestJobInfoService {
+
     @Autowired
     private IJobInfoRepository jobInfoRepository;
 

@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.framework.module.rest.representation;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -26,9 +26,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Server error response representation
- *
  * @author Marc Sordi
- *
  */
 public class ServerErrorResponse {
 
@@ -40,13 +38,13 @@ public class ServerErrorResponse {
     private final List<String> messages;
 
     public ServerErrorResponse(String message) {
-        this(Arrays.asList(message));
+        this(Collections.singletonList(message));
     }
 
     public ServerErrorResponse(List<String> messages) {
         this.messages = messages;
         if (messages != null) {
-            messages.forEach(message -> LOGGER.error(message));
+            messages.forEach(LOGGER::error);
         }
     }
 

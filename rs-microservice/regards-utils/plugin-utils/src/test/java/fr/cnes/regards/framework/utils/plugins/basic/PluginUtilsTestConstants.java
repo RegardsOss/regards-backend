@@ -20,9 +20,7 @@ package fr.cnes.regards.framework.utils.plugins.basic;
 
 /**
  * This class contains a set of {@link String) constants used in the tests.
- *
  * @author Christophe Mertz
- *
  */
 public class PluginUtilsTestConstants {
 

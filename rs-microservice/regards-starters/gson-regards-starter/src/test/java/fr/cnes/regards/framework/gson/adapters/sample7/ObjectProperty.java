@@ -22,7 +22,6 @@ import java.util.List;
 
 /**
  * @author Marc Sordi
- *
  */
 public class ObjectProperty extends AbstractProperty<List<AbstractProperty<?>>> {
 

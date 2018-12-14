@@ -22,12 +22,9 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 /**
- *
  * OAIS content information
- *
  * @author Sylvain Vissiere-Guerinet
  * @author Marc Sordi
- *
  */
 public class ContentInformation {
 
@@ -84,12 +81,8 @@ public class ContentInformation {
             return false;
         }
         if (representationInformation == null) {
-            if (other.representationInformation != null) {
-                return false;
-            }
-        } else if (!representationInformation.equals(other.representationInformation)) {
-            return false;
-        }
-        return true;
+            return other.representationInformation == null;
+        } else
+            return representationInformation.equals(other.representationInformation);
     }
 }

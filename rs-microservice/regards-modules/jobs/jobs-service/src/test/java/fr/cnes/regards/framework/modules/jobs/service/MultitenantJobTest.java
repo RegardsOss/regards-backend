@@ -88,7 +88,7 @@ public class MultitenantJobTest {
     private Gson gson;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         GsonUtil.setGson(gson);
         // tenantResolver.forceTenant(TENANT1);
         //
@@ -157,8 +157,9 @@ public class MultitenantJobTest {
                     LOGGER.info("FAILED for " + wrapper.getContent().getJobId());
                     break;
                 default:
-                    throw new IllegalArgumentException(type + " is not an handled type of JobEvent for this test: "
-                            + JobServiceTest.class.getSimpleName());
+                    throw new IllegalArgumentException(
+                            type + " is not an handled type of JobEvent for this test: " + JobServiceTest.class
+                                    .getSimpleName());
             }
         }
     }
@@ -169,7 +170,7 @@ public class MultitenantJobTest {
         JobInfo waitJobInfo1 = new JobInfo(false);
         waitJobInfo1.setPriority(10);
         waitJobInfo1.setClassName(WaiterJob.class.getName());
-        waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500l),
+        waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500L),
                                    new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 1));
         waitJobInfo1 = jobInfoService.createAsQueued(waitJobInfo1);
 
@@ -177,7 +178,7 @@ public class MultitenantJobTest {
         JobInfo waitJobInfo2 = new JobInfo(false);
         waitJobInfo2.setPriority(10);
         waitJobInfo2.setClassName(WaiterJob.class.getName());
-        waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500l),
+        waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500L),
                                    new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 1));
         waitJobInfo2 = jobInfoService.createAsQueued(waitJobInfo2);
 
@@ -209,14 +210,14 @@ public class MultitenantJobTest {
         JobInfo waitJobInfo1 = new JobInfo(false);
         waitJobInfo1.setPriority(10);
         waitJobInfo1.setClassName(WaiterJob.class.getName());
-        waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
+        waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000L),
                                    new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
 
         tenantResolver.forceTenant(TENANT2);
         JobInfo waitJobInfo2 = new JobInfo(false);
         waitJobInfo2.setPriority(10);
         waitJobInfo2.setClassName(WaiterJob.class.getName());
-        waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
+        waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000L),
                                    new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
 
         tenantResolver.forceTenant(TENANT1);
@@ -242,14 +243,14 @@ public class MultitenantJobTest {
         JobInfo waitJobInfo1 = new JobInfo(false);
         waitJobInfo1.setPriority(10);
         waitJobInfo1.setClassName(WaiterJob.class.getName());
-        waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
+        waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000L),
                                    new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
 
         tenantResolver.forceTenant(TENANT2);
         JobInfo waitJobInfo2 = new JobInfo(false);
         waitJobInfo2.setPriority(10);
         waitJobInfo2.setClassName(WaiterJob.class.getName());
-        waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
+        waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000L),
                                    new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
 
         waitJobInfo2 = jobInfoService.createAsQueued(waitJobInfo2);
@@ -317,7 +318,7 @@ public class MultitenantJobTest {
             jobInfos[i] = new JobInfo(false);
             jobInfos[i].setPriority(20 - i); // Makes it easier to know which ones are launched first
             jobInfos[i].setClassName(WaiterJob.class.getName());
-            jobInfos[i].setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
+            jobInfos[i].setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000L),
                                       new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 2));
         }
         tenantResolver.forceTenant(TENANT1);

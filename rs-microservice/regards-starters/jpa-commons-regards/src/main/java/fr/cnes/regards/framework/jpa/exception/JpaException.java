@@ -19,10 +19,8 @@
 package fr.cnes.regards.framework.jpa.exception;
 
 /**
- *
  * Generic JPA exception
  * @author Marc Sordi
- *
  */
 @SuppressWarnings("serial")
 public class JpaException extends Exception {

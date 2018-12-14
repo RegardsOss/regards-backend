@@ -24,13 +24,11 @@ import java.time.OffsetDateTime;
 
 /**
  * @author svissier
- *
  */
 public class PastOrNowValidator implements ConstraintValidator<PastOrNow, OffsetDateTime> {
 
     /**
      * Validator initializing method
-     * @param pArg0
      */
     @Override
     public void initialize(PastOrNow pArg0) {

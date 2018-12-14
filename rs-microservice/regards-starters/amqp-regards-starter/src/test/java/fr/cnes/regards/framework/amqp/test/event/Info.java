@@ -24,9 +24,7 @@ import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
  * {@link ISubscribable} information event with no {@link Target} restriction
- *
  * @author Marc Sordi
- *
  */
 @Event(target = Target.ALL)
 public class Info extends AbstractEvent implements ISubscribable {

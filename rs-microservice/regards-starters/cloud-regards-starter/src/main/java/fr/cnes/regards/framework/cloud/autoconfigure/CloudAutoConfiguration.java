@@ -29,4 +29,5 @@ import org.springframework.context.annotation.Configuration;
 @EnableDiscoveryClient
 @AutoConfigureBefore(EurekaClientAutoConfiguration.class)
 public class CloudAutoConfiguration {
+
 }

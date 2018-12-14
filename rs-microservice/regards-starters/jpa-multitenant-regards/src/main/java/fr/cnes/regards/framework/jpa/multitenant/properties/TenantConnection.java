@@ -21,11 +21,8 @@ package fr.cnes.regards.framework.jpa.multitenant.properties;
 import javax.validation.constraints.NotNull;
 
 /**
- *
  * POJO for microservice project configuration
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 public class TenantConnection {
 
@@ -66,30 +63,19 @@ public class TenantConnection {
     private String errorCause;
 
     /**
-     *
      * Constructor
-     *
-     * @since 1.0-SNAPSHOT
      */
     public TenantConnection() {
         super();
     }
 
     /**
-     *
      * Constructor
-     *
-     * @param tenant
-     *            tenant name
-     * @param url
-     *            tenant datasource url
-     * @param userName
-     *            tenant datasource username
-     * @param password
-     *            tenant datasource password
-     * @param driverClassName
-     *            tenant datasource driver class name
-     * @since 1.0-SNAPSHOT
+     * @param tenant tenant name
+     * @param url tenant datasource url
+     * @param userName tenant datasource username
+     * @param password tenant datasource password
+     * @param driverClassName tenant datasource driver class name
      */
     public TenantConnection(final String tenant, final String url, final String userName, final String password,
             final String driverClassName) {

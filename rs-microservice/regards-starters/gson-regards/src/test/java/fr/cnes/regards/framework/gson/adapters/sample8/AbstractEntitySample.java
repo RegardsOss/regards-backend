@@ -22,7 +22,6 @@ import fr.cnes.regards.framework.gson.annotation.Gsonable;
 
 /**
  * @author Marc Sordi
- *
  */
 @Gsonable
 public abstract class AbstractEntitySample {

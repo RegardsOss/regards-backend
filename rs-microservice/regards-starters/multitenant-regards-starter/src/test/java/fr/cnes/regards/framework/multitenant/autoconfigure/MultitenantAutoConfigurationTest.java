@@ -24,7 +24,7 @@ import java.util.TreeSet;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
-import org.springframework.boot.test.util.EnvironmentTestUtils;
+import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mock.web.MockServletContext;
@@ -34,9 +34,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 
 /**
  * Test auto configuration
- *
  * @author msordi
- *
  */
 public class MultitenantAutoConfigurationTest {
 
@@ -85,30 +83,27 @@ public class MultitenantAutoConfigurationTest {
         Assert.assertTrue(tenantResolver.getAllTenants().contains(CUSTOM_TENANT));
     }
 
-    private void loadApplicationContext(Class<?> pConfig, String... pPairs) {
+    private void loadApplicationContext(Class<?> config, String... pairs) {
         context = new AnnotationConfigWebApplicationContext();
         context.setServletContext(new MockServletContext());
-        EnvironmentTestUtils.addEnvironment(context, pPairs);
-        context.register(pConfig);
+        TestPropertyValues.of(pairs).applyTo(context.getEnvironment());
+        context.register(config);
         context.register(MultitenantAutoConfiguration.class);
         context.refresh();
     }
 
     /**
      * Empty configuration
-     *
      * @author msordi
-     *
      */
     @Configuration
     static class EmptyConfiguration {
+
     }
 
     /**
      * Custom tenant resolver configuration
-     *
      * @author msordi
-     *
      */
     @Configuration
     static class CustomConfiguration {
@@ -120,9 +115,7 @@ public class MultitenantAutoConfigurationTest {
 
         /**
          * Custom tenant resolver
-         *
          * @author msordi
-         *
          */
         private class CustomTenantResolver implements ITenantResolver {
 

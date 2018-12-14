@@ -18,20 +18,17 @@
  */
 package fr.cnes.regards.framework.oais.builder;
 
+import javax.annotation.Nullable;
 import java.time.OffsetDateTime;
 import java.util.Collection;
-
-import javax.annotation.Nullable;
 
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.oais.Event;
 import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
 
 /**
- *
  * Preservation Description Information Builder.<br/>
  *
  * A {@link PreservationDescriptionInformation} contains exactly five information objects :
@@ -87,9 +84,7 @@ import fr.cnes.regards.framework.oais.PreservationDescriptionInformation;
  * <li>{@link PDIBuilder#setAccessRightInformation(String, String, OffsetDateTime)}</li>
  * </ul>
  * <br/>
- *
  * @author Marc Sordi
- *
  */
 public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformation> {
 
@@ -104,7 +99,6 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
 
     /**
      * Constructor using the given preservation and description information as a base
-     * @param pdi
      */
     public PDIBuilder(PreservationDescriptionInformation pdi) {
         this.pdi = pdi;
@@ -121,9 +115,8 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
      */
     public void addTags(String... tags) {
         Assert.notEmpty(tags, "Tag is required");
-        @SuppressWarnings("unchecked")
-        Collection<String> existingTags = (Collection<String>) pdi.getContextInformation()
-                .get(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY);
+        @SuppressWarnings("unchecked") Collection<String> existingTags = (Collection<String>) pdi
+                .getContextInformation().get(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY);
         if (existingTags == null) {
             existingTags = Sets.newHashSet(tags);
             pdi.getContextInformation().put(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY, existingTags);
@@ -138,8 +131,8 @@ public class PDIBuilder implements IOAISBuilder<PreservationDescriptionInformati
 
     /**
      * Remove tags from the information package
-     * @param tags
      */
+    @SuppressWarnings("unchecked")
     public void removeTags(String... tags) {
         Collection<String> existingTags = (Collection<String>) pdi.getContextInformation()
                 .get(PreservationDescriptionInformation.CONTEXT_INFO_TAGS_KEY);
