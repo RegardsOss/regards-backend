@@ -21,7 +21,6 @@ package fr.cnes.regards.framework.microservice.web;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcRegistrations;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 /**
@@ -38,12 +37,11 @@ public class ControllerHandlingConfiguration implements WebMvcRegistrations {
 
             /**
              * Expects a handler to have a type-level @{@link Controller}
-             * annotation <b>AND</b> a type-level @{@link RequestMapping} annotation.
+             * annotation.
              */
             @Override
             protected boolean isHandler(Class<?> beanType) {
-                return AnnotatedElementUtils.hasAnnotation(beanType, Controller.class)
-                        && AnnotatedElementUtils.hasAnnotation(beanType, RequestMapping.class);
+                return AnnotatedElementUtils.hasAnnotation(beanType, Controller.class);
             }
         };
     }
