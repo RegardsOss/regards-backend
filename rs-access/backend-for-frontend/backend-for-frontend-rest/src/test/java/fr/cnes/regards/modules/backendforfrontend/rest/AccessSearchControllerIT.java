@@ -25,8 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -37,9 +36,8 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
  */
-@MultitenantTransactional
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=bff" })
-public class AccessSearchControllerIT extends AbstractRegardsTransactionalIT {
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=bff", "spring.datasource.type=" })
+public class AccessSearchControllerIT extends AbstractRegardsIT {
 
     /**
      * Class logger
