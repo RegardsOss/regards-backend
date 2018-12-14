@@ -32,7 +32,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.gson.GsonBuilder;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.DefaultDaoTestConfiguration;
+import fr.cnes.regards.framework.jpa.multitenant.test.AppDaoTestConfiguration;
 import fr.cnes.regards.framework.jpa.multitenant.test.MockAmqpConfiguration;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.util.JUnitLogRule;
@@ -58,8 +58,8 @@ import fr.cnes.regards.framework.test.util.JUnitLogRule;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = TestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@ContextConfiguration(classes = { DefaultTestFeignConfiguration.class, DefaultDaoTestConfiguration.class,
-        MockAmqpConfiguration.class })
+@ContextConfiguration(
+        classes = { DefaultTestFeignConfiguration.class, AppDaoTestConfiguration.class, MockAmqpConfiguration.class })
 @ActiveProfiles({ "default", "test", "noschedule" })
 @TestPropertySource(properties = { "regards.cloud.enabled=false", "spring.flyway.enabled=false" })
 public abstract class AbstractRegardsServiceIT {

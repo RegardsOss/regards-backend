@@ -180,7 +180,6 @@ public class DataSourcesAutoConfiguration {
      * @param instanceSubscriber to subscribe to tenant connection events
      * @param multitenantResolver to resolve tenant
      * @return JPA event handler
-     * @throws JpaMultitenantException if error occurs!
      */
     @Bean
     public MultitenantJpaEventHandler multitenantJpaEventHandler(IInstanceSubscriber instanceSubscriber,
@@ -205,7 +204,6 @@ public class DataSourcesAutoConfiguration {
      * @param existingDataSources list of existing datasources
      * @param connections pTenants tenants configuration
      * @param needRegistration if data source have to be registered
-     * @return datasources created
      */
     private void initDataSources(Map<String, DataSource> existingDataSources, List<TenantConnection> connections,
             boolean needRegistration, ITenantConnectionResolver tenantConnectionResolver) {
@@ -240,8 +238,6 @@ public class DataSourcesAutoConfiguration {
      * Default data source for persistence unit projects.
      *
      * ConditionalOnMissingBean : In case of jpa-instance-regards-starter activated. There can't be two datasources.
-     * @return datasource
-     * @throws JpaMultitenantException if connections cannot be retrieved on startup
      */
     @Bean
     @ConditionalOnMissingBean(DataSource.class)

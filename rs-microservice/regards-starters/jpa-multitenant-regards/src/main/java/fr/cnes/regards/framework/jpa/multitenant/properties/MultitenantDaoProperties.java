@@ -70,7 +70,7 @@ public class MultitenantDaoProperties {
     /**
      * For pooled data source, max available connections
      */
-    private Integer maxPoolSize = 15;
+    private Integer maxPoolSize = 5;
 
     /**
      * Default test query
