@@ -42,8 +42,8 @@ import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-@TestPropertySource(locations = { "classpath:test.properties" })
 @MultitenantTransactional
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=access" })
 public class UIPluginDefinitionControllerIT extends AbstractRegardsTransactionalIT {
 
     /**

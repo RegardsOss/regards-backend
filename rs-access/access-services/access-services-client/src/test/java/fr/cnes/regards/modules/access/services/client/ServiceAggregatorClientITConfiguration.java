@@ -56,11 +56,6 @@ public class ServiceAggregatorClientITConfiguration {
         return client;
     }
 
-    @Bean
-    public ServiceAggregatorClientEventHandler serviceAggregatorClientEventHandler() {
-        return Mockito.mock(ServiceAggregatorClientEventHandler.class);
-    }
-
     public PluginConfigurationDto dummyPluginConfigurationDto() {
         final PluginMetaData metaData = new PluginMetaData();
         metaData.getInterfaceNames().add(IService.class.getName());

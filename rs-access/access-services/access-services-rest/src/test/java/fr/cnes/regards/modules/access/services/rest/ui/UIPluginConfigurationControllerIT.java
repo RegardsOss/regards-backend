@@ -53,8 +53,8 @@ import fr.cnes.regards.modules.dam.domain.models.Model;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-@TestPropertySource(locations = { "classpath:test.properties" })
 @MultitenantTransactional
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=access" })
 public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
@@ -210,7 +210,7 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
 
         performDefaultPost(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
                 + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS, conf,
-                           customizer().expectStatusOk().expectValue(JSON_PATH_CONTENT + ".id", conf.getId().intValue())
+                           customizer().expectStatusOk().expectValue(JSON_PATH_CONTENT + ".active", conf.getActive().booleanValue())
                                    .expectValue(JSON_PATH_CONTENT + ".conf", conf.getConf())
                                    .expectValue(JSON_PATH_CONTENT + ".linkedToAllEntities",
                                                 conf.getLinkedToAllEntities().booleanValue()),

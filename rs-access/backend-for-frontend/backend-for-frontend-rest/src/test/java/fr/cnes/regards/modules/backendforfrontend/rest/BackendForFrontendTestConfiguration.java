@@ -24,7 +24,6 @@ import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
 
 import fr.cnes.regards.modules.access.services.client.IServiceAggregatorClient;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
@@ -34,7 +33,6 @@ import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
  *
  * @author Xavier-Alexandre Brochard
  */
-@Profile("test")
 @Configuration
 public class BackendForFrontendTestConfiguration {
 

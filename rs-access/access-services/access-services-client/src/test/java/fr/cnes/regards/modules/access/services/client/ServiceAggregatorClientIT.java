@@ -33,8 +33,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.feign.FeignClientBuilder;
@@ -50,14 +48,13 @@ import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
  *
  * @author Xavier-Alexandre Brochard
  */
-@TestPropertySource("classpath:test.properties")
-@DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
-public class IServiceAggregatorClientIT extends AbstractRegardsWebIT {
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=access" })
+public class ServiceAggregatorClientIT extends AbstractRegardsWebIT {
 
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(IServiceAggregatorClientIT.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ServiceAggregatorClientIT.class);
 
     @Value("${server.address}")
     private String serverAddress;

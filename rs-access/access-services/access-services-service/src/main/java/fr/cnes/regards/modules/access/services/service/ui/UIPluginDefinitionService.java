@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Optional;
 
 import javax.annotation.PostConstruct;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,6 +82,7 @@ public class UIPluginDefinitionService
      * Perform initialization only when the whole application is ready
      */
     @Override
+    @Transactional(value = TxType.NOT_SUPPORTED)
     public void onApplicationEvent(ApplicationReadyEvent event) {
         LOG.info("UIPluginDefinitionService subscribing to new TenantConnectionReady events.");
     }

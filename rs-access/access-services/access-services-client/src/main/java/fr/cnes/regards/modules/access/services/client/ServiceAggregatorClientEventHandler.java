@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.access.services.client;
 
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
@@ -37,6 +38,7 @@ import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
  *
  * @author Xavier-Alexandre Brochard
  */
+@Profile("!test")
 @Component
 public class ServiceAggregatorClientEventHandler implements ApplicationListener<ApplicationReadyEvent> {
 
