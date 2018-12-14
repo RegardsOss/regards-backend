@@ -1,9 +1,5 @@
 package fr.cnes.regards.modules.configuration.rest;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,9 +8,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
+import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
+
 @Configuration
 public class ModuleConfiguration {
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Bean
     public ILegacySearchEngineJsonClient projectClient() {
         ILegacySearchEngineJsonClient mock = Mockito.mock(ILegacySearchEngineJsonClient.class);

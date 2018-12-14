@@ -39,30 +39,33 @@ public interface ILayoutService {
      *
      * Retrieve an application layout configuration by is applicationId
      *
-     * @param pApplicationId
+     * @param applicationId
      * @return Layout
+     * @throws EntityNotFoundException
      * @since 1.0-SNAPSHOT
      */
-    Layout retrieveLayout(String pApplicationId) throws EntityNotFoundException;
+    Layout retrieveLayout(String applicationId) throws EntityNotFoundException;
 
     /**
      *
      * Save a new layout configuration
      *
-     * @param pLayout
+     * @param layout
      * @return Layout
+     * @throws EntityException
      * @since 1.0-SNAPSHOT
      */
-    Layout saveLayout(Layout pLayout) throws EntityException;
+    Layout saveLayout(Layout layout) throws EntityException;
 
     /**
      *
      * Save a new layout configuration
      *
-     * @param pLayout
+     * @param layout
      * @return Layout
+     * @throws EntityException
      * @since 1.0-SNAPSHOT
      */
-    Layout updateLayout(Layout pLayout) throws EntityException;
+    Layout updateLayout(Layout layout) throws EntityException;
 
 }

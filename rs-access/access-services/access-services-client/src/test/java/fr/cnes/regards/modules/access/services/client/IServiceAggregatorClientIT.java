@@ -80,7 +80,7 @@ public class IServiceAggregatorClientIT extends AbstractRegardsWebIT {
     public void init() {
         client = FeignClientBuilder.build(new TokenClientProvider<>(IServiceAggregatorClient.class,
                 "http://" + serverAddress + ":" + getPort(), feignSecurityManager));
-        runtimeTenantResolver.forceTenant(DEFAULT_TENANT);
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         FeignSecurityManager.asSystem();
     }
 

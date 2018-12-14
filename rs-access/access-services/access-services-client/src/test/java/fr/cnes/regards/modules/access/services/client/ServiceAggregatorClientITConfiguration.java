@@ -28,6 +28,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -50,7 +51,7 @@ public class ServiceAggregatorClientITConfiguration {
         ResponseEntity<List<Resource<PluginConfigurationDto>>> result = new ResponseEntity<List<Resource<PluginConfigurationDto>>>(
                 HateoasUtils.wrapList(Lists.newArrayList(dummyPluginConfigurationDto())), HttpStatus.OK);
 
-        Mockito.when(client.retrieveServices(Mockito.anyListOf(String.class), Mockito.any())).thenReturn(result);
+        Mockito.when(client.retrieveServices(Mockito.anyList(), Mockito.any())).thenReturn(result);
 
         return client;
     }

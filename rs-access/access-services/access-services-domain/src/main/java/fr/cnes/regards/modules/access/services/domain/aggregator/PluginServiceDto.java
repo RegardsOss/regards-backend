@@ -47,48 +47,48 @@ public final class PluginServiceDto {
 
     /**
      * Constructor. It is private in order to force the caller to use one of the 'from' builder methods
-     * @param pConfigId
-     * @param pLabel
-     * @param pIcon
-     * @param pApplicationModes
-     * @param pEntityTypes
-     * @param pType
+     * @param configId
+     * @param label
+     * @param iconUrl
+     * @param applicationModes
+     * @param entityTypes
+     * @param type
      */
-    private PluginServiceDto(Long pConfigId, String pLabel, URL pIcon, Set<ServiceScope> pApplicationModes,
-            Set<EntityType> pEntityTypes, PluginServiceType pType) {
+    private PluginServiceDto(Long configId, String label, URL iconUrl, Set<ServiceScope> applicationModes,
+            Set<EntityType> entityTypes, PluginServiceType type) {
         super();
-        configId = pConfigId;
-        label = pLabel;
-        iconUrl = pIcon;
-        applicationModes = pApplicationModes;
-        entityTypes = pEntityTypes;
-        type = pType;
+        this.configId = configId;
+        this.label = label;
+        this.iconUrl = iconUrl;
+        this.applicationModes = applicationModes;
+        this.entityTypes = entityTypes;
+        this.type = type;
     }
 
     /**
      * Build a new instance from the given {@link PluginConfigurationDto}
-     * @param pPluginConfigurationDto
+     * @param pluginConfigurationDto
      * @return the new instance
      */
-    public static final PluginServiceDto fromPluginConfigurationDto(PluginConfigurationDto pPluginConfigurationDto) {
+    public static final PluginServiceDto fromPluginConfigurationDto(PluginConfigurationDto pluginConfigurationDto) {
         // Retrieve applicationModes & entityTypes from Dto
-        Set<ServiceScope> appModes = pPluginConfigurationDto.getApplicationModes();
-        Set<EntityType> entTypes = pPluginConfigurationDto.getEntityTypes();
+        Set<ServiceScope> appModes = pluginConfigurationDto.getApplicationModes();
+        Set<EntityType> entTypes = pluginConfigurationDto.getEntityTypes();
 
-        return new PluginServiceDto(pPluginConfigurationDto.getId(), pPluginConfigurationDto.getLabel(),
-                pPluginConfigurationDto.getIconUrl(), appModes, entTypes, PluginServiceType.CATALOG);
+        return new PluginServiceDto(pluginConfigurationDto.getId(), pluginConfigurationDto.getLabel(),
+                pluginConfigurationDto.getIconUrl(), appModes, entTypes, PluginServiceType.CATALOG);
     }
 
     /**
      * Build a new instance from the given {@link UIPluginConfiguration}
-     * @param pUiPluginConfiguration
+     * @param uiPluginConfiguration
      * @return the new instance
      */
-    public static final PluginServiceDto fromUIPluginConfiguration(UIPluginConfiguration pUiPluginConfiguration) {
-        return new PluginServiceDto(pUiPluginConfiguration.getId(), pUiPluginConfiguration.getLabel(),
-                pUiPluginConfiguration.getPluginDefinition().getIconUrl(),
-                pUiPluginConfiguration.getPluginDefinition().getApplicationModes(),
-                pUiPluginConfiguration.getPluginDefinition().getEntityTypes(), PluginServiceType.UI);
+    public static final PluginServiceDto fromUIPluginConfiguration(UIPluginConfiguration uiPluginConfiguration) {
+        return new PluginServiceDto(uiPluginConfiguration.getId(), uiPluginConfiguration.getLabel(),
+                uiPluginConfiguration.getPluginDefinition().getIconUrl(),
+                uiPluginConfiguration.getPluginDefinition().getApplicationModes(),
+                uiPluginConfiguration.getPluginDefinition().getEntityTypes(), PluginServiceType.UI);
     }
 
     /**

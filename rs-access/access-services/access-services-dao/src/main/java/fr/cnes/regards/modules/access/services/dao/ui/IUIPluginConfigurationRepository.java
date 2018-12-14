@@ -43,96 +43,96 @@ public interface IUIPluginConfigurationRepository extends JpaRepository<UIPlugin
      *
      * Find {@link UIPluginConfiguration} associated to all entities througth linkedToAllEntities parameter
      *
-     * @param pIsLinkedToAllEntities
+     * @param isLinkedToAllEntities
      *            [true|false]
-     * @param pPageable
+     * @param pageable
      * @return {@link Page} of {@link UIPluginConfiguration}
      * @since 1.0-SNAPSHOT
      */
-    Page<UIPluginConfiguration> findByLinkedToAllEntities(Boolean pIsLinkedToAllEntities, Pageable pPageable);
+    Page<UIPluginConfiguration> findByLinkedToAllEntities(Boolean isLinkedToAllEntities, Pageable pageable);
 
     /**
      *
      * Find all actives {@link UIPluginConfiguration}
      *
-     * @param pIsActive
+     * @param isActive
      *            [true|false]
-     * @param pPageable
+     * @param pageable
      * @return {@link Page} of {@link UIPluginConfiguration}
      * @since 1.0-SNAPSHOT
      */
-    Page<UIPluginConfiguration> findByActive(Boolean pIsActive, Pageable pPageable);
+    Page<UIPluginConfiguration> findByActive(Boolean isActive, Pageable pageable);
 
     /**
      *
      * Find all actives {@link UIPluginConfiguration} associated to all entities througth linkedToAllEntities parameter
      *
-     * @param pIsActive
+     * @param isActive
      *            [true|false]
-     * @param pIsLinkedToAllEntities
+     * @param isLinkedToAllEntities
      *            [true|false]
-     * @param pPageable
+     * @param pageable
      * @return {@link Page} of {@link UIPluginConfiguration}
      * @since 1.0-SNAPSHOT
      */
-    Page<UIPluginConfiguration> findByActiveAndLinkedToAllEntities(Boolean pIsActive, Boolean pIsLinkedToAllEntities,
-            Pageable pPageable);
+    Page<UIPluginConfiguration> findByActiveAndLinkedToAllEntities(Boolean isActive, Boolean isLinkedToAllEntities,
+            Pageable pageable);
 
     /**
      *
      * Find all actives {@link UIPluginConfiguration} associated to all entities througth linkedToAllEntities parameter
      * with the given type
      *
-     * @param pPluginType type
-     * @param pIsActive [true|false]
-     * @param pIsLinkedToAllEntities [true|false]
-     * @param pPageable
+     * @param pluginType type
+     * @param isActive [true|false]
+     * @param isLinkedToAllEntities [true|false]
+     * @param pageable
      * @return {@link Page} of {@link UIPluginConfiguration}
      * @since 1.0-SNAPSHOT
      */
-    Page<UIPluginConfiguration> findByPluginDefinitionTypeAndActiveAndLinkedToAllEntities(UIPluginTypesEnum pPluginType,
-            Boolean pIsActive, Boolean pIsLinkedToAllEntities, Pageable pPageable);
+    Page<UIPluginConfiguration> findByPluginDefinitionTypeAndActiveAndLinkedToAllEntities(UIPluginTypesEnum pluginType,
+            Boolean isActive, Boolean isLinkedToAllEntities, Pageable pageable);
 
     /**
      *
      * Find all actives {@link UIPluginConfiguration} of type SERVICE and associated to all entities througth
      * linkedToAllEntities parameter
      *
-     * @param pIsActive
+     * @param isActive
      *            [true|false]
-     * @param pIsLinkedToAllEntities
+     * @param isLinkedToAllEntities
      *            [true|false]
-     * @param pPluginDefinitionType
+     * @param pluginDefinitionType
      *            type {@link UIPluginTypesEnum}
      * @return {@link List} of {@link UIPluginConfiguration}
      * @since 1.0-SNAPHSOT
      */
-    List<UIPluginConfiguration> findByActiveAndLinkedToAllEntitiesAndPluginDefinitionType(Boolean pIsActive,
-            Boolean pIsLinkedToAllEntities, UIPluginTypesEnum pPluginDefinitionType);
+    List<UIPluginConfiguration> findByActiveAndLinkedToAllEntitiesAndPluginDefinitionType(Boolean isActive,
+            Boolean isLinkedToAllEntities, UIPluginTypesEnum pluginDefinitionType);
 
     /**
      *
      * Find all {@link UIPluginConfiguration} associated to the given {@link UIPluginDefinition}
      *
-     * @param pPlugin
+     * @param plugin
      *            {@link UIPluginDefinition}
-     * @param pPageable
+     * @param pageable
      * @return {@link Page} of {@link UIPluginConfiguration}
      * @since 1.0-SNAPSHOT
      */
-    Page<UIPluginConfiguration> findByPluginDefinition(UIPluginDefinition pPlugin, Pageable pPageable);
+    Page<UIPluginConfiguration> findByPluginDefinition(UIPluginDefinition plugin, Pageable pageable);
 
-    Page<UIPluginConfiguration> findByPluginDefinitionTypeAndActive(UIPluginTypesEnum pPluginType, Boolean pIsActive,
-            Pageable pPageable);
+    Page<UIPluginConfiguration> findByPluginDefinitionTypeAndActive(UIPluginTypesEnum pluginType, Boolean isActive,
+            Pageable pageable);
 
-    Page<UIPluginConfiguration> findByPluginDefinitionTypeAndLinkedToAllEntities(UIPluginTypesEnum pPluginType,
-            Boolean pIsLinkedToAllEntities, Pageable pPageable);
+    Page<UIPluginConfiguration> findByPluginDefinitionTypeAndLinkedToAllEntities(UIPluginTypesEnum pluginType,
+            Boolean isLinkedToAllEntities, Pageable pageable);
 
-    Page<UIPluginConfiguration> findByPluginDefinitionType(UIPluginTypesEnum pPluginType, Pageable pPageable);
+    Page<UIPluginConfiguration> findByPluginDefinitionType(UIPluginTypesEnum pluginType, Pageable pageable);
 
-    long countByPluginDefinition(UIPluginDefinition pPlugin);
+    long countByPluginDefinition(UIPluginDefinition plugin);
 
-    default boolean hasPluginConfigurations(UIPluginDefinition pPlugin) {
-        return countByPluginDefinition(pPlugin) > 0;
+    default boolean hasPluginConfigurations(UIPluginDefinition plugin) {
+        return countByPluginDefinition(plugin) > 0;
     }
 }

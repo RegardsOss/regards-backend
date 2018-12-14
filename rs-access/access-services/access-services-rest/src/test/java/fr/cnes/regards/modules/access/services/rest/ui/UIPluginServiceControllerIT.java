@@ -21,21 +21,18 @@ package fr.cnes.regards.modules.access.services.rest.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.ResultMatcher;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.access.services.dao.ui.ILinkUIPluginsDatasetsRepository;
@@ -46,7 +43,6 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  *
@@ -156,13 +152,10 @@ public class UIPluginServiceControllerIT extends AbstractRegardsTransactionalIT 
     @Requirement("REGARDS_DSL_ACC_ADM_1530")
     @Purpose("Check retrieve dataset associated UIPluginServices")
     public void retrieveDatasetLinkedPlugins_1() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-
-        expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT, Matchers.hasSize(2)));
-        RequestParamBuilder builder = RequestParamBuilder.build().param("dataset_id", "firstOne");
-        performDefaultGet(UIPluginServiceController.REQUEST_MAPPING_ROOT, expectations,
-                          "Error getting dataset linked UIPluginConfiguration", builder);
+        performDefaultGet(UIPluginServiceController.REQUEST_MAPPING_ROOT,
+                          customizer().expectStatusOk().expectToHaveSize(JSON_PATH_ROOT, 2).addParameter("dataset_id",
+                                                                                                         "firstOne"),
+                          "Error getting dataset linked UIPluginConfiguration");
     }
 
     /**
@@ -173,13 +166,10 @@ public class UIPluginServiceControllerIT extends AbstractRegardsTransactionalIT 
     @Requirement("REGARDS_DSL_ACC_ADM_1530")
     @Purpose("Check retrieve dataset associated UIPluginServices")
     public void retrieveDatasetLinkedPlugins_2() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-
-        expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT, Matchers.hasSize(3)));
-        RequestParamBuilder builder = RequestParamBuilder.build().param("dataset_id", "second");
-        performDefaultGet(UIPluginServiceController.REQUEST_MAPPING_ROOT, expectations,
-                          "Error getting dataset linked UIPluginConfiguration", builder);
+        performDefaultGet(UIPluginServiceController.REQUEST_MAPPING_ROOT,
+                          customizer().expectStatusOk().expectToHaveSize(JSON_PATH_ROOT, 3).addParameter("dataset_id",
+                                                                                                         "second"),
+                          "Error getting dataset linked UIPluginConfiguration");
 
     }
 
@@ -191,13 +181,10 @@ public class UIPluginServiceControllerIT extends AbstractRegardsTransactionalIT 
     @Requirement("REGARDS_DSL_ACC_ADM_1530")
     @Purpose("Check retrieve dataset associated UIPluginServices")
     public void retrieveDatasetLinkedPlugins_3() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-
-        expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT, Matchers.hasSize(3)));
-        RequestParamBuilder builder = RequestParamBuilder.build().param("dataset_id", "third");
-        performDefaultGet(UIPluginServiceController.REQUEST_MAPPING_ROOT, expectations,
-                          "Error getting dataset linked UIPluginConfiguration", builder);
+        performDefaultGet(UIPluginServiceController.REQUEST_MAPPING_ROOT,
+                          customizer().expectStatusOk().expectToHaveSize(JSON_PATH_ROOT, 3).addParameter("dataset_id",
+                                                                                                         "third"),
+                          "Error getting dataset linked UIPluginConfiguration");
 
     }
 
@@ -208,13 +195,10 @@ public class UIPluginServiceControllerIT extends AbstractRegardsTransactionalIT 
     @Requirement("REGARDS_DSL_ACC_ADM_1530")
     @Purpose("Check retrieve dataset associated UIPluginServices")
     public void retrieveDatasetLinkedPlugins_4() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-
-        expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT, Matchers.hasSize(1)));
-        RequestParamBuilder builder = RequestParamBuilder.build().param("dataset_id", "unknown");
-        performDefaultGet(UIPluginServiceController.REQUEST_MAPPING_ROOT, expectations,
-                          "Error getting dataset linked UIPluginConfiguration", builder);
+        performDefaultGet(UIPluginServiceController.REQUEST_MAPPING_ROOT,
+                          customizer().expectStatusOk().expectToHaveSize(JSON_PATH_ROOT, 1).addParameter("dataset_id",
+                                                                                                         "unknown"),
+                          "Error getting dataset linked UIPluginConfiguration");
     }
 
     @Override

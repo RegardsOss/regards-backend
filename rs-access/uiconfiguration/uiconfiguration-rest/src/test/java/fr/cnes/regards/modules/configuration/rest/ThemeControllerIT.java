@@ -18,24 +18,17 @@
  */
 package fr.cnes.regards.modules.configuration.rest;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.ResultMatcher;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.modules.configuration.dao.IThemeRepository;
 import fr.cnes.regards.modules.configuration.domain.Theme;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  *
@@ -91,10 +84,8 @@ public class ThemeControllerIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     public void testGetAllThemes() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(7)));
-        performDefaultGet(ThemeController.ROOT_MAPPING, expectations,
+        performDefaultGet(ThemeController.ROOT_MAPPING,
+                          customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 7),
                           "Error getting all themes. There should 7 themes. The 4 default ones and the 3 created in this test.");
     }
 
@@ -105,10 +96,8 @@ public class ThemeControllerIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     public void testGetOneTheme() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        performDefaultGet(ThemeController.ROOT_MAPPING + ThemeController.THEME_ID_MAPPING, expectations,
-                          "Error getting one theme", theme.getId());
+        performDefaultGet(ThemeController.ROOT_MAPPING + ThemeController.THEME_ID_MAPPING,
+                          customizer().expectStatusOk(), "Error getting one theme", theme.getId());
     }
 
     /**
@@ -118,15 +107,13 @@ public class ThemeControllerIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     public void testDeleteOneTheme() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        performDefaultDelete(ThemeController.ROOT_MAPPING + ThemeController.THEME_ID_MAPPING, expectations,
-                             "Error deleting one theme", theme.getId());
 
-        expectations.clear();
-        expectations.add(status().isNotFound());
-        performDefaultGet(ThemeController.ROOT_MAPPING + ThemeController.THEME_ID_MAPPING, expectations,
-                          "The deleted theme should not pe present anymore", theme.getId());
+        performDefaultDelete(ThemeController.ROOT_MAPPING + ThemeController.THEME_ID_MAPPING,
+                             customizer().expectStatusOk(), "Error deleting one theme", theme.getId());
+
+        performDefaultGet(ThemeController.ROOT_MAPPING + ThemeController.THEME_ID_MAPPING,
+                          customizer().expectStatusNotFound(), "The deleted theme should not pe present anymore",
+                          theme.getId());
     }
 
     /**
@@ -137,14 +124,11 @@ public class ThemeControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void testSaveTheme() {
         final Theme theme = createTheme(true, "NewTheme");
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        performDefaultPost(ThemeController.ROOT_MAPPING, theme, expectations, "Error saving new theme");
+        performDefaultPost(ThemeController.ROOT_MAPPING, theme, customizer().expectStatusOk(),
+                           "Error saving new theme");
 
-        expectations.clear();
-        expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(8)));
-        performDefaultGet(ThemeController.ROOT_MAPPING, expectations,
+        performDefaultGet(ThemeController.ROOT_MAPPING,
+                          customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 8),
                           "There should be the 7 initial themes and the new created one.");
     }
 
@@ -156,10 +140,8 @@ public class ThemeControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void testUpdateTheme() {
         theme.setActive(true);
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        performDefaultPut(ThemeController.ROOT_MAPPING + ThemeController.THEME_ID_MAPPING, theme, expectations,
-                          "Error saving new theme", theme.getId());
+        performDefaultPut(ThemeController.ROOT_MAPPING + ThemeController.THEME_ID_MAPPING, theme,
+                          customizer().expectStatusOk(), "Error saving new theme", theme.getId());
     }
 
 }

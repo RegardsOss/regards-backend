@@ -72,7 +72,7 @@ public abstract class AbstractUiConfigurationService implements ApplicationListe
     private boolean isMultitenantMicroservice;
 
     @Override
-    public void onApplicationEvent(ApplicationReadyEvent pEvent) {
+    public void onApplicationEvent(ApplicationReadyEvent event) {
         if (isMultitenantMicroservice) {
             // Multitenant version of the microservice.
             for (final String tenant : tenantResolver.getAllActiveTenants()) {
@@ -93,12 +93,12 @@ public abstract class AbstractUiConfigurationService implements ApplicationListe
      * @throws IOException
      * @since 1.0-SNAPSHOT
      */
-    protected String readDefaultFileResource(final Resource pResource) throws IOException {
+    protected String readDefaultFileResource(final Resource resource) throws IOException {
 
-        if ((pResource == null) || !pResource.exists()) {
+        if ((resource == null) || !resource.exists()) {
             throw new MissingResourceException();
         }
-        try (BufferedReader buffer = new BufferedReader(new InputStreamReader(pResource.getInputStream()))) {
+        try (BufferedReader buffer = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
             return buffer.lines().collect(Collectors.joining(System.lineSeparator()));
         }
     }

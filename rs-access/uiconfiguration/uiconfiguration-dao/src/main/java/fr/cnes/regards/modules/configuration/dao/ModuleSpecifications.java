@@ -42,7 +42,7 @@ public class ModuleSpecifications {
      * @param applicationId {@link String}
      * @param active {@link Boolean}
      * @param type {@link String}
-     * @return
+     * @return {@link Module} {@link Specification}
      */
     public static Specification<Module> search(String applicationId, Boolean active, String type) {
         return (root, query, cb) -> {

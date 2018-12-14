@@ -22,6 +22,7 @@ package fr.cnes.regards.modules.configuration.service.exception;
  * Runtime exception thrown when a required Spring @Resource is null.
  * @author Xavier-Alexandre Brochard
  */
+@SuppressWarnings("serial")
 public class MissingResourceException extends RuntimeException {
 
     /**
@@ -38,18 +39,18 @@ public class MissingResourceException extends RuntimeException {
 
     /**
      * @param pCause
-     * @param pEnableSuppression
-     * @param pWritableStackTrace
+     * @param enableSuppression
+     * @param writableStackTrace
      */
-    public MissingResourceException(Throwable pCause, boolean pEnableSuppression, boolean pWritableStackTrace) {
-        super(MESSAGE, pCause, pEnableSuppression, pWritableStackTrace);
+    public MissingResourceException(Throwable pCause, boolean enableSuppression, boolean writableStackTrace) {
+        super(MESSAGE, pCause, enableSuppression, writableStackTrace);
     }
 
     /**
-     * @param pCause
+     * @param cause
      */
-    public MissingResourceException(Throwable pCause) {
-        super(MESSAGE, pCause);
+    public MissingResourceException(Throwable cause) {
+        super(MESSAGE, cause);
     }
 
 }

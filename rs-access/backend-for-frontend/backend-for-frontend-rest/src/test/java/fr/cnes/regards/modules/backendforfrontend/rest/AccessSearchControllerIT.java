@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.backendforfrontend.rest;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -52,25 +50,14 @@ public class AccessSearchControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_ACC_USE_700")
     @Purpose("Check the system can inject applicable services to the result of a search")
     public void searchAll() {
-        // Define customizer
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(status().isOk());
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content[0].content.services",
-                                                                 Matchers.hasSize(2)));
-        customizer.addExpectation(MockMvcResultMatchers
-                .jsonPath(JSON_PATH_ROOT + ".content[0].content.services[0].content.label", Matchers.equalTo("conf0")));
-        customizer.addExpectation(MockMvcResultMatchers
-                .jsonPath(JSON_PATH_ROOT + ".content[0].content.services[1].content.label",
-                          Matchers.equalTo("uiPluginConfiguration2")));
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content[1].content.services",
-                                                                 Matchers.hasSize(1)));
-        customizer.addExpectation(MockMvcResultMatchers
-                .jsonPath(JSON_PATH_ROOT + ".content[1].content.services[0].content.label", Matchers.equalTo("conf1")));
-
-        // Call
         RequestParamBuilder builder = RequestParamBuilder.build().param("q",
                                                                         BackendForFrontendTestUtils.OPENSEARCH_QUERY);
-        performDefaultGet(AccessSearchController.ROOT_PATH + AccessSearchController.SEARCH, customizer,
+        performDefaultGet(AccessSearchController.ROOT_PATH + AccessSearchController.SEARCH, customizer()
+                .expectStatusOk().expectToHaveSize(JSON_PATH_ROOT + ".content[0].content.services", 2)
+                .expectToHaveSize(JSON_PATH_ROOT + ".content[1].content.services", 1)
+                .expectValue(JSON_PATH_ROOT + ".content[0].content.services[0].content.label", "conf0")
+                .expectValue(JSON_PATH_ROOT + ".content[0].content.services[1].content.label", "uiPluginConfiguration2")
+                .expectValue(JSON_PATH_ROOT + ".content[1].content.services[0].content.label", "conf1"),
                           "Error searching all entities", builder);
     }
 
@@ -78,18 +65,11 @@ public class AccessSearchControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_ACC_USE_700")
     @Purpose("Check the system can inject applicable services to the result of a search")
     public void searchCollections() {
-        // Define customizer
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(status().isOk());
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content[0].content.services",
-                                                                 Matchers.hasSize(1)));
-        customizer.addExpectation(MockMvcResultMatchers
-                .jsonPath(JSON_PATH_ROOT + ".content[0].content.services[0].content.label", Matchers.equalTo("conf1")));
-
-        // Call
         RequestParamBuilder builder = RequestParamBuilder.build().param("q",
                                                                         BackendForFrontendTestUtils.OPENSEARCH_QUERY);
-        performDefaultGet(AccessSearchController.ROOT_PATH + AccessSearchController.COLLECTIONS_SEARCH, customizer,
+        performDefaultGet(AccessSearchController.ROOT_PATH + AccessSearchController.COLLECTIONS_SEARCH, customizer()
+                .expectStatusOk().expectToHaveSize(JSON_PATH_ROOT + ".content[0].content.services", 1)
+                .expectValue(JSON_PATH_ROOT + ".content[0].content.services[0].content.label", "conf1"),
                           "Error searching collections", builder);
     }
 
@@ -97,23 +77,16 @@ public class AccessSearchControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_ACC_USE_700")
     @Purpose("Check the system can inject applicable services to the result of a search")
     public void searchDatasets() {
-        // Define customizer
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content[0].content.services",
-                                                                 Matchers.hasSize(0)));
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content[1].content.services",
-                                                                 Matchers.hasSize(2)));
-        customizer.addExpectation(MockMvcResultMatchers
-                .jsonPath(JSON_PATH_ROOT + ".content[1].content.services[0].content.label", Matchers.equalTo("conf0")));
-        customizer.addExpectation(MockMvcResultMatchers
-                .jsonPath(JSON_PATH_ROOT + ".content[1].content.services[1].content.label",
-                          Matchers.equalTo("uiPluginConfiguration2")));
-
-        // Call
         RequestParamBuilder builder = RequestParamBuilder.build().param("q",
                                                                         BackendForFrontendTestUtils.OPENSEARCH_QUERY);
-        performDefaultGet(AccessSearchController.ROOT_PATH + AccessSearchController.DATASETS_SEARCH, customizer,
+        performDefaultGet(AccessSearchController.ROOT_PATH + AccessSearchController.DATASETS_SEARCH,
+                          customizer().expectStatusOk()
+                                  .expectToHaveSize(JSON_PATH_ROOT + ".content[0].content.services", 0)
+                                  .expectToHaveSize(JSON_PATH_ROOT + ".content[1].content.services", 2)
+                                  .expectValue(JSON_PATH_ROOT + ".content[1].content.services[0].content.label",
+                                               "conf0")
+                                  .expectValue(JSON_PATH_ROOT + ".content[1].content.services[1].content.label",
+                                               "uiPluginConfiguration2"),
                           "Error searching datasets", builder);
     }
 
@@ -121,21 +94,15 @@ public class AccessSearchControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_ACC_USE_700")
     @Purpose("Check the system can inject applicable services to the result of a search")
     public void searchDataobjects() {
-        // Define customizer
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(status().isOk());
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content[0].content.services",
-                                                                 Matchers.hasSize(2)));
-        customizer.addExpectation(MockMvcResultMatchers
-                .jsonPath(JSON_PATH_ROOT + ".content[0].content.services[0].content.label", Matchers.equalTo("conf0")));
-        customizer.addExpectation(MockMvcResultMatchers
-                .jsonPath(JSON_PATH_ROOT + ".content[0].content.services[1].content.label",
-                          Matchers.equalTo("uiPluginConfiguration2")));
-
-        // Call
         RequestParamBuilder builder = RequestParamBuilder.build().param("q",
                                                                         BackendForFrontendTestUtils.OPENSEARCH_QUERY);
-        performDefaultGet(AccessSearchController.ROOT_PATH + AccessSearchController.DATAOBJECTS_SEARCH, customizer,
+        performDefaultGet(AccessSearchController.ROOT_PATH + AccessSearchController.DATAOBJECTS_SEARCH,
+                          customizer().expectStatusOk()
+                                  .expectToHaveSize(JSON_PATH_ROOT + ".content[0].content.services", 2)
+                                  .expectValue(JSON_PATH_ROOT + ".content[0].content.services[0].content.label",
+                                               "conf0")
+                                  .expectValue(JSON_PATH_ROOT + ".content[0].content.services[1].content.label",
+                                               "uiPluginConfiguration2"),
                           "Error searching datasets", builder);
     }
 
@@ -143,19 +110,13 @@ public class AccessSearchControllerIT extends AbstractRegardsIT {
     @Requirement("REGARDS_DSL_ACC_USE_700")
     @Purpose("Check the system can inject applicable services to the result of a search")
     public void searchDocuments() {
-        // Define customizer
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(status().isOk());
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content[0].content.services",
-                                                                 Matchers.hasSize(3)));
-        customizer.addExpectation(MockMvcResultMatchers
-                .jsonPath(JSON_PATH_ROOT + ".content[0].content.services[*].content.label",
-                          Matchers.containsInAnyOrder("conf0", "conf1", "uiPluginConfiguration2")));
-
-        // Call
         RequestParamBuilder builder = RequestParamBuilder.build().param("q",
                                                                         BackendForFrontendTestUtils.OPENSEARCH_QUERY);
-        performDefaultGet(AccessSearchController.ROOT_PATH + AccessSearchController.DOCUMENTS_SEARCH, customizer,
+        performDefaultGet(AccessSearchController.ROOT_PATH + AccessSearchController.DOCUMENTS_SEARCH, customizer()
+                .expectStatusOk().expectToHaveSize(JSON_PATH_ROOT + ".content[0].content.services", 3)
+                .expect(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content[0].content.services[*].content.label",
+                                                       Matchers.containsInAnyOrder("conf0", "conf1",
+                                                                                   "uiPluginConfiguration2"))),
                           "Error searching datasets", builder);
     }
 
@@ -164,18 +125,12 @@ public class AccessSearchControllerIT extends AbstractRegardsIT {
     @Purpose("Check the system can inject applicable services to the result of a search")
     public void searchDataobjectsReturnDatasets() {
         // Define customizer
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(status().isOk());
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content[0].content.services",
-                                                                 Matchers.hasSize(0)));
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".content[1].content.services",
-                                                                 Matchers.hasSize(2)));
-        customizer.addExpectation(MockMvcResultMatchers
-                .jsonPath(JSON_PATH_ROOT + ".content[1].content.services[0].content.label", Matchers.equalTo("conf0")));
-        customizer.addExpectation(MockMvcResultMatchers
-                .jsonPath(JSON_PATH_ROOT + ".content[1].content.services[1].content.label",
-                          Matchers.equalTo("uiPluginConfiguration2")));
-
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk()
+                .expectToHaveSize(JSON_PATH_ROOT + ".content[0].content.services", 0)
+                .expectToHaveSize(JSON_PATH_ROOT + ".content[1].content.services", 2)
+                .expectValue(JSON_PATH_ROOT + ".content[1].content.services[0].content.label", "conf0")
+                .expectValue(JSON_PATH_ROOT + ".content[1].content.services[1].content.label",
+                             "uiPluginConfiguration2");
         // Call
         RequestParamBuilder builder = RequestParamBuilder.build().param("q",
                                                                         BackendForFrontendTestUtils.OPENSEARCH_QUERY);

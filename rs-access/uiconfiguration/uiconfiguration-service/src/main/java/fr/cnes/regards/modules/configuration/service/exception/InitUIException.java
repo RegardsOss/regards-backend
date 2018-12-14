@@ -22,6 +22,7 @@ package fr.cnes.regards.modules.configuration.service.exception;
  * Runtime exception thrown when an error occurs during project layout intialization.
  * @author Xavier-Alexandre Brochard
  */
+@SuppressWarnings("serial")
 public class InitUIException extends RuntimeException {
 
     /**

@@ -48,7 +48,7 @@ public class LayoutRepositoryTest extends AbstractDaoTransactionalTest {
         layout.setApplicationId("TEST");
         layout.setLayout("{}");
         final Layout newLayout = repository.save(layout);
-        final Layout layout2 = repository.findOne(newLayout.getId());
+        final Layout layout2 = repository.findById(newLayout.getId()).orElse(null);
         Assert.assertEquals(newLayout.getLayout(), layout2.getLayout());
     }
 

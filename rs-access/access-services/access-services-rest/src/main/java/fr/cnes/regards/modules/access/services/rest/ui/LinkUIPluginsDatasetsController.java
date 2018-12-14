@@ -66,8 +66,8 @@ public class LinkUIPluginsDatasetsController {
             role = DefaultRole.PROJECT_ADMIN)
     @ResponseBody
     public ResponseEntity<Resource<LinkUIPluginsDatasets>> retrieveLink(
-            @PathVariable("datasetId") final String pDatasetId) throws EntityNotFoundException {
-        final LinkUIPluginsDatasets link = linkService.retrieveLink(pDatasetId);
+            @PathVariable("datasetId") final String datasetId) throws EntityNotFoundException {
+        final LinkUIPluginsDatasets link = linkService.retrieveLink(datasetId);
         Resource<LinkUIPluginsDatasets> resource = resourceService.toResource(link);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
@@ -77,9 +77,9 @@ public class LinkUIPluginsDatasetsController {
             role = DefaultRole.PROJECT_ADMIN)
     @ResponseBody
     public ResponseEntity<Resource<LinkUIPluginsDatasets>> updateLink(
-            @PathVariable("datasetId") final String pDatasetId, @RequestBody final LinkUIPluginsDatasets pUpdatedLink)
+            @PathVariable("datasetId") final String datasetId, @RequestBody final LinkUIPluginsDatasets updatedLink)
             throws EntityException {
-        final LinkUIPluginsDatasets link = linkService.updateLink(pDatasetId, pUpdatedLink);
+        final LinkUIPluginsDatasets link = linkService.updateLink(datasetId, updatedLink);
         Resource<LinkUIPluginsDatasets> resource = resourceService.toResource(link);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }

@@ -55,7 +55,7 @@ public class UiConfigurationServiceEventHandler implements ApplicationListener<A
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Override
-    public void onApplicationEvent(ApplicationReadyEvent pEvent) {
+    public void onApplicationEvent(ApplicationReadyEvent event) {
         LOG.info("UiConfigurationServiceEventHandler subscribing to new TenantConnectionReady events.");
     }
 

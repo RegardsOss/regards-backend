@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.access.services.domain.ui;
 
+import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -32,9 +36,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
-import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
 
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.modules.access.services.domain.validation.NotEmptyFieldsIfService;
@@ -116,32 +117,32 @@ public class UIPluginDefinition {
         return id;
     }
 
-    public void setId(final Long pId) {
-        id = pId;
+    public void setId(final Long id) {
+        this.id = id;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(final String pName) {
-        name = pName;
+    public void setName(final String name) {
+        this.name = name;
     }
 
     public UIPluginTypesEnum getType() {
         return type;
     }
 
-    public void setType(final UIPluginTypesEnum pType) {
-        type = pType;
+    public void setType(final UIPluginTypesEnum type) {
+        this.type = type;
     }
 
     public String getSourcePath() {
         return sourcePath;
     }
 
-    public void setSourcePath(final String pSourcePath) {
-        sourcePath = pSourcePath;
+    public void setSourcePath(final String sourcePath) {
+        this.sourcePath = sourcePath;
     }
 
     /**
@@ -152,10 +153,10 @@ public class UIPluginDefinition {
     }
 
     /**
-     * @param pIconUrl the iconUrl to set
+     * @param iconUrl the iconUrl to set
      */
-    public void setIconUrl(URL pIconUrl) {
-        iconUrl = pIconUrl;
+    public void setIconUrl(URL iconUrl) {
+        this.iconUrl = iconUrl;
     }
 
     /**
@@ -166,10 +167,10 @@ public class UIPluginDefinition {
     }
 
     /**
-     * @param pApplicationModes the applicationModes to set
+     * @param applicationModes the applicationModes to set
      */
-    public void setApplicationModes(Set<ServiceScope> pApplicationModes) {
-        applicationModes = pApplicationModes;
+    public void setApplicationModes(Set<ServiceScope> applicationModes) {
+        this.applicationModes = applicationModes;
     }
 
     /**
@@ -180,10 +181,10 @@ public class UIPluginDefinition {
     }
 
     /**
-     * @param pEntityTypes the entityTypes to set
+     * @param entityTypes the entityTypes to set
      */
-    public void setEntityTypes(Set<EntityType> pEntityTypes) {
-        entityTypes = pEntityTypes;
+    public void setEntityTypes(Set<EntityType> entityTypes) {
+        this.entityTypes = entityTypes;
     }
 
     @Override

@@ -74,7 +74,7 @@ public class ModuleRepositoryTest extends AbstractDaoTransactionalTest {
         // Create a new layout configuration
         final Module module = addModule("TEST");
         final Module newModule = repository.save(module);
-        final Module module2 = repository.findOne(newModule.getId());
+        final Module module2 = repository.findById(newModule.getId()).orElse(null);
         Assert.assertEquals(newModule.getApplicationId(), module2.getApplicationId());
     }
 
@@ -102,10 +102,10 @@ public class ModuleRepositoryTest extends AbstractDaoTransactionalTest {
         addModule("TEST");
         addModule("TEST");
         addModule("OTHER_TEST");
-        Page<Module> modulesPage = repository.findByApplicationId("TEST", new PageRequest(0, 10));
+        Page<Module> modulesPage = repository.findByApplicationId("TEST", PageRequest.of(0, 10));
         Assert.assertEquals(2, modulesPage.getTotalElements());
 
-        modulesPage = repository.findByApplicationId("OTHER_TEST", new PageRequest(0, 10));
+        modulesPage = repository.findByApplicationId("OTHER_TEST", PageRequest.of(0, 10));
         Assert.assertEquals(1, modulesPage.getTotalElements());
     }
 

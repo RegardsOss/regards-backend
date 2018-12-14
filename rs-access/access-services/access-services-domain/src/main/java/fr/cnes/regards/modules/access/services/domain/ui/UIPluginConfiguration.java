@@ -84,48 +84,48 @@ public class UIPluginConfiguration {
         return id;
     }
 
-    public void setId(final Long pId) {
-        id = pId;
+    public void setId(final Long id) {
+        this.id = id;
     }
 
     public UIPluginDefinition getPluginDefinition() {
         return pluginDefinition;
     }
 
-    public void setPluginDefinition(final UIPluginDefinition pPluginDefinition) {
-        pluginDefinition = pPluginDefinition;
+    public void setPluginDefinition(final UIPluginDefinition pluginDefinition) {
+        this.pluginDefinition = pluginDefinition;
     }
 
     public Boolean getActive() {
         return active;
     }
 
-    public void setActive(final Boolean pActive) {
-        active = pActive;
+    public void setActive(final Boolean active) {
+        this.active = active;
     }
 
     public Boolean getLinkedToAllEntities() {
         return linkedToAllEntities;
     }
 
-    public void setLinkedToAllEntities(final Boolean pLinkedToAllEntities) {
-        linkedToAllEntities = pLinkedToAllEntities;
+    public void setLinkedToAllEntities(final Boolean linkedToAllEntities) {
+        this.linkedToAllEntities = linkedToAllEntities;
     }
 
     public String getConf() {
         return conf;
     }
 
-    public void setConf(final String pConf) {
-        conf = pConf;
+    public void setConf(final String conf) {
+        this.conf = conf;
     }
 
     public String getLabel() {
         return label;
     }
 
-    public void setLabel(final String pLabel) {
-        label = pLabel;
+    public void setLabel(final String label) {
+        this.label = label;
     }
 
     @Override
@@ -152,10 +152,9 @@ public class UIPluginConfiguration {
             if (other.id != null) {
                 return false;
             }
-        } else
-            if (!id.equals(other.id)) {
-                return false;
-            }
+        } else if (!id.equals(other.id)) {
+            return false;
+        }
         return true;
     }
 

@@ -41,11 +41,11 @@ public class UIPluginConfigurationEvent implements ISubscribable {
     }
 
     /**
-     * @param pUiPluginConfiguration Source object of the event
+     * @param uiPluginConfiguration Source object of the event
      */
-    public UIPluginConfigurationEvent(UIPluginConfiguration pUiPluginConfiguration) {
+    public UIPluginConfigurationEvent(UIPluginConfiguration uiPluginConfiguration) {
         super();
-        uiPluginConfiguration = pUiPluginConfiguration;
+        this.uiPluginConfiguration = uiPluginConfiguration;
     }
 
     /**

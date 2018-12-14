@@ -42,39 +42,41 @@ public interface IModuleRepository extends JpaRepository<Module, Long>, JpaSpeci
      *
      * Retrieve modules for the given application id.
      *
-     * @param pApplicationId
+     * @param applicationId
+     * @param pageable
      * @return Page of {@link Module}
      * @since 1.0-SNAPSHOT
      */
-    Page<Module> findByApplicationId(String pApplicationId, Pageable pPageable);
+    Page<Module> findByApplicationId(String applicationId, Pageable pageable);
 
     /**
      * Retrieve all modules for the given application id
      *
-     * @param pApplicationId
+     * @param applicationId
      * @return List of {@link Module}
      * @since 1.0-SNAPSHOT
      */
-    List<Module> findByApplicationId(String pApplicationId);
+    List<Module> findByApplicationId(String applicationId);
 
     /**
      *
      * Retrieve modules for the given application id without pagination
      *
-     * @param pApplicationId
-     * @return
+     * @param applicationId
+     * @return {@link Module}s
      * @since 1.0-SNAPSHOT
      */
-    List<Module> findByApplicationIdAndPageHomeTrue(String pApplicationId);
+    List<Module> findByApplicationIdAndPageHomeTrue(String applicationId);
 
     /**
      *
      * Retrieve modules for the given application id.
      *
-     * @param pApplicationId
+     * @param applicationId
+     * @param pageable
      * @return {@link Module}
      * @since 1.0-SNAPSHOT
      */
-    Page<Module> findByApplicationIdAndActiveTrue(String pApplicationId, Pageable pPageable);
+    Page<Module> findByApplicationIdAndActiveTrue(String applicationId, Pageable pageable);
 
 }
