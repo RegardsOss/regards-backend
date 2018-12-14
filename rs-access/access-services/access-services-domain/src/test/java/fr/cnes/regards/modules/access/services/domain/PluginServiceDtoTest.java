@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -60,7 +61,7 @@ public class PluginServiceDtoTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto#fromPluginConfiguration(fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration)}.
+     * Test method for {@link fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto#fromPluginConfigurationDto(PluginConfigurationDto)}.
      */
     @Test
     public final void testFromPluginConfiguration() {

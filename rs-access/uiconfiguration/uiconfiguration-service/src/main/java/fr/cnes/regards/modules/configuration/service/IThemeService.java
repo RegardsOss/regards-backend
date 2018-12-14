@@ -26,7 +26,6 @@ import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.configuration.domain.Theme;
 
@@ -46,54 +45,57 @@ public interface IThemeService {
      *
      * Retreive a Theme by is id.
      *
-     * @param pThemeId
+     * @param themeId
      * @return {@link Theme}
+     * @throws EntityNotFoundException
      * @since 1.0-SNAPSHOT
      */
-    Theme retrieveTheme(Long pThemeId) throws EntityNotFoundException;
+    Theme retrieveTheme(Long themeId) throws EntityNotFoundException;
 
     /**
      *
      * Retrieve all themes
      *
-     * @param pPageable
+     * @param pageable
      * @return Paged list of {@link Theme}
      * @since 1.0-SNAPSHOT
      */
-    Page<Theme> retrieveThemes(Pageable pPageable);
+    Page<Theme> retrieveThemes(Pageable pageable);
 
     /**
      *
      * Save a new theme
      *
-     * @param pTheme
+     * @param theme
      *            {@link Theme} to save
      * @return saved {@link Theme}
      * @since 1.0-SNAPSHOT
      */
-    Theme saveTheme(Theme pTheme);
+    Theme saveTheme(Theme theme);
 
     /**
      *
      * Update a theme
      *
-     * @param pTheme
+     * @param theme
      *            {@link Theme} to update
      * @return updated {@link Theme}
+     * @throws EntityException
      * @since 1.0-SNAPSHOT
      */
-    Theme updateTheme(Theme pTheme) throws EntityException;
+    Theme updateTheme(Theme theme) throws EntityException;
 
     /**
      *
      * Delete a theme
      *
-     * @param pThemeId
+     * @param themeId
      *            Theme id to delete
+     * @throws EntityNotFoundException
      *
      * @since 1.0-SNAPSHOT
      */
-    void deleteTheme(Long pThemeId) throws EntityNotFoundException;
+    void deleteTheme(Long themeId) throws EntityNotFoundException;
 
     /**
      * Retrieve all themes

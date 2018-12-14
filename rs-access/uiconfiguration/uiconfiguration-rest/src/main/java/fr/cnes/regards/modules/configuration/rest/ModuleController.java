@@ -18,27 +18,10 @@
  */
 package fr.cnes.regards.modules.configuration.rest;
 
-import com.google.gson.JsonObject;
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.hateoas.IResourceController;
-import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.hateoas.LinkRels;
-import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.configuration.domain.Layout;
-import fr.cnes.regards.modules.configuration.domain.Module;
-import fr.cnes.regards.modules.configuration.service.IModuleService;
-import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
-
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
@@ -64,6 +47,25 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.google.gson.JsonObject;
+
+import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.hateoas.IResourceController;
+import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.hateoas.LinkRels;
+import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.configuration.domain.Layout;
+import fr.cnes.regards.modules.configuration.domain.Module;
+import fr.cnes.regards.modules.configuration.service.IModuleService;
+import fr.cnes.regards.modules.search.client.ILegacySearchEngineJsonClient;
 
 /**
  * REST controller for the microservice Access
@@ -99,7 +101,10 @@ public class ModuleController implements IResourceController<Module> {
 
     /**
      * Entry point to retrieve a modules for a given application id {@link Module}.
+     * @param applicationId
+     * @param moduleId
      * @return {@link Layout}
+     * @throws EntityNotFoundException
      */
     @RequestMapping(value = MODULE_ID_MAPPING, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
@@ -114,6 +119,11 @@ public class ModuleController implements IResourceController<Module> {
     /**
      * Entry point to retrieve all modules for a given application id {@link Module}. Query parameter active
      * [true|false]
+     * @param applicationId
+     * @param onlyActive
+     * @param type
+     * @param pageable
+     * @param assembler
      * @return {@link Layout}
      */
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -133,7 +143,10 @@ public class ModuleController implements IResourceController<Module> {
 
     /**
      * Entry point to save a new ihm module.
+     * @param applicationId
+     * @param module
      * @return {@link Module}
+     * @throws EntityInvalidException
      */
     @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
@@ -150,7 +163,11 @@ public class ModuleController implements IResourceController<Module> {
 
     /**
      * Entry point to save a new ihm module.
+     * @param applicationId
+     * @param moduleId
+     * @param module
      * @return {@link Module}
+     * @throws EntityException
      */
     @RequestMapping(value = MODULE_ID_MAPPING, method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
@@ -169,7 +186,10 @@ public class ModuleController implements IResourceController<Module> {
 
     /**
      * Entry point to delete an ihm module.
+     * @param applicationId
+     * @param moduleId
      * @return {@link Module}
+     * @throws EntityNotFoundException
      */
     @RequestMapping(value = MODULE_ID_MAPPING, method = RequestMethod.DELETE,
             produces = MediaType.APPLICATION_JSON_VALUE)
@@ -185,7 +205,14 @@ public class ModuleController implements IResourceController<Module> {
     /**
      * Entry point to retrieve a Mizar config for a given module id {@link Module}.
      * It retrieves the list of dataset visible by this user and returns the corresponding Mizar configuration
+     * @param applicationId
+     * @param moduleId
+     * @param request
      * @return {@link JsonObject} mizar configuration
+     * @throws EntityNotFoundException
+     * @throws EntityInvalidException
+     * @throws URISyntaxException
+     * @throws MalformedURLException
      */
     @RequestMapping(value = MAP_CONFIG, method = RequestMethod.GET)
     @ResponseBody
@@ -205,10 +232,12 @@ public class ModuleController implements IResourceController<Module> {
         }
         // Retrieve the URI for the opensearch endpoint (with public gateway IP/Port)
         URI uriDatasetDescriptor = HttpUtils.retrievePublicURI(request, gatewayPrefix
-                                                                       + "/rs-catalog/engines/opensearch/datasets/DATASET_ID/dataobjects/search/opensearchDescription.xml",
+                + "/rs-catalog/engines/opensearch/datasets/DATASET_ID/dataobjects/search/opensearchDescription.xml",
                                                                queryParams);
         final Module module = service.retrieveModule(moduleId);
-        MultiValueMap attr = new LinkedMultiValueMap();
+        @SuppressWarnings("rawtypes")
+        MultiValueMap attr = new LinkedMultiValueMap<>();
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         ResponseEntity datasets = searchClient.searchDatasets(attr);
         if (!HttpUtils.isSuccess(datasets.getStatusCode())) {
             return new ResponseEntity<>(datasets.getStatusCode());

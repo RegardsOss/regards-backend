@@ -28,9 +28,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.ResultMatcher;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
@@ -44,7 +44,6 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  *
@@ -53,8 +52,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-@TestPropertySource(locations = { "classpath:test.properties" })
 @MultitenantTransactional
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=access" })
 public class LinkUIPluginDatasetsIT extends AbstractRegardsTransactionalIT {
 
     /**
@@ -131,7 +130,6 @@ public class LinkUIPluginDatasetsIT extends AbstractRegardsTransactionalIT {
     public void linkConfToDataset() {
 
         // Create a new link between a given dataset and 2 plugin configurations
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
         final List<UIPluginConfiguration> services = new ArrayList<>();
         services.add(pluginConf);
         services.add(pluginConf2);
@@ -139,8 +137,7 @@ public class LinkUIPluginDatasetsIT extends AbstractRegardsTransactionalIT {
         link.setDatasetId("firstOne");
         link.setServices(services);
 
-        expectations.add(status().isOk());
-        performDefaultPut(LinkUIPluginsDatasetsController.REQUEST_MAPPING_ROOT, link, expectations,
+        performDefaultPut(LinkUIPluginsDatasetsController.REQUEST_MAPPING_ROOT, link, customizer().expectStatusOk(),
                           "Error getting dataset linked UIPluginConfiguration", "firstOne");
 
         LinkUIPluginsDatasets linkResult = linkRepo.findOneByDatasetId("firstOne");
@@ -154,8 +151,7 @@ public class LinkUIPluginDatasetsIT extends AbstractRegardsTransactionalIT {
         link = new LinkUIPluginsDatasets();
         link.setDatasetId("firstOne");
         link.setServices(services);
-        expectations.add(status().isOk());
-        performDefaultPut(LinkUIPluginsDatasetsController.REQUEST_MAPPING_ROOT, link, expectations,
+        performDefaultPut(LinkUIPluginsDatasetsController.REQUEST_MAPPING_ROOT, link, customizer().expectStatusOk(),
                           "Error getting dataset linked UIPluginConfiguration", "firstOne");
 
         linkResult = linkRepo.findOneByDatasetId("firstOne");
@@ -168,8 +164,7 @@ public class LinkUIPluginDatasetsIT extends AbstractRegardsTransactionalIT {
         link = new LinkUIPluginsDatasets();
         link.setDatasetId("firstOne");
         link.setServices(services);
-        expectations.add(status().isOk());
-        performDefaultPut(LinkUIPluginsDatasetsController.REQUEST_MAPPING_ROOT, link, expectations,
+        performDefaultPut(LinkUIPluginsDatasetsController.REQUEST_MAPPING_ROOT, link, customizer().expectStatusOk(),
                           "Error getting dataset linked UIPluginConfiguration", "firstOne");
 
         linkResult = linkRepo.findOneByDatasetId("firstOne");

@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.access.services.client;
 
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
@@ -37,6 +38,7 @@ import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
  *
  * @author Xavier-Alexandre Brochard
  */
+@Profile("!test")
 @Component
 public class ServiceAggregatorClientEventHandler implements ApplicationListener<ApplicationReadyEvent> {
 
@@ -47,20 +49,20 @@ public class ServiceAggregatorClientEventHandler implements ApplicationListener<
     private final IServiceAggregatorClient serviceAggregatorClient;
 
     /**
-     * @param pSubscriber
-     * @param pRuntimeTenantResolver
-     * @param pServiceAggregatorClient
+     * @param subscriber
+     * @param runtimeTenantResolver
+     * @param serviceAggregatorClient
      */
-    public ServiceAggregatorClientEventHandler(ISubscriber pSubscriber, IRuntimeTenantResolver pRuntimeTenantResolver,
-            IServiceAggregatorClient pServiceAggregatorClient) {
+    public ServiceAggregatorClientEventHandler(ISubscriber subscriber, IRuntimeTenantResolver runtimeTenantResolver,
+            IServiceAggregatorClient serviceAggregatorClient) {
         super();
-        subscriber = pSubscriber;
-        runtimeTenantResolver = pRuntimeTenantResolver;
-        serviceAggregatorClient = pServiceAggregatorClient;
+        this.subscriber = subscriber;
+        this.runtimeTenantResolver = runtimeTenantResolver;
+        this.serviceAggregatorClient = serviceAggregatorClient;
     }
 
     @Override
-    public void onApplicationEvent(ApplicationReadyEvent pEvent) {
+    public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(LinkUiPluginsDatasetsEvent.class, new LinkUiPluginsDatasetsEventHandler());
         subscriber.subscribeTo(LinkPluginsDatasetsEvent.class, new LinkPluginsDatasetsEventHandler());
         subscriber.subscribeTo(UIPluginConfigurationEvent.class, new UIPluginConfigurationEventHandler());

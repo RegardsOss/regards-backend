@@ -18,20 +18,17 @@
  */
 package fr.cnes.regards.modules.configuration.rest;
 
-import java.util.ArrayList;
-import java.util.List;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.ResultMatcher;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.modules.configuration.domain.Layout;
 import fr.cnes.regards.modules.configuration.domain.LayoutDefaultApplicationIds;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  *
@@ -53,33 +50,27 @@ public class LayoutControllerIT extends AbstractRegardsTransactionalIT {
 
     @Test
     public void getUserApplicationLayout() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        performDefaultGet("/layouts/{applicationId}", expectations, "Plop",
+        performDefaultGet("/layouts/{applicationId}", customizer().expectStatusOk(), "Plop",
                           LayoutDefaultApplicationIds.USER.toString());
     }
 
     @Test
     public void updateLayoutWithInvalidJsonFormat() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isUnprocessableEntity());
         final Layout layout = new Layout();
         layout.setId(1L);
         layout.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
         layout.setLayout("{}}");
-        performDefaultPut("/layouts/{applicationId}", layout, expectations, "Plop",
-                          LayoutDefaultApplicationIds.USER.toString());
+        performDefaultPut("/layouts/{applicationId}", layout, customizer().expect(status().isUnprocessableEntity()),
+                          "Plop", LayoutDefaultApplicationIds.USER.toString());
     }
 
     @Test
     public void updateLayout() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
         final Layout layout = new Layout();
         layout.setId(1L);
         layout.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
         layout.setLayout("{\"test\":\"ok\"}");
-        performDefaultPut("/layouts/{applicationId}", layout, expectations, "Plop",
+        performDefaultPut("/layouts/{applicationId}", layout, customizer().expectStatusOk(), "Plop",
                           LayoutDefaultApplicationIds.USER.toString());
     }
 

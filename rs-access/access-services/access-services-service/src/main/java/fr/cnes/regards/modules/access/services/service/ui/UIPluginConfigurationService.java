@@ -126,7 +126,7 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
         }
 
         // retrieve plugin
-        if (!pluginRepository.exists(pPluginDefinition.getId())) {
+        if (!pluginRepository.existsById(pPluginDefinition.getId())) {
             throw new EntityNotFoundException(pPluginDefinition.getId(), UIPluginDefinition.class);
         }
         return repository.findByPluginDefinition(pPluginDefinition, pPageable);
@@ -139,7 +139,7 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
             throw new EntityInvalidException("Plugin Identifier cannot be null");
         }
 
-        return repository.findOne(pPluginConfigurationId);
+        return repository.findById(pPluginConfigurationId).orElse(null);
     }
 
     @Override
@@ -149,7 +149,7 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
             throw new EntityInvalidException("PluginConfiguration Identifier cannot be null");
         }
 
-        if (!repository.exists(pPluginConfiguration.getId())) {
+        if (!repository.existsById(pPluginConfiguration.getId())) {
             throw new EntityNotFoundException(pPluginConfiguration.getId(), UIPluginConfiguration.class);
         }
 
@@ -192,7 +192,7 @@ public class UIPluginConfigurationService implements IUIPluginConfigurationServi
             throw new EntityInvalidException("PluginConfiguration Identifier cannot be null");
         }
 
-        if (!repository.exists(pPluginConfiguration.getId())) {
+        if (!repository.existsById(pPluginConfiguration.getId())) {
             throw new EntityNotFoundException(pPluginConfiguration.getId(), UIPluginConfiguration.class);
         }
 

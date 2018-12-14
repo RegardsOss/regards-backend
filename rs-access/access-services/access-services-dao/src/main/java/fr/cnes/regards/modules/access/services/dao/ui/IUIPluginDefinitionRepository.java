@@ -36,6 +36,6 @@ import fr.cnes.regards.modules.access.services.domain.ui.UIPluginTypesEnum;
  */
 public interface IUIPluginDefinitionRepository extends JpaRepository<UIPluginDefinition, Long> {
 
-    Page<UIPluginDefinition> findByType(UIPluginTypesEnum pType, Pageable pPageable);
+    Page<UIPluginDefinition> findByType(UIPluginTypesEnum type, Pageable pageable);
 
 }

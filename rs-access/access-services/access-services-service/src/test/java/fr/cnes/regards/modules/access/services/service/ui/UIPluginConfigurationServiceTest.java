@@ -58,7 +58,6 @@ public class UIPluginConfigurationServiceTest {
     private IPublisher publisher;
 
     /**
-     * @param publisher
      * @throws java.lang.Exception
      */
     @Before
@@ -95,7 +94,7 @@ public class UIPluginConfigurationServiceTest {
                 Lists.newArrayList(pluginConfiguration0, pluginConfiguration1));
 
         // Mock
-        Mockito.when(repository.exists(Mockito.anyLong())).thenReturn(true);
+        Mockito.when(repository.existsById(Mockito.anyLong())).thenReturn(true);
         Mockito.when(linkedUiPluginRespository.findAllByServicesContaining(pluginConfiguration0))
                 .thenReturn(Stream.of(link));
 
@@ -122,7 +121,7 @@ public class UIPluginConfigurationServiceTest {
                 Lists.newArrayList(pluginConfiguration0));
 
         // Mock
-        Mockito.when(repository.exists(Mockito.anyLong())).thenReturn(true);
+        Mockito.when(repository.existsById(Mockito.anyLong())).thenReturn(true);
         Mockito.when(linkedUiPluginRespository.findAllByServicesContaining(pluginConfiguration0))
                 .thenReturn(Stream.of(link));
 

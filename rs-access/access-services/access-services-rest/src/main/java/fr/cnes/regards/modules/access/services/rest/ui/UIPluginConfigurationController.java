@@ -43,7 +43,6 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -57,8 +56,6 @@ import fr.cnes.regards.modules.access.services.service.ui.IUIPluginConfiguration
  * Controller managing {@link UIPluginConfiguration}s
  */
 @RestController
-@ModuleInfo(name = "Plugin", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping(UIPluginConfigurationController.REQUEST_MAPPING_ROOT)
 public class UIPluginConfigurationController implements IResourceController<UIPluginConfiguration> {
 
@@ -90,7 +87,6 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
      * @param assembler Assembler to manage PagedResources.
      * @param pageable Pagination parameters
      * @return Page {@link UIPluginConfiguration}
-     * @throws EntityInvalidException error occurred.
      */
     @RequestMapping(value = REQUEST_PLUGIN_CONFIGURATIONS, method = RequestMethod.GET)
     @ResponseBody
@@ -137,6 +133,7 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
      * Endpoint to retrieve one {@link UIPluginConfiguration} by his identifier.
      * @param pluginConfigurationId {@link UIPluginConfiguration} identifier
      * @return {@lunk PluginConfiguration}
+     * @throws EntityInvalidException
      */
     @RequestMapping(value = REQUEST_PLUGIN_CONFIGURATION, method = RequestMethod.GET)
     @ResponseBody
@@ -150,8 +147,9 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
     /**
      * Endpoint to update a {@link UIPluginConfiguration} by his identifier.
      * @param pluginConfigurationId {@link UIPluginConfiguration} identifier
-     * @param {@link UIPluginConfiguration} to update
-     * @return {@link UIPluginConfiguration}
+     * @param pluginConfiguration
+     * @return {@link UIPluginConfiguration} to update
+     * @throws EntityException
      */
     @RequestMapping(value = REQUEST_PLUGIN_CONFIGURATION, method = RequestMethod.PUT)
     @ResponseBody
@@ -168,7 +166,9 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
 
     /**
      * Endpoint to create a new {@link UIPluginConfiguration}.
-     * @return {@lunk PluginConfiguration}
+     * @param pluginConfiguration
+     * @return {@link UIPluginConfiguration}
+     * @throws EntityException
      */
     @RequestMapping(value = REQUEST_PLUGIN_CONFIGURATIONS, method = RequestMethod.POST)
     @ResponseBody
@@ -183,6 +183,7 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
      * Endpoint to delete a {@link UIPluginConfiguration}.
      * @param pluginConfigurationId {@link UIPluginConfiguration} identifier to delete
      * @return {@lunk PluginConfiguration}
+     * @throws EntityException
      */
     @RequestMapping(value = REQUEST_PLUGIN_CONFIGURATION, method = RequestMethod.DELETE)
     @ResponseBody
@@ -196,23 +197,25 @@ public class UIPluginConfigurationController implements IResourceController<UIPl
     }
 
     @Override
-    public Resource<UIPluginConfiguration> toResource(final UIPluginConfiguration pElement, final Object... pExtras) {
-        final Resource<UIPluginConfiguration> resource = resourceService.toResource(pElement);
+    public Resource<UIPluginConfiguration> toResource(final UIPluginConfiguration element, final Object... extras) {
+        final Resource<UIPluginConfiguration> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "retrievePluginConfiguration", LinkRels.SELF,
-                                MethodParamFactory.build(Long.class, pElement.getId()));
+                                MethodParamFactory.build(Long.class, element.getId()));
         resourceService.addLink(resource, this.getClass(), "updatePluginConfiguration", LinkRels.UPDATE,
-                                MethodParamFactory.build(Long.class, pElement.getId()),
+                                MethodParamFactory.build(Long.class, element.getId()),
                                 MethodParamFactory.build(UIPluginConfiguration.class));
         resourceService.addLink(resource, this.getClass(), "deletePluginConfiguration", LinkRels.DELETE,
-                                MethodParamFactory.build(Long.class, pElement.getId()));
+                                MethodParamFactory.build(Long.class, element.getId()));
         return resource;
     }
 
     /**
      * Convert services to resources
+     * @param element
+     * @return {@link UIPluginConfiguration}
      */
-    public Resource<UIPluginConfiguration> servicesToResource(final UIPluginConfiguration pElement) {
-        return resourceService.toResource(pElement);
+    public Resource<UIPluginConfiguration> servicesToResource(final UIPluginConfiguration element) {
+        return resourceService.toResource(element);
     }
 
 }

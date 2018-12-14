@@ -87,7 +87,7 @@ public class LayoutService extends AbstractUiConfigurationService implements ILa
     }
 
     @Override
-    public void initProjectUI(final String pTenant) {
+    public void initProjectUI(final String tenant) {
         try {
             final String layoutConf = readDefaultFileResource(defaultUserApplicationLayoutResource);
             final Layout layout = new Layout();
@@ -102,9 +102,9 @@ public class LayoutService extends AbstractUiConfigurationService implements ILa
     }
 
     @Override
-    public Layout retrieveLayout(final String pApplicationId) throws EntityNotFoundException {
-        return repository.findByApplicationId(pApplicationId)
-                .orElseThrow(() -> new EntityNotFoundException(pApplicationId, Layout.class));
+    public Layout retrieveLayout(final String applicationId) throws EntityNotFoundException {
+        return repository.findByApplicationId(applicationId)
+                .orElseThrow(() -> new EntityNotFoundException(applicationId, Layout.class));
     }
 
     @Override
@@ -124,20 +124,20 @@ public class LayoutService extends AbstractUiConfigurationService implements ILa
     }
 
     @Override
-    public Layout updateLayout(final Layout pLayout) throws EntityException {
+    public Layout updateLayout(final Layout layout) throws EntityException {
 
         // Check layout json format
         final Gson gson = new Gson();
         try {
-            gson.fromJson(pLayout.getLayout(), Object.class);
+            gson.fromJson(layout.getLayout(), Object.class);
         } catch (final RuntimeException e) {
             LOG.error(e.getMessage(), e);
             throw new EntityInvalidException("Layout is not a valid json format.", e);
         }
-        if (!repository.findByApplicationId(pLayout.getApplicationId()).isPresent()) {
-            throw new EntityNotFoundException(pLayout.getId(), Layout.class);
+        if (!repository.findByApplicationId(layout.getApplicationId()).isPresent()) {
+            throw new EntityNotFoundException(layout.getId(), Layout.class);
         }
-        return repository.save(pLayout);
+        return repository.save(layout);
     }
 
 }

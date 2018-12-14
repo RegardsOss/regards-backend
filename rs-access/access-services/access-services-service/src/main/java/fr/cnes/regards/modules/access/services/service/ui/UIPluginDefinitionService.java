@@ -19,8 +19,11 @@
 package fr.cnes.regards.modules.access.services.service.ui;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.PostConstruct;
+import javax.transaction.Transactional;
+import javax.transaction.Transactional.TxType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,7 +82,8 @@ public class UIPluginDefinitionService
      * Perform initialization only when the whole application is ready
      */
     @Override
-    public void onApplicationEvent(ApplicationReadyEvent pEvent) {
+    @Transactional(value = TxType.NOT_SUPPORTED)
+    public void onApplicationEvent(ApplicationReadyEvent event) {
         LOG.info("UIPluginDefinitionService subscribing to new TenantConnectionReady events.");
     }
 
@@ -162,10 +166,10 @@ public class UIPluginDefinitionService
 
     @Override
     public UIPluginDefinition retrievePlugin(final Long pPluginId) throws EntityNotFoundException {
-        if (!repository.exists(pPluginId)) {
+        if (!repository.existsById(pPluginId)) {
             throw new EntityNotFoundException(pPluginId, UIPluginDefinition.class);
         }
-        return repository.findOne(pPluginId);
+        return repository.findById(pPluginId).orElse(null);
     }
 
     @Override
@@ -186,7 +190,7 @@ public class UIPluginDefinitionService
     @Override
     public UIPluginDefinition updatePlugin(final UIPluginDefinition pPlugin)
             throws EntityNotFoundException, EntityInvalidException {
-        if (!repository.exists(pPlugin.getId())) {
+        if (!repository.existsById(pPlugin.getId())) {
             throw new EntityNotFoundException(pPlugin.getId(), UIPluginDefinition.class);
         }
         return repository.save(pPlugin);
@@ -195,14 +199,14 @@ public class UIPluginDefinitionService
     @Override
     public void deletePlugin(Long pluginId) throws ModuleException {
 
-        UIPluginDefinition pluginDef = repository.findOne(pluginId);
-        if (pluginDef == null) {
+        Optional<UIPluginDefinition> oPluginDef = repository.findById(pluginId);
+        if (!oPluginDef.isPresent()) {
             throw new EntityNotFoundException(pluginId, UIPluginDefinition.class);
         }
-        if (pluginConfigurationRepository.hasPluginConfigurations(pluginDef)) {
+        if (pluginConfigurationRepository.hasPluginConfigurations(oPluginDef.get())) {
             throw new EntityNotEmptyException(pluginId, UIPluginDefinition.class);
         }
-        repository.delete(pluginId);
+        repository.deleteById(pluginId);
     }
 
 }

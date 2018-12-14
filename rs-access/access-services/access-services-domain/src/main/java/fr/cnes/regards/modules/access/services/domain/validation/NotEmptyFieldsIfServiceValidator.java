@@ -24,7 +24,7 @@ import javax.validation.ConstraintValidatorContext;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
 
 /**
- * Validator enforcing {@link OnlyForTypeService} constraints
+ * Validator enforcing {@link UIPluginDefinition} constraints
  *
  * @author Xavier-Alexandre Brochard
  */
