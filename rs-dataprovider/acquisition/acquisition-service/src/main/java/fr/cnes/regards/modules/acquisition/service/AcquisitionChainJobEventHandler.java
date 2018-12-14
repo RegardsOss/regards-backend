@@ -39,7 +39,6 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
-import fr.cnes.regards.modules.acquisition.service.job.SIPSubmissionJob;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.notification.domain.NotificationType;
 
@@ -119,9 +118,7 @@ public class AcquisitionChainJobEventHandler implements ApplicationListener<Appl
             if (jobInfo != null) {
                 // First lets check which job failed. Then lets responsible service handle errors.
                 String jobClassName = jobInfo.getClassName();
-                if (SIPSubmissionJob.class.getName().equals(jobClassName)) {
-                    productService.handleSIPSubmissiontError(jobInfo);
-                } else if (SIPGenerationJob.class.getName().equals(jobClassName)) {
+                if (SIPGenerationJob.class.getName().equals(jobClassName)) {
                     productService.handleSIPGenerationError(jobInfo);
                 } else if (ProductAcquisitionJob.class.getName().equals(jobClassName)) {
                     acquisitionProcessingService.handleProductAcquisitionError(jobInfo);

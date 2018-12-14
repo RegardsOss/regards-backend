@@ -46,12 +46,12 @@ import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
-import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
@@ -157,10 +157,6 @@ public class Product {
     @OneToOne
     @JoinColumn(name = "post_prod_job_info_id", foreignKey = @ForeignKey(name = "fk_post_prod_job_info_id"))
     private JobInfo lastPostProductionJobInfo;
-
-    @OneToOne
-    @JoinColumn(name = "sip_submission_job_info_id", foreignKey = @ForeignKey(name = "fk_sip_submission_job_info_id"))
-    private JobInfo lastSIPSubmissionJobInfo;
 
     public Long getId() {
         return id;
@@ -318,14 +314,6 @@ public class Product {
 
     public void setLastPostProductionJobInfo(JobInfo lastPostProductionJobInfo) {
         this.lastPostProductionJobInfo = lastPostProductionJobInfo;
-    }
-
-    public JobInfo getLastSIPSubmissionJobInfo() {
-        return lastSIPSubmissionJobInfo;
-    }
-
-    public void setLastSIPSubmissionJobInfo(JobInfo lastSIPSubmissionJobInfo) {
-        this.lastSIPSubmissionJobInfo = lastSIPSubmissionJobInfo;
     }
 
     public String getError() {

@@ -50,7 +50,6 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
 import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
-import fr.cnes.regards.modules.acquisition.service.job.SIPSubmissionJob;
 import fr.cnes.regards.modules.acquisition.service.plugin.LongLastingSIPGeneration;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
@@ -83,9 +82,6 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
     @Autowired
     private IJobInfoService jobInfoService;
 
-    @Autowired
-    private IngestClientMock ingestClientMock;
-
     /**
      * Create chain with slow SIP generation plugin
      */
@@ -98,7 +94,6 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
         processingChain.setGenerationRetryEnabled(true);
-        processingChain.setSubmissionRetryEnabled(true);
 
         // Create an acquisition file info
         AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();
@@ -175,7 +170,6 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
                 .get("src", "test", "resources", "startstop", "fake").toAbsolutePath());
 
         // Start chain
-        ingestClientMock.setWaitingMillis(20_000); // Slow down submission
         processingService.startManualChain(processingChain.getId());
 
         // Check all products are registered
@@ -205,20 +199,6 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
             Assert.fail();
         }
 
-        // Check at least one SIP submission job is working
-        loops = 100;
-        long runningSubmissionJobs;
-        do {
-            Thread.sleep(1_000);
-            loops--;
-            runningSubmissionJobs = jobInfoService.retrieveJobsCount(SIPSubmissionJob.class.getName(),
-                                                                     JobStatus.RUNNING);
-        } while (runningSubmissionJobs < 1 && loops != 0);
-
-        if (loops == 0) {
-            Assert.fail();
-        }
-
         // Stop it verifying all threads are properly stopped
         processingService.stopAndCleanChain(processingChain.getId());
 
@@ -243,7 +223,6 @@ public class StartStopChainTest extends AbstractMultitenantServiceTest {
 
         // Restart chain verifying all re-run properly
         updateProcessingChain(processingChain.getId());
-        ingestClientMock.setWaitingMillis(0); // Speed up submission
         processingService.startManualChain(processingChain.getId());
 
         // At the end, all product must be valid

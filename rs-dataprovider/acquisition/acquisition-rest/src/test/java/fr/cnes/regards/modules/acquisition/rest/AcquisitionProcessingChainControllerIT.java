@@ -29,13 +29,13 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.PayloadDocumentation;
 import org.springframework.restdocs.request.RequestDocumentation;
 import org.springframework.restdocs.snippet.Attributes;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.jayway.jsonpath.JsonPath;
 
@@ -77,8 +77,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
     @Requirement("REGARDS_DSL_ING_PRO_030")
     @Purpose("Create a manual acquisition chain")
     public void createChain() {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+        RequestBuilderCustomizer customizer = customizer().expectStatusCreated();
 
         AcquisitionProcessingChain chain = AcquisitionTestUtils.getNewChain("post");
 
@@ -156,8 +155,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
     @Requirement("REGARDS_DSL_ING_PRO_030")
     @Purpose("Get all acquisition chain")
     public void getAllChains() {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+        RequestBuilderCustomizer customizer = customizer().expectStatusCreated();
 
         AcquisitionProcessingChain chain = AcquisitionTestUtils.getNewChain("one");
         performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH, chain, customizer,
@@ -168,8 +166,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
                            "Chain should be created!");
 
         // Retrieve chains
-        customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer = customizer().expectStatusOk();
 
         performDefaultGet(AcquisitionProcessingChainController.TYPE_PATH, customizer, "Chains should be retrieved");
     }
@@ -179,8 +176,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
     @Requirement("REGARDS_DSL_ING_PRO_030")
     @Purpose("Get an acquisition chain")
     public void getOneChain() {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+        RequestBuilderCustomizer customizer = customizer().expectStatusCreated();
 
         AcquisitionProcessingChain chain = AcquisitionTestUtils.getNewChain("first");
         ResultActions result = performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH, chain, customizer,
@@ -191,8 +187,8 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         Integer chainId = JsonPath.read(resultAsString, "$.content.id");
 
         // Retrieve chains
-        customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer = customizer().expectStatusOk();
+
         // Document path parameter
         customizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName(AcquisitionProcessingChainController.CHAIN_PATH_PARAM)
@@ -208,8 +204,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
     @Purpose("Create and update a manual acquisition chain")
     public void updateChain() throws ModuleException {
 
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+        RequestBuilderCustomizer customizer = customizer().expectStatusCreated();
 
         AcquisitionProcessingChain chain = AcquisitionTestUtils.getNewChain("update");
 
@@ -235,8 +230,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         scanPlugin.setLabel(label);
         loadedChain.getFileInfos().get(0).setScanPlugin(scanPlugin);
 
-        customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer = customizer().expectStatusOk();
         // Document path parameter
         customizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName(AcquisitionProcessingChainController.CHAIN_PATH_PARAM)
@@ -259,8 +253,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
     @Purpose("Delete a inactive manual acquisition chain")
     public void deleteChain() throws ModuleException {
 
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+        RequestBuilderCustomizer customizer = customizer().expectStatusCreated();
 
         AcquisitionProcessingChain chain = AcquisitionTestUtils.getNewChain("delete");
 
@@ -286,8 +279,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         scanPlugin.setLabel(label);
         loadedChain.getFileInfos().get(0).setScanPlugin(scanPlugin);
 
-        customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer = customizer().expectStatusOk();
         performDefaultPut(AcquisitionProcessingChainController.TYPE_PATH
                 + AcquisitionProcessingChainController.CHAIN_PATH, loadedChain, customizer, "Chain should be updated",
                           loadedChain.getId());
@@ -298,15 +290,13 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         Assert.assertEquals(label, loadedChain.getFileInfos().get(0).getScanPlugin().getLabel());
 
         // Delete active chain
-        customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isForbidden());
+        customizer = customizer().expectStatusForbidden();
         performDefaultDelete(AcquisitionProcessingChainController.TYPE_PATH
                 + AcquisitionProcessingChainController.CHAIN_PATH, customizer, "Chain should be removed",
                              chainId.longValue());
 
         // Change to inactive
-        customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        customizer = customizer().expectStatusOk();
 
         // Document path parameter
         customizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
@@ -321,8 +311,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
                           loadedChain.getId());
 
         // Delete inactive chain
-        customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isNoContent());
+        customizer = customizer().expectStatusNoContent();
         performDefaultDelete(AcquisitionProcessingChainController.TYPE_PATH
                 + AcquisitionProcessingChainController.CHAIN_PATH, customizer, "Chain should be removed",
                              chainId.longValue());
@@ -333,8 +322,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
     @Requirement("REGARDS_DSL_ING_PRO_030")
     @Purpose("Create an automatic acquisition chain without a periodicity")
     public void createAutomaticChainWithoutPeriodicity() {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isUnprocessableEntity());
+        RequestBuilderCustomizer customizer = customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY);
 
         AcquisitionProcessingChain chain = AcquisitionTestUtils.getNewChain("AutoError");
         chain.setMode(AcquisitionProcessingChainMode.AUTO);
@@ -349,8 +337,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
     @Requirement("REGARDS_DSL_ING_PRO_030")
     @Purpose("Create an automatic acquisition chain with a periodicity")
     public void createAutomaticChain() {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+        RequestBuilderCustomizer customizer = customizer().expectStatusCreated();
 
         AcquisitionProcessingChain chain = AcquisitionTestUtils.getNewChain("Auto10s");
         chain.setMode(AcquisitionProcessingChainMode.AUTO);
@@ -366,8 +353,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
     public void createFromContract01() {
         String processingChain = readJsonContract("createChain01.json");
 
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+        RequestBuilderCustomizer customizer = customizer().expectStatusCreated();
 
         // Create the chain
         performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH, processingChain, customizer,
@@ -377,8 +363,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
     @Test
     public void exportConfiguration() {
         // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
 
         performDefaultGet(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
                           requestBuilderCustomizer, "Should export configuration");
@@ -389,8 +374,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         Path filePath = Paths.get("src", "test", "resources", "acquisition-configuration2.json");
 
         // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
 
         performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
                                  filePath, requestBuilderCustomizer, "Should be able to import configuration");
@@ -399,8 +383,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
     @Test
     public void importExport() {
         // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
 
         performDefaultGet(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_ENABLED_MAPPING,
                           requestBuilderCustomizer, "Shoulb be enabled");

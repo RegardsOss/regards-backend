@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.junit.Assert;
@@ -28,13 +30,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.TestPropertySource;
 
-import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 
 /**
  * Test complex queries
@@ -63,9 +64,11 @@ public class ProductRepositoryTest extends AbstractDaoTest {
         Assert.assertNotNull(products);
         Assert.assertTrue(!products.isEmpty());
 
+        Collection<ISipState> states = new ArrayList<>();
+        states.add(ProductSIPState.SUBMITTED);
         Page<Product> productByState = productRepository
-                .findByProcessingChainIngestChainAndSessionAndSipStateIn("DefaultIngestChain", "NO_SESSION", Sets
-                        .newHashSet(ProductSIPState.SUBMISSION_SCHEDULED), new PageRequest(0, 10));
+                .findByProcessingChainIngestChainAndSessionAndSipStateIn("DefaultIngestChain", "NO_SESSION", states,
+                                                                         PageRequest.of(0, 10));
         Assert.assertNotNull(productByState);
 
     }

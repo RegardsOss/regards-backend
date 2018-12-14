@@ -16,31 +16,23 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.microservices.dataprovider;
-
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
+package fr.cnes.regards.modules.acquisition.service;
 
 /**
+ * Acquisition properties
  *
- * Start microservice dataprovider
- * @author Christophe Mertz
+ * @author Marc SORDI
  *
  */
-@SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.contrib" })
-@MicroserviceInfo(name = "dataprovider", version = "2.0.0-SNAPSHOT")
-public class Application {
+public final class AcquisitionProperties {
 
     /**
-     * Microservice bootstrap method
-     *
-     * @param args
-     *            microservice bootstrap arguments
+     * All transactions only manage at most {@link #WORKING_UNIT} entities at a time
+     * in order to take care of the memory consumption and potential tenant starvation.
      */
-    public static void main(final String[] args) {
-        SpringApplication.run(Application.class, args); // NOSONAR
-    }
+    public static final Integer WORKING_UNIT = 100;
 
+    private AcquisitionProperties() {
+        // Nothing to do
+    }
 }

@@ -95,10 +95,6 @@
 			<artifactId>feign-regards-starter</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.ingest</groupId>
-			<artifactId>ingest-client</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>fr.cnes.regards.framework.utils</groupId>
 			<artifactId>file-utils</artifactId>
 		</dependency>

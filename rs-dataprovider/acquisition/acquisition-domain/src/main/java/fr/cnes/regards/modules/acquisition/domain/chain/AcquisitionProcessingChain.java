@@ -44,10 +44,9 @@ import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-
-import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
@@ -183,13 +182,6 @@ public class AcquisitionProcessingChain {
     @NotNull(message = "Generation retry status is required")
     @Column(name = "generation_retry_enabled")
     private boolean generationRetryEnabled = false;
-
-    /**
-     * When starting processing chain, system tries to re-launch SIP submission for product in {@link ProductSIPState#SUBMISSION_ERROR}
-     */
-    @NotNull(message = "Submission retry status is required")
-    @Column(name = "submission_retry_enabled")
-    private boolean submissionRetryEnabled = true;
 
     public String getLabel() {
         return label;
@@ -330,19 +322,5 @@ public class AcquisitionProcessingChain {
      */
     public void setGenerationRetryEnabled(boolean generationRetryEnabled) {
         this.generationRetryEnabled = generationRetryEnabled;
-    }
-
-    /**
-     * @return the submissionRetryEnabled
-     */
-    public boolean isSubmissionRetryEnabled() {
-        return submissionRetryEnabled;
-    }
-
-    /**
-     * @param submissionRetryEnabled the submissionRetryEnabled to set
-     */
-    public void setSubmissionRetryEnabled(boolean submissionRetryEnabled) {
-        this.submissionRetryEnabled = submissionRetryEnabled;
     }
 }
