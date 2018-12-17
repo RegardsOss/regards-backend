@@ -90,8 +90,7 @@ public class ScheduleStorageTasks {
                 runtimeTenantResolver.forceTenant(tenant);
                 long count = 0;
                 long startTime = System.currentTimeMillis();
-                Page<AIP> createdAips = aipService
-                        .storePage(new PageRequest(0, aipIterationLimit, Direction.ASC, "id"));
+                Page<AIP> createdAips = aipService.storePage(PageRequest.of(0, aipIterationLimit, Direction.ASC, "id"));
                 count = count + createdAips.getNumberOfElements();
                 LOGGER.trace("AIP data scheduled in {}ms for {} aips", System.currentTimeMillis() - startTime, count);
             } finally {

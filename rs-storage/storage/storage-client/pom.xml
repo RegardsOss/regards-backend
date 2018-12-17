@@ -86,8 +86,8 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>plugins-regards-starter</artifactId>
+			<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
+    		<artifactId>plugins-rest</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

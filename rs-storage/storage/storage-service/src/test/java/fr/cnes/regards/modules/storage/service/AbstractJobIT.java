@@ -116,8 +116,8 @@ public abstract class AbstractJobIT extends AbstractMultitenantServiceTest {
         for (int i = 0; i < 40; i++) {
             // Pause for 1 seconds
             Thread.sleep(1000);
-            JobInfo jobInfoRefreshed = jobInfoRepo.findById(jobInfo.getId());
-            if (JobStatus.SUCCEEDED.equals(jobInfoRefreshed.getStatus().getStatus())) {
+            Optional<JobInfo> jobInfoRefreshed = jobInfoRepo.findById(jobInfo.getId());
+            if (JobStatus.SUCCEEDED.equals(jobInfoRefreshed.get().getStatus().getStatus())) {
                 break;
             }
         }

@@ -1,10 +1,11 @@
 package fr.cnes.regards.modules.storage.service;
 
-import javax.annotation.Nullable;
-import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
+import javax.annotation.Nullable;
+import javax.persistence.EntityManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,17 +59,14 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
         } else if (dataStorageConf.getInterfaceNames().contains(INearlineDataStorage.class.getName())) {
             dataStorageType = DataStorageType.NEARLINE;
         } else {
-            throw new EntityInvalidException(String.format(
-                    "Given plugin configuration(label: %s) is not a configuration for an online or nearline data storage (respectfully %s or %s)!",
-                    dataStorageConf.getLabel(), IOnlineDataStorage.class.getName(),
-                    INearlineDataStorage.class.getName()));
+            throw new EntityInvalidException(String
+                    .format("Given plugin configuration(label: %s) is not a configuration for an online or nearline data storage (respectfully %s or %s)!",
+                            dataStorageConf.getLabel(), IOnlineDataStorage.class.getName(),
+                            INearlineDataStorage.class.getName()));
         }
         Long actualLowestPriority = getLowestPriority(dataStorageType);
         return prioritizedDataStorageRepository.save(new PrioritizedDataStorage(dataStorageConf,
-                                                                                actualLowestPriority == null ?
-                                                                                        0 :
-                                                                                        actualLowestPriority + 1,
-                                                                                dataStorageType));
+                actualLowestPriority == null ? 0 : actualLowestPriority + 1, dataStorageType));
     }
 
     @Override
@@ -134,11 +132,11 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
 
     @Override
     public PrioritizedDataStorage retrieve(Long id) throws EntityNotFoundException {
-        PrioritizedDataStorage actual = prioritizedDataStorageRepository.findOne(id);
-        if (actual == null) {
+        Optional<PrioritizedDataStorage> actual = prioritizedDataStorageRepository.findById(id);
+        if (!actual.isPresent()) {
             throw new EntityNotFoundException(id, PrioritizedDataStorage.class);
         }
-        return actual;
+        return actual.get();
     }
 
     @Override
@@ -169,8 +167,7 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
             return prioritizedDataStorageRepository.save(oldOne);
         } else {
             throw new EntityOperationForbiddenException(oldOne.getDataStorageConfiguration().getLabel(),
-                                                        PrioritizedDataStorage.class,
-                                                        updatable.getUpdateNotAllowedReason());
+                    PrioritizedDataStorage.class, updatable.getUpdateNotAllowedReason());
         }
     }
 
@@ -190,7 +187,7 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
                 for (PrioritizedDataStorage lessPrioritized : lessPrioritizeds) {
                     lessPrioritized.setPriority(lessPrioritized.getPriority() - 1);
                 }
-                prioritizedDataStorageRepository.save(lessPrioritizeds);
+                prioritizedDataStorageRepository.saveAll(lessPrioritizeds);
             } else {
                 String msg = String.format("Data storage %s could not be deleted because it contains files",
                                            toDelete.getDataStorageConfiguration().getLabel());

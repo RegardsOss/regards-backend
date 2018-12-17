@@ -41,8 +41,9 @@ public class CustomizedAIPEntityRepositoryTest extends AbstractMultitenantServic
 
     @Test
     public void findAllTest() {
-        customRepo.findAll(AIPQueryGenerator.searchAIPContainingAllTags(null, null, null, null, null, "PID", null, null),
-                           new PageRequest(0, 1));
+        customRepo
+                .findAll(AIPQueryGenerator.searchAIPContainingAllTags(null, null, null, null, null, "PID", null, null),
+                         PageRequest.of(0, 1));
     }
 
 }

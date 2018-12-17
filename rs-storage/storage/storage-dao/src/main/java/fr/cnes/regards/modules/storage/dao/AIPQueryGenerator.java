@@ -29,7 +29,6 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 
 /**
  * Specification class to filter DAO searches on {@link AIP} entities
@@ -47,10 +46,10 @@ public class AIPQueryGenerator {
      * Return an SQL query that retrieve all entities matching provided criteria
      * @param tags must be present in the AIP
      */
-    public static String searchAIPContainingAllTags(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags,
-            String session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded) {
+    public static String searchAIPContainingAllTags(AIPState state, OffsetDateTime from, OffsetDateTime to,
+            List<String> tags, String session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded) {
         Set<String> predicates = generatePredicates(state, from, to, session, providerId, aipIds, aipIdsExcluded);
-        if ((tags != null) && !tags.isEmpty()) {
+        if (tags != null && !tags.isEmpty()) {
             predicates.add(getConjunctionTagPredicate(tags));
         }
         return createQuery(predicates);
@@ -73,10 +72,10 @@ public class AIPQueryGenerator {
      * Return an SQL query that retrieve all entities matching provided criteria
      * @param tags At least one provided tag will be present in the AIP
      */
-    public static String searchAIPContainingAtLeastOneTag(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags,
-            String session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded) {
+    public static String searchAIPContainingAtLeastOneTag(AIPState state, OffsetDateTime from, OffsetDateTime to,
+            List<String> tags, String session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded) {
         Set<String> predicates = generatePredicates(state, from, to, session, providerId, aipIds, aipIdsExcluded);
-        if ((tags != null) && !tags.isEmpty()) {
+        if (tags != null && !tags.isEmpty()) {
             predicates.add(getDisjunctionTagPredicate(tags));
         }
         return createQuery(predicates);
@@ -92,7 +91,7 @@ public class AIPQueryGenerator {
                 "SELECT distinct jsonb_array_elements_text(json_aip#>'{properties,pdi,contextInformation,tags}') "
                         + "FROM {h-schema}t_aip ");
         Set<String> predicates = generatePredicates(state, from, to, session, providerId, aipIds, aipIdsExcluded);
-        if ((tags != null) && !tags.isEmpty()) {
+        if (tags != null && !tags.isEmpty()) {
             predicates.add(getConjunctionTagPredicate(tags));
         }
         if (!predicates.isEmpty()) {
@@ -120,21 +119,21 @@ public class AIPQueryGenerator {
         if (session != null) {
             predicates.add("(session = '" + session + "')");
         }
-        if ((aipIds != null) && !aipIds.isEmpty()) {
+        if (aipIds != null && !aipIds.isEmpty()) {
             Set<String> aipIncludedPredicates = Sets.newHashSet();
             for (String aipId : aipIds) {
                 aipIncludedPredicates.add("'" + aipId + "'");
             }
             predicates.add("(aip_id in (" + String.join(" , ", aipIncludedPredicates) + "))");
         }
-        if ((aipIdsExcluded != null) && !aipIdsExcluded.isEmpty()) {
+        if (aipIdsExcluded != null && !aipIdsExcluded.isEmpty()) {
             Set<String> aipExcludedPredicates = Sets.newHashSet();
             for (String aipId : aipIdsExcluded) {
                 aipExcludedPredicates.add("'" + aipId + "'");
             }
             predicates.add("(aip_id not in (" + String.join(" , ", aipExcludedPredicates) + "))");
         }
-        if ((providerId != null) && !providerId.isEmpty()) {
+        if (providerId != null && !providerId.isEmpty()) {
             predicates.add("(provider_id like '%" + providerId + "%')");
         }
         return predicates;

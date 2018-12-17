@@ -55,7 +55,7 @@ public class CustomizedAIPEntityRepository implements ICustomizedAIPEntityReposi
         Long numberResults = countNumberOfResults(sqlQuery);
         Query q = entityManager.createNativeQuery(sqlQuery, AIPEntity.class);
         // Handle the pagination here
-        q.setFirstResult(pageable.getOffset());
+        q.setFirstResult((int) pageable.getOffset());
         q.setMaxResults(pageable.getPageSize());
         @SuppressWarnings("unchecked")
         List<AIPEntity> resultList = q.getResultList();

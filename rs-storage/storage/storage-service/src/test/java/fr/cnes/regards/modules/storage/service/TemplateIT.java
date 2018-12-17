@@ -167,9 +167,8 @@ public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
         // lets use the template service to get our message
         SimpleMailMessage email = templateService
                 .writeToEmail(TemplateServiceConfiguration.NOT_SUBSETTED_DATA_FILES_CODE, dataMap);
-        Assert.assertNotEquals(templateRepository
-                .findOneByCode(TemplateServiceConfiguration.NOT_SUBSETTED_DATA_FILES_CODE).get().getContent(),
-                               email.getText());
+        Assert.assertNotEquals(templateRepository.findByCode(TemplateServiceConfiguration.NOT_SUBSETTED_DATA_FILES_CODE)
+                .get().getContent(), email.getText());
         LOGGER.info(email.getText());
     }
 
@@ -197,7 +196,7 @@ public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
         SimpleMailMessage email = templateService
                 .writeToEmail(TemplateServiceConfiguration.NOT_DISPATCHED_DATA_FILES_CODE, dataMap);
         Assert.assertNotEquals(templateRepository
-                .findOneByCode(TemplateServiceConfiguration.NOT_DISPATCHED_DATA_FILES_CODE).get().getContent(),
+                .findByCode(TemplateServiceConfiguration.NOT_DISPATCHED_DATA_FILES_CODE).get().getContent(),
                                email.getText());
         LOGGER.info(email.getText());
     }

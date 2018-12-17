@@ -84,6 +84,11 @@ public interface IAIPService {
     List<RejectedAip> validateAndStore(AIPCollection aips) throws ModuleException;
 
     /**
+     * Asynchronous method for validating and storing a single AIP from data flow
+     */
+    void validateAndStore(AIP aip);
+
+    /**
      * Asynchronusly makes the heavy work of storing AIP metadata.<ul>
      * <li>1. Search for all AIP ready to store their metadata (all DataFile are in STORED state).</li>
      * <li>2. Schedule a unique job perf IDataStorage configuration to store all AIP metadata files found.</li>
@@ -108,7 +113,6 @@ public interface IAIPService {
      * <li>Aip is known in the system</li>
      * </ul>
      * @param aipIpIds
-     * @return  {@link RejectedAip}s
      */
     List<RejectedAip> applyRetryChecks(Set<String> aipIpIds);
 
