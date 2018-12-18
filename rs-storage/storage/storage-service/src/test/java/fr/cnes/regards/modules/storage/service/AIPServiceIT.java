@@ -121,7 +121,7 @@ import fr.cnes.regards.modules.storage.service.plugins.CatalogSecurityDelegation
  * @author Sylvain VISSIERE-GUERINET
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = { TestConfig.class, AIPServiceIT.Config.class })
+@ContextConfiguration(classes = { TestConfig.class })
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=storage_test", "regards.amqp.enabled=true" },
         locations = { "classpath:storage.properties" })
@@ -129,15 +129,6 @@ import fr.cnes.regards.modules.storage.service.plugins.CatalogSecurityDelegation
 @DirtiesContext(hierarchyMode = HierarchyMode.EXHAUSTIVE, classMode = ClassMode.BEFORE_CLASS)
 @EnableAsync
 public class AIPServiceIT extends AbstractRegardsIT {
-
-    @Configuration
-    static class Config {
-
-        @Bean
-        public INotificationClient notificationClient() {
-            return Mockito.mock(INotificationClient.class);
-        }
-    }
 
     private static final Logger LOG = LoggerFactory.getLogger(AIPServiceIT.class);
 
