@@ -18,12 +18,12 @@
  */
 package fr.cnes.regards.modules.emails.service;
 
-import javax.mail.Address;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMessage.RecipientType;
-import javax.mail.internet.MimeMultipart;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assume.assumeTrue;
+
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -31,6 +31,13 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import javax.mail.Address;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMessage.RecipientType;
+import javax.mail.internet.MimeMultipart;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -51,6 +58,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.icegreen.greenmail.junit.GreenMailRule;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.icegreen.greenmail.util.ServerSetupTest;
+
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -58,11 +66,6 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.emails.dao.IEmailRepository;
 import fr.cnes.regards.modules.emails.domain.Email;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * Test class for {@link EmailService}.
@@ -107,7 +110,6 @@ public class EmailServiceTest {
      * GreenMail responds like a regular SMTP server but does not deliver any email, which enables it to be used in real
      * life applications and real test cases. Messages can easily be extracted, verified and modified.
      * <p>
-     * @see <a href=http://www.icegreen.com/greenmail/#scenarios>Green Mail documentation</a>
      */
     @Rule
     public final GreenMailRule greenMail = new GreenMailRule(ServerSetupTest.SMTP);
@@ -115,6 +117,7 @@ public class EmailServiceTest {
     @Configuration
     @PropertySource(value = { "classpath:test.properties" })
     public static class Config {
+
         @Bean
         public IInstanceSubscriber instanceSubscriber() {
             return Mockito.mock(IInstanceSubscriber.class);
@@ -191,7 +194,6 @@ public class EmailServiceTest {
 
     }
 
-
     @Test
     public void sendEmailWithZipAttachment() throws MessagingException, IOException {
         // Create dummy email with random subject and content
@@ -218,15 +220,12 @@ public class EmailServiceTest {
 
     /**
      * Check that the system allows to retrieve a single email.
-     * @throws MessagingException Exception thrown by getters of {@link MimeMessage}
      */
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_440")
     @Requirement("REGARDS_DSL_ADM_ADM_450")
     @Purpose("Check that the system allows to retrieve a single email.")
     public void retrieveEmail() throws ModuleException {
-        final Long id = 0L;
-
         // Create dummy email
         Email expected = emailService.sendEmail(createDummyMessage());
 
@@ -302,28 +301,6 @@ public class EmailServiceTest {
         message.setTo("xavier-alexandre.brochard@c-s.fr");
         message.setSentDate(Date.from(SEND_DATE.atZone(ZoneId.systemDefault()).toInstant()));
         return message;
-    }
-
-    /**
-     * Creates a {@link Email} with some random values initialized.
-     * @return The mail
-     */
-    private Email createDummyEmail() {
-        // Create an empty message
-        final Email email = new Email();
-
-        // With random content to avoid potential residual lingering problems
-        final String subject = GreenMailUtil.random();
-        final String sender = GreenMailUtil.random();
-        final String body = GreenMailUtil.random();
-
-        // Set content on the mail
-        email.setSubject(subject);
-        email.setFrom(sender + "@test.com");
-        email.setText(body);
-        email.setSentDate(SEND_DATE);
-
-        return email;
     }
 
     /**

@@ -18,9 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -29,12 +26,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -42,7 +36,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
@@ -60,6 +53,7 @@ import fr.cnes.regards.modules.accessrights.service.role.RoleService;
 @MultitenantTransactional
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
 public class RolesControllerIT extends AbstractRegardsTransactionalIT {
+
     private String apiRolesUsers;
 
     @Autowired
@@ -100,7 +94,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
         publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
         Set<ResourcesAccess> resourcesAccessPublic = new HashSet<>();
         resourceAccessPublic = new ResourcesAccess("", "aMicroservice", "the public resource", "Controller",
-                                                   RequestMethod.GET, DefaultRole.ADMIN);
+                RequestMethod.GET, DefaultRole.ADMIN);
         resourceAccessPublic = resourcesAccessRepository.save(resourceAccessPublic);
         resourcesAccessPublic.add(resourceAccessPublic);
         publicRole.setPermissions(resourcesAccessPublic);
@@ -112,10 +106,10 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
 
         Set<ResourcesAccess> resourcesAccess = new HashSet<>();
         ResourcesAccess aResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", "Controller",
-                                                               RequestMethod.GET, DefaultRole.ADMIN);
+                RequestMethod.GET, DefaultRole.ADMIN);
         aResourcesAccess = resourcesAccessRepository.save(aResourcesAccess);
         ResourcesAccess bResourcesAccess = new ResourcesAccess("", "aMicroservice", "the resource", "Controller",
-                                                               RequestMethod.DELETE, DefaultRole.ADMIN);
+                RequestMethod.DELETE, DefaultRole.ADMIN);
         bResourcesAccess = resourcesAccessRepository.save(bResourcesAccess);
 
         resourcesAccess.add(aResourcesAccess);
@@ -202,7 +196,8 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
                            // Updated : Permissions are ignore in roles results requests to avoid lazy load.
                            // expectations.add(MockMvcResultMatchers.jsonPath("$.*.content.permissions", hasSize(6)));
                            // 3 = 3 roles has a parent (public, project_admin, instance_admin has no parent)
-                           .expectToHaveSize("$.*.content.parentRole", 3), "TODO Error message");
+                           .expectToHaveSize("$.*.content.parentRole", 3),
+                   "TODO Error message");
     }
 
     @Test
@@ -252,7 +247,7 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check hierachy of roles")
     public void retrieveInheritedRoles() {
         Set<Role> roles = roleService.retrieveInheritedRoles(publicRole);
-        Assert.assertEquals(roles.size(), ((DefaultRole.values().length - 3) + 1));
+        Assert.assertEquals(roles.size(), DefaultRole.values().length - 3 + 1);
         Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(DefaultRole.ADMIN.toString())));
         Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(DefaultRole.REGISTERED_USER.toString())));
         Assert.assertTrue(roles.stream().anyMatch(r -> r.getName().equals(ROLE_TEST)));

@@ -18,10 +18,11 @@
  */
 package fr.cnes.regards.modules.emails.rest;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.context.ContextConfiguration;
@@ -34,8 +35,6 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.emails.dao.IEmailRepository;
 import fr.cnes.regards.modules.emails.domain.Email;
 import fr.cnes.regards.modules.emails.service.IEmailService;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Integration tests for the email module
@@ -45,8 +44,6 @@ import static org.junit.Assert.assertTrue;
 @ContextConfiguration(classes = EmailConfiguration.class)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=email_it" })
 public class EmailControllerIT extends AbstractRegardsTransactionalIT {
-
-    private static final Logger LOG = LoggerFactory.getLogger(EmailControllerIT.class);
 
     /**
      * Email service handling mailing operations

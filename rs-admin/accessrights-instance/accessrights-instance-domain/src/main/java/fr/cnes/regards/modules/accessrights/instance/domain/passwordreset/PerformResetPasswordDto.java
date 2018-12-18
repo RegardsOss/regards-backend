@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.accessrights.instance.domain.passwordreset;
 
 /**
- * Dto class wrapping data required for the {@link AccountsController#performResetPassword} endpoint.
+ * Dto class
  *
  * @author Xavier-Alexandre Brochard
  */

@@ -51,7 +51,7 @@ public interface IResourcesAccessRepository extends JpaRepository<ResourcesAcces
      * @param pVerb
      *            HttpVerb of the resource
      * @return ResourcesAccess
-
+    
      */
     ResourcesAccess findOneByMicroserviceAndResourceAndVerb(String pMicroservice, String pResourceFullPath,
             RequestMethod pVerb);
@@ -63,7 +63,7 @@ public interface IResourcesAccessRepository extends JpaRepository<ResourcesAcces
      * @param pMicroservice
      *            Microservice name who own the resource
      * @return List of {@link ResourcesAccess}
-
+    
      */
     List<ResourcesAccess> findByMicroservice(String pMicroservice);
 
@@ -76,7 +76,7 @@ public interface IResourcesAccessRepository extends JpaRepository<ResourcesAcces
     * @param pPageable
     *            the pagination information
     * @return {@link Page} of {@link ResourcesAccess}
-
+    
     */
     Page<ResourcesAccess> findByMicroservice(String pMicroservice, Pageable pPageable);
 
@@ -90,7 +90,7 @@ public interface IResourcesAccessRepository extends JpaRepository<ResourcesAcces
      * @param pPageable
      *            the pagination information
      * @return {@link Page} of {@link ResourcesAccess}
-
+    
      */
     Page<ResourcesAccess> findByMicroserviceAndDefaultRoleNot(String pMicroservice, DefaultRole pExcludedDefaultRole,
             Pageable pPageable);
@@ -114,7 +114,7 @@ public interface IResourcesAccessRepository extends JpaRepository<ResourcesAcces
      *            controller name
      * @param pExcludedDefaultRole excluded default role
      * @return List of {@link ResourcesAccess}
-
+    
      */
     List<ResourcesAccess> findByMicroserviceAndControllerSimpleNameAndDefaultRoleNotOrderByResource(
             String pMicroservice, String pControllerSimpleName, DefaultRole pExcludedDefaultRole);
@@ -136,7 +136,7 @@ public interface IResourcesAccessRepository extends JpaRepository<ResourcesAcces
      *
      * @param pMicroservice
      * @return Array of String
-
+    
      */
     @Query("select distinct controllerSimpleName from ResourcesAccess where microservice = ?1 and defaultRole <> 'INSTANCE_ADMIN'")
     List<String> findAllControllersByMicroservice(String pMicroservice);
@@ -145,7 +145,6 @@ public interface IResourcesAccessRepository extends JpaRepository<ResourcesAcces
      * Retrieve all controllers for a given microservice that can be managed by a specified role
      * @param pMicroservice microservice name
      * @param roleName role name
-     * @return
      */
     @Query(value = "select distinct controller_name from {h-schema}t_resources_access res, {h-schema}ta_resource_role resrole, {h-schema}t_role role  where microservice = ?1 and defaultrole <> 'INSTANCE_ADMIN' and res.id = resrole.resource_id and resrole.role_id = role.id and role.name = ?2 order by controller_name",
             nativeQuery = true)

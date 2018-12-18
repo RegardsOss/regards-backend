@@ -31,7 +31,6 @@ import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactiona
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
@@ -68,8 +67,8 @@ public class TenantControllerIT extends AbstractRegardsIT {
 
     @Before
     public void initialize() {
-        instanceAdmintoken = jwtService
-                .generateToken("test1", getDefaultUserEmail(), DefaultRole.INSTANCE_ADMIN.name());
+        instanceAdmintoken = jwtService.generateToken("test1", getDefaultUserEmail(),
+                                                      DefaultRole.INSTANCE_ADMIN.name());
 
         Project activeProject = new Project("description", "icon", true, ACTIVE_PROJECT_NAME);
         activeProject.setLabel("label");
@@ -78,10 +77,10 @@ public class TenantControllerIT extends AbstractRegardsIT {
         deletedProject.setLabel("label");
 
         ProjectConnection rsTestConnection = new ProjectConnection(activeProject, TEST_MS, "user", "password", "driver",
-                                                                   "url");
+                "url");
         rsTestConnection.setState(TenantConnectionState.ENABLED);
         ProjectConnection rsTestConnection2 = new ProjectConnection(deletedProject, TEST_MS, "user", "password",
-                                                                    "driver", "url");
+                "driver", "url");
         rsTestConnection2.setState(TenantConnectionState.DISABLED);
 
         projectRepository.save(activeProject);
@@ -106,9 +105,9 @@ public class TenantControllerIT extends AbstractRegardsIT {
     public void retrievePublicProjectsTest() {
         performGet(TenantController.BASE_PATH + TenantController.MICROSERVICE_PATH, instanceAdmintoken,
                    customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT).expectToHaveSize(JSON_PATH_ROOT, 1)
-                           .expect(MockMvcResultMatchers
-                                           .jsonPath(JSON_PATH_ROOT, Matchers.contains(ACTIVE_PROJECT_NAME))), "error",
-                   TEST_MS);
+                           .expect(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT,
+                                                                  Matchers.contains(ACTIVE_PROJECT_NAME))),
+                   "error", TEST_MS);
     }
 
 }

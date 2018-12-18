@@ -18,8 +18,11 @@
  */
 package fr.cnes.regards.modules.accessrights.client;
 
-import javax.validation.Valid;
+import static fr.cnes.regards.modules.accessrights.client.IProjectUsersClient.TARGET_NAME;
+
 import java.util.List;
+
+import javax.validation.Valid;
 
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -33,7 +36,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
-import static fr.cnes.regards.modules.accessrights.client.IProjectUsersClient.TARGET_NAME;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto;
@@ -46,8 +48,6 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
  *
  * @author Sébastien Binda
  * @author Christophe Mertz
- *
-
  */
 @RestClient(name = TARGET_NAME)
 @RequestMapping(value = "/users", produces = MediaType.APPLICATION_JSON_UTF8_VALUE,
@@ -58,8 +58,6 @@ public interface IProjectUsersClient {
 
     /**
      * Retrieve the {@link List} of all {@link ProjectUser}s.
-     *
-     * @return
      */
     @ResponseBody
     @RequestMapping(method = RequestMethod.GET)
@@ -161,6 +159,6 @@ public interface IProjectUsersClient {
      * @return page of project user which role, represented by its name, is the one provided
      */
     @RequestMapping(value = "/roles", method = RequestMethod.GET)
-    ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUsersList(@RequestParam("role_name") String pRole, @RequestParam("page") int pPage,
-            @RequestParam("size") int pSize);
+    ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveRoleProjectUsersList(
+            @RequestParam("role_name") String pRole, @RequestParam("page") int pPage, @RequestParam("size") int pSize);
 }

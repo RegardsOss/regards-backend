@@ -48,7 +48,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
@@ -148,7 +147,7 @@ public class RoleServiceTest {
         tenantResolver = Mockito.mock(ITenantResolver.class);
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
         roleService = new RoleService(roleRepository, projectUserRepository, tenantResolver, runtimeTenantResolver,
-                                      Mockito.mock(IPublisher.class), authResolver);
+                Mockito.mock(IPublisher.class), authResolver);
 
         // Clear the repos
         projectUserRepository.deleteAll();
@@ -210,8 +209,7 @@ public class RoleServiceTest {
         Mockito.when(authResolver.getUser()).thenReturn("test@test.test");
 
         // mock project user
-        ProjectUser projectUser = new ProjectUser("test@test.test", roleAdmin, new ArrayList<>(),
-                                                        new ArrayList<>());
+        ProjectUser projectUser = new ProjectUser("test@test.test", roleAdmin, new ArrayList<>(), new ArrayList<>());
         Mockito.when(projectUserRepository.findOneByEmail("test@test.test")).thenReturn(Optional.of(projectUser));
         Mockito.when(roleRepository.findByParentRoleName(roleAdmin.getName())).thenReturn(Sets.newHashSet(adminSon));
         Set<Role> result = roleService.retrieveBorrowableRoles();
@@ -269,13 +267,13 @@ public class RoleServiceTest {
 
         Mockito.when(roleRepository.save(expected)).thenReturn(expected);
 
-        Mockito.when(roleRepository.findOneByName("newRole")).thenReturn((Optional.empty()));
+        Mockito.when(roleRepository.findOneByName("newRole")).thenReturn(Optional.empty());
         Mockito.when(roleRepository.findOneByName(roleAdmin.getName())).thenReturn(Optional.of(roleAdmin));
         Mockito.when(roleRepository.findOneByName(adminSon.getName())).thenReturn(Optional.of(adminSon));
 
         Role actual = roleService.createRole(newRole);
 
-        Mockito.when(roleRepository.findOneByName(Mockito.anyString())).thenReturn((Optional.of(actual)));
+        Mockito.when(roleRepository.findOneByName(Mockito.anyString())).thenReturn(Optional.of(actual));
         Mockito.when(roleRepository.findById(id)).thenReturn(Optional.of(actual));
 
         // Check that the expected and actual role have same values
@@ -430,7 +428,7 @@ public class RoleServiceTest {
         // Mock
         Set<ResourcesAccess> resourcesAccesses = new HashSet<>();
         ResourcesAccess addedResourcesAccess = new ResourcesAccess(468645L, "", "", "", "Controller",
-                                                                         RequestMethod.PATCH, DefaultRole.ADMIN);
+                RequestMethod.PATCH, DefaultRole.ADMIN);
         resourcesAccesses.add(addedResourcesAccess);
         // for this test, let's consider that the user adding a right onto role PUBLIC has the role ADMIN
 
@@ -451,9 +449,10 @@ public class RoleServiceTest {
             sonsOfRU.add(roleAdmin);
             return sonsOfRU;
         });
-        Mockito.when(roleRepository.findByParentRoleName(roleAdmin.getName())).thenAnswer(invocation -> new HashSet<Role>());
-        rolePublic.addPermission(
-                new ResourcesAccess(4567L, "", "", "", "Controller", RequestMethod.GET, DefaultRole.ADMIN));
+        Mockito.when(roleRepository.findByParentRoleName(roleAdmin.getName()))
+                .thenAnswer(invocation -> new HashSet<Role>());
+        rolePublic.addPermission(new ResourcesAccess(4567L, "", "", "", "Controller", RequestMethod.GET,
+                DefaultRole.ADMIN));
         Mockito.when(roleRepository.existsById(PUBLIC_ID)).thenReturn(true);
         Mockito.when(roleRepository.findById(PUBLIC_ID)).thenReturn(Optional.of(rolePublic));
         Mockito.when(roleRepository.findOneByName(NAME)).thenReturn(Optional.ofNullable(rolePublic));
@@ -484,12 +483,12 @@ public class RoleServiceTest {
     @Purpose("Check that the system allows to update resources accesses of a role.")
     public void updateRoleResourcesAccessUpdatingResourcesAccess() throws EntityException {
         Set<ResourcesAccess> initRAs = new HashSet<>();
-        initRAs.add(
-                new ResourcesAccess(0L, "desc", "mic", "res", "Controller", RequestMethod.TRACE, DefaultRole.ADMIN));
+        initRAs.add(new ResourcesAccess(0L, "desc", "mic", "res", "Controller", RequestMethod.TRACE,
+                DefaultRole.ADMIN));
 
         Set<ResourcesAccess> passedRAs = new HashSet<>();
         passedRAs.add(new ResourcesAccess(0L, "new desc", "new mic", "new res", "Controller", RequestMethod.DELETE,
-                                          DefaultRole.ADMIN));
+                DefaultRole.ADMIN));
 
         // for this test, let's consider that the user adding a right onto role PUBLIC has the role ADMIN
         Mockito.when(authResolver.getRole()).thenReturn(DefaultRole.ADMIN.toString());
@@ -545,7 +544,7 @@ public class RoleServiceTest {
         // Prepare the role by adding some resources accesses
         Set<ResourcesAccess> resourcesAccesses = new HashSet<>();
         resourcesAccesses.add(new ResourcesAccess(0L, "desc", "mic", "res", "Controller", RequestMethod.TRACE,
-                                                  DefaultRole.ADMIN));
+                DefaultRole.ADMIN));
         rolePublic.setPermissions(resourcesAccesses);
 
         // Mock

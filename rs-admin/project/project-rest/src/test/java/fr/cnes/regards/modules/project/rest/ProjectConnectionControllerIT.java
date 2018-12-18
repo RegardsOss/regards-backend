@@ -18,19 +18,16 @@
  */
 package fr.cnes.regards.modules.project.rest;
 
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
@@ -96,14 +93,14 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
      */
     @Before
     public void initialize() {
-        instanceAdmintoken = jwtService
-                .generateToken(PROJECT_TEST, "public@regards.fr", DefaultRole.INSTANCE_ADMIN.name());
+        instanceAdmintoken = jwtService.generateToken(PROJECT_TEST, "public@regards.fr",
+                                                      DefaultRole.INSTANCE_ADMIN.name());
 
         Project project = projectRepo.findOneByNameIgnoreCase(PROJECT_TEST);
         project.setLabel("project");
         project = projectRepo.save(project);
         connection = new ProjectConnection(project, MICROSERVICE_TEST, "newUserName", "newPassword", "newDriver",
-                                           "newUrl");
+                "newUrl");
         projectConnRepo.save(connection);
     }
 
@@ -117,8 +114,8 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
                            .expectValue(JSON_PATH_ROOT + ".metadata.size", 20)
                            .expectValue(JSON_PATH_ROOT + ".metadata.totalElements", 1)
                            .expectValue(JSON_PATH_ROOT + ".metadata.totalPages", 1)
-                           .expectValue(JSON_PATH_ROOT + ".metadata.number", 0).addParameter("size", "20"), "error",
-                   PROJECT_TEST);
+                           .expectValue(JSON_PATH_ROOT + ".metadata.number", 0).addParameter("size", "20"),
+                   "error", PROJECT_TEST);
     }
 
     /**
@@ -143,7 +140,7 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     public void createProjectConnectionTest() {
         Project project = projectRepo.findOneByNameIgnoreCase(PROJECT_TEST);
         ProjectConnection connection = new ProjectConnection(project, "microservice-test-2", "newUserName",
-                                                             "newPassword", "newDriver", "newUrl");
+                "newPassword", "newDriver", "newUrl");
         performPost(ProjectConnectionController.TYPE_MAPPING, instanceAdmintoken, connection,
                     customizer().expectStatusOk(), "Error there must be project results", PROJECT_TEST);
     }
@@ -156,8 +153,8 @@ public class ProjectConnectionControllerIT extends AbstractRegardsIT {
     @Purpose("Check REST Access to update a project connection and Hateoas returned links")
     @Test
     public void updateProjectConnectionTest() {
-        ProjectConnection connection = projectConnRepo
-                .findOneByProjectNameAndMicroservice(PROJECT_TEST, MICROSERVICE_TEST);
+        ProjectConnection connection = projectConnRepo.findOneByProjectNameAndMicroservice(PROJECT_TEST,
+                                                                                           MICROSERVICE_TEST);
         performPut(ProjectConnectionController.TYPE_MAPPING + ProjectConnectionController.RESOURCE_ID_MAPPING,
                    instanceAdmintoken, connection, customizer().expectStatusOk(), "Error there must be project results",
                    PROJECT_TEST, connection.getId());

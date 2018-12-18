@@ -29,7 +29,7 @@ import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.notification.domain.Notification;
 
 /**
- * Test class for {@link EmailService}.
+ * Test class for {@link IEmailClient}.
  *
  * @author Xavier-Alexandre Brochard
  */
@@ -93,7 +93,7 @@ public class EmailSendingStrategyTest {
         // Define expected mail
         final SimpleMailMessage expected = new SimpleMailMessage();
         expected.setFrom("regards@noreply.com");
-        expected.setSubject("["+SENDER+"]"+notification.getTitle());
+        expected.setSubject("[" + SENDER + "]" + notification.getTitle());
         expected.setText(MESSAGE);
         expected.setTo(RECIPIENTS);
 

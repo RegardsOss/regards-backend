@@ -21,11 +21,8 @@ package fr.cnes.regards.modules.accessrights.rest;
 import java.util.ArrayList;
 
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.collect.Lists;
@@ -33,7 +30,6 @@ import com.google.common.collect.Lists;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
@@ -71,7 +67,7 @@ public class UserResourceControllerIT extends AbstractRegardsTransactionalIT {
 
         // Create a new resource
         ResourcesAccess resource = new ResourcesAccess(null, "microservice", "/to/user", "controller",
-                                                       RequestMethod.GET, DefaultRole.ADMIN);
+                RequestMethod.GET, DefaultRole.ADMIN);
         resourcesAccessRepository.save(resource);
 
         // Add access to user

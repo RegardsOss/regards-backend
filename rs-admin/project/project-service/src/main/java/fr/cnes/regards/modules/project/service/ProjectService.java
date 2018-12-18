@@ -68,8 +68,6 @@ public class ProjectService implements IProjectService {
      */
     private final IProjectRepository projectRepository;
 
-    private final ITenantResolver tenantResolver;
-
     /**
      * AMQP message publisher
      */
@@ -96,10 +94,8 @@ public class ProjectService implements IProjectService {
             @Value("${regards.config.first.project.public.access}") String defaultTenantHost) {
         super();
         projectRepository = pProjectRepository;
-        this.tenantResolver = tenantResolver;
         this.instancePublisher = instancePublisher;
-        this.defaultTenants = Arrays.stream(defaultTenants.split(",")).map(String::trim)
-                .collect(Collectors.toSet());
+        this.defaultTenants = Arrays.stream(defaultTenants.split(",")).map(String::trim).collect(Collectors.toSet());
         this.defaultTenantHost = defaultTenantHost;
     }
 

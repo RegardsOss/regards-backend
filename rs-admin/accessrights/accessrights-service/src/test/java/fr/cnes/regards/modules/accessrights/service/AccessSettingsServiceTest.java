@@ -71,9 +71,6 @@ public class AccessSettingsServiceTest {
 
     /**
      * Check that the system allows to retrieve the access settings.
-     * 
-     * @throws EntityNotFoundException
-     *             Thrown when no access settings could be found
      */
     @Test
     @Requirement("?")

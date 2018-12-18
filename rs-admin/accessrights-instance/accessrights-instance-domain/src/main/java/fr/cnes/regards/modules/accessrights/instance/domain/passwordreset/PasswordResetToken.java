@@ -39,7 +39,6 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
  *
- * @see <a>http://www.baeldung.com/spring-security-registration-i-forgot-my-password</a>
  */
 @InstanceEntity
 @Entity
@@ -168,9 +167,9 @@ public class PasswordResetToken {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = (prime * result) + ((expiryDate == null) ? 0 : expiryDate.hashCode());
-        result = (prime * result) + ((token == null) ? 0 : token.hashCode());
-        result = (prime * result) + ((account == null) ? 0 : account.hashCode());
+        result = prime * result + (expiryDate == null ? 0 : expiryDate.hashCode());
+        result = prime * result + (token == null ? 0 : token.hashCode());
+        result = prime * result + (account == null ? 0 : account.hashCode());
         return result;
     }
 
@@ -202,8 +201,9 @@ public class PasswordResetToken {
         }
         if (account == null) {
             return other.account == null;
-        } else
+        } else {
             return account.equals(other.account);
+        }
     }
 
     @Override

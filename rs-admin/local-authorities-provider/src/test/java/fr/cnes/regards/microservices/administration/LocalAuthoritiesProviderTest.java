@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Before;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,9 +34,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.security.utils.jwt.exception.JwtException;
 import fr.cnes.regards.framework.test.integration.RegardsSpringRunner;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
@@ -66,12 +63,6 @@ public class LocalAuthoritiesProviderTest {
     private String microserviceName;
 
     /**
-     * Authorities provider to test
-     */
-    @Autowired
-    private IAuthoritiesProvider provider;
-
-    /**
      * Runtime tenant resolver
      */
     @Autowired
@@ -91,9 +82,6 @@ public class LocalAuthoritiesProviderTest {
         runtimeTenantResolver.forceTenant("test-project");
     }
 
-    /**
-     * @throws JwtException if the token is wrong
-     */
     @Before
     public void setUp() {
         resourcesAccessRepository.deleteAll();
@@ -116,22 +104,13 @@ public class LocalAuthoritiesProviderTest {
                 .ifPresent(role -> roleRepository.deleteById(role.getId()));
         roleRepository.save(roleFactory.withName(AuthoritiesTestConfiguration.ROLE_NAME).create());
 
-        resourcesAccessRepository
-                .save(new ResourcesAccess(0L, "description", microserviceName, "/resource", "Controller",
-                                          RequestMethod.GET, DefaultRole.ADMIN));
-        resourcesAccessRepository
-                .save(new ResourcesAccess(0L, "description", microserviceName, "/resource", "Controller",
-                                          RequestMethod.PUT, DefaultRole.ADMIN));
-        resourcesAccessRepository
-                .save(new ResourcesAccess(0L, "description", microserviceName, "/resource", "Controller",
-                                          RequestMethod.POST, DefaultRole.ADMIN));
-        resourcesAccessRepository
-                .save(new ResourcesAccess(0L, "description", microserviceName, "/resource", "Controller",
-                                          RequestMethod.DELETE, DefaultRole.ADMIN));
-    }
-
-    @Test
-    public void init() throws JwtException {
-        // TODO
+        resourcesAccessRepository.save(new ResourcesAccess(0L, "description", microserviceName, "/resource",
+                "Controller", RequestMethod.GET, DefaultRole.ADMIN));
+        resourcesAccessRepository.save(new ResourcesAccess(0L, "description", microserviceName, "/resource",
+                "Controller", RequestMethod.PUT, DefaultRole.ADMIN));
+        resourcesAccessRepository.save(new ResourcesAccess(0L, "description", microserviceName, "/resource",
+                "Controller", RequestMethod.POST, DefaultRole.ADMIN));
+        resourcesAccessRepository.save(new ResourcesAccess(0L, "description", microserviceName, "/resource",
+                "Controller", RequestMethod.DELETE, DefaultRole.ADMIN));
     }
 }

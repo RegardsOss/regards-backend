@@ -20,19 +20,14 @@ package fr.cnes.regards.modules.accessrights.rest;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
@@ -88,7 +83,6 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
      * Initialize all datas for this unit tests
-     * @throws EntityNotFoundException test error
      */
     @Before
     public void initResources() {
@@ -96,10 +90,10 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
         JWTService service = new JWTService();
         service.setSecret("123456789");
         publicToken = service.generateToken(getDefaultTenant(), getDefaultUserEmail(), DefaultRole.PUBLIC.toString());
-        projectAdminToken = service
-                .generateToken(getDefaultTenant(), getDefaultUserEmail(), DefaultRole.PROJECT_ADMIN.toString());
-        instanceAdminToken = service
-                .generateToken(getDefaultTenant(), getDefaultUserEmail(), DefaultRole.INSTANCE_ADMIN.toString());
+        projectAdminToken = service.generateToken(getDefaultTenant(), getDefaultUserEmail(),
+                                                  DefaultRole.PROJECT_ADMIN.toString());
+        instanceAdminToken = service.generateToken(getDefaultTenant(), getDefaultUserEmail(),
+                                                   DefaultRole.INSTANCE_ADMIN.toString());
     }
 
     /**
@@ -141,7 +135,7 @@ public class ResourceControllerIT extends AbstractRegardsTransactionalIT {
     @Test
     public void getResourceAccessTest() {
         ResourcesAccess resource = new ResourcesAccess("description", DEFAULT_MICROSERVICE, CONFIGURED_ENDPOINT_URL,
-                                                       DEFAULT_CONTROLLER, RequestMethod.GET, DefaultRole.ADMIN);
+                DEFAULT_CONTROLLER, RequestMethod.GET, DefaultRole.ADMIN);
         resourcesAccessRepository.save(resource);
         Role adminRole = roleRepository.findOneByName(DefaultRole.ADMIN.toString()).get();
         adminRole.addPermission(resource);

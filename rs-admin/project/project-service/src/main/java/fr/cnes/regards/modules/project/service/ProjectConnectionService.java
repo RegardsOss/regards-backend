@@ -18,10 +18,11 @@
  */
 package fr.cnes.regards.modules.project.service;
 
-import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import javax.persistence.EntityManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,11 +78,6 @@ public class ProjectConnectionService implements IProjectConnectionService {
      */
     private final IInstancePublisher instancePublisher;
 
-    /**
-     * EntityManager
-     */
-    private final EntityManager em;
-
     private final IEncryptionService encryptionService;
 
     /**
@@ -96,7 +92,6 @@ public class ProjectConnectionService implements IProjectConnectionService {
         this.projectRepository = projectRepository;
         this.projectConnectionRepository = projectConnectionRepository;
         this.instancePublisher = instancePublisher;
-        this.em = em;
         this.encryptionService = encryptionService;
     }
 
@@ -108,11 +103,11 @@ public class ProjectConnectionService implements IProjectConnectionService {
     @Override
     public ProjectConnection retrieveProjectConnection(String projectName, String microservice)
             throws EntityNotFoundException {
-        ProjectConnection connection = projectConnectionRepository
-                .findOneByProjectNameAndMicroservice(projectName, microservice);
+        ProjectConnection connection = projectConnectionRepository.findOneByProjectNameAndMicroservice(projectName,
+                                                                                                       microservice);
         if (connection == null) {
-            String message = String
-                    .format("No connection found for project %s and microservice %s", projectName, microservice);
+            String message = String.format("No connection found for project %s and microservice %s", projectName,
+                                           microservice);
             LOGGER.error(message);
             throw new EntityNotFoundException(message);
         }
@@ -130,13 +125,13 @@ public class ProjectConnectionService implements IProjectConnectionService {
         ProjectConnection connection;
         Project project = projectConnection.getProject();
         // Check referenced project exists
-        if ((project.getId() != null) && projectRepository.isActiveProject(project.getId())) {
+        if (project.getId() != null && projectRepository.isActiveProject(project.getId())) {
             // Manage connection conflicts!
             manageProjectConnectionConflicts(projectConnection);
             // Check project connection to create doesn't already exists
             if (projectConnectionRepository
-                    .findOneByProjectNameAndMicroservice(project.getName(), projectConnection.getMicroservice())
-                    == null) {
+                    .findOneByProjectNameAndMicroservice(project.getName(),
+                                                         projectConnection.getMicroservice()) == null) {
                 // Connection disabled
                 // Multitenant starter is responsible for enabling data source
                 projectConnection.setState(TenantConnectionState.DISABLED);
@@ -153,7 +148,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
         // Send event to all microservices that a new connection is available for a new project
         if (!silent) {
             instancePublisher.publish(new TenantConnectionConfigurationCreated(toTenantConnection(connection),
-                                                                               connection.getMicroservice()));
+                    connection.getMicroservice()));
         }
 
         return connection;
@@ -209,7 +204,7 @@ public class ProjectConnectionService implements IProjectConnectionService {
     private TenantConnection toTenantConnection(ProjectConnection connection) {
         // Send event to all microservices that a new connection is available for a new project
         return new TenantConnection(connection.getProject().getName(), connection.getUrl(), connection.getUserName(),
-                                    connection.getPassword(), connection.getDriverClassName());
+                connection.getPassword(), connection.getDriverClassName());
     }
 
     @Override
@@ -234,10 +229,10 @@ public class ProjectConnectionService implements IProjectConnectionService {
             throws ModuleException {
         ProjectConnection connection;
         // Check that entity to update exists
-        if ((projectConnection.getId() != null) && projectConnectionRepository.existsById(projectConnection.getId())) {
+        if (projectConnection.getId() != null && projectConnectionRepository.existsById(projectConnection.getId())) {
             Project project = projectConnection.getProject();
             // Check that the referenced project exists
-            if ((project.getId() != null) && projectRepository.isActiveProject(project.getId())) {
+            if (project.getId() != null && projectRepository.isActiveProject(project.getId())) {
                 // Manage connection conflicts!
                 manageProjectConnectionConflicts(projectConnection);
                 // Disable connection : new configuration may be incorrect
@@ -258,8 +253,8 @@ public class ProjectConnectionService implements IProjectConnectionService {
         }
 
         // Publish configuration update
-        instancePublisher.publish(
-                new TenantConnectionConfigurationUpdated(toTenantConnection(connection), connection.getMicroservice()));
+        instancePublisher.publish(new TenantConnectionConfigurationUpdated(toTenantConnection(connection),
+                connection.getMicroservice()));
 
         return connection;
     }

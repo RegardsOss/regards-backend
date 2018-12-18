@@ -23,21 +23,16 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccessAdapter;
 import fr.cnes.regards.framework.security.domain.ResourceMapping;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
@@ -74,18 +69,17 @@ public class MicroserviceResourceControllerIT extends AbstractRegardsTransaction
 
     /**
      * Initialize all datas for this unit tests
-     * @throws EntityNotFoundException test error
      */
     @Before
     public void initResources() {
 
         JWTService service = new JWTService();
         service.setSecret("123456789");
-        instanceToken = service
-                .generateToken(getDefaultTenant(), getDefaultUserEmail(), DefaultRole.INSTANCE_ADMIN.toString());
+        instanceToken = service.generateToken(getDefaultTenant(), getDefaultUserEmail(),
+                                              DefaultRole.INSTANCE_ADMIN.toString());
 
         ResourcesAccess resource = new ResourcesAccess("description", DEFAULT_MICROSERVICE, CONFIGURED_ENDPOINT_URL,
-                                                       DEFAULT_CONTROLLER, RequestMethod.GET, DefaultRole.ADMIN);
+                DEFAULT_CONTROLLER, RequestMethod.GET, DefaultRole.ADMIN);
         resource = resourcesAccessRepository.save(resource);
     }
 
@@ -97,13 +91,13 @@ public class MicroserviceResourceControllerIT extends AbstractRegardsTransaction
     public void registerMicroserviceEndpointsTest() {
         List<ResourceMapping> mapping = new ArrayList<>();
         mapping.add(new ResourceMapping(ResourceAccessAdapter.createResourceAccess("test", DefaultRole.PUBLIC),
-                                        "/endpoint/test", DEFAULT_CONTROLLER, RequestMethod.GET));
+                "/endpoint/test", DEFAULT_CONTROLLER, RequestMethod.GET));
         mapping.add(new ResourceMapping(ResourceAccessAdapter.createResourceAccess("test", DefaultRole.REGISTERED_USER),
-                                        "/endpoint/test2", DEFAULT_CONTROLLER, RequestMethod.GET));
+                "/endpoint/test2", DEFAULT_CONTROLLER, RequestMethod.GET));
         mapping.add(new ResourceMapping(ResourceAccessAdapter.createResourceAccess("test", DefaultRole.INSTANCE_ADMIN),
-                                        "/endpoint/test3", DEFAULT_CONTROLLER, RequestMethod.GET));
+                "/endpoint/test3", DEFAULT_CONTROLLER, RequestMethod.GET));
         mapping.add(new ResourceMapping(ResourceAccessAdapter.createResourceAccess("test", DefaultRole.PUBLIC),
-                                        CONFIGURED_ENDPOINT_URL, DEFAULT_CONTROLLER, RequestMethod.GET));
+                CONFIGURED_ENDPOINT_URL, DEFAULT_CONTROLLER, RequestMethod.GET));
         performPost(MicroserviceResourceController.TYPE_MAPPING, instanceToken, mapping, customizer().expectStatusOk(),
                     "Error during registring endpoints", DEFAULT_MICROSERVICE);
 

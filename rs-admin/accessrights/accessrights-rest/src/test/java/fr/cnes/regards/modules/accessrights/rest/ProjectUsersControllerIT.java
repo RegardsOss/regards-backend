@@ -18,16 +18,12 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -37,7 +33,6 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IMetaDataRepository;
@@ -60,6 +55,7 @@ import fr.cnes.regards.modules.accessrights.service.role.RoleService;
 @MultitenantTransactional
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
 public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
+
     /**
      * An email
      */
@@ -206,11 +202,9 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     public void updateUserPermissions() {
         final List<ResourcesAccess> newPermissionList = new ArrayList<>();
         newPermissionList.add(resourcesAccessRepository
-                                      .save(new ResourcesAccess("desc0", "ms0", "res0", "Controller", RequestMethod.GET,
-                                                                DefaultRole.ADMIN)));
+                .save(new ResourcesAccess("desc0", "ms0", "res0", "Controller", RequestMethod.GET, DefaultRole.ADMIN)));
         newPermissionList.add(resourcesAccessRepository.save(new ResourcesAccess("desc1", "ms1", "res1", "Controller",
-                                                                                 RequestMethod.DELETE,
-                                                                                 DefaultRole.ADMIN)));
+                RequestMethod.DELETE, DefaultRole.ADMIN)));
 
         performDefaultPut(UserResourceController.TYPE_MAPPING, newPermissionList, customizer().expectStatusOk(),
                           errorMessage, EMAIL);

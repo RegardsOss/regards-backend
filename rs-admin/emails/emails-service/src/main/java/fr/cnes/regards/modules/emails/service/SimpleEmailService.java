@@ -28,7 +28,6 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.emails.dao.IEmailRepository;
 import fr.cnes.regards.modules.emails.domain.Email;
 
@@ -57,8 +56,6 @@ public class SimpleEmailService extends AbstractEmailService {
     /**
      * Creates an {@link EmailService} wired to the given {@link IEmailRepository}.
      *
-     * @param pEmailRepository
-     *            Autowired by Spring. Must not be {@literal null}.
      * @param pMailSender
      *            Autowired by Spring. Must not be {@literal null}.
      */

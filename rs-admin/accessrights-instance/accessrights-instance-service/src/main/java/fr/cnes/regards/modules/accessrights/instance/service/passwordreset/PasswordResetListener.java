@@ -22,8 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Component;
@@ -42,16 +40,6 @@ import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
  */
 @Component
 public class PasswordResetListener implements ApplicationListener<OnPasswordResetEvent> {
-
-    /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(PasswordResetListener.class);
-
-    /**
-     * The password reset email template code
-     */
-    private static final String MDP_RESET_TEMPLATE = "passwordResetTemplate";
 
     /**
      * The password reset service. Autowired by Spring.
@@ -116,20 +104,21 @@ public class PasswordResetListener implements ApplicationListener<OnPasswordRese
 
         SimpleMailMessage email;
         try {
-            email = templateService.writeToEmail(TemplateServiceConfiguration.PASSWORD_RESET_TEMPLATE_CODE, data, recipients);
+            email = templateService.writeToEmail(TemplateServiceConfiguration.PASSWORD_RESET_TEMPLATE_CODE, data,
+                                                 recipients);
         } catch (final EntityNotFoundException e) {
             email = new SimpleMailMessage();
             email.setTo(recipients);
             email.setSubject("REGARDS - Password Reset");
 
             String linkUrlTemplate;
-            if ((pEvent.getRequestLink() != null) && pEvent.getRequestLink().contains("?")) {
+            if (pEvent.getRequestLink() != null && pEvent.getRequestLink().contains("?")) {
                 linkUrlTemplate = "%s&origin_url=%s&token=%s&account_email=%s";
             } else {
                 linkUrlTemplate = "%s?origin_url=%s&token=%s&account_email=%s";
             }
-            final String linkUrl = String
-                    .format(linkUrlTemplate, pEvent.getRequestLink(), pEvent.getOriginUrl(), token, account.getEmail());
+            final String linkUrl = String.format(linkUrlTemplate, pEvent.getRequestLink(), pEvent.getOriginUrl(), token,
+                                                 account.getEmail());
             email.setText("Please click on the following link to set a new password for your account: " + linkUrl);
         }
 

@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.microservices.administration;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -101,8 +100,8 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
                 ResourceAccessAdapter.createResourceAccess(resourcesAccess.getDescription(), null),
                 resourcesAccess.getResource(), resourcesAccess.getControllerSimpleName(),
                 RequestMethod.valueOf(resourcesAccess.getVerb().toString()));
-        mapping.setAutorizedRoles(
-                roles.stream().map(role -> new RoleAuthority(role.getName())).collect(Collectors.toList()));
+        mapping.setAutorizedRoles(roles.stream().map(role -> new RoleAuthority(role.getName()))
+                .collect(Collectors.toList()));
         return mapping;
     }
 

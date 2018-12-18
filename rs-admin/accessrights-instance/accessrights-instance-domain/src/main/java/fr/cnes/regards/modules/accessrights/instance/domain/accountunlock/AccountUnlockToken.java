@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.domain.accountunlock;
 
+import java.time.LocalDateTime;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
@@ -29,7 +31,6 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.Valid;
-import java.time.LocalDateTime;
 
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
@@ -40,7 +41,6 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
  *
- * @see <a>http://www.baeldung.com/registration-verify-user-by-email</a>
  */
 @InstanceEntity
 @Entity
@@ -122,7 +122,7 @@ public class AccountUnlockToken {
      *
      * Update token expiracy date from the current date.
      *
-
+    
      */
     public void updateExipracyDate() {
         this.expiryDate = calculateExpiryDate(EXPIRATION);

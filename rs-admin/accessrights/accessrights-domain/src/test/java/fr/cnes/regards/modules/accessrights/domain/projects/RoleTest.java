@@ -218,9 +218,6 @@ public class RoleTest {
         Assert.assertEquals(newParentRole, role.getParentRole());
     }
 
-    /**
-     * Test method for {@link fr.cnes.regards.modules.accessrights.domain.projects.Role#setPermissions(java.util.List)}.
-     */
     @Test
     public void testSetPermissions() {
         final Set<ResourcesAccess> newPermissions = new HashSet<>();

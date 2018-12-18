@@ -35,8 +35,6 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-
-
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.annotation.InstanceEntity;
@@ -140,10 +138,6 @@ public class Account implements IIdentifiable<Long> {
         return id;
     }
 
-    /**
-     * @param pId
-     *            the id to set
-     */
     public void setId(final Long id) {
         this.id = id;
     }
@@ -155,10 +149,6 @@ public class Account implements IIdentifiable<Long> {
         return email;
     }
 
-    /**
-     * @param pEmail
-     *            the email to set
-     */
     public void setEmail(final String email) {
         this.email = email;
     }
@@ -275,7 +265,7 @@ public class Account implements IIdentifiable<Long> {
         if (this == o) {
             return true;
         }
-        if ((o == null) || (getClass() != o.getClass())) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
 

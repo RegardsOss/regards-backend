@@ -39,7 +39,6 @@ public class SendAccountRefusedEmailListenerTest {
      * Test method for {@link SendAccountRefusedEmailListener#onApplicationEvent(OnRefuseAccountEvent)}.
      * @throws EntityNotFoundException
      */
-    @SuppressWarnings("unchecked")
     @Test
     public final void testOnApplicationEvent_templateNotFound() throws EntityNotFoundException {
         Account account = new Account("email@test.com", "firstname", "lastname", "password");
@@ -60,7 +59,6 @@ public class SendAccountRefusedEmailListenerTest {
      * Test method for {@link SendAccountRefusedEmailListener#onApplicationEvent(OnRefuseAccountEvent)}.
      * @throws EntityNotFoundException
      */
-    @SuppressWarnings("unchecked")
     @Test
     public final void testOnApplicationEvent() throws EntityNotFoundException {
         Account account = new Account("email@test.com", "firstname", "lastname", "password");

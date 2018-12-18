@@ -325,7 +325,7 @@ public class AccountsController implements IResourceController<Account> {
     /**
      * Change the password of an {@link Account}.
      * @param accountEmail The {@link Account}'s <code>email</code>
-     * @param pDto The DTO containing : 1) the token 2) the new password
+     * @param changePasswordDto The DTO containing : 1) the token 2) the new password
      * @return void
      * @throws EntityException <br>
      *                         {@link EntityOperationForbiddenException} when the token is invalid<br>
@@ -492,7 +492,7 @@ public class AccountsController implements IResourceController<Account> {
     @Override
     public Resource<Account> toResource(Account element, final Object... extras) {
         Resource<Account> resource = null;
-        if ((element != null) && (element.getId() != null)) {
+        if (element != null && element.getId() != null) {
             resource = resourceService.toResource(element);
             // Self retrieve link
             resourceService.addLink(resource, this.getClass(), "retrieveAccount", LinkRels.SELF,
@@ -588,6 +588,7 @@ public class AccountsController implements IResourceController<Account> {
         /**
          * @return the rules
          */
+        @SuppressWarnings("unused")
         public String getRules() {
             return rules;
         }
@@ -595,6 +596,7 @@ public class AccountsController implements IResourceController<Account> {
         /**
          * Set the rules
          */
+        @SuppressWarnings("unused")
         public void setRules(String rules) {
             this.rules = rules;
         }

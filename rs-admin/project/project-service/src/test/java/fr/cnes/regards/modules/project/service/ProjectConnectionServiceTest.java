@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.project.service;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
@@ -148,13 +146,11 @@ public class ProjectConnectionServiceTest extends AbstractRegardsServiceIT {
         project2.setLabel("Project1");
         project2 = projectRepo.save(project2);
 
-        projectCtx = new ProjectConnection(project1, MS_TEST_1, COMMON_PROJECT_USER_NAME,
-                                                             COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER,
-                                                             PROJECT1_URL);
+        projectCtx = new ProjectConnection(project1, MS_TEST_1, COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD,
+                COMMON_PROJECT_DRIVER, PROJECT1_URL);
         projectCtx = projectConnectionRepo.save(projectCtx);
-        projectConnectionRepo
-                .save(new ProjectConnection(project2, MS_TEST_2, COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD,
-                                            COMMON_PROJECT_DRIVER, PROJECT2_URL));
+        projectConnectionRepo.save(new ProjectConnection(project2, MS_TEST_2, COMMON_PROJECT_USER_NAME,
+                COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT2_URL));
     }
 
     /**
@@ -170,8 +166,7 @@ public class ProjectConnectionServiceTest extends AbstractRegardsServiceIT {
 
         // Test database parameter conflict detection : project 1 connection = project 2 connection
         ProjectConnection connection = new ProjectConnection(600L, project1, "microservice-test",
-                                                             COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD,
-                                                             COMMON_PROJECT_DRIVER, PROJECT2_URL);
+                COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT2_URL);
         try {
             projectConnectionService.createProjectConnection(connection, true);
             Assert.fail("Conflicting connection should not be created");
@@ -253,9 +248,9 @@ public class ProjectConnectionServiceTest extends AbstractRegardsServiceIT {
         }
 
         // Updating with an non existing project
-        connection = new ProjectConnection(0L, new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true,
-                                                           PROJECT_TEST_3), MS_TEST_1, COMMON_PROJECT_USER_NAME,
-                                           COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT1_URL);
+        connection = new ProjectConnection(0L,
+                new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_3), MS_TEST_1,
+                COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT1_URL);
         try {
             connection = projectConnectionService.updateProjectConnection(0L, connection);
             Assert.fail(errorUpdate);
@@ -265,9 +260,9 @@ public class ProjectConnectionServiceTest extends AbstractRegardsServiceIT {
 
         // Updating a non existing projectConnection
         final long id = 56L;
-        connection = new ProjectConnection(id, new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true,
-                                                           PROJECT_TEST_3), MS_TEST_1, COMMON_PROJECT_USER_NAME,
-                                           COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT1_URL);
+        connection = new ProjectConnection(id,
+                new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_3), MS_TEST_1,
+                COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT1_URL);
         try {
             connection = projectConnectionService.updateProjectConnection(id, connection);
             Assert.fail(errorUpdate);

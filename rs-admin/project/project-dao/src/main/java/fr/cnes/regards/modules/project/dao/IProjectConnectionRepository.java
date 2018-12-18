@@ -80,7 +80,7 @@ public interface IProjectConnectionRepository extends JpaRepository<ProjectConne
      * Custom query auto-implemented by JPA thanks to the method naming convention.
      *
      * @param projectName
-     *            The {@link ProjectConnection}'s {@link Projects}'s <code>name</code>
+     *            the project name
      * @return A {@link Page} of found {@link ProjectConnection}s
      */
     Page<ProjectConnection> findByProjectName(String projectName, Pageable pageable);

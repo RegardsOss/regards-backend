@@ -90,10 +90,6 @@ public class ProjectUserTest {
         Assert.assertNull(testUser.getEmail());
     }
 
-    /**
-     * Test method for
-     * {@link ProjectUser#createProjectUser(Long, OffsetDateTime, OffsetDateTime, UserStatus, List, Role, List, String)}.
-     */
     @Test
     public void testProjectUserWithParams() {
         final ProjectUser testUser = new ProjectUser(email, role, permissions, metaData);

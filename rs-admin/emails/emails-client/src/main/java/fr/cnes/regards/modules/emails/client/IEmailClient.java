@@ -64,8 +64,6 @@ public interface IEmailClient {
 
     /**
      * Define the endpoint for re-sending an email
-     * @param pId The email id
-     * @return void
      */
     @RequestMapping(value = "/{mail_id}", method = RequestMethod.PUT)
     void resendEmail(Long pId);

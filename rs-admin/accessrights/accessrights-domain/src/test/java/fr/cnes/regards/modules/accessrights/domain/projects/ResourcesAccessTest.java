@@ -100,7 +100,7 @@ public class ResourcesAccessTest {
     }
 
     /**
-     * Test method for {@link ResourcesAccess#ResourcesAccess(Long, String, String, String, HttpVerb)}.
+     * Test ResourcesAccess constructor
      */
     @Test
     public void testResourcesAccessWithEverything() {
@@ -115,7 +115,7 @@ public class ResourcesAccessTest {
     }
 
     /**
-     * Test method for {@link ResourcesAccess#ResourcesAccess(String, String, String, HttpVerb)}.
+     * Test ResourcesAccess constructor
      */
     @Test
     public void testResourcesAccessWithoutID() {
@@ -213,9 +213,6 @@ public class ResourcesAccessTest {
         Assert.assertEquals(verb, resourcesAccess.getVerb());
     }
 
-    /**
-     * Test method for {@link ResourcesAccess#setVerb(fr.cnes.regards.modules.accessrights.domain.HttpVerb)}.
-     */
     @Test
     public void testSetVerb() {
         final RequestMethod newVerb = RequestMethod.DELETE;

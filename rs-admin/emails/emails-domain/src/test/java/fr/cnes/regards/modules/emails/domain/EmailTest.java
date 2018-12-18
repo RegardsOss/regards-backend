@@ -245,7 +245,7 @@ public class EmailTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.emails.domain.Email#setSentDate(java.time.LocalDateTime))}.
+     * Test method for {@link fr.cnes.regards.modules.emails.domain.Email#setSentDate(LocalDateTime)}
      */
     @Test
     public void testSetSentDate() {

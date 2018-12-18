@@ -23,19 +23,15 @@ import java.util.ArrayList;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IAccessSettingsRepository;
@@ -185,12 +181,11 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check that the system allows the user to request a registration.")
     public void requestAccess() {
         final AccessRequestDto newAccessRequest = new AccessRequestDto(EMAIL, FIRST_NAME, LAST_NAME, null,
-                                                                       new ArrayList<>(), PASSWORD, ORIGIN_URL,
-                                                                       REQUEST_LINK);
+                new ArrayList<>(), PASSWORD, ORIGIN_URL, REQUEST_LINK);
 
         //lets mock the feign clients
         Account account = new Account(newAccessRequest.getEmail(), newAccessRequest.getFirstName(),
-                                      newAccessRequest.getLastName(), newAccessRequest.getPassword());
+                newAccessRequest.getLastName(), newAccessRequest.getPassword());
         AccountSettings accountSettings = new AccountSettings();
 
         Mockito.when(accountsClient.retrieveAccounByEmail(newAccessRequest.getEmail()))
@@ -333,14 +328,14 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
 
         //lets mock the feign clients
         Account account = new Account(projectUser.getEmail(), "projectUser.getFirstName()", "projectUser.getLastName()",
-                                      "projectUser.getPassword()");
+                "projectUser.getPassword()");
 
         Mockito.when(accountsClient.retrieveAccounByEmail(projectUser.getEmail()))
                 .thenReturn(new ResponseEntity<>(new Resource<>(account), HttpStatus.OK));
 
         // Endpoint
-        String endpoint =
-                RegistrationController.REQUEST_MAPPING_ROOT + RegistrationController.ACTIVE_ACCESS_RELATIVE_PATH;
+        String endpoint = RegistrationController.REQUEST_MAPPING_ROOT
+                + RegistrationController.ACTIVE_ACCESS_RELATIVE_PATH;
 
         performDefaultPut(endpoint, null, customizer().expectStatusOk(), errorMessage, projectUser.getId());
     }
@@ -360,8 +355,8 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
         projectUserRepository.save(projectUser);
 
         // Endpoint
-        String endpoint =
-                RegistrationController.REQUEST_MAPPING_ROOT + RegistrationController.INACTIVE_ACCESS_RELATIVE_PATH;
+        String endpoint = RegistrationController.REQUEST_MAPPING_ROOT
+                + RegistrationController.INACTIVE_ACCESS_RELATIVE_PATH;
 
         performDefaultPut(endpoint, null, customizer().expectStatusOk(), errorMessage, projectUser.getId());
     }

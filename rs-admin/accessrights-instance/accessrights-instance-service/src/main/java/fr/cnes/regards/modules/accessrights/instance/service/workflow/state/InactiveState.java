@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
@@ -60,11 +59,7 @@ public class InactiveState extends AbstractDeletableState {
             ITenantService tenantService, IRuntimeTenantResolver runtimeTenantResolver,
             IPasswordResetService passwordResetService, IAccountUnlockTokenService accountUnlockTokenService,
             @Value("${regards.accounts.validity.duration}") Long accountValidityDuration) {
-        super(projectUsersClient,
-              accountRepository,
-              tenantService,
-              runtimeTenantResolver,
-              passwordResetService,
+        super(projectUsersClient, accountRepository, tenantService, runtimeTenantResolver, passwordResetService,
               accountUnlockTokenService);
         this.accountValidityDuration = accountValidityDuration;
     }

@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.notification.domain.Notification;
 
 /**
- * Implementation of the {@link INotificationSendingStrategy}.<br>
+ * Implementation of the {@link ISendingStrategy}.<br>
  * Sends the notifications as emails.
  *
  * @author Xavier-Alexandre Brochard

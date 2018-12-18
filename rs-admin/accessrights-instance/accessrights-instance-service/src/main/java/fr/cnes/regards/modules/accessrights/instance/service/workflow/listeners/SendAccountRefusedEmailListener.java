@@ -49,11 +49,6 @@ public class SendAccountRefusedEmailListener implements ApplicationListener<OnRe
     private static final Logger LOG = LoggerFactory.getLogger(SendAccountRefusedEmailListener.class);
 
     /**
-     * The email template for refused account
-     */
-    private static final String ACCOUNT_REFUSED_TEMPLATE = "accountRefusedTemplate";
-
-    /**
      * Service handling CRUD operations on email templates
      */
     private final ITemplateService templateService;
@@ -97,7 +92,8 @@ public class SendAccountRefusedEmailListener implements ApplicationListener<OnRe
 
         SimpleMailMessage email;
         try {
-            email = templateService.writeToEmail(TemplateServiceConfiguration.ACCOUNT_REFUSED_TEMPLATE_CODE, data, recipients);
+            email = templateService.writeToEmail(TemplateServiceConfiguration.ACCOUNT_REFUSED_TEMPLATE_CODE, data,
+                                                 recipients);
         } catch (final EntityNotFoundException e) {
             LOG.error("Could not find the template to generate the email notifying the account refusal. Falling back to default.",
                       e);

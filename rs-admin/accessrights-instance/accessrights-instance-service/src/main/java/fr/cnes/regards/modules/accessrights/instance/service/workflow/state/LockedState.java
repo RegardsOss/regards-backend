@@ -62,11 +62,6 @@ public class LockedState extends AbstractDeletableState {
     private static final Logger LOG = LoggerFactory.getLogger(LockedState.class);
 
     /**
-     * The account unlock email template code
-     */
-    private static final String ACCOUNT_UNLOCK_RESET_TEMPLATE = "accountUnlockTemplate";
-
-    /**
      * CRUD service handling {@link Account}s. Autowired by Spring.
      */
     private final IAccountService accountService;
@@ -94,11 +89,10 @@ public class LockedState extends AbstractDeletableState {
      */
     public LockedState(IProjectUsersClient projectUsersClient, IAccountRepository accountRepository,
             ITenantService tenantService, IRuntimeTenantResolver runtimeTenantResolver,
-            IPasswordResetService passwordResetService,
-            IAccountUnlockTokenService accountUnlockTokenService, IAccountService accountService,
-            ITemplateService templateService, IEmailClient emailClient) {
-        super(projectUsersClient, accountRepository, tenantService, runtimeTenantResolver,
-              passwordResetService, accountUnlockTokenService);
+            IPasswordResetService passwordResetService, IAccountUnlockTokenService accountUnlockTokenService,
+            IAccountService accountService, ITemplateService templateService, IEmailClient emailClient) {
+        super(projectUsersClient, accountRepository, tenantService, runtimeTenantResolver, passwordResetService,
+              accountUnlockTokenService);
         this.accountService = accountService;
         this.templateService = templateService;
         this.emailClient = emailClient;
@@ -122,7 +116,8 @@ public class LockedState extends AbstractDeletableState {
 
         SimpleMailMessage email;
         try {
-            email = templateService.writeToEmail(TemplateServiceConfiguration.ACCOUNT_UNLOCK_TEMPLATE_CODE, data, recipients);
+            email = templateService.writeToEmail(TemplateServiceConfiguration.ACCOUNT_UNLOCK_TEMPLATE_CODE, data,
+                                                 recipients);
         } catch (final EntityNotFoundException e) {
             LOG.warn("Could not find the template to generate a unlock account email. Falling back to default.", e);
             email = new SimpleMailMessage();

@@ -21,8 +21,6 @@ package fr.cnes.regards.modules.accessrights.rest;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
@@ -33,7 +31,6 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
@@ -134,8 +131,10 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
         Assert.assertNotNull("Cannot find an ADMIN resources", resourceToRemove);
 
         // Delete resource with PROJECT ADMIN
-        String projectAdminJwt = manageSecurity(getDefaultTenant(), RoleResourceController.TYPE_MAPPING
-                                                        + RoleResourceController.SINGLE_RESOURCE_MAPPING, RequestMethod.DELETE, getDefaultUserEmail(),
+        String projectAdminJwt = manageSecurity(getDefaultTenant(),
+                                                RoleResourceController.TYPE_MAPPING
+                                                        + RoleResourceController.SINGLE_RESOURCE_MAPPING,
+                                                RequestMethod.DELETE, getDefaultUserEmail(),
                                                 DefaultRole.PROJECT_ADMIN.name());
         performDelete(RoleResourceController.TYPE_MAPPING + RoleResourceController.SINGLE_RESOURCE_MAPPING,
                       projectAdminJwt, customizer().expect(MockMvcResultMatchers.status().is(expectedStatus.value())),
@@ -175,8 +174,10 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
         Assert.assertNotNull("Cannot find an ADMIN resources", resourceToRemove);
 
         // Delete resource with PROJECT ADMIN
-        String projectAdminJwt = manageSecurity(getDefaultTenant(), RoleResourceController.TYPE_MAPPING
-                                                        + RoleResourceController.SINGLE_RESOURCE_MAPPING, RequestMethod.DELETE, getDefaultUserEmail(),
+        String projectAdminJwt = manageSecurity(getDefaultTenant(),
+                                                RoleResourceController.TYPE_MAPPING
+                                                        + RoleResourceController.SINGLE_RESOURCE_MAPPING,
+                                                RequestMethod.DELETE, getDefaultUserEmail(),
                                                 DefaultRole.PROJECT_ADMIN.name());
         performDelete(RoleResourceController.TYPE_MAPPING + RoleResourceController.SINGLE_RESOURCE_MAPPING,
                       projectAdminJwt, customizer().expectStatusNoContent(),
@@ -204,7 +205,7 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
 
         // Create a new resource
         ResourcesAccess resource = new ResourcesAccess(null, "microservice", "/to/delete", "delController",
-                                                       RequestMethod.GET, DefaultRole.ADMIN);
+                RequestMethod.GET, DefaultRole.ADMIN);
         resourcesAccessRepository.save(resource);
 
         // Add to admin group
@@ -213,8 +214,10 @@ public class RoleResourceControllerIT extends AbstractRegardsTransactionalIT {
         roleRepository.save(adminRole);
 
         // Delete resource with PROJECT ADMIN
-        String projectAdminJwt = manageSecurity(getDefaultTenant(), RoleResourceController.TYPE_MAPPING
-                                                        + RoleResourceController.SINGLE_RESOURCE_MAPPING, RequestMethod.DELETE, getDefaultUserEmail(),
+        String projectAdminJwt = manageSecurity(getDefaultTenant(),
+                                                RoleResourceController.TYPE_MAPPING
+                                                        + RoleResourceController.SINGLE_RESOURCE_MAPPING,
+                                                RequestMethod.DELETE, getDefaultUserEmail(),
                                                 DefaultRole.PROJECT_ADMIN.name());
         performDelete(RoleResourceController.TYPE_MAPPING + RoleResourceController.SINGLE_RESOURCE_MAPPING,
                       projectAdminJwt, customizer().expectStatusNoContent(),

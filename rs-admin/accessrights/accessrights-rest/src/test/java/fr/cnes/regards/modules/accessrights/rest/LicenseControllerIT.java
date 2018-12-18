@@ -20,13 +20,11 @@ package fr.cnes.regards.modules.accessrights.rest;
 
 import org.junit.Test;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 
 /**
@@ -41,8 +39,8 @@ public class LicenseControllerIT extends AbstractRegardsTransactionalIT {
     @Purpose("Check license agreement can be reset by an ADMIN")
     public void resetLicense() {
 
-        String customToken = jwtService
-                .generateToken(getDefaultTenant(), getDefaultUserEmail(), DefaultRole.ADMIN.toString());
+        String customToken = jwtService.generateToken(getDefaultTenant(), getDefaultUserEmail(),
+                                                      DefaultRole.ADMIN.toString());
         authService.setAuthorities(getDefaultTenant(), LicenseController.PATH_LICENSE + LicenseController.PATH_RESET,
                                    "osef", RequestMethod.PUT, DefaultRole.ADMIN.toString());
 

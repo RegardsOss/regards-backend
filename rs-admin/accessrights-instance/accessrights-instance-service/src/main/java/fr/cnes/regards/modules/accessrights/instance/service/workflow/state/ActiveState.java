@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.accessrights.instance.service.workflow.state;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
@@ -51,13 +50,9 @@ public class ActiveState extends AbstractDeletableState {
      */
     public ActiveState(IProjectUsersClient projectUsersClient, IAccountRepository accountRepository,
             ITenantService tenantService, IRuntimeTenantResolver runtimeTenantResolver,
-            IPasswordResetService passwordResetService,
-            IAccountUnlockTokenService accountUnlockTokenService) {
-        super(projectUsersClient,
-              accountRepository,
-              tenantService,
-              runtimeTenantResolver,
-              passwordResetService, accountUnlockTokenService);
+            IPasswordResetService passwordResetService, IAccountUnlockTokenService accountUnlockTokenService) {
+        super(projectUsersClient, accountRepository, tenantService, runtimeTenantResolver, passwordResetService,
+              accountUnlockTokenService);
     }
 
     @Override
