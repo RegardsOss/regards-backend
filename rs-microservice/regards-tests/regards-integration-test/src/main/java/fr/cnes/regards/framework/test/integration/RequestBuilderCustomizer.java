@@ -1,10 +1,5 @@
 package fr.cnes.regards.framework.test.integration;
 
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.removeHeaders;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,6 +20,8 @@ import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.operation.preprocess.OperationRequestPreprocessor;
 import org.springframework.restdocs.operation.preprocess.OperationResponsePreprocessor;
+import org.springframework.restdocs.request.ParameterDescriptor;
+import org.springframework.restdocs.request.RequestDocumentation;
 import org.springframework.restdocs.snippet.Snippet;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -35,8 +32,11 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
 import fr.cnes.regards.framework.security.utils.HttpConstants;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.removeHeaders;
 
 /**
  * Allow to customize the request done thanks to {@link MockMvc}.
@@ -44,16 +44,6 @@ import fr.cnes.regards.framework.security.utils.HttpConstants;
  * @author Sylvain VISSIERE-GUERINET
  */
 public class RequestBuilderCustomizer {
-
-    /**
-     * Class logger
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(RequestBuilderCustomizer.class);
-
-    /**
-     * Default request headers
-     */
-    private static final HttpHeaders DEFAULT_HEADERS = new HttpHeaders();
 
     /**
      * Documentation snippet constraint fields
@@ -69,6 +59,22 @@ public class RequestBuilderCustomizer {
      * Documentation snippet fields doc title
      */
     public static final String PARAM_TITLE = "title";
+
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(RequestBuilderCustomizer.class);
+
+    /**
+     * Default request headers
+     */
+    private static final HttpHeaders DEFAULT_HEADERS = new HttpHeaders();
+
+    static {
+        // lets initiate the default headers!
+        DEFAULT_HEADERS.add(HttpConstants.CONTENT_TYPE, "application/json");
+        DEFAULT_HEADERS.add(HttpConstants.ACCEPT, "application/json");
+    }
 
     /**
      * Headers
@@ -91,20 +97,14 @@ public class RequestBuilderCustomizer {
     private final List<ResultMatcher> expectations = Lists.newArrayList();
 
     /**
-     * Should the doc be skip
-     */
-    private boolean skipDocumentation = false;
-
-    /**
      * Gson builder
      */
     private final GsonBuilder gsonBuilder;
 
-    static {
-        // lets initiate the default headers!
-        DEFAULT_HEADERS.add(HttpConstants.CONTENT_TYPE, "application/json");
-        DEFAULT_HEADERS.add(HttpConstants.ACCEPT, "application/json");
-    }
+    /**
+     * Should the doc be skip
+     */
+    private boolean skipDocumentation = false;
 
     /**
      * Constructor setting the parameter as attribute
@@ -134,7 +134,8 @@ public class RequestBuilderCustomizer {
      */
     protected ResultActions performDelete(MockMvc mvc, String urlTemplate, String authToken, String errorMsg,
             Object... urlVariables) {
-        return performRequest(mvc, getRequestBuilder(authToken, HttpMethod.DELETE, urlTemplate, urlVariables),
+        return performRequest(mvc,
+                              getRequestBuilder(authToken, HttpMethod.DELETE, urlTemplate, urlVariables),
                               errorMsg);
     }
 
@@ -143,7 +144,8 @@ public class RequestBuilderCustomizer {
      */
     protected ResultActions performPost(MockMvc mvc, String urlTemplate, String authToken, Object content,
             String errorMsg, Object... urlVariables) {
-        return performRequest(mvc, getRequestBuilder(authToken, HttpMethod.POST, content, urlTemplate, urlVariables),
+        return performRequest(mvc,
+                              getRequestBuilder(authToken, HttpMethod.POST, content, urlTemplate, urlVariables),
                               errorMsg);
     }
 
@@ -152,7 +154,8 @@ public class RequestBuilderCustomizer {
      */
     protected ResultActions performPut(MockMvc mvc, String urlTemplate, String authToken, Object content,
             String errorMsg, Object... urlVariables) {
-        return performRequest(mvc, getRequestBuilder(authToken, HttpMethod.PUT, content, urlTemplate, urlVariables),
+        return performRequest(mvc,
+                              getRequestBuilder(authToken, HttpMethod.PUT, content, urlTemplate, urlVariables),
                               errorMsg);
     }
 
@@ -169,7 +172,8 @@ public class RequestBuilderCustomizer {
      */
     protected ResultActions performFileUpload(MockMvc mvc, String urlTemplate, String authToken, Path filePath,
             String errorMsg, Object... urlVariables) {
-        return performRequest(mvc, getMultipartRequestBuilder(authToken, filePath, urlTemplate, urlVariables),
+        return performRequest(mvc,
+                              getMultipartRequestBuilder(authToken, filePath, urlTemplate, urlVariables),
                               errorMsg);
     }
 
@@ -192,8 +196,8 @@ public class RequestBuilderCustomizer {
     protected MockHttpServletRequestBuilder getRequestBuilder(String authToken, HttpMethod httpMethod,
             String urlTemplate, Object... urlVars) {
         checkCustomizationCoherence(httpMethod);
-        MockHttpServletRequestBuilder requestBuilder = RestDocumentationRequestBuilders.request(httpMethod, urlTemplate,
-                                                                                                urlVars);
+        MockHttpServletRequestBuilder requestBuilder = RestDocumentationRequestBuilders
+                .request(httpMethod, urlTemplate, urlVars);
         addSecurityHeader(requestBuilder, authToken);
 
         requestBuilder.headers(getHeaders());
@@ -425,9 +429,33 @@ public class RequestBuilderCustomizer {
      * Path parameters cna be documented thanks to {@link org.springframework.restdocs.request.PathParametersSnippet}
      * <br/>
      * @param snippet documentation snippet to be added.
+     *
+     * @deprecated use {@link #document(Snippet)} instead
      */
+    @Deprecated
     public RequestBuilderCustomizer addDocumentationSnippet(Snippet snippet) {
         docSnippets.add(snippet);
+        return this;
+    }
+
+    /**
+     * Add snippets to be used to generate specific documentation.
+     * To document request parameters you better use {@link #documentRequestParameters(ParameterDescriptor...)} <br/>
+     * To document path parameters you better use {@link #documentPathParameters(ParameterDescriptor...)} <br/>
+     * @param snippet documentation snippet to be added.
+     */
+    public RequestBuilderCustomizer document(Snippet snippet) {
+        docSnippets.add(snippet);
+        return this;
+    }
+
+    public RequestBuilderCustomizer documentRequestParameters(ParameterDescriptor... descriptors) {
+        docSnippets.add(RequestDocumentation.requestParameters(descriptors));
+        return this;
+    }
+
+    public RequestBuilderCustomizer documentPathParameters(ParameterDescriptor... descriptors) {
+        docSnippets.add(RequestDocumentation.pathParameters(descriptors));
         return this;
     }
 
@@ -445,12 +473,15 @@ public class RequestBuilderCustomizer {
             }
             if (!skipDocumentation) {
                 OperationRequestPreprocessor reqPreprocessor = preprocessRequest(prettyPrint(),
-                                                                                 removeHeaders("Authorization", "Host",
+                                                                                 removeHeaders("Authorization",
+                                                                                               "Host",
                                                                                                "Content-Length"));
                 OperationResponsePreprocessor respPreprocessor = preprocessResponse(prettyPrint(),
                                                                                     removeHeaders("Content-Length"));
-                request.andDo(MockMvcRestDocumentation.document("{ClassName}/{methodName}", reqPreprocessor,
-                                                                respPreprocessor, docSnippets.toArray(new Snippet[0])));
+                request.andDo(MockMvcRestDocumentation.document("{ClassName}/{methodName}",
+                                                                reqPreprocessor,
+                                                                respPreprocessor,
+                                                                docSnippets.toArray(new Snippet[0])));
             }
             return request;
         } catch (Exception e) { // NOSONAR
@@ -509,14 +540,13 @@ public class RequestBuilderCustomizer {
      * Check if the request customizer is coherent towards the multiple options used
      */
     protected void checkCustomizationCoherence(HttpMethod httpMethod) {
-        // constraints are only on DELETE, PUT and POST, for now, as they cannot have request parameters
+        // constraints are only on DELETE and PUT, for now, as they cannot have request parameters
         switch (httpMethod) {
             case DELETE:
             case PUT:
-            case POST:
                 if (!requestParamBuilder.getParameters().isEmpty()) {
-                    throw new IllegalStateException(
-                            String.format("Method %s cannot have request parameters", httpMethod));
+                    throw new IllegalStateException(String.format("Method %s cannot have request parameters",
+                                                                  httpMethod));
                 }
                 break;
             default:
