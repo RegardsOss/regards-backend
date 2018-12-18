@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -112,5 +113,10 @@ public class LocalAuthoritiesProviderTest {
                 "Controller", RequestMethod.POST, DefaultRole.ADMIN));
         resourcesAccessRepository.save(new ResourcesAccess(0L, "description", microserviceName, "/resource",
                 "Controller", RequestMethod.DELETE, DefaultRole.ADMIN));
+    }
+
+    @Test
+    public void test() {
+        // Test initialization
     }
 }
