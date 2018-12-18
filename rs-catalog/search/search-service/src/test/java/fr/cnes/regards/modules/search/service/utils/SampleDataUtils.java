@@ -348,7 +348,7 @@ public class SampleDataUtils {
     /**
      * A dummy sort
      */
-    public static final Sort SORT = new Sort("date");
+    public static final Sort SORT = Sort.by("date");
 
     /**
      * A dummy tenant

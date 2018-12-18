@@ -181,7 +181,7 @@ public interface ILegacySearchEngineClient {
      * Search dataobjects on a single dataset<br/>
      *
      * This method uses a {@link String} to handle dataset URN because HATEOAS link builder cannot manage complex type
-     * conversion at the moment. It does not consider custom {@link Converter}.
+     * conversion at the moment. It does not consider custom converter.
      */
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING)
     ResponseEntity<FacettedPagedResources<Resource<EntityFeature>>> searchSingleDataset(

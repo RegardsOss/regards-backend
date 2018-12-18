@@ -39,7 +39,6 @@ import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -144,7 +143,7 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
                 new InputStreamReader(this.getClass().getResourceAsStream("config-rs-catalog.json"), "UTF-8"))) {
             MicroserviceConfiguration microConfig = getConfigGson().fromJson(reader, MicroserviceConfiguration.class);
             for (ModuleConfiguration module : microConfig.getModules()) {
-                for (IModuleManager manager : managers) {
+                for (IModuleManager<?> manager : managers) {
                     if (manager.isApplicable(module)) {
                         manager.importConfigurationAndLog(module);
                     }
@@ -211,11 +210,9 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
     @Test
     public void getOpenSearchDescription() throws XPathExpressionException {
 
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_XML));
-
-        customizer.customizeRequestParam().param("token", "public_token");
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_XML));
+        customizer.addParameter("token", "public_token");
 
         long startTime = System.currentTimeMillis();
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING
@@ -228,8 +225,7 @@ public class DepartmentSearchControllerIT extends AbstractEngineIT {
     @Test
     public void searchDataobjects() {
 
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         long startTime = System.currentTimeMillis();
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);

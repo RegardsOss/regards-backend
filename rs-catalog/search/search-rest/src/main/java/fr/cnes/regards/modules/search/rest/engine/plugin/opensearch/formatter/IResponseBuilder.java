@@ -70,7 +70,7 @@ public interface IResponseBuilder<R> {
 
     /**
      * Build the oupout search results collection.
-     * @return {@link R}Search Output result formatted
+     * @return Search Output result formatted
      */
     R build();
 

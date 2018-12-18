@@ -113,7 +113,7 @@ public class AccessRightController {
             ICriterion criterion = ICriterion.or(urns.stream().map(urn -> ICriterion.eq("ipId", urn.toString()))
                     .toArray(n -> new ICriterion[n]));
             FacetPage<DataObject> page = searchService.search(criterion, Searches.onSingleEntity(EntityType.DATA), null,
-                                                              new PageRequest(0, urns.size()));
+                                                              PageRequest.of(0, urns.size()));
             urnsWithAccess.addAll(page.getContent().parallelStream()
                     .filter(dataObject -> dataObject.getFiles().containsKey(DataType.RAWDATA)).map(DataObject::getIpId)
                     .collect(Collectors.toSet()));

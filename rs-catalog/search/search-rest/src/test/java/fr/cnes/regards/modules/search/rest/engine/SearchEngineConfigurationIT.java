@@ -51,31 +51,30 @@ public class SearchEngineConfigurationIT extends AbstractEngineIT {
 
     @Test
     public void retrieveConfs() {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.customizeRequestParam().param("page", "0");
-        customizer.customizeRequestParam().param("size", "10");
+        RequestBuilderCustomizer customizer = customizer();
+        customizer.expect(MockMvcResultMatchers.status().isOk());
+        customizer.addParameter("page", "0");
+        customizer.addParameter("size", "10");
         // 2 conf initialized in test + 1 conf initialized by default in tenant
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.equalTo(3)));
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.equalTo(3)));
         performDefaultGet(SearchEngineConfigurationController.TYPE_MAPPING, customizer, "Search all error");
     }
 
     @Test
     public void retrieveConfByEngine() {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.customizeRequestParam().param("page", "0");
-        customizer.customizeRequestParam().param("size", "10");
-        customizer.customizeRequestParam().param(SearchEngineConfigurationController.ENGINE_TYPE,
-                                                 LegacySearchEngine.PLUGIN_ID);
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.equalTo(1)));
+        RequestBuilderCustomizer customizer = customizer();
+        customizer.expect(MockMvcResultMatchers.status().isOk());
+        customizer.addParameter("page", "0");
+        customizer.addParameter("size", "10");
+        customizer.addParameter(SearchEngineConfigurationController.ENGINE_TYPE, LegacySearchEngine.PLUGIN_ID);
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.equalTo(1)));
         performDefaultGet(SearchEngineConfigurationController.TYPE_MAPPING, customizer, "Search by engine type error");
     }
 
     @Test
     public void createConf() {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+        RequestBuilderCustomizer customizer = customizer();
+        customizer.expect(MockMvcResultMatchers.status().isCreated());
 
         Set<PluginParameter> parameters = PluginParametersFactory.build().getParameters();
         PluginConfiguration pluginConf = PluginUtils.getPluginConfiguration(parameters, LegacySearchEngine.class);
@@ -88,24 +87,24 @@ public class SearchEngineConfigurationIT extends AbstractEngineIT {
                            "Search by engine type error");
 
         // Try to create same conf. Should be error.
-        customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isUnprocessableEntity());
+        customizer = customizer();
+        customizer.expect(MockMvcResultMatchers.status().isUnprocessableEntity());
         performDefaultPost(SearchEngineConfigurationController.TYPE_MAPPING, conf, customizer,
                            "The service must not allow to create two same conf.");
     }
 
     @Test
     public void updateConf() {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        RequestBuilderCustomizer customizer = customizer();
+        customizer.expect(MockMvcResultMatchers.status().isOk());
         openSearchEngineConf
                 .setDatasetUrn("URN:AIP:" + EntityType.DATASET.toString() + ":PROJECT:" + UUID.randomUUID() + ":V2");
         performDefaultPut(SearchEngineConfigurationController.TYPE_MAPPING
                 + SearchEngineConfigurationController.CONF_ID_PATH, openSearchEngineConf, customizer,
                           "Search by engine type error", openSearchEngineConf.getId());
 
-        customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isUnprocessableEntity());
+        customizer = customizer();
+        customizer.expect(MockMvcResultMatchers.status().isUnprocessableEntity());
         performDefaultPut(SearchEngineConfigurationController.TYPE_MAPPING
                 + SearchEngineConfigurationController.CONF_ID_PATH, openSearchEngineConf, customizer,
                           "Search by engine type error", 0L);
@@ -113,14 +112,14 @@ public class SearchEngineConfigurationIT extends AbstractEngineIT {
 
     @Test
     public void deleteConf() {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        RequestBuilderCustomizer customizer = customizer();
+        customizer.expect(MockMvcResultMatchers.status().isOk());
         performDefaultDelete(SearchEngineConfigurationController.TYPE_MAPPING
                 + SearchEngineConfigurationController.CONF_ID_PATH, customizer, "Search all error",
                              openSearchEngineConf.getId());
 
-        customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isNotFound());
+        customizer = customizer();
+        customizer.expect(MockMvcResultMatchers.status().isNotFound());
         performDefaultGet(SearchEngineConfigurationController.TYPE_MAPPING
                 + SearchEngineConfigurationController.CONF_ID_PATH, customizer, "Conf should deleted",
                           openSearchEngineConf.getId());

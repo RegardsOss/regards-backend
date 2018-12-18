@@ -284,7 +284,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
             try {
                 // Ignore special query parameter (q) or empty values
                 if (!queryParam.getKey().equals(configuration.getQueryParameterName())
-                        && ((queryParam.getValue().size() != 1)
+                        && (queryParam.getValue().size() != 1
                                 || !Strings.isNullOrEmpty(queryParam.getValue().get(0)))) {
                     AttributeModel attributeModel = finder.findByName(queryParam.getKey());
                     // Search configuration if any
@@ -364,7 +364,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         List<String> startPage = context.getQueryParams().get(DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE_NAME);
 
         int size = context.getPageable().getPageSize();
-        if ((count != null) && (count.size() == 1)) {
+        if (count != null && count.size() == 1) {
             try {
                 size = Integer.valueOf(count.get(0));
             } catch (NumberFormatException e) {
@@ -373,7 +373,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         }
 
         int start = context.getPageable().getPageNumber();
-        if ((startPage != null) && (startPage.size() == 1)) {
+        if (startPage != null && startPage.size() == 1) {
             try {
                 start = Integer.valueOf(startPage.get(0));
                 // Handle page starts at 1 but 0 for spring Pageable
@@ -385,7 +385,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
             }
         }
 
-        return new PageRequest(start, size);
+        return PageRequest.of(start, size);
     }
 
     @Override

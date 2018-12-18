@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,6 +39,8 @@ import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.security.annotation.ResourceAccess;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.dam.domain.entities.StaticProperties;
 import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.indexer.dao.FacetPage;
@@ -96,7 +96,8 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
      * @throws ModuleException
      */
     @RequestMapping(method = RequestMethod.POST, value = ComplexSearchController.SUMMARY_MAPPING)
-    @ResourceAccess(description = "Provide a summary for a given dataset from user current basket", role = DefaultRole.REGISTERED_USER)
+    @ResourceAccess(description = "Provide a summary for a given dataset from user current basket",
+            role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<DocFilesSummary> computeDatasetsSummary(
             @RequestBody ComplexSearchRequest complexSearchRequest) throws ModuleException {
         List<ICriterion> searchCriterions = Lists.newArrayList();
@@ -105,7 +106,7 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
         }
 
         List<DataType> dataTypes = complexSearchRequest.getDataTypes();
-        if ((dataTypes == null) || dataTypes.isEmpty()) {
+        if (dataTypes == null || dataTypes.isEmpty()) {
             dataTypes = Lists.newArrayList();
             for (DataType type : DataType.values()) {
                 dataTypes.add(type);
@@ -133,7 +134,7 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
         }
         FacetPage<EntityFeature> facetPage = searchService
                 .search(ICriterion.or(searchCriterions), SearchType.DATAOBJECTS, null,
-                        new PageRequest(complexSearchRequest.getPage(), complexSearchRequest.getSize()));
+                        PageRequest.of(complexSearchRequest.getPage(), complexSearchRequest.getSize()));
         return new ResponseEntity<>(toPagedResources(facetPage, assembler), HttpStatus.OK);
     }
 
@@ -152,7 +153,7 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
         // Open search request
         SearchContext context = SearchContext.build(SearchType.DATAOBJECTS, searchRequest.getEngineType(),
                                                     SearchEngineMappings.getJsonHeaders(),
-                                                    searchRequest.getSearchParameters(), new PageRequest(0, 1));
+                                                    searchRequest.getSearchParameters(), PageRequest.of(0, 1));
         if (searchRequest.getDatasetUrn() != null) {
             context = context.withDatasetUrn(UniformResourceName.fromString(searchRequest.getDatasetUrn()));
         }
@@ -165,7 +166,7 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
         }
 
         // Include ids criterion
-        if ((searchRequest.getEntityIdsToInclude() != null) && !searchRequest.getEntityIdsToInclude().isEmpty()) {
+        if (searchRequest.getEntityIdsToInclude() != null && !searchRequest.getEntityIdsToInclude().isEmpty()) {
             ICriterion idsCrit = null;
             for (String ipId : searchRequest.getEntityIdsToInclude()) {
                 if (idsCrit == null) {
@@ -180,7 +181,7 @@ public class ComplexSearchController implements IResourceController<EntityFeatur
         }
 
         // Exclude ids criterion
-        if ((searchRequest.getEntityIdsToExclude() != null) && !searchRequest.getEntityIdsToExclude().isEmpty()) {
+        if (searchRequest.getEntityIdsToExclude() != null && !searchRequest.getEntityIdsToExclude().isEmpty()) {
             for (String ipId : searchRequest.getEntityIdsToExclude()) {
                 reqCrit = ICriterion.and(reqCrit, ICriterion.not(ICriterion.eq(StaticProperties.IP_ID, ipId)));
             }

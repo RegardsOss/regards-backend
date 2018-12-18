@@ -93,9 +93,8 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
     }
 
     private ResultActions searchDataobjects() {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(9)));
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(9)));
         return performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                                  customizer, "Search all error", ENGINE_TYPE);
     }
@@ -134,11 +133,10 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
 
     @Test
     public void searchFullTextDataobjects() {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(1)));
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(1)));
         // Add full text search
-        customizer.customizeRequestParam().param("q", MERCURY);
+        customizer.addParameter("q", MERCURY);
 
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
@@ -146,12 +144,11 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
 
     @Test
     public void searchFullTextDataobjects2() {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(2)));
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(2)));
         // Add full text search
         String value = MERCURY + " OR " + PLANET + ":" + JUPITER;
-        customizer.customizeRequestParam().param("q", value);
+        customizer.addParameter("q", value);
 
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
@@ -159,13 +156,12 @@ public class DOSearchEngineControllerIT extends AbstractEngineIT {
 
     @Test(expected = AssertionError.class)
     public void searchFullTextDataobjects3() {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(2)));
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.content.length()", Matchers.equalTo(2)));
         // Add full text search
         String value = MERCURY + " " + JUPITER;
         //        String value = MERCURY + " OR " + JUPITER;
-        customizer.customizeRequestParam().param("q", value);
+        customizer.addParameter("q", value);
 
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);

@@ -66,7 +66,6 @@ public interface IOpenSearchExtension {
      * @param paramConfigurations {@link ParameterConfiguration} opensearch parameters configurations.
      * @param entry {@link Entry} ATOM feed entry in which add the extension format
      * @param gson {@link Gson} tool to serialize objects.
-     * @return {@link Module} from rome library
      */
     void formatAtomResponseEntry(EntityFeature entity, List<ParameterConfiguration> paramConfigurations, Entry entry,
             Gson gson, String token);
