@@ -89,7 +89,7 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
                                                    "State of the AIP",
                                                    "Available values: " + Arrays.stream(AIPState.values())
                                                            .map(Enum::name).collect(Collectors.joining(", ")))
-                                .optional());
+                                .optional().type(String.class.getSimpleName()));
 
         descriptors.add(constrainedFields.withPath("session",
                                                    "session",
@@ -362,10 +362,10 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         AIPQueryFilters requestParam = new AIPQueryFilters();
         RequestBuilderCustomizer customizer = customizer().expect(MockMvcResultMatchers.status().isNoContent())
                 .document(PayloadDocumentation.requestFields(documentQueryFilters()));
-        performDefaultPost(AIPController.AIP_PATH + AIPController.FILES_DELETE_PATH,
+        performDefaultPost(AIPController.AIP_PATH + AIPController.DELETE_SEARCH_PATH,
                            requestParam,
                            customizer,
-                           "There should be any error on REST call as return value is" + " not conditional.");
+                           "There should be any error on REST call as return value is not conditional.");
     }
 
     @Test
@@ -511,7 +511,7 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
                 .addParameter("from", OffsetDateTime.now().minusDays(40).toString())
                 .addParameter("to", OffsetDateTime.now().toString()).addParameter("state", AIPState.VALID.toString())
                 .addParameter("session", SESSION).addParameter("tags", "tag").expectStatusOk()
-                .expectIsEmpty("$.content");
+                .expectIsNotEmpty("$.content");
 
         customizer.documentRequestParameters(RequestDocumentation.parameterWithName("state")
                                                      .description("state the aips should be in")

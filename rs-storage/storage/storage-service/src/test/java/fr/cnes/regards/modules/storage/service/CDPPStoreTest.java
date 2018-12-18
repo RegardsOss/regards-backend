@@ -44,7 +44,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -142,8 +141,8 @@ public class CDPPStoreTest extends AbstractMultitenantServiceTest {
                               Paths.get("target", "localstorage").toUri().toString())
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 100_000_000).getParameters();
 
-        PluginConfiguration localDataStorageConf = PluginUtils.getPluginConfiguration(parameters,
-                                                                                      LocalDataStorage.class);
+        PluginConfiguration localDataStorageConf = PluginUtils
+                .getPluginConfiguration(parameters, LocalDataStorage.class);
         localDataStorageConf.setIsActive(true);
         localDataStorageConf.setLabel("Local data storage");
         prioritizedDataStorageService.create(localDataStorageConf);

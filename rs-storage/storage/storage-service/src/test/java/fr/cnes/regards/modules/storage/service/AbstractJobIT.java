@@ -29,7 +29,6 @@ import java.util.UUID;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -38,7 +37,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.MimeType;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
@@ -55,19 +53,20 @@ import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
+import fr.cnes.regards.modules.storage.dao.IAIPSessionRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
+import fr.cnes.regards.modules.storage.dao.IPrioritizedDataStorageRepository;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 
-@ContextConfiguration(classes = { TestConfig.class, AIPServiceIT.Config.class })
+@ContextConfiguration(classes = { TestConfig.class })
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=storage_test", "regards.amqp.enabled=true" },
         locations = { "classpath:storage.properties" })
 @ActiveProfiles({ "testAmqp", "disableStorageTasks", "noschdule" })
 @EnableAsync
-@RunWith(SpringRunner.class)
 public abstract class AbstractJobIT extends AbstractMultitenantServiceTest {
 
     public static final String SESSION = "SESSION 42";
@@ -94,6 +93,12 @@ public abstract class AbstractJobIT extends AbstractMultitenantServiceTest {
 
     @Autowired
     protected IAIPService aipService;
+
+    @Autowired
+    private IPrioritizedDataStorageRepository prioritizedDataStorageRepository;
+
+    @Autowired
+    private IAIPSessionRepository sessionRepo;
 
     @Before
     public void init() throws IOException, URISyntaxException, ModuleException {
@@ -126,17 +131,23 @@ public abstract class AbstractJobIT extends AbstractMultitenantServiceTest {
 
     protected AIP getNewAipWithTags(String aipSession, String... tags) throws MalformedURLException {
 
-        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP, EntityType.DATA, getDefaultTenant(),
-                UUID.randomUUID(), 1);
-        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, getDefaultTenant(),
-                sipId.getEntityId(), 1);
+        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP,
+                                                            EntityType.DATA,
+                                                            getDefaultTenant(),
+                                                            UUID.randomUUID(),
+                                                            1);
+        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP,
+                                                            EntityType.DATA,
+                                                            getDefaultTenant(),
+                                                            sipId.getEntityId(),
+                                                            1);
         AIPBuilder aipBuilder = new AIPBuilder(aipId, Optional.of(sipId), "providerId", EntityType.DATA, aipSession);
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", MimeType.valueOf("text/plain"));
         aipBuilder.addContentInformation();
         aipBuilder.getPDIBuilder().setAccessRightInformation("public");
         aipBuilder.getPDIBuilder().setFacility("CS");
-        aipBuilder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event",
-                                                                 OffsetDateTime.now());
+        aipBuilder.getPDIBuilder()
+                .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event", OffsetDateTime.now());
         aipBuilder.addTags(tags);
         return aipBuilder.build();
     }
@@ -146,16 +157,9 @@ public abstract class AbstractJobIT extends AbstractMultitenantServiceTest {
         tenantResolver.forceTenant(getDefaultTenant());
         jobInfoRepo.deleteAll();
         dataFileDao.deleteAll();
+        prioritizedDataStorageRepository.deleteAll();
         pluginRepo.deleteAll();
         aipDao.deleteAll();
-    }
-
-    @Configuration
-    static class Config {
-
-        @Bean
-        public INotificationClient notificationClient() {
-            return Mockito.mock(INotificationClient.class);
-        }
+        sessionRepo.deleteAll();
     }
 }
