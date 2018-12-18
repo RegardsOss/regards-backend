@@ -24,7 +24,7 @@ import java.util.List;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
- * List<Long> wrapper for PluginParameter of {@link AIPMiscAllocationStratey}
+ * List<Long> wrapper for PluginParameter of {@link AIPMiscAllocationStrategyPlugin}
  * @author Sébastien Binda
  */
 public class PluginConfigurationIdentifiersWrapper {

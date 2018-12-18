@@ -90,20 +90,16 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
     @Override
     public void run() {
         AIPQueryFilters tagFilter = parameters.get(FILTER_PARAMETER_NAME).getValue();
-        Pageable pageRequest = new PageRequest(0, aipIterationLimit, Direction.ASC, "id");
+        Pageable pageRequest = PageRequest.of(0, aipIterationLimit, Direction.ASC, "id");
         Page<AIP> aipsPage;
         nbError = new AtomicInteger(0);
         nbEntityRemoved = new AtomicInteger(0);
         entityFailed = new ArrayList<>();
         do {
-            aipsPage = aipDao.findAll(AIPQueryGenerator.searchAIPContainingAllTags(tagFilter.getState(),
-                                                                                   tagFilter.getFrom(),
-                                                                                   tagFilter.getTo(),
-                                                                                   tagFilter.getTags(),
-                                                                                   tagFilter.getSession(),
-                                                                                   tagFilter.getProviderId(),
-                                                                                   tagFilter.getAipIds(),
-                                                                                   tagFilter.getAipIdsExcluded()),
+            aipsPage = aipDao.findAll(AIPQueryGenerator
+                    .searchAIPContainingAllTags(tagFilter.getState(), tagFilter.getFrom(), tagFilter.getTo(),
+                                                tagFilter.getTags(), tagFilter.getSession(), tagFilter.getProviderId(),
+                                                tagFilter.getAipIds(), tagFilter.getAipIdsExcluded()),
                                       pageRequest);
             aipsPage.forEach(aip -> {
                 try {
@@ -133,19 +129,16 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
             // Notify admins that the job had issues
             String title = String.format("Failure while removing %d AIPs", nbError.get());
             StringBuilder message = new StringBuilder();
-            message.append(String.format("A job finished with %d AIP correctly removed and %d errors.%nAIP concerned:  ",
-                                         nbEntityRemoved.get(),
-                                         nbError.get()));
+            message.append(String
+                    .format("A job finished with %d AIP correctly removed and %d errors.%nAIP concerned:  ",
+                            nbEntityRemoved.get(), nbError.get()));
             for (String ipId : entityFailed) {
                 message.append(ipId);
                 message.append("  \\n");
             }
             FeignSecurityManager.asSystem();
             try {
-                notificationClient.notifyRoles(message.toString(),
-                                               title,
-                                               applicationName,
-                                               NotificationType.ERROR,
+                notificationClient.notifyRoles(message.toString(), title, applicationName, NotificationType.ERROR,
                                                DefaultRole.ADMIN);
             } finally {
                 FeignSecurityManager.reset();
@@ -160,10 +153,10 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
 
     @Override
     public int getCompletionCount() {
-        if ((nbError.get() + nbEntityRemoved.get()) == 0) {
+        if (nbError.get() + nbEntityRemoved.get() == 0) {
             return 0;
         }
-        return (int) Math.floor((100 * (nbError.get() + nbEntityRemoved.get())) / nbEntity);
+        return (int) Math.floor(100 * (nbError.get() + nbEntityRemoved.get()) / nbEntity);
     }
 
     @Override
@@ -178,19 +171,15 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
         JobParameter filterParam = parameters.get(FILTER_PARAMETER_NAME);
         if (filterParam == null) {
 
-            JobParameterMissingException e = new JobParameterMissingException(String.format(
-                    "Job %s: parameter %s not provided",
-                    this.getClass().getName(),
-                    FILTER_PARAMETER_NAME));
+            JobParameterMissingException e = new JobParameterMissingException(String
+                    .format("Job %s: parameter %s not provided", this.getClass().getName(), FILTER_PARAMETER_NAME));
             logger.error(e.getMessage(), e);
             throw e;
         }
         // Check if the filterParam can be correctly parsed, depending of its type
         if (!(filterParam.getValue() instanceof AIPQueryFilters)) {
-            JobParameterInvalidException e = new JobParameterInvalidException(String.format(
-                    "Job %s: cannot read the parameter %s",
-                    this.getClass().getName(),
-                    FILTER_PARAMETER_NAME));
+            JobParameterInvalidException e = new JobParameterInvalidException(String
+                    .format("Job %s: cannot read the parameter %s", this.getClass().getName(), FILTER_PARAMETER_NAME));
             logger.error(e.getMessage(), e);
             throw e;
         }

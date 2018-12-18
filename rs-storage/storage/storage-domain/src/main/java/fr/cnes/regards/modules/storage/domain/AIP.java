@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.storage.domain;
 
 import java.util.Optional;
 
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
@@ -135,7 +135,7 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
         if (this == o) {
             return true;
         }
-        if ((o == null) || (getClass() != o.getClass())) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
         return super.equals(o);

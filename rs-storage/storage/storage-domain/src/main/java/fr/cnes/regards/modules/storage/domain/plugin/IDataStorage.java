@@ -45,7 +45,7 @@ public interface IDataStorage<T extends IWorkingSubset> {
     WorkingSubsetWrapper<T> prepare(Collection<StorageDataFile> dataFiles, DataStorageAccessModeEnum mode);
 
     /**
-     * Do the delete action for the given {@link T} working subset. It is called "safe" because it checks
+     * Do the delete action for the given working subset. It is called "safe" because it checks
      * if deletion is permitted by the configuration.
      * @param workingSubset Subset of files to delete.
      * @param progressManager {@link IProgressManager} object to inform global store process after each deletion succeed or fail.
@@ -65,14 +65,14 @@ public interface IDataStorage<T extends IWorkingSubset> {
     boolean canDelete();
 
     /**
-     * Do the delete action for the given {@link T} working subset without checking if deletion is permitted by the configuration.
+     * Do the delete action for the given working subset without checking if deletion is permitted by the configuration.
      * @param workingSubset Subset of files to delete.
      * @param progressManager {@link IProgressManager} object to inform global store process after each deletion succeed or fail.
      */
     void delete(T workingSubset, IProgressManager progressManager);
 
     /**
-     * Do the store action for the given {@link T} working subset.
+     * Do the store action for the given working subset.
      * @param workingSubset Subset of files to store.
      * @param replaceMode if file exists, to the store action should replace it ?
      * @param progressManager {@link IProgressManager} object to inform global store process after each transfer succeed or fail.

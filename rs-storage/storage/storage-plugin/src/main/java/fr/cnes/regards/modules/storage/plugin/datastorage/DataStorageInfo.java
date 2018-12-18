@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.plugin.datastorage;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotEmpty;
 
 import fr.cnes.regards.modules.storage.plugin.datastorage.validation.FileSize;
 
@@ -70,7 +70,7 @@ public class DataStorageInfo {
         this.storagePhysicalId = storagePhysicalId;
         this.totalSize = totalSize + BYTES_UNIT;
         this.usedSize = usedSize + BYTES_UNIT;
-        this.ratio = (Double.valueOf(usedSize) / totalSize) * 100;
+        this.ratio = Double.valueOf(usedSize) / totalSize * 100;
     }
 
     /**
@@ -144,9 +144,8 @@ public class DataStorageInfo {
 
         DataStorageInfo that = (DataStorageInfo) o;
 
-        return storagePhysicalId != null ?
-                storagePhysicalId.equals(that.storagePhysicalId) :
-                that.storagePhysicalId == null;
+        return storagePhysicalId != null ? storagePhysicalId.equals(that.storagePhysicalId)
+                : that.storagePhysicalId == null;
     }
 
     @Override

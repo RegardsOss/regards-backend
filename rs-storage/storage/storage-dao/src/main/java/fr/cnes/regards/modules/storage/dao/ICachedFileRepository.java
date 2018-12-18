@@ -74,8 +74,6 @@ public interface ICachedFileRepository extends JpaRepository<CachedFile, Long> {
 
     /**
      * Count number of {@link CachedFile} for the given {@link CachedFileState}
-     * @param pQueued
-     * @return
      */
     Long countByState(CachedFileState pQueued);
 

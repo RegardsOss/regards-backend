@@ -100,20 +100,16 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
     public void run() {
         UpdateAIPsTagJobType updateType = parameters.get(UPDATE_TYPE_PARAMETER_NAME).getValue();
         AIPQueryFilters tagFilter = parameters.get(FILTER_PARAMETER_NAME).getValue();
-        Pageable pageRequest = new PageRequest(0, aipIterationLimit, Direction.ASC, "id");
+        Pageable pageRequest = PageRequest.of(0, aipIterationLimit, Direction.ASC, "id");
         Page<AIP> aipsPage;
         nbError = new AtomicInteger(0);
         nbEntityUpdated = new AtomicInteger(0);
         entityFailed = new ArrayList<>();
         do {
-            aipsPage = aipDao.findAll(AIPQueryGenerator.searchAIPContainingAllTags(tagFilter.getState(),
-                                                                                   tagFilter.getFrom(),
-                                                                                   tagFilter.getTo(),
-                                                                                   tagFilter.getTags(),
-                                                                                   tagFilter.getSession(),
-                                                                                   tagFilter.getProviderId(),
-                                                                                   tagFilter.getAipIds(),
-                                                                                   tagFilter.getAipIdsExcluded()),
+            aipsPage = aipDao.findAll(AIPQueryGenerator
+                    .searchAIPContainingAllTags(tagFilter.getState(), tagFilter.getFrom(), tagFilter.getTo(),
+                                                tagFilter.getTags(), tagFilter.getSession(), tagFilter.getProviderId(),
+                                                tagFilter.getAipIds(), tagFilter.getAipIdsExcluded()),
                                       pageRequest);
             aipsPage.forEach(aip -> {
                 try {
@@ -154,18 +150,14 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
             }
             StringBuilder message = new StringBuilder();
             message.append(String.format("A job finished with %d successful updates and %d errors.%nAIP concerned:  ",
-                                         nbEntityUpdated.get(),
-                                         nbError.get()));
+                                         nbEntityUpdated.get(), nbError.get()));
             for (String ipId : entityFailed) {
                 message.append(ipId);
                 message.append("  \\n");
             }
             FeignSecurityManager.asSystem();
             try {
-                notificationClient.notifyRoles(message.toString(),
-                                               title,
-                                               applicationName,
-                                               NotificationType.ERROR,
+                notificationClient.notifyRoles(message.toString(), title, applicationName, NotificationType.ERROR,
                                                DefaultRole.ADMIN);
             } finally {
                 FeignSecurityManager.reset();
@@ -180,10 +172,10 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
 
     @Override
     public int getCompletionCount() {
-        if ((nbError.get() + nbEntityUpdated.get()) == 0) {
+        if (nbError.get() + nbEntityUpdated.get() == 0) {
             return 0;
         }
-        return (int) Math.floor((100 * (nbError.get() + nbEntityUpdated.get())) / nbEntity);
+        return (int) Math.floor(100 * (nbError.get() + nbEntityUpdated.get()) / nbEntity);
     }
 
     @Override
@@ -197,18 +189,16 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
             throws JobParameterInvalidException, JobParameterMissingException {
         JobParameter typeParam = parameters.get(UPDATE_TYPE_PARAMETER_NAME);
         if (typeParam == null) {
-            JobParameterMissingException e = new JobParameterMissingException(String.format(
-                    "Job %s: parameter %s not provided",
-                    this.getClass().getName(),
-                    UPDATE_TYPE_PARAMETER_NAME));
+            JobParameterMissingException e = new JobParameterMissingException(
+                    String.format("Job %s: parameter %s not provided", this.getClass().getName(),
+                                  UPDATE_TYPE_PARAMETER_NAME));
             logger.error(e.getMessage(), e);
             throw e;
         }
         if (!(typeParam.getValue() instanceof UpdateAIPsTagJobType)) {
-            JobParameterInvalidException e = new JobParameterInvalidException(String.format(
-                    "Job %s: cannot read the parameter %s",
-                    this.getClass().getName(),
-                    UPDATE_TYPE_PARAMETER_NAME));
+            JobParameterInvalidException e = new JobParameterInvalidException(
+                    String.format("Job %s: cannot read the parameter %s", this.getClass().getName(),
+                                  UPDATE_TYPE_PARAMETER_NAME));
             logger.error(e.getMessage(), e);
             throw e;
         }
@@ -216,21 +206,17 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
         JobParameter filterParam = parameters.get(FILTER_PARAMETER_NAME);
         if (filterParam == null) {
 
-            JobParameterMissingException e = new JobParameterMissingException(String.format(
-                    "Job %s: parameter %s not provided",
-                    this.getClass().getName(),
-                    FILTER_PARAMETER_NAME));
+            JobParameterMissingException e = new JobParameterMissingException(String
+                    .format("Job %s: parameter %s not provided", this.getClass().getName(), FILTER_PARAMETER_NAME));
             logger.error(e.getMessage(), e);
             throw e;
         }
         // Check if the filterParam can be correctly parsed, depending of its type
-        if (((typeParam.getValue() == UpdateAIPsTagJobType.ADD) && !(filterParam
-                .getValue() instanceof AddAIPTagsFilters)) || ((typeParam.getValue() == UpdateAIPsTagJobType.REMOVE)
-                && !(filterParam.getValue() instanceof RemoveAIPTagsFilters))) {
-            JobParameterInvalidException e = new JobParameterInvalidException(String.format(
-                    "Job %s: cannot read the parameter %s",
-                    this.getClass().getName(),
-                    FILTER_PARAMETER_NAME));
+        if (typeParam.getValue() == UpdateAIPsTagJobType.ADD && !(filterParam.getValue() instanceof AddAIPTagsFilters)
+                || typeParam.getValue() == UpdateAIPsTagJobType.REMOVE
+                        && !(filterParam.getValue() instanceof RemoveAIPTagsFilters)) {
+            JobParameterInvalidException e = new JobParameterInvalidException(String
+                    .format("Job %s: cannot read the parameter %s", this.getClass().getName(), FILTER_PARAMETER_NAME));
             logger.error(e.getMessage(), e);
             throw e;
         }

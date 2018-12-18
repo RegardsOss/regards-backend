@@ -43,25 +43,24 @@ public class AIPSessionControllerIT extends AbstractAIPControllerIT {
         int nbQueueAipsSession1 = 2;
         int nbStoredAipsSession1 = 2;
         int nbAipsSession2 = 1;
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(2)));
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.content", Matchers.hasSize(2)));
 
         requestBuilderCustomizer
-                .addExpectation(MockMvcResultMatchers.jsonPath("$.content.[0].content.id", Matchers.is(SESSION_NAME)));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.[0].content.aipsCount",
-                                                                               Matchers.is(nbAipsSession1)));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.[0].content.deletedAipsCount",
-                                                                               Matchers.is(nbDeletedAipsSession1)));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.[0].content.errorAipsCount",
-                                                                               Matchers.is(nbErrorAipsSession1)));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.[0].content.queuedAipsCount",
-                                                                               Matchers.is(nbQueueAipsSession1)));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.[0].content.storedAipsCount",
-                                                                               Matchers.is(nbStoredAipsSession1)));
+                .expect(MockMvcResultMatchers.jsonPath("$.content.[0].content.id", Matchers.is(SESSION_NAME)));
+        requestBuilderCustomizer
+                .expect(MockMvcResultMatchers.jsonPath("$.content.[0].content.aipsCount", Matchers.is(nbAipsSession1)));
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.content.[0].content.deletedAipsCount",
+                                                                       Matchers.is(nbDeletedAipsSession1)));
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.content.[0].content.errorAipsCount",
+                                                                       Matchers.is(nbErrorAipsSession1)));
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.content.[0].content.queuedAipsCount",
+                                                                       Matchers.is(nbQueueAipsSession1)));
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.content.[0].content.storedAipsCount",
+                                                                       Matchers.is(nbStoredAipsSession1)));
 
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.[1].content.aipsCount",
-                                                                               Matchers.is(nbAipsSession2)));
+        requestBuilderCustomizer
+                .expect(MockMvcResultMatchers.jsonPath("$.content.[1].content.aipsCount", Matchers.is(nbAipsSession2)));
 
         performDefaultGet(AIPSessionController.TYPE_MAPPING, requestBuilderCustomizer,
                           "we should have the list of session");
@@ -71,12 +70,10 @@ public class AIPSessionControllerIT extends AbstractAIPControllerIT {
     public void testRetrieveSession() throws MalformedURLException {
         createSeveralAips();
         int nbAipsSession1 = 8;
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.content.id", Matchers.is(SESSION_NAME)));
         requestBuilderCustomizer
-                .addExpectation(MockMvcResultMatchers.jsonPath("$.content.id", Matchers.is(SESSION_NAME)));
-        requestBuilderCustomizer
-                .addExpectation(MockMvcResultMatchers.jsonPath("$.content.aipsCount", Matchers.is(nbAipsSession1)));
+                .expect(MockMvcResultMatchers.jsonPath("$.content.aipsCount", Matchers.is(nbAipsSession1)));
 
         performDefaultGet(AIPSessionController.TYPE_MAPPING + AIPSessionController.ID_PATH, requestBuilderCustomizer,
                           "we should have the list of session", SESSION_NAME);

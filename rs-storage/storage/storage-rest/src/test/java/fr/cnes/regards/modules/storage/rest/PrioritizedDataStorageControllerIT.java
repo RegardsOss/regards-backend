@@ -113,17 +113,16 @@ public class PrioritizedDataStorageControllerIT extends AbstractRegardsTransacti
         PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, DATA_STORAGE_CONF_LABEL_1,
                 parameters, 0);
         PrioritizedDataStorage toCreate = new PrioritizedDataStorage(dataStorageConf, null, DataStorageType.ONLINE);
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
         requestBuilderCustomizer
-                .addExpectation(MockMvcResultMatchers.jsonPath("$.content.id", Matchers.notNullValue(Long.class)));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                .jsonPath("$.content.dataStorageType", Matchers.is(DataStorageType.ONLINE.name())));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$.content.priority", Matchers.is(0)));
-        requestBuilderCustomizer.addDocumentationSnippet(PayloadDocumentation
+                .expect(MockMvcResultMatchers.jsonPath("$.content.id", Matchers.notNullValue(Long.class)));
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.content.dataStorageType",
+                                                                       Matchers.is(DataStorageType.ONLINE.name())));
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.content.priority", Matchers.is(0)));
+        requestBuilderCustomizer.document(PayloadDocumentation
                 .relaxedRequestFields(Attributes.attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE)
                         .value("Prioritized data storage")), documentPrioritizedDataStorageRequestBody(true)));
-        requestBuilderCustomizer.addDocumentationSnippet(PayloadDocumentation
+        requestBuilderCustomizer.document(PayloadDocumentation
                 .relaxedResponseFields(Attributes.attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE)
                         .value("Prioritized data storage")), documentPrioritizedDataStorageResponseBody()));
         performDefaultPost(PrioritizedDataStorageController.BASE_PATH, toCreate, requestBuilderCustomizer,
@@ -133,13 +132,12 @@ public class PrioritizedDataStorageControllerIT extends AbstractRegardsTransacti
     @Test
     public void testRetrieve() throws ModuleException, IOException, URISyntaxException {
         PrioritizedDataStorage created = createPrioritizedDataStorage(DATA_STORAGE_CONF_LABEL_1);
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        requestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName("id").description("the prioritized data storage id")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Number"), Attributes
                         .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Should be a whole number"))));
-        requestBuilderCustomizer.addDocumentationSnippet(PayloadDocumentation
+        requestBuilderCustomizer.document(PayloadDocumentation
                 .relaxedResponseFields(Attributes.attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE)
                         .value("Prioritized data storage")), documentPrioritizedDataStorageResponseBody()));
 
@@ -149,10 +147,9 @@ public class PrioritizedDataStorageControllerIT extends AbstractRegardsTransacti
 
     @Test
     public void testRetrieveByType() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.customizeRequestParam().param("type", DataStorageType.ONLINE.name());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.requestParameters(RequestDocumentation
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        requestBuilderCustomizer.addParameter("type", DataStorageType.ONLINE.name());
+        requestBuilderCustomizer.document(RequestDocumentation.requestParameters(RequestDocumentation
                 .parameterWithName("type").description("the wanted Data Storage Type (ONLINE, NEARLINE)")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName()),
                             Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
@@ -165,18 +162,17 @@ public class PrioritizedDataStorageControllerIT extends AbstractRegardsTransacti
     public void testUpdate() throws ModuleException, URISyntaxException, IOException {
         PrioritizedDataStorage created = createPrioritizedDataStorage(DATA_STORAGE_CONF_LABEL_1);
         created.getDataStorageConfiguration().setIsActive(false);
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                .jsonPath("$.content.dataStorageConfiguration.active", Matchers.is(Boolean.FALSE)));
-        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.content.dataStorageConfiguration.active",
+                                                                       Matchers.is(Boolean.FALSE)));
+        requestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName("id").description("the prioritized data storage id")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Number"), Attributes
                         .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Should be a whole number"))));
-        requestBuilderCustomizer.addDocumentationSnippet(PayloadDocumentation
+        requestBuilderCustomizer.document(PayloadDocumentation
                 .relaxedRequestFields(Attributes.attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE)
                         .value("Prioritized data storage")), documentPrioritizedDataStorageRequestBody(false)));
-        requestBuilderCustomizer.addDocumentationSnippet(PayloadDocumentation
+        requestBuilderCustomizer.document(PayloadDocumentation
                 .relaxedResponseFields(Attributes.attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE)
                         .value("Prioritized data storage")), documentPrioritizedDataStorageResponseBody()));
         performDefaultPut(PrioritizedDataStorageController.BASE_PATH + PrioritizedDataStorageController.ID_PATH,
@@ -190,9 +186,8 @@ public class PrioritizedDataStorageControllerIT extends AbstractRegardsTransacti
         PrioritizedDataStorage created2 = createPrioritizedDataStorage(DATA_STORAGE_CONF_LABEL_2);
         Assert.assertEquals("created1 priority should be 0", 0L, created1.getPriority().longValue());
         Assert.assertEquals("created2 priority should be 1", 1L, created2.getPriority().longValue());
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        requestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName("id").description("the prioritized data storage id")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Number"), Attributes
                         .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Should be a whole number"))));
@@ -211,9 +206,8 @@ public class PrioritizedDataStorageControllerIT extends AbstractRegardsTransacti
         PrioritizedDataStorage created2 = createPrioritizedDataStorage(DATA_STORAGE_CONF_LABEL_2);
         Assert.assertEquals("created1 priority should be 0", 0L, created1.getPriority().longValue());
         Assert.assertEquals("created2 priority should be 1", 1L, created2.getPriority().longValue());
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        requestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName("id").description("the prioritized data storage id")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Number"), Attributes
                         .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Should be a whole number"))));
