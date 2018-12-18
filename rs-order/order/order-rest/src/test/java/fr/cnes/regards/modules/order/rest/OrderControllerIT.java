@@ -53,6 +53,7 @@ import org.springframework.restdocs.payload.PayloadDocumentation;
 import org.springframework.restdocs.request.RequestDocumentation;
 import org.springframework.restdocs.snippet.Attributes;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.xml.sax.SAXException;
@@ -95,6 +96,7 @@ import fr.cnes.regards.modules.project.domain.Project;
  * @author Sébastien Binda
  */
 @ContextConfiguration(classes = OrderConfiguration.class)
+@TestPropertySource(properties = { "regards.tenant=order1", "spring.jpa.properties.hibernate.default_schema=order1" })
 public class OrderControllerIT extends AbstractRegardsIT {
 
     @Autowired
@@ -383,7 +385,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
                                                         order.getId());
         assertMediaType(resultActions, MediaType.APPLICATION_OCTET_STREAM);
         File resultFile = File.createTempFile("ZIP_ORDER_", ".zip");
-        resultFile.deleteOnExit();
+        //resultFile.deleteOnExit();
         try (FileOutputStream fos = new FileOutputStream(resultFile)) {
             Object o = resultActions.andReturn().getAsyncResult();
             System.out.println(o);

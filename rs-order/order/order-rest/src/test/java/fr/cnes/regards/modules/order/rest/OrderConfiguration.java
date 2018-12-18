@@ -21,6 +21,9 @@ package fr.cnes.regards.modules.order.rest;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -94,10 +97,12 @@ public class OrderConfiguration {
 
     private class AipClientProxy {
 
+        Map<String, Collection<String>> headers = new HashMap<>();
+
         @SuppressWarnings("unused")
         public Response downloadFile(String aipId, String checksum) {
-            return Response.builder().status(200).body(getClass().getResourceAsStream("/files/" + checksum), 1000)
-                    .build();
+            return Response.builder().status(200).headers(headers)
+                    .body(getClass().getResourceAsStream("/files/" + checksum), 1000).build();
         }
     }
 

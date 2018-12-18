@@ -18,8 +18,12 @@
  */
 package fr.cnes.regards.modules.order.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
+import fr.cnes.regards.modules.order.domain.OrderDataFile;
 
 /**
  * @author oroussel
@@ -29,4 +33,6 @@ public interface IDatasetTaskService {
     DatasetTask loadSimple(Long datasetId) throws EntityNotFoundException;
 
     DatasetTask loadComplete(Long datasetId);
+
+    Page<OrderDataFile> loadDataFiles(Long datasetId, Pageable pageable);
 }

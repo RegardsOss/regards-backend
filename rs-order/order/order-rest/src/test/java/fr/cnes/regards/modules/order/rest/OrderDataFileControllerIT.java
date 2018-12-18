@@ -36,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
 
 import com.google.common.io.ByteStreams;
@@ -63,6 +64,8 @@ import fr.cnes.regards.modules.order.domain.OrderDataFile;
  */
 @ContextConfiguration(classes = OrderConfiguration.class)
 @DirtiesContext
+@TestPropertySource(
+        properties = { "regards.tenant=orderdata", "spring.jpa.properties.hibernate.default_schema=orderdata" })
 public class OrderDataFileControllerIT extends AbstractRegardsIT {
 
     @Autowired

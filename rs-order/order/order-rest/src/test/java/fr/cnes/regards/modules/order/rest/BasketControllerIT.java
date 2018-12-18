@@ -37,6 +37,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.PayloadDocumentation;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -66,6 +67,7 @@ import fr.cnes.regards.modules.project.domain.Project;
  * @author Sébastien Binda
  */
 @ContextConfiguration(classes = OrderConfiguration.class)
+@TestPropertySource(properties = { "regards.tenant=basket", "spring.jpa.properties.hibernate.default_schema=basket" })
 public class BasketControllerIT extends AbstractRegardsIT {
 
     @Autowired
@@ -208,7 +210,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
     @Test
     public void testGetBasket() {
         createBasket();
-        performDefaultGet(BasketController.ORDER_BASKET, customizer().expectStatusNoContent(), "error");
+        performDefaultGet(BasketController.ORDER_BASKET, customizer().expectStatusOk(), "error");
     }
 
     private Basket createBasket() {
