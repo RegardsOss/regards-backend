@@ -1,9 +1,8 @@
 package fr.cnes.regards.modules.storage.domain.job;
 
+import javax.validation.constraints.NotEmpty;
 import java.util.HashSet;
 import java.util.Set;
-
-import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * @author Sylvain VISSIERE-GUERINET

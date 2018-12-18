@@ -154,6 +154,11 @@ public class AIPDao implements IAIPDao {
     }
 
     @Override
+    public long countByQuery(String sqlQuery) {
+        return custoRepo.countNumberOfResults(sqlQuery);
+    }
+
+    @Override
     public long countBySessionIdAndStateIn(String sessionId, Collection<AIPState> states) {
         return repo.countBySessionIdAndStateIn(sessionId, states);
     }

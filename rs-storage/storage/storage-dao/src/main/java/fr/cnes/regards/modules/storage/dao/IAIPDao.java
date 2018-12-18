@@ -136,6 +136,8 @@ public interface IAIPDao {
      */
     long countBySessionId(String sessionId);
 
+    long countByQuery(String sqlQuery);
+
     /**
      * Count number of {@link AIP} associated to a given session and in a specific given {@link AIPState}
      * @param sessionId session id

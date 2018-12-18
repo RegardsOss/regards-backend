@@ -53,7 +53,19 @@ public class AIPQueryGenerator {
             predicates.add(getConjunctionTagPredicate(tags));
         }
         return createQuery(predicates);
+    }
 
+    /**
+     * Return an SQL query that retrieve all AIPEntity ids matching provided criteria
+     * @param tags must be present in the AIP
+     */
+    public static String searchAIPIdContainingAllTags(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags,
+            String session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded) {
+        Set<String> predicates = generatePredicates(state, from, to, session, providerId, aipIds, aipIdsExcluded);
+        if ((tags != null) && !tags.isEmpty()) {
+            predicates.add(getConjunctionTagPredicate(tags));
+        }
+        return createIdQuery(predicates);
     }
 
     /**
@@ -128,7 +140,17 @@ public class AIPQueryGenerator {
     }
 
     private static String createQuery(Set<String> predicates) {
-        StringBuilder request = new StringBuilder("SELECT * FROM {h-schema}t_aip ");
+        StringBuilder request = new StringBuilder("SELECT * ");
+        return addFromNWhere(predicates, request);
+    }
+
+    private static String createIdQuery(Set<String> predicates) {
+        StringBuilder request = new StringBuilder("SELECT id ");
+        return addFromNWhere(predicates, request);
+    }
+
+    private static String addFromNWhere(Set<String> predicates, StringBuilder request) {
+        request.append("FROM {h-schema}t_aip ");
         if (!predicates.isEmpty()) {
             request.append("WHERE ");
             Joiner.on(" AND ").appendTo(request, predicates);
