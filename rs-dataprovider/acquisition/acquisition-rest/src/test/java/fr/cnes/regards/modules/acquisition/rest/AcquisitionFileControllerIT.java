@@ -75,10 +75,9 @@ public class AcquisitionFileControllerIT extends AbstractRegardsTransactionalIT 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         documentRequestParameters(requestBuilderCustomizer);
 
-        requestBuilderCustomizer
-                .addDocumentationSnippet(PayloadDocumentation.relaxedResponseFields(Attributes
-                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE).value("Acquisition file")),
-                                                                                    documentAcquisitionFile()));
+        requestBuilderCustomizer.document(PayloadDocumentation.relaxedResponseFields(Attributes
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE).value("Acquisition file")),
+                                                                                     documentAcquisitionFile()));
 
         performDefaultGet(AcquisitionFileController.TYPE_PATH, requestBuilderCustomizer, "Should retrieve files");
     }
@@ -131,7 +130,7 @@ public class AcquisitionFileControllerIT extends AbstractRegardsTransactionalIT 
                         .value("Optional. Required format : yyyy-MM-dd'T'HH:mm:ss.SSSZ"));
 
         // Add request parameters documentation
-        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation
+        requestBuilderCustomizer.document(RequestDocumentation
                 .requestParameters(paramFilepath, paramState, paramProductId, paramChainId, paramFrom));
     }
 

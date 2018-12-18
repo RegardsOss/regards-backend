@@ -88,7 +88,7 @@ public class ProductControllerTestIT extends AbstractRegardsTransactionalIT {
         performDefaultGet(ProductController.TYPE_PATH, requestBuilderCustomizer, "Should retrieve products");
         documentRequestParameters(requestBuilderCustomizer);
 
-        requestBuilderCustomizer.addDocumentationSnippet(PayloadDocumentation.relaxedResponseFields(Attributes
+        requestBuilderCustomizer.document(PayloadDocumentation.relaxedResponseFields(Attributes
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE).value("Product")), documentProduct()));
 
         requestBuilderCustomizer.addParameter("sipState", "NOT_SCHEDULED", "QUEUED");
@@ -149,9 +149,9 @@ public class ProductControllerTestIT extends AbstractRegardsTransactionalIT {
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"));
 
         // Add request parameters documentation
-        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation
-                .requestParameters(paramState, paramSipState, paramProductId, paramChainId, paramFrom, paramSession,
-                                   noSession));
+        requestBuilderCustomizer
+                .document(RequestDocumentation.requestParameters(paramState, paramSipState, paramProductId,
+                                                                 paramChainId, paramFrom, paramSession, noSession));
     }
 
     private List<FieldDescriptor> documentProduct() {
