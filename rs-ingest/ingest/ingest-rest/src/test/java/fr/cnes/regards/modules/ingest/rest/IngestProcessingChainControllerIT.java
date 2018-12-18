@@ -87,7 +87,7 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
     @Test
     public void exportProcessingChain() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
-        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+        requestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName(IngestProcessingChainController.REQUEST_PARAM_NAME)
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                 .description("Ingestion processing name")));
@@ -120,14 +120,13 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
                 .description("A file containing an ingestion processing chain in GeoJson format")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String"));
         // Add request parameters documentation
-        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.requestParameters(paramFile));
+        requestBuilderCustomizer.document(RequestDocumentation.requestParameters(paramFile));
     }
 
     @Test
     public void createIngestProcessingChain() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
-        requestBuilderCustomizer.addHeaderValue(HttpHeaders.CONTENT_TYPE,
-                                                GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
         performDefaultPost(IngestProcessingChainController.TYPE_MAPPING, this.create(), requestBuilderCustomizer,
                            "Ingest processing creation error");
     }
@@ -136,8 +135,7 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
     public void updateIngestProcessingChain() {
         // create an IngestProcessingChain
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
-        requestBuilderCustomizer.addHeaderValue(HttpHeaders.CONTENT_TYPE,
-                                                GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
         IngestProcessingChain ingestProcessingChain = this.create();
         ResultActions resultActions = performDefaultPost(IngestProcessingChainController.TYPE_MAPPING,
                                                          ingestProcessingChain, requestBuilderCustomizer,
@@ -153,9 +151,9 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
         ingestProcessingChain.getGenerationPlugin().setId(new Long(genPluginId));
 
         RequestBuilderCustomizer putRequestBuilderCustomizer = customizer().expectStatusOk();
-        putRequestBuilderCustomizer.addHeaderValue(HttpHeaders.CONTENT_TYPE,
-                                                   GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
-        putRequestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+        putRequestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE,
+                                              GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        putRequestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName(IngestProcessingChainController.REQUEST_PARAM_NAME)
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                 .description(INGEST_PROCESSING_DESCRIPTION)));
@@ -169,16 +167,14 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
     public void deleteIngestProcessingChain() {
         // create an IngestProcessingChain
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
-        requestBuilderCustomizer.addHeaderValue(HttpHeaders.CONTENT_TYPE,
-                                                GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
         IngestProcessingChain ingestProcessingChain = this.create();
         performDefaultPost(IngestProcessingChainController.TYPE_MAPPING, ingestProcessingChain,
                            requestBuilderCustomizer, "Ingest processing creation error");
 
         requestBuilderCustomizer = customizer().expectStatusOk();
-        requestBuilderCustomizer.addHeaderValue(HttpHeaders.CONTENT_TYPE,
-                                                GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
-        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        requestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName(IngestProcessingChainController.REQUEST_PARAM_NAME)
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                 .description(INGEST_PROCESSING_DESCRIPTION)));
@@ -221,7 +217,7 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
                                  "Should be able to import valid test processing chain");
 
         RequestBuilderCustomizer getCustomizer = customizer().expectStatusOk();
-        getCustomizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+        getCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName(IngestProcessingChainController.REQUEST_PARAM_NAME)
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                 .description(INGEST_PROCESSING_DESCRIPTION)));
