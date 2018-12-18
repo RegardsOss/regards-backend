@@ -81,9 +81,9 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
 
         AcquisitionProcessingChain chain = AcquisitionTestUtils.getNewChain("post");
 
-        customizer.addDocumentationSnippet(PayloadDocumentation
-                .relaxedRequestFields(Attributes.attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE)
-                        .value("Acquisition processing chain")), documentAcquisitionProcessingChain()));
+        customizer.document(PayloadDocumentation.relaxedRequestFields(Attributes
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE).value("Acquisition processing chain")),
+                                                                      documentAcquisitionProcessingChain()));
 
         // Create the chain
         performDefaultPost(AcquisitionProcessingChainController.TYPE_PATH, chain, customizer,
@@ -190,7 +190,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         customizer = customizer().expectStatusOk();
 
         // Document path parameter
-        customizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+        customizer.document(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName(AcquisitionProcessingChainController.CHAIN_PATH_PARAM)
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                 .description("Acquisition chain identifier")));
@@ -232,7 +232,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
 
         customizer = customizer().expectStatusOk();
         // Document path parameter
-        customizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+        customizer.document(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName(AcquisitionProcessingChainController.CHAIN_PATH_PARAM)
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_NUMBER_TYPE))
                 .description("Acquisition chain identifier")));
@@ -299,7 +299,7 @@ public class AcquisitionProcessingChainControllerIT extends AbstractRegardsTrans
         customizer = customizer().expectStatusOk();
 
         // Document path parameter
-        customizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+        customizer.document(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName(AcquisitionProcessingChainController.CHAIN_PATH_PARAM)
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_NUMBER_TYPE))
                 .description("Acquisition chain identifier to update").attributes(Attributes
