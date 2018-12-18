@@ -511,7 +511,7 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
                 .addParameter("from", OffsetDateTime.now().minusDays(40).toString())
                 .addParameter("to", OffsetDateTime.now().toString()).addParameter("state", AIPState.VALID.toString())
                 .addParameter("session", SESSION).addParameter("tags", "tag").expectStatusOk()
-                .expectIsEmpty("$.content");
+                .expectIsNotEmpty("$.content");
 
         customizer.documentRequestParameters(RequestDocumentation.parameterWithName("state")
                                                      .description("state the aips should be in")
