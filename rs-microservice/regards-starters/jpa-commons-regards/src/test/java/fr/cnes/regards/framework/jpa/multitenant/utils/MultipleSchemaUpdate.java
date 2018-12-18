@@ -41,7 +41,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.jpa.exception.JpaException;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
 import fr.cnes.regards.framework.jpa.utils.DatabaseModule;
 import fr.cnes.regards.framework.jpa.utils.DatabaseModuleComparator;
@@ -109,7 +108,6 @@ public class MultipleSchemaUpdate {
     /**
      * hbm2ddl sequence generation doesn't work with multiple schemas in PostgreSQL. Only a single sequence is created for all catalog.<br/>
      * hbm2ddl should not be used in production.
-     * @throws JpaException if error occurs!
      */
     @Test
     public void testWithHbm2ddl() {

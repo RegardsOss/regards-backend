@@ -22,6 +22,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
@@ -144,9 +145,8 @@ public class JobServiceTest {
                     LOGGER.info("FAILED for " + wrapper.getContent().getJobId());
                     break;
                 default:
-                    throw new IllegalArgumentException(
-                            type + " is not an handled type of JobEvent for this test: " + JobServiceTest.class
-                                    .getSimpleName());
+                    throw new IllegalArgumentException(type + " is not an handled type of JobEvent for this test: "
+                            + JobServiceTest.class.getSimpleName());
             }
         }
     }

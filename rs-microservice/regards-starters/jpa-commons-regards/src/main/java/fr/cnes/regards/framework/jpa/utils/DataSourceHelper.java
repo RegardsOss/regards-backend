@@ -117,7 +117,7 @@ public final class DataSourceHelper {
      * @throws PropertyVetoException See {@link PropertyVetoException}
      */
     @Deprecated
-    private static DataSource createPooledDataSource(final String pTenant, final String pUrl,
+    public static DataSource createPooledDataSource(final String pTenant, final String pUrl,
             final String pDriverClassName, final String pUserName, final String pPassword, Integer pMinPoolSize,
             Integer pMaxPoolSize, String pPreferredTestQuery) throws PropertyVetoException {
         ComboPooledDataSource cpds = new ComboPooledDataSource();
