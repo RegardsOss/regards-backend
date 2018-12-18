@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.storage.dao;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -47,9 +48,8 @@ public interface IPrioritizedDataStorageRepository extends JpaRepository<Priorit
 
     PrioritizedDataStorage findOneByDataStorageTypeAndPriority(DataStorageType dataStorageType, long priority);
 
-    @Query(value = "SELECT data_storage_conf_id FROM {h-schema}ta_data_file_plugin_conf WHERE data_file_id IN ("
-            + "SELECT id FROM {h-schema}t_data_file WHERE aip_ip_id IN (:aipQuery))", nativeQuery = true)
+    @Query(value = "SELECT data_storage_conf_id FROM {h-schema}ta_data_file_plugin_conf WHERE data_file_id IN (SELECT id FROM {h-schema}t_data_file WHERE aip_ip_id IN (:aipQuery))", nativeQuery = true)
     Set<Long> findAllIdUsedByAipInQuery(@Param("aipQuery") String aipQuery);
 
-    Set<PrioritizedDataStorage> findAllByIdIn(Set<Long> allIdUsedByAipInQuery);
+    Set<PrioritizedDataStorage> findAllByIdIn(Collection<Long> allIdUsedByAipInQuery);
 }

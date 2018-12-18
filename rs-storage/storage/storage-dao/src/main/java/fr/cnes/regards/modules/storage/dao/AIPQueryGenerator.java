@@ -145,7 +145,7 @@ public class AIPQueryGenerator {
     }
 
     private static String createIdQuery(Set<String> predicates) {
-        StringBuilder request = new StringBuilder("SELECT id::bigint ");
+        StringBuilder request = new StringBuilder("SELECT id ");
         return addFromNWhere(predicates, request);
     }
 
