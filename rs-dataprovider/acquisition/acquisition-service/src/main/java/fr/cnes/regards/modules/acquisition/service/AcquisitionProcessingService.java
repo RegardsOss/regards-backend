@@ -178,6 +178,16 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     @Override
+    public Page<AcquisitionProcessingChain> getFullChains(Pageable pageable) throws ModuleException {
+        Page<AcquisitionProcessingChain> apcs = acqChainRepository.findAll(pageable);
+        List<AcquisitionProcessingChain> fullChains = new ArrayList<>();
+        for (AcquisitionProcessingChain apc : apcs) {
+            fullChains.add(getChain(apc.getId()));
+        }
+        return new PageImpl<>(fullChains, pageable, apcs.getTotalElements());
+    }
+
+    @Override
     public AcquisitionProcessingChain createChain(AcquisitionProcessingChain processingChain) throws ModuleException {
 
         // Check no identifier

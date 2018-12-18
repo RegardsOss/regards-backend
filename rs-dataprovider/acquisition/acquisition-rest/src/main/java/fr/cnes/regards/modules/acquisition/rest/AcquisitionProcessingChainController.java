@@ -106,8 +106,8 @@ public class AcquisitionProcessingChainController implements IResourceController
     public ResponseEntity<PagedResources<Resource<AcquisitionProcessingChain>>> retrieveAll(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<AcquisitionProcessingChain> assembler) throws ModuleException {
-        return new ResponseEntity<>(toPagedResources(processingService.getAllChains(pageable), assembler),
-                                    HttpStatus.OK);
+        return new ResponseEntity<>(toPagedResources(processingService.getFullChains(pageable), assembler),
+                HttpStatus.OK);
     }
 
     /**
@@ -181,8 +181,8 @@ public class AcquisitionProcessingChainController implements IResourceController
         resourceService.addLink(resource, this.getClass(), "update", LinkRels.UPDATE,
                                 MethodParamFactory.build(Long.class, element.getId()),
                                 MethodParamFactory.build(AcquisitionProcessingChain.class));
-        if (AcquisitionProcessingChainMode.MANUAL.equals(element.getMode()) && !element.isLocked() && element
-                .isActive()) {
+        if (AcquisitionProcessingChainMode.MANUAL.equals(element.getMode()) && !element.isLocked()
+                && element.isActive()) {
             resourceService.addLink(resource, this.getClass(), "startManualChain", "start",
                                     MethodParamFactory.build(Long.class, element.getId()));
         }
