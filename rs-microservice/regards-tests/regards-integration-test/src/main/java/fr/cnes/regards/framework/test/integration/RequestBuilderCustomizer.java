@@ -279,7 +279,7 @@ public class RequestBuilderCustomizer {
      * Set or replace given values to associated header name values
      */
     public RequestBuilderCustomizer addHeaders(Map<String, List<String>> headers) {
-        headers.putAll(headers);
+        this.headers.putAll(headers);
         return this;
     }
 
