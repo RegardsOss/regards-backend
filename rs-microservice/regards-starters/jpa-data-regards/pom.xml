@@ -14,8 +14,6 @@
 
     <artifactId>jpa-data-regards</artifactId>
     <description>REGARDS JPA data</description>
-    <version>4.0.0-SNAPSHOT</version>
-
     <parent>
         <groupId>fr.cnes.regards.framework</groupId>
         <artifactId>regards-starters</artifactId>

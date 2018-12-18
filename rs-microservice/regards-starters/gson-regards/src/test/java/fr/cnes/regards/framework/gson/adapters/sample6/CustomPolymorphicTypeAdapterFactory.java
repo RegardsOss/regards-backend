@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.framework.gson.adapters.sample6;
 
-import java.util.Iterator;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+
 import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
 
 /**
@@ -177,8 +176,8 @@ public class CustomPolymorphicTypeAdapterFactory extends PolymorphicTypeAdapterF
     }
 
     private IllegalArgumentException missingFieldException(JsonElement jsonElement, String fieldName) {
-        String errorMessage = String
-                .format("JSON element %s must contains a %s field", jsonElement.toString(), fieldName);
+        String errorMessage = String.format("JSON element %s must contains a %s field", jsonElement.toString(),
+                                            fieldName);
         LOGGER.error(errorMessage);
         return new IllegalArgumentException(errorMessage);
     }

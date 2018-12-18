@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.helloworldmodule.domain.Greeting;
 import fr.cnes.regards.modules.helloworldmodule.service.GreetingsService;
@@ -43,8 +42,6 @@ import fr.cnes.regards.modules.helloworldmodule.service.GreetingsService;
  * @author TODO
  */
 @RestController
-@ModuleInfo(name = "helloworldmodule-rest", version = "1.0.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping("/api")
 public class GreetingsController implements IResourceController<Greeting> {
 

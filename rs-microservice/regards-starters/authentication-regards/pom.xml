@@ -15,8 +15,6 @@
 
     <artifactId>authentication-regards</artifactId>
     <description>Provide authentication service interface</description>
-    <version>4.0.0-SNAPSHOT</version>
-
     <parent>
         <groupId>fr.cnes.regards.framework</groupId>
         <artifactId>regards-starters</artifactId>

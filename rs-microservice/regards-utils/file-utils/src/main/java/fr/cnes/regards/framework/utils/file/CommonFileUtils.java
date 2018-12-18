@@ -18,11 +18,7 @@
  */
 package fr.cnes.regards.framework.utils.file;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.FileImageInputStream;
-import javax.imageio.stream.ImageInputStream;
-import java.awt.*;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -31,6 +27,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Set;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.ImageInputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,11 +81,6 @@ public final class CommonFileUtils {
 
     /**
      * Write from a given {@link FileInputStream} to the output given {@link File} a maximum of <maxSizeToWrite> bytes.
-     * @param pInputStream {@link FileInputStream} reader
-     * @param outputFile {@link File} to write to
-     * @param maxSizeToWrite maximum number of bytes to write
-     * @return TRUE if there is more bytes to read from pInputStream after writing the maximum number of bytes.
-     * @throws IOException I/O exception.
      */
     public static void writeInFile(FileInputStream pInputStream, OutputStream os) throws IOException {
         byte[] buffer = new byte[1024];

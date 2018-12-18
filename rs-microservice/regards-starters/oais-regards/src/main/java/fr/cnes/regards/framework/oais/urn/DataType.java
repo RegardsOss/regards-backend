@@ -19,7 +19,7 @@
 package fr.cnes.regards.framework.oais.urn;
 
 /**
- * {@link AbstractEntity} types
+ * Entity types
  * @author lmieulet
  * @author Marc Sordi
  */

@@ -25,7 +25,6 @@ import com.google.gson.Gson;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
@@ -65,9 +64,6 @@ public class JobServiceTest {
 
     @Autowired
     private IRabbitVirtualHostAdmin rabbitVhostAdmin;
-
-    @Autowired
-    private RegardsAmqpAdmin amqpAdmin;
 
     @Autowired
     private ISubscriber subscriber;

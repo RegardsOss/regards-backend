@@ -19,9 +19,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
@@ -59,12 +58,6 @@ public class MultitenantJobTest {
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
-
-    @Autowired
-    private IRabbitVirtualHostAdmin rabbitVhostAdmin;
-
-    @Autowired
-    private RegardsAmqpAdmin amqpAdmin;
 
     @Autowired
     private ISubscriber subscriber;
@@ -157,9 +150,8 @@ public class MultitenantJobTest {
                     LOGGER.info("FAILED for " + wrapper.getContent().getJobId());
                     break;
                 default:
-                    throw new IllegalArgumentException(
-                            type + " is not an handled type of JobEvent for this test: " + JobServiceTest.class
-                                    .getSimpleName());
+                    throw new IllegalArgumentException(type + " is not an handled type of JobEvent for this test: "
+                            + JobServiceTest.class.getSimpleName());
             }
         }
     }
@@ -322,7 +314,7 @@ public class MultitenantJobTest {
                                       new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 2));
         }
         tenantResolver.forceTenant(TENANT1);
-        for (int i = 0; i < (jobInfos.length / 2); i++) {
+        for (int i = 0; i < jobInfos.length / 2; i++) {
             jobInfos[i] = jobInfoService.createAsQueued(jobInfos[i]);
         }
         tenantResolver.forceTenant(TENANT2);
@@ -340,11 +332,11 @@ public class MultitenantJobTest {
         } finally {
             // Wait for all jobs to terminate
             tenantResolver.forceTenant(TENANT1);
-            while (jobInfoRepos.findAllByStatusStatus(JobStatus.SUCCEEDED).size() < (jobInfos.length / 2)) {
+            while (jobInfoRepos.findAllByStatusStatus(JobStatus.SUCCEEDED).size() < jobInfos.length / 2) {
                 Thread.sleep(1_000);
             }
             tenantResolver.forceTenant(TENANT2);
-            while (jobInfoRepos.findAllByStatusStatus(JobStatus.SUCCEEDED).size() < (jobInfos.length / 2)) {
+            while (jobInfoRepos.findAllByStatusStatus(JobStatus.SUCCEEDED).size() < jobInfos.length / 2) {
                 Thread.sleep(1_000);
             }
         }

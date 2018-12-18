@@ -23,9 +23,9 @@ import java.sql.Connection;
 import com.mchange.v2.c3p0.AbstractConnectionTester;
 
 /**
- * FIXME
  * @author Marc Sordi
  */
+@SuppressWarnings("serial")
 public class MultitenantConnectionTester extends AbstractConnectionTester {
 
     /*

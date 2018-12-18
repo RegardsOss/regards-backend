@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.templates.service;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -106,11 +105,14 @@ public class TemplateServiceTest {
      * Data
      */
     @SuppressWarnings("serial")
-    public static final Map<String, String> DATA = new HashMap<String, String>() {{
-        put("name", "Defaultname");
-        put("age", DATA_VALUE_1);
-        put("height", DATA_VALUE_2);
-    }};
+    public static final Map<String, String> DATA = new HashMap<String, String>() {
+
+        {
+            put("name", "Defaultname");
+            put("age", DATA_VALUE_1);
+            put("height", DATA_VALUE_2);
+        }
+    };
 
     /**
      * A template id
@@ -133,18 +135,6 @@ public class TemplateServiceTest {
      */
     @Autowired
     private ITemplateRepository templateRepository;
-
-    /**
-     * Mocked tenant resolver
-     */
-    @Autowired
-    private ITenantResolver tenantResolver;
-
-    /**
-     * Mocked runtime tenant resolver
-     */
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Before
     public void setUp() {

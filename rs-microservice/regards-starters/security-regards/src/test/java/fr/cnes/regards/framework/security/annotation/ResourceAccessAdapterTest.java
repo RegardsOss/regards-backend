@@ -26,12 +26,11 @@ import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+
 import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**
@@ -41,11 +40,6 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
  * @author sbinda
  */
 public class ResourceAccessAdapterTest {
-
-    /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(ResourceAccessAdapterTest.class);
 
     /**
      * Test to check json serialization/deserialization for ResourceAccess annotation
@@ -62,8 +56,8 @@ public class ResourceAccessAdapterTest {
         final Map<String, Object> attributs = new HashMap<>();
         attributs.put(ResourceAccessAdapter.ROLE_LABEL, DefaultRole.ADMIN);
         attributs.put(ResourceAccessAdapter.DESCRIPTION_LABEL, "description");
-        final ResourceAccess resourceAccess = AnnotationUtils
-                .synthesizeAnnotation(attributs, ResourceAccess.class, null);
+        final ResourceAccess resourceAccess = AnnotationUtils.synthesizeAnnotation(attributs, ResourceAccess.class,
+                                                                                   null);
 
         try {
             // Serialize test

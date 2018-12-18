@@ -23,7 +23,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 /**
  * Common processing step applied to job execution
  * @param <I> input object
- * @param <0> output object
+ * @param <O> output object
  * @param <J> associated processing job
  * FIXME Write the doc please !!!!!
  * @author Marc Sordi

@@ -38,7 +38,6 @@ import feign.gson.GsonEncoder;
  * This class allows to customize Feign behavior.<br>
  * This class has to be annotated with <code>@Configuration</code>.
  * @author Sébastien Binda
- * @see 'http://projects.spring.io/spring-cloud/spring-cloud.html#spring-cloud-feign'
  */
 @Configuration
 public class FeignClientConfiguration {
@@ -64,7 +63,6 @@ public class FeignClientConfiguration {
     /**
      * Every REGARDS clients should use a Gson decoder/encoder.
      * @return Decoder
-     * @see {@link 'fr.cnes.regards.framework.microservice.web.MicroserviceWebConfiguration'}
      */
     @Bean
     public Decoder getDecoder(@Autowired(required = false) Gson pGson) {
@@ -77,7 +75,6 @@ public class FeignClientConfiguration {
     /**
      * Every REGARDS clients should use a Gson decoder/encoder.
      * @return Encoder
-     * @see {@link 'fr.cnes.regards.framework.microservice.web.MicroserviceWebConfiguration'}
      */
     @Bean
     public Encoder getEncoder(@Autowired(required = false) Gson pGson) {

@@ -13,7 +13,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>jpa-multitenant-regards-test</artifactId>
-    <version>4.0.0-SNAPSHOT</version>
     <description>REGARDS JPA multi tenant test</description>
 
     <parent>

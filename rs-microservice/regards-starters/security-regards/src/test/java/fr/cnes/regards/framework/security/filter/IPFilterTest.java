@@ -38,7 +38,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
@@ -81,7 +80,6 @@ public class IPFilterTest {
 
     /**
      * Check security filter with ip adress for endpoints accesses
-     * @throws SecurityException test error
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Check security filter with ip adress for endpoints accesses")
@@ -137,7 +135,6 @@ public class IPFilterTest {
 
     /**
      * Check security filter with ip adress for endpoints accesses
-     * @throws SecurityException test error
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Check security filter with subdomain ip adress for endpoints accesses")

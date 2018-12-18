@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.framework.modules.plugins.client.rest;
 
-import javax.validation.Valid;
 import java.util.List;
+
+import javax.validation.Valid;
 
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
@@ -98,7 +99,7 @@ public interface IPluginClient {
     /**
      * Get all the metadata of a specified plugin.
      * @param pPluginId a plugin identifier
-     * @return a {@link List} of {@link PluginParameter}
+     * @return a {@link PluginMetaData}
      */
     @RequestMapping(value = PLUGINS_PLUGINID, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
@@ -130,7 +131,7 @@ public interface IPluginClient {
     /**
      * Create a new {@link PluginConfiguration}.
      * @param pPluginConfiguration a {@link PluginConfiguration}
-     * @return the {@link PluginConfiguration] created
+     * @return the created {@link PluginConfiguration}
      */
     @RequestMapping(value = PLUGINS_PLUGINID_CONFIGS, method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

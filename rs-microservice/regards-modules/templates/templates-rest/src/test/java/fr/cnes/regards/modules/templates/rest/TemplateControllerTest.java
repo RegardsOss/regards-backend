@@ -71,7 +71,7 @@ public class TemplateControllerTest {
     public void setUp() {
         // Init a template
         template = new Template(TemplateTestConstants.CODE, TemplateTestConstants.CONTENT, TemplateTestConstants.DATA,
-                                null);
+                null);
         template.setId(TemplateTestConstants.ID);
 
         // Mock stuff
@@ -157,7 +157,6 @@ public class TemplateControllerTest {
      * Test method for {@link fr.cnes.regards.modules.templates.rest.TemplateController#findById(java.lang.Long)}.
      * @throws EntityNotFoundException if no template with passed id could be found
      */
-    @SuppressWarnings("unchecked")
     @Test(expected = EntityNotFoundException.class)
     @Purpose("Check that the system handles the case where trying to retrieve a template of unknown id.")
     @Requirement("REGARDS_DSL_SYS_ERG_310")

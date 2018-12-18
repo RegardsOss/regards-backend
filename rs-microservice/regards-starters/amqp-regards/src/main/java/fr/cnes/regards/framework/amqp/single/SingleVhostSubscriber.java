@@ -19,7 +19,6 @@
 package fr.cnes.regards.framework.amqp.single;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
@@ -30,7 +29,6 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
@@ -73,14 +71,14 @@ public class SingleVhostSubscriber extends AbstractSubscriber implements ISubscr
 
                 Class<?> handlerClass = entry.getKey();
                 Class<? extends ISubscribable> eventType = handledEvents.get(handlerClass);
-                IHandler<? extends ISubscribable> handler = handlerInstances.get(handlerClass);
+                //                IHandler<? extends ISubscribable> handler = handlerInstances.get(handlerClass);
                 WorkerMode workerMode = EventUtils.getWorkerMode(eventType);
                 Target target = EventUtils.getTargetRestriction(eventType);
 
                 // Only useful for UNICAST tenant dependent queues
                 if (WorkerMode.UNICAST.equals(workerMode)) {
-                    Optional<Class<? extends IHandler<?>>> handlerType =
-                            handler == null ? Optional.empty() : Optional.of(handler.getType());
+                    //                    Optional<Class<? extends IHandler<?>>> handlerType =
+                    //                            handler == null ? Optional.empty() : Optional.of(handler.getType());
                     String queueNameToRemove = amqpAdmin.getUnicastQueueName(tenant, eventType, target);
                     String virtualHost = resolveVirtualHost(tenant);
 

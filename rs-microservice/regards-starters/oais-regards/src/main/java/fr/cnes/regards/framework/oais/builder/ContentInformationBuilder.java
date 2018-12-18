@@ -50,16 +50,11 @@ import fr.cnes.regards.framework.oais.urn.DataType;
  * <br/>
  * To define the data object, use one of the following methods :
  * <ul>
- * <li>{@link #setDataObject(DataType, URL, String, String)}</li>
  * <li>{@link #setDataObject(DataType, Path, String, String)}</li>
  * <li>{@link #setDataObject(DataType, String, String, String, Long, URL...)}</li>
  * <li>{@link #setDataObject(DataType, Path, String, String, String, Long)}</li>
  * <li>{@link #setDataObject(DataType, Path, String)}</li>
- * <li>{@link #setDataObject(DataType, URL, String)}</li>
  * <li>{@link #setDataObject(DataType, Path, String, String)}</li>
- * <li>{@link #setDataObject(DataType, URL, String, String)}</li>
- * <li>{@link #setDataObject(DataType, Path, String, String, Long)}</li>
- * <li>{@link #setDataObject(DataType, URL, String, String, Long)}</li>
  * </ul>
  * <br/>
  * To set the representation information, use :
@@ -147,8 +142,8 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
         try {
             setDataObject(dataType, filename, algorithm, checksum, fileSize, filePath.toUri().toURL());
         } catch (MalformedURLException e) {
-            String errorMessage = String
-                    .format("Cannot transform %s to valid URL (MalformedURLException).", filePath.toString());
+            String errorMessage = String.format("Cannot transform %s to valid URL (MalformedURLException).",
+                                                filePath.toString());
             LOGGER.error(errorMessage, e);
             throw new IllegalArgumentException(errorMessage);
         }

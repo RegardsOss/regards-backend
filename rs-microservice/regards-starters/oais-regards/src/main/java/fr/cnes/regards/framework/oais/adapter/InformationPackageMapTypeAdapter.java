@@ -20,6 +20,7 @@ import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
+
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterBean;
 
 /**
@@ -42,6 +43,7 @@ public class InformationPackageMapTypeAdapter extends TypeAdapter<InformationPac
 
     @Override
     public void write(JsonWriter out, InformationPackageMap value) throws IOException {
+        @SuppressWarnings("rawtypes")
         TypeAdapter<Map> mapAdapter = gson.getAdapter(Map.class);
         mapAdapter.write(out, value);
     }

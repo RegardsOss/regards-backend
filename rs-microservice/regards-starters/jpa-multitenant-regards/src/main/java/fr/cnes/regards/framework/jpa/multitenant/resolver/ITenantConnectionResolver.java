@@ -55,7 +55,6 @@ public interface ITenantConnectionResolver {
      * @param tenant target tenant
      * @param state new connection state
      * @param errorCause optional error cause (useful when {@link TenantConnectionState#ERROR}!)
-     * @return updated connection
      */
     void updateState(String microservice, String tenant, TenantConnectionState state, Optional<String> errorCause)
             throws JpaMultitenantException;

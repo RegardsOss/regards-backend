@@ -57,7 +57,7 @@ public final class DownloadUtils {
                 InputStream sourceStream = DownloadUtils.getInputStreamThroughProxy(source, proxy, pConnectTimeout);
                 // lets compute the checksum during the copy!
                 DigestInputStream dis = new DigestInputStream(sourceStream,
-                                                              MessageDigest.getInstance(checksumAlgorithm))) {
+                        MessageDigest.getInstance(checksumAlgorithm))) {
             ByteStreams.copy(dis, os);
             return ChecksumUtils.getHexChecksum(dis.getMessageDigest().digest());
         }
@@ -92,13 +92,6 @@ public final class DownloadUtils {
         return checksum.equals(expectedChecksum);
     }
 
-    /**
-     *
-     * @param source
-     * @param proxy
-     * @return
-     * @throws IOException
-     */
     public static InputStream getInputStreamThroughProxy(URL source, Proxy proxy) throws IOException {
         URLConnection connection = source.openConnection(proxy);
         connection.setDoInput(true); //that's the default but lets set it explicitly for understanding

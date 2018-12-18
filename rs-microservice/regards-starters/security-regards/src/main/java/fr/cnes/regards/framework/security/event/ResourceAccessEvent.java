@@ -43,6 +43,7 @@ public class ResourceAccessEvent implements ISubscribable {
     /**
      * for serialization needs
      */
+    @SuppressWarnings("unused")
     private ResourceAccessEvent() {
     }
 

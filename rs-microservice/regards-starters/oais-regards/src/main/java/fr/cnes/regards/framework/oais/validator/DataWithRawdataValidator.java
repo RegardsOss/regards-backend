@@ -1,9 +1,10 @@
 package fr.cnes.regards.framework.oais.validator;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
 import java.util.Iterator;
 import java.util.stream.Collectors;
+
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
 
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
 import fr.cnes.regards.framework.oais.ContentInformation;
@@ -15,6 +16,7 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
+@SuppressWarnings("rawtypes")
 public class DataWithRawdataValidator implements ConstraintValidator<DataWithRawdata, AbstractInformationPackage> {
 
     @Override
@@ -28,7 +30,7 @@ public class DataWithRawdataValidator implements ConstraintValidator<DataWithRaw
         if (value.getIpType() == EntityType.DATA) {
             // lets see if there is at least one file representing a RAWDATA
             boolean hasRawData = false;
-            InformationPackageProperties properties = ((InformationPackageProperties) value.getProperties());
+            InformationPackageProperties properties = (InformationPackageProperties) value.getProperties();
             if (properties == null) {
                 // because of SIP which are references
                 return true;

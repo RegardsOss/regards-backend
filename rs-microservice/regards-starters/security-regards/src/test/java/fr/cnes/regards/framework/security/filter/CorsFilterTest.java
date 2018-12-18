@@ -18,12 +18,13 @@
  */
 package fr.cnes.regards.framework.security.filter;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
@@ -51,18 +51,7 @@ public class CorsFilterTest {
     private static final Logger LOG = LoggerFactory.getLogger(CorsFilterTest.class);
 
     /**
-     * Test user Role
-     */
-    private static final String ROLE_NAME = "USER";
-
-    /**
-     * Tenant test
-     */
-    private static final String TENANT_NAME = "tenant";
-
-    /**
      * Check security filter with cors requests
-     * @throws SecurityException test error
      */
     @Requirement("REGARDS_DSL_SYS_ARC_030")
     @Purpose("Check security filter with cors requests")
@@ -102,7 +91,6 @@ public class CorsFilterTest {
 
     /**
      * Check security filter with cors requests
-     * @throws SecurityException test error
      */
     @Requirement("REGARDS_DSL_SYS_ARC_030")
     @Requirement("REGARDS_DSL_SYS_ARC_040")

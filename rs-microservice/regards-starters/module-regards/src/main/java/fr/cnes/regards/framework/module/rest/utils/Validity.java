@@ -11,6 +11,7 @@ public final class Validity {
     /**
      * private constructor for serialization issue
      */
+    @SuppressWarnings("unused")
     private Validity() {
     }
 

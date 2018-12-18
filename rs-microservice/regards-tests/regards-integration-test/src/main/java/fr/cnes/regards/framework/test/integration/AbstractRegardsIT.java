@@ -25,20 +25,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
 
 import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.gson.Gson;
@@ -123,53 +120,53 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
     @Autowired
     protected MockMvc mvc;
 
-    /**
-     * @deprecated Deprecated in favor of
-     * {@link AbstractRegardsIT#performPost(String, String, Object, RequestBuilderCustomizer, String, Object...)}
-     */
-    @Deprecated
-    protected ResultActions performPostWithContentType(String urlTemplate, String authToken, Object content,
-            String contentType, List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectations(matchers);
-        requestBuilderCustomizer.customizeHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-        requestBuilderCustomizer.customizeHeaders().add(HttpHeaders.CONTENT_TYPE, contentType);
-        return performPost(urlTemplate, authToken, content, requestBuilderCustomizer, errorMsg, urlVariables);
-    }
-
-    /**
-     * @deprecated Deprecated in favor of
-     * {@link AbstractRegardsIT#performPut(String, String, Object, RequestBuilderCustomizer, String, Object...)}
-     */
-    @Deprecated
-    protected ResultActions performPutWithContentType(String urlTemplate, String authToken, Object content,
-            String contentType, List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectations(matchers);
-        requestBuilderCustomizer.customizeHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-        requestBuilderCustomizer.customizeHeaders().add(HttpHeaders.CONTENT_TYPE, contentType);
-        return performPut(urlTemplate, authToken, content, requestBuilderCustomizer, errorMsg, urlVariables);
-    }
+    //    /**
+    //     * @deprecated Deprecated in favor of
+    //     * {@link AbstractRegardsIT#performPost(String, String, Object, RequestBuilderCustomizer, String, Object...)}
+    //     */
+    //    @Deprecated
+    //    private ResultActions performPostWithContentType(String urlTemplate, String authToken, Object content,
+    //            String contentType, List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
+    //        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+    //        requestBuilderCustomizer.addExpectations(matchers);
+    //        requestBuilderCustomizer.customizeHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+    //        requestBuilderCustomizer.customizeHeaders().add(HttpHeaders.CONTENT_TYPE, contentType);
+    //        return performPost(urlTemplate, authToken, content, requestBuilderCustomizer, errorMsg, urlVariables);
+    //    }
+    //
+    //    /**
+    //     * @deprecated Deprecated in favor of
+    //     * {@link AbstractRegardsIT#performPut(String, String, Object, RequestBuilderCustomizer, String, Object...)}
+    //     */
+    //    @Deprecated
+    //    private ResultActions performPutWithContentType(String urlTemplate, String authToken, Object content,
+    //            String contentType, List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
+    //        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+    //        requestBuilderCustomizer.addExpectations(matchers);
+    //        requestBuilderCustomizer.customizeHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+    //        requestBuilderCustomizer.customizeHeaders().add(HttpHeaders.CONTENT_TYPE, contentType);
+    //        return performPut(urlTemplate, authToken, content, requestBuilderCustomizer, errorMsg, urlVariables);
+    //    }
 
     // Automatic default security management methods
 
-    /**
-     * @deprecated Deprecated in favor of
-     * {@link AbstractRegardsIT#performDefaultGet(String, String, RequestBuilderCustomizer, String, Object...)}
-     */
-    @Deprecated
-    protected ResultActions performDefaultGet(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
-            RequestParamBuilder requestParams, Object... urlVariables) {
-        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.GET, getDefaultUserEmail(),
-                                    getDefaultRole());
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectations(matchers);
-        for (Map.Entry<String, List<String>> requestParam : requestParams.getParameters().entrySet()) {
-            requestBuilderCustomizer.customizeRequestParam().param(requestParam.getKey(),
-                                                                   requestParam.getValue().toArray(new String[0]));
-        }
-        return performGet(urlTemplate, jwt, requestBuilderCustomizer, errorMsg, urlVariables);
-    }
+    //    /**
+    //     * @deprecated Deprecated in favor of
+    //     * {@link AbstractRegardsIT#performDefaultGet(String, String, RequestBuilderCustomizer, String, Object...)}
+    //     */
+    //    @Deprecated
+    //    private ResultActions performDefaultGet(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
+    //            RequestParamBuilder requestParams, Object... urlVariables) {
+    //        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.GET, getDefaultUserEmail(),
+    //                                    getDefaultRole());
+    //        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+    //        requestBuilderCustomizer.addExpectations(matchers);
+    //        for (Map.Entry<String, List<String>> requestParam : requestParams.getParameters().entrySet()) {
+    //            requestBuilderCustomizer.customizeRequestParam().param(requestParam.getKey(),
+    //                                                                   requestParam.getValue().toArray(new String[0]));
+    //        }
+    //        return performGet(urlTemplate, jwt, requestBuilderCustomizer, errorMsg, urlVariables);
+    //    }
 
     /**
      * Allows to perform GET request with the security automatically handled
@@ -189,50 +186,50 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
         return requestBuilderCustomizer.performGet(mvc, urlTemplate, authToken, errorMsg, urlVariables);
     }
 
-    /**
-     * @deprecated Deprecated in favor of
-     * {@link AbstractRegardsIT#performDefaultGet(String, RequestBuilderCustomizer, String, Object...)}
-     */
-    @Deprecated
-    protected ResultActions performDefaultGet(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
-            Object... urlVariables) {
-        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.GET, getDefaultUserEmail(),
-                                    getDefaultRole());
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectations(matchers);
-        return performGet(urlTemplate, jwt, requestBuilderCustomizer, errorMsg, urlVariables);
-    }
+    //    /**
+    //     * @deprecated Deprecated in favor of
+    //     * {@link AbstractRegardsIT#performDefaultGet(String, RequestBuilderCustomizer, String, Object...)}
+    //     */
+    //    @Deprecated
+    //    private ResultActions performDefaultGet(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
+    //            Object... urlVariables) {
+    //        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.GET, getDefaultUserEmail(),
+    //                                    getDefaultRole());
+    //        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+    //        requestBuilderCustomizer.addExpectations(matchers);
+    //        return performGet(urlTemplate, jwt, requestBuilderCustomizer, errorMsg, urlVariables);
+    //    }
 
-    /**
-     * @deprecated Deprecated in favor of
-     * {@link AbstractRegardsIT#performDefaultGet(String, RequestBuilderCustomizer, String, Object...)}
-     */
-    @Deprecated
-    protected ResultActions performDefaultGet(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
-            HttpHeaders headers, Object... urlVariables) {
-        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.GET, getDefaultUserEmail(),
-                                    getDefaultRole());
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectations(matchers);
-        for (Map.Entry<String, List<String>> header : headers.entrySet()) {
-            requestBuilderCustomizer.customizeHeaders().put(header.getKey(), header.getValue());
-        }
-        return performGet(urlTemplate, jwt, requestBuilderCustomizer, errorMsg, urlVariables);
-    }
-
-    /**
-     * @deprecated Deprecated in favor of
-     * {@link AbstractRegardsIT#performDefaultPost(String, Object, RequestBuilderCustomizer, String, Object...)}
-     */
-    @Deprecated
-    protected ResultActions performDefaultPost(String urlTemplate, Object content, List<ResultMatcher> matchers,
-            String errorMsg, Object... urlVariables) {
-        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.POST, getDefaultUserEmail(),
-                                    getDefaultRole());
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectations(matchers);
-        return performPost(urlTemplate, jwt, content, requestBuilderCustomizer, errorMsg, urlVariables);
-    }
+    //    /**
+    //     * @deprecated Deprecated in favor of
+    //     * {@link AbstractRegardsIT#performDefaultGet(String, RequestBuilderCustomizer, String, Object...)}
+    //     */
+    //    @Deprecated
+    //    private ResultActions performDefaultGet(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
+    //            HttpHeaders headers, Object... urlVariables) {
+    //        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.GET, getDefaultUserEmail(),
+    //                                    getDefaultRole());
+    //        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+    //        requestBuilderCustomizer.addExpectations(matchers);
+    //        for (Map.Entry<String, List<String>> header : headers.entrySet()) {
+    //            requestBuilderCustomizer.customizeHeaders().put(header.getKey(), header.getValue());
+    //        }
+    //        return performGet(urlTemplate, jwt, requestBuilderCustomizer, errorMsg, urlVariables);
+    //    }
+    //
+    //    /**
+    //     * @deprecated Deprecated in favor of
+    //     * {@link AbstractRegardsIT#performDefaultPost(String, Object, RequestBuilderCustomizer, String, Object...)}
+    //     */
+    //    @Deprecated
+    //    private ResultActions performDefaultPost(String urlTemplate, Object content, List<ResultMatcher> matchers,
+    //            String errorMsg, Object... urlVariables) {
+    //        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.POST, getDefaultUserEmail(),
+    //                                    getDefaultRole());
+    //        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+    //        requestBuilderCustomizer.addExpectations(matchers);
+    //        return performPost(urlTemplate, jwt, content, requestBuilderCustomizer, errorMsg, urlVariables);
+    //    }
 
     /**
      * Allows to perform POST request with the security automatically handled
@@ -252,19 +249,19 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
         return requestBuilderCustomizer.performPost(mvc, urlTemplate, token, content, errorMsg, urlVariables);
     }
 
-    /**
-     * @deprecated Deprecated in favor of
-     * {@link AbstractRegardsIT#performDefaultPut(String, Object, RequestBuilderCustomizer, String, Object...)}
-     */
-    @Deprecated
-    protected ResultActions performDefaultPut(String urlTemplate, Object content, List<ResultMatcher> matchers,
-            String errorMsg, Object... urlVariables) {
-        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.PUT, getDefaultUserEmail(),
-                                    getDefaultRole());
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectations(matchers);
-        return performPut(urlTemplate, jwt, content, requestBuilderCustomizer, errorMsg, urlVariables);
-    }
+    //    /**
+    //     * @deprecated Deprecated in favor of
+    //     * {@link AbstractRegardsIT#performDefaultPut(String, Object, RequestBuilderCustomizer, String, Object...)}
+    //     */
+    //    @Deprecated
+    //    private ResultActions performDefaultPut(String urlTemplate, Object content, List<ResultMatcher> matchers,
+    //            String errorMsg, Object... urlVariables) {
+    //        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.PUT, getDefaultUserEmail(),
+    //                                    getDefaultRole());
+    //        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+    //        requestBuilderCustomizer.addExpectations(matchers);
+    //        return performPut(urlTemplate, jwt, content, requestBuilderCustomizer, errorMsg, urlVariables);
+    //    }
 
     /**
      * Allows to perform PUT request with the security automatically handled
@@ -284,43 +281,43 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
         return requestBuilderCustomizer.performPut(mvc, urlTemplate, token, content, errorMsg, urlVariables);
     }
 
-    /**
-     * @deprecated Deprecated in favor of
-     * {@link AbstractRegardsIT#performDefaultPost(String, Object, RequestBuilderCustomizer, String, Object...)}
-     */
-    @Deprecated
-    protected ResultActions performDefaultPostWithContentType(String urlTemplate, Object content, String contentType,
-            List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
-        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.POST, getDefaultUserEmail(),
-                                    getDefaultRole());
-        return performPostWithContentType(urlTemplate, jwt, content, contentType, matchers, errorMsg, urlVariables);
-    }
-
-    /**
-     * @deprecated Deprecated in favor of
-     * {@link AbstractRegardsIT#performDefaultPut(String, Object, RequestBuilderCustomizer, String, Object...)}
-     */
-    @Deprecated
-    protected ResultActions performDefaultPutWithContentType(String urlTemplate, Object content, String contentType,
-            List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
-        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.PUT, getDefaultUserEmail(),
-                                    getDefaultRole());
-        return performPutWithContentType(urlTemplate, jwt, content, contentType, matchers, errorMsg, urlVariables);
-    }
-
-    /**
-     * @deprecated Deprecated in favor of
-     * {@link AbstractRegardsIT#performDefaultDelete(String, RequestBuilderCustomizer, String, Object...)}
-     */
-    @Deprecated
-    protected ResultActions performDefaultDelete(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
-            Object... urlVariables) {
-        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.DELETE, getDefaultUserEmail(),
-                                    getDefaultRole());
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectations(matchers);
-        return performDelete(urlTemplate, jwt, requestBuilderCustomizer, errorMsg, urlVariables);
-    }
+    //    /**
+    //     * @deprecated Deprecated in favor of
+    //     * {@link AbstractRegardsIT#performDefaultPost(String, Object, RequestBuilderCustomizer, String, Object...)}
+    //     */
+    //    @Deprecated
+    //    private ResultActions performDefaultPostWithContentType(String urlTemplate, Object content, String contentType,
+    //            List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
+    //        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.POST, getDefaultUserEmail(),
+    //                                    getDefaultRole());
+    //        return performPostWithContentType(urlTemplate, jwt, content, contentType, matchers, errorMsg, urlVariables);
+    ////    }
+    //
+    //    /**
+    //     * @deprecated Deprecated in favor of
+    //     * {@link AbstractRegardsIT#performDefaultPut(String, Object, RequestBuilderCustomizer, String, Object...)}
+    //     */
+    //    @Deprecated
+    //    private ResultActions performDefaultPutWithContentType(String urlTemplate, Object content, String contentType,
+    //            List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
+    //        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.PUT, getDefaultUserEmail(),
+    //                                    getDefaultRole());
+    //        return performPutWithContentType(urlTemplate, jwt, content, contentType, matchers, errorMsg, urlVariables);
+    //    }
+    //
+    //    /**
+    //     * @deprecated Deprecated in favor of
+    //     * {@link AbstractRegardsIT#performDefaultDelete(String, RequestBuilderCustomizer, String, Object...)}
+    //     */
+    //    @Deprecated
+    //    private ResultActions performDefaultDelete(String urlTemplate, List<ResultMatcher> matchers, String errorMsg,
+    //            Object... urlVariables) {
+    //        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.DELETE, getDefaultUserEmail(),
+    //                                    getDefaultRole());
+    //        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+    //        requestBuilderCustomizer.addExpectations(matchers);
+    //        return performDelete(urlTemplate, jwt, requestBuilderCustomizer, errorMsg, urlVariables);
+    //    }
 
     /**
      * Allows to perform DELETE request with the security automatically handled
@@ -341,19 +338,19 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
         return requestBuilderCustomizer.performDelete(mvc, urlTemplate, authToken, errorMsg, urlVariables);
     }
 
-    /**
-     * @deprecated Deprecated in favor of
-     * {@link AbstractRegardsIT#performDefaultFileUpload(String, Path, RequestBuilderCustomizer, String, Object...)}
-     */
-    @Deprecated
-    protected ResultActions performDefaultFileUpload(String urlTemplate, Path pFilePath, List<ResultMatcher> matchers,
-            String errorMsg, Object... urlVariables) {
-        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.POST, getDefaultUserEmail(),
-                                    getDefaultRole());
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectations(matchers);
-        return performFileUpload(urlTemplate, jwt, pFilePath, requestBuilderCustomizer, errorMsg, urlVariables);
-    }
+    //    /**
+    //     * @deprecated Deprecated in favor of
+    //     * {@link AbstractRegardsIT#performDefaultFileUpload(String, Path, RequestBuilderCustomizer, String, Object...)}
+    //     */
+    //    @Deprecated
+    //    private ResultActions performDefaultFileUpload(String urlTemplate, Path pFilePath, List<ResultMatcher> matchers,
+    //            String errorMsg, Object... urlVariables) {
+    //        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.POST, getDefaultUserEmail(),
+    //                                    getDefaultRole());
+    //        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+    //        requestBuilderCustomizer.addExpectations(matchers);
+    //        return performFileUpload(urlTemplate, jwt, pFilePath, requestBuilderCustomizer, errorMsg, urlVariables);
+    //    }
 
     /**
      * Multipart request uses "file" as part name at the moment
@@ -365,19 +362,19 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
         return performFileUpload(urlTemplate, jwt, pFilePath, requestBuilderCustomizer, errorMsg, urlVariables);
     }
 
-    /**
-     * @deprecated Deprecated in favor of
-     * {@link AbstractRegardsIT#performDefaultFileUpload(String, List, RequestBuilderCustomizer, String, Object...)}
-     */
-    @Deprecated
-    protected ResultActions performDefaultFileUpload(String urlTemplate, List<MockMultipartFile> pFileList,
-            List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
-        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.POST, getDefaultUserEmail(),
-                                    getDefaultRole());
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectations(matchers);
-        return performFileUpload(urlTemplate, jwt, pFileList, requestBuilderCustomizer, errorMsg, urlVariables);
-    }
+    //    /**
+    //     * @deprecated Deprecated in favor of
+    //     * {@link AbstractRegardsIT#performDefaultFileUpload(String, List, RequestBuilderCustomizer, String, Object...)}
+    //     */
+    //    @Deprecated
+    //    private ResultActions performDefaultFileUpload(String urlTemplate, List<MockMultipartFile> pFileList,
+    //            List<ResultMatcher> matchers, String errorMsg, Object... urlVariables) {
+    //        String jwt = manageSecurity(getDefaultTenant(), urlTemplate, RequestMethod.POST, getDefaultUserEmail(),
+    //                                    getDefaultRole());
+    //        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
+    //        requestBuilderCustomizer.addExpectations(matchers);
+    //        return performFileUpload(urlTemplate, jwt, pFileList, requestBuilderCustomizer, errorMsg, urlVariables);
+    //    }
 
     /**
      * Multipart request uses "file" as part name at the moment
@@ -435,15 +432,15 @@ public abstract class AbstractRegardsIT extends AbstractRegardsServiceIT {
         Assert.assertEquals(pMediaType, current);
     }
 
-    /**
-     * Allow to get a request builder customizer to make a request to the server
-     * @return a new instance of {@link RequestBuilderCustomizer}
-     * @deprecated prefer use {@link #customizer()} which is a lot more synthetic
-     */
-    @Deprecated
-    protected RequestBuilderCustomizer getNewRequestBuilderCustomizer() {
-        return customizer();
-    }
+    //    /**
+    //     * Allow to get a request builder customizer to make a request to the server
+    //     * @return a new instance of {@link RequestBuilderCustomizer}
+    //     * @deprecated prefer use {@link #customizer()} which is a lot more synthetic
+    //     */
+    //    @Deprecated
+    //    private RequestBuilderCustomizer getNewRequestBuilderCustomizer() {
+    //        return customizer();
+    //    }
 
     /**
      * @return a new RequestBuilderCustomizer

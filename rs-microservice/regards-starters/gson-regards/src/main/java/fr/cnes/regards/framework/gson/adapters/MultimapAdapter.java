@@ -43,7 +43,7 @@ public class MultimapAdapter implements JsonDeserializer<Multimap<?, ?>>, JsonSe
     private <KK, V> Type multimapTypeToMapType(Type type) {
         final Type[] typeArguments = ((ParameterizedType) type).getActualTypeArguments();
         assert typeArguments.length == 2;
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({ "unchecked", "serial" })
         final TypeToken<Map<KK, Collection<V>>> mapTypeToken = new TypeToken<Map<KK, Collection<V>>>() {
 
         }.where(new TypeParameter<KK>() {

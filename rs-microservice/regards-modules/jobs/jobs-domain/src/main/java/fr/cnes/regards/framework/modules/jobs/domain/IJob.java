@@ -56,7 +56,6 @@ public interface IJob<R> extends Runnable {
     /**
      * If the job needs a workspace, JobService create one for it before executing job and clean it after execution
      * @param workspaceSupplier workspace supplier that is also called by the method to set workspace path
-     * @throws IOException when workspaceSupplier is called
      */
     void setWorkspace(CheckedSupplier<Path, IOException> workspaceSupplier) throws JobWorkspaceException;
 

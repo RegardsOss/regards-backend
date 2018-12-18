@@ -18,13 +18,14 @@
  */
 package fr.cnes.regards.framework.security.filter;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.regex.Pattern;
+
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.List;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,7 +113,7 @@ public class CorsFilter extends OncePerRequestFilter {
 
         final String originAdress = getClientOrigin(request);
 
-        if ((authorizedAddress == null) || (authorizedAddress.isEmpty())) {
+        if (authorizedAddress == null || authorizedAddress.isEmpty()) {
             allowCorsRequest(request, response, pFilterChain);
         } else {
             boolean isAuthorized = false;
@@ -144,8 +145,6 @@ public class CorsFilter extends OncePerRequestFilter {
      * @param request Http request
      * @param response Http response
      * @param filterChain Filter chain
-     * @throws ServletException Servlet error
-     * @throws IOException      Internal error
      */
     public static void allowCorsRequest(HttpServletRequest request, HttpServletResponse response,
             FilterChain filterChain) {

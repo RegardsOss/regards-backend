@@ -47,6 +47,7 @@ import com.google.gson.JsonElement;
 /**
  * @author Vlad Mihalcea
  */
+@SuppressWarnings("serial")
 public class JsonBinarySqlTypeDescriptor extends AbstractJsonSqlTypeDescriptor {
 
     public static final JsonBinarySqlTypeDescriptor INSTANCE = new JsonBinarySqlTypeDescriptor();

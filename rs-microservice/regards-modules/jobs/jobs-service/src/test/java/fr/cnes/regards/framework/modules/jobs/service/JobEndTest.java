@@ -16,6 +16,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.BlowJob;
@@ -102,8 +103,8 @@ public class JobEndTest {
         // Look at jobInfo from database
         do {
             blowJob = jobInfoRepos.findById(blowJob.getId()).get();
-        } while ((blowJob.getStatus().getStatus() != JobStatus.SUCCEEDED) && (blowJob.getStatus().getStatus()
-                != JobStatus.FAILED));
+        } while (blowJob.getStatus().getStatus() != JobStatus.SUCCEEDED
+                && blowJob.getStatus().getStatus() != JobStatus.FAILED);
         Assert.assertEquals(JobStatus.SUCCEEDED, blowJob.getStatus().getStatus());
         Assert.assertNotNull(blowJob.getResult());
         Assert.assertTrue(blowJob.getResult() instanceof Float);
@@ -111,6 +112,7 @@ public class JobEndTest {
         Thread.sleep(5_000);
     }
 
+    @SuppressWarnings("rawtypes")
     @Test
     public void testWithResults2() throws InterruptedException {
         JobInfo handJob = new JobInfo(false);
@@ -121,8 +123,8 @@ public class JobEndTest {
         // Look at jobInfo from database
         do {
             handJob = jobInfoRepos.findById(handJob.getId()).get();
-        } while ((handJob.getStatus().getStatus() != JobStatus.SUCCEEDED) && (handJob.getStatus().getStatus()
-                != JobStatus.FAILED));
+        } while (handJob.getStatus().getStatus() != JobStatus.SUCCEEDED
+                && handJob.getStatus().getStatus() != JobStatus.FAILED);
         Assert.assertEquals(JobStatus.SUCCEEDED, handJob.getStatus().getStatus());
         Assert.assertNotNull(handJob.getResult());
         Assert.assertTrue(handJob.getResult() instanceof Map);
@@ -146,8 +148,8 @@ public class JobEndTest {
         // Look at jobInfo from database
         do {
             footJob = jobInfoRepos.findById(footJob.getId()).get();
-        } while ((footJob.getStatus().getStatus() != JobStatus.SUCCEEDED) && (footJob.getStatus().getStatus()
-                != JobStatus.FAILED));
+        } while (footJob.getStatus().getStatus() != JobStatus.SUCCEEDED
+                && footJob.getStatus().getStatus() != JobStatus.FAILED);
         Assert.assertEquals(JobStatus.SUCCEEDED, footJob.getStatus().getStatus());
         Assert.assertNotNull(footJob.getResult());
         Assert.assertTrue(footJob.getResult() instanceof Toto);
@@ -172,8 +174,8 @@ public class JobEndTest {
         // Look at jobInfo from database
         do {
             jobSnow = jobInfoRepos.findById(jobSnow.getId()).get();
-        } while ((jobSnow.getStatus().getStatus() != JobStatus.SUCCEEDED) && (jobSnow.getStatus().getStatus()
-                != JobStatus.FAILED));
+        } while (jobSnow.getStatus().getStatus() != JobStatus.SUCCEEDED
+                && jobSnow.getStatus().getStatus() != JobStatus.FAILED);
         Assert.assertEquals(JobStatus.FAILED, jobSnow.getStatus().getStatus());
         Assert.assertEquals("Expiration date reached", jobSnow.getStatus().getStackTrace());
     }

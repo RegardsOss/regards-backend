@@ -21,8 +21,6 @@
 
     <groupId>fr.cnes.regards.framework.utils</groupId>
     <artifactId>plugin-utils</artifactId>
-    <version>4.0.0-SNAPSHOT</version>
-
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2016</inceptionYear>
     <licenses>

@@ -1,5 +1,10 @@
 package fr.cnes.regards.framework.test.integration;
 
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.removeHeaders;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,11 +37,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
 import fr.cnes.regards.framework.security.utils.HttpConstants;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.removeHeaders;
 
 /**
  * Allow to customize the request done thanks to {@link MockMvc}.
@@ -134,8 +136,7 @@ public class RequestBuilderCustomizer {
      */
     protected ResultActions performDelete(MockMvc mvc, String urlTemplate, String authToken, String errorMsg,
             Object... urlVariables) {
-        return performRequest(mvc,
-                              getRequestBuilder(authToken, HttpMethod.DELETE, urlTemplate, urlVariables),
+        return performRequest(mvc, getRequestBuilder(authToken, HttpMethod.DELETE, urlTemplate, urlVariables),
                               errorMsg);
     }
 
@@ -144,8 +145,7 @@ public class RequestBuilderCustomizer {
      */
     protected ResultActions performPost(MockMvc mvc, String urlTemplate, String authToken, Object content,
             String errorMsg, Object... urlVariables) {
-        return performRequest(mvc,
-                              getRequestBuilder(authToken, HttpMethod.POST, content, urlTemplate, urlVariables),
+        return performRequest(mvc, getRequestBuilder(authToken, HttpMethod.POST, content, urlTemplate, urlVariables),
                               errorMsg);
     }
 
@@ -154,8 +154,7 @@ public class RequestBuilderCustomizer {
      */
     protected ResultActions performPut(MockMvc mvc, String urlTemplate, String authToken, Object content,
             String errorMsg, Object... urlVariables) {
-        return performRequest(mvc,
-                              getRequestBuilder(authToken, HttpMethod.PUT, content, urlTemplate, urlVariables),
+        return performRequest(mvc, getRequestBuilder(authToken, HttpMethod.PUT, content, urlTemplate, urlVariables),
                               errorMsg);
     }
 
@@ -172,8 +171,7 @@ public class RequestBuilderCustomizer {
      */
     protected ResultActions performFileUpload(MockMvc mvc, String urlTemplate, String authToken, Path filePath,
             String errorMsg, Object... urlVariables) {
-        return performRequest(mvc,
-                              getMultipartRequestBuilder(authToken, filePath, urlTemplate, urlVariables),
+        return performRequest(mvc, getMultipartRequestBuilder(authToken, filePath, urlTemplate, urlVariables),
                               errorMsg);
     }
 
@@ -196,8 +194,8 @@ public class RequestBuilderCustomizer {
     protected MockHttpServletRequestBuilder getRequestBuilder(String authToken, HttpMethod httpMethod,
             String urlTemplate, Object... urlVars) {
         checkCustomizationCoherence(httpMethod);
-        MockHttpServletRequestBuilder requestBuilder = RestDocumentationRequestBuilders
-                .request(httpMethod, urlTemplate, urlVars);
+        MockHttpServletRequestBuilder requestBuilder = RestDocumentationRequestBuilders.request(httpMethod, urlTemplate,
+                                                                                                urlVars);
         addSecurityHeader(requestBuilder, authToken);
 
         requestBuilder.headers(getHeaders());
@@ -216,16 +214,16 @@ public class RequestBuilderCustomizer {
         return gson.toJson(object);
     }
 
-    /**
-     * Grants access to the {@link RequestParamBuilder} used to add request parameters to the request
-     * @return requestParamBuilder for further customization
-     * @deprecated this method is only used to call {@link RequestParamBuilder#param(String, String...)} on it, prefer
-     * use {@link #addParameter(String, String...)} instead
-     */
-    @Deprecated
-    public RequestParamBuilder customizeRequestParam() {
-        return requestParamBuilder;
-    }
+    //    /**
+    //     * Grants access to the {@link RequestParamBuilder} used to add request parameters to the request
+    //     * @return requestParamBuilder for further customization
+    //     * @deprecated this method is only used to call {@link RequestParamBuilder#param(String, String...)} on it, prefer
+    //     * use {@link #addParameter(String, String...)} instead
+    //     */
+    //    @Deprecated
+    //    private RequestParamBuilder customizeRequestParam() {
+    //        return requestParamBuilder;
+    //    }
 
     /**
      * Add name/values request parameter to the request
@@ -235,15 +233,15 @@ public class RequestBuilderCustomizer {
         return this;
     }
 
-    /**
-     * Grants access to the {@link HttpHeaders} used to add request parameters to the request
-     * @return http headers for further customization
-     * @deprecated use {@link #addHeaderValue(String, String)} or {@link #addHeaderValues(String, List)}
-     */
-    @Deprecated
-    public HttpHeaders customizeHeaders() {
-        return headers;
-    }
+    //    /**
+    //     * Grants access to the {@link HttpHeaders} used to add request parameters to the request
+    //     * @return http headers for further customization
+    //     * @deprecated use {@link #addHeaderValue(String, String)} or {@link #addHeaderValues(String, List)}
+    //     */
+    //    @Deprecated
+    //    private HttpHeaders customizeHeaders() {
+    //        return headers;
+    //    }
 
     /**
      * Set or add given value to associated header name values
@@ -253,14 +251,14 @@ public class RequestBuilderCustomizer {
         return this;
     }
 
-    /**
-     * Set or add given value to associated header name values. Use {@link #addHeader(String, String)} instead.
-     */
-    @Deprecated
-    public RequestBuilderCustomizer addHeaderValue(String name, String value) {
-        headers.add(name, value);
-        return this;
-    }
+    //    /**
+    //     * Set or add given value to associated header name values. Use {@link #addHeader(String, String)} instead.
+    //     */
+    //    @Deprecated
+    //    private RequestBuilderCustomizer addHeaderValue(String name, String value) {
+    //        headers.add(name, value);
+    //        return this;
+    //    }
 
     /**
      * Set or replace given values to associated header name values
@@ -270,14 +268,14 @@ public class RequestBuilderCustomizer {
         return this;
     }
 
-    /**
-     * Set or replace given values to associated header name values.  Use {@link #addHeader(String, List)} instead.
-     */
-    @Deprecated
-    public RequestBuilderCustomizer addHeaderValues(String name, List<String> values) {
-        headers.put(name, values);
-        return this;
-    }
+    //    /**
+    //     * Set or replace given values to associated header name values.  Use {@link #addHeader(String, List)} instead.
+    //     */
+    //    @Deprecated
+    //    private RequestBuilderCustomizer addHeaderValues(String name, List<String> values) {
+    //        headers.put(name, values);
+    //        return this;
+    //    }
 
     /**
      * Set or replace given values to associated header name values
@@ -288,15 +286,22 @@ public class RequestBuilderCustomizer {
     }
 
     /**
-     * Add a whole list of ResultMatcher to be matched. Mainly here for easier refactor. We strongly advise to use
-     * {@link RequestBuilderCustomizer#expect(ResultMatcher)}.
-     * @param matchers list of matcher to be matched after by the server response
-     * @deprecated use {@link #expect(ResultMatcher)} on each ResultMatcher (haven't you strongly advised yet ?)
+     * Low level getter to directly customize request headers
      */
-    @Deprecated
-    public void addExpectations(List<ResultMatcher> matchers) {
-        expectations.addAll(matchers);
+    public HttpHeaders headers() {
+        return headers;
     }
+
+    //    /**
+    //     * Add a whole list of ResultMatcher to be matched. Mainly here for easier refactor. We strongly advise to use
+    //     * {@link RequestBuilderCustomizer#expect(ResultMatcher)}.
+    //     * @param matchers list of matcher to be matched after by the server response
+    //     * @deprecated use {@link #expect(ResultMatcher)} on each ResultMatcher (haven't you strongly advised yet ?)
+    //     */
+    //    @Deprecated
+    //    private void addExpectations(List<ResultMatcher> matchers) {
+    //        expectations.addAll(matchers);
+    //    }
 
     /**
      * Add a ResultMatcher to be matched.
@@ -411,32 +416,32 @@ public class RequestBuilderCustomizer {
         return expect(MockMvcResultMatchers.jsonPath(jsonPath, Matchers.hasToString(expectedToString)));
     }
 
-    /**
-     * Add {@link ResultMatcher} to the already present matchers
-     * @deprecated use {@link #expect(ResultMatcher)} instead (it uses fluent API)
-     */
-    @Deprecated
-    public void addExpectation(ResultMatcher matcher) {
-        expect(matcher);
-    }
-
-    /**
-     * Add snippets to be used to generate specific documentation.
-     * For exemple, request parameters and path parameters require too much specific information to be generalized.
-     * <br/>
-     * Request parameters can be documented thanks to
-     * {@link org.springframework.restdocs.request.RequestParametersSnippet} <br/>
-     * Path parameters cna be documented thanks to {@link org.springframework.restdocs.request.PathParametersSnippet}
-     * <br/>
-     * @param snippet documentation snippet to be added.
-     *
-     * @deprecated use {@link #document(Snippet)} instead
-     */
-    @Deprecated
-    public RequestBuilderCustomizer addDocumentationSnippet(Snippet snippet) {
-        docSnippets.add(snippet);
-        return this;
-    }
+    //    /**
+    //     * Add {@link ResultMatcher} to the already present matchers
+    //     * @deprecated use {@link #expect(ResultMatcher)} instead (it uses fluent API)
+    //     */
+    //    @Deprecated
+    //    private void addExpectation(ResultMatcher matcher) {
+    //        expect(matcher);
+    //    }
+    //
+    //    /**
+    //     * Add snippets to be used to generate specific documentation.
+    //     * For exemple, request parameters and path parameters require too much specific information to be generalized.
+    //     * <br/>
+    //     * Request parameters can be documented thanks to
+    //     * {@link org.springframework.restdocs.request.RequestParametersSnippet} <br/>
+    //     * Path parameters cna be documented thanks to {@link org.springframework.restdocs.request.PathParametersSnippet}
+    //     * <br/>
+    //     * @param snippet documentation snippet to be added.
+    //     *
+    //     * @deprecated use {@link #document(Snippet)} instead
+    //     */
+    //    @Deprecated
+    //    private RequestBuilderCustomizer addDocumentationSnippet(Snippet snippet) {
+    //        docSnippets.add(snippet);
+    //        return this;
+    //    }
 
     /**
      * Add snippets to be used to generate specific documentation.
@@ -473,15 +478,12 @@ public class RequestBuilderCustomizer {
             }
             if (!skipDocumentation) {
                 OperationRequestPreprocessor reqPreprocessor = preprocessRequest(prettyPrint(),
-                                                                                 removeHeaders("Authorization",
-                                                                                               "Host",
+                                                                                 removeHeaders("Authorization", "Host",
                                                                                                "Content-Length"));
                 OperationResponsePreprocessor respPreprocessor = preprocessResponse(prettyPrint(),
                                                                                     removeHeaders("Content-Length"));
-                request.andDo(MockMvcRestDocumentation.document("{ClassName}/{methodName}",
-                                                                reqPreprocessor,
-                                                                respPreprocessor,
-                                                                docSnippets.toArray(new Snippet[0])));
+                request.andDo(MockMvcRestDocumentation.document("{ClassName}/{methodName}", reqPreprocessor,
+                                                                respPreprocessor, docSnippets.toArray(new Snippet[0])));
             }
             return request;
         } catch (Exception e) { // NOSONAR
@@ -545,8 +547,8 @@ public class RequestBuilderCustomizer {
             case DELETE:
             case PUT:
                 if (!requestParamBuilder.getParameters().isEmpty()) {
-                    throw new IllegalStateException(String.format("Method %s cannot have request parameters",
-                                                                  httpMethod));
+                    throw new IllegalStateException(
+                            String.format("Method %s cannot have request parameters", httpMethod));
                 }
                 break;
             default:

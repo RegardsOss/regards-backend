@@ -5,7 +5,6 @@
 
     <groupId>fr.cnes.regards.modules</groupId>
     <artifactId>helloworld-module-archetype</artifactId>
-    <version>4.0.0-SNAPSHOT</version>
     <packaging>maven-archetype</packaging>
 
     <name>helloworld-module-archetype</name>

@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.templates.service;
 
-import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -29,12 +28,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+
 import fr.cnes.regards.modules.templates.domain.Template;
 import fr.cnes.regards.modules.templates.domain.TemplatePathSubject;
 
@@ -166,10 +168,6 @@ public class TemplateServiceConfiguration {
 
     private static final Map<String, TemplatePathSubject> templateCodePathMap = Maps.newHashMap();
 
-    private static void addTemplate(String templateCode, String templatePath, String emailSubject) {
-        templateCodePathMap.put(templateCode, new TemplatePathSubject(templatePath, emailSubject));
-    }
-
     @PostConstruct
     public void postConstruct() {
         templateCodePathMap.put(EMAIL_ACCOUNT_VALIDATION_TEMPLATE_CODE,
@@ -178,26 +176,24 @@ public class TemplateServiceConfiguration {
                                 new TemplatePathSubject(PROJECT_USER_ACTIVATED_TEMPLATE, "Access re-activated"));
         templateCodePathMap.put(PROJECT_USER_INACTIVATED_TEMPLATE_CODE,
                                 new TemplatePathSubject(PROJECT_USER_INACTIVATED_TEMPLATE, "Access deactivated"));
-        templateCodePathMap
-                .put(ORDER_CREATED_TEMPLATE_CODE, new TemplatePathSubject(ORDER_CREATED_TEMPLATE, "Order created"));
+        templateCodePathMap.put(ORDER_CREATED_TEMPLATE_CODE,
+                                new TemplatePathSubject(ORDER_CREATED_TEMPLATE, "Order created"));
         templateCodePathMap.put(ASIDE_ORDERS_NOTIFICATION_TEMPLATE_CODE,
                                 new TemplatePathSubject(ASIDE_ORDERS_NOTIFICATION_TEMPLATE, "Orders waiting"));
-        templateCodePathMap.put(NOT_DISPATCHED_DATA_FILES_CODE,
-                                new TemplatePathSubject(NOT_DISPATCHED_DATA_FILES_TEMPLATE,
-                                                        "Files not associated to any data storages"));
+        templateCodePathMap.put(NOT_DISPATCHED_DATA_FILES_CODE, new TemplatePathSubject(
+                NOT_DISPATCHED_DATA_FILES_TEMPLATE, "Files not associated to any data storages"));
         templateCodePathMap.put(REJECTED_SIPS_CODE,
                                 new TemplatePathSubject(REJECTED_SIPS_TEMPLATE, "Some sips could not be deleted"));
-        templateCodePathMap.put(NOT_SUBSETTED_DATA_FILES_CODE,
-                                new TemplatePathSubject(NOT_SUBSETTED_DATA_FILES_TEMPLATE,
-                                                        "Files could not be handled by their data storage"));
+        templateCodePathMap.put(NOT_SUBSETTED_DATA_FILES_CODE, new TemplatePathSubject(
+                NOT_SUBSETTED_DATA_FILES_TEMPLATE, "Files could not be handled by their data storage"));
         templateCodePathMap.put(UNDELETABLES_DATA_FILES_CODE, new TemplatePathSubject(UNDELETABLES_DATA_FILES_TEMPLATE,
-                                                                                      "REGARDS - Some files could not be deleted from data storage"));
-        templateCodePathMap
-                .put(ACCOUNT_UNLOCK_TEMPLATE_CODE, new TemplatePathSubject(ACCOUNT_UNLOCK_TEMPLATE, "Account Unlock"));
+                "REGARDS - Some files could not be deleted from data storage"));
+        templateCodePathMap.put(ACCOUNT_UNLOCK_TEMPLATE_CODE,
+                                new TemplatePathSubject(ACCOUNT_UNLOCK_TEMPLATE, "Account Unlock"));
         templateCodePathMap.put(ACCOUNT_REFUSED_TEMPLATE_CODE,
                                 new TemplatePathSubject(ACCOUNT_REFUSED_TEMPLATE, "Account refused"));
-        templateCodePathMap
-                .put(PASSWORD_RESET_TEMPLATE_CODE, new TemplatePathSubject(PASSWORD_RESET_TEMPLATE, "Password Reset"));
+        templateCodePathMap.put(PASSWORD_RESET_TEMPLATE_CODE,
+                                new TemplatePathSubject(PASSWORD_RESET_TEMPLATE, "Password Reset"));
     }
 
     /**
@@ -212,7 +208,7 @@ public class TemplateServiceConfiguration {
                 final String text = inputStreamToString(is);
                 final Map<String, String> dataStructure = new HashMap<>();
                 templates.add(new Template(templateCodePathEntry.getKey(), text, dataStructure,
-                                           templateCodePathEntry.getValue().getEmailSubject()));
+                        templateCodePathEntry.getValue().getEmailSubject()));
             } catch (FileNotFoundException fnfe) {
                 // due to code construction, it happens and it is not an error or an issue
             }

@@ -48,7 +48,7 @@ public interface IRuntimeTenantResolver {
      * This method should only be used in the following context:<br>
      *   - Thread that can be reused by multiple tenants<br>
      *   - Thread tenant cannot only be determined thanks to authentication<br>
-     * For example, server thread that handle REST call. This means it should be used only by {@link fr.cnes.regards.framework.security.filter.JWTAuthenticationFilter}
+     * For example, server thread that handle REST call. This means it should be used only by fr.cnes.regards.framework.security.filter.JWTAuthenticationFilter.
      */
     void clearTenant();
 }

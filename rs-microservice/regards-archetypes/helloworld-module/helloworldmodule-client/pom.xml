@@ -12,7 +12,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>fr.cnes.regards.modules</groupId>
     <artifactId>helloworldmodule-client</artifactId>
     <packaging>jar</packaging>
 
@@ -52,7 +51,6 @@
         <dependency>
             <groupId>fr.cnes.regards.modules</groupId>
             <artifactId>helloworldmodule-domain</artifactId>
-            <version>4.0.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

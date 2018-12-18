@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.RestController;
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.modules.workspace.domain.WorkspaceMonitoringInformation;
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -44,8 +43,6 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
  * @author svissier
  */
 @RestController
-@ModuleInfo(name = "workspace-rest", version = "2.0.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping(WorkspaceController.BASE_PATH)
 public class WorkspaceController implements IResourceController<WorkspaceMonitoringInformation> {
 

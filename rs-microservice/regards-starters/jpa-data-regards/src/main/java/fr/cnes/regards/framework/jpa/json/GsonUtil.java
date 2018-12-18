@@ -104,7 +104,7 @@ public final class GsonUtil {
      * @param argType {@link Type} of the value type of the map
      * @return a TypeToken representing a Map<K,V>, K and V being dynamicly set
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "serial" })
     public static <K, V> TypeToken<Map<K, V>> createMapTypeToken(Type keyArgType, Type argType) {
         return new TypeToken<Map<K, V>>() {
 

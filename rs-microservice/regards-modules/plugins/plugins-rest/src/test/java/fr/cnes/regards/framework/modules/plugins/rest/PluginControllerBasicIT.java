@@ -261,7 +261,7 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
                 .expectToHaveToString("$.content.version", VERSION).expectToHaveToString("$.content.active", TRUE)
                 .expectToHaveToString("$.content.parameters[?(@.name == 'param31')].dynamic", "[true]")
                 .expectToHaveToString("$.content.parameters[?(@.name == 'param32')].dynamic", "[false]")
-                .addDocumentationSnippet(RequestDocumentation
+                .document(RequestDocumentation
                         .pathParameters(RequestDocumentation.parameterWithName(PluginController.REQUEST_PARAM_PLUGIN_ID)
                                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                                 .description("Plugin identifier"),
@@ -336,10 +336,10 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
         PluginConfigurationFieldDescriptors pluginConfDescriptors = new PluginConfigurationFieldDescriptors();
         List<FieldDescriptor> lfd = new ArrayList<>(pluginConfDescriptors.build(update));
 
-        requestBuilderCustomizer.addDocumentationSnippet(PayloadDocumentation
-                .relaxedRequestFields(Attributes
+        requestBuilderCustomizer
+                .document(PayloadDocumentation.relaxedRequestFields(Attributes
                         .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE).value("Plugin configuration")),
-                                      lfd.toArray(new FieldDescriptor[0])));
+                                                                    lfd.toArray(new FieldDescriptor[0])));
     }
 
     @Test
@@ -358,7 +358,7 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
         PluginConfiguration aPluginConfiguration = createPluginConfiguration(LABEL);
 
         performDelete(PluginController.PLUGINS_PLUGINID_CONFIGID, token, customizer().expectStatusNoContent()
-                .addDocumentationSnippet(RequestDocumentation
+                .document(RequestDocumentation
                         .pathParameters(RequestDocumentation.parameterWithName(PluginController.REQUEST_PARAM_PLUGIN_ID)
                                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                                 .description("Plugin identifier"),

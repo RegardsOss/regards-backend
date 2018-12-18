@@ -36,7 +36,6 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.basic.PluginUtilsTestConstants;
 
 /**
- * Unit testing of {@link PluginInterfaceUtils}.
  * @author Christophe Mertz
  */
 @RunWith(SpringJUnit4ClassRunner.class)

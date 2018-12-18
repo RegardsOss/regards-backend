@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.modules.templates.rest;
 
-import javax.validation.Valid;
 import java.util.List;
+
+import javax.validation.Valid;
 
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -35,7 +36,6 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -48,8 +48,6 @@ import fr.cnes.regards.modules.templates.service.ITemplateService;
  * @author Xavier-Alexandre Brochard
  */
 @RestController
-@ModuleInfo(name = "templates", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping("/templates")
 public class TemplateController implements IResourceController<Template> {
 
