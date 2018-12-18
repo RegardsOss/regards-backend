@@ -262,7 +262,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         fields.add(constrainedFields
                 .withPath("onSuccessUrl", "url used by frontend to display a page if order creation has succeeded")
                 .optional().type(JSON_STRING_TYPE));
-        customizer.addDocumentationSnippet(PayloadDocumentation.relaxedRequestFields(fields));
+        customizer.document(PayloadDocumentation.relaxedRequestFields(fields));
 
         // All baskets have been deleted so order creation must fail
         // Test POST without argument
@@ -280,7 +280,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         ConstrainedFields constrainedFields = new ConstrainedFields(BasketSelectionRequest.class);
         List<FieldDescriptor> fields = new ArrayList<>();
         fields.add(constrainedFields.withPath("content", "order object").optional().type(JSON_OBJECT_TYPE));
-        customizer.addDocumentationSnippet(PayloadDocumentation.relaxedResponseFields(fields));
+        customizer.document(PayloadDocumentation.relaxedResponseFields(fields));
 
         performDefaultGet(OrderController.GET_ORDER_PATH, customizer, "error", order.getId());
 
@@ -357,7 +357,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         customizer.addParameter("orderToken", token);
         // request parameters
-        customizer.addDocumentationSnippet(RequestDocumentation
+        customizer.document(RequestDocumentation
                 .relaxedRequestParameters(RequestDocumentation.parameterWithName("orderToken").optional()
                         .description("token generated at order creation and sent by email to user.")
                         .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String"))));
@@ -407,25 +407,21 @@ public class OrderControllerIT extends AbstractRegardsIT {
         customizer.addParameter("page", "0");
         customizer.addParameter("size", "20");
         // request parameters
-        customizer.addDocumentationSnippet(RequestDocumentation
-                .relaxedRequestParameters(RequestDocumentation.parameterWithName("page").optional()
-                        .description("page number (from 0)")
-                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer")),
-                                          RequestDocumentation.parameterWithName("size").optional()
-                                                  .description("page size").attributes(Attributes
-                                                          .key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer"))));
-        customizer.addDocumentationSnippet(RequestDocumentation
-                .pathParameters(RequestDocumentation.parameterWithName("datasetId")
-                        .description("dataset task id (from order)")
-                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Long")),
-                                RequestDocumentation.parameterWithName("orderId").description("order id")
-                                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                .value("Long"))));
+        customizer.document(RequestDocumentation.relaxedRequestParameters(RequestDocumentation.parameterWithName("page")
+                .optional().description("page number (from 0)").attributes(Attributes
+                        .key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer")), RequestDocumentation
+                                .parameterWithName("size").optional().description("page size")
+                                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer"))));
+        customizer.document(RequestDocumentation.pathParameters(RequestDocumentation.parameterWithName("datasetId")
+                .description("dataset task id (from order)").attributes(Attributes
+                        .key(RequestBuilderCustomizer.PARAM_TYPE).value("Long")), RequestDocumentation
+                                .parameterWithName("orderId").description("order id")
+                                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Long"))));
 
         ConstrainedFields constrainedFields = new ConstrainedFields(OrderDataFile.class);
         List<FieldDescriptor> fields = new ArrayList<>();
         fields.add(constrainedFields.withPath("content", "files").optional().type(JSON_ARRAY_TYPE));
-        customizer.addDocumentationSnippet(PayloadDocumentation.relaxedResponseFields(fields));
+        customizer.document(PayloadDocumentation.relaxedResponseFields(fields));
 
         performDefaultGet(OrderDataFileController.ORDERS_ORDER_ID_DATASET_DATASET_ID_FILES, customizer, "error",
                           order.getId(), order.getDatasetTasks().first().getId());
@@ -525,18 +521,16 @@ public class OrderControllerIT extends AbstractRegardsIT {
             }
             RequestBuilderCustomizer customizer = customizer().expectStatusOk().addParameter("orderToken", token);
 
-            customizer.addDocumentationSnippet(RequestDocumentation
+            customizer.document(RequestDocumentation
                     .relaxedRequestParameters(RequestDocumentation.parameterWithName("orderToken").optional()
                             .description("token generated at order creation and sent by email to user.")
                             .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String"))));
 
-            customizer.addDocumentationSnippet(RequestDocumentation
-                    .pathParameters(RequestDocumentation.parameterWithName("aipId")
-                            .description("IP_ID of data object of which file belongs to")
-                            .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")),
-                                    RequestDocumentation.parameterWithName("dataFileId").description("file id ")
-                                            .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
-                                                    .value("Long"))));
+            customizer.document(RequestDocumentation.pathParameters(RequestDocumentation.parameterWithName("aipId")
+                    .description("IP_ID of data object of which file belongs to").attributes(Attributes
+                            .key(RequestBuilderCustomizer.PARAM_TYPE).value("String")), RequestDocumentation
+                                    .parameterWithName("dataFileId").description("file id ")
+                                    .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Long"))));
 
             // Try downloading file as if, with token given into public file url
             ResultActions results = performDefaultGet(OrderDataFileController.ORDERS_AIPS_AIP_ID_FILES_ID, customizer,
@@ -721,7 +715,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         customizer.addParameter("page", "0");
         customizer.addParameter("size", "20");
         // request parameters
-        customizer.addDocumentationSnippet(RequestDocumentation
+        customizer.document(RequestDocumentation
                 .relaxedRequestParameters(RequestDocumentation.parameterWithName("user").optional()
                         .description("Optional - user email whom orders are requested, if not provided all users orders are retrieved")
                         .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")),
@@ -736,7 +730,7 @@ public class OrderControllerIT extends AbstractRegardsIT {
         ConstrainedFields constrainedFields = new ConstrainedFields(OrderDto.class);
         List<FieldDescriptor> fields = new ArrayList<>();
         fields.add(constrainedFields.withPath("content", "orders").optional().type(JSON_ARRAY_TYPE));
-        customizer.addDocumentationSnippet(PayloadDocumentation.relaxedResponseFields(fields));
+        customizer.document(PayloadDocumentation.relaxedResponseFields(fields));
         performDefaultGet(OrderController.ADMIN_ROOT_PATH, customizer, "errors");
     }
 
@@ -750,18 +744,16 @@ public class OrderControllerIT extends AbstractRegardsIT {
         customizer.addParameter("page", "0");
         customizer.addParameter("size", "20");
         // request parameters
-        customizer.addDocumentationSnippet(RequestDocumentation
-                .relaxedRequestParameters(RequestDocumentation.parameterWithName("page").optional()
-                        .description("page number (from 0)")
-                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer")),
-                                          RequestDocumentation.parameterWithName("size").optional()
-                                                  .description("page size").attributes(Attributes
-                                                          .key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer"))));
+        customizer.document(RequestDocumentation.relaxedRequestParameters(RequestDocumentation.parameterWithName("page")
+                .optional().description("page number (from 0)").attributes(Attributes
+                        .key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer")), RequestDocumentation
+                                .parameterWithName("size").optional().description("page size")
+                                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Integer"))));
         // response body
         ConstrainedFields constrainedFields = new ConstrainedFields(OrderDto.class);
         List<FieldDescriptor> fields = new ArrayList<>();
         fields.add(constrainedFields.withPath("content", "orders").optional().type(JSON_ARRAY_TYPE));
-        customizer.addDocumentationSnippet(PayloadDocumentation.relaxedResponseFields(fields));
+        customizer.document(PayloadDocumentation.relaxedResponseFields(fields));
         performDefaultGet(OrderController.USER_ROOT_PATH, customizer, "errors");
     }
 

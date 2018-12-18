@@ -184,7 +184,7 @@ public class BasketControllerIT extends AbstractRegardsIT {
         ConstrainedFields constrainedFields = new ConstrainedFields(BasketSelectionRequest.class);
         List<FieldDescriptor> fields = new ArrayList<>();
         fields.add(constrainedFields.withPath("content", "basket object").optional().type(JSON_OBJECT_TYPE));
-        customizer.addDocumentationSnippet(PayloadDocumentation.relaxedResponseFields(fields));
+        customizer.document(PayloadDocumentation.relaxedResponseFields(fields));
 
         performDefaultPost(BasketController.ORDER_BASKET + BasketController.SELECTION, request, customizer, "error");
     }
