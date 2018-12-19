@@ -173,7 +173,7 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
 
     @Override
     public void delete(Long pluginConfId) throws ModuleException {
-        Optional<PrioritizedDataStorage> toDeleteOpt = prioritizedDataStorageRepository.findOneById(pluginConfId);
+        Optional<PrioritizedDataStorage> toDeleteOpt = prioritizedDataStorageRepository.findById(pluginConfId);
         if (toDeleteOpt.isPresent()) {
             // first we need to increase all the priorities of those which are less prioritized than the one to delete
             PrioritizedDataStorage toDelete = toDeleteOpt.get();
