@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -264,17 +265,6 @@ public class AIPController implements IResourceController<AIP> {
             PagedResourcesAssembler<AIP> assembler) throws ModuleException {
         Page<AIP> aips = aipService.retrieveAIPs(state, from, to, tags, session, providerId, pageable);
         return new ResponseEntity<>(toPagedResources(aips, assembler), HttpStatus.OK);
-    }
-
-    @RequestMapping(method = RequestMethod.POST, path = SEARCH_PATH)
-    @ResponseBody
-    @ResourceAccess(description = "send a page of aips with data storages information", role = DefaultRole.ADMIN)
-    public ResponseEntity<AIPPageWithDataStorages> retrieveAIPWithDataStorages(
-            @Valid @RequestBody AIPQueryFilters filters,
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<AIPWithDataStorageIds> assembler) throws ModuleException {
-        AIPPageWithDataStorages aipPage = aipService.retrieveAIPWithDataStorageIds(filters, pageable);
-        return new ResponseEntity<>(aipPage, HttpStatus.OK);
     }
 
     /**
@@ -559,20 +549,37 @@ public class AIPController implements IResourceController<AIP> {
         return new ResponseEntity<>(aipTags, HttpStatus.OK);
     }
 
+    @RequestMapping(value = DELETE_SEARCH_PATH, method = RequestMethod.POST)
+    @ResourceAccess(description = "allow to remove aips files from given data storages")
+    public ResponseEntity<Void> deleteAIPByQuery(@Valid @RequestBody AIPQueryFilters request) {
+        aipService.deleteAIPsByQuery(request);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
     @RequestMapping(value = FILES_DELETE_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "allow to remove aips from given data storages")
-    public ResponseEntity<Void> deleteAIPOnDataStorages(@Valid @RequestBody DataStorageRemovalAIPFilters request) {
+    public ResponseEntity<Void> deleteAIPByQueryOnDataStorages(@Valid @RequestBody DataStorageRemovalAIPFilters request) {
         for (Long dataStorageId : request.getDataStorageIds()) {
             aipService.deleteFilesFromDataStorageByQuery(request, dataStorageId);
         }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @RequestMapping(value = DELETE_SEARCH_PATH, method = RequestMethod.POST)
-    @ResourceAccess(description = "allow to remove aips files from given data storages")
-    public ResponseEntity<Void> deleteAIPByQuery(@Valid @RequestBody AIPQueryFilters request) {
-        aipService.deleteAIPsByQuery(request);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    @RequestMapping(method = RequestMethod.POST, path = SEARCH_PATH)
+    @ResponseBody
+    @ResourceAccess(description = "send a page of aips with data storages information", role = DefaultRole.ADMIN)
+    public ResponseEntity<ResourcedAIPPageWithDataStorages> retrieveAIPWithDataStorages(
+            @Valid @RequestBody AIPQueryFilters filters,
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            PagedResourcesAssembler<AIPWithDataStorageIds> assembler) throws ModuleException {
+        AIPPageWithDataStorages aipPage = aipService.retrieveAIPWithDataStorageIds(filters, pageable);
+        List<Resource<AIPWithDataStorageIds>> resourcedContent = new ArrayList<>();
+        for (AIPWithDataStorageIds aipWithDataStorageIds : aipPage) {
+            resourcedContent.add(toResourceWithIds(aipWithDataStorageIds));
+        }
+        ResourcedAIPPageWithDataStorages pageWithLink = new ResourcedAIPPageWithDataStorages(aipPage, resourcedContent);
+        addPageLinks(pageWithLink, filters);
+        return new ResponseEntity<>(pageWithLink, HttpStatus.OK);
     }
 
     /**
@@ -684,6 +691,11 @@ public class AIPController implements IResourceController<AIP> {
     @Override
     public Resource<AIP> toResource(AIP element, Object... extras) {
         Resource<AIP> resource = resourceService.toResource(element);
+        addAipLinks(resource, element.getId().toString(), element.getState());
+        return resource;
+    }
+
+    protected void addAipLinks(Resource resource, String resourceId, AIPState resourceState) {
         resourceService.addLink(resource,
                                 this.getClass(),
                                 "retrieveAIPs",
@@ -707,19 +719,19 @@ public class AIPController implements IResourceController<AIP> {
                                 this.getClass(),
                                 "retrieveAip",
                                 LinkRels.SELF,
-                                MethodParamFactory.build(String.class, element.getId().toString()));
-        if (AIPState.STORAGE_ERROR.equals(element.getState())) {
+                                MethodParamFactory.build(String.class, resourceId));
+        if (AIPState.STORAGE_ERROR.equals(resourceState)) {
             resourceService.addLink(resource,
                                     this.getClass(),
                                     "storeRetryUnit",
                                     "retry",
-                                    MethodParamFactory.build(String.class, element.getId().toString()));
+                                    MethodParamFactory.build(String.class, resourceId));
         }
         resourceService.addLink(resource,
                                 this.getClass(),
                                 "deleteAip",
                                 "delete",
-                                MethodParamFactory.build(String.class, element.getId().toString()));
+                                MethodParamFactory.build(String.class, resourceId));
         resourceService.addLink(resource,
                                 this.getClass(),
                                 "deleteAIPByQuery",
@@ -727,9 +739,28 @@ public class AIPController implements IResourceController<AIP> {
                                 MethodParamFactory.build(AIPQueryFilters.class));
         resourceService.addLink(resource,
                                 this.getClass(),
-                                "deleteAIPOnDataStorages",
+                                "deleteAIPByQueryOnDataStorages",
                                 "deleteByQueryOnSpecificDataStorages",
                                 MethodParamFactory.build(DataStorageRemovalAIPFilters.class));
+    }
+
+    private void addPageLinks(ResourcedAIPPageWithDataStorages pageWithLink, AIPQueryFilters aipQuery) {
+        // add delete by query links
+        resourceService.addLink(pageWithLink,
+                                this.getClass(),
+                                "deleteAIPByQuery",
+                                "deleteByQuery",
+                                MethodParamFactory.build(AIPQueryFilters.class, aipQuery));
+        resourceService.addLink(pageWithLink,
+                                this.getClass(),
+                                "deleteAIPByQueryOnDataStorages",
+                                "deleteByQueryOnSpecificDataStorages",
+                                MethodParamFactory.build(DataStorageRemovalAIPFilters.class));
+    }
+
+    private Resource<AIPWithDataStorageIds> toResourceWithIds(AIPWithDataStorageIds aipWithDataStorageIds) {
+        Resource<AIPWithDataStorageIds> resource = new Resource(aipWithDataStorageIds);
+        addAipLinks(resource, aipWithDataStorageIds.getAip().getId().toString(), aipWithDataStorageIds.getAip().getState());
         return resource;
     }
 
@@ -749,4 +780,11 @@ public class AIPController implements IResourceController<AIP> {
         dataFile.setUrl(downloadUrl);
     }
 
+    private class ResourcedAIPPageWithDataStorages extends PagedResources<Resource<AIPWithDataStorageIds>> {
+
+        public ResourcedAIPPageWithDataStorages(AIPPageWithDataStorages aipPage,
+                List<Resource<AIPWithDataStorageIds>> resourcedContent) {
+            super(resourcedContent, aipPage.getMetadata());
+        }
+    }
 }
