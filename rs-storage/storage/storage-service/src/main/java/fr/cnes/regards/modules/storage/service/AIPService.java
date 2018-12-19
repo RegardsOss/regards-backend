@@ -672,7 +672,7 @@ public class AIPService implements IAIPService {
         // lets sort everything by aip
         HashMultimap<AIP, Long> aipDataFileMap = HashMultimap.create();
         for (StorageDataFile sdf : dataFiles) {
-            //lets get all archive ids
+            //lets get all data storages id
             sdf.getPrioritizedDataStorages().stream().forEach(pds -> aipDataFileMap.put(sdf.getAip(), pds.getId()));
         }
         // we have all storage data file needed to make aip with data storage id

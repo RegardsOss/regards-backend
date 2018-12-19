@@ -26,6 +26,7 @@ import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -90,6 +91,7 @@ import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.DataFileDto;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
 import fr.cnes.regards.modules.storage.domain.RejectedSip;
+import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.job.AIPQueryFilters;
 import fr.cnes.regards.modules.storage.domain.job.AddAIPTagsFilters;
@@ -780,9 +782,13 @@ public class AIPController implements IResourceController<AIP> {
 
     private class ResourcedAIPPageWithDataStorages extends PagedResources<Resource<AIPWithDataStorageIds>> {
 
+        private Set<PrioritizedDataStorage> dataStorages = new HashSet<>();
+
         public ResourcedAIPPageWithDataStorages(AIPPageWithDataStorages aipPage,
                 List<Resource<AIPWithDataStorageIds>> resourcedContent) {
             super(resourcedContent, aipPage.getMetadata());
+            this.dataStorages.addAll(aipPage.getDataStorages());
         }
+
     }
 }
