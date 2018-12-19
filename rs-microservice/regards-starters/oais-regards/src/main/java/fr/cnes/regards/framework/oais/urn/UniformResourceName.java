@@ -370,12 +370,46 @@ public class UniformResourceName {
     }
 
     @Override
-    public boolean equals(Object other) {
-        return other instanceof UniformResourceName && other.toString().equals(toString());
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        UniformResourceName that = (UniformResourceName) o;
+
+        if (version != that.version) {
+            return false;
+        }
+        if (oaisIdentifier != that.oaisIdentifier) {
+            return false;
+        }
+        if (entityType != that.entityType) {
+            return false;
+        }
+        if (!tenant.equals(that.tenant)) {
+            return false;
+        }
+        if (!entityId.equals(that.entityId)) {
+            return false;
+        }
+        if (order != null ? !order.equals(that.order) : that.order != null) {
+            return false;
+        }
+        return revision != null ? revision.equals(that.revision) : that.revision == null;
     }
 
     @Override
     public int hashCode() {
-        return toString().hashCode();
+        int result = oaisIdentifier.hashCode();
+        result = 31 * result + entityType.hashCode();
+        result = 31 * result + tenant.hashCode();
+        result = 31 * result + entityId.hashCode();
+        result = 31 * result + version;
+        result = 31 * result + (order != null ? order.hashCode() : 0);
+        result = 31 * result + (revision != null ? revision.hashCode() : 0);
+        return result;
     }
 }
