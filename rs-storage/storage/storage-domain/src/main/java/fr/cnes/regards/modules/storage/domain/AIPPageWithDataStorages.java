@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
 
 import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 
