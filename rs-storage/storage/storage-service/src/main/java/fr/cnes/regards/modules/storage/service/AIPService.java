@@ -669,16 +669,18 @@ public class AIPService implements IAIPService {
         List<Long> dataFileIds = q.getResultList().stream().mapToLong(r -> ((BigInteger) r).longValue()).boxed()
                 .collect(Collectors.toList());
         List<StorageDataFile> dataFiles = dataFileDao.findAllById(dataFileIds);
-        // lets sort everything by aip
-        HashMultimap<AIP, Long> aipDataFileMap = HashMultimap.create();
+        // lets sort everything by aip, maps with object as key does not work as espected, lets use 2 map with same key to achieve our goal
+        Map<String, AIP> aipIdAipMap = new HashMap<>();
+        HashMultimap<String, Long> aipIdDataStorageIdsMap = HashMultimap.create();
         for (StorageDataFile sdf : dataFiles) {
             //lets get all data storages id
-            sdf.getPrioritizedDataStorages().stream().forEach(pds -> aipDataFileMap.put(sdf.getAip(), pds.getId()));
+            aipIdAipMap.put(sdf.getAipEntity().getAipId(), sdf.getAip());
+            sdf.getPrioritizedDataStorages().stream().forEach(pds -> aipIdDataStorageIdsMap.put(sdf.getAipEntity().getAipId(), pds.getId()));
         }
         // we have all storage data file needed to make aip with data storage id
-            List<AIPWithDataStorageIds> content = new ArrayList<>();
-        for (AIP aip : aipDataFileMap.keySet()) {
-            content.add(new AIPWithDataStorageIds(aip, aipDataFileMap.get(aip)));
+        List<AIPWithDataStorageIds> content = new ArrayList<>();
+        for (String aipId : aipIdAipMap.keySet()) {
+            content.add(new AIPWithDataStorageIds(aipIdAipMap.get(aipId), aipIdDataStorageIdsMap.get(aipId)));
         }
         // now lets get information for metadata
         String pdsIdQuery = "SELECT data_storage_conf_id FROM {h-schema}ta_data_file_plugin_conf WHERE data_file_id IN "
