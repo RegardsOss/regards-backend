@@ -650,6 +650,8 @@ public class AIPService implements IAIPService {
     @Override
     public AIPPageWithDataStorages retrieveAIPWithDataStorageIds(AIPQueryFilters filters, Pageable pageable)
             throws ModuleException {
+        // In all this method usage of list is mandatory to keep order
+
         if (!getSecurityDelegationPlugin().hasAccessToListFeature()) {
             throw new EntityOperationForbiddenException("Only Admins can access this feature.");
         }
@@ -660,12 +662,12 @@ public class AIPService implements IAIPService {
         String aipQuery = aipQueryWithoutPage + " LIMIT " + pageable.getPageSize() + " OFFSET " + pageable.getOffset();
         // first lets get information for this page
 
-        String sqlQuery = "select * from {h-schema}t_data_file sdf where sdf.aip_ip_id IN (" + aipQuery
+        String sqlQuery = "select id from {h-schema}t_data_file sdf where sdf.aip_ip_id IN (" + aipQuery
                 + ") order by sdf.aip_ip_id";
-        Query q = em.createNativeQuery(sqlQuery, StorageDataFile.class);
+        Query q = em.createNativeQuery(sqlQuery, Long.class);
         @SuppressWarnings("unchecked")
-        List<StorageDataFile> dataFiles = q.getResultList();
-
+        List<Long> dataFileIds = q.getResultList();
+        List<StorageDataFile> dataFiles = dataFileDao.findAllById(dataFileIds);
         // lets sort everything by aip
         HashMultimap<AIP, Long> aipDataFileMap = HashMultimap.create();
         for (StorageDataFile sdf : dataFiles) {
@@ -673,7 +675,7 @@ public class AIPService implements IAIPService {
             sdf.getPrioritizedDataStorages().stream().forEach(pds -> aipDataFileMap.put(sdf.getAip(), pds.getId()));
         }
         // we have all storage data file needed to make aip with data storage id
-        List<AIPWithDataStorageIds> content = new ArrayList<>();
+            List<AIPWithDataStorageIds> content = new ArrayList<>();
         for (AIP aip : aipDataFileMap.keySet()) {
             content.add(new AIPWithDataStorageIds(aip, aipDataFileMap.get(aip)));
         }

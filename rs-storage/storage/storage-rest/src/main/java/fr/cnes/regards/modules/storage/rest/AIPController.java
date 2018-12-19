@@ -570,8 +570,7 @@ public class AIPController implements IResourceController<AIP> {
     @ResourceAccess(description = "send a page of aips with data storages information", role = DefaultRole.ADMIN)
     public ResponseEntity<ResourcedAIPPageWithDataStorages> retrieveAIPWithDataStorages(
             @Valid @RequestBody AIPQueryFilters filters,
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<AIPWithDataStorageIds> assembler) throws ModuleException {
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable) throws ModuleException {
         AIPPageWithDataStorages aipPage = aipService.retrieveAIPWithDataStorageIds(filters, pageable);
         List<Resource<AIPWithDataStorageIds>> resourcedContent = new ArrayList<>();
         for (AIPWithDataStorageIds aipWithDataStorageIds : aipPage) {
@@ -713,8 +712,7 @@ public class AIPController implements IResourceController<AIP> {
                                 "retrieveAIPWithDataStorages",
                                 LinkRels.LIST + "-with-datastorages",
                                 MethodParamFactory.build(AIPQueryFilters.class),
-                                MethodParamFactory.build(Pageable.class),
-                                MethodParamFactory.build(PagedResourcesAssembler.class));
+                                MethodParamFactory.build(Pageable.class));
         resourceService.addLink(resource,
                                 this.getClass(),
                                 "retrieveAip",
