@@ -214,17 +214,6 @@ public class RequestBuilderCustomizer {
         return gson.toJson(object);
     }
 
-    //    /**
-    //     * Grants access to the {@link RequestParamBuilder} used to add request parameters to the request
-    //     * @return requestParamBuilder for further customization
-    //     * @deprecated this method is only used to call {@link RequestParamBuilder#param(String, String...)} on it, prefer
-    //     * use {@link #addParameter(String, String...)} instead
-    //     */
-    //    @Deprecated
-    //    private RequestParamBuilder customizeRequestParam() {
-    //        return requestParamBuilder;
-    //    }
-
     /**
      * Add name/values request parameter to the request
      */
@@ -232,16 +221,6 @@ public class RequestBuilderCustomizer {
         requestParamBuilder.param(name, values);
         return this;
     }
-
-    //    /**
-    //     * Grants access to the {@link HttpHeaders} used to add request parameters to the request
-    //     * @return http headers for further customization
-    //     * @deprecated use {@link #addHeaderValue(String, String)} or {@link #addHeaderValues(String, List)}
-    //     */
-    //    @Deprecated
-    //    private HttpHeaders customizeHeaders() {
-    //        return headers;
-    //    }
 
     /**
      * Set or add given value to associated header name values
@@ -251,15 +230,6 @@ public class RequestBuilderCustomizer {
         return this;
     }
 
-    //    /**
-    //     * Set or add given value to associated header name values. Use {@link #addHeader(String, String)} instead.
-    //     */
-    //    @Deprecated
-    //    private RequestBuilderCustomizer addHeaderValue(String name, String value) {
-    //        headers.add(name, value);
-    //        return this;
-    //    }
-
     /**
      * Set or replace given values to associated header name values
      */
@@ -267,15 +237,6 @@ public class RequestBuilderCustomizer {
         headers.put(name, values);
         return this;
     }
-
-    //    /**
-    //     * Set or replace given values to associated header name values.  Use {@link #addHeader(String, List)} instead.
-    //     */
-    //    @Deprecated
-    //    private RequestBuilderCustomizer addHeaderValues(String name, List<String> values) {
-    //        headers.put(name, values);
-    //        return this;
-    //    }
 
     /**
      * Set or replace given values to associated header name values
@@ -291,17 +252,6 @@ public class RequestBuilderCustomizer {
     public HttpHeaders headers() {
         return headers;
     }
-
-    //    /**
-    //     * Add a whole list of ResultMatcher to be matched. Mainly here for easier refactor. We strongly advise to use
-    //     * {@link RequestBuilderCustomizer#expect(ResultMatcher)}.
-    //     * @param matchers list of matcher to be matched after by the server response
-    //     * @deprecated use {@link #expect(ResultMatcher)} on each ResultMatcher (haven't you strongly advised yet ?)
-    //     */
-    //    @Deprecated
-    //    private void addExpectations(List<ResultMatcher> matchers) {
-    //        expectations.addAll(matchers);
-    //    }
 
     /**
      * Add a ResultMatcher to be matched.
@@ -415,33 +365,6 @@ public class RequestBuilderCustomizer {
     public RequestBuilderCustomizer expectToHaveToString(String jsonPath, String expectedToString) {
         return expect(MockMvcResultMatchers.jsonPath(jsonPath, Matchers.hasToString(expectedToString)));
     }
-
-    //    /**
-    //     * Add {@link ResultMatcher} to the already present matchers
-    //     * @deprecated use {@link #expect(ResultMatcher)} instead (it uses fluent API)
-    //     */
-    //    @Deprecated
-    //    private void addExpectation(ResultMatcher matcher) {
-    //        expect(matcher);
-    //    }
-    //
-    //    /**
-    //     * Add snippets to be used to generate specific documentation.
-    //     * For exemple, request parameters and path parameters require too much specific information to be generalized.
-    //     * <br/>
-    //     * Request parameters can be documented thanks to
-    //     * {@link org.springframework.restdocs.request.RequestParametersSnippet} <br/>
-    //     * Path parameters cna be documented thanks to {@link org.springframework.restdocs.request.PathParametersSnippet}
-    //     * <br/>
-    //     * @param snippet documentation snippet to be added.
-    //     *
-    //     * @deprecated use {@link #document(Snippet)} instead
-    //     */
-    //    @Deprecated
-    //    private RequestBuilderCustomizer addDocumentationSnippet(Snippet snippet) {
-    //        docSnippets.add(snippet);
-    //        return this;
-    //    }
 
     /**
      * Add snippets to be used to generate specific documentation.
