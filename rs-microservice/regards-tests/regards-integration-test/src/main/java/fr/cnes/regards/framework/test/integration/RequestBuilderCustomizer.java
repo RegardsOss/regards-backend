@@ -353,6 +353,20 @@ public class RequestBuilderCustomizer {
     }
 
     /**
+     * Add a ResultMatcher expecting given jsonPath has given value
+     */
+    public RequestBuilderCustomizer expectValueContains(String jsonPath, Object value) {
+        return expect(MockMvcResultMatchers.jsonPath(jsonPath, Matchers.contains(value)));
+    }
+
+    /**
+     * Add a ResultMatcher expecting given jsonPath has given value
+     */
+    public RequestBuilderCustomizer expectArrayContains(String jsonPath, Object value) {
+        return expect(MockMvcResultMatchers.jsonPath(jsonPath, Matchers.hasItem(value)));
+    }
+
+    /**
      * Add a ResultMatcher expecting given jsonPath (corresponding to an array) to have given size
      */
     public RequestBuilderCustomizer expectToHaveSize(String jsonPath, int size) {
