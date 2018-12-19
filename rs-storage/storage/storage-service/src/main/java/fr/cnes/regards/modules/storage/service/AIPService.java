@@ -664,7 +664,7 @@ public class AIPService implements IAIPService {
 
         String sqlQuery = "select id from {h-schema}t_data_file sdf where sdf.aip_ip_id IN (" + aipQuery
                 + ") order by sdf.aip_ip_id";
-        Query q = em.createNativeQuery(sqlQuery, Long.class);
+        Query q = em.createNativeQuery(sqlQuery);
         @SuppressWarnings("unchecked")
         List<Long> dataFileIds = q.getResultList();
         List<StorageDataFile> dataFiles = dataFileDao.findAllById(dataFileIds);
