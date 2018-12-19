@@ -666,7 +666,8 @@ public class AIPService implements IAIPService {
                 + ") order by sdf.aip_ip_id";
         Query q = em.createNativeQuery(sqlQuery);
         @SuppressWarnings("unchecked")
-        List<Long> dataFileIds = q.getResultList();
+        List<Long> dataFileIds = q.getResultList().stream().mapToLong(r -> ((BigInteger) r).longValue()).boxed()
+                .collect(Collectors.toList());
         List<StorageDataFile> dataFiles = dataFileDao.findAllById(dataFileIds);
         // lets sort everything by aip
         HashMultimap<AIP, Long> aipDataFileMap = HashMultimap.create();
