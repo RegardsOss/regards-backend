@@ -161,4 +161,8 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
 
     @Query(value = "select * from {h-schema}t_data_file sdf where sdf.aip_ip_id IN (:aipQuery) order by sdf.aip_ip_id", nativeQuery = true)
     List<StorageDataFile> findAllByAipInQuery(@Param("aipQuery") String aipQuery);
+
+    @Override
+    @EntityGraph(value = "graph.datafile.full")
+    List<StorageDataFile> findAllById(Iterable<Long> longs);
 }
