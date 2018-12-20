@@ -73,4 +73,7 @@ public interface IPluginConfigurationRepository extends JpaRepository<PluginConf
     @Modifying
     @Query(value = "TRUNCATE {h-schema}t_plugin_configuration CASCADE", nativeQuery = true)
     void deleteAll();
+
+    @EntityGraph(attributePaths = { "parameters", "parameters.dynamicsValues" })
+    List<PluginConfiguration> findAll();
 }

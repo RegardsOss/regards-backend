@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.modules.plugins.rest;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +43,6 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
  * Test plugin controller
  * @author Marc Sordi
  */
-@RegardsTransactional
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=plugin_it",
         "regards.cipher.key-location=src/test/resources/testKey", "regards.cipher.iv=1234567812345678" })
 public class PluginControllerIT extends AbstractRegardsTransactionalIT {
@@ -55,6 +55,11 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private IPluginConfigurationRepository repository;
+
+    @After
+    public void cleanUp() {
+        repository.deleteAll();
+    }
 
     @Test
     public void savePluginConfigurationTest() throws ModuleException {

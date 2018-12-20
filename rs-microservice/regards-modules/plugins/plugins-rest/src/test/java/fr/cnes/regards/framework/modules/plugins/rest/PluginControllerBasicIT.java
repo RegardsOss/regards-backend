@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.framework.modules.plugins.rest;
 
+import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.net.MalformedURLException;
@@ -27,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -61,7 +63,6 @@ import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
  * @author Christophe Mertz
  * @author Sébastien Binda
  */
-@RegardsTransactional
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=plugin_basic_it",
         "regards.cipher.key-location=src/test/resources/testKey", "regards.cipher.iv=1234567812345678" })
 public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
@@ -87,6 +88,9 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private IPluginService pluginService;
+
+    @Autowired
+    private IPluginConfigurationRepository pluginConfigurationRepository;
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
@@ -118,6 +122,12 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
         manageDefaultSecurity(PluginController.PLUGINS_CACHE, RequestMethod.DELETE);
 
         token = generateToken(getDefaultUserEmail(), DEFAULT_ROLE);
+    }
+
+    @After
+    public void cleanUp() {
+        tenantResolver.forceTenant(getDefaultTenant());
+        pluginConfigurationRepository.deleteAll();
     }
 
     private String manageDefaultSecurity(String urlPath, RequestMethod method) {
@@ -390,17 +400,15 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
         return pluginMetaData;
     }
 
-    @Override
-    protected Logger getLogger() {
-        return LOGGER;
-    }
-
     // Add a PluginConfiguration with the PluginService
     private PluginConfiguration createPluginConfiguration(String label) throws ModuleException, MalformedURLException {
         PluginConfiguration aPluginConfiguration = new PluginConfiguration(this.getPluginMetaData(), label,
                 pluginParameters, 0);
         aPluginConfiguration.setIconUrl(new URL("http://google.fr/svg/logo.svg"));
-        return pluginService.savePluginConfiguration(aPluginConfiguration);
+        PluginConfiguration savedPluginConf = pluginService.savePluginConfiguration(aPluginConfiguration);
+        // to avoid issue with hibernate and allow pluginParameters to be considered new each time, lets remove ids from plugin parameters
+        pluginParameters.forEach(p->p.setId(null));
+        return savedPluginConf;
     }
 
 }
