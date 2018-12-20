@@ -161,7 +161,8 @@
 		<!--<com.netflix.feign.version>8.18.0</com.netflix.feign.version> -->
 		<!-- Take a version that retrieve a version of Hibernate that correctly 
 			manage uk naming while inheriting classes with JOINED strategy -->
-		<org.springframework.boot.spring-boot-dependencies.version>2.1.0.RELEASE</org.springframework.boot.spring-boot-dependencies.version>
+		<!-- <org.springframework.boot.spring-boot-dependencies.version>2.1.0.RELEASE</org.springframework.boot.spring-boot-dependencies.version> -->
+		<org.springframework.boot.spring-boot-dependencies.version>2.0.7.RELEASE</org.springframework.boot.spring-boot-dependencies.version>
 		<!-- Spring OAuth is no more into spring-boot, only client is (From what 
 			i understood) -->
 		<org.springframework.security.oauth.version>2.3.4.RELEASE</org.springframework.security.oauth.version>
