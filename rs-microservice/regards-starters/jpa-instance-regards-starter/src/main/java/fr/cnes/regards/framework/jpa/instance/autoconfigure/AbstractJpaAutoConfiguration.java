@@ -18,12 +18,13 @@
  */
 package fr.cnes.regards.framework.jpa.instance.autoconfigure;
 
-import javax.sql.DataSource;
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.sql.DataSource;
 
 import org.hibernate.MultiTenancyStrategy;
 import org.hibernate.boot.model.naming.ImplicitNamingStrategy;
@@ -34,8 +35,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateProperties;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateSettings;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
@@ -46,6 +45,7 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.jpa.exception.JpaException;
 import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
 import fr.cnes.regards.framework.jpa.instance.properties.InstanceDaoProperties;
@@ -104,9 +104,6 @@ public abstract class AbstractJpaAutoConfiguration {
     @Autowired
     private JpaProperties jpaProperties;
 
-    @Autowired
-    private HibernateProperties hb8Properties;
-
     /**
      * Instance datasource
      */
@@ -140,7 +137,7 @@ public abstract class AbstractJpaAutoConfiguration {
 
         if (MigrationTool.HBM2DDL.equals(daoProperties.getMigrationTool())) {
             Hbm2ddlDatasourceSchemaHelper helper = new Hbm2ddlDatasourceSchemaHelper(hibernateProperties,
-                                                                                     getEntityAnnotationScan(), null);
+                    getEntityAnnotationScan(), null);
             helper.setDataSource(instanceDataSource);
             // Set output file, may be null.
             helper.setOutputFile(daoProperties.getOutputFile());
@@ -213,9 +210,9 @@ public abstract class AbstractJpaAutoConfiguration {
         // Schema must be retrieved here if managed with property :
         // spring.jpa.properties.hibernate.default_schema
         // Before retrieving hibernate properties, set ddl auto to avoid the need of a datasource
-        hb8Properties.setDdlAuto("none");
-        Map<String, Object> dbProperties = new HashMap<>(
-                hb8Properties.determineHibernateProperties(jpaProperties.getProperties(), new HibernateSettings()));
+        Map<String, Object> dbProperties = new HashMap<>();
+        dbProperties.putAll(jpaProperties.getProperties());
+
         // Remove hbm2ddl as schema update is done programmatically
         dbProperties.remove(Environment.HBM2DDL_AUTO);
 

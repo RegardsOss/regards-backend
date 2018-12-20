@@ -39,8 +39,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateProperties;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateSettings;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -117,9 +115,6 @@ public class DataSourcesAutoConfiguration {
     private JpaProperties jpaProperties;
 
     @Autowired
-    private HibernateProperties hb8Properties;
-
-    @Autowired
     private IEncryptionService encryptionService;
 
     /**
@@ -134,8 +129,10 @@ public class DataSourcesAutoConfiguration {
 
     /**
      * List of data sources for each configured tenant.
+     * @param tenantConnectionResolver
      * @return Map { Tenant, DataSource }
      * @throws JpaMultitenantException if connections cannot be retrieved on startup
+     * @throws EncryptionException
      */
     @Bean(name = { DATA_SOURCE_BEAN_NAME })
     public Map<String, DataSource> getDataSources(ITenantConnectionResolver tenantConnectionResolver)
@@ -179,6 +176,8 @@ public class DataSourcesAutoConfiguration {
      * Init JPA event handler manager
      * @param instanceSubscriber to subscribe to tenant connection events
      * @param multitenantResolver to resolve tenant
+     * @param datasourceSchemaHelper
+     * @param dataSources
      * @return JPA event handler
      */
     @Bean
@@ -238,13 +237,15 @@ public class DataSourcesAutoConfiguration {
      * Default data source for persistence unit projects.
      *
      * ConditionalOnMissingBean : In case of jpa-instance-regards-starter activated. There can't be two datasources.
+     * @param dataSources
+     * @return DataSource
      */
     @Bean
     @ConditionalOnMissingBean(DataSource.class)
     public DataSource projectsDataSource(
             @Qualifier(DataSourcesAutoConfiguration.DATA_SOURCE_BEAN_NAME) Map<String, DataSource> dataSources) {
         DataSource datasource = null;
-        if (dataSources != null && !dataSources.isEmpty()) {
+        if ((dataSources != null) && !dataSources.isEmpty()) {
             datasource = dataSources.values().iterator().next();
         } else {
             LOGGER.error("No datasource defined for MultitenantJpaAutoConfiguration !");
@@ -263,9 +264,9 @@ public class DataSourcesAutoConfiguration {
         // Schema must be retrieved here if managed with property :
         // spring.jpa.properties.hibernate.default_schema
         // Before retrieving hibernate properties, set ddl auto to avoid the need of a datasource
-        hb8Properties.setDdlAuto("none");
-        Map<String, Object> dbProperties = new HashMap<>(
-                hb8Properties.determineHibernateProperties(jpaProperties.getProperties(), new HibernateSettings()));
+        Map<String, Object> dbProperties = new HashMap<>();
+        dbProperties.putAll(jpaProperties.getProperties());
+
         // Remove hbm2ddl as schema update is done programmatically
         dbProperties.remove(Environment.HBM2DDL_AUTO);
 
