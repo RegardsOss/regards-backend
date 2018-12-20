@@ -24,6 +24,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -73,6 +74,20 @@ import fr.cnes.regards.modules.storage.service.IPrioritizedDataStorageService;
 @TestPropertySource(locations = "classpath:test.properties")
 public class PrioritizedDataStorageControllerIT extends AbstractRegardsTransactionalIT {
 
+    @Configuration
+    static class Config {
+
+        @Bean
+        public IProjectsClient projectsClient() {
+            return Mockito.mock(IProjectsClient.class);
+        }
+
+        @Bean
+        public INotificationClient notificationClient() {
+            return Mockito.mock(INotificationClient.class);
+        }
+    }
+
     private static final String DATA_STORAGE_CONF_LABEL_1 = "PrioritizedDataStorageControllerIT_1";
 
     private static final String DATA_STORAGE_CONF_LABEL_2 = "PrioritizedDataStorageControllerIT_2";
@@ -110,8 +125,10 @@ public class PrioritizedDataStorageControllerIT extends AbstractRegardsTransacti
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000000L)
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
                 .getParameters();
-        PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, DATA_STORAGE_CONF_LABEL_1,
-                parameters, 0);
+        PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta,
+                                                                      DATA_STORAGE_CONF_LABEL_1,
+                                                                      parameters,
+                                                                      0);
         PrioritizedDataStorage toCreate = new PrioritizedDataStorage(dataStorageConf, null, DataStorageType.ONLINE);
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
         requestBuilderCustomizer
@@ -119,13 +136,18 @@ public class PrioritizedDataStorageControllerIT extends AbstractRegardsTransacti
         requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.content.dataStorageType",
                                                                        Matchers.is(DataStorageType.ONLINE.name())));
         requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.content.priority", Matchers.is(0)));
-        requestBuilderCustomizer.document(PayloadDocumentation
-                .relaxedRequestFields(Attributes.attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE)
-                        .value("Prioritized data storage")), documentPrioritizedDataStorageRequestBody(true)));
-        requestBuilderCustomizer.document(PayloadDocumentation
-                .relaxedResponseFields(Attributes.attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE)
-                        .value("Prioritized data storage")), documentPrioritizedDataStorageResponseBody()));
-        performDefaultPost(PrioritizedDataStorageController.BASE_PATH, toCreate, requestBuilderCustomizer,
+        requestBuilderCustomizer.document(PayloadDocumentation.relaxedRequestFields(Attributes.attributes(Attributes
+                                                                                                                  .key(RequestBuilderCustomizer.PARAM_TITLE)
+                                                                                                                  .value("Prioritized data storage")),
+                                                                                    documentPrioritizedDataStorageRequestBody(
+                                                                                            true)));
+        requestBuilderCustomizer.document(PayloadDocumentation.relaxedResponseFields(Attributes.attributes(Attributes
+                                                                                                                   .key(RequestBuilderCustomizer.PARAM_TITLE)
+                                                                                                                   .value("Prioritized data storage")),
+                                                                                     documentPrioritizedDataStorageResponseBody()));
+        performDefaultPost(PrioritizedDataStorageController.BASE_PATH,
+                           toCreate,
+                           requestBuilderCustomizer,
                            "Could not create a PrioritizedDataStorage");
     }
 
@@ -133,28 +155,63 @@ public class PrioritizedDataStorageControllerIT extends AbstractRegardsTransacti
     public void testRetrieve() throws ModuleException, IOException, URISyntaxException {
         PrioritizedDataStorage created = createPrioritizedDataStorage(DATA_STORAGE_CONF_LABEL_1);
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
-        requestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation
-                .parameterWithName("id").description("the prioritized data storage id")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Number"), Attributes
-                        .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Should be a whole number"))));
-        requestBuilderCustomizer.document(PayloadDocumentation
-                .relaxedResponseFields(Attributes.attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE)
-                        .value("Prioritized data storage")), documentPrioritizedDataStorageResponseBody()));
+        requestBuilderCustomizer.documentPathParameters(RequestDocumentation.parameterWithName("id")
+                                                                .description("the prioritized data storage id")
+                                                                .attributes(Attributes
+                                                                                    .key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                    .value("Number"),
+                                                                            Attributes
+                                                                                    .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                    .value("Should be a whole number")));
+        requestBuilderCustomizer.document(PayloadDocumentation.relaxedResponseFields(Attributes.attributes(Attributes
+                                                                                                                   .key(RequestBuilderCustomizer.PARAM_TITLE)
+                                                                                                                   .value("Prioritized data storage")),
+                                                                                     documentPrioritizedDataStorageResponseBody()));
 
         performDefaultGet(PrioritizedDataStorageController.BASE_PATH + PrioritizedDataStorageController.ID_PATH,
-                          requestBuilderCustomizer, "could not retrieve the prioritized data storage", created.getId());
+                          requestBuilderCustomizer,
+                          "could not retrieve the prioritized data storage",
+                          created.getId());
+    }
+
+    @Test
+    public void testRetrievePrioritizedDataStorages() throws ModuleException, IOException, URISyntaxException {
+        PrioritizedDataStorage created = createPrioritizedDataStorage(DATA_STORAGE_CONF_LABEL_1);
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk()
+                .addParameter("type", created.getDataStorageType().toString());
+        customizer.documentRequestParameters(RequestDocumentation.parameterWithName("type")
+                                                     .description("Prioritized data storage type")
+                                                     .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                                         .value(String.class.getSimpleName()),
+                                                                 Attributes
+                                                                         .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                         .value("Available values: " + Arrays
+                                                                                 .stream(DataStorageType.values())
+                                                                                 .map(Enum::name)
+                                                                                 .reduce((first, second) -> first + ", "
+                                                                                         + second).get())));
+        performDefaultGet(PrioritizedDataStorageController.BASE_PATH,
+                          customizer,
+                          "could not retrieve the prioritized data storage");
     }
 
     @Test
     public void testRetrieveByType() {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         requestBuilderCustomizer.addParameter("type", DataStorageType.ONLINE.name());
-        requestBuilderCustomizer.document(RequestDocumentation.requestParameters(RequestDocumentation
-                .parameterWithName("type").description("the wanted Data Storage Type (ONLINE, NEARLINE)")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(String.class.getSimpleName()),
-                            Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                    .value("Available values: ONLINE, NEARLINE"))));
-        performDefaultGet(PrioritizedDataStorageController.BASE_PATH, requestBuilderCustomizer,
+        requestBuilderCustomizer.document(RequestDocumentation
+                                                  .requestParameters(RequestDocumentation.parameterWithName("type")
+                                                                             .description(
+                                                                                     "the wanted Data Storage Type (ONLINE, NEARLINE)")
+                                                                             .attributes(Attributes
+                                                                                                 .key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                                 .value(String.class
+                                                                                                                .getSimpleName()),
+                                                                                         Attributes
+                                                                                                 .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                                 .value("Available values: ONLINE, NEARLINE"))));
+        performDefaultGet(PrioritizedDataStorageController.BASE_PATH,
+                          requestBuilderCustomizer,
                           "could not retrieve the prioritized data storage");
     }
 
@@ -165,18 +222,28 @@ public class PrioritizedDataStorageControllerIT extends AbstractRegardsTransacti
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.content.dataStorageConfiguration.active",
                                                                        Matchers.is(Boolean.FALSE)));
-        requestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation
-                .parameterWithName("id").description("the prioritized data storage id")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Number"), Attributes
-                        .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Should be a whole number"))));
-        requestBuilderCustomizer.document(PayloadDocumentation
-                .relaxedRequestFields(Attributes.attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE)
-                        .value("Prioritized data storage")), documentPrioritizedDataStorageRequestBody(false)));
-        requestBuilderCustomizer.document(PayloadDocumentation
-                .relaxedResponseFields(Attributes.attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE)
-                        .value("Prioritized data storage")), documentPrioritizedDataStorageResponseBody()));
+        requestBuilderCustomizer.document(RequestDocumentation
+                                                  .pathParameters(RequestDocumentation.parameterWithName("id")
+                                                                          .description("the prioritized data storage id")
+                                                                          .attributes(Attributes
+                                                                                              .key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                              .value("Number"),
+                                                                                      Attributes
+                                                                                              .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                              .value("Should be a whole number"))));
+        requestBuilderCustomizer.document(PayloadDocumentation.relaxedRequestFields(Attributes.attributes(Attributes
+                                                                                                                  .key(RequestBuilderCustomizer.PARAM_TITLE)
+                                                                                                                  .value("Prioritized data storage")),
+                                                                                    documentPrioritizedDataStorageRequestBody(
+                                                                                            false)));
+        requestBuilderCustomizer.document(PayloadDocumentation.relaxedResponseFields(Attributes.attributes(Attributes
+                                                                                                                   .key(RequestBuilderCustomizer.PARAM_TITLE)
+                                                                                                                   .value("Prioritized data storage")),
+                                                                                     documentPrioritizedDataStorageResponseBody()));
         performDefaultPut(PrioritizedDataStorageController.BASE_PATH + PrioritizedDataStorageController.ID_PATH,
-                          created, requestBuilderCustomizer, "could not update the prioritized data storage",
+                          created,
+                          requestBuilderCustomizer,
+                          "could not update the prioritized data storage",
                           created.getId());
     }
 
@@ -187,12 +254,20 @@ public class PrioritizedDataStorageControllerIT extends AbstractRegardsTransacti
         Assert.assertEquals("created1 priority should be 0", 0L, created1.getPriority().longValue());
         Assert.assertEquals("created2 priority should be 1", 1L, created2.getPriority().longValue());
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
-        requestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation
-                .parameterWithName("id").description("the prioritized data storage id")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Number"), Attributes
-                        .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Should be a whole number"))));
-        performDefaultPut(PrioritizedDataStorageController.BASE_PATH + PrioritizedDataStorageController.UP_PATH, "",
-                          requestBuilderCustomizer, "could not increase the priority of created2", created2.getId());
+        requestBuilderCustomizer.document(RequestDocumentation
+                                                  .pathParameters(RequestDocumentation.parameterWithName("id")
+                                                                          .description("the prioritized data storage id")
+                                                                          .attributes(Attributes
+                                                                                              .key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                              .value("Number"),
+                                                                                      Attributes
+                                                                                              .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                              .value("Should be a whole number"))));
+        performDefaultPut(PrioritizedDataStorageController.BASE_PATH + PrioritizedDataStorageController.UP_PATH,
+                          "",
+                          requestBuilderCustomizer,
+                          "could not increase the priority of created2",
+                          created2.getId());
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         created1 = prioritizedDataStorageRepository.findById(created1.getId()).get();
         created2 = prioritizedDataStorageRepository.findById(created2.getId()).get();
@@ -207,12 +282,20 @@ public class PrioritizedDataStorageControllerIT extends AbstractRegardsTransacti
         Assert.assertEquals("created1 priority should be 0", 0L, created1.getPriority().longValue());
         Assert.assertEquals("created2 priority should be 1", 1L, created2.getPriority().longValue());
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
-        requestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation
-                .parameterWithName("id").description("the prioritized data storage id")
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("Number"), Attributes
-                        .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Should be a whole number"))));
-        performDefaultPut(PrioritizedDataStorageController.BASE_PATH + PrioritizedDataStorageController.DOWN_PATH, "",
-                          requestBuilderCustomizer, "could not decrease the priority of created1", created1.getId());
+        requestBuilderCustomizer.document(RequestDocumentation
+                                                  .pathParameters(RequestDocumentation.parameterWithName("id")
+                                                                          .description("the prioritized data storage id")
+                                                                          .attributes(Attributes
+                                                                                              .key(RequestBuilderCustomizer.PARAM_TYPE)
+                                                                                              .value("Number"),
+                                                                                      Attributes
+                                                                                              .key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
+                                                                                              .value("Should be a whole number"))));
+        performDefaultPut(PrioritizedDataStorageController.BASE_PATH + PrioritizedDataStorageController.DOWN_PATH,
+                          "",
+                          requestBuilderCustomizer,
+                          "could not decrease the priority of created1",
+                          created1.getId());
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         created1 = prioritizedDataStorageRepository.findById(created1.getId()).get();
         created2 = prioritizedDataStorageRepository.findById(created2.getId()).get();
@@ -250,16 +333,21 @@ public class PrioritizedDataStorageControllerIT extends AbstractRegardsTransacti
         List<FieldDescriptor> fields = new ArrayList<>();
 
         if (!creation) {
-            fields.add(constrainedFields.withPath("id", "id", "PrioritizedDataStorage identifier",
-                                                  "Should be a whole number"));
-            fields.add(constrainedFields.withPath("priority", "priority",
+            fields.add(constrainedFields
+                               .withPath("id", "id", "PrioritizedDataStorage identifier", "Should be a whole number"));
+            fields.add(constrainedFields.withPath("priority",
+                                                  "priority",
                                                   "PrioritizedDataStorage priority. 0 being the highest priority"));
         }
-        fields.add(constrainedFields.withPath("dataStorageType", "dataStorageType", "PrioritizedDataStorage type",
+        fields.add(constrainedFields.withPath("dataStorageType",
+                                              "dataStorageType",
+                                              "PrioritizedDataStorage type",
                                               "Available values: ONLINE, NEARLINE"));
-        fields.add(constrainedFields
-                .withPath("dataStorageConfiguration", "dataStorageConfiguration", "DataStorage configuration",
-                          "Should respect " + PluginConfiguration.class.getSimpleName() + " structure"));
+        fields.add(constrainedFields.withPath("dataStorageConfiguration",
+                                              "dataStorageConfiguration",
+                                              "DataStorage configuration",
+                                              "Should respect " + PluginConfiguration.class.getSimpleName()
+                                                      + " structure"));
 
         return fields;
     }
@@ -268,31 +356,24 @@ public class PrioritizedDataStorageControllerIT extends AbstractRegardsTransacti
         ConstrainedFields constrainedFields = new ConstrainedFields(PrioritizedDataStorage.class);
         List<FieldDescriptor> fields = new ArrayList<>();
 
-        fields.add(constrainedFields.withPath("content.id", "id", "PrioritizedDataStorage identifier",
+        fields.add(constrainedFields.withPath("content.id",
+                                              "id",
+                                              "PrioritizedDataStorage identifier",
                                               "Should be a whole number"));
-        fields.add(constrainedFields.withPath("content.priority", "priority",
+        fields.add(constrainedFields.withPath("content.priority",
+                                              "priority",
                                               "PrioritizedDataStorage priority. 0 being the highest priority"));
-        fields.add(constrainedFields.withPath("content.dataStorageType", "dataStorageType",
-                                              "PrioritizedDataStorage type", "Available values: ONLINE, NEARLINE"));
-        fields.add(constrainedFields
-                .withPath("content.dataStorageConfiguration", "dataStorageConfiguration", "DataStorage configuration",
-                          "Should respect " + PluginConfiguration.class.getSimpleName() + " structure"));
+        fields.add(constrainedFields.withPath("content.dataStorageType",
+                                              "dataStorageType",
+                                              "PrioritizedDataStorage type",
+                                              "Available values: ONLINE, NEARLINE"));
+        fields.add(constrainedFields.withPath("content.dataStorageConfiguration",
+                                              "dataStorageConfiguration",
+                                              "DataStorage configuration",
+                                              "Should respect " + PluginConfiguration.class.getSimpleName()
+                                                      + " structure"));
 
         return fields;
-    }
-
-    @Configuration
-    static class Config {
-
-        @Bean
-        public IProjectsClient projectsClient() {
-            return Mockito.mock(IProjectsClient.class);
-        }
-
-        @Bean
-        public INotificationClient notificationClient() {
-            return Mockito.mock(INotificationClient.class);
-        }
     }
 
 }
