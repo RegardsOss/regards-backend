@@ -41,6 +41,7 @@ public interface IPluginConfigurationRepository extends JpaRepository<PluginConf
      * @param pluginId the plugin identifier
      * @return a {@link List} of {@link PluginConfiguration}
      */
+    @EntityGraph(attributePaths = { "parameters", "parameters.dynamicsValues" })
     List<PluginConfiguration> findByPluginIdOrderByPriorityOrderDesc(String pluginId);
 
     /**
