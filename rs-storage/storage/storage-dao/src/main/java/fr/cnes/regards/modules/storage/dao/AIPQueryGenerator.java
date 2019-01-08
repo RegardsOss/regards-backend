@@ -135,8 +135,8 @@ public class AIPQueryGenerator {
         }
         if (storedOn != null && !storedOn.isEmpty()) {
             Set<String> storedOnPredicates = Sets.newHashSet();
-            for (String aipId : aipIds) {
-                storedOnPredicates.add("'" + aipId + "'");
+            for (Long storedOnId : storedOn) {
+                storedOnPredicates.add("'" + storedOnId + "'");
             }
             storedOnPredicates.stream().collect(Collectors.joining("' , '", "'", "'"));
             predicates.add("(id IN (SELECT aip_ip_id FROM storage.t_data_file WHERE id IN ("
