@@ -53,7 +53,7 @@ public class DeleteFilesFromDataStorageJob extends AbstractJob<Void> {
             aipsPage = aipDao.findAll(AIPQueryGenerator
                     .searchAIPContainingAllTags(filters.getState(), filters.getFrom(), filters.getTo(),
                                                 filters.getTags(), filters.getSession(), filters.getProviderId(),
-                                                filters.getAipIds(), filters.getAipIdsExcluded()),
+                                                filters.getAipIds(), filters.getAipIdsExcluded(), filters.getStoredOn()),
                                       pageRequest);
 
             aipService.deleteFilesFromDataStorage(

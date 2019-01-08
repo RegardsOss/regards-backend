@@ -109,7 +109,7 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
             aipsPage = aipDao.findAll(AIPQueryGenerator
                     .searchAIPContainingAllTags(tagFilter.getState(), tagFilter.getFrom(), tagFilter.getTo(),
                                                 tagFilter.getTags(), tagFilter.getSession(), tagFilter.getProviderId(),
-                                                tagFilter.getAipIds(), tagFilter.getAipIdsExcluded()),
+                                                tagFilter.getAipIds(), tagFilter.getAipIdsExcluded(), tagFilter.getStoredOn()),
                                       pageRequest);
             aipsPage.forEach(aip -> {
                 try {

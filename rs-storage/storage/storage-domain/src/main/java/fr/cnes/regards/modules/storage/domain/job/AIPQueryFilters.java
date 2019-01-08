@@ -68,6 +68,11 @@ public class AIPQueryFilters {
     private List<String> tags = new ArrayList<>();
 
     /**
+     * Data storage ids on which filtered aip should be stored on
+     */
+    private Set<Long> storedOn = new HashSet<>();
+
+    /**
      * Regards session id
      */
     private String session;
@@ -137,5 +142,13 @@ public class AIPQueryFilters {
 
     public void setProviderId(String providerId) {
         this.providerId = providerId;
+    }
+
+    public Set<Long> getStoredOn() {
+        return storedOn;
+    }
+
+    public void setStoredOn(Set<Long> storedOn) {
+        this.storedOn = storedOn;
     }
 }

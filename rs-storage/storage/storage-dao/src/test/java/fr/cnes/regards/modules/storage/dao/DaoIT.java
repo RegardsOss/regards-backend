@@ -375,7 +375,7 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         Page<AIP> aips = dao.findAll(
                                      // test at least one tag
                                      AIPQueryGenerator.searchAIPContainingAtLeastOneTag(null, null, null, tags, null,
-                                                                                        null, null, null),
+                                                                                        null, null, null, null),
                                      PageRequest.of(0, 100));
         Assert.assertTrue(aips.getContent().contains(aip1));
         Assert.assertTrue(aips.getContent().contains(aip12));
@@ -392,7 +392,8 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         Page<AIP> aips = dao.findAll(
                                      // test at least one tag
                                      AIPQueryGenerator.searchAIPContainingAtLeastOneTag(AIPState.STORED, null, null,
-                                                                                        tags, null, null, null, null),
+                                                                                        tags, null, null, null, null,
+                                                                                        null),
                                      PageRequest.of(0, 100));
         Assert.assertFalse(aips.getContent().contains(aip1));
         Assert.assertFalse(aips.getContent().contains(aip12));
@@ -409,7 +410,7 @@ public class DaoIT extends AbstractDaoTransactionalTest {
         Page<AIP> aips = dao.findAll(
                                      // test at least one tag
                                      AIPQueryGenerator.searchAIPContainingAllTags(AIPState.VALID, null, null, tags,
-                                                                                  null, null, null, null),
+                                                                                  null, null, null, null, null),
                                      PageRequest.of(0, 100));
         Assert.assertTrue(aips.getContent().contains(aip1));
         Assert.assertTrue(aips.getContent().contains(aip12));
@@ -426,7 +427,7 @@ public class DaoIT extends AbstractDaoTransactionalTest {
                                                      // test at least one tag
                                                      AIPQueryGenerator.searchAipTagsUsingSQL(AIPState.VALID, null, null,
                                                                                              tags, null, null, null,
-                                                                                             null));
+                                                                                             null, null));
 
         Assert.assertTrue(aips.containsAll(aip1.getTags()));
         Assert.assertTrue(aips.containsAll(aip12.getTags()));

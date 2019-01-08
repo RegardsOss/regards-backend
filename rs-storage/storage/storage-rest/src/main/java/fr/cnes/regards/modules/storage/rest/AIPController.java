@@ -263,9 +263,10 @@ public class AIPController implements IResourceController<AIP> {
                     OffsetDateTime to, @RequestParam(name = "tags", required = false) List<String> tags,
             @RequestParam(name = "providerId", required = false) String providerId,
             @RequestParam(name = "session", required = false) String session,
+            @RequestParam(name = "storedOn", required = false) Set<Long> storedOn,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<AIP> assembler) throws ModuleException {
-        Page<AIP> aips = aipService.retrieveAIPs(state, from, to, tags, session, providerId, pageable);
+        Page<AIP> aips = aipService.retrieveAIPs(state, from, to, tags, session, providerId, storedOn, pageable);
         return new ResponseEntity<>(toPagedResources(aips, assembler), HttpStatus.OK);
     }
 

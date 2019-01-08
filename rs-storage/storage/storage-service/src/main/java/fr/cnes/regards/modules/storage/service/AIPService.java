@@ -52,7 +52,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.util.Pair;
 import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeType;
@@ -638,12 +637,12 @@ public class AIPService implements IAIPService {
 
     @Override
     public Page<AIP> retrieveAIPs(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags,
-            String session, String providerId, Pageable pageable) throws ModuleException {
+            String session, String providerId, Set<Long> storedOn, Pageable pageable) throws ModuleException {
         if (!getSecurityDelegationPlugin().hasAccessToListFeature()) {
             throw new EntityOperationForbiddenException("Only Admins can access this feature.");
         }
         return aipDao.findAll(AIPQueryGenerator.searchAIPContainingAllTags(state, from, to, tags, session, providerId,
-                                                                           null, null),
+                                                                           null, null, storedOn),
                               pageable);
     }
 
@@ -658,7 +657,7 @@ public class AIPService implements IAIPService {
         String aipQueryWithoutPage = AIPQueryGenerator
                 .searchAIPIdContainingAllTags(filters.getState(), filters.getFrom(), filters.getTo(), filters.getTags(),
                                               filters.getSession(), filters.getProviderId(), filters.getAipIds(),
-                                              filters.getAipIdsExcluded());
+                                              filters.getAipIdsExcluded(), filters.getStoredOn());
         String aipQuery = aipQueryWithoutPage + " LIMIT " + pageable.getPageSize() + " OFFSET " + pageable.getOffset();
         // first lets get information for this page
 
@@ -707,13 +706,13 @@ public class AIPService implements IAIPService {
             } else {
                 aips = aipDao.findAll(AIPQueryGenerator.searchAIPContainingAtLeastOneTag(state, null, null,
                                                                                          new ArrayList<>(tags), null,
-                                                                                         null, null, null),
+                                                                                         null, null, null, null),
                                       pageable);
             }
         } else {
             aips = aipDao.findAll(AIPQueryGenerator.searchAIPContainingAtLeastOneTag(state, fromLastUpdateDate, null,
                                                                                      new ArrayList<>(tags), null, null,
-                                                                                     null, null),
+                                                                                     null, null, null),
                                   pageable);
         }
         // Associate data files with their AIP (=> multimap)
@@ -1749,7 +1748,7 @@ public class AIPService implements IAIPService {
         return aipDao.findAllByCustomQuery(AIPQueryGenerator
                 .searchAipTagsUsingSQL(request.getState(), request.getFrom(), request.getTo(), request.getTags(),
                                        request.getSession(), request.getProviderId(), request.getAipIds(),
-                                       request.getAipIdsExcluded()));
+                                       request.getAipIdsExcluded(), request.getStoredOn()));
     }
 
     @Override
