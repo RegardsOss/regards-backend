@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.amqp.configuration;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
@@ -35,6 +36,7 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.IPollable;
@@ -83,19 +85,33 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     @Autowired
     private RabbitAdmin rabbitAdmin;
 
+    @Value("${spring.application.name}")
+    private String microserviceName;
+
     /**
-     * Microservice type identifier
+     * Microservice type identifier. If not specified, set to spring application name.
      */
     private String microserviceTypeId;
 
     /**
-     * Microservice instance identifier
+     * Microservice instance identifier. If not specified, set to spring application name plus a generated unique suffix.
+     * Moreover, related queues will be created with <b>auto delete</b> capabilities.
      */
     private String microserviceInstanceId;
 
+    /**
+     * Whether above instance identifier is generated or not. If so, queues using instance identifier will be auto delete queues.
+     */
+    private boolean instanceIdGenerated = false;
+
     public RegardsAmqpAdmin(String microserviceTypeId, String microserviceInstanceId) {
-        this.microserviceTypeId = microserviceTypeId;
-        this.microserviceInstanceId = microserviceInstanceId;
+        this.microserviceTypeId = microserviceTypeId == null ? microserviceName : microserviceTypeId;
+        if (microserviceInstanceId == null) {
+            this.instanceIdGenerated = true;
+            this.microserviceInstanceId = microserviceName + UUID.randomUUID();
+        } else {
+            this.microserviceInstanceId = microserviceInstanceId;
+        }
     }
 
     @Override
@@ -160,8 +176,9 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
             case BROADCAST:
                 // Allows to subscribe to a broadcast exchange
                 if (handlerType.isPresent()) {
-                    queue = QueueBuilder.durable(getSubscriptionQueueName(handlerType.get(), target))
-                            .withArguments(args).build();
+                    QueueBuilder qb = QueueBuilder.durable(getSubscriptionQueueName(handlerType.get(), target))
+                            .withArguments(args);
+                    queue = isAutoDeleteSubscriptionQueue(target) ? qb.autoDelete().build() : qb.build();
                 } else {
                     throw new IllegalArgumentException("Missing event handler for broadcasted event");
                 }
@@ -223,6 +240,10 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
         builder.append(DOT);
         builder.append(handlerType.getName());
         return builder.toString();
+    }
+
+    public boolean isAutoDeleteSubscriptionQueue(Target target) {
+        return this.instanceIdGenerated && (Target.ALL.equals(target) || Target.MICROSERVICE.equals(target));
     }
 
     @Override

@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.framework.amqp.autoconfigure;
 
-import javax.validation.constraints.NotNull;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
@@ -32,15 +30,14 @@ import org.springframework.validation.annotation.Validated;
 public class AmqpMicroserviceProperties {
 
     /**
-     * Microservice identifier unique to identify exchanges/queue related to only one type of microservices
+     * Microservice identifier unique to identify exchanges/queue related to only one type of microservices.<br/>
+     * If not specified, fallback to microservice name (i.e. spring.application.name property)
      */
-    @NotNull
     private String typeIdentifier;
 
     /**
      * Microservice instance identifier
      */
-    @NotNull
     private String instanceIdentifier;
 
     /**
