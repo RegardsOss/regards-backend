@@ -708,6 +708,7 @@ public class AIPController implements IResourceController<AIP> {
                                 MethodParamFactory.build(List.class),
                                 MethodParamFactory.build(String.class),
                                 MethodParamFactory.build(String.class),
+                                MethodParamFactory.build(Set.class),
                                 MethodParamFactory.build(Pageable.class),
                                 MethodParamFactory.build(PagedResourcesAssembler.class));
         resourceService.addLink(resource,
