@@ -53,7 +53,7 @@ public class DeleteFilesFromDataStorageJob extends AbstractJob<Void> {
             aipsPage = aipDao.findAll(AIPQueryGenerator
                     .searchAIPContainingAllTags(filters.getState(), filters.getFrom(), filters.getTo(),
                                                 filters.getTags(), filters.getSession(), filters.getProviderId(),
-                                                filters.getAipIds(), filters.getAipIdsExcluded()),
+                                                filters.getAipIds(), filters.getAipIdsExcluded(), filters.getStoredOn()),
                                       pageRequest);
 
             aipService.deleteFilesFromDataStorage(
@@ -92,10 +92,10 @@ public class DeleteFilesFromDataStorageJob extends AbstractJob<Void> {
             logger.error(e.getMessage(), e);
             throw e;
         }
-        if (!Long.class.isAssignableFrom(dataStorageIdParam.getClass())) {
+        if (!Long.class.isAssignableFrom(dataStorageIdParam.getValue().getClass())) {
             JobParameterInvalidException e = new JobParameterInvalidException(
                     String.format("Job %s: parameter %s should be of type %s", this.getClass().getName(),
-                                  FILTER_PARAMETER_NAME, Long.class.getName()));
+                                  DATA_STORAGE_ID_PARAMETER_NAME, Long.class.getName()));
             logger.error(e.getMessage(), e);
             throw e;
         }

@@ -52,7 +52,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.util.Pair;
 import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeType;
@@ -638,44 +637,49 @@ public class AIPService implements IAIPService {
 
     @Override
     public Page<AIP> retrieveAIPs(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags,
-            String session, String providerId, Pageable pageable) throws ModuleException {
+            String session, String providerId, Set<Long> storedOn, Pageable pageable) throws ModuleException {
         if (!getSecurityDelegationPlugin().hasAccessToListFeature()) {
             throw new EntityOperationForbiddenException("Only Admins can access this feature.");
         }
         return aipDao.findAll(AIPQueryGenerator.searchAIPContainingAllTags(state, from, to, tags, session, providerId,
-                                                                           null, null),
+                                                                           null, null, storedOn),
                               pageable);
     }
 
     @Override
     public AIPPageWithDataStorages retrieveAIPWithDataStorageIds(AIPQueryFilters filters, Pageable pageable)
             throws ModuleException {
+        // In all this method usage of list is mandatory to keep order
+
         if (!getSecurityDelegationPlugin().hasAccessToListFeature()) {
             throw new EntityOperationForbiddenException("Only Admins can access this feature.");
         }
         String aipQueryWithoutPage = AIPQueryGenerator
                 .searchAIPIdContainingAllTags(filters.getState(), filters.getFrom(), filters.getTo(), filters.getTags(),
                                               filters.getSession(), filters.getProviderId(), filters.getAipIds(),
-                                              filters.getAipIdsExcluded());
+                                              filters.getAipIdsExcluded(), filters.getStoredOn());
         String aipQuery = aipQueryWithoutPage + " LIMIT " + pageable.getPageSize() + " OFFSET " + pageable.getOffset();
         // first lets get information for this page
 
-        String sqlQuery = "select * from {h-schema}t_data_file sdf where sdf.aip_ip_id IN (" + aipQuery
+        String sqlQuery = "select id from {h-schema}t_data_file sdf where sdf.aip_ip_id IN (" + aipQuery
                 + ") order by sdf.aip_ip_id";
-        Query q = em.createNativeQuery(sqlQuery, StorageDataFile.class);
+        Query q = em.createNativeQuery(sqlQuery);
         @SuppressWarnings("unchecked")
-        List<StorageDataFile> dataFiles = q.getResultList();
-
-        // lets sort everything by aip
-        HashMultimap<AIP, Long> aipDataFileMap = HashMultimap.create();
+        List<Long> dataFileIds = q.getResultList().stream().mapToLong(r -> ((BigInteger) r).longValue()).boxed()
+                .collect(Collectors.toList());
+        List<StorageDataFile> dataFiles = dataFileDao.findAllById(dataFileIds);
+        // lets sort everything by aip, maps with object as key does not work as espected, lets use 2 map with same key to achieve our goal
+        Map<String, AIP> aipIdAipMap = new HashMap<>();
+        HashMultimap<String, Long> aipIdDataStorageIdsMap = HashMultimap.create();
         for (StorageDataFile sdf : dataFiles) {
-            //lets get all archive ids
-            sdf.getPrioritizedDataStorages().stream().forEach(pds -> aipDataFileMap.put(sdf.getAip(), pds.getId()));
+            //lets get all data storages id
+            aipIdAipMap.put(sdf.getAipEntity().getAipId(), sdf.getAip());
+            sdf.getPrioritizedDataStorages().stream().forEach(pds -> aipIdDataStorageIdsMap.put(sdf.getAipEntity().getAipId(), pds.getId()));
         }
         // we have all storage data file needed to make aip with data storage id
         List<AIPWithDataStorageIds> content = new ArrayList<>();
-        for (AIP aip : aipDataFileMap.keySet()) {
-            content.add(new AIPWithDataStorageIds(aip, aipDataFileMap.get(aip)));
+        for (String aipId : aipIdAipMap.keySet()) {
+            content.add(new AIPWithDataStorageIds(aipIdAipMap.get(aipId), aipIdDataStorageIdsMap.get(aipId)));
         }
         // now lets get information for metadata
         String pdsIdQuery = "SELECT data_storage_conf_id FROM {h-schema}ta_data_file_plugin_conf WHERE data_file_id IN "
@@ -702,13 +706,13 @@ public class AIPService implements IAIPService {
             } else {
                 aips = aipDao.findAll(AIPQueryGenerator.searchAIPContainingAtLeastOneTag(state, null, null,
                                                                                          new ArrayList<>(tags), null,
-                                                                                         null, null, null),
+                                                                                         null, null, null, null),
                                       pageable);
             }
         } else {
             aips = aipDao.findAll(AIPQueryGenerator.searchAIPContainingAtLeastOneTag(state, fromLastUpdateDate, null,
                                                                                      new ArrayList<>(tags), null, null,
-                                                                                     null, null),
+                                                                                     null, null, null),
                                   pageable);
         }
         // Associate data files with their AIP (=> multimap)
@@ -1744,7 +1748,7 @@ public class AIPService implements IAIPService {
         return aipDao.findAllByCustomQuery(AIPQueryGenerator
                 .searchAipTagsUsingSQL(request.getState(), request.getFrom(), request.getTo(), request.getTags(),
                                        request.getSession(), request.getProviderId(), request.getAipIds(),
-                                       request.getAipIdsExcluded()));
+                                       request.getAipIdsExcluded(), request.getStoredOn()));
     }
 
     @Override

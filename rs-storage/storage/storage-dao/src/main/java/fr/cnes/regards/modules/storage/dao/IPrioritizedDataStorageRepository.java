@@ -27,14 +27,13 @@ public interface IPrioritizedDataStorageRepository extends JpaRepository<Priorit
      */
     PrioritizedDataStorage findFirstByDataStorageTypeOrderByPriorityDesc(DataStorageType dataStorageType);
 
-    Optional<PrioritizedDataStorage> findOneByDataStorageConfigurationId(Long pluginConfId);
-
     @EntityGraph(attributePaths = { "dataStorageConfiguration.parameters", "dataStorageConfiguration.parameters.dynamicsValues" })
     Optional<PrioritizedDataStorage> findById(Long pluginConfId);
 
     Set<PrioritizedDataStorage> findAllByDataStorageTypeAndPriorityGreaterThanOrderByPriorityAsc(
             DataStorageType dataStorageType, Long priority);
 
+    @EntityGraph(attributePaths = { "dataStorageConfiguration.parameters", "dataStorageConfiguration.parameters.dynamicsValues" })
     List<PrioritizedDataStorage> findAllByDataStorageTypeOrderByPriorityAsc(DataStorageType dataStorageType);
 
     /**
@@ -49,10 +48,6 @@ public interface IPrioritizedDataStorageRepository extends JpaRepository<Priorit
             DataStorageType dataStorageType, boolean pluginConfActivity);
 
     PrioritizedDataStorage findOneByDataStorageTypeAndPriority(DataStorageType dataStorageType, long priority);
-
-    @Query(value = "SELECT data_storage_conf_id FROM {h-schema}ta_data_file_plugin_conf WHERE data_file_id IN "
-            + "(SELECT id FROM {h-schema}t_data_file WHERE aip_ip_id IN (:aipQuery))", nativeQuery = true)
-    Set<Long> findAllIdUsedByAipInQuery(@Param("aipQuery") String aipQuery);
 
     @EntityGraph(attributePaths = { "dataStorageConfiguration.parameters", "dataStorageConfiguration.parameters.dynamicsValues" })
     Set<PrioritizedDataStorage> findAllByIdIn(Collection<Long> allIdUsedByAipInQuery);

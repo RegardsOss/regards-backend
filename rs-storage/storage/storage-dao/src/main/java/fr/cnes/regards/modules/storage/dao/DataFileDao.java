@@ -254,4 +254,9 @@ public class DataFileDao implements IDataFileDao {
     public List<StorageDataFile> findAllByAipInQuery(String aipQuery) {
         return repository.findAllByAipInQuery(aipQuery);
     }
+
+    @Override
+    public List<StorageDataFile> findAllById(List<Long> dataFileIds) {
+        return repository.findAllById(dataFileIds);
+    }
 }

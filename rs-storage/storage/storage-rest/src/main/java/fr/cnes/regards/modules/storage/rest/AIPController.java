@@ -26,6 +26,7 @@ import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -90,6 +91,7 @@ import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.DataFileDto;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
 import fr.cnes.regards.modules.storage.domain.RejectedSip;
+import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.job.AIPQueryFilters;
 import fr.cnes.regards.modules.storage.domain.job.AddAIPTagsFilters;
@@ -261,9 +263,10 @@ public class AIPController implements IResourceController<AIP> {
                     OffsetDateTime to, @RequestParam(name = "tags", required = false) List<String> tags,
             @RequestParam(name = "providerId", required = false) String providerId,
             @RequestParam(name = "session", required = false) String session,
+            @RequestParam(name = "storedOn", required = false) Set<Long> storedOn,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<AIP> assembler) throws ModuleException {
-        Page<AIP> aips = aipService.retrieveAIPs(state, from, to, tags, session, providerId, pageable);
+        Page<AIP> aips = aipService.retrieveAIPs(state, from, to, tags, session, providerId, storedOn, pageable);
         return new ResponseEntity<>(toPagedResources(aips, assembler), HttpStatus.OK);
     }
 
@@ -570,8 +573,7 @@ public class AIPController implements IResourceController<AIP> {
     @ResourceAccess(description = "send a page of aips with data storages information", role = DefaultRole.ADMIN)
     public ResponseEntity<ResourcedAIPPageWithDataStorages> retrieveAIPWithDataStorages(
             @Valid @RequestBody AIPQueryFilters filters,
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-            PagedResourcesAssembler<AIPWithDataStorageIds> assembler) throws ModuleException {
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable) throws ModuleException {
         AIPPageWithDataStorages aipPage = aipService.retrieveAIPWithDataStorageIds(filters, pageable);
         List<Resource<AIPWithDataStorageIds>> resourcedContent = new ArrayList<>();
         for (AIPWithDataStorageIds aipWithDataStorageIds : aipPage) {
@@ -706,6 +708,7 @@ public class AIPController implements IResourceController<AIP> {
                                 MethodParamFactory.build(List.class),
                                 MethodParamFactory.build(String.class),
                                 MethodParamFactory.build(String.class),
+                                MethodParamFactory.build(Set.class),
                                 MethodParamFactory.build(Pageable.class),
                                 MethodParamFactory.build(PagedResourcesAssembler.class));
         resourceService.addLink(resource,
@@ -713,8 +716,7 @@ public class AIPController implements IResourceController<AIP> {
                                 "retrieveAIPWithDataStorages",
                                 LinkRels.LIST + "-with-datastorages",
                                 MethodParamFactory.build(AIPQueryFilters.class),
-                                MethodParamFactory.build(Pageable.class),
-                                MethodParamFactory.build(PagedResourcesAssembler.class));
+                                MethodParamFactory.build(Pageable.class));
         resourceService.addLink(resource,
                                 this.getClass(),
                                 "retrieveAip",
@@ -782,9 +784,13 @@ public class AIPController implements IResourceController<AIP> {
 
     private class ResourcedAIPPageWithDataStorages extends PagedResources<Resource<AIPWithDataStorageIds>> {
 
+        private Set<PrioritizedDataStorage> dataStorages = new HashSet<>();
+
         public ResourcedAIPPageWithDataStorages(AIPPageWithDataStorages aipPage,
                 List<Resource<AIPWithDataStorageIds>> resourcedContent) {
             super(resourcedContent, aipPage.getMetadata());
+            this.dataStorages.addAll(aipPage.getDataStorages());
         }
+
     }
 }

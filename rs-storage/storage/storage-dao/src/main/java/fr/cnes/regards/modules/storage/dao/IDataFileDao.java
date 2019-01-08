@@ -134,4 +134,6 @@ public interface IDataFileDao {
     long countByAipAndByState(AIP aip, DataFileState dataFileState);
 
     List<StorageDataFile> findAllByAipInQuery(String aipQuery);
+
+    List<StorageDataFile> findAllById(List<Long> dataFileIds);
 }

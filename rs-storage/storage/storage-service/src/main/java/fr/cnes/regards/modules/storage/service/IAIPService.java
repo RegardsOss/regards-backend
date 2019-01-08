@@ -138,12 +138,12 @@ public interface IAIPService {
      * @param tags
      * @param sessionId
      * @param providerId
-     * @param pageable {@link Pageable} Pagination information
-     * @return {@link AIP}s corresponding to parameters given.
+     * @param storedOn
+     *@param pageable {@link Pageable} Pagination information  @return {@link AIP}s corresponding to parameters given.
      * @throws ModuleException
      */
     Page<AIP> retrieveAIPs(AIPState pState, OffsetDateTime pFrom, OffsetDateTime pTo, List<String> tags,
-            String sessionId, String providerId, Pageable pageable) throws ModuleException;
+            String sessionId, String providerId, Set<Long> storedOn, Pageable pageable) throws ModuleException;
 
     AIPPageWithDataStorages retrieveAIPWithDataStorageIds(AIPQueryFilters filters, Pageable pageable) throws ModuleException;
 
