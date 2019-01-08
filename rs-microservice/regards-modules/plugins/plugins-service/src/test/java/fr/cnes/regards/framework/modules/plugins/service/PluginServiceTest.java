@@ -88,7 +88,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         blowfishEncryptionService
                 .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "12345678"));
         pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, publisherMocked, runtimeTenantResolver,
-                                                blowfishEncryptionService);
+                blowfishEncryptionService);
         PluginUtils.setup(Arrays.asList("fr.cnes.regards.plugins", "fr.cnes.regards.framework.plugins",
                                         "fr.cnes.regards.framework.modules.plugins"));
     }
@@ -160,8 +160,8 @@ public class PluginServiceTest extends PluginServiceUtility {
         try {
             final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithParameters();
             aPluginConfiguration.setId(AN_ID);
-            Mockito.when(pluginConfRepositoryMocked.findById(aPluginConfiguration.getId()))
-                    .thenReturn(Optional.of(aPluginConfiguration));
+            Mockito.when(pluginConfRepositoryMocked.findCompleteById(aPluginConfiguration.getId()))
+                    .thenReturn(aPluginConfiguration);
             Mockito.when(pluginConfRepositoryMocked.existsById(aPluginConfiguration.getId())).thenReturn(true);
 
             PluginConfiguration aConf;
@@ -186,9 +186,8 @@ public class PluginServiceTest extends PluginServiceUtility {
                     .thenReturn(Optional.of(aPluginConfiguration));
             pluginServiceMocked.deletePluginConfiguration(aPluginConfiguration.getId());
             Mockito.verify(pluginConfRepositoryMocked).deleteById(aPluginConfiguration.getId());
-            Mockito.verify(publisherMocked).publish(
-                    new BroadcastPluginConfEvent(aPluginConfiguration.getId(), PluginServiceAction.DELETE,
-                                                 aPluginConfiguration.getInterfaceNames()));
+            Mockito.verify(publisherMocked).publish(new BroadcastPluginConfEvent(aPluginConfiguration.getId(),
+                    PluginServiceAction.DELETE, aPluginConfiguration.getInterfaceNames()));
 
         } catch (final ModuleException e) {
             Assert.fail();
@@ -218,9 +217,8 @@ public class PluginServiceTest extends PluginServiceUtility {
             Assert.assertEquals(aPluginConfiguration.getParameters().size(),
                                 savedPluginConfiguration.getParameters().size());
 
-            Mockito.verify(publisherMocked).publish(
-                    new BroadcastPluginConfEvent(aPluginConfigurationWithId.getId(), PluginServiceAction.CREATE,
-                                                 aPluginConfigurationWithId.getInterfaceNames()));
+            Mockito.verify(publisherMocked).publish(new BroadcastPluginConfEvent(aPluginConfigurationWithId.getId(),
+                    PluginServiceAction.CREATE, aPluginConfigurationWithId.getInterfaceNames()));
         } catch (final ModuleException e) {
             Assert.fail();
         }
@@ -286,9 +284,8 @@ public class PluginServiceTest extends PluginServiceUtility {
         final PluginConfiguration updatedConf = pluginServiceMocked.updatePluginConfiguration(toBeUpdated);
         Assert.assertEquals(updatedConf.getLabel(), aPluginConfiguration.getLabel());
         Assert.assertEquals(updatedConf.getPluginId(), aPluginConfiguration.getPluginId());
-        Mockito.verify(publisherMocked).publish(
-                new BroadcastPluginConfEvent(aPluginConfiguration.getId(), PluginServiceAction.DISABLE,
-                                             aPluginConfiguration.getInterfaceNames()));
+        Mockito.verify(publisherMocked).publish(new BroadcastPluginConfEvent(aPluginConfiguration.getId(),
+                PluginServiceAction.DISABLE, aPluginConfiguration.getInterfaceNames()));
     }
 
     @Test
@@ -308,9 +305,8 @@ public class PluginServiceTest extends PluginServiceUtility {
         final PluginConfiguration updatedConf = pluginServiceMocked.updatePluginConfiguration(toBeUpdated);
         Assert.assertEquals(updatedConf.getLabel(), aPluginConfiguration.getLabel());
         Assert.assertEquals(updatedConf.getPluginId(), aPluginConfiguration.getPluginId());
-        Mockito.verify(publisherMocked).publish(
-                new BroadcastPluginConfEvent(aPluginConfiguration.getId(), PluginServiceAction.ACTIVATE,
-                                             aPluginConfiguration.getInterfaceNames()));
+        Mockito.verify(publisherMocked).publish(new BroadcastPluginConfEvent(aPluginConfiguration.getId(),
+                PluginServiceAction.ACTIVATE, aPluginConfiguration.getInterfaceNames()));
     }
 
     @Test
@@ -471,12 +467,12 @@ public class PluginServiceTest extends PluginServiceUtility {
         final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
                 .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).getParameters().stream().findFirst().get();
 
-        final SamplePlugin aSamplePlugin = pluginServiceMocked
-                .getFirstPluginByType(ISamplePlugin.class, aDynamicPlgParam);
+        final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class,
+                                                                                    aDynamicPlgParam);
         Assert.assertNotNull(aSamplePlugin);
 
-        final SamplePlugin bSamplePlugin = pluginServiceMocked
-                .getFirstPluginByType(ISamplePlugin.class, aDynamicPlgParam);
+        final SamplePlugin bSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class,
+                                                                                    aDynamicPlgParam);
         Assert.assertNotNull(bSamplePlugin);
         Assert.assertNotEquals(aSamplePlugin, bSamplePlugin);
     }
@@ -507,8 +503,8 @@ public class PluginServiceTest extends PluginServiceUtility {
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class);
         Assert.assertNotNull(aSamplePlugin);
 
-        final SamplePlugin bSamplePlugin = pluginServiceMocked
-                .getFirstPluginByType(ISamplePlugin.class, aDynamicPlgParam);
+        final SamplePlugin bSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class,
+                                                                                    aDynamicPlgParam);
         Assert.assertNotNull(bSamplePlugin);
         Assert.assertNotEquals(aSamplePlugin, bSamplePlugin);
     }
@@ -541,8 +537,8 @@ public class PluginServiceTest extends PluginServiceUtility {
         final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
                 .addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, -1).getParameters().stream().findFirst().get();
 
-        final SamplePlugin aSamplePlugin = pluginServiceMocked
-                .getFirstPluginByType(ISamplePlugin.class, aDynamicPlgParam);
+        final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class,
+                                                                                    aDynamicPlgParam);
 
         Assert.assertNotNull(aSamplePlugin);
 
@@ -562,8 +558,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     @Requirement("REGARDS_DSL_SYS_ARC_120")
     @Requirement("REGARDS_DSL_CMP_PLG_300")
     @Requirement("REGARDS_DSL_CMP_PLG_340")
-    @Purpose(
-            "Load a plugin with a dynamic parameter with a list of value from a specific type with a configuration and execute a method.")
+    @Purpose("Load a plugin with a dynamic parameter with a list of value from a specific type with a configuration and execute a method.")
     public void getFirstPluginInstanceByTypeWithADynamicParameterWithAListOfValue() throws ModuleException {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
@@ -591,8 +586,7 @@ public class PluginServiceTest extends PluginServiceUtility {
     @Requirement("REGARDS_DSL_SYS_ARC_120")
     @Requirement("REGARDS_DSL_CMP_PLG_300")
     @Requirement("REGARDS_DSL_CMP_PLG_340")
-    @Purpose(
-            "Load a plugin with a dynamic parameter with a list of value from a specific type with a configuration and set a parameter value and execute a method.")
+    @Purpose("Load a plugin with a dynamic parameter with a list of value from a specific type with a configuration and set a parameter value and execute a method.")
     public void getFirstPluginInstanceByTypeWithADynamicParameterWithAListOfValueAndSetAValue() throws ModuleException {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
@@ -610,8 +604,8 @@ public class PluginServiceTest extends PluginServiceUtility {
         final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
                 .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).getParameters().stream().findFirst().get();
 
-        final SamplePlugin aSamplePlugin = pluginServiceMocked
-                .getFirstPluginByType(ISamplePlugin.class, aDynamicPlgParam);
+        final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class,
+                                                                                    aDynamicPlgParam);
 
         Assert.assertNotNull(aSamplePlugin);
         Assert.assertTrue(aSamplePlugin.echo(HELLO).contains(BLUE));
