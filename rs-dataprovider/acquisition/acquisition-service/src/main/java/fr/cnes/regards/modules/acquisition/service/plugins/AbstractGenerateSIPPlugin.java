@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
  * @author Christophe Mertz
  *
  */
-public abstract class AbstractGenerateSIPPlugin extends AbstractMiscStorageInformation
+public abstract class AbstractGenerateSIPPlugin extends AbstractStorageInformation
         implements ISIPGenerationPluginWithMetadataToolbox {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractGenerateSIPPlugin.class);
@@ -74,7 +74,7 @@ public abstract class AbstractGenerateSIPPlugin extends AbstractMiscStorageInfor
         addAttributesTopSip(sipBuilder, mm);
 
         // Add misc information
-        addMiscStorageInfomation(sipBuilder);
+        addStorageInfomation(sipBuilder);
 
         // Add the SIP to the SIPCollection
         SIP aSip = sipBuilder.build();
