@@ -116,6 +116,11 @@ public class AIPControllerIT extends AbstractAIPControllerIT {
         descriptors.add(constrainedFields.withPath("tags", "tags", "List of tags that AIPs must have to be included")
                                 .optional().type(List.class.getSimpleName()));
 
+        descriptors.add(constrainedFields.withPath("storedOn",
+                                                   "storedOn",
+                                                   "Set of data storage id on which at least "
+                                                           + "one file of the AIP has to be stored").optional()
+                                .type(List.class.getSimpleName()));
         return descriptors;
     }
 
