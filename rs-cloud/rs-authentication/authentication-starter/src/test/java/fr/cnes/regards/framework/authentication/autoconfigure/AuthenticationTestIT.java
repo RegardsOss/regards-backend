@@ -199,7 +199,16 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
                                                            .param(GRANT_TYPE, PASSWORD).param(SCOPE, "PROJECT")
                                                            .param(USER_NAME, "test@regards.fr").param(PASSWORD,
                                                                                                       AuthenticationTestConfiguration.VALID_PASSWORD))
-                    .andExpect(MockMvcResultMatchers.status().isOk());
+                    .andExpect(MockMvcResultMatchers.status().isOk())
+                    .andExpect(MockMvcResultMatchers.jsonPath("$.access_token").exists())
+                    .andExpect(MockMvcResultMatchers.jsonPath("$.email").exists())
+                    .andExpect(MockMvcResultMatchers.jsonPath("$.scope").exists())
+                    .andExpect(MockMvcResultMatchers.jsonPath("$.tenant").exists())
+                    .andExpect(MockMvcResultMatchers.jsonPath("$.sub").exists())
+                    .andExpect(MockMvcResultMatchers.jsonPath("$.role").exists())
+                    .andExpect(MockMvcResultMatchers.jsonPath("$.token_type").exists())
+                    .andExpect(MockMvcResultMatchers.jsonPath("$.expires_in").exists())
+                    .andExpect(MockMvcResultMatchers.jsonPath("$.jti").exists());
 
         } catch (Exception e) {
             e.printStackTrace();
