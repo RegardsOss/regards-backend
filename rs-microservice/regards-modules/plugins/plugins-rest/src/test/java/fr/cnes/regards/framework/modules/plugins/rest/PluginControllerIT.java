@@ -58,6 +58,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
 
     @After
     public void cleanUp() {
+        resolver.forceTenant(getDefaultTenant());
         repository.deleteAll();
     }
 
