@@ -353,7 +353,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     private void checkProcessingChainMode(AcquisitionProcessingChain processingChain) throws ModuleException {
 
         if (AcquisitionProcessingChainMode.AUTO.equals(processingChain.getMode())
-                && processingChain.getPeriodicity() == null) {
+                && (processingChain.getPeriodicity() == null)) {
             throw new EntityInvalidException("Missing periodicity for automatic acquisition processing chain");
         }
     }
@@ -427,7 +427,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
         // Stop all active jobs for current processing chain
         JobInfo jobInfo = processingChain.getLastProductAcquisitionJobInfo();
-        if (jobInfo != null && !jobInfo.getStatus().getStatus().isFinished()) {
+        if ((jobInfo != null) && !jobInfo.getStatus().getStatus().isFinished()) {
             jobInfoService.stopJob(jobInfo.getId());
         }
         productService.stopProductJobs(processingChain);
@@ -437,7 +437,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     public boolean isChainJobStoppedAndCleaned(Long processingChainId) throws ModuleException {
         AcquisitionProcessingChain processingChain = getChain(processingChainId);
         JobInfo jobInfo = processingChain.getLastProductAcquisitionJobInfo();
-        boolean acqJobStopped = jobInfo == null || jobInfo.getStatus().getStatus().isFinished();
+        boolean acqJobStopped = (jobInfo == null) || jobInfo.getStatus().getStatus().isFinished();
         return acqJobStopped && productService.isProductJobStoppedAndCleaned(processingChain);
     }
 
@@ -477,7 +477,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         for (AcquisitionProcessingChain processingChain : processingChains) {
 
             // Check periodicity
-            if (processingChain.getLastActivationDate() != null && processingChain.getLastActivationDate()
+            if ((processingChain.getLastActivationDate() != null) && processingChain.getLastActivationDate()
                     .plusSeconds(processingChain.getPeriodicity()).isAfter(OffsetDateTime.now())) {
                 LOGGER.debug("Acquisition processing chain \"{}\" will not be started due to periodicity",
                              processingChain.getLabel());
@@ -796,7 +796,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                                         Arrays.asList(AcquisitionFileState.IN_PROGRESS, AcquisitionFileState.VALID)));
 
         // Handle job summary
-        if (chain.getLastProductAcquisitionJobInfo() != null
+        if ((chain.getLastProductAcquisitionJobInfo() != null)
                 && !chain.getLastProductAcquisitionJobInfo().getStatus().getStatus().isFinished()) {
             summary.setNbProductAcquisitionJob(1);
         }
