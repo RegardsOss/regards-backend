@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.authentication.autoconfigure;
 
 import java.util.List;
 
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
@@ -27,6 +28,7 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import fr.cnes.regards.framework.authentication.internal.Oauth2DefaultTokenMessageConverter;
+import fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration;
 
 /**
  * Class MicroserviceWebConfiguration
@@ -35,7 +37,8 @@ import fr.cnes.regards.framework.authentication.internal.Oauth2DefaultTokenMessa
  * @author Sébastien Binda
  */
 @Configuration
-@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
+@AutoConfigureBefore(GsonAutoConfiguration.class)
+//@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 public class Oauth2WebAutoConfiguration implements WebMvcConfigurer {
 
     /**
