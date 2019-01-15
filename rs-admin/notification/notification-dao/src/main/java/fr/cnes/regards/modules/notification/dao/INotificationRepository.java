@@ -18,9 +18,12 @@
  */
 package fr.cnes.regards.modules.notification.dao;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -44,19 +47,16 @@ public interface INotificationRepository
      * @param projectUser The required project user recipient
      * @param role The required role recipient
      * @return The list of found notifications
-     * @deprecated please remove this shit and use a not native simple request
      */
-    @Query(value = "select distinct on (n.id) n.* from {h-schema}t_notification n "
-            + "left join {h-schema}ta_notification_role_name r on r.notification_id = n.id "
-            + "left join {h-schema}ta_notification_projectuser_email e on e.notification_id = n.id "
-            + "where e.projectuser_email = ?1 or r.role_name= ?2 GROUP BY n.id ORDER BY n.id, ?#{#pageable}",
-            countQuery = "select count(distinct n.id) from {h-schema}t_notification n "
-                    + "left join {h-schema}ta_notification_role_name r on r.notification_id = n.id "
-                    + "left join {h-schema}ta_notification_projectuser_email e on e.notification_id = n.id "
-                    + "where e.projectuser_email = ?1 or r.role_name= ?2 GROUP BY n.id "
-                    + "ORDER BY n.id, ?#{#pageable}", nativeQuery = true)
-    @Deprecated
-    Page<Notification> findByRecipientsContaining(String projectUser, String role, Pageable pageable);
+    default Page<Notification> findByRecipientsContaining(String projectUser, String role, Pageable pageable) {
+        return findByProjectUserRecipientsContainingOrRoleRecipientsContaining(projectUser, role, pageable);
+    }
+
+    @EntityGraph(attributePaths = { "projectUserRecipients", "roleRecipients" })
+    Page<Notification> findByProjectUserRecipientsContainingOrRoleRecipientsContaining(String projectUser, String role, Pageable pageable);
+
+    @EntityGraph(attributePaths = { "projectUserRecipients", "roleRecipients" })
+    Optional<Notification> findById(Long id);
 
     /**
      * Find all notifications having the passed project user or the passed role as recipient.
@@ -64,7 +64,12 @@ public interface INotificationRepository
      * @param role The required role recipient
      * @return The list of found notifications
      */
-    @Query("select distinct n from Notification n where n.status= ?1 and (?2 member of n.projectUserRecipients or "
+    @Query(value = "select distinct n from Notification n left join fetch n.roleRecipients "
+            + "left join fetch n.projectUserRecipients "
+            + " where n.status= ?1 and (?2 member of n.projectUserRecipients or "
+            + " ?3 member of n.roleRecipients)",
+            countQuery = "select count(distinct n) from Notification n "
+            + " where n.status= ?1 and (?2 member of n.projectUserRecipients or "
             + " ?3 member of n.roleRecipients)")
     Page<Notification> findByStatusAndRecipientsContaining(NotificationStatus status, String projectUser, String role,
             Pageable pageable);
@@ -74,6 +79,7 @@ public interface INotificationRepository
      * @param pStatus The notification status
      * @return The list of notifications
      */
+    @EntityGraph(attributePaths = { "projectUserRecipients", "roleRecipients" })
     Page<Notification> findByStatus(NotificationStatus pStatus, Pageable page);
 
     /**
