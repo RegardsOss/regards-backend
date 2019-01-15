@@ -14,12 +14,12 @@
 
 	<groupId>fr.cnes.regards.framework.test</groupId>
 	<artifactId>regards-test</artifactId>
-	<version>3.0.0-RELEASE</version>
+	<version>3.1.0-RC</version>
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-parent</artifactId>
-		<version>3.0.0-RELEASE</version>
+		<version>3.1.0-RC</version>
 		<relativePath />
 	</parent>
 

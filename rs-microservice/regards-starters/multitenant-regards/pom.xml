@@ -13,13 +13,13 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>multitenant-regards</artifactId>
-	<version>3.0.0-RELEASE</version>
+	<version>3.1.0-RC</version>
 	<description>REGARDS multitenant</description>
 
 	<parent>
 		<groupId>fr.cnes.regards.framework</groupId>
 		<artifactId>regards-starters</artifactId>
-		<version>3.0.0-RELEASE</version>
+		<version>3.1.0-RC</version>
 	</parent>
 
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>

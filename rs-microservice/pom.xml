@@ -14,13 +14,13 @@
 
 	<groupId>fr.cnes.regards.microservices</groupId>
 	<artifactId>rs-microservice</artifactId>
-	<version>3.0.0-RELEASE</version>
+	<version>3.1.0-RC</version>
 	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-aggregator-parent</artifactId>
-		<version>3.0.0-RELEASE</version>
+		<version>3.1.0-RC</version>
 		<relativePath />
 	</parent>
 

@@ -13,12 +13,12 @@
 	<parent>
 		<artifactId>regards-starters</artifactId>
 		<groupId>fr.cnes.regards.framework</groupId>
-		<version>3.0.0-RELEASE</version>
+		<version>3.1.0-RC</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>oais-regards</artifactId>
-	<version>3.0.0-RELEASE</version>
+	<version>3.1.0-RC</version>
 
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
 	<inceptionYear>2016</inceptionYear>
