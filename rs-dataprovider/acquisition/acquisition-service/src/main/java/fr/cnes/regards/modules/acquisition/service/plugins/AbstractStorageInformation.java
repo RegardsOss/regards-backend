@@ -48,8 +48,12 @@ public abstract class AbstractStorageInformation {
      * @param sipBuilder
      */
     protected void addStorageInfomation(SIPBuilder sipBuilder) {
-        sipBuilder.addDescriptiveInformation(SIP_STAF_STORAGE_NODE_KEY, stafStorageNode);
-        sipBuilder.addDescriptiveInformation(SIP_DATASET_KEY, dataset);
+        if (stafStorageNode != null) {
+            sipBuilder.addDescriptiveInformation(SIP_STAF_STORAGE_NODE_KEY, stafStorageNode);
+        }
+        if (dataset != null) {
+            sipBuilder.addDescriptiveInformation(SIP_DATASET_KEY, dataset);
+        }
     }
 
 }
