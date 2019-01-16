@@ -149,8 +149,10 @@ public final class DataSourceHelper {
         config.setUsername(userName);
         config.setPassword(password);
         // For maximum performance, HikariCP does not recommend setting this value so minimumIdle = maximumPoolSize
-        //        config.setMinimumIdle(minPoolSize);
+        config.setMinimumIdle(minPoolSize);
         config.setMaximumPoolSize(maxPoolSize);
+        config.setPoolName(String.format("Hikari-Pool-%s", tenant));
+        config.setIdleTimeout(30000L);
 
         return new HikariDataSource(config);
     }

@@ -18,16 +18,18 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.autoconfigure.rest;
 
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
+
+import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,6 +37,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mchange.v2.c3p0.PooledDataSource;
+import com.zaxxer.hikari.HikariDataSource;
+import com.zaxxer.hikari.HikariPoolMXBean;
+
 import fr.cnes.regards.framework.jpa.multitenant.autoconfigure.DataSourcesAutoConfiguration;
 import fr.cnes.regards.framework.module.rest.representation.GenericResponseBody;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -46,7 +51,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
  */
 @RestController
 @ConditionalOnProperty(prefix = "regards.jpa", name = "multitenant.enabled", matchIfMissing = true)
-@RequestMapping("/regards/{tenant}/datasource")
+@RequestMapping(value = "/regards/{tenant}/datasource", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class JpaMultitenantController {
 
     /**
@@ -92,15 +97,27 @@ public class JpaMultitenantController {
         }
 
         // Add datasource status if available
-        if (dataSource instanceof PooledDataSource) {
+        if (dataSource instanceof HikariDataSource) {
+            @SuppressWarnings("resource") // Data source is not close here!
+            HikariDataSource hds = (HikariDataSource) dataSource;
+            HikariPoolMXBean bean = hds.getHikariPoolMXBean();
+            GenericResponseBody body = new GenericResponseBody();
+            body.getProperties().put("Max connections", hds.getMaximumPoolSize());
+            body.getProperties().put("Min idle connections", hds.getMinimumIdle());
+            body.getProperties().put("Idle timeout", hds.getIdleTimeout());
+            // Live info
+            body.getProperties().put("Total connections", bean.getTotalConnections());
+            body.getProperties().put("Idle connections", bean.getIdleConnections());
+            body.getProperties().put("Threads awaiting connection", bean.getThreadsAwaitingConnection());
+            body.getProperties().put("Active connection", bean.getActiveConnections());
+            return ResponseEntity.ok(body);
+        } else if (dataSource instanceof PooledDataSource) {
             PooledDataSource pds = (PooledDataSource) dataSource;
             GenericResponseBody body = new GenericResponseBody();
             try {
                 body.getProperties().put("num_connections", pds.getNumConnectionsDefaultUser());
-                body.getProperties()
-                        .put("num_busy_connections", pds.getNumBusyConnectionsDefaultUser());
-                body.getProperties()
-                        .put("num_idle_connections", pds.getNumIdleConnectionsDefaultUser());
+                body.getProperties().put("num_busy_connections", pds.getNumBusyConnectionsDefaultUser());
+                body.getProperties().put("num_idle_connections", pds.getNumIdleConnectionsDefaultUser());
                 return ResponseEntity.ok(body);
             } catch (SQLException e) {
                 LOGGER.error("Status check fail", e);
