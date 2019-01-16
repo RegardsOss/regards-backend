@@ -18,12 +18,9 @@
  */
 package fr.cnes.regards.modules.access.services.service.ui;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
-
-import javax.annotation.PostConstruct;
-import javax.transaction.Transactional;
-import javax.transaction.Transactional.TxType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +32,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -82,12 +80,13 @@ public class UIPluginDefinitionService
      * Perform initialization only when the whole application is ready
      */
     @Override
-    @Transactional(value = TxType.NOT_SUPPORTED)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void onApplicationEvent(ApplicationReadyEvent event) {
         LOG.info("UIPluginDefinitionService subscribing to new TenantConnectionReady events.");
     }
 
     @EventListener
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void processEvent(TenantConnectionReady event) {
         LOG.info("New tenant ready, initializing default plugins for tenant {}.", event.getTenant());
         try {
