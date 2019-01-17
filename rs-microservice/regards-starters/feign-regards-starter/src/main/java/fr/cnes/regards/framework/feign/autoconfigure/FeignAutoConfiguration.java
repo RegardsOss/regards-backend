@@ -28,7 +28,7 @@ import org.springframework.context.annotation.Profile;
  * If test profile is used, all feign clients in regards package have to be mocked.
  * @author Marc Sordi
  */
-@Profile("!test")
+@Profile({ "production", "feign" })
 @Configuration
 @EnableFeignClients("fr.cnes.regards")
 @AutoConfigureAfter(name = "fr.cnes.regards.framework.gson.autoconfigure.GsonAutoConfiguration")

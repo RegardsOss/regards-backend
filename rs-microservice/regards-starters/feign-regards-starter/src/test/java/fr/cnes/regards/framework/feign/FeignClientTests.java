@@ -38,6 +38,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -52,6 +53,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
  * @author Marc Sordi
  */
 @RunWith(SpringRunner.class)
+@ActiveProfiles("feign")
 @SpringBootTest(classes = FeignClientTests.Application.class, webEnvironment = WebEnvironment.DEFINED_PORT)
 public class FeignClientTests {
 
@@ -72,7 +74,7 @@ public class FeignClientTests {
     protected static class Application {
 
         @RequestMapping(method = RequestMethod.GET, value = "/hello")
-        @ResourceAccess(role = DefaultRole.PROJECT_ADMIN, description = "FUCK")
+        @ResourceAccess(role = DefaultRole.PROJECT_ADMIN, description = "None")
         public ResponseEntity<Hello> getHello() {
             Hello hello = new Hello();
             hello.setMessage(HELLO_MESSAGE);
