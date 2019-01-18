@@ -23,7 +23,6 @@
 
 	<groupId>fr.cnes.regards.modules.notification</groupId>
 	<artifactId>notification-domain</artifactId>
-	<packaging>jar</packaging>
 
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
@@ -32,6 +31,10 @@
 	</parent>
 
 	<dependencies>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>amqp-regards</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-commons-regards</artifactId>

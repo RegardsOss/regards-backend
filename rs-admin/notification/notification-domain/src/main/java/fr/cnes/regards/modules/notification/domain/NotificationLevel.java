@@ -5,12 +5,16 @@ package fr.cnes.regards.modules.notification.domain;
  *
  * @author Sylvain VISSIERE-GUERINET
  */
-public enum NotificationType {
+public enum NotificationLevel {
 
     /**
      * Associated notification reflects an information
      */
     INFO,
+    /**
+     * Associated notification reflects a warning
+     */
+    WARNING,
     /**
      * Associated notification reflects an error
      */
@@ -18,7 +22,6 @@ public enum NotificationType {
     /**
      * Associated notification reflects a fatal error
      */
-    FATAL,
-    WARNING
+    FATAL
 
 }

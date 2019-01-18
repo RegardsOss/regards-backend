@@ -58,7 +58,7 @@ import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationMode;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
-import fr.cnes.regards.modules.notification.domain.NotificationType;
+import fr.cnes.regards.modules.notification.domain.NotificationLevel;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
 
 /**
@@ -108,7 +108,7 @@ public class NotificationServiceTest {
      */
     private static String TITLE = "Title";
 
-    private static NotificationType TYPE = NotificationType.INFO;
+    private static NotificationLevel TYPE = NotificationLevel.INFO;
 
     /**
      * A notification
@@ -222,7 +222,7 @@ public class NotificationServiceTest {
         notification.setSender(SENDER);
         notification.setStatus(NotificationStatus.UNREAD);
         notification.setTitle(TITLE);
-        notification.setType(TYPE);
+        notification.setLevel(TYPE);
         notification.setProjectUserRecipients(Sets.newHashSet(RECIPIENT_1));
         notification.setRoleRecipients(Sets.newHashSet(ROLE_NAME_1));
 
@@ -291,7 +291,7 @@ public class NotificationServiceTest {
         roleRecipientsAsString.add(ROLE_NAME_0);
         dto.setRoleRecipients(roleRecipientsAsString);
         dto.setSender(SENDER);
-        dto.setType(NotificationType.INFO);
+        dto.setLevel(NotificationLevel.INFO);
 
         Mockito.when(rolesClient.retrieveRoleDescendants(ROLE_NAME_0))
                 .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(ROLE_NAME_0)), HttpStatus.OK));
@@ -302,7 +302,7 @@ public class NotificationServiceTest {
         expected.setTitle(TITLE);
         expected.setSender(SENDER);
         expected.setStatus(NotificationStatus.UNREAD);
-        expected.setType(NotificationType.INFO);
+        expected.setLevel(NotificationLevel.INFO);
         Set<String> projectUserRecipients = new HashSet<>();
         projectUserRecipients.add(RECIPIENT_0);
         projectUserRecipients.add(RECIPIENT_1);

@@ -25,6 +25,7 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.ISubscriber;
@@ -45,6 +46,7 @@ import fr.cnes.regards.modules.project.client.rest.ITenantConnectionClient;
 
  */
 @Configuration
+@Profile("production")
 @EnableCaching
 @AutoConfigureBefore({ DataSourcesAutoConfiguration.class, MultitenantJpaAutoConfiguration.class })
 public class RemoteTenantAutoConfiguration {
@@ -77,7 +79,7 @@ public class RemoteTenantAutoConfiguration {
      *            administration clients manually configured {@link FeignInitialAdminClients}
      *
      * @return RemoteTenantResolver
-
+    
      */
     @Bean
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)

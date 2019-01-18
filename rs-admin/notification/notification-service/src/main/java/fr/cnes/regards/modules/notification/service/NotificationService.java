@@ -60,10 +60,10 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUserEvent;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
+import fr.cnes.regards.modules.notification.domain.NotificationLevel;
 import fr.cnes.regards.modules.notification.domain.NotificationMode;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
 import fr.cnes.regards.modules.notification.domain.NotificationToSendEvent;
-import fr.cnes.regards.modules.notification.domain.NotificationType;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
 
 /**
@@ -137,9 +137,8 @@ public class NotificationService implements INotificationService, ApplicationLis
     @Override
     public Page<Notification> retrieveNotifications(Pageable page) {
         if (notificationMode == NotificationMode.MULTITENANT) {
-            return notificationRepository
-                    .findByRecipientsContaining(authenticationResolver.getUser(), authenticationResolver.getRole(),
-                                                page);
+            return notificationRepository.findByRecipientsContaining(authenticationResolver.getUser(),
+                                                                     authenticationResolver.getRole(), page);
         } else {
             return notificationRepository.findAll(page);
         }
@@ -153,14 +152,14 @@ public class NotificationService implements INotificationService, ApplicationLis
         notification.setTitle(dto.getTitle());
         notification.setSender(dto.getSender());
         notification.setStatus(NotificationStatus.UNREAD);
-        notification.setType(dto.getType());
+        notification.setLevel(dto.getLevel());
         notification.setMimeType(dto.getMimeType());
         notification.setProjectUserRecipients(dto.getProjectUserRecipients());
 
         notification.setRoleRecipients(getAllRecipientRoles(dto.getRoleRecipients()));
 
         // check the notification type and send it immediately if FATAL or ERROR
-        if (notification.getType() == NotificationType.FATAL || notification.getType() == NotificationType.ERROR) {
+        if (notification.getLevel() == NotificationLevel.FATAL || notification.getLevel() == NotificationLevel.ERROR) {
             applicationEventPublisher.publishEvent(new NotificationToSendEvent(notification));
         }
 
@@ -232,13 +231,14 @@ public class NotificationService implements INotificationService, ApplicationLis
                 Stream<String> usersStream = pNotification.getProjectUserRecipients().stream()) {
 
             // Merge the two streams
-            return Stream.concat(usersStream,
-                                 rolesStream.flatMap(// Define a function mapping each role to its project users by
-                                                     // calling the roles client
-                                                     r -> HateoasUtils.retrieveAllPages(100,
-                                                                                        pageable -> retrieveRoleProjectUserList(
-                                                                                                r, pageable)).stream()
-                                                             .map(ProjectUser::getEmail))).distinct();
+            return Stream.concat(usersStream, rolesStream.flatMap(// Define a function mapping each role to its project users by
+                                                                  // calling the roles client
+                                                                  r -> HateoasUtils
+                                                                          .retrieveAllPages(100,
+                                                                                            pageable -> retrieveRoleProjectUserList(r,
+                                                                                                                                    pageable))
+                                                                          .stream().map(ProjectUser::getEmail)))
+                    .distinct();
         }
     }
 

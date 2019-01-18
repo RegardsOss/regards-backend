@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.notification.domain;
 
+import java.time.OffsetDateTime;
+import java.util.Set;
+
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -25,7 +28,6 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -34,8 +36,6 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.time.OffsetDateTime;
-import java.util.Set;
 
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
@@ -118,7 +118,7 @@ public class Notification implements IIdentifiable<Long> {
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "type")
-    private NotificationType type;
+    private NotificationLevel level;
 
     /**
      * The title
@@ -243,15 +243,15 @@ public class Notification implements IIdentifiable<Long> {
     /**
      * @return the notification type
      */
-    public NotificationType getType() {
-        return type;
+    public NotificationLevel getLevel() {
+        return level;
     }
 
     /**
      * Set the notification type
      */
-    public void setType(NotificationType type) {
-        this.type = type;
+    public void setLevel(NotificationLevel level) {
+        this.level = level;
     }
 
     public MimeType getMimeType() {

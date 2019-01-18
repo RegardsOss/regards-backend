@@ -66,7 +66,7 @@ public class NotificationTest {
      */
     private static final NotificationStatus STATUS = NotificationStatus.UNREAD;
 
-    private static final NotificationType TYPE = NotificationType.INFO;
+    private static final NotificationLevel TYPE = NotificationLevel.INFO;
 
     /**
      * Role recipients
@@ -114,7 +114,7 @@ public class NotificationTest {
         notification.setMessage(MESSAGE);
         notification.setSender(SENDER);
         notification.setStatus(STATUS);
-        notification.setType(TYPE);
+        notification.setLevel(TYPE);
 
         roleRecipients = new HashSet<>();
         roleRecipients.add(DefaultRole.PUBLIC.toString());

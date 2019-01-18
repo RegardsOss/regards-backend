@@ -34,7 +34,7 @@ import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTe
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
-import fr.cnes.regards.modules.notification.domain.NotificationType;
+import fr.cnes.regards.modules.notification.domain.NotificationLevel;
 
 /**
  * @author Christophe Mertz
@@ -93,7 +93,7 @@ public class NotificationDaoIT extends AbstractDaoTransactionalTest {
         notif.setMessage(pMessage);
         notif.setSender(pSender);
         notif.setStatus(pStatus);
-        notif.setType(NotificationType.INFO);
+        notif.setLevel(NotificationLevel.INFO);
         return notif;
     }
 

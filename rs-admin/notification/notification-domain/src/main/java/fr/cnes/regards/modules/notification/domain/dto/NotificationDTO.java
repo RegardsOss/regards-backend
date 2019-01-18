@@ -24,7 +24,7 @@ import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
 
 import fr.cnes.regards.modules.notification.domain.Notification;
-import fr.cnes.regards.modules.notification.domain.NotificationType;
+import fr.cnes.regards.modules.notification.domain.NotificationLevel;
 
 /**
  * DTO representing a {@link Notification}.
@@ -62,45 +62,9 @@ public class NotificationDTO {
     /**
      * The notification type
      */
-    private NotificationType type;
+    private NotificationLevel level;
 
     private MimeType mimeType = MimeTypeUtils.TEXT_PLAIN;
-
-    /**
-     * Default constructor
-     */
-    public NotificationDTO() {
-    }
-
-    /**
-     * Constructor setting the parameters as attributes
-     * @param message notification message
-     * @param projectUserRecipients users recieving the notification
-     * @param roleRecipients roles recieving the notification
-     * @param sender notification sender
-     * @param title notification title
-     * @param type notification type
-     */
-    public NotificationDTO(String message, Set<String> projectUserRecipients, Set<String> roleRecipients, String sender,
-            String title, NotificationType type) {
-        this.message = message;
-        this.projectUserRecipients = projectUserRecipients;
-        this.roleRecipients = roleRecipients;
-        this.sender = sender;
-        this.title = title;
-        this.type = type;
-    }
-
-    public NotificationDTO(String message, Set<String> projectUserRecipients, Set<String> roleRecipients, String sender,
-            String title, NotificationType type, MimeType mimeType) {
-        this.message = message;
-        this.projectUserRecipients = projectUserRecipients;
-        this.roleRecipients = roleRecipients;
-        this.sender = sender;
-        this.title = title;
-        this.type = type;
-        this.mimeType = mimeType;
-    }
 
     /**
      * @return the message
@@ -177,26 +141,19 @@ public class NotificationDTO {
         title = pTitle;
     }
 
-    /**
-     * @return the notification type
-     */
-    public NotificationType getType() {
-        return type;
-    }
-
-    /**
-     * Set the notification type
-     * @param type
-     */
-    public void setType(NotificationType type) {
-        this.type = type;
-    }
-
     public MimeType getMimeType() {
         return mimeType;
     }
 
     public void setMimeType(MimeType mimeType) {
         this.mimeType = mimeType;
+    }
+
+    public NotificationLevel getLevel() {
+        return level;
+    }
+
+    public void setLevel(NotificationLevel level) {
+        this.level = level;
     }
 }

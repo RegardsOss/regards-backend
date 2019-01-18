@@ -5,6 +5,7 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.endpoint.IAuthoritiesProvider;
@@ -17,6 +18,7 @@ import fr.cnes.regards.modules.accessrights.client.IRolesClient;
  */
 
 @Configuration
+@Profile("production")
 @EnableCaching
 public class RemoteAuthoritiesProviderAutoConfiguration {
 
@@ -29,18 +31,15 @@ public class RemoteAuthoritiesProviderAutoConfiguration {
      * @param resourcesClient
      *            Feign client to query administration service for resources
      * @return IAuthoritiesProvider
-
+    
      */
     @Bean
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
     public IAuthoritiesProvider authoritiesProvider(final DiscoveryClient discoveryClient,
             final IMicroserviceResourceClient resourcesClient, final IRolesClient rolesClient,
             final IRuntimeTenantResolver runtimeTenantResolver, final IRoleResourceClient pRoleResourceClient) {
-        return new RemoteAuthoritiesProvider(discoveryClient,
-                                             resourcesClient,
-                                             rolesClient,
-                                             runtimeTenantResolver,
-                                             pRoleResourceClient);
+        return new RemoteAuthoritiesProvider(discoveryClient, resourcesClient, rolesClient, runtimeTenantResolver,
+                pRoleResourceClient);
     }
 
 }
