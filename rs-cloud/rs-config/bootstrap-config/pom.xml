@@ -156,6 +156,11 @@
                             <directory>${project.build.directory}/scripts</directory>
                             <include>prestart.sh</include>
                         </resource>
+                        <resource>
+                            <directory>${project.build.directory}/classes/regards</directory>
+                            <targetPath>/config/regards</targetPath>
+                            <include>*</include>
+                        </resource>
                     </resources>
                 </configuration>
             </plugin>

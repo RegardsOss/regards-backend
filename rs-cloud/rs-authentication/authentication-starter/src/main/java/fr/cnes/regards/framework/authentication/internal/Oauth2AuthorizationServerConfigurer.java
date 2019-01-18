@@ -130,9 +130,9 @@ public class Oauth2AuthorizationServerConfigurer extends AuthorizationServerConf
     }
 
     @Override
-    public void configure(final ClientDetailsServiceConfigurer pClients) throws Exception {
-        pClients.inMemory().withClient(clientUser).authorizedGrantTypes(grantType).resourceIds(resourceId)
-                .secret(clientSecret);
+    public void configure(final ClientDetailsServiceConfigurer clients) throws Exception {
+        clients.inMemory().withClient(clientUser).authorizedGrantTypes(grantType).resourceIds(resourceId)
+                .secret(clientSecret).accessTokenValiditySeconds(7200);
     }
 
     @Override
