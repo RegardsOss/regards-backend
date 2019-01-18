@@ -38,7 +38,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
-import fr.cnes.regards.modules.notification.domain.NotificationType;
+import fr.cnes.regards.modules.notification.domain.NotificationLevel;
 import fr.cnes.regards.modules.storage.dao.AIPQueryGenerator;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -77,12 +77,6 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
     @Value("${regards.storage.aips.iteration.limit:100}")
     private Integer aipIterationLimit;
 
-    /**
-     * Spring application name ~= microservice type
-     */
-    @Value("${spring.application.name}")
-    private String applicationName;
-
     @Autowired
     private INotificationClient notificationClient;
 
@@ -109,7 +103,8 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
             aipsPage = aipDao.findAll(AIPQueryGenerator
                     .searchAIPContainingAllTags(tagFilter.getState(), tagFilter.getFrom(), tagFilter.getTo(),
                                                 tagFilter.getTags(), tagFilter.getSession(), tagFilter.getProviderId(),
-                                                tagFilter.getAipIds(), tagFilter.getAipIdsExcluded(), tagFilter.getStoredOn()),
+                                                tagFilter.getAipIds(), tagFilter.getAipIdsExcluded(),
+                                                tagFilter.getStoredOn()),
                                       pageRequest);
             aipsPage.forEach(aip -> {
                 try {
@@ -157,8 +152,7 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
             }
             FeignSecurityManager.asSystem();
             try {
-                notificationClient.notifyRoles(message.toString(), title, applicationName, NotificationType.ERROR,
-                                               DefaultRole.ADMIN);
+                notificationClient.notify(message.toString(), title, NotificationLevel.ERROR, DefaultRole.ADMIN);
             } finally {
                 FeignSecurityManager.reset();
             }

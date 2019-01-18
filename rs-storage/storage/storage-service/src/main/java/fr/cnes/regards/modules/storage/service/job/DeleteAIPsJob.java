@@ -29,7 +29,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -37,7 +36,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
-import fr.cnes.regards.modules.notification.domain.NotificationType;
+import fr.cnes.regards.modules.notification.domain.NotificationLevel;
 import fr.cnes.regards.modules.storage.dao.AIPQueryGenerator;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -61,12 +60,6 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
 
     @Autowired
     private IAIPDao aipDao;
-
-    /**
-     * Spring application name ~= microservice type
-     */
-    @Value("${spring.application.name}")
-    private String applicationName;
 
     @Autowired
     private INotificationClient notificationClient;
@@ -99,7 +92,8 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
             aipsPage = aipDao.findAll(AIPQueryGenerator
                     .searchAIPContainingAllTags(tagFilter.getState(), tagFilter.getFrom(), tagFilter.getTo(),
                                                 tagFilter.getTags(), tagFilter.getSession(), tagFilter.getProviderId(),
-                                                tagFilter.getAipIds(), tagFilter.getAipIdsExcluded(), tagFilter.getStoredOn()),
+                                                tagFilter.getAipIds(), tagFilter.getAipIdsExcluded(),
+                                                tagFilter.getStoredOn()),
                                       pageRequest);
             aipsPage.forEach(aip -> {
                 try {
@@ -136,13 +130,7 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
                 message.append(ipId);
                 message.append("  \\n");
             }
-            FeignSecurityManager.asSystem();
-            try {
-                notificationClient.notifyRoles(message.toString(), title, applicationName, NotificationType.ERROR,
-                                               DefaultRole.ADMIN);
-            } finally {
-                FeignSecurityManager.reset();
-            }
+            notificationClient.notify(message.toString(), title, NotificationLevel.ERROR, DefaultRole.ADMIN);
         }
     }
 

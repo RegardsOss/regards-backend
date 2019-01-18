@@ -59,8 +59,6 @@ import org.springframework.util.MimeTypeUtils;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
@@ -70,10 +68,8 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 
-import feign.FeignException;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.microservice.maintenance.MaintenanceException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
@@ -96,7 +92,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
-import fr.cnes.regards.modules.notification.domain.NotificationType;
+import fr.cnes.regards.modules.notification.domain.NotificationLevel;
 import fr.cnes.regards.modules.storage.dao.AIPQueryGenerator;
 import fr.cnes.regards.modules.storage.dao.AIPSessionSpecifications;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
@@ -282,12 +278,6 @@ public class AIPService implements IAIPService {
 
     @Autowired
     private IPrioritizedDataStorageRepository prioritizedDataStorageRepo;
-
-    /**
-     * The spring application name ~= microservice type
-     */
-    @Value("${spring.application.name}")
-    private String applicationName;
 
     @Override
     public AIP save(AIP aip, boolean publish) {
@@ -674,7 +664,8 @@ public class AIPService implements IAIPService {
         for (StorageDataFile sdf : dataFiles) {
             //lets get all data storages id
             aipIdAipMap.put(sdf.getAipEntity().getAipId(), sdf.getAip());
-            sdf.getPrioritizedDataStorages().stream().forEach(pds -> aipIdDataStorageIdsMap.put(sdf.getAipEntity().getAipId(), pds.getId()));
+            sdf.getPrioritizedDataStorages().stream()
+                    .forEach(pds -> aipIdDataStorageIdsMap.put(sdf.getAipEntity().getAipId(), pds.getId()));
         }
         // we have all storage data file needed to make aip with data storage id
         List<AIPWithDataStorageIds> content = new ArrayList<>();
@@ -704,7 +695,8 @@ public class AIPService implements IAIPService {
             if (tags == null || tags.isEmpty()) {
                 aips = aipDao.findAllByState(state, pageable);
             } else {
-                aips = aipDao.findAll(AIPQueryGenerator.searchAIPContainingAtLeastOneTag(state, null, null,
+                aips = aipDao.findAll(
+                                      AIPQueryGenerator.searchAIPContainingAtLeastOneTag(state, null, null,
                                                                                          new ArrayList<>(tags), null,
                                                                                          null, null, null, null),
                                       pageable);
@@ -810,7 +802,7 @@ public class AIPService implements IAIPService {
             } catch (EntityNotFoundException e) {
                 throw new MaintenanceException(e.getMessage(), e);
             }
-            notifyAdmins("Some file were not associated to a data storage", email.getText(), NotificationType.ERROR,
+            notifyAdmins("Some file were not associated to a data storage", email.getText(), NotificationLevel.ERROR,
                          MimeTypeUtils.TEXT_HTML);
         }
     }
@@ -818,15 +810,8 @@ public class AIPService implements IAIPService {
     /**
      * Use the notification module in admin to create a notification for admins
      */
-    private void notifyAdmins(String title, String message, NotificationType type, MimeType mimeType) {
-        try {
-            FeignSecurityManager.asSystem();
-            notificationClient.notifyRoles(message, title, applicationName, type, mimeType, DefaultRole.ADMIN);
-        } catch (FeignException | HttpClientErrorException | HttpServerErrorException e) {
-            LOGGER.error("Error sending notification to admins through admin microservice.", e);
-        } finally {
-            FeignSecurityManager.reset();
-        }
+    private void notifyAdmins(String title, String message, NotificationLevel type, MimeType mimeType) {
+        notificationClient.notify(message, title, type, mimeType, DefaultRole.ADMIN);
     }
 
     /**
@@ -926,7 +911,7 @@ public class AIPService implements IAIPService {
                 } catch (EntityNotFoundException e) {
                     throw new MaintenanceException(e.getMessage(), e);
                 }
-                notifyAdmins("Some file were not handled by a data storage", email.getText(), NotificationType.ERROR,
+                notifyAdmins("Some file were not handled by a data storage", email.getText(), NotificationLevel.ERROR,
                              MimeTypeUtils.TEXT_HTML);
             }
             return workingSubSets;
@@ -936,7 +921,7 @@ public class AIPService implements IAIPService {
                                  + " Please check the configuration.%n"
                                  + " Skipping work(mode: %s) on this Plugin configuration for now.", dataStorageConfId,
                                        accessMode),
-                         NotificationType.ERROR, MimeTypeUtils.TEXT_PLAIN);
+                         NotificationLevel.ERROR, MimeTypeUtils.TEXT_PLAIN);
             return new HashSet<>();
         }
     }
@@ -952,7 +937,7 @@ public class AIPService implements IAIPService {
             return pluginService.getPlugin(activeAllocationStrategy.getId());
         } catch (PluginUtilsRuntimeException e) {
             LOGGER.error(e.getMessage(), e);
-            notifyAdmins("Allocation Strategy miss configured", e.getMessage(), NotificationType.ERROR,
+            notifyAdmins("Allocation Strategy miss configured", e.getMessage(), NotificationLevel.ERROR,
                          MimeTypeUtils.TEXT_PLAIN);
             throw e;
         }
@@ -969,7 +954,7 @@ public class AIPService implements IAIPService {
             IllegalStateException e = new IllegalStateException(
                     "The application needs one and only one active configuration of "
                             + IAllocationStrategy.class.getName());
-            notifyAdmins("No active Allocation Strategy", e.getMessage(), NotificationType.ERROR,
+            notifyAdmins("No active Allocation Strategy", e.getMessage(), NotificationLevel.ERROR,
                          MimeTypeUtils.TEXT_PLAIN);
             LOGGER.error(e.getMessage(), e);
             throw e;
@@ -1014,7 +999,7 @@ public class AIPService implements IAIPService {
             LOGGER.error(e.getMessage(), e);
             notifyAdmins("Could not schedule metadata storage",
                          "Metadata storage could not be realized because an error occured. Please check the logs",
-                         NotificationType.ERROR, MimeTypeUtils.TEXT_PLAIN);
+                         NotificationLevel.ERROR, MimeTypeUtils.TEXT_PLAIN);
         }
     }
 
@@ -1411,7 +1396,7 @@ public class AIPService implements IAIPService {
             throw new MaintenanceException(e.getMessage(), e);
         }
         notifyAdmins("REGARDS - Some files could not be deleted from data storage", email.getText(),
-                     NotificationType.WARNING, MimeTypeUtils.TEXT_HTML);
+                     NotificationLevel.WARNING, MimeTypeUtils.TEXT_HTML);
         // now that we are done with pure removal logic, lets create an update request for the AIPs to write changes
         // made to DataFiles.
         return undeletableFileCauseMap;

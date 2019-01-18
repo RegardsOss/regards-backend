@@ -72,7 +72,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
-import fr.cnes.regards.modules.notification.domain.NotificationType;
+import fr.cnes.regards.modules.notification.domain.NotificationLevel;
 import fr.cnes.regards.modules.storage.dao.ICachedFileRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.CoupleAvailableError;
@@ -204,9 +204,6 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     @Lazy
     private ICachedFileService self;
 
-    @Value("${spring.application.name}")
-    private String springApplicationName;
-
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
@@ -242,10 +239,10 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
                     .map(availableFile -> availableFile.getLocation().getPath().toString()).collect(Collectors.toSet());
             Files.walk(getTenantCachePath())
                     .filter(path -> availableFilePaths.contains(path.toAbsolutePath().toString()))
-                    .forEach(path -> notificationClient.notifyRoles(String
+                    .forEach(path -> notificationClient.notify(String
                             .format("File %s is present in cache directory while it shouldn't be. Please remove this file from the cache directory",
-                                    path.toString()), "Dirty cache", springApplicationName, NotificationType.WARNING,
-                                                                    DefaultRole.PROJECT_ADMIN));
+                                    path.toString()), "Dirty cache", NotificationLevel.WARNING,
+                                                               DefaultRole.PROJECT_ADMIN));
             page = availableFiles.nextPageable();
         } while (availableFiles.hasNext());
         runtimeTenantResolver.clearTenant();

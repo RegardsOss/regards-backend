@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.rest;
 
-import javax.validation.Valid;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -31,6 +30,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
+
+import javax.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +62,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.geojson.GeoJsonMediaType;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
@@ -257,10 +259,11 @@ public class AIPController implements IResourceController<AIP> {
     @ResourceAccess(description = "send a page of aips")
     public ResponseEntity<PagedResources<Resource<AIP>>> retrieveAIPs(
             @RequestParam(name = "state", required = false) AIPState state,
-            @RequestParam(name = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                    OffsetDateTime from,
-            @RequestParam(name = "to", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                    OffsetDateTime to, @RequestParam(name = "tags", required = false) List<String> tags,
+            @RequestParam(name = "from",
+                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime from,
+            @RequestParam(name = "to",
+                    required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime to,
+            @RequestParam(name = "tags", required = false) List<String> tags,
             @RequestParam(name = "providerId", required = false) String providerId,
             @RequestParam(name = "session", required = false) String session,
             @RequestParam(name = "storedOn", required = false) Set<Long> storedOn,
@@ -308,11 +311,8 @@ public class AIPController implements IResourceController<AIP> {
             }
         }
         // small hack to be used thanks to GSON which does not know how to deserialize Page or PageImpl
-        PagedResources<AipDataFiles> aipDataFiles = new PagedResources<>(content,
-                                                                         new PagedResources.PageMetadata(page.getSize(),
-                                                                                                         page.getNumber(),
-                                                                                                         page.getTotalElements(),
-                                                                                                         page.getTotalPages()));
+        PagedResources<AipDataFiles> aipDataFiles = new PagedResources<>(content, new PagedResources.PageMetadata(
+                page.getSize(), page.getNumber(), page.getTotalElements(), page.getTotalPages()));
         return new ResponseEntity<>(aipDataFiles, HttpStatus.OK);
     }
 
@@ -561,7 +561,8 @@ public class AIPController implements IResourceController<AIP> {
 
     @RequestMapping(value = FILES_DELETE_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "allow to remove aips from given data storages")
-    public ResponseEntity<Void> deleteAIPByQueryOnDataStorages(@Valid @RequestBody DataStorageRemovalAIPFilters request) {
+    public ResponseEntity<Void> deleteAIPByQueryOnDataStorages(
+            @Valid @RequestBody DataStorageRemovalAIPFilters request) {
         for (Long dataStorageId : request.getDataStorageIds()) {
             aipService.deleteFilesFromDataStorageByQuery(request, dataStorageId);
         }
@@ -633,8 +634,8 @@ public class AIPController implements IResourceController<AIP> {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
             StringJoiner sj = new StringJoiner(", ",
-                                               "This aip could not be deleted because at least one of his files has not be handle by the storage process: ",
-                                               ".");
+                    "This aip could not be deleted because at least one of his files has not be handle by the storage process: ",
+                    ".");
             notSuppressible.stream().map(StorageDataFile::getAipEntity)
                     .forEach(aipEntity -> sj.add(aipEntity.getAipId()));
             return new ResponseEntity<>(sj.toString(), HttpStatus.CONFLICT);
@@ -698,71 +699,44 @@ public class AIPController implements IResourceController<AIP> {
     }
 
     protected void addAipLinks(Resource resource, String resourceId, AIPState resourceState) {
-        resourceService.addLink(resource,
-                                this.getClass(),
-                                "retrieveAIPs",
-                                LinkRels.LIST,
+        resourceService.addLink(resource, this.getClass(), "retrieveAIPs", LinkRels.LIST,
                                 MethodParamFactory.build(AIPState.class),
                                 MethodParamFactory.build(OffsetDateTime.class),
-                                MethodParamFactory.build(OffsetDateTime.class),
-                                MethodParamFactory.build(List.class),
-                                MethodParamFactory.build(String.class),
-                                MethodParamFactory.build(String.class),
-                                MethodParamFactory.build(Set.class),
-                                MethodParamFactory.build(Pageable.class),
+                                MethodParamFactory.build(OffsetDateTime.class), MethodParamFactory.build(List.class),
+                                MethodParamFactory.build(String.class), MethodParamFactory.build(String.class),
+                                MethodParamFactory.build(Set.class), MethodParamFactory.build(Pageable.class),
                                 MethodParamFactory.build(PagedResourcesAssembler.class));
-        resourceService.addLink(resource,
-                                this.getClass(),
-                                "retrieveAIPWithDataStorages",
-                                LinkRels.LIST + "-with-datastorages",
-                                MethodParamFactory.build(AIPQueryFilters.class),
+        resourceService.addLink(resource, this.getClass(), "retrieveAIPWithDataStorages",
+                                LinkRels.LIST + "-with-datastorages", MethodParamFactory.build(AIPQueryFilters.class),
                                 MethodParamFactory.build(Pageable.class));
-        resourceService.addLink(resource,
-                                this.getClass(),
-                                "retrieveAip",
-                                LinkRels.SELF,
+        resourceService.addLink(resource, this.getClass(), "retrieveAip", LinkRels.SELF,
                                 MethodParamFactory.build(String.class, resourceId));
         if (AIPState.STORAGE_ERROR.equals(resourceState)) {
-            resourceService.addLink(resource,
-                                    this.getClass(),
-                                    "storeRetryUnit",
-                                    "retry",
+            resourceService.addLink(resource, this.getClass(), "storeRetryUnit", "retry",
                                     MethodParamFactory.build(String.class, resourceId));
         }
-        resourceService.addLink(resource,
-                                this.getClass(),
-                                "deleteAip",
-                                "delete",
+        resourceService.addLink(resource, this.getClass(), "deleteAip", "delete",
                                 MethodParamFactory.build(String.class, resourceId));
-        resourceService.addLink(resource,
-                                this.getClass(),
-                                "deleteAIPByQuery",
-                                "deleteByQuery",
+        resourceService.addLink(resource, this.getClass(), "deleteAIPByQuery", "deleteByQuery",
                                 MethodParamFactory.build(AIPQueryFilters.class));
-        resourceService.addLink(resource,
-                                this.getClass(),
-                                "deleteAIPByQueryOnDataStorages",
+        resourceService.addLink(resource, this.getClass(), "deleteAIPByQueryOnDataStorages",
                                 "deleteByQueryOnSpecificDataStorages",
                                 MethodParamFactory.build(DataStorageRemovalAIPFilters.class));
     }
 
     private void addPageLinks(ResourcedAIPPageWithDataStorages pageWithLink, AIPQueryFilters aipQuery) {
         // add delete by query links
-        resourceService.addLink(pageWithLink,
-                                this.getClass(),
-                                "deleteAIPByQuery",
-                                "deleteByQuery",
+        resourceService.addLink(pageWithLink, this.getClass(), "deleteAIPByQuery", "deleteByQuery",
                                 MethodParamFactory.build(AIPQueryFilters.class, aipQuery));
-        resourceService.addLink(pageWithLink,
-                                this.getClass(),
-                                "deleteAIPByQueryOnDataStorages",
+        resourceService.addLink(pageWithLink, this.getClass(), "deleteAIPByQueryOnDataStorages",
                                 "deleteByQueryOnSpecificDataStorages",
                                 MethodParamFactory.build(DataStorageRemovalAIPFilters.class));
     }
 
     private Resource<AIPWithDataStorageIds> toResourceWithIds(AIPWithDataStorageIds aipWithDataStorageIds) {
         Resource<AIPWithDataStorageIds> resource = new Resource(aipWithDataStorageIds);
-        addAipLinks(resource, aipWithDataStorageIds.getAip().getId().toString(), aipWithDataStorageIds.getAip().getState());
+        addAipLinks(resource, aipWithDataStorageIds.getAip().getId().toString(),
+                    aipWithDataStorageIds.getAip().getState());
         return resource;
     }
 
@@ -775,9 +749,9 @@ public class AIPController implements IResourceController<AIP> {
             throws MalformedURLException {
         // Lets reconstruct the public url of rs-storage
         // now lets add it the gateway prefix and the microservice name and the endpoint path to it
-        String sb = projectHost + "/" + gatewayPrefix + "/" + microserviceName + AIP_PATH + DOWNLOAD_AIP_FILE
-                .replaceAll("\\{" + AIP_ID_PATH_PARAM + "\\}", owningAip.getId().toString())
-                .replaceAll("\\{checksum\\}", dataFile.getChecksum());
+        String sb = projectHost + "/" + gatewayPrefix + "/" + microserviceName + AIP_PATH
+                + DOWNLOAD_AIP_FILE.replaceAll("\\{" + AIP_ID_PATH_PARAM + "\\}", owningAip.getId().toString())
+                        .replaceAll("\\{checksum\\}", dataFile.getChecksum());
         URL downloadUrl = new URL(sb);
         dataFile.setUrl(downloadUrl);
     }
