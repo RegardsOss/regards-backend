@@ -65,7 +65,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.ingest.service.ISIPService;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
-import fr.cnes.regards.modules.notification.domain.NotificationType;
+import fr.cnes.regards.modules.notification.domain.NotificationLevel;
 import fr.cnes.regards.modules.storage.client.IAipClient;
 import fr.cnes.regards.modules.storage.client.IAipEntityClient;
 import fr.cnes.regards.modules.storage.domain.AIPState;
@@ -345,7 +345,7 @@ public class AIPService implements IAIPService {
         } catch (EntityNotFoundException enf) {
             throw new MaintenanceException(enf.getMessage(), enf);
         }
-        notificationClient.notifyRoles(email.getText(), "Errors during SIPs deletions", "rs-ingest",
-                                       NotificationType.ERROR, DefaultRole.ADMIN);
+        notificationClient.notify(email.getText(), "Errors during SIPs deletions", NotificationLevel.ERROR,
+                                  DefaultRole.ADMIN);
     }
 }
