@@ -29,10 +29,10 @@ public interface IWorkspaceNotifier {
     /**
      * Send an error notification from the given parameters
      */
-    void sendErrorNotification(String sender, String message, String title, DefaultRole role);
+    void sendErrorNotification(String message, String title, DefaultRole role);
 
     /**
      * Send a warning notification from the given parameters
      */
-    void sendWarningNotification(String sender, String message, String title, DefaultRole role);
+    void sendWarningNotification(String message, String title, DefaultRole role);
 }

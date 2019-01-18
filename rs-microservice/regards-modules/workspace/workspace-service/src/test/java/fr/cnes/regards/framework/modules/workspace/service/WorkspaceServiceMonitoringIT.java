@@ -55,7 +55,7 @@ public class WorkspaceServiceMonitoringIT extends AbstractRegardsServiceIT {
         IWorkspaceNotifier spiedNotifier = Mockito.spy(notifier);
         workspaceService.monitor(getDefaultTenant());
         Mockito.verify(spiedNotifier, Mockito.times(1)).sendErrorNotification(Mockito.any(), Mockito.any(),
-                                                                              Mockito.any(), Mockito.any());
+                                                                              Mockito.any());
         Assert.assertTrue(MaintenanceManager.getMaintenance(getDefaultTenant()));
     }
 

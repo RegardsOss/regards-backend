@@ -33,12 +33,12 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 public class DefaultWorkspaceNotifier implements IWorkspaceNotifier {
 
     @Override
-    public void sendErrorNotification(String sender, String message, String title, DefaultRole role) {
+    public void sendErrorNotification(String message, String title, DefaultRole role) {
         throw new UnsupportedOperationException("This bean has to overriden for real notification");
     }
 
     @Override
-    public void sendWarningNotification(String sender, String message, String title, DefaultRole role) {
+    public void sendWarningNotification(String message, String title, DefaultRole role) {
         throw new UnsupportedOperationException("This bean has to overriden for real notification");
     }
 
