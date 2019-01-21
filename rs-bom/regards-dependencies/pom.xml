@@ -100,6 +100,7 @@
 		<fr.cnes.regards.framework.modules.jobs.version>4.0.0-SNAPSHOT</fr.cnes.regards.framework.modules.jobs.version>
 		<fr.cnes.regards.framework.modules.workspace.version>4.0.0-SNAPSHOT</fr.cnes.regards.framework.modules.workspace.version>
 		<fr.cnes.regards.framework.modules.plugins.version>4.0.0-SNAPSHOT</fr.cnes.regards.framework.modules.plugins.version>
+		<fr.cnes.regards.framework.modules.locks.version>4.0.0-SNAPSHOT</fr.cnes.regards.framework.modules.locks.version>
 		<fr.cnes.regards.microservices.catalog.plugin-client.version>4.0.0-SNAPSHOT</fr.cnes.regards.microservices.catalog.plugin-client.version>
 		<fr.cnes.regards.utils.plugin-utils.version>4.0.0-SNAPSHOT</fr.cnes.regards.utils.plugin-utils.version>
 		<fr.cnes.regards.modules.project.version>4.0.0-SNAPSHOT</fr.cnes.regards.modules.project.version>
@@ -501,6 +502,22 @@
 				<artifactId>workspace-project-notifier</artifactId>
 				<version>${fr.cnes.regards.framework.modules.workspace.version}</version>
 			</dependency>
+			<!-- Regards Locks -->
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.locks</groupId>
+				<artifactId>locks-dao</artifactId>
+				<version>${fr.cnes.regards.framework.modules.locks.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.locks</groupId>
+				<artifactId>locks-domain</artifactId>
+				<version>${fr.cnes.regards.framework.modules.locks.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework.modules.locks</groupId>
+				<artifactId>locks-service</artifactId>
+				<version>${fr.cnes.regards.framework.modules.locks.version}</version>
+			</dependency>
 			<!-- Regards Plugins -->
 			<dependency>
 				<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
@@ -514,12 +531,12 @@
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
-				<artifactId>plugins-rest</artifactId>
+				<artifactId>plugins-service</artifactId>
 				<version>${fr.cnes.regards.framework.modules.plugins.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>fr.cnes.regards.framework.modules.plugins</groupId>
-				<artifactId>plugins-service</artifactId>
+				<artifactId>plugins-rest</artifactId>
 				<version>${fr.cnes.regards.framework.modules.plugins.version}</version>
 			</dependency>
 			<dependency>
