@@ -59,6 +59,14 @@
 			<artifactId>feign-regards-starter</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>fr.cnes.regards.modules.dam</groupId>
+			<artifactId>dam-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.modules.notification</groupId>
+			<artifactId>notification-client</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>fr.cnes.regards.modules.search</groupId>
 			<artifactId>search-dao</artifactId>
 		</dependency>
@@ -67,8 +75,8 @@
 			<artifactId>plugins-service</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.dam</groupId>
-			<artifactId>dam-client</artifactId>
+			<groupId>fr.cnes.regards.framework.modules.locks</groupId>
+			<artifactId>locks-service</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.accessrights</groupId>
@@ -77,17 +85,6 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.dam</groupId>
 			<artifactId>dam-gson</artifactId>
-		</dependency>
-		<!-- COTS -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-cache</artifactId>
-		</dependency>
-		<!-- Test dependencies -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-test</artifactId>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.indexer</groupId>
@@ -108,6 +105,17 @@
 		<dependency>
 			<groupId>fr.cnes.regards.modules.opensearch</groupId>
 			<artifactId>opensearch-service</artifactId>
+		</dependency>
+		<!-- COTS -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-cache</artifactId>
+		</dependency>
+		<!-- Test dependencies -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>
