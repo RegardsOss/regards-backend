@@ -28,11 +28,11 @@ public class Lock {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "lockSequence")
     private Long id;
 
-    @Column(name = "lock_name", columnDefinition = "text")
+    @Column(name = "lock_name", columnDefinition = "text", nullable = false)
     @Type(type = "text")
     private String lockName;
 
-    @Column(name = "locking_class_name", columnDefinition = "text")
+    @Column(name = "locking_class_name", columnDefinition = "text", nullable = false)
     @Type(type = "text")
     private String lockingClassName;
 
@@ -84,5 +84,33 @@ public class Lock {
 
     public void expiresIn(long seconds) {
         this.expirationDate = OffsetDateTime.now().plusSeconds(seconds);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Lock lock = (Lock) o;
+
+        if (!lockName.equals(lock.lockName)) {
+            return false;
+        }
+        if (!lockingClassName.equals(lock.lockingClassName)) {
+            return false;
+        }
+        return expirationDate != null ? expirationDate.equals(lock.expirationDate) : lock.expirationDate == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = lockName.hashCode();
+        result = 31 * result + lockingClassName.hashCode();
+        result = 31 * result + (expirationDate != null ? expirationDate.hashCode() : 0);
+        return result;
     }
 }
