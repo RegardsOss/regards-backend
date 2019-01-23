@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.framework.amqp.autoconfigure;
 
-import javax.annotation.PostConstruct;
-
 import org.springframework.amqp.rabbit.connection.SimpleRoutingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -103,30 +101,15 @@ public class AmqpAutoConfiguration {
     @Autowired
     private AmqpMicroserviceProperties amqpMicroserviceProperties;
 
-    /**
-     * class regrouping accesses to all properties used by the client
-     */
-    private AmqpProperties amqpProperties;
-
-    /**
-     * Initilization method
-     */
-    @PostConstruct
-    public void init() {
-        amqpProperties = new AmqpProperties(rabbitProperties, amqpManagmentProperties, amqpMicroserviceProperties);
-    }
-
     @Bean
     @ConditionalOnMissingBean(IRabbitVirtualHostAdmin.class)
     public IRabbitVirtualHostAdmin rabbitVirtualHostAdmin(ITenantResolver pTenantResolver,
             final MultitenantSimpleRoutingConnectionFactory pSimpleRoutingConnectionFactory,
             final RestOperations restOperations) {
         return new RabbitVirtualHostAdmin(amqpManagmentProperties.getMode(), pTenantResolver,
-                                          amqpProperties.getRabbitmqUserName(), amqpProperties.getRabbitmqPassword(),
-                                          amqpProperties.getAmqpManagementHost(),
-                                          amqpProperties.getAmqpManagementPort(), restOperations,
-                                          pSimpleRoutingConnectionFactory, amqpProperties.getRabbitmqAddresses(),
-                                          bootstrapProperties.getBootstrapTenants());
+                rabbitProperties.getUsername(), rabbitProperties.getPassword(), amqpManagmentProperties.getHost(),
+                amqpManagmentProperties.getPort(), restOperations, pSimpleRoutingConnectionFactory,
+                rabbitProperties.determineAddresses(), bootstrapProperties.getBootstrapTenants());
     }
 
     /**
@@ -140,7 +123,8 @@ public class AmqpAutoConfiguration {
 
     @Bean
     public IAmqpAdmin regardsAmqpAdmin() {
-        return new RegardsAmqpAdmin(amqpProperties.getTypeIdentifier(), amqpProperties.getInstanceIdentifier());
+        return new RegardsAmqpAdmin(amqpMicroserviceProperties.getTypeIdentifier(),
+                amqpMicroserviceProperties.getInstanceIdentifier());
     }
 
     @Bean
@@ -241,8 +225,7 @@ public class AmqpAutoConfiguration {
     public PlatformTransactionManager rabbitTransactionManager(IRuntimeTenantResolver pThreadTenantResolver,
             IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {
         return new MultitenantRabbitTransactionManager(amqpManagmentProperties.getMode(),
-                                                       simpleRoutingConnectionFactory(), pThreadTenantResolver,
-                                                       pRabbitVirtualHostAdmin);
+                simpleRoutingConnectionFactory(), pThreadTenantResolver, pRabbitVirtualHostAdmin);
     }
 
     @Bean

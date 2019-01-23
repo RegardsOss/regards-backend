@@ -315,4 +315,7 @@ public class JWTService {
         validityDelay = pValidityDelay;
     }
 
+    public OffsetDateTime getExpirationDate(OffsetDateTime generationDate) {
+        return generationDate.plusMinutes(validityDelay);
+    }
 }

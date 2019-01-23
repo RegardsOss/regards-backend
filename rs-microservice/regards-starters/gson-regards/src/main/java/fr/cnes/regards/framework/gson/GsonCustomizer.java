@@ -25,6 +25,8 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.actuate.beans.BeansEndpoint.BeanDescriptor;
+import org.springframework.boot.actuate.health.Health;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.MimeType;
 import org.springframework.util.MultiValueMap;
@@ -39,6 +41,8 @@ import fr.cnes.regards.framework.gson.adapters.MultiValueMapAdapter;
 import fr.cnes.regards.framework.gson.adapters.MultimapAdapter;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.gson.adapters.PathAdapter;
+import fr.cnes.regards.framework.gson.adapters.actuator.BeanDescriptorAdapter;
+import fr.cnes.regards.framework.gson.adapters.actuator.HealthAdapter;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterBean;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
@@ -74,6 +78,9 @@ public final class GsonCustomizer {
         builder.registerTypeHierarchyAdapter(Multimap.class, new MultimapAdapter());
         builder.registerTypeHierarchyAdapter(MultiValueMap.class, new MultiValueMapAdapter());
         builder.addSerializationExclusionStrategy(new GsonIgnoreExclusionStrategy());
+        // Custom actuator deserialization
+        builder.registerTypeAdapter(Health.class, new HealthAdapter());
+        builder.registerTypeAdapter(BeanDescriptor.class, new BeanDescriptorAdapter());
     }
 
     /**
@@ -114,11 +121,11 @@ public final class GsonCustomizer {
     private static void addBeanAdapters(GsonBuilder builder, Optional<ApplicationContext> applicationContext) {
 
         if (applicationContext.isPresent()) {
-            @SuppressWarnings("rawtypes") Map<String, TypeAdapter> beanFactories = applicationContext.get()
-                    .getBeansOfType(TypeAdapter.class);
+            @SuppressWarnings("rawtypes")
+            Map<String, TypeAdapter> beanFactories = applicationContext.get().getBeansOfType(TypeAdapter.class);
             if (beanFactories != null) {
-                for (@SuppressWarnings("rawtypes") Map.Entry<String, TypeAdapter> beanFactory : beanFactories
-                        .entrySet()) {
+                for (@SuppressWarnings("rawtypes")
+                Map.Entry<String, TypeAdapter> beanFactory : beanFactories.entrySet()) {
                     TypeAdapter<?> current = beanFactory.getValue();
                     // Retrieve custom annotation
                     GsonTypeAdapterBean annot = current.getClass().getAnnotation(GsonTypeAdapterBean.class);

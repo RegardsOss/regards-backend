@@ -62,7 +62,7 @@ public class InstanceDaoProperties {
     /**
      * Hibernate dialect
      */
-    private String dialect;
+    private String dialect = "org.hibernate.dialect.PostgreSQLDialect";
 
     /**
      * For pooled data source, min available connections

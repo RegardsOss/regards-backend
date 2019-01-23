@@ -22,6 +22,8 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 public class MaintenanceHealthIndicator extends AbstractHealthIndicator
         implements ApplicationListener<ApplicationReadyEvent> {
 
+    private static final String TENANT = "tenant";
+
     /**
      * {@link IRuntimeTenantResolver} instance
      */
@@ -50,11 +52,17 @@ public class MaintenanceHealthIndicator extends AbstractHealthIndicator
     @Override
     protected void doHealthCheck(Health.Builder builder) {
         MaintenanceInfo info = MaintenanceManager.getMaintenanceMap().get(runtimeTenantResolver.getTenant());
+
+        if (info == null) {
+            // No a managed tenant ... supervisor request
+            builder.up().withDetail(TENANT, "no tenant specified");
+            return;
+        }
         builder.withDetail("lastUpdate", info.getLastUpdate());
         if (info.getActive()) {
-            builder.outOfService();
+            builder.outOfService().withDetail(TENANT, runtimeTenantResolver.getTenant());
         } else {
-            builder.up();
+            builder.up().withDetail(TENANT, runtimeTenantResolver.getTenant());
         }
     }
 
