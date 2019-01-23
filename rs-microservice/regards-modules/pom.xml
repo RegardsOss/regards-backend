@@ -51,6 +51,7 @@
         <module>jobs</module>
         <module>templates</module>
         <module>workspace</module>
+        <module>locks</module>
     </modules>
 
 </project>
