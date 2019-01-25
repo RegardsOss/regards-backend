@@ -40,7 +40,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
-import fr.cnes.regards.modules.notification.domain.NotificationType;
+import fr.cnes.regards.modules.notification.domain.NotificationLevel;
 
 /**
  *
@@ -104,8 +104,8 @@ public class AcquisitionChainJobEventHandler implements ApplicationListener<Appl
                 StringWriter sw = new StringWriter();
                 e.printStackTrace(new PrintWriter(sw));
                 FeignSecurityManager.asSystem();
-                notificationClient.notifyRoles(sw.toString(), "Error occurs during job event handling",
-                                               "rs-dataprovider", NotificationType.ERROR, DefaultRole.ADMIN);
+                notificationClient.notify(sw.toString(), "Error occurs during job event handling",
+                                          NotificationLevel.ERROR, DefaultRole.ADMIN);
             } finally {
                 FeignSecurityManager.reset();
                 runtimeTenantResolver.clearTenant();
