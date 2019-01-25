@@ -21,6 +21,7 @@ package fr.cnes.regards.framework.amqp.configuration;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.transaction.RabbitTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
+import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
@@ -65,4 +66,13 @@ public class MultitenantRabbitTransactionManager extends RabbitTransactionManage
             rabbitVirtualHostAdmin.unbind();
         }
     }
+
+    /* (non-Javadoc)
+     * @see org.springframework.amqp.rabbit.transaction.RabbitTransactionManager#afterPropertiesSet()
+     */
+    @Override
+    public void afterPropertiesSet() {
+        Assert.notNull(getConnectionFactory(), "Property 'connectionFactory' is required");
+    }
+
 }
