@@ -159,6 +159,7 @@
 		<!-- Take a version that retrieve a version of Hibernate that correctly 
 			manage uk naming while inheriting classes with JOINED strategy -->
 		<org.springframework.boot.spring-boot-dependencies.version>2.1.2.RELEASE</org.springframework.boot.spring-boot-dependencies.version>
+		<org.springframework.security.oauth.autoconfigure-version>2.1.2.RELEASE</org.springframework.security.oauth.autoconfigure-version>
 		<!-- Spring OAuth is no more into spring-boot, only client is (From what 
 			i understood) -->
 		<org.springframework.security.oauth.version>2.3.4.RELEASE</org.springframework.security.oauth.version>
@@ -1126,6 +1127,11 @@
 				<version>${org.springframework.cloud.spring-cloud-dependencies.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.security.oauth.boot</groupId>
+				<artifactId>spring-security-oauth2-autoconfigure</artifactId>
+				<version>${org.springframework.security.oauth.autoconfigure-version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
