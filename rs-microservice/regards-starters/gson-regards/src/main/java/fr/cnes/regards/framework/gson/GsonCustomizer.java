@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.actuate.beans.BeansEndpoint.BeanDescriptor;
 import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.web.mappings.MappingsEndpoint.ApplicationMappings;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.MimeType;
 import org.springframework.util.MultiValueMap;
@@ -41,6 +42,7 @@ import fr.cnes.regards.framework.gson.adapters.MultiValueMapAdapter;
 import fr.cnes.regards.framework.gson.adapters.MultimapAdapter;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.gson.adapters.PathAdapter;
+import fr.cnes.regards.framework.gson.adapters.actuator.ApplicationMappingsAdapter;
 import fr.cnes.regards.framework.gson.adapters.actuator.BeanDescriptorAdapter;
 import fr.cnes.regards.framework.gson.adapters.actuator.HealthAdapter;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
@@ -81,6 +83,7 @@ public final class GsonCustomizer {
         // Custom actuator deserialization
         builder.registerTypeAdapter(Health.class, new HealthAdapter());
         builder.registerTypeAdapter(BeanDescriptor.class, new BeanDescriptorAdapter());
+        builder.registerTypeAdapter(ApplicationMappings.class, new ApplicationMappingsAdapter());
     }
 
     /**
