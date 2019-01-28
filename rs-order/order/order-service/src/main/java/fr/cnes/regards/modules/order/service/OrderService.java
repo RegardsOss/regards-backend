@@ -99,8 +99,7 @@ import fr.cnes.regards.modules.dam.domain.entities.feature.EntityFeature;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
-import fr.cnes.regards.modules.notification.domain.NotificationType;
-import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
+import fr.cnes.regards.modules.notification.domain.NotificationLevel;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IOrderRepository;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
@@ -336,7 +335,7 @@ public class OrderService implements IOrderService {
             }
             // In case order contains only external files, percent completion can be set to 100%, else completion is
             // computed when files are available (even if some external files exist, this case will not (often) occur
-            if (internalFilesCount == 0 && externalFilesCount > 0) {
+            if ((internalFilesCount == 0) && (externalFilesCount > 0)) {
                 // Because external files haven't size set (files.size isn't allowed to be mapped on DatasourcePlugins
                 // other than AipDatasourcePlugin which manage only internal files), these will not be taken into
                 // account by {@see OrderService#updateCurrentOrdersComputedValues}
@@ -413,15 +412,9 @@ public class OrderService implements IOrderService {
         // Send a very useful notification if file is bigger than bucket size
         if (orderDataFile.getFilesize() > storageBucketSize) {
             // To send a notification, NotificationClient needs it
-            FeignSecurityManager.asSystem();
-            NotificationDTO notif = new NotificationDTO(
-                    String.format("File \"%s\" is bigger than sub-order size", orderDataFile.getFilename()),
-                    Collections.emptySet(), Collections.singleton(DefaultRole.PROJECT_ADMIN.name()), microserviceName,
-                    "Order creation", NotificationType.WARNING);
-            notificationClient.createNotification(notif);
-            FeignSecurityManager.reset();
-            // To search objects with SearchClient
-            FeignSecurityManager.asUser(basket.getOwner(), role);
+            notificationClient
+                    .notify(String.format("File \"%s\" is bigger than sub-order size", orderDataFile.getFilename()),
+                            "Order creation", NotificationLevel.WARNING, DefaultRole.PROJECT_ADMIN);
         }
     }
 
@@ -550,7 +543,7 @@ public class OrderService implements IOrderService {
     public void pause(Long id) throws CannotPauseOrderException {
         Order order = repos.findCompleteById(id);
         // Only a pending or running order can be paused
-        if (order.getStatus() != OrderStatus.PENDING && order.getStatus() != OrderStatus.RUNNING) {
+        if ((order.getStatus() != OrderStatus.PENDING) && (order.getStatus() != OrderStatus.RUNNING)) {
             throw new CannotPauseOrderException();
         }
         // Ask for all jobInfos abortion
@@ -613,8 +606,8 @@ public class OrderService implements IOrderService {
      */
     private boolean orderEffectivelyInPause(Order order) {
         // No associated jobInfo or all associated jobs finished
-        return order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
-                .filter(ft -> ft.getJobInfo() != null).count() == 0
+        return (order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
+                .filter(ft -> ft.getJobInfo() != null).count() == 0)
                 || order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
                         .map(ft -> ft.getJobInfo().getStatus().getStatus()).allMatch(JobStatus::isFinished);
     }
@@ -733,7 +726,7 @@ public class OrderService implements IOrderService {
                                 + sw.toString());
                     }
                     // Unable to download file from storage
-                    if (response == null || response.status() != HttpStatus.OK.value()) {
+                    if ((response == null) || (response.status() != HttpStatus.OK.value())) {
                         downloadErrorFiles.add(dataFile);
                         i.remove();
                         LOGGER.warn("Cannot retrieve data file from storage (aip : {}, checksum : {})", aip,

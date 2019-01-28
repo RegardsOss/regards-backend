@@ -76,7 +76,7 @@ public class BasketServiceIT {
     @Autowired
     private IProjectsClient projectsClient;
 
-    private static final String USER_EMAIL = "marc.sordi@baltringue.fr";
+    private static final String USER_EMAIL = "test@test.fr";
 
     @Before
     public void setUp() {

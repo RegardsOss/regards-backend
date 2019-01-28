@@ -38,7 +38,6 @@ import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.modules.dam.client.models.IAttributeModelClient;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
-import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
@@ -114,10 +113,5 @@ public class OrderConfiguration {
     @Bean
     public IEmailClient emailClient() {
         return Mockito.mock(IEmailClient.class);
-    }
-
-    @Bean
-    public INotificationClient notificationClient() {
-        return Mockito.mock(INotificationClient.class);
     }
 }
