@@ -41,7 +41,6 @@ import fr.cnes.regards.modules.dam.client.models.IModelAttrAssocClient;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.models.Model;
-import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
@@ -71,11 +70,6 @@ public class EngineConfiguration {
     @Bean
     public IAttributeModelClient attributeModelClient() {
         return Mockito.mock(IAttributeModelClient.class);
-    }
-
-    @Bean
-    public INotificationClient getNotificationClient() {
-        return Mockito.mock(INotificationClient.class);
     }
 
     @Bean
