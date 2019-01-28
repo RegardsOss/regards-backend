@@ -3,6 +3,7 @@ package fr.cnes.regards.framework.modules.locks.service;
 import java.time.OffsetDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import fr.cnes.regards.framework.modules.locks.domain.LockException;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
+@Service
 @RegardsTransactional
 public class LockService implements ILockService {
 
@@ -54,7 +56,8 @@ public class LockService implements ILockService {
     public boolean tryLock(Lock lock, long seconds) {
         Lock currentLock;
         currentLock = lockRepository.findByLockingClassNameAndLockName(lock.getLockingClassName(), lock.getLockName());
-        if (currentLock.getExpirationDate() != null && currentLock.getExpirationDate().isBefore(OffsetDateTime.now())) {
+        if ((currentLock != null) && (currentLock.getExpirationDate() != null)
+                && currentLock.getExpirationDate().isBefore(OffsetDateTime.now())) {
             // if lock has expired, lets remove it
             lockRepository.delete(currentLock);
             currentLock = null;
