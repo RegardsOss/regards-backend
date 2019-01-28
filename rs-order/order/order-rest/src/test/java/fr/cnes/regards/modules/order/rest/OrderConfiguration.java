@@ -33,6 +33,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.ResponseEntity;
 
+import com.google.common.collect.Maps;
+
+import feign.Request;
 import feign.Response;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.modules.dam.client.models.IAttributeModelClient;
@@ -101,6 +104,7 @@ public class OrderConfiguration {
         @SuppressWarnings("unused")
         public Response downloadFile(String aipId, String checksum) {
             return Response.builder().status(200).headers(headers)
+                    .request(Request.create(feign.Request.HttpMethod.GET, "", Maps.newHashMap(), null))
                     .body(getClass().getResourceAsStream("/files/" + checksum), 1000).build();
         }
     }
