@@ -46,16 +46,22 @@ public @interface RestClient {
      * Name of the microservice as it is registered in the eureka server.
      * @return name
      */
-    @AliasFor(annotation = FeignClient.class) String name();
+    @AliasFor(annotation = FeignClient.class)
+    String name();
+
+    @AliasFor(annotation = FeignClient.class)
+    String contextId() default "";
 
     /**
      * Fallback class implementation for the client
      * @return Class
      */
-    @AliasFor(annotation = FeignClient.class) Class<?> fallback() default void.class;
+    @AliasFor(annotation = FeignClient.class)
+    Class<?> fallback() default void.class;
 
     /**
      * An absolute URL or resolvable hostname (the protocol is optional).
      */
-    @AliasFor(annotation = FeignClient.class) String url() default "";
+    @AliasFor(annotation = FeignClient.class)
+    String url() default "";
 }
