@@ -41,7 +41,7 @@ import fr.cnes.regards.modules.project.domain.Project;
  * @author Xavier-Alexandre Brochard
 
  */
-@RestClient(name = "rs-admin-instance")
+@RestClient(name = "rs-admin-instance", contextId = "rs-admin-instance.projects-client")
 @RequestMapping(value = "/projects", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IProjectsClient {
@@ -59,7 +59,7 @@ public interface IProjectsClient {
      *            number of elements per page
      *
      * @return List of projects
-    
+
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
@@ -81,7 +81,7 @@ public interface IProjectsClient {
      * @param pNewProject
      *            new Project to create
      * @return Created project
-    
+
      */
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
@@ -94,7 +94,7 @@ public interface IProjectsClient {
      * @param pProjectName
      *            Project name
      * @return Project
-    
+
      */
     @RequestMapping(method = RequestMethod.GET, value = "/{project_name}")
     @ResponseBody
@@ -109,7 +109,7 @@ public interface IProjectsClient {
      * @param pProjectToUpdate
      *            project to update
      * @return Updated Project
-    
+
      */
     @RequestMapping(method = RequestMethod.PUT, value = "/{project_name}")
     @ResponseBody
@@ -123,7 +123,7 @@ public interface IProjectsClient {
      * @param pProjectName
      *            Project name to delete
      * @return Void
-    
+
      */
     @RequestMapping(method = RequestMethod.DELETE, value = "/{project_name}")
     @ResponseBody

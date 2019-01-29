@@ -49,7 +49,7 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
  * @author Sébastien Binda
  * @author Christophe Mertz
  */
-@RestClient(name = TARGET_NAME)
+@RestClient(name = TARGET_NAME, contextId = "rs-admin.project-user-client")
 @RequestMapping(value = "/users", produces = MediaType.APPLICATION_JSON_UTF8_VALUE,
         consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IProjectUsersClient {
@@ -142,7 +142,7 @@ public interface IProjectUsersClient {
      * @param pSize
      *            page size
      * @return {@link PagedResources} of {@link ProjectUser}
-
+    
      */
     @ResponseBody
     @RequestMapping(value = "/roles/{role_id}", method = RequestMethod.GET)

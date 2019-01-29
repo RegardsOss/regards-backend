@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.modules.project.client.rest;
 
-import javax.validation.Valid;
 import java.util.List;
+
+import javax.validation.Valid;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +39,7 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
  * @author Marc Sordi
  *
  */
-@RestClient(name = "rs-admin-instance")
+@RestClient(name = "rs-admin-instance", contextId = "rs-admin-instance.tenant-connection-client")
 @RequestMapping(value = "/connections/{microservice}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface ITenantConnectionClient {

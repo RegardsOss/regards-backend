@@ -18,9 +18,10 @@
  */
 package fr.cnes.regards.modules.accessrights.client;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.Set;
+
+import javax.validation.Valid;
 
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
@@ -42,7 +43,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  * @author CS
 
  */
-@RestClient(name = "rs-admin")
+@RestClient(name = "rs-admin", contextId = "rs-admin.roles-client")
 @RequestMapping(value = IRolesClient.TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IRolesClient { // NOSONAR

@@ -46,7 +46,7 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
  * @author CS
 
  */
-@RestClient(name = "rs-admin")
+@RestClient(name = "rs-admin", contextId = "rs-admin.registration-client")
 @RequestMapping(value = "/accesses", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IRegistrationClient {

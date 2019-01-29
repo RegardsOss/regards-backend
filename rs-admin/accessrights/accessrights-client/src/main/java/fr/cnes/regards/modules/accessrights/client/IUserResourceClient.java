@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.modules.accessrights.client;
 
-import javax.validation.Valid;
 import java.util.List;
+
+import javax.validation.Valid;
 
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
@@ -43,7 +44,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
  * @author Marc Sordi
  *
  */
-@RestClient(name = "rs-admin")
+@RestClient(name = "rs-admin", contextId = "rs-admin.user-resource-client")
 @RequestMapping(value = IUserResourceClient.TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IUserResourceClient {
