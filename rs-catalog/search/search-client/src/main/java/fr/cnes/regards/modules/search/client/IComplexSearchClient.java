@@ -43,7 +43,7 @@ import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResource
  * @author Sébastien Binda
  *
  */
-@RestClient(name = "rs-catalog")
+@RestClient(name = "rs-catalog", contextId = "rs-catalog.complex-search.client")
 @RequestMapping(value = IComplexSearchClient.TYPE_MAPPING, produces = MediaType.APPLICATION_JSON_UTF8_VALUE,
         consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IComplexSearchClient {

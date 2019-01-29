@@ -40,7 +40,7 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
  * @author Marc Sordi
  *
  */
-@RestClient(name = "rs-catalog")
+@RestClient(name = "rs-catalog", contextId = "rs-catalog.search-engine.client")
 @RequestMapping(value = SearchEngineMappings.TYPE_MAPPING, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface ISearchEngineClient {
 
