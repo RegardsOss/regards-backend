@@ -20,14 +20,8 @@ package fr.cnes.regards.microservices.administration;
 
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-
-import fr.cnes.regards.modules.accessrights.client.IResourcesClient;
-import fr.cnes.regards.modules.accessrights.client.IRolesClient;
-import fr.cnes.regards.modules.project.client.rest.IProjectConnectionClient;
-import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
  * Class MicroserviceClientsAutoConfiguration
@@ -41,8 +35,6 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 @Profile("production")
 @AutoConfigureBefore(RemoteTenantAutoConfiguration.class)
 @ConditionalOnProperty(name = "regards.cloud.enabled", matchIfMissing = true)
-@EnableFeignClients(
-        clients = { IProjectsClient.class, IProjectConnectionClient.class, IResourcesClient.class, IRolesClient.class })
 public class RemoteClientAutoConfiguration {
 
 }
