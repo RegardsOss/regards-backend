@@ -67,8 +67,9 @@ public class MultitenantRabbitTransactionManager extends RabbitTransactionManage
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.springframework.amqp.rabbit.transaction.RabbitTransactionManager#afterPropertiesSet()
+    /**
+     * Temproary fix waiting for spring amq fix issue : 
+     * https://github.com/spring-projects/spring-amqp/issues/883
      */
     @Override
     public void afterPropertiesSet() {
