@@ -23,7 +23,7 @@ import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
 
 /**
- * Job that ask files availability to storage microservice and wait for all files acailability or error
+ * Job that ask files availability to storage microservice and wait for all files availability or error
  * @author oroussel
  */
 public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataFileEvent> {
