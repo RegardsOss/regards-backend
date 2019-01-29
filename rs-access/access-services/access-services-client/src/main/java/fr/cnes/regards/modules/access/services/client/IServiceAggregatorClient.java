@@ -39,7 +39,7 @@ import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
  * Feign client for calling ServicesAggregatorController methods
  * @author Xavier-Alexandre Brochard
  */
-@RestClient(name = "rs-access-project")
+@RestClient(name = "rs-access-project", contextId = "rs-access-project.service-agg-client")
 @RequestMapping(value = "/services/aggregated", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IServiceAggregatorClient {
