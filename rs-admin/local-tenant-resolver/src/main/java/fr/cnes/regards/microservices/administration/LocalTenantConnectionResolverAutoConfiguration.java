@@ -62,7 +62,7 @@ public class LocalTenantConnectionResolverAutoConfiguration {
      * @return ITenantResolver
 
      */
-    @Bean
+    @Bean("local-tenant-resolver")
     @Primary
     ITenantResolver tenantResolver() {
         return new LocalTenantResolver();

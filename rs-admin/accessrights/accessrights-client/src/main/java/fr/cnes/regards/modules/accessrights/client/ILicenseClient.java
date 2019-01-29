@@ -31,7 +31,7 @@ import fr.cnes.regards.framework.feign.annotation.RestClient;
  * @author Marc Sordi
  *
  */
-@RestClient(name = "rs-admin")
+@RestClient(name = "rs-admin", contextId = "rs-admin.license-client")
 @RequestMapping(value = ILicenseClient.PATH_LICENSE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE,
         consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface ILicenseClient {

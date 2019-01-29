@@ -31,12 +31,13 @@ import fr.cnes.regards.framework.feign.annotation.RestClient;
 /**
  *
  * Tenant client
- * 
+ *
  * @author Marc Sordi
  *
  */
-@RestClient(name = "rs-admin-instance")
-@RequestMapping(value = "/tenants", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RestClient(name = "rs-admin-instance", contextId = "rs-admin-instance.tenant-client")
+@RequestMapping(value = "/tenants", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
+        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface ITenantClient {
 
     @RequestMapping(method = RequestMethod.GET)

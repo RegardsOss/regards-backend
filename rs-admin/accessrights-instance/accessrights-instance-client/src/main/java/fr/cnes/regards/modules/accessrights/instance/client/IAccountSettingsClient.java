@@ -38,8 +38,9 @@ import fr.cnes.regards.modules.accessrights.instance.domain.AccountSettings;
  * @author Xavier-Alexandre Brochard
 
  */
-@RestClient(name = "rs-admin-instance")
-@RequestMapping(path = "/accounts/settings", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RestClient(name = "rs-admin-instance", contextId = "rs-admin-instance.account-settings-client")
+@RequestMapping(path = "/accounts/settings", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
+        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IAccountSettingsClient {
 
     /**

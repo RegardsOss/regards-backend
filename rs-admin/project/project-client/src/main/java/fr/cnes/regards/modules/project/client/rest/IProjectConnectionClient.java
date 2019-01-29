@@ -38,7 +38,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * Feign client allowing access to the module with REST requests.
  * @author sbinda
  */
-@RestClient(name = "rs-admin-instance")
+@RestClient(name = "rs-admin-instance", contextId = "rs-admin-instance.project-connection-client")
 @RequestMapping(value = "/projects/{projectName}/connections", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IProjectConnectionClient {
