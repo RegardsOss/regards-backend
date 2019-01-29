@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.Reques
  * @author Xavier-Alexandre Brochard
 
  */
-@RestClient(name = "rs-admin-instance")
+@RestClient(name = "rs-admin-instance", contextId = "rs-admin-instance.accounts-client")
 @RequestMapping(path = "/accounts", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IAccountsClient {
