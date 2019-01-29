@@ -17,7 +17,7 @@ import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
  *
  * @author Sylvain VISSIERE-GUERINET
  */
-@RestClient(name = "rs-storage")
+@RestClient(name = "rs-storage", contextId = "rs-storage.aip-entity.client")
 @RequestMapping(value = IAipEntityClient.BASE_PATH, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IAipEntityClient {
