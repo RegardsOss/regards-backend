@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.notification.client;
 
+import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
 
@@ -15,6 +16,11 @@ public interface INotificationClient {
 
     /**
      * Notify a set of roles with a text plain message
+     *
+     * @param message message to notify
+     * @param title message title
+     * @param level {@link NotificationLevel}
+     * @param roles list of roles to notify
      */
     default void notify(String message, String title, NotificationLevel level, DefaultRole... roles) {
         notify(message, title, level, MimeTypeUtils.TEXT_PLAIN, roles);
@@ -22,11 +28,22 @@ public interface INotificationClient {
 
     /**
      * Notify a set of roles
+     *
+     * @param message message to notify
+     * @param title message title
+     * @param level {@link NotificationLevel}
+     * @param mimeType MIME type ({@link MediaType} can be used!)
+     * @param roles list of roles to notify
      */
     void notify(String message, String title, NotificationLevel level, MimeType mimeType, DefaultRole... roles);
 
     /**
      * Notify a set of users with a text plain message
+     *
+     * @param message message to notify
+     * @param title message title
+     * @param level {@link NotificationLevel}
+     * @param users list of users to notify
      */
     default void notify(String message, String title, NotificationLevel level, String... users) {
         notify(message, title, level, MimeTypeUtils.TEXT_PLAIN, users);
@@ -34,11 +51,23 @@ public interface INotificationClient {
 
     /**
      * Notify a set of users
+     *
+     * @param message message to notify
+     * @param title message title
+     * @param level {@link NotificationLevel}
+     * @param mimeType MIME type ({@link MediaType} can be used!)
+     * @param users list of users to notify
      */
     void notify(String message, String title, NotificationLevel level, MimeType mimeType, String... users);
 
     /**
      * Notify a user and a set of roles with a text plain message
+     *
+     * @param message message to notify
+     * @param title message title
+     * @param level {@link NotificationLevel}
+     * @param user user to notify
+     * @param roles list of roles to notify
      */
     default void notify(String message, String title, NotificationLevel level, String user, DefaultRole... roles) {
         notify(message, title, level, MimeTypeUtils.TEXT_PLAIN, user, roles);
@@ -46,6 +75,13 @@ public interface INotificationClient {
 
     /**
      * Notify a user and a set of roles
+     *
+     * @param message message to notify
+     * @param title message title
+     * @param level {@link NotificationLevel}
+     * @param mimeType MIME type ({@link MediaType} can be used!)
+     * @param user user to notify
+     * @param roles list of roles to notify
      */
     void notify(String message, String title, NotificationLevel level, MimeType mimeType, String user,
             DefaultRole... roles);

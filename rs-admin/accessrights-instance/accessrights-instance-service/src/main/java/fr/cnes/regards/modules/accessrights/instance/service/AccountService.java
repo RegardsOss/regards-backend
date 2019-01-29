@@ -45,6 +45,8 @@ import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountStatus;
 import fr.cnes.regards.modules.accessrights.instance.service.encryption.EncryptionUtils;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 
 /**
  * {@link IAccountService} implementation.
@@ -113,6 +115,11 @@ public class AccountService implements IAccountService {
      */
     private IRuntimeTenantResolver runtimeTenantResolver;
 
+    @Autowired
+    private MeterRegistry registry;
+
+    private Counter createdAccountCounter;
+
     /**
      * Constructor
      * @param accountRepository account repository
@@ -154,12 +161,13 @@ public class AccountService implements IAccountService {
     public void initialize() {
         if (!this.existAccount(rootAdminUserLogin)) {
             Account account = new Account(rootAdminUserLogin, rootAdminUserLogin, rootAdminUserLogin,
-                                          rootAdminUserPassword);
+                    rootAdminUserPassword);
             account.setStatus(AccountStatus.ACTIVE);
             account.setAuthenticationFailedCounter(0L);
             account.setExternal(false);
             createAccount(account);
         }
+        this.createdAccountCounter = registry.counter("regards.created.account");
     }
 
     @Override
@@ -311,23 +319,26 @@ public class AccountService implements IAccountService {
         // Account#equals being on email, we create a fake Account with the INSTANCE_ADMIN login and we remove it from the database result.
         toCheck.remove(new Account(rootAdminUserLogin, "", "", rootAdminUserPassword));
         // lets check issues with the invalidity date
-        if ((accountValidityDuration != null) && !accountValidityDuration.equals(0L)) {
+        if (accountValidityDuration != null && !accountValidityDuration.equals(0L)) {
             LocalDateTime now = LocalDateTime.now();
             toCheck.stream().filter(a -> a.getInvalidityDate().isBefore(now))
-                    .peek(a -> a.setStatus(AccountStatus.INACTIVE)).peek(a -> LOG
-                    .info("Account {} set to {} because of its account validity date", a.getEmail(),
-                          AccountStatus.INACTIVE)).forEach(accountRepository::save);
+                    .peek(a -> a.setStatus(AccountStatus.INACTIVE))
+                    .peek(a -> LOG.info("Account {} set to {} because of its account validity date", a.getEmail(),
+                                        AccountStatus.INACTIVE))
+                    .forEach(accountRepository::save);
         }
 
         // lets check issues with the password
-        if ((accountPasswordValidityDuration != null) && !accountPasswordValidityDuration.equals(0L)) {
+        if (accountPasswordValidityDuration != null && !accountPasswordValidityDuration.equals(0L)) {
             LocalDateTime minValidityDate = LocalDateTime.now().minusDays(accountPasswordValidityDuration);
             // get all account that are not already locked, those already locked would not be re-locked anyway
-            toCheck.stream().filter(a -> a.getExternal().equals(false) && (a.getPasswordUpdateDate() != null) && a
-                    .getPasswordUpdateDate().isBefore(minValidityDate))
-                    .peek(a -> a.setStatus(AccountStatus.INACTIVE_PASSWORD)).peek(a -> LOG
-                    .info("Account {} set to {} because of its password validity date", a.getEmail(),
-                          AccountStatus.INACTIVE_PASSWORD)).forEach(accountRepository::save);
+            toCheck.stream()
+                    .filter(a -> a.getExternal().equals(false) && a.getPasswordUpdateDate() != null
+                            && a.getPasswordUpdateDate().isBefore(minValidityDate))
+                    .peek(a -> a.setStatus(AccountStatus.INACTIVE_PASSWORD))
+                    .peek(a -> LOG.info("Account {} set to {} because of its password validity date", a.getEmail(),
+                                        AccountStatus.INACTIVE_PASSWORD))
+                    .forEach(accountRepository::save);
         }
     }
 
