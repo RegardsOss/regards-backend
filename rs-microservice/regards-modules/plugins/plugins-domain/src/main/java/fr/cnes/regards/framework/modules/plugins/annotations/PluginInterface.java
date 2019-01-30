@@ -44,6 +44,6 @@ public @interface PluginInterface {
      * If false, there should be at any time only one configuration active.
      * default true
      */
-    boolean allowMultipleConfigurationActive() default true;
+    boolean allowMultipleActiveConfigurations() default true;
 
 }

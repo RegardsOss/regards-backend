@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
  * Test plugin class interface
  * @author Sébastien Binda
  */
-@PluginInterface(allowMultipleConfigurationActive = false, description = "Test interface")
+@PluginInterface(allowMultipleActiveConfigurations = false, description = "Test interface")
 public interface IUniqueConfActivePlugin {
 
 }
