@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
  * @author Sylvain Vissiere-Guerinet
  *
  */
-@PluginInterface(description = "Interface for all AllocationStrategy plugin", allowMultipleConfigurationActive = false)
+@PluginInterface(description = "Interface for all AllocationStrategy plugin", allowMultipleActiveConfigurations = false)
 @FunctionalInterface
 public interface IAllocationStrategy {
 
