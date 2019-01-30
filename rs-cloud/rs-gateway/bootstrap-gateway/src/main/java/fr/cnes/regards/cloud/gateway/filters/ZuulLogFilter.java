@@ -37,10 +37,7 @@ import com.netflix.zuul.context.RequestContext;
 @Component
 public class ZuulLogFilter extends ZuulFilter {
 
-    /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(ZuulLogFilter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ZuulLogFilter.class);
 
     public static final String COMMA = ", ";
 
@@ -65,19 +62,19 @@ public class ZuulLogFilter extends ZuulFilter {
         HttpServletRequest request = ctx.getRequest();
         String remoteAddr = request.getRemoteAddr();
 
-        LOG.info("Request received : {}@{} from {}", request.getRequestURI(), request.getMethod(), remoteAddr);
+        LOGGER.info("Request received : {}@{} from {}", request.getRequestURI(), request.getMethod(), remoteAddr);
 
         String xForwardedFor = ctx.getZuulRequestHeaders().get(HttpHeaders.X_FORWARDED_FOR);
-        if ((xForwardedFor != null) && !xForwardedFor.isEmpty() && !xForwardedFor.contains(remoteAddr)) {
+        if (xForwardedFor != null && !xForwardedFor.isEmpty() && !xForwardedFor.contains(remoteAddr)) {
             xForwardedFor = xForwardedFor + COMMA + remoteAddr;
             ctx.getZuulRequestHeaders().put(HttpHeaders.X_FORWARDED_FOR, xForwardedFor);
         } else {
             ctx.getZuulRequestHeaders().put(HttpHeaders.X_FORWARDED_FOR, remoteAddr);
         }
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("{} is set to request header : {}", HttpHeaders.X_FORWARDED_FOR,
-                      ctx.getZuulRequestHeaders().get(HttpHeaders.X_FORWARDED_FOR));
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("{} is set to request header : {}", HttpHeaders.X_FORWARDED_FOR,
+                         ctx.getZuulRequestHeaders().get(HttpHeaders.X_FORWARDED_FOR));
         }
 
         return null;
