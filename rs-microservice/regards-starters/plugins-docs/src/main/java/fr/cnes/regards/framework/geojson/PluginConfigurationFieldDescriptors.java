@@ -26,7 +26,7 @@ import org.springframework.restdocs.payload.FieldDescriptor;
 import com.google.common.base.Strings;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
 import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 
 /**
@@ -88,7 +88,7 @@ public class PluginConfigurationFieldDescriptors {
     private List<FieldDescriptor> buildPluginParameterDescription(String prefix) {
         List<FieldDescriptor> lfd = new ArrayList<>();
 
-        ConstrainedFields representationInformationField = new ConstrainedFields(PluginParameter.class);
+        ConstrainedFields representationInformationField = new ConstrainedFields(AbstractPluginParam.class);
 
         //        lfd.add(representationInformationField.withPath(addPrefix(prefix, "id"), "id", "Unique identifier"));
         lfd.add(representationInformationField.withPath(addPrefix(prefix, "name"), "name", "The parameter name"));

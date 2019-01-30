@@ -30,7 +30,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
 
 /**
  * Plugin management service.
@@ -75,27 +75,27 @@ public interface IPluginService {
      * return type.
      * @param <T> a plugin instance
      * @param pluginConfigurationId the id of a {@link PluginConfiguration}.
-     * @param dynamicPluginParameters list of dynamic {@link PluginParameter}
+     * @param dynamicPluginParameters list of dynamic {@link AbstractPluginParam}
      * @return a plugin instance
      * @throws ModuleException thrown if we cannot find any PluginConfiguration corresponding to pId
      */
-    <T> T getPlugin(Long pluginConfigurationId, final PluginParameter... dynamicPluginParameters)
+    <T> T getPlugin(Long pluginConfigurationId, final AbstractPluginParam... dynamicPluginParameters)
             throws ModuleException;
 
     /**
      * Get a plugin instance for a {@link PluginConfiguration} and dynamic plugin parameters<br/>
      *
-     * Note : this method is just a proxy for {@link IPluginService#getPlugin(Long, PluginParameter...)}
+     * Note : this method is just a proxy for {@link IPluginService#getPlugin(Long, AbstractPluginParam...)}
      * so plugin configuration is reloaded from database before instanciation.
      * @param <T> a plugin instance
      * @param pluginConfiguration a {@link PluginConfiguration}.
-     * @param dynamicPluginParameters list of dynamic {@link PluginParameter}
+     * @param dynamicPluginParameters list of dynamic {@link AbstractPluginParam}
      * @return a plugin instance
      * @throws ModuleException thrown if we cannot find any PluginConfiguration corresponding to pId
-     * @deprecated Use {@link IPluginService#getPlugin(Long, PluginParameter...)} instead.
+     * @deprecated Use {@link IPluginService#getPlugin(Long, AbstractPluginParam...)} instead.
      */
     @Deprecated
-    default <T> T getPlugin(PluginConfiguration pluginConfiguration, final PluginParameter... dynamicPluginParameters)
+    default <T> T getPlugin(PluginConfiguration pluginConfiguration, final AbstractPluginParam... dynamicPluginParameters)
             throws ModuleException {
         return getPlugin(pluginConfiguration.getId(), dynamicPluginParameters);
     }
@@ -105,11 +105,11 @@ public interface IPluginService {
      * return type.
      * @param <T> a plugin instance
      * @param interfacePluginType a specific interface plugin type
-     * @param pluginParameters an optional list of {@link PluginParameter}
+     * @param pluginParameters an optional list of {@link AbstractPluginParam}
      * @return a plugin instance
      * @throws ModuleException thrown if an error occurs
      */
-    <T> T getFirstPluginByType(Class<?> interfacePluginType, final PluginParameter... pluginParameters)
+    <T> T getFirstPluginByType(Class<?> interfacePluginType, final AbstractPluginParam... pluginParameters)
             throws ModuleException;
 
     /**

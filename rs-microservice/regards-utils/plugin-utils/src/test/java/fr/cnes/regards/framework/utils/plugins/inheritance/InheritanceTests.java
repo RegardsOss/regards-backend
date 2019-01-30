@@ -23,7 +23,7 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 
@@ -36,7 +36,7 @@ public class InheritanceTests {
     @Test
     public void test() {
 
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<AbstractPluginParam> parameters = PluginParametersFactory.build()
                 .addParameter(BasicPlugin.FIELD_NAME_STRING, "hello!")
                 .addParameter(BasicPlugin.INHERITED_FIELD_NAME_STRING, "inherited hello!").getParameters();
 

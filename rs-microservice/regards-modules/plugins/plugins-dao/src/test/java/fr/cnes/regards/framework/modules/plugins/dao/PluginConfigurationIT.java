@@ -32,7 +32,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 
 /***
@@ -118,7 +118,7 @@ public class PluginConfigurationIT extends PluginDaoUtility {
         Assert.assertEquals(aPluginConf.getParameters().size(), getPlgConfWithParameters().getParameters().size());
         Assert.assertEquals(aPluginConf.getPriorityOrder(), jpaConf.getPriorityOrder());
 
-        for (PluginParameter p : aPluginConf.getParameters()) {
+        for (AbstractPluginParam p : aPluginConf.getParameters()) {
             Assert.assertEquals(aPluginConf.getParameterConfiguration(p.getName()),
                                 jpaConf.getParameterConfiguration(p.getName()));
         }
@@ -211,10 +211,10 @@ public class PluginConfigurationIT extends PluginDaoUtility {
                             paramRepository.count());
 
         // Create PluginParameter
-        Set<PluginParameter> params1 = PluginParametersFactory.build().addPluginConfiguration(RED, pluginConf1)
+        Set<AbstractPluginParam> params1 = PluginParametersFactory.build().addPluginConfiguration(RED, pluginConf1)
                 .getParameters();
 
-        Set<PluginParameter> params2 = PluginParametersFactory.build().addPluginConfiguration(BLUE, pluginConf2)
+        Set<AbstractPluginParam> params2 = PluginParametersFactory.build().addPluginConfiguration(BLUE, pluginConf2)
                 .getParameters();
 
         // Create 2 PluginConfiguration with the 2 PluginParameter above
@@ -241,7 +241,7 @@ public class PluginConfigurationIT extends PluginDaoUtility {
         Assert.assertEquals(nbPlgConfs, plgRepository.count());
 
         // Create PluginParameter
-        Set<PluginParameter> params1 = PluginParametersFactory.build().addPluginConfiguration(RED, pluginConf1)
+        Set<AbstractPluginParam> params1 = PluginParametersFactory.build().addPluginConfiguration(RED, pluginConf1)
                 .getParameters();
 
         // Create 2 PluginConfiguration with the same PluginParameter

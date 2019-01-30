@@ -29,7 +29,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
 import fr.cnes.regards.framework.utils.cycle.generics.PluginWithCyclicPojoCollection;
 import fr.cnes.regards.framework.utils.cycle.generics.PluginWithCyclicPojoMap;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
@@ -48,7 +48,7 @@ public class PluginWithGenericsTest {
     @Test
     public void primitiveTest() {
 
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<AbstractPluginParam> parameters = PluginParametersFactory.build()
                 .addParameter(PluginWithBoolean.FIELD_NAME_OBJECT, true)
                 .addParameter(PluginWithBoolean.FIELD_NAME_PRIMITIVE, false)
                 .addParameter(PluginWithBoolean.FIELD_NAME_STRING, "string").getParameters();
@@ -63,7 +63,7 @@ public class PluginWithGenericsTest {
     public void stringCollectionTest() {
         List<String> infos = Arrays.asList("info 1", "info 2", "info 3");
 
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<AbstractPluginParam> parameters = PluginParametersFactory.build()
                 .addParameter(PluginWithStringCollection.FIELD_NAME, infos).getParameters();
 
         PluginUtils.setup(this.getClass().getPackage().getName());
@@ -84,7 +84,7 @@ public class PluginWithGenericsTest {
 
         List<Info> infos = Arrays.asList(info1, info2, info3);
 
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<AbstractPluginParam> parameters = PluginParametersFactory.build()
                 .addParameter(PluginWithPojoCollection.FIELD_NAME, infos).getParameters();
 
         PluginUtils.setup(this.getClass().getPackage().getName());
@@ -101,7 +101,7 @@ public class PluginWithGenericsTest {
         infos.put("info2", "info 2");
         infos.put("info3", "info 3");
 
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<AbstractPluginParam> parameters = PluginParametersFactory.build()
                 .addParameter(PluginWithStringMap.FIELD_NAME, infos).getParameters();
 
         PluginUtils.setup(this.getClass().getPackage().getName());
@@ -124,7 +124,7 @@ public class PluginWithGenericsTest {
         infos.put("info2", info2);
         infos.put("info3", info3);
 
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<AbstractPluginParam> parameters = PluginParametersFactory.build()
                 .addParameter(PluginWithPojoMap.PARAMETER_NAME, infos).getParameters();
 
         PluginUtils.setup(this.getClass().getPackage().getName());

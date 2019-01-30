@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
@@ -140,7 +140,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
         LOGGER.debug(STARTING + toString());
         PluginUtils.setup(PLUGIN_CURRENT_PACKAGE);
 
-        Set<PluginParameter> interfaceParameters = PluginParametersFactory.build()
+        Set<AbstractPluginParam> interfaceParameters = PluginParametersFactory.build()
                 .addParameter(AParameterPluginImplementation.FIELD_NAME, PluginInterfaceUtilsTest.LONG_STR_VALUE)
                 .getParameters();
         PluginConfiguration pluginConfigurationInterface = PluginUtils
@@ -150,7 +150,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
         /*
          * Get the configuration for the complex Plugin (ie the parent)
          */
-        final Set<PluginParameter> complexParameters = PluginParametersFactory.build()
+        final Set<AbstractPluginParam> complexParameters = PluginParametersFactory.build()
                 .addPluginConfiguration(ComplexPlugin.FIELD_NAME_PLUGIN, pluginConfigurationInterface)
                 .addParameter(ComplexPlugin.FIELD_NAME_ACTIVE, TRUE)
                 .addParameter(ComplexPlugin.FIELD_NAME_COEF, PluginInterfaceUtilsTest.CINQ).getParameters();
@@ -184,7 +184,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
          * Set all parameters
          */
 
-        final Set<PluginParameter> complexParameters = PluginParametersFactory.build()
+        final Set<AbstractPluginParam> complexParameters = PluginParametersFactory.build()
                 .addParameter(ComplexErrorPlugin.FIELD_NAME_COEF, PluginInterfaceUtilsTest.CINQ)
                 .addParameter(ComplexErrorPlugin.FIELD_NAME_PLUGIN, "coucou").getParameters();
 
@@ -202,7 +202,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
          * Set all parameters
          */
 
-        final Set<PluginParameter> complexParameters = PluginParametersFactory.build()
+        final Set<AbstractPluginParam> complexParameters = PluginParametersFactory.build()
                 .addParameter(ComplexErrorPlugin.FIELD_NAME_COEF, "allo")
                 .addParameter(ComplexErrorPlugin.FIELD_NAME_PLUGIN, "lorem ipsum").getParameters();
 

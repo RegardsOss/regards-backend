@@ -29,7 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 
 /***
@@ -80,9 +80,9 @@ public abstract class PluginDaoUtility extends AbstractDaoTest {
     protected static final String INVALID_JWT = "Invalid JWT";
 
     /**
-     * A {@link PluginParameter}
+     * A {@link AbstractPluginParam}
      */
-    protected static final PluginParameter ONE_PARAMETER = PluginParametersFactory.build()
+    protected static final AbstractPluginParam ONE_PARAMETER = PluginParametersFactory.build()
             .addParameter("param11", "value11").getParameters().stream().findFirst().get();
 
     /**
@@ -91,17 +91,17 @@ public abstract class PluginDaoUtility extends AbstractDaoTest {
     protected static final List<String> DYNAMICVALUES = Arrays.asList(RED, BLUE, GREEN);
 
     /**
-     * A {@link List} of {@link PluginParameter}
+     * A {@link List} of {@link AbstractPluginParam}
      */
-    protected static final Set<PluginParameter> LIST_PARAMETERS = PluginParametersFactory.build()
+    protected static final Set<AbstractPluginParam> LIST_PARAMETERS = PluginParametersFactory.build()
             .addDynamicParameter("param-dyn21", RED, DYNAMICVALUES)
             .addDynamicParameter("param-dyn31", GREEN, DYNAMICVALUES).addParameter("param31", "value31")
             .addParameter("param51", "value51").addParameter("param61", "value61").getParameters();
 
     /**
-     * A list of {@link PluginParameter}
+     * A list of {@link AbstractPluginParam}
      */
-    protected static final Set<PluginParameter> INTERFACEPARAMETERS = PluginParametersFactory.build()
+    protected static final Set<AbstractPluginParam> INTERFACEPARAMETERS = PluginParametersFactory.build()
             .addParameter("param41", "value41").addParameter("param42", "value42").addParameter("param43", "value43")
             .addParameter("param44", "value44").addParameter("param45", "value45").getParameters();
 
@@ -166,7 +166,7 @@ public abstract class PluginDaoUtility extends AbstractDaoTest {
         paramRepository.findAll().forEach(p -> LOGGER
                 .info("name=" + p.getName() + "-value=" + p.getValue() + "-nb dyns=" + p.getDynamicsValuesAsString()
                         .size()));
-        for (PluginParameter pP : paramRepository.findAll()) {
+        for (AbstractPluginParam pP : paramRepository.findAll()) {
             if ((pP.getDynamicsValues() != null) && !pP.getDynamicsValues().isEmpty()) {
                 pP.getDynamicsValues().forEach(p -> LOGGER.info("-value=" + p.getValue()));
             }

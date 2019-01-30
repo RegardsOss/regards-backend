@@ -47,9 +47,9 @@ import fr.cnes.regards.framework.modules.plugins.SamplePlugin;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.event.BroadcastPluginConfEvent;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginServiceAction;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -464,7 +464,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         Mockito.when(pluginConfRepositoryMocked.existsById(aPluginConfiguration.getId())).thenReturn(true);
 
         // the argument for the dynamic parameter
-        final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
+        final AbstractPluginParam aDynamicPlgParam = PluginParametersFactory.build()
                 .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).getParameters().stream().findFirst().get();
 
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class,
@@ -497,7 +497,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         Mockito.when(pluginConfRepositoryMocked.existsById(aPluginConfiguration.getId())).thenReturn(true);
 
         // the argument for the dynamic parameter
-        final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
+        final AbstractPluginParam aDynamicPlgParam = PluginParametersFactory.build()
                 .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).getParameters().stream().findFirst().get();
 
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class);
@@ -534,7 +534,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         Mockito.when(pluginConfRepositoryMocked.existsById(aPluginConfiguration.getId())).thenReturn(true);
 
         // the argument for the dynamic parameter
-        final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
+        final AbstractPluginParam aDynamicPlgParam = PluginParametersFactory.build()
                 .addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, -1).getParameters().stream().findFirst().get();
 
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class,
@@ -601,7 +601,7 @@ public class PluginServiceTest extends PluginServiceUtility {
         Mockito.when(pluginConfRepositoryMocked.existsById(aPluginConfiguration.getId())).thenReturn(true);
 
         // the argument for the dynamic parameter
-        final PluginParameter aDynamicPlgParam = PluginParametersFactory.build()
+        final AbstractPluginParam aDynamicPlgParam = PluginParametersFactory.build()
                 .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, BLUE).getParameters().stream().findFirst().get();
 
         final SamplePlugin aSamplePlugin = pluginServiceMocked.getFirstPluginByType(ISamplePlugin.class,

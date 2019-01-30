@@ -16,25 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.modules.plugins.domain;
+package fr.cnes.regards.framework.modules.plugins.domain.parameter;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 
 /**
- * Converter for plugin parameter value.
- * @author Marc Sordi
+ * Supported plugin parameter
+ *
+ * @author Marc SORDI
+ *
  */
-@Converter(autoApply = true)
-public class PluginParameterValueConverter implements AttributeConverter<PluginParameterValue, String> {
+public class NestedPluginParam extends AbstractPluginParam<PluginConfiguration> {
 
-    @Override
-    public String convertToDatabaseColumn(PluginParameterValue attribute) {
-        return attribute == null ? null : attribute.getValue();
-    }
-
-    @Override
-    public PluginParameterValue convertToEntityAttribute(String dbData) {
-        return dbData == null ? null : PluginParameterValue.create(dbData);
-    }
 }

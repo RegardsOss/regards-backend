@@ -31,7 +31,7 @@ import org.junit.runner.RunWith;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
@@ -65,7 +65,7 @@ public class CycleDetectionTest {
         /*
          * Set all parameters
          */
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<AbstractPluginParam> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePluginWithPojo.FIELD_NAME_ACTIVE, true)
                 .addParameter(SamplePluginWithPojo.FIELD_NAME_COEF, 12345)
                 .addParameter(SamplePluginWithPojo.FIELD_NAME_POJO, pojoParam)
@@ -125,7 +125,7 @@ public class CycleDetectionTest {
         /*
          * Set all parameters
          */
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<AbstractPluginParam> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePluginWithPojoCycleDetected.FIELD_NAME_ACTIVE, true)
                 .addParameter(SamplePluginWithPojoCycleDetected.FIELD_NAME_COEF, 12345)
                 .addParameter(SamplePluginWithPojoCycleDetected.FIELD_NAME_POJO, pojoParent).getParameters();
@@ -153,7 +153,7 @@ public class CycleDetectionTest {
         /*
          * Set all parameters
          */
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<AbstractPluginParam> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePluginWithPojo.FIELD_NAME_ACTIVE, true)
                 .addParameter(SamplePluginWithPojo.FIELD_NAME_COEF, 12345)
                 .addParameter(SamplePluginWithPojo.FIELD_NAME_POJO, pojoParent)
@@ -217,7 +217,7 @@ public class CycleDetectionTest {
         /*
          * Set all parameters
          */
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<AbstractPluginParam> parameters = PluginParametersFactory.build()
                 .addParameter(SamplePluginWithPojoCycleDetectedLevelThree.FIELD_NAME_ACTIVE, true)
                 .addParameter(SamplePluginWithPojoCycleDetectedLevelThree.FIELD_NAME_COEF, 12345)
                 .addParameter(SamplePluginWithPojoCycleDetectedLevelThree.FIELD_NAME_POJO, pojoGrandParent)

@@ -30,10 +30,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
 
 /***
- * Unit testing of {@link PluginParameter} persistence.
+ * Unit testing of {@link AbstractPluginParam} persistence.
  *
  * @author Christophe Mertz
  *
@@ -56,7 +56,7 @@ public class PluginParameterIT extends PluginDaoUtility {
     }
 
     /**
-     * Unit testing for the creation of a {@link PluginParameter}
+     * Unit testing for the creation of a {@link AbstractPluginParam}
      */
     @Test
     public void createPluginParameter() {
@@ -71,19 +71,19 @@ public class PluginParameterIT extends PluginDaoUtility {
     }
 
     /**
-     * Unit testing for the update of a {@link PluginParameter}
+     * Unit testing for the update of a {@link AbstractPluginParam}
      */
     @Test
     public void updatePluginParameter() {
         paramRepository.save(INTERFACEPARAMETERS.stream().findFirst().get());
-        PluginParameter paramJpa = paramRepository.save(LIST_PARAMETERS.stream().findFirst().get());
+        AbstractPluginParam paramJpa = paramRepository.save(LIST_PARAMETERS.stream().findFirst().get());
         Assert.assertEquals(paramJpa.getName(), LIST_PARAMETERS.stream().findFirst().get().getName());
 
         paramRepository.findAll().forEach(p -> LOGGER.info(p.getName()));
 
         paramRepository.save(paramJpa);
 
-        Optional<PluginParameter> foundParamOpt = paramRepository.findById(paramJpa.getId());
+        Optional<AbstractPluginParam> foundParamOpt = paramRepository.findById(paramJpa.getId());
         Assert.assertTrue(foundParamOpt.isPresent());
         Assert.assertEquals(foundParamOpt.get().getName(), paramJpa.getName());
 
@@ -92,11 +92,11 @@ public class PluginParameterIT extends PluginDaoUtility {
     }
 
     /**
-     * Unit testing for the delete of a {@link PluginParameter}
+     * Unit testing for the delete of a {@link AbstractPluginParam}
      */
     @Test
     public void deletePluginParameter() {
-        PluginParameter paramJpa = paramRepository.save(ONE_PARAMETER);
+        AbstractPluginParam paramJpa = paramRepository.save(ONE_PARAMETER);
         paramRepository.saveAll(LIST_PARAMETERS);
         Assert.assertEquals(1 + LIST_PARAMETERS.size(), paramRepository.count());
 
@@ -110,24 +110,24 @@ public class PluginParameterIT extends PluginDaoUtility {
     }
 
     /**
-     * Unit testing about the dynamic values of a {@link PluginParameter}
+     * Unit testing about the dynamic values of a {@link AbstractPluginParam}
      */
     @Test
     public void createAndFindPluginParameter() {
         // first plugin parameter
-        PluginParameter savedParam = paramRepository.save(ONE_PARAMETER);
+        AbstractPluginParam savedParam = paramRepository.save(ONE_PARAMETER);
         Assert.assertNotNull(savedParam.getId());
         Assert.assertEquals(1, paramRepository.count());
 
         // second plugin parameter with dynamic values
-        PluginParameter paramWithDynValues = paramRepository.save(LIST_PARAMETERS.stream().findFirst().get());
+        AbstractPluginParam paramWithDynValues = paramRepository.save(LIST_PARAMETERS.stream().findFirst().get());
         Assert.assertNotNull(paramWithDynValues.getId());
         Assert.assertEquals(2, paramRepository.count());
 
         // search the first plugin parameter
-        Optional<PluginParameter> paramFound2Opt = paramRepository.findById(savedParam.getId());
+        Optional<AbstractPluginParam> paramFound2Opt = paramRepository.findById(savedParam.getId());
         Assert.assertTrue(paramFound2Opt.isPresent());
-        PluginParameter paramFound2 = paramFound2Opt.get();
+        AbstractPluginParam paramFound2 = paramFound2Opt.get();
         Assert.assertEquals(savedParam.isDynamic(), paramFound2.isDynamic());
         Assert.assertTrue(savedParam.getDynamicsValues().isEmpty());
         Assert.assertEquals(savedParam.getName(), paramFound2.getName());
@@ -136,24 +136,24 @@ public class PluginParameterIT extends PluginDaoUtility {
     }
 
     /**
-     * Unit testing about the dynamic values of a {@link PluginParameter}
+     * Unit testing about the dynamic values of a {@link AbstractPluginParam}
      */
     @Test
     public void controlPluginParameterDynamicValues() {
         // first plugin parameter
-        final PluginParameter savedParam = paramRepository.save(ONE_PARAMETER);
+        final AbstractPluginParam savedParam = paramRepository.save(ONE_PARAMETER);
         Assert.assertNotNull(savedParam.getId());
         Assert.assertEquals(1, paramRepository.count());
 
         // second plugin parameter with dynamic values
-        PluginParameter dynParam = LIST_PARAMETERS.stream().filter(p -> p.getName().equals("param-dyn21")).findFirst()
+        AbstractPluginParam dynParam = LIST_PARAMETERS.stream().filter(p -> p.getName().equals("param-dyn21")).findFirst()
                 .get();
-        final PluginParameter paramWithDynValues = paramRepository.save(dynParam);
+        final AbstractPluginParam paramWithDynValues = paramRepository.save(dynParam);
         Assert.assertNotNull(paramWithDynValues.getId());
         Assert.assertEquals(2, paramRepository.count());
 
         // search the second plugin parameter
-        final PluginParameter paramFound = paramRepository.findOneWithDynamicsValues(paramWithDynValues.getId());
+        final AbstractPluginParam paramFound = paramRepository.findOneWithDynamicsValues(paramWithDynValues.getId());
         Assert.assertNotNull(paramFound);
         paramFound.getDynamicsValues().forEach(p -> LOGGER.info(p.getValue()));
 

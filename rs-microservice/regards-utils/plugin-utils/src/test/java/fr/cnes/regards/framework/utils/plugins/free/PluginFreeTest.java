@@ -27,7 +27,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.generics.PluginWithBoolean;
@@ -46,7 +46,7 @@ public class PluginFreeTest {
 
         // Configure as dynamic parameter
         List<String> availableValues = Arrays.asList("string1", "string2");
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
+        Set<AbstractPluginParam> parameters = PluginParametersFactory.build()
                 .addDynamicParameter(PluginWithBoolean.FIELD_NAME_STRING, "string", availableValues).getParameters();
 
         // Pass a dynamic parameter

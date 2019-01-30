@@ -49,7 +49,7 @@ import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
@@ -84,7 +84,7 @@ public class PluginControllerBasicIT extends AbstractRegardsTransactionalIT {
      */
     private static String token = "";
 
-    private Set<PluginParameter> pluginParameters;
+    private Set<AbstractPluginParam> pluginParameters;
 
     @Autowired
     private IPluginService pluginService;

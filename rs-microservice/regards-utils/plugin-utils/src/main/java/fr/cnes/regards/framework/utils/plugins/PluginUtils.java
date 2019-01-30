@@ -49,8 +49,8 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
 import fr.cnes.regards.framework.utils.plugins.bean.IPluginUtilsBean;
 import fr.cnes.regards.framework.utils.plugins.bean.PluginUtilsBean;
 
@@ -185,7 +185,7 @@ public final class PluginUtils {
     }
 
     /**
-     * Create {@link PluginMetaData} based on its annotations {@link Plugin} and {@link PluginParameter} if any.
+     * Create {@link PluginMetaData} based on its annotations {@link Plugin} and {@link AbstractPluginParam} if any.
      * @param pluginClass a class that must contains a {@link Plugin} annotation
      * @return the {@link PluginMetaData} create
      */
@@ -220,18 +220,18 @@ public final class PluginUtils {
      * @param pluginConf the {@link PluginConfiguration}
      * @param pluginMetadata the {@link PluginMetaData}
      * @param instantiatedPluginMap already instaniated plugins
-     * @param dynamicPluginParameters an optional list of {@link PluginParameter}
+     * @param dynamicPluginParameters an optional list of {@link AbstractPluginParam}
      * @return an instance of a {@link Plugin} @ if a problem occurs
      */
     public static <T> T getPlugin(PluginConfiguration pluginConf, PluginMetaData pluginMetadata,
-            Map<Long, Object> instantiatedPluginMap, PluginParameter... dynamicPluginParameters) {
+            Map<Long, Object> instantiatedPluginMap, AbstractPluginParam... dynamicPluginParameters) {
         return getPlugin(pluginConf, pluginMetadata.getPluginClassName(), instantiatedPluginMap,
                          dynamicPluginParameters);
     }
 
     public static <T> T getPlugin(PluginConfiguration pluginConf, PluginMetaData pluginMetadata,
             IPluginUtilsBean pluginUtilsBean, Map<Long, Object> instantiatedPluginMap,
-            PluginParameter... dynamicPluginParameters) {
+            AbstractPluginParam... dynamicPluginParameters) {
         return PluginUtils.getPlugin(pluginConf, pluginMetadata, instantiatedPluginMap, dynamicPluginParameters);
     }
 
@@ -240,12 +240,12 @@ public final class PluginUtils {
      * @param <T> a {@link Plugin}
      * @param pluginConf the {@link PluginConfiguration}
      * @param pluginClassName the {@link Plugin} class name
-     * @param dynamicPluginParameters an optional list of {@link PluginParameter}
+     * @param dynamicPluginParameters an optional list of {@link AbstractPluginParam}
      * @return an instance of {@link Plugin} @ if a problem occurs
      */
     @SuppressWarnings("unchecked")
     public static <T> T getPlugin(PluginConfiguration pluginConf, String pluginClassName,
-            Map<Long, Object> instantiatedPluginMap, PluginParameter... dynamicPluginParameters) {
+            Map<Long, Object> instantiatedPluginMap, AbstractPluginParam... dynamicPluginParameters) {
         T returnPlugin = null;
 
         try {
@@ -276,13 +276,13 @@ public final class PluginUtils {
     /**
      * Create an instance of {@link Plugin} based on its configuration and metadata
      * @param <T> a {@link Plugin}
-     * @param parameters a {@link List} of {@link PluginParameter}
+     * @param parameters a {@link List} of {@link AbstractPluginParam}
      * @param pluginClass the required returned type
-     * @param dynamicPluginParameters an optional {@link List} of {@link PluginParameter}
+     * @param dynamicPluginParameters an optional {@link List} of {@link AbstractPluginParam}
      * @return a {@link Plugin} instance
      */
-    public static <T> T getPlugin(Set<PluginParameter> parameters, Class<T> pluginClass,
-            Map<Long, Object> instantiatedPluginMap, PluginParameter... dynamicPluginParameters) {
+    public static <T> T getPlugin(Set<AbstractPluginParam> parameters, Class<T> pluginClass,
+            Map<Long, Object> instantiatedPluginMap, AbstractPluginParam... dynamicPluginParameters) {
         // Build plugin metadata
         PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pluginClass);
 
@@ -346,7 +346,7 @@ public final class PluginUtils {
      * @param returnInterfaceType the required returned type
      * @return an instance @ if a problem occurs
      */
-    public static <T> PluginConfiguration getPluginConfiguration(Set<PluginParameter> parameters,
+    public static <T> PluginConfiguration getPluginConfiguration(Set<AbstractPluginParam> parameters,
             Class<T> returnInterfaceType) {
         // Build plugin metadata
         PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(returnInterfaceType);

@@ -26,7 +26,7 @@ import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 
 /***
@@ -112,17 +112,17 @@ public class PluginDomainUtility {
     protected static final List<String> DYNAMICVALUES = Arrays.asList(RED, BLUE, GREEN);
 
     /**
-     * A {@link PluginParameter}
+     * A {@link AbstractPluginParam}
      */
-    protected static final Set<PluginParameter> DYNAMICPARAMETERS = PluginParametersFactory.build()
+    protected static final Set<AbstractPluginParam> DYNAMICPARAMETERS = PluginParametersFactory.build()
             .addParameter("param11", "value11").addDynamicParameter("coeff", "0")
             .addParameter(PARAM_IS_ACTIVE, Boolean.TRUE.toString()).addDynamicParameter("suffix", RED, DYNAMICVALUES)
             .getParameters();
 
     /**
-     * A list of {@link PluginParameter}
+     * A list of {@link AbstractPluginParam}
      */
-    protected static final Set<PluginParameter> INTERFACEPARAMETERS = PluginParametersFactory.build()
+    protected static final Set<AbstractPluginParam> INTERFACEPARAMETERS = PluginParametersFactory.build()
             .addParameter("param31", "value31").addParameter("param32", "value32").addParameter("param33", "value33")
             .addParameter("param34", "value34").addParameter("param35", "value35").addDynamicParameter("Koeff", "3")
             .addParameter(PARAM_IS_ACTIVE, Boolean.TRUE.toString()).addParameter("suffixe", "Toulouse").getParameters();
@@ -135,14 +135,14 @@ public class PluginDomainUtility {
                                                                                      INTERFACEPARAMETERS, 0);
 
     /**
-     * A list of {@link PluginParameter} with a dynamic {@link PluginParameter}
+     * A list of {@link AbstractPluginParam} with a dynamic {@link AbstractPluginParam}
      */
     private final PluginConfiguration pluginConfiguration2 = new PluginConfiguration(getPluginMetaData(),
                                                                                      "second configuration  from PluginDomainUtility",
                                                                                      DYNAMICPARAMETERS, 0);
 
     /**
-     * A list of {@link PluginParameter} without parameters.
+     * A list of {@link AbstractPluginParam} without parameters.
      */
     private final PluginConfiguration pluginConfiguration3 = new PluginConfiguration(getPluginMetaData(),
                                                                                      "third configuration from PluginDomainUtility",

@@ -49,7 +49,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -187,7 +187,7 @@ public class PluginController implements IResourceController<PluginConfiguration
     /**
      * Get all the metadata of a specified plugin.
      * @param pluginId a plugin identifier
-     * @return a {@link List} of {@link PluginParameter}
+     * @return a {@link List} of {@link AbstractPluginParam}
      */
     @RequestMapping(value = PLUGINS_PLUGINID, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResourceAccess(description = "Get the plugin Meta data for a specific plugin id", role = DefaultRole.PUBLIC)

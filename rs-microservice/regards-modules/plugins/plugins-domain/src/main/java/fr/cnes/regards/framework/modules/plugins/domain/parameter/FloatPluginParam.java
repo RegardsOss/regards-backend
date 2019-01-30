@@ -16,23 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.framework.modules.plugins.dao;
-
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
-
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
+package fr.cnes.regards.framework.modules.plugins.domain.parameter;
 
 /**
- * {@link AbstractPluginParam} repository
- * @author Christophe Mertz
+ * Supported plugin parameter
+ *
+ * @author Marc SORDI
+ *
  */
-@Repository
-public interface IPluginParameterRepository extends CrudRepository<AbstractPluginParam, Long> {
-
-    @Query("from PluginParameter pp join fetch pp.dynamicsValues where pp.id=:id")
-    AbstractPluginParam findOneWithDynamicsValues(@Param("id") Long pId);
+public class FloatPluginParam extends AbstractPluginParam<Float> {
 
 }

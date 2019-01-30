@@ -28,7 +28,7 @@ import fr.cnes.regards.framework.modules.plugins.ISamplePlugin;
 import fr.cnes.regards.framework.modules.plugins.SamplePlugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 
 /***
@@ -110,25 +110,25 @@ public class PluginServiceUtility {
     protected static final List<String> DYNAMICVALUES = Arrays.asList(RED, BLUE, GREEN);
 
     /**
-     * A {@link PluginParameter}
+     * A {@link AbstractPluginParam}
      */
-    protected static final Set<PluginParameter> DYNAMICPARAMETERS = PluginParametersFactory.build()
+    protected static final Set<AbstractPluginParam> DYNAMICPARAMETERS = PluginParametersFactory.build()
             .addParameter("param11", "value11").addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, 0)
             .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE)
             .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, RED, DYNAMICVALUES).getParameters();
 
     /**
-     * A {@link PluginParameter}
+     * A {@link AbstractPluginParam}
      */
-    protected static final Set<PluginParameter> DYNAMICPARAMETERS_TO_UPDATE = PluginParametersFactory.build()
+    protected static final Set<AbstractPluginParam> DYNAMICPARAMETERS_TO_UPDATE = PluginParametersFactory.build()
             .addParameter("param11", "value11").addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, 0)
             .addParameter(SamplePlugin.FIELD_NAME_ACTIVE, Boolean.TRUE)
             .addDynamicParameter(SamplePlugin.FIELD_NAME_SUFFIX, RED, DYNAMICVALUES).getParameters();
 
     /**
-     * A list of {@link PluginParameter}
+     * A list of {@link AbstractPluginParam}
      */
-    protected static final Set<PluginParameter> INTERFACEPARAMETERS = PluginParametersFactory.build()
+    protected static final Set<AbstractPluginParam> INTERFACEPARAMETERS = PluginParametersFactory.build()
             .addParameter("param31", "value31").addParameter("param32", "value32").addParameter("param33", "value33")
             .addParameter("param34", "value34").addParameter("param35", "value35")
             .addDynamicParameter(SamplePlugin.FIELD_NAME_COEF, 3)
@@ -143,21 +143,21 @@ public class PluginServiceUtility {
                                                                                      INTERFACEPARAMETERS, 0);
 
     /**
-     * A list of {@link PluginParameter} with a dynamic {@link PluginParameter}.
+     * A list of {@link AbstractPluginParam} with a dynamic {@link AbstractPluginParam}.
      */
     private final PluginConfiguration pluginConfiguration2 = new PluginConfiguration(getPluginMetaData(),
                                                                                      "second configuration from PluginServiceUtility",
                                                                                      DYNAMICPARAMETERS, 0);
 
     /**
-     * A list of {@link PluginParameter} without parameters.
+     * A list of {@link AbstractPluginParam} without parameters.
      */
     private final PluginConfiguration pluginConfiguration3 = new PluginConfiguration(getPluginMetaData(),
                                                                                      "third configuration from PluginServiceUtility",
                                                                                      CINQ);
 
     /**
-     * A list of {@link PluginParameter} with a dynamic {@link PluginParameter}.
+     * A list of {@link AbstractPluginParam} with a dynamic {@link AbstractPluginParam}.
      */
     private final PluginConfiguration pluginConfiguration4 = new PluginConfiguration(getPluginMetaData(),
                                                                                      "fourth configuration",
