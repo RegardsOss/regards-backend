@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResource
  * @author Marc Sordi
  *
  */
-@RestClient(name = "rs-catalog")
+@RestClient(name = "rs-catalog", contextId = "rs-catalog.legacy-search-engine.client")
 @RequestMapping(value = SearchEngineMappings.TYPE_MAPPING_FOR_LEGACY, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface ILegacySearchEngineClient {
 

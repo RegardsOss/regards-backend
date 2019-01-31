@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.search.service;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableMap;
@@ -41,8 +43,11 @@ import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchUnknownPar
 @Service
 public class FacetConverter implements IFacetConverter {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(FacetConverter.class);
+
     // @formatter:off
     private static final Map<AttributeType, FacetType> MAP = new ImmutableMap.Builder<AttributeType, FacetType>()
+            .put(AttributeType.URL, FacetType.STRING)
             .put(AttributeType.STRING, FacetType.STRING)
             .put(AttributeType.STRING_ARRAY, FacetType.STRING)
             .put(AttributeType.BOOLEAN, FacetType.BOOLEAN)
@@ -82,8 +87,13 @@ public class FacetConverter implements IFacetConverter {
         for (String propertyName : propertyNames) {
             AttributeModel attModel = finder.findByName(propertyName);
             String queryablePath = attModel.getFullJsonPath();
-            facetMapBuilder.put(queryablePath, MAP.get(attModel.getType()));
-            reverseFacetNames.put(queryablePath, propertyName);
+            FacetType facetType = MAP.get(attModel.getType());
+            if (facetType != null) {
+                facetMapBuilder.put(queryablePath, facetType);
+                reverseFacetNames.put(queryablePath, propertyName);
+            } else {
+                LOGGER.warn("Facets are not available for attribute type {}", attModel.getType());
+            }
         }
 
         return facetMapBuilder.build();

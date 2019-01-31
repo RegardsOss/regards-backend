@@ -18,10 +18,9 @@
  */
 package fr.cnes.regards.modules.search.service;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
-
-import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +33,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Lists;
-
 import feign.FeignException;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -44,15 +42,21 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.locks.domain.Lock;
+import fr.cnes.regards.framework.modules.locks.domain.LockException;
+import fr.cnes.regards.framework.modules.locks.service.ILockService;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.event.BroadcastEntityEvent;
 import fr.cnes.regards.modules.dam.domain.entities.event.EventType;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
+import fr.cnes.regards.modules.notification.domain.NotificationLevel;
 import fr.cnes.regards.modules.search.dao.ISearchEngineConfRepository;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
@@ -83,6 +87,12 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
     @Autowired
     private IDatasetClient datasetClient;
 
+    @Autowired
+    private ILockService lockService;
+
+    @Autowired
+    private INotificationClient noticationClient;
+
     @PostConstruct
     public void listenForDatasetEvents() {
         // Subscribe to entity events in order to delete links to deleted dataset.
@@ -91,19 +101,39 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
 
     @Override
     public void initDefaultSearchEngine(Class<?> legacySearchEnginePluginClass) {
-        // Initialize the mandatory legacy searchengine if it does not exists yet.
-        SearchEngineConfiguration conf = repository
-                .findByDatasetUrnIsNullAndConfigurationPluginId(SearchEngineMappings.LEGACY_PLUGIN_ID);
-        if (conf == null) {
-            // Create the new one
-            conf = new SearchEngineConfiguration();
-            conf.setLabel("REGARDS search protocol");
-            conf.setConfiguration(PluginUtils.getPluginConfiguration(PluginParametersFactory.build().getParameters(),
-                                                                     legacySearchEnginePluginClass));
+        Lock lock = null;
+        try {
+            lock = lockService.lock(new Lock("initDefaultSearchEngine", this.getClass()), 10L);
+        } catch (LockException e) {
+            // lock could not be acquired, mainly because thread was interrupted while sleeping. Lets log and do nothing
+            LOGGER.error("Default search engine could not be initialized.", e);
+            noticationClient.notify("You can initialize it by going to relevant part of HMI. Plugin type: \"legacy\"."
+                                            + " Select use this search protocol for every search on catalog.",
+                                    "Default search engine could not be initialized",
+                                    NotificationLevel.INFO,
+                                    DefaultRole.ADMIN);
+        }
+        // if the lock is null it means it could not be acquired
+        if (lock != null) {
             try {
-                createConf(conf);
-            } catch (ModuleException e) {
-                LOGGER.error("Error initializing legacy search engine", e);
+                // Initialize the mandatory legacy searchengine if it does not exists yet.
+                SearchEngineConfiguration conf = repository
+                        .findByDatasetUrnIsNullAndConfigurationPluginId(SearchEngineMappings.LEGACY_PLUGIN_ID);
+                if (conf == null) {
+                    // Create the new one
+                    conf = new SearchEngineConfiguration();
+                    conf.setLabel("REGARDS search protocol");
+                    conf.setConfiguration(PluginUtils.getPluginConfiguration(PluginParametersFactory.build()
+                                                                                     .getParameters(),
+                                                                             legacySearchEnginePluginClass));
+                    try {
+                        createConf(conf);
+                    } catch (ModuleException e) {
+                        LOGGER.error("Error initializing legacy search engine", e);
+                    }
+                }
+            } finally {
+                lockService.release(lock);
             }
         }
     }
@@ -176,7 +206,7 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
 
         if (conf == null) {
             throw new EntityNotFoundException(String.format("SearchType=%s and Dataset=%s", pluginId, ds),
-                    SearchEngineConfiguration.class);
+                                              SearchEngineConfiguration.class);
         }
 
         return addDatasetLabel(conf, Lists.newArrayList());
@@ -199,9 +229,10 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
         }
 
         if (foundConf != null && !foundConf.getId().equals(conf.getId())) {
-            throw new EntityInvalidException(
-                    String.format("Search engine already defined for engine <%s> and dataset <%s>",
-                                  conf.getConfiguration().getPluginId(), conf.getDatasetUrn()));
+            throw new EntityInvalidException(String.format(
+                    "Search engine already defined for engine <%s> and dataset <%s>",
+                    conf.getConfiguration().getPluginId(),
+                    conf.getDatasetUrn()));
         }
     }
 
