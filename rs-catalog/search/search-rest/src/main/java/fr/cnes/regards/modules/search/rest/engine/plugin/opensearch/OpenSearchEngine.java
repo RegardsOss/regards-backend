@@ -98,7 +98,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     public static final String MEDIA_EXTENSION_PARAMETER = "mediaExtension";
 
-    public static final String EXTRA_DESCRIPTION = "opensearchDescription.xml";
+    public static final String EXTRA_DESCRIPTION = "opensearchdescription.xml";
 
     public static final String PARAMETERS_CONFIGURATION = "parametersConfiguration";
 
@@ -185,7 +185,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     @Override
     public ResponseEntity<OpenSearchDescription> extra(SearchContext context) throws ModuleException {
-        if (context.getExtra().isPresent() && context.getExtra().get().equals(EXTRA_DESCRIPTION)) {
+        if (context.getExtra().isPresent() && context.getExtra().get().equalsIgnoreCase(EXTRA_DESCRIPTION)) {
 
             // If the descriptor is asked for a specific dataset, first get the dataset.
             // The dataset will be used to set specific metadatas into the descriptor like title, tags, ...
