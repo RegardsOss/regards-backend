@@ -18,11 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.domain.chain;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -39,6 +34,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
 import javax.persistence.NamedEntityGraphs;
+import javax.persistence.NamedSubgraph;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
@@ -47,6 +43,12 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.EntityGraph;
 
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
@@ -68,7 +70,11 @@ import fr.cnes.regards.modules.acquisition.plugins.IValidationPlugin;
 @Entity
 @Table(name = "t_acq_processing_chain")
 @NamedEntityGraphs({ @NamedEntityGraph(name = "graph.acquisition.file.info.complete",
-        attributeNodes = { @NamedAttributeNode(value = "fileInfos") }) })
+        attributeNodes = { @NamedAttributeNode(value = "fileInfos"),
+                @NamedAttributeNode(value = "lastProductAcquisitionJobInfo",
+                        subgraph = "graph.acquisition.chain.jobs") }, subgraphs = {
+        @NamedSubgraph(name = "graph.acquisition.chain.jobs",
+                attributeNodes = { @NamedAttributeNode(value = "parameters") }) }) })
 public class AcquisitionProcessingChain {
 
     /**
@@ -250,8 +256,16 @@ public class AcquisitionProcessingChain {
         return active;
     }
 
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
     public AcquisitionProcessingChainMode getMode() {
         return mode;
+    }
+
+    public void setMode(AcquisitionProcessingChainMode mode) {
+        this.mode = mode;
     }
 
     public Long getId() {
@@ -276,14 +290,6 @@ public class AcquisitionProcessingChain {
 
     public void setProductPluginConf(PluginConfiguration productPluginConf) {
         this.productPluginConf = productPluginConf;
-    }
-
-    public void setActive(Boolean active) {
-        this.active = active;
-    }
-
-    public void setMode(AcquisitionProcessingChainMode mode) {
-        this.mode = mode;
     }
 
     public Optional<String> getSession() {

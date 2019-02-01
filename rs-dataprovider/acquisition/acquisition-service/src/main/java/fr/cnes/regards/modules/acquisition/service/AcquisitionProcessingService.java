@@ -58,6 +58,7 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.acquisition.dao.AcquisitionProcessingChainSpecifications;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
@@ -776,6 +777,15 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     }
 
     private AcquisitionProcessingChainMonitor buildAcquisitionProcessingChainSummary(AcquisitionProcessingChain chain) {
+
+        //first lets handle all those lazy initialization issues on the chain
+        try {
+            chain = getChain(chain.getId());
+        } catch (ModuleException e) {
+            // it should not happens, as the chain has just been recovered from DB, but anyway lets log it and rethrow it
+            LOGGER.error(e.getMessage(), e);
+            throw new RsRuntimeException(e);
+        }
 
         AcquisitionProcessingChainMonitor summary = new AcquisitionProcessingChainMonitor(chain);
 

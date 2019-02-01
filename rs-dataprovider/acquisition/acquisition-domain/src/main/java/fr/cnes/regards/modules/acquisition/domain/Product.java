@@ -135,6 +135,7 @@ public class Product {
     /**
      * {@link List} of file include in the {@link Product}
      */
+    @GsonIgnore
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "product_id", foreignKey = @ForeignKey(name = "fk_product_id"))
     private final List<AcquisitionFile> fileList = new ArrayList<>();
