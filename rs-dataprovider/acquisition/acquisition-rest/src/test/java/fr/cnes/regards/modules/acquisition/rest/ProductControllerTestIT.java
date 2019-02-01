@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,12 +34,14 @@ import org.springframework.restdocs.request.RequestDocumentation;
 import org.springframework.restdocs.snippet.Attributes;
 import org.springframework.test.context.TestPropertySource;
 
-import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
+import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
@@ -51,7 +54,6 @@ import fr.cnes.regards.modules.acquisition.service.IProductService;
  * @author Sébastien Binda
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acquisition_it" })
-@RegardsTransactional
 public class ProductControllerTestIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
@@ -61,7 +63,16 @@ public class ProductControllerTestIT extends AbstractRegardsTransactionalIT {
     private IProductService productService;
 
     @Autowired
+    private IProductRepository productRepository;
+
+    @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    private IAcquisitionFileInfoRepository fileInfoRepository;
+
+    @Autowired
+    private IAcquisitionProcessingChainRepository acquisitionProcessingChainRepository;
 
     @Before
     public void init() throws ModuleException {
@@ -82,14 +93,24 @@ public class ProductControllerTestIT extends AbstractRegardsTransactionalIT {
         productService.save(product);
     }
 
+    @After
+    public void cleanUp() throws ModuleException {
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        fileInfoRepository.deleteAll();
+        productRepository.deleteAll();
+        acquisitionProcessingChainRepository.deleteAll();
+    }
+
     @Test
     public void searchForProductsTest() throws ModuleException {
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         performDefaultGet(ProductController.TYPE_PATH, requestBuilderCustomizer, "Should retrieve products");
         documentRequestParameters(requestBuilderCustomizer);
 
-        requestBuilderCustomizer.document(PayloadDocumentation.relaxedResponseFields(Attributes
-                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE).value("Product")), documentProduct()));
+        requestBuilderCustomizer.document(PayloadDocumentation.relaxedResponseFields(Attributes.attributes(Attributes
+                                                                                                                   .key(RequestBuilderCustomizer.PARAM_TITLE)
+                                                                                                                   .value("Product")),
+                                                                                     documentProduct()));
 
         requestBuilderCustomizer.addParameter("sipState", "NOT_SCHEDULED", "QUEUED");
         performDefaultGet(ProductController.TYPE_PATH, requestBuilderCustomizer, "Should retrieve products");
@@ -105,7 +126,7 @@ public class ProductControllerTestIT extends AbstractRegardsTransactionalIT {
                 .optional().attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                 .description("Product state filter")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                        .value("Optional. Multiple values allowed. Allowed values : " + joiner.toString()));
+                                    .value("Optional. Multiple values allowed. Allowed values : " + joiner.toString()));
 
         joiner = new StringJoiner(", ");
         for (ProductSIPState state : ProductSIPState.values()) {
@@ -116,7 +137,7 @@ public class ProductControllerTestIT extends AbstractRegardsTransactionalIT {
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                 .description("Product SIP state filter")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                        .value("Optional. Multiple values allowed. Allowed values : " + joiner.toString()));
+                                    .value("Optional. Multiple values allowed. Allowed values : " + joiner.toString()));
 
         ParameterDescriptor paramProductId = RequestDocumentation
                 .parameterWithName(ProductController.REQUEST_PARAM_PRODUCT_NAME).optional()
@@ -134,7 +155,7 @@ public class ProductControllerTestIT extends AbstractRegardsTransactionalIT {
                 .optional().attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                 .description("ISO Date time filter")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                        .value("Optional. Required format : yyyy-MM-dd'T'HH:mm:ss.SSSZ"));
+                                    .value("Optional. Required format : yyyy-MM-dd'T'HH:mm:ss.SSSZ"));
 
         ParameterDescriptor paramSession = RequestDocumentation
                 .parameterWithName(ProductController.REQUEST_PARAM_SESSION).optional()
@@ -149,9 +170,13 @@ public class ProductControllerTestIT extends AbstractRegardsTransactionalIT {
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS).value("Optional"));
 
         // Add request parameters documentation
-        requestBuilderCustomizer
-                .document(RequestDocumentation.requestParameters(paramState, paramSipState, paramProductId,
-                                                                 paramChainId, paramFrom, paramSession, noSession));
+        requestBuilderCustomizer.document(RequestDocumentation.requestParameters(paramState,
+                                                                                 paramSipState,
+                                                                                 paramProductId,
+                                                                                 paramChainId,
+                                                                                 paramFrom,
+                                                                                 paramSession,
+                                                                                 noSession));
     }
 
     private List<FieldDescriptor> documentProduct() {
@@ -165,28 +190,30 @@ public class ProductControllerTestIT extends AbstractRegardsTransactionalIT {
         for (ProductState mode : ProductState.values()) {
             joiner.add(mode.name());
         }
-        fields.add(constrainedFields.withPath(prefix + "state", "state", "State",
-                                              "Allowed values : " + joiner.toString()));
+        fields.add(constrainedFields
+                           .withPath(prefix + "state", "state", "State", "Allowed values : " + joiner.toString()));
 
         joiner = new StringJoiner(", ");
         for (ProductSIPState mode : ProductSIPState.values()) {
             joiner.add(mode.name());
         }
-        fields.add(constrainedFields.withPath(prefix + "sipState", "sipState", " SIP State",
+        fields.add(constrainedFields.withPath(prefix + "sipState",
+                                              "sipState",
+                                              " SIP State",
                                               "Allowed values : " + joiner.toString()));
 
         fields.add(constrainedFields
-                .withPath(prefix + "error", "error", "Error details when product state is in error state").optional()
-                .type(JSON_STRING_TYPE));
+                           .withPath(prefix + "error", "error", "Error details when product state is in error state")
+                           .optional().type(JSON_STRING_TYPE));
 
         fields.add(constrainedFields.withPath(prefix + "lastUpdate", "lastUpdate", "ISO 8601 last product update"));
         fields.add(constrainedFields.withPath(prefix + "productName", "productName", "Product name"));
         fields.add(constrainedFields.withPath(prefix + "session", "session", "Session name").optional()
-                .type(JSON_STRING_TYPE));
-        fields.add(constrainedFields.withPath(prefix + "fileList[]", "fileList", "Acquired product files"));
+                           .type(JSON_STRING_TYPE));
+//        fields.add(constrainedFields.withPath(prefix + "fileList[]", "fileList", "Acquired product files"));
 
         fields.add(constrainedFields.withPath(prefix + "sip", "sip", "Generated SIP").optional()
-                .type(JSON_OBJECT_TYPE));
+                           .type(JSON_OBJECT_TYPE));
         fields.add(constrainedFields.withPath(prefix + "ipId", "ipId", "SIP IP ID").optional().type(JSON_STRING_TYPE));
 
         return fields;
