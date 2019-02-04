@@ -18,14 +18,18 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
+import javax.persistence.LockModeType;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-
-import javax.persistence.LockModeType;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -119,7 +123,6 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
      * Count number of products associated to the given {@link AcquisitionProcessingChain} and in the given state
      * @param processingChain {@link AcquisitionProcessingChain}
      * @param productStates
-     * @param states {@link ProductState}s
      * @return number of matching {@link Product}
      */
     long countByProcessingChainAndStateIn(AcquisitionProcessingChain processingChain, List<ProductState> productStates);
@@ -162,4 +165,22 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
     @Modifying
     @Query(value = "UPDATE Product p set p.sipState = ?1 where p.productName in (?2)")
     void updateSipStatesByProductNameIn(ISipState state, Collection<String> productNames);
+
+    /**
+     * Load a page of product (i.e. with all dependencies).
+     */
+    default Page<Product> loadAll(Specification<Product> search, Pageable pageable) {
+        // as a Specification is used to constrain the page, we cannot simply ask for ids with a query
+        // to mimic that, we are querying without any entity graph to extract ids
+        Page<Product> products = findAll(search, pageable);
+        List<Long> productIds = products.stream().map(p -> p.getId()).collect(Collectors.toList());
+        // now that we have the ids, lets load the products and keep the same sort
+        List<Product> loadedProducts = findAllById(productIds, pageable.getSort());
+        return new PageImpl<>(loadedProducts,
+                              PageRequest.of(products.getNumber(), products.getSize(), products.getSort()),
+                              products.getTotalElements());
+    }
+
+    @EntityGraph("graph.acquisition.file.complete")
+    List<Product> findAllById(List<Long> productIds, Sort sort);
 }
