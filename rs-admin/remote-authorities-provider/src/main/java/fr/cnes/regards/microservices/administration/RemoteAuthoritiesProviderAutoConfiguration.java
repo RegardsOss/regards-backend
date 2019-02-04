@@ -5,6 +5,7 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
@@ -24,7 +25,8 @@ public class RemoteAuthoritiesProviderAutoConfiguration {
 
     /**
      *
-     * Authorities provider by accessing administration microservice with Feign rest clients
+     * Authorities provider by accessing administration microservice with Feign rest clients.
+     * Set as primary bean to override default one from security-regards-starter
      *
      * @param rolesClient
      *            Feign client to query administration service for roles
@@ -33,7 +35,8 @@ public class RemoteAuthoritiesProviderAutoConfiguration {
      * @return IAuthoritiesProvider
     
      */
-    @Bean
+    @Bean("remote-authorities-provider")
+    @Primary
     @ConditionalOnProperty(name = "regards.eureka.client.enabled", havingValue = "true", matchIfMissing = true)
     public IAuthoritiesProvider authoritiesProvider(final DiscoveryClient discoveryClient,
             final IMicroserviceResourceClient resourcesClient, final IRolesClient rolesClient,
