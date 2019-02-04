@@ -18,10 +18,6 @@
  */
 package fr.cnes.regards.modules.ingest.domain.entity;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
@@ -30,6 +26,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
+import javax.persistence.NamedSubgraph;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -37,6 +36,9 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -49,6 +51,17 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 @Entity
 @Table(name = "t_ingest_processing_chain",
         uniqueConstraints = { @UniqueConstraint(name = "uk_ingest_chain_name", columnNames = "name") })
+@NamedEntityGraph(name = "graph.ingest.processing.chain.complete", attributeNodes = {
+        @NamedAttributeNode(value = "preProcessingPlugin", subgraph = "graph.ingest.processing.chain.plugin"),
+        @NamedAttributeNode(value = "validationPlugin", subgraph = "graph.ingest.processing.chain.plugin"),
+        @NamedAttributeNode(value = "generationPlugin", subgraph = "graph.ingest.processing.chain.plugin"),
+        @NamedAttributeNode(value = "tagPlugin", subgraph = "graph.ingest.processing.chain.plugin"),
+        @NamedAttributeNode(value = "postProcessingPlugin", subgraph = "graph.ingest.processing.chain.plugin") },
+        subgraphs = { @NamedSubgraph(name = "graph.ingest.processing.chain.plugin", attributeNodes = {
+                @NamedAttributeNode(value = "parameters",
+                        subgraph = "graph.ingest.processing.chain.plugin.parameters") }),
+                @NamedSubgraph(name = "graph.ingest.processing.chain.plugin.parameters",
+                        attributeNodes = { @NamedAttributeNode("dynamicsValues") }) })
 public class IngestProcessingChain {
 
     public static final String DEFAULT_INGEST_CHAIN_LABEL = "DefaultProcessingChain";

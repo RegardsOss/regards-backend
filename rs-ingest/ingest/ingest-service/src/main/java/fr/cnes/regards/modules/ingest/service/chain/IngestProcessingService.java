@@ -432,7 +432,7 @@ public class IngestProcessingService implements IIngestProcessingService {
 
     @Override
     public Page<IngestProcessingChain> searchChains(String name, Pageable pageable) {
-        return ingestChainRepository.findAll(IngestProcessingChainSpecifications.search(name), pageable);
+        return ingestChainRepository.loadAll(IngestProcessingChainSpecifications.search(name), pageable);
     }
 
     @Override

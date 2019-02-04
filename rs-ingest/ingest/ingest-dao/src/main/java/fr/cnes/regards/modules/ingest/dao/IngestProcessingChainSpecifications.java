@@ -48,7 +48,6 @@ public final class IngestProcessingChainSpecifications {
             if (name != null) {
                 predicates.add(cb.like(root.get("name"), LIKE_CHAR + name + LIKE_CHAR));
             }
-            query.orderBy(cb.desc(root.get("name")));
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
