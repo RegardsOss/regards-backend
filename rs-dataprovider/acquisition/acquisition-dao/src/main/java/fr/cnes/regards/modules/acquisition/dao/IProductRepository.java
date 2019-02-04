@@ -176,18 +176,12 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
         Page<Product> products = findAll(search, pageable);
         List<Long> productIds = products.stream().map(p -> p.getId()).collect(Collectors.toList());
         // now that we have the ids, lets load the products and keep the same sort
-//        List<Product> loadedProducts = findAllById(productIds, pageable.getSort());
-        List<Product> loadedProducts = findAllById(productIds);
-        // sort by Id as it is okay with the needs for now.
-        loadedProducts.sort(Comparator.comparing(Product::getId));
+        List<Product> loadedProducts = findAllByIdIn(productIds, pageable.getSort());
         return new PageImpl<>(loadedProducts,
                               PageRequest.of(products.getNumber(), products.getSize(), products.getSort()),
                               products.getTotalElements());
     }
 
     @EntityGraph("graph.product.complete")
-    List<Product> findAllById(List<Long> productIds);
-
-    @EntityGraph("graph.product.complete")
-    List<Product> findAllById(List<Long> productIds, Sort sort);
+    List<Product> findAllByIdIn(List<Long> productIds, Sort sort);
 }
