@@ -99,7 +99,7 @@ public class SIPValidationTest {
         if (!errors.hasErrors()) {
             Assert.fail("An empty SIP should be invalid");
         }
-        Assert.assertTrue(errors.getErrorCount() == 2);
+        Assert.assertEquals(2, errors.getErrorCount());
     }
 
     /**
