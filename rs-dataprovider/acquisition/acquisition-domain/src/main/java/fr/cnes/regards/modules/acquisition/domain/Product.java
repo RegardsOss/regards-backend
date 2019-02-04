@@ -18,12 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.domain;
 
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -40,7 +34,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
-import javax.persistence.NamedEntityGraphs;
+import javax.persistence.NamedSubgraph;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
@@ -48,6 +42,11 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -77,11 +76,19 @@ import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
         uniqueConstraints = { @UniqueConstraint(name = "uk_acq_product_ipId", columnNames = "ip_id"),
                 @UniqueConstraint(name = "uk_acq_product_name", columnNames = "product_name") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
-@NamedEntityGraphs({ @NamedEntityGraph(name = "graph.acquisition.file.complete",
-        attributeNodes = @NamedAttributeNode(value = "fileList"))
-
-})
+@NamedEntityGraph(name = "graph.product.complete", attributeNodes = { @NamedAttributeNode(value = "fileList"),
+        @NamedAttributeNode(value = "lastSIPGenerationJobInfo", subgraph = "graph.product.jobs"),
+        @NamedAttributeNode(value = "lastPostProductionJobInfo", subgraph = "graph.product.jobs") }, subgraphs = {
+        @NamedSubgraph(name = "graph.product.jobs", attributeNodes = { @NamedAttributeNode(value = "parameters") }) })
 public class Product {
+
+    /**
+     * {@link List} of file include in the {@link Product}
+     */
+    @GsonIgnore
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "product_id", foreignKey = @ForeignKey(name = "fk_product_id"))
+    private final List<AcquisitionFile> fileList = new ArrayList<>();
 
     /**
      * Unique id
@@ -132,14 +139,6 @@ public class Product {
             updatable = false)
     private AcquisitionProcessingChain processingChain;
 
-    /**
-     * {@link List} of file include in the {@link Product}
-     */
-    @GsonIgnore
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "product_id", foreignKey = @ForeignKey(name = "fk_product_id"))
-    private final List<AcquisitionFile> fileList = new ArrayList<>();
-
     @Column(columnDefinition = "jsonb", name = "json_sip")
     @Type(type = "jsonb")
     private SIP sip;
@@ -161,6 +160,10 @@ public class Product {
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     @Override
@@ -191,10 +194,6 @@ public class Product {
             return false;
         }
         return true;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getProductName() {

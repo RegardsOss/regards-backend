@@ -54,13 +54,13 @@ import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 @Repository
 public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
 
-    @EntityGraph("graph.acquisition.file.complete")
+    @EntityGraph("graph.product.complete")
     Product findCompleteById(Long id);
 
-    @EntityGraph("graph.acquisition.file.complete")
+    @EntityGraph("graph.product.complete")
     Product findCompleteByProductName(String productName);
 
-    @EntityGraph("graph.acquisition.file.complete")
+    @EntityGraph("graph.product.complete")
     Set<Product> findCompleteByProductNameIn(Collection<String> productNames);
 
     Page<Product> findByProcessingChainOrderByIdAsc(AcquisitionProcessingChain processingChain, Pageable pageable);
@@ -181,6 +181,6 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
                               products.getTotalElements());
     }
 
-    @EntityGraph("graph.acquisition.file.complete")
+    @EntityGraph("graph.product.complete")
     List<Product> findAllById(List<Long> productIds, Sort sort);
 }
