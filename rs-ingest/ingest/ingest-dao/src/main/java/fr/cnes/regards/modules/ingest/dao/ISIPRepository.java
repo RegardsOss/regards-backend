@@ -23,9 +23,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -33,6 +38,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
@@ -193,4 +199,22 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
     }
 
     Page<SIPEntity> findPageByState(SIPState state, Pageable pageable);
+
+    default Page<SIPEntity> loadAll(Specification<SIPEntity> search, Pageable pageable) {
+        // as a Specification is used to constrain the page, we cannot simply ask for ids with a query
+        // to mimic that, we are querying without any entity graph to extract ids
+        Page<SIPEntity> sips = findAll(search, pageable);
+        List<Long> sipIds = sips.stream().map(p -> p.getId())
+                .collect(Collectors.toList());
+        // now that we have the ids, lets load the products and keep the same sort
+        List<SIPEntity> loaded = findAllByIdIn(sipIds, pageable.getSort());
+        return new PageImpl<>(loaded,
+                              PageRequest.of(sips.getNumber(),
+                                             sips.getSize(),
+                                             sips.getSort()),
+                              sips.getTotalElements());
+    }
+
+    @EntityGraph("graph.sip.entity.complete")
+    List<SIPEntity> findAllByIdIn(List<Long> ingestProcChainIds, Sort sort);
 }

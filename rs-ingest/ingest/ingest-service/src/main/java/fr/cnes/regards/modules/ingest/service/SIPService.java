@@ -76,7 +76,7 @@ public class SIPService implements ISIPService {
     public Page<SIPEntity> search(String providerId, String sessionId, String owner, OffsetDateTime from,
             List<SIPState> state, String processing, Pageable page) {
         return sipRepository
-                .findAll(SIPEntitySpecifications.search(providerId, sessionId, owner, from, state, processing), page);
+                .loadAll(SIPEntitySpecifications.search(providerId, sessionId, owner, from, state, processing), page);
     }
 
     @Override
