@@ -19,18 +19,42 @@
 package fr.cnes.regards.framework.modules.plugins.domain.parameter;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
-
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import java.util.Set;
 
 /**
+ * Plugin parameter interface
+ *
  * @author Marc SORDI
  *
  */
 public interface IPluginParam {
 
     /**
-     * Check if parameter has a real value set
+     * Get parameter name
+     */
+    String getName();
+
+    /**
+     * Get parameter type
+     */
+    String getType();
+
+    /**
+     * Check if parameter is dynamic (i.e. value depends on the processing context)
+     */
+    boolean isDynamic();
+
+    /**
+     * Check if dynamic parameter is consistent with static one
+     */
+    default boolean isValid(IPluginParam staticParam) {
+        return false;
+    }
+
+    /**
+     * Check if parameter has a corresponding value
      */
     boolean hasValue();
 
@@ -38,6 +62,26 @@ public interface IPluginParam {
      * Check if parameter value is instance of the specified class
      */
     boolean isInstance(Class<?> clazz);
+
+    /**
+     * Get parameter value
+     */
+    Object getValue();
+
+    /**
+     * Check if parameter supports default value injection. If not, {@link #applyDefaultValue(String)} will throw an {@link UnsupportedOperationException}.
+     */
+    default boolean supportsDefaultValue() {
+        return false;
+    }
+
+    /**
+     * Apply default value to current parameter
+     */
+    default void applyDefaultValue(String value) {
+        throw new UnsupportedOperationException(
+                String.format("Cannot apply default value for parameter \"%s\" of type \"%s\"", getName(), getType()));
+    }
 
     static StringPluginParam build(String name, String value) {
         return new StringPluginParam().with(name, value);
@@ -83,7 +127,20 @@ public interface IPluginParam {
         return new ObjectPluginParam().with(name, value);
     }
 
-    static NestedPluginParam build(String name, PluginConfiguration value) {
-        return new NestedPluginParam().with(name, value);
+    /**
+     * Build a plugin parameter referencing a nested plugin configuration
+     */
+    static NestedPluginParam nested(String name, Long configurationId) {
+        return new NestedPluginParam().with(name, configurationId);
+    }
+
+    static Set<IPluginParam> set(IPluginParam... params) {
+        Set<IPluginParam> set = new HashSet<>();
+        if (params != null) {
+            for (IPluginParam param : params) {
+                set.add(param);
+            }
+        }
+        return set;
     }
 }

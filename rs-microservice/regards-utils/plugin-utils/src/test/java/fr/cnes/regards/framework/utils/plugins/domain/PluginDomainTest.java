@@ -1,6 +1,5 @@
 package fr.cnes.regards.framework.utils.plugins.domain;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -13,7 +12,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType.ParamType;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 
 /**
  * @author Christophe Mertz
@@ -37,16 +36,13 @@ public class PluginDomainTest extends PluginDomainUtility {
         Assert.assertNotNull(pluginConfiguration.getParameters().stream().findFirst().get().getName());
 
         // Get an unknown parameter value
-        String unknowValue = pluginConfiguration.getParameterValue("unknon");
-        Assert.assertNull(unknowValue);
+        Assert.assertFalse(pluginConfiguration.getParameter("unknon").hasValue());
     }
 
     @Test
     public void pluginConfigurationWithoutParameters() {
         PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParameters();
         Assert.assertNotNull(aPluginConfiguration);
-
-        PluginParametersFactory.build().addDynamicParameter("param", RED, new ArrayList<>()).getParameters();
     }
 
     /**
@@ -80,10 +76,8 @@ public class PluginDomainTest extends PluginDomainUtility {
     public void pluginConfigurationParameters() {
         PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
         String parameterName = "paramWithPluginConf1";
-        Set<AbstractPluginParam> parameters = PluginParametersFactory.build()
-                .addPluginConfiguration(parameterName, aPluginConfiguration).addParameter("paramIdentifier1", BLUE)
-                .getParameters();
-        parameters.stream().findFirst().get().setId(AN_ID);
+
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build("paramIdentifier1", BLUE));
 
         PluginConfiguration pluginConfigurationParameter = new PluginConfiguration();
         pluginConfigurationParameter.setParameters(parameters);
@@ -146,15 +140,13 @@ public class PluginDomainTest extends PluginDomainUtility {
         plgMetaData.setAuthor(anAuthor);
         String aDescription = USERROLE + BLUE + RED;
         plgMetaData.setDescription(aDescription);
-        List<PluginParameterType> parameters = Arrays.asList(PluginParameterType.create(RED, "red", null, String.class,
-                                                                                        ParamType.PRIMITIVE, false,
-                                                                                        false, false),
-                                                             PluginParameterType
-                                                                     .create(BLUE, "blue", null, String.class,
-                                                                             ParamType.PRIMITIVE, false, false, false),
-                                                             PluginParameterType
-                                                                     .create(GREEN, "green", null, String.class,
-                                                                             ParamType.PLUGIN, false, false, false));
+        List<PluginParameterType> parameters = Arrays
+                .asList(PluginParameterType.create(RED, "red", null, String.class, ParamType.PRIMITIVE, false, false,
+                                                   false),
+                        PluginParameterType.create(BLUE, "blue", null, String.class, ParamType.PRIMITIVE, false, false,
+                                                   false),
+                        PluginParameterType.create(GREEN, "green", null, String.class, ParamType.PLUGIN, false, false,
+                                                   false));
 
         plgMetaData.setParameters(parameters);
 

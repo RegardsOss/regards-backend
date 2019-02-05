@@ -18,14 +18,13 @@
  */
 package fr.cnes.regards.framework.modules.plugins.domain.parameter;
 
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-
 /**
- * Supported plugin parameter
+ * Supported plugin parameter.<br/>
+ * Nested plugin param keeps the reference to a another plugin configuration.
  *
  * @author Marc SORDI
  *
  */
-public class NestedPluginParam extends AbstractPluginParam<PluginConfiguration> {
+public class NestedPluginParam extends AbstractPluginParam<Long> {
 
 }

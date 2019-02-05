@@ -50,6 +50,7 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 
 /**
  * Plugin configuration contains a unique Id, plugin meta-data and parameters.
@@ -129,7 +130,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     @Valid
     @Column(columnDefinition = "jsonb")
     @Type(type = "jsonb")
-    private final Set<AbstractPluginParam<?>> parameters = Sets.newHashSet();
+    private final Set<IPluginParam> parameters = Sets.newHashSet();
 
     /**
      * Icon of the plugin. It must be an URL to a svg file.
@@ -159,7 +160,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * @param label the label
      * @param parameters the list of parameters
      */
-    public PluginConfiguration(PluginMetaData metaData, String label, Set<AbstractPluginParam<?>> parameters) {
+    public PluginConfiguration(PluginMetaData metaData, String label, Set<IPluginParam> parameters) {
         this(metaData, label, parameters, 0);
     }
 
@@ -170,8 +171,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
      * @param parameters the list of parameters
      * @param order the order
      */
-    public PluginConfiguration(PluginMetaData metaData, String label, Collection<AbstractPluginParam<?>> parameters,
-            int order) {
+    public PluginConfiguration(PluginMetaData metaData, String label, Collection<IPluginParam> parameters, int order) {
         super();
         this.setMetaData(metaData);
         if (parameters != null) {
@@ -220,27 +220,16 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
      * Return the {@link AbstractPluginParam} of a specific parameter
-     * @param parameterName the parameter to get the value
+     * @param name the parameter to get the value
      * @return {@link AbstractPluginParam}
      */
-    @SuppressWarnings("unchecked")
-    public <T> AbstractPluginParam<T> getParameter(String parameterName) {
-        for (AbstractPluginParam<?> p : parameters) {
-            if (p != null && p.getName().equals(parameterName)) {
-                return (AbstractPluginParam<T>) p;
+    public IPluginParam getParameter(String name) {
+        for (IPluginParam p : parameters) {
+            if (p != null && p.getName().equals(name)) {
+                return p;
             }
         }
         return null;
-    }
-
-    /**
-     * Return the value of a specific parameter
-     * @param parameterName the parameter to get the value
-     * @return {@link String}
-     */
-    public <T> T getParameterValue(String parameterName) {
-        AbstractPluginParam<T> param = getParameter(parameterName);
-        return param == null ? null : param.getValue();
     }
 
     /**
@@ -249,26 +238,15 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     public void logParams() {
         LOGGER.info("===> parameters <===");
         LOGGER.info("  ---> number of dynamic parameters : "
-                + getParameters().stream().filter(AbstractPluginParam::isDynamic).count());
+                + getParameters().stream().filter(IPluginParam::isDynamic).count());
 
-        getParameters().stream().filter(AbstractPluginParam::isDynamic)
-                .forEach(p -> logParam(p, "  ---> dynamic parameter : "));
+        getParameters().stream().filter(IPluginParam::isDynamic)
+                .forEach(p -> LOGGER.info("  ---> dynamic parameter : {}-def val: {}", p.getName(), p.toString()));
 
         LOGGER.info("  ---> number of no dynamic parameters : "
                 + getParameters().stream().filter(p -> !p.isDynamic()).count());
-        getParameters().stream().filter(p -> !p.isDynamic()).forEach(p -> logParam(p, "  ---> parameter : "));
-    }
-
-    /**
-     * Log a {@link AbstractPluginParam}.
-     * @param pParam the {@link AbstractPluginParam} to log
-     * @param pPrefix a prefix to set in the log
-     */
-    private void logParam(AbstractPluginParam<?> pParam, String pPrefix) {
-        LOGGER.info(pPrefix + pParam.getName() + "-def val:" + pParam.getValue());
-        if (!pParam.getDynamicsValues().isEmpty()) {
-            pParam.getDynamicsValues().forEach(v -> LOGGER.info("     --> val= {}", v));
-        }
+        getParameters().stream().filter(p -> !p.isDynamic())
+                .forEach(p -> LOGGER.info("  ---> parameter : {}-def val: {}", p.getName(), p.toString()));
     }
 
     public String getLabel() {
@@ -306,11 +284,11 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         priorityOrder = order;
     }
 
-    public Set<AbstractPluginParam<?>> getParameters() {
+    public Set<IPluginParam> getParameters() {
         return parameters;
     }
 
-    public void setParameters(Set<AbstractPluginParam<?>> parameters) {
+    public void setParameters(Set<IPluginParam> parameters) {
         this.parameters.clear();
         if (parameters != null && !parameters.isEmpty()) {
             this.parameters.addAll(parameters);

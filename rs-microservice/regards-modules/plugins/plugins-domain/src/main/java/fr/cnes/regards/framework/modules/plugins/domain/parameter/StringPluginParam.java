@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.framework.modules.plugins.domain.parameter;
 
+import javax.persistence.Transient;
+
+import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
+
 /**
  * Supported plugin parameter
  *
@@ -26,8 +30,27 @@ package fr.cnes.regards.framework.modules.plugins.domain.parameter;
  */
 public class StringPluginParam extends AbstractPluginParam<String> {
 
+    @Transient
+    @GsonIgnore
+    protected transient String decryptedValue;
+
     @Override
-    public boolean hasValue() {
-        return value != null && !value.isEmpty();
+    public boolean supportsDefaultValue() {
+        return true;
+    }
+
+    @Override
+    public void applyDefaultValue(String value) {
+        if (!hasValue()) {
+            this.value = value;
+        }
+    }
+
+    public String getDecryptedValue() {
+        return decryptedValue;
+    }
+
+    public void setDecryptedValue(String decryptedValue) {
+        this.decryptedValue = decryptedValue;
     }
 }

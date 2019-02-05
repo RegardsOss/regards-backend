@@ -48,10 +48,6 @@
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>jpa-multitenant-regards</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-        </dependency>
         <!-- Tests -->
         <dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>

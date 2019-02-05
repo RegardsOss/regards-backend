@@ -23,8 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter2.IPluginParam;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter2.PluginParam;
 
 /**
  * @author Marc SORDI
@@ -36,13 +34,13 @@ public class PluginParamTest {
 
     @Test
     public void stringParam() {
-        PluginParam<String> pp = IPluginParam.buildParam("toto", "tutu");
-        LOGGER.debug("Name {}, Class {}", pp.getName(), pp.getClazz());
+        IPluginParam pp = IPluginParam.build("toto", "tutu");
+        LOGGER.debug("Name {}, Class {}", pp.getName(), pp.getType());
     }
 
     @Test
     public void objectParam() {
-        PluginParam<PluginConfiguration> pp = IPluginParam.buildParam("toto", new PluginConfiguration());
-        LOGGER.debug("Name {}, Class {}", pp.getName(), pp.getClazz());
+        IPluginParam pp = IPluginParam.build("toto", new PluginConfiguration());
+        LOGGER.debug("Name {}, Class {}", pp.getName(), pp.getType());
     }
 }

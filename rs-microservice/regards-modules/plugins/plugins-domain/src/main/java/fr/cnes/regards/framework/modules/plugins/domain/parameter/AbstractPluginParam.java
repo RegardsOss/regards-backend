@@ -19,13 +19,11 @@
 
 package fr.cnes.regards.framework.modules.plugins.domain.parameter;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
-
-import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 
 /**
  * Parameter associated to a plugin configuration <PluginConfiguration>
@@ -44,19 +42,9 @@ public abstract class AbstractPluginParam<T> implements IPluginParam {
 
     protected Class<T> clazz;
 
-    protected Boolean dynamic = false;
+    protected boolean dynamic = false;
 
     protected Set<T> dynamicsValues = new HashSet<>();
-
-    /**
-     * The parameter is only dynamic
-     */
-    @Transient
-    protected boolean onlyDynamic = false;
-
-    @Transient
-    @GsonIgnore
-    protected transient String decryptedValue;
 
     @Override
     public boolean hasValue() {
@@ -68,15 +56,21 @@ public abstract class AbstractPluginParam<T> implements IPluginParam {
         return clazz.isInstance(value);
     }
 
-    //    public List<String> getDynamicsValuesAsString() {
-    //        final List<String> result = new ArrayList<>();
-    //        if (dynamicsValues != null && !dynamicsValues.isEmpty()) {
-    //            dynamicsValues.forEach(d -> result.add(d.getValue()));
-    //        }
-    //        return result;
-    //    }
-    //
-    public boolean isValidDynamicValue(Object value) {
+    @Override
+    public String getType() {
+        return clazz.getName();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public boolean isValid(IPluginParam staticParam) {
+        if (this.getClass().isInstance(staticParam)) {
+            return isValidDynamicValue((T) staticParam.getValue());
+        }
+        return false;
+    }
+
+    public boolean isValidDynamicValue(T value) {
         if (dynamicsValues == null || dynamicsValues.isEmpty()) {
             // No restriction
             return true;
@@ -125,9 +119,10 @@ public abstract class AbstractPluginParam<T> implements IPluginParam {
 
     @Override
     public String toString() {
-        return name + " - " + value + " - " + dynamic.toString();
+        return name + " - " + value + " - " + dynamic;
     }
 
+    @Override
     public String getName() {
         return name;
     }
@@ -136,6 +131,7 @@ public abstract class AbstractPluginParam<T> implements IPluginParam {
         this.name = name;
     }
 
+    @Override
     public T getValue() {
         return value;
     }
@@ -152,7 +148,8 @@ public abstract class AbstractPluginParam<T> implements IPluginParam {
         this.clazz = clazz;
     }
 
-    public Boolean isDynamic() {
+    @Override
+    public boolean isDynamic() {
         return dynamic;
     }
 
@@ -168,22 +165,6 @@ public abstract class AbstractPluginParam<T> implements IPluginParam {
         this.dynamicsValues = dynamicsValues;
     }
 
-    public boolean isOnlyDynamic() {
-        return onlyDynamic;
-    }
-
-    public void setOnlyDynamic(boolean onlyDynamic) {
-        this.onlyDynamic = onlyDynamic;
-    }
-
-    public String getDecryptedValue() {
-        return decryptedValue;
-    }
-
-    public void setDecryptedValue(String decryptedValue) {
-        this.decryptedValue = decryptedValue;
-    }
-
     // Fluent API
 
     @SuppressWarnings("unchecked")
@@ -191,6 +172,13 @@ public abstract class AbstractPluginParam<T> implements IPluginParam {
         this.name = name;
         this.value = value;
         this.clazz = (Class<T>) value.getClass();
+        return (P) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <P extends AbstractPluginParam<T>> P with(Class<T> clazz, String name) {
+        this.name = name;
+        this.clazz = clazz;
         return (P) this;
     }
 
@@ -202,6 +190,24 @@ public abstract class AbstractPluginParam<T> implements IPluginParam {
     public AbstractPluginParam<T> dynamic(Set<T> dynamicsValues) {
         this.setDynamic(Boolean.TRUE);
         this.setDynamicsValues(dynamicsValues);
+        return this;
+    }
+
+    public AbstractPluginParam<T> dynamic(T dyn1) {
+        this.setDynamic(Boolean.TRUE);
+        this.setDynamicsValues(new HashSet<>(Arrays.asList(dyn1)));
+        return this;
+    }
+
+    public AbstractPluginParam<T> dynamic(T dyn1, T dyn2) {
+        this.setDynamic(Boolean.TRUE);
+        this.setDynamicsValues(new HashSet<>(Arrays.asList(dyn1, dyn2)));
+        return this;
+    }
+
+    public AbstractPluginParam<T> dynamic(T dyn1, T dyn2, T dyn3) {
+        this.setDynamic(Boolean.TRUE);
+        this.setDynamicsValues(new HashSet<>(Arrays.asList(dyn1, dyn2, dyn3)));
         return this;
     }
 }

@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.UUID;
@@ -42,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
 import com.google.common.reflect.TypeToken;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginDestroy;
@@ -50,8 +50,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
-import fr.cnes.regards.framework.utils.plugins.bean.IPluginUtilsBean;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.utils.plugins.bean.PluginUtilsBean;
 
 /**
@@ -66,11 +65,6 @@ public final class PluginUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginUtils.class);
 
     private static final String HR = "####################################################";
-
-    /**
-     * Message error plugin instantiate
-     */
-    private static final String CANNOT_INSTANTIATE = "Cannot instantiate <%s>";
 
     /**
      * Plugin interface cache, should be only populate one on startup calling {@link #setup(List)}
@@ -123,7 +117,7 @@ public final class PluginUtils {
         LOGGER.info("{} Loading plugins...", HR);
         // Initialize reflection tool
         Reflections reflections;
-        if ((reflectionPackages == null) || reflectionPackages.isEmpty()) {
+        if (reflectionPackages == null || reflectionPackages.isEmpty()) {
             String defaultPackage = "fr.cnes.regards";
             LOGGER.info("System will look for plugins in default package: {}", defaultPackage);
             reflections = new Reflections(defaultPackage);
@@ -131,8 +125,7 @@ public final class PluginUtils {
             StringJoiner customPackages = new StringJoiner(",");
             reflectionPackages.forEach(customPackages::add);
             LOGGER.info("System will look for plugins in custom package(s): {}", customPackages.toString());
-            Configuration configuration = ConfigurationBuilder
-                    .build(reflectionPackages.toArray(new Object[0]));
+            Configuration configuration = ConfigurationBuilder.build(reflectionPackages.toArray(new Object[0]));
             reflections = new Reflections(configuration);
         }
 
@@ -185,7 +178,7 @@ public final class PluginUtils {
     }
 
     /**
-     * Create {@link PluginMetaData} based on its annotations {@link Plugin} and {@link AbstractPluginParam} if any.
+     * Create {@link PluginMetaData} based on its annotations {@link Plugin} and {@link IPluginParam} if any.
      * @param pluginClass a class that must contains a {@link Plugin} annotation
      * @return the {@link PluginMetaData} create
      */
@@ -217,57 +210,46 @@ public final class PluginUtils {
     /**
      * Create an instance of {@link Plugin} based on its configuration and metadata
      * @param <T> a {@link Plugin}
-     * @param pluginConf the {@link PluginConfiguration}
+     * @param conf the {@link PluginConfiguration}
      * @param pluginMetadata the {@link PluginMetaData}
-     * @param instantiatedPluginMap already instaniated plugins
-     * @param dynamicPluginParameters an optional list of {@link AbstractPluginParam}
+     * @param instantiatedPlugins already instaniated plugins
+     * @param dynamicParams an optional list of {@link IPluginParam}
      * @return an instance of a {@link Plugin} @ if a problem occurs
      */
-    public static <T> T getPlugin(PluginConfiguration pluginConf, PluginMetaData pluginMetadata,
-            Map<Long, Object> instantiatedPluginMap, AbstractPluginParam... dynamicPluginParameters) {
-        return getPlugin(pluginConf, pluginMetadata.getPluginClassName(), instantiatedPluginMap,
-                         dynamicPluginParameters);
-    }
-
-    public static <T> T getPlugin(PluginConfiguration pluginConf, PluginMetaData pluginMetadata,
-            IPluginUtilsBean pluginUtilsBean, Map<Long, Object> instantiatedPluginMap,
-            AbstractPluginParam... dynamicPluginParameters) {
-        return PluginUtils.getPlugin(pluginConf, pluginMetadata, instantiatedPluginMap, dynamicPluginParameters);
+    public static <T> T getPlugin(PluginConfiguration conf, PluginMetaData pluginMetadata,
+            Map<Long, Object> instantiatedPlugins, IPluginParam... dynamicParams) {
+        return getPlugin(conf, pluginMetadata.getPluginClassName(), instantiatedPlugins, dynamicParams);
     }
 
     /**
      * Create an instance of {@link Plugin} based on its configuration and the plugin class name
      * @param <T> a {@link Plugin}
-     * @param pluginConf the {@link PluginConfiguration}
-     * @param pluginClassName the {@link Plugin} class name
-     * @param dynamicPluginParameters an optional list of {@link AbstractPluginParam}
+     * @param conf the {@link PluginConfiguration}
+     * @param pluginClass the {@link Plugin} class name
+     * @param dynamicParams an optional list of {@link IPluginParam}
      * @return an instance of {@link Plugin} @ if a problem occurs
      */
     @SuppressWarnings("unchecked")
-    public static <T> T getPlugin(PluginConfiguration pluginConf, String pluginClassName,
-            Map<Long, Object> instantiatedPluginMap, AbstractPluginParam... dynamicPluginParameters) {
+    public static <T> T getPlugin(PluginConfiguration conf, String pluginClass, Map<Long, Object> instantiatedPlugins,
+            IPluginParam... dynamicParams) {
         T returnPlugin = null;
 
         try {
             // Make a new instance
-            returnPlugin = (T) Class.forName(pluginClassName).newInstance();
-
+            returnPlugin = (T) Class.forName(pluginClass).newInstance();
+            // Post process parameters
+            PluginParameterUtils.postProcess(returnPlugin, conf, instantiatedPlugins, dynamicParams);
+            // Autowired Spring bean in Spring IOC context
             if (PluginUtilsBean.getInstance() != null) {
-                // Post process parameters in Spring context
-                PluginParameterUtils.postProcess(PluginUtilsBean.getInstance().getGson(), returnPlugin, pluginConf,
-                                                 instantiatedPluginMap, dynamicPluginParameters);
                 PluginUtilsBean.getInstance().processAutowiredBean(returnPlugin);
-            } else {
-                // Post process parameters without Spring
-                PluginParameterUtils.postProcess(Optional.empty(), returnPlugin, pluginConf, instantiatedPluginMap,
-                                                 dynamicPluginParameters);
             }
 
             // Launch init method if detected
             doInitPlugin(returnPlugin);
 
-        } catch (InstantiationException | IllegalAccessException | NoSuchElementException | IllegalArgumentException | SecurityException | ClassNotFoundException e) {
-            throw new PluginUtilsRuntimeException(String.format(CANNOT_INSTANTIATE, pluginClassName), e);
+        } catch (InstantiationException | IllegalAccessException | NoSuchElementException | IllegalArgumentException
+                | SecurityException | ClassNotFoundException e) {
+            throw new PluginUtilsRuntimeException(String.format("Cannot instantiate <%s>", pluginClass), e);
         }
 
         return returnPlugin;
@@ -276,37 +258,37 @@ public final class PluginUtils {
     /**
      * Create an instance of {@link Plugin} based on its configuration and metadata
      * @param <T> a {@link Plugin}
-     * @param parameters a {@link List} of {@link AbstractPluginParam}
+     * @param params a {@link List} of {@link IPluginParam}
      * @param pluginClass the required returned type
-     * @param dynamicPluginParameters an optional {@link List} of {@link AbstractPluginParam}
+     * @param dynamicPlugins an optional {@link List} of {@link IPluginParam}
      * @return a {@link Plugin} instance
      */
-    public static <T> T getPlugin(Set<AbstractPluginParam> parameters, Class<T> pluginClass,
-            Map<Long, Object> instantiatedPluginMap, AbstractPluginParam... dynamicPluginParameters) {
+    public static <T> T getPlugin(Set<IPluginParam> params, Class<T> pluginClass, Map<Long, Object> instantiatedPlugins,
+            IPluginParam... dynamicPlugins) {
         // Build plugin metadata
         PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(pluginClass);
 
-        PluginConfiguration pluginConfiguration = new PluginConfiguration(pluginMetadata, "", parameters);
-        return PluginUtils
-                .getPlugin(pluginConfiguration, pluginMetadata, instantiatedPluginMap, dynamicPluginParameters);
+        PluginConfiguration pluginConfiguration = new PluginConfiguration(pluginMetadata, "", params);
+        return PluginUtils.getPlugin(pluginConfiguration, pluginMetadata, instantiatedPlugins, dynamicPlugins);
     }
 
     /**
      * Look for {@link PluginDestroy} annotation and launch corresponding method if found.
      * @param <T> a {@link Plugin}
-     * @param pluginInstance the {@link Plugin} instance
+     * @param plugin the {@link Plugin} instance
      */
-    public static <T> void doDestroyPlugin(final T pluginInstance) {
-        for (final Method method : ReflectionUtils.getAllDeclaredMethods(pluginInstance.getClass())) {
+    public static <T> void doDestroyPlugin(final T plugin) {
+        for (final Method method : ReflectionUtils.getAllDeclaredMethods(plugin.getClass())) {
             if (method.isAnnotationPresent(PluginDestroy.class)) {
                 // Invoke method
                 ReflectionUtils.makeAccessible(method);
 
                 try {
-                    method.invoke(pluginInstance);
+                    method.invoke(plugin);
                 } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                     LOGGER.error(String.format("Exception while invoking destroy method on plugin class <%s>.",
-                                               pluginInstance.getClass()), e);
+                                               plugin.getClass()),
+                                 e);
                     throw new PluginUtilsRuntimeException(e);
                 }
             }
@@ -316,19 +298,20 @@ public final class PluginUtils {
     /**
      * Look for {@link PluginInit} annotation and launch corresponding method if found.
      * @param <T> a {@link Plugin}
-     * @param pluginInstance the {@link Plugin} instance @ if a problem occurs
+     * @param plugin the {@link Plugin} instance @ if a problem occurs
      */
-    private static <T> void doInitPlugin(final T pluginInstance) {
-        for (final Method method : ReflectionUtils.getAllDeclaredMethods(pluginInstance.getClass())) {
+    private static <T> void doInitPlugin(final T plugin) {
+        for (final Method method : ReflectionUtils.getAllDeclaredMethods(plugin.getClass())) {
             if (method.isAnnotationPresent(PluginInit.class)) {
                 // Invoke method
                 ReflectionUtils.makeAccessible(method);
 
                 try {
-                    method.invoke(pluginInstance);
+                    method.invoke(plugin);
                 } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                     LOGGER.error(String.format("Exception while invoking init method on plugin class <%s>.",
-                                               pluginInstance.getClass()), e);
+                                               plugin.getClass()),
+                                 e);
                     if (e.getCause() instanceof PluginUtilsRuntimeException) {
                         throw (PluginUtilsRuntimeException) e.getCause();
                     } else {
@@ -342,61 +325,61 @@ public final class PluginUtils {
     /**
      * Create an instance of {@link PluginConfiguration}
      * @param <T> a plugin
-     * @param parameters the plugin parameters
+     * @param params the plugin parameters
      * @param returnInterfaceType the required returned type
      * @return an instance @ if a problem occurs
      */
-    public static <T> PluginConfiguration getPluginConfiguration(Set<AbstractPluginParam> parameters,
+    public static <T> PluginConfiguration getPluginConfiguration(Set<IPluginParam> params,
             Class<T> returnInterfaceType) {
         // Build plugin metadata
         PluginMetaData pluginMetadata = PluginUtils.createPluginMetaData(returnInterfaceType);
-        return new PluginConfiguration(pluginMetadata, UUID.randomUUID().toString(), parameters);
+        return new PluginConfiguration(pluginMetadata, UUID.randomUUID().toString(), params);
     }
 
     /**
      * Validate the plugin configuration
-     * @param pluginConfiguration the plugin configuration to be validated
+     * @param conf the plugin configuration to be validated
      * @return null if there is no validation issues, the exception containing all validation errors as messages
      */
-    public static EntityInvalidException validate(PluginConfiguration pluginConfiguration) {
+    public static EntityInvalidException validate(PluginConfiguration conf) {
         List<String> validationErrors = new ArrayList<>();
         // First lets apply equivalent to hibernate validation
-        if (pluginConfiguration == null) {
+        if (conf == null) {
             validationErrors.add("The plugin configuration cannot be null.");
             return new EntityInvalidException(validationErrors);
         }
-        if (pluginConfiguration.getPriorityOrder() == null) {
+        if (conf.getPriorityOrder() == null) {
             validationErrors.add(String.format("The plugin configuration priority order is required (pluginId: %s).",
-                                               pluginConfiguration.getPluginId()));
+                                               conf.getPluginId()));
         }
-        if (Strings.isNullOrEmpty(pluginConfiguration.getLabel())) {
+        if (Strings.isNullOrEmpty(conf.getLabel())) {
             validationErrors.add(String.format("The plugin configuration label is required (pluginId: %s).",
-                                               pluginConfiguration.getPluginId()));
+                                               conf.getPluginId()));
         }
         // Now lets apply some more complicated validation that required introspection
         try {
-            Class<?> pluginClass = Class.forName(pluginConfiguration.getPluginClassName());
+            Class<?> pluginClass = Class.forName(conf.getPluginClassName());
             PluginMetaData pluginMetadata = createPluginMetaData(pluginClass);
             // Now that we have the metadata, lets check everything and eventualy set some properties
             // as version (a null version means a plugin configuration creation
-            if (pluginConfiguration.getVersion() == null) {
-                pluginConfiguration.setVersion(pluginMetadata.getVersion());
+            if (conf.getVersion() == null) {
+                conf.setVersion(pluginMetadata.getVersion());
             } else {
                 // Check that version is the same between plugin one and plugin configuration one
-                if (!Objects.equals(pluginMetadata.getVersion(), pluginConfiguration.getVersion())) {
+                if (!Objects.equals(pluginMetadata.getVersion(), conf.getVersion())) {
                     validationErrors
                             .add(String.format("Plugin configuration version (%s) is different from plugin one (%s).",
-                                               pluginConfiguration.getVersion(), pluginMetadata.getVersion()));
+                                               conf.getVersion(), pluginMetadata.getVersion()));
                 }
             }
-            if (pluginConfiguration.getPluginId() == null) {
-                pluginConfiguration.setPluginId(pluginMetadata.getPluginId());
+            if (conf.getPluginId() == null) {
+                conf.setPluginId(pluginMetadata.getPluginId());
             } else {
                 // Check that pluginId is the same between plugin one and plugin configuration one
-                if (!Objects.equals(pluginMetadata.getPluginId(), pluginConfiguration.getPluginId())) {
+                if (!Objects.equals(pluginMetadata.getPluginId(), conf.getPluginId())) {
                     validationErrors
                             .add(String.format("Plugin configuration pluginId (%s) is different from plugin one (%s).",
-                                               pluginConfiguration.getPluginId(), pluginMetadata.getPluginId()));
+                                               conf.getPluginId(), pluginMetadata.getPluginId()));
                 }
             }
 
@@ -406,9 +389,9 @@ public final class PluginUtils {
             // the plugin configuration should not have any reference to plugin parameters that are only dynamic
             // lets check that all remaining parameters are correctly given
             for (PluginParameterType plgParamMeta : pluginParametersFromMeta) {
-                if (!plgParamMeta.isOptional() && !plgParamMeta.getUnconfigurable() && (
-                        (pluginConfiguration.getParameter(plgParamMeta.getName()) == null) && (
-                                plgParamMeta.getDefaultValue() == null))) {
+                if (!plgParamMeta.isOptional() && !plgParamMeta.getUnconfigurable()
+                        && conf.getParameter(plgParamMeta.getName()) == null
+                        && plgParamMeta.getDefaultValue() == null) {
                     validationErrors.add(String.format("Plugin Parameter %s is missing.", plgParamMeta.getName()));
                 }
             }

@@ -26,4 +26,15 @@ package fr.cnes.regards.framework.modules.plugins.domain.parameter;
  */
 public class DoublePluginParam extends AbstractPluginParam<Double> {
 
+    @Override
+    public boolean supportsDefaultValue() {
+        return true;
+    }
+
+    @Override
+    public void applyDefaultValue(String value) {
+        if (!hasValue()) {
+            this.value = Double.valueOf(value);
+        }
+    }
 }
