@@ -97,8 +97,7 @@ public class SIPEntity {
 
     /**
      * The SIP internal identifier (generated URN). If two SIP are ingested with same id, this idIp will distinguish
-     * them as 2 different
-     * versions
+     * them as 2 different versions
      */
     @NotBlank(message = "SIP ID is required")
     @Column(name = "sipId", length = MAX_URN_SIZE)
@@ -150,7 +149,7 @@ public class SIPEntity {
     private OffsetDateTime lastUpdateDate;
 
     /**
-     * Processing chain name from {@link IngestMetadata}
+     * {@link IngestProcessingChain} name from {@link IngestMetadata}
      */
     @NotBlank(message = "Processing chain name is required")
     @Column(length = 100)

@@ -69,9 +69,9 @@ import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 /**
  * @author Sébastien Binda
  */
-public class SIPServiceTest extends AbstractSIPTest {
+public class SIPServiceIT extends AbstractSipIT {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SIPServiceTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SIPServiceIT.class);
 
     private final static String COMPLEX_SESSION_ID = "SESSION_100";
 

@@ -86,12 +86,12 @@ import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
 @TestPropertySource(locations = "classpath:test.properties")
 @ContextConfiguration(classes = { TestConfiguration.class })
 @RegardsTransactional
-public class IngestProcessingJobTest extends AbstractRegardsServiceTransactionalIT {
+public class IngestProcessingJobIT extends AbstractRegardsServiceTransactionalIT {
 
     /**
      * Class logger.
      */
-    private static final Logger LOG = LoggerFactory.getLogger(IngestProcessingJobTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IngestProcessingJobIT.class);
 
     @Autowired
     private IIngestProcessingChainRepository processingChainRepository;

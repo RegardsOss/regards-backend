@@ -42,7 +42,7 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPEntityBuilder;
  *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=checksum" })
-public class SIPChecksumTest extends AbstractMultitenantServiceTest {
+public class SIPChecksumIT extends AbstractMultitenantServiceTest {
 
     @Autowired
     private Gson gson;

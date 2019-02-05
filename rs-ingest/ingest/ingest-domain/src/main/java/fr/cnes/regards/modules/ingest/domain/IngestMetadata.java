@@ -35,7 +35,7 @@ import org.springframework.util.Assert;
 public class IngestMetadata {
 
     /**
-     * Processing chain name
+     * {@link fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain} name
      */
     @NotBlank
     private String processing;

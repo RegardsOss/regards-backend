@@ -46,7 +46,7 @@ import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
 @TestPropertySource(locations = "classpath:test.properties")
 @ContextConfiguration(classes = { TestConfiguration.class })
 @RegardsTransactional
-public class IngestProcessingServiceTest extends AbstractRegardsServiceTransactionalIT {
+public class IngestProcessingServiceIT extends AbstractRegardsServiceTransactionalIT {
 
     @Autowired
     private IIngestProcessingService ingestProcessingService;

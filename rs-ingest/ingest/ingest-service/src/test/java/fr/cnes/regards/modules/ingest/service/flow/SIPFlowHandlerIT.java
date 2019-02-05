@@ -50,9 +50,9 @@ import fr.cnes.regards.modules.ingest.domain.flow.SipFlowItem;
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=sipflow", "regards.amqp.enabled=true" })
 @ActiveProfiles("testAmqp")
-public class SIPFlowHandlerTest extends AbstractMultitenantServiceTest {
+public class SIPFlowHandlerIT extends AbstractMultitenantServiceTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SIPFlowHandlerTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SIPFlowHandlerIT.class);
 
     @Autowired
     private IRuntimeTenantResolver threadTenantResolver;
