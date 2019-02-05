@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
-import fr.cnes.regards.modules.ingest.service.AbstractSIPTest;
+import fr.cnes.regards.modules.ingest.service.AbstractSipIT;
 import fr.cnes.regards.modules.ingest.service.ISIPService;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 
@@ -43,7 +43,7 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
  * AIP Service tests.
  * @author Sébastien Binda
  */
-public class AIPServiceTest extends AbstractSIPTest {
+public class AIPServiceIT extends AbstractSipIT {
 
     private final Set<AIPEntity> aips = Sets.newHashSet();
 

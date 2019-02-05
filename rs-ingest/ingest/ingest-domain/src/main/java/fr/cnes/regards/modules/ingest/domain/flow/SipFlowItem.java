@@ -34,7 +34,6 @@ import fr.cnes.regards.modules.ingest.domain.SIP;
  * Data flow item to ingest SIP using event driven mechanism.
  *
  * @author Marc SORDI
- *
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE, converter = JsonMessageConverter.GSON)
 public class SipFlowItem implements ISubscribable {

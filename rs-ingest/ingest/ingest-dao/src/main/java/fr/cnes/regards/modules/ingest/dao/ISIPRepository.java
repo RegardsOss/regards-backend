@@ -40,6 +40,7 @@ import org.springframework.data.repository.query.Param;
 
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPIdNProcessing;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
@@ -124,8 +125,8 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
      * @param state {@link SIPState}
      * @return {@link SIPEntity}s
      */
-    @Query("select s.id, s.processing from SIPEntity s where s.state = ?1")
-    List<Object[]> findIdAndProcessingByState(SIPState state);
+    @Query("select s.id, s.processing from SIPEntity s where s.state = :state")
+    List<SIPIdNProcessing> findIdAndProcessingByState(@Param("state") SIPState state);
 
     /**
      * Update state of a {@link SIPEntity}
@@ -133,15 +134,15 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
      * @param id id of the {@link SIPEntity} to update
      */
     @Modifying(flushAutomatically = true, clearAutomatically = true)
-    @Query("UPDATE SIPEntity s set s.state = ?1 where s.id = ?2")
-    void updateSIPEntityState(SIPState state, Long id);
+    @Query("UPDATE SIPEntity s set s.state = :state where s.id = :id")
+    void updateSIPEntityState(@Param("state") SIPState state, @Param("id") Long id);
 
     /**
      * Update state for a set of {@link SIPEntity}
      */
     @Modifying(flushAutomatically = true, clearAutomatically = true)
-    @Query("UPDATE SIPEntity s set s.state = ?1 where s.id in (?2)")
-    void updateSIPEntitiesState(SIPState state, Collection<Long> ids);
+    @Query("UPDATE SIPEntity s set s.state = :state where s.id in (:ids)")
+    void updateSIPEntitiesState(@Param("state") SIPState state, @Param("ids") Collection<Long> ids);
 
     /**
      * Switch state for a given session

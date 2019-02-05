@@ -50,9 +50,9 @@ import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingService;
  * @author Marc Sordi
  * @author Sébastien Binda
  */
-public class IngestServiceTest extends AbstractSIPTest {
+public class IngestServiceIT extends AbstractSipIT {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(IngestServiceTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IngestServiceIT.class);
 
     @Autowired
     private ISIPSessionRepository sipSessionRepository;
