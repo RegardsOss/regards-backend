@@ -22,6 +22,7 @@ import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
 
 import com.google.gson.Gson;
 
+import feign.Client;
 import feign.Feign;
 import feign.Target;
 import feign.gson.GsonDecoder;
@@ -55,6 +56,18 @@ public final class FeignClientBuilder {
      */
     public static <T> T build(final Target<T> pTarget, Gson gson) {
         return Feign.builder() // Feign customization
+                .encoder(new GsonEncoder(gson)).decoder(new ResponseEntityDecoder(new GsonDecoder(gson)))
+                .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
+                .target(pTarget);
+    }
+
+    /**
+     * Generate client
+     * @param pTarget Target to add informations in header like Autorization.
+     * @return IResourcesClient a client instance
+     */
+    public static <T> T build(final Target<T> pTarget, Client client, Gson gson) {
+        return Feign.builder().client(client) // Feign customization
                 .encoder(new GsonEncoder(gson)).decoder(new ResponseEntityDecoder(new GsonDecoder(gson)))
                 .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
                 .target(pTarget);
