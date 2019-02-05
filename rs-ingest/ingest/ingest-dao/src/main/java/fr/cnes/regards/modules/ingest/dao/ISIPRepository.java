@@ -58,7 +58,7 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
 
     /**
      * Retrieve all {@link SIPEntity} for the given ids
-     * @param sipIds
+     * @param ids
      * @return {@link SIPEntity}s
      */
     @EntityGraph("graph.sip.entity.complete")
@@ -125,8 +125,7 @@ public interface ISIPRepository extends JpaRepository<SIPEntity, Long>, JpaSpeci
      * @param state {@link SIPState}
      * @return {@link SIPEntity}s
      */
-    @Query("select s.id, s.processing from SIPEntity s where s.state = :state")
-    List<SIPIdNProcessing> findIdAndProcessingByState(@Param("state") SIPState state);
+    List<SIPIdNProcessing> findIdAndProcessingByState(SIPState state);
 
     /**
      * Update state of a {@link SIPEntity}
