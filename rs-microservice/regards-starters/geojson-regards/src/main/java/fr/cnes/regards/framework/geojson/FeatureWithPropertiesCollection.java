@@ -52,6 +52,10 @@ public class FeatureWithPropertiesCollection extends FeatureCollection {
         properties = new HashMap<>();
     }
 
+    public Map<String, Object> getProperties() {
+        return properties;
+    }
+
     public void addProperty(String key, Object value) {
         properties.put(key, value);
     }
