@@ -30,6 +30,10 @@ import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
  */
 public class StringPluginParam extends AbstractPluginParam<String> {
 
+    public StringPluginParam() {
+        super(PluginParamType.STRING);
+    }
+
     @Transient
     @GsonIgnore
     protected transient String decryptedValue;

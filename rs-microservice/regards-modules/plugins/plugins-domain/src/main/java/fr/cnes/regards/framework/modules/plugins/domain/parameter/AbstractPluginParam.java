@@ -23,10 +23,13 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+import org.springframework.util.Assert;
+
 /**
- * Parameter associated to a plugin configuration <PluginConfiguration>
+ * Parameter associated to a plugin configuration
  * @author Christophe Mertz
  * @author Marc SORDI
  *
@@ -34,17 +37,25 @@ import javax.validation.constraints.NotNull;
  */
 public abstract class AbstractPluginParam<T> implements IPluginParam {
 
-    @NotNull(message = "Parameter name is required")
+    @NotBlank(message = "Parameter name is required")
     protected String name;
+
+    @NotNull(message = "Parameter type is required")
+    protected PluginParamType type;
 
     @NotNull(message = "Parameter value is required")
     protected T value;
 
+    /** Parameter value type */
     protected Class<T> clazz;
 
     protected boolean dynamic = false;
 
     protected Set<T> dynamicsValues = new HashSet<>();
+
+    public AbstractPluginParam(PluginParamType type) {
+        this.type = type;
+    }
 
     @Override
     public boolean hasValue() {
@@ -57,8 +68,8 @@ public abstract class AbstractPluginParam<T> implements IPluginParam {
     }
 
     @Override
-    public String getType() {
-        return clazz.getName();
+    public PluginParamType getType() {
+        return type;
     }
 
     @SuppressWarnings("unchecked")
@@ -169,6 +180,8 @@ public abstract class AbstractPluginParam<T> implements IPluginParam {
 
     @SuppressWarnings("unchecked")
     public <P extends AbstractPluginParam<T>> P with(String name, T value) {
+        Assert.hasText(name, "Plugin parameter name is required");
+        Assert.notNull(name, "Plugin parameter value is required");
         this.name = name;
         this.value = value;
         this.clazz = (Class<T>) value.getClass();
@@ -177,6 +190,8 @@ public abstract class AbstractPluginParam<T> implements IPluginParam {
 
     @SuppressWarnings("unchecked")
     public <P extends AbstractPluginParam<T>> P with(Class<T> clazz, String name) {
+        Assert.notNull(clazz, "Plugin parameter value type is required");
+        Assert.hasText(name, "Plugin parameter name is required");
         this.name = name;
         this.clazz = clazz;
         return (P) this;
@@ -208,6 +223,18 @@ public abstract class AbstractPluginParam<T> implements IPluginParam {
     public AbstractPluginParam<T> dynamic(T dyn1, T dyn2, T dyn3) {
         this.setDynamic(Boolean.TRUE);
         this.setDynamicsValues(new HashSet<>(Arrays.asList(dyn1, dyn2, dyn3)));
+        return this;
+    }
+
+    public AbstractPluginParam<T> dynamic(T dyn1, T dyn2, T dyn3, T dyn4) {
+        this.setDynamic(Boolean.TRUE);
+        this.setDynamicsValues(new HashSet<>(Arrays.asList(dyn1, dyn2, dyn3, dyn4)));
+        return this;
+    }
+
+    public AbstractPluginParam<T> dynamic(T dyn1, T dyn2, T dyn3, T dyn4, T dyn5) {
+        this.setDynamic(Boolean.TRUE);
+        this.setDynamicsValues(new HashSet<>(Arrays.asList(dyn1, dyn2, dyn3, dyn4, dyn5)));
         return this;
     }
 }

@@ -26,6 +26,10 @@ package fr.cnes.regards.framework.modules.plugins.domain.parameter;
  */
 public class ShortPluginParam extends AbstractPluginParam<Short> {
 
+    public ShortPluginParam() {
+        super(PluginParamType.SHORT);
+    }
+
     @Override
     public boolean supportsDefaultValue() {
         return true;

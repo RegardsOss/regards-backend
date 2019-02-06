@@ -26,6 +26,9 @@ import java.util.Map;
  * @author Marc SORDI
  *
  */
-public class MapPluginParam extends AbstractPluginParam<Map<?, ?>> {
+public class MapPluginParam extends AbstractPluginParam<Map<String, ?>> {
 
+    public MapPluginParam() {
+        super(PluginParamType.MAP);
+    }
 }

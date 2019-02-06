@@ -29,10 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.basic.PluginUtilsTestConstants;
@@ -140,20 +139,20 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
         LOGGER.debug(STARTING + toString());
         PluginUtils.setup(PLUGIN_CURRENT_PACKAGE);
 
-        Set<AbstractPluginParam> interfaceParameters = PluginParametersFactory.build()
-                .addParameter(AParameterPluginImplementation.FIELD_NAME, PluginInterfaceUtilsTest.LONG_STR_VALUE)
-                .getParameters();
+        Set<IPluginParam> interfaceParameters = IPluginParam.set(IPluginParam
+                .build(AParameterPluginImplementation.FIELD_NAME, PluginInterfaceUtilsTest.LONG_STR_VALUE));
         PluginConfiguration pluginConfigurationInterface = PluginUtils
                 .getPluginConfiguration(interfaceParameters, AParameterPluginImplementation.class);
         Assert.assertNotNull(pluginConfigurationInterface);
+        pluginConfigurationInterface.setId(100L);
 
         /*
          * Get the configuration for the complex Plugin (ie the parent)
          */
-        final Set<AbstractPluginParam> complexParameters = PluginParametersFactory.build()
-                .addPluginConfiguration(ComplexPlugin.FIELD_NAME_PLUGIN, pluginConfigurationInterface)
-                .addParameter(ComplexPlugin.FIELD_NAME_ACTIVE, TRUE)
-                .addParameter(ComplexPlugin.FIELD_NAME_COEF, PluginInterfaceUtilsTest.CINQ).getParameters();
+        final Set<IPluginParam> complexParameters = IPluginParam
+                .set(IPluginParam.plugin(ComplexPlugin.FIELD_NAME_PLUGIN, pluginConfigurationInterface.getId()),
+                     IPluginParam.build(ComplexPlugin.FIELD_NAME_ACTIVE, TRUE),
+                     IPluginParam.build(ComplexPlugin.FIELD_NAME_COEF, PluginInterfaceUtilsTest.CINQ));
 
         HashMap<Long, Object> instantiatedPluginMap = new HashMap<>();
         instantiatedPluginMap.put(pluginConfigurationInterface.getId(),
@@ -180,13 +179,9 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     @Purpose("Error to load a plugin from with an incompatible interface parameter.")
     public void incompatibleInterfaceError() {
         LOGGER.debug(STARTING + toString());
-        /*
-         * Set all parameters
-         */
-
-        final Set<AbstractPluginParam> complexParameters = PluginParametersFactory.build()
-                .addParameter(ComplexErrorPlugin.FIELD_NAME_COEF, PluginInterfaceUtilsTest.CINQ)
-                .addParameter(ComplexErrorPlugin.FIELD_NAME_PLUGIN, "coucou").getParameters();
+        Set<IPluginParam> complexParameters = IPluginParam
+                .set(IPluginParam.build(ComplexErrorPlugin.FIELD_NAME_COEF, PluginInterfaceUtilsTest.CINQ),
+                     IPluginParam.build(ComplexErrorPlugin.FIELD_NAME_PLUGIN, "coucou"));
 
         // instantiate plugin
         PluginUtils.setup(PLUGIN_CURRENT_PACKAGE);
@@ -198,13 +193,9 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     @Purpose("Error to load a plugin from with an incompatible interface parameter.")
     public void incompatibleParameterError() {
         LOGGER.debug(STARTING + toString());
-        /*
-         * Set all parameters
-         */
-
-        final Set<AbstractPluginParam> complexParameters = PluginParametersFactory.build()
-                .addParameter(ComplexErrorPlugin.FIELD_NAME_COEF, "allo")
-                .addParameter(ComplexErrorPlugin.FIELD_NAME_PLUGIN, "lorem ipsum").getParameters();
+        Set<IPluginParam> complexParameters = IPluginParam
+                .set(IPluginParam.build(ComplexErrorPlugin.FIELD_NAME_COEF, "allo"),
+                     IPluginParam.build(ComplexErrorPlugin.FIELD_NAME_PLUGIN, "lorem ipsum"));
 
         // instantiate plugin
         PluginUtils.setup(PLUGIN_CURRENT_PACKAGE);

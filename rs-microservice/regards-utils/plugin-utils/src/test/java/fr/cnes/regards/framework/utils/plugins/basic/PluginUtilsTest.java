@@ -28,7 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParamDescriptor;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
@@ -84,7 +84,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
         Assert.assertNotNull(mtd);
         Assert.assertTrue(mtd.getMarkdown() != null && !mtd.getMarkdown().isEmpty());
-        for (PluginParameterType ptype : mtd.getParameters()) {
+        for (PluginParamDescriptor ptype : mtd.getParameters()) {
             if (SamplePlugin.FIELD_NAME_SUFFIX.equals(ptype.getName())) {
                 Assert.assertTrue(ptype.getMarkdown() != null && !ptype.getMarkdown().isEmpty());
             }

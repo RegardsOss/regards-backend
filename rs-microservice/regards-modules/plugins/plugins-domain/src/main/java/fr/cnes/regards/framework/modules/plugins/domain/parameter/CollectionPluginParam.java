@@ -28,4 +28,7 @@ import java.util.Collection;
  */
 public class CollectionPluginParam extends AbstractPluginParam<Collection<?>> {
 
+    public CollectionPluginParam() {
+        super(PluginParamType.COLLECTION);
+    }
 }

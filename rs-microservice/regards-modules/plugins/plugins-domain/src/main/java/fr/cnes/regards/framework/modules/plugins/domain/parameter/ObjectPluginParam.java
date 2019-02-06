@@ -26,4 +26,7 @@ package fr.cnes.regards.framework.modules.plugins.domain.parameter;
  */
 public class ObjectPluginParam extends AbstractPluginParam<Object> {
 
+    public ObjectPluginParam() {
+        super(PluginParamType.POJO);
+    }
 }

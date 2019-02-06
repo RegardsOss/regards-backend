@@ -26,4 +26,7 @@ package fr.cnes.regards.framework.modules.plugins.domain.parameter;
  */
 public class BytePluginParam extends AbstractPluginParam<Byte> {
 
+    public BytePluginParam() {
+        super(PluginParamType.BYTE);
+    }
 }

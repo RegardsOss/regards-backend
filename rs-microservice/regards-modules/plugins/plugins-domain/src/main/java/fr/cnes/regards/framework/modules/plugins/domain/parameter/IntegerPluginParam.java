@@ -26,6 +26,10 @@ package fr.cnes.regards.framework.modules.plugins.domain.parameter;
  */
 public class IntegerPluginParam extends AbstractPluginParam<Integer> {
 
+    public IntegerPluginParam() {
+        super(PluginParamType.INTEGER);
+    }
+
     @Override
     public boolean supportsDefaultValue() {
         return true;

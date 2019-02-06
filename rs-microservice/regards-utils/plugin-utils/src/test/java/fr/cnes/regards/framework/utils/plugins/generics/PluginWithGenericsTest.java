@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.utils.plugins.generics;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,10 +30,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.modules.plugins.domain.parameter.AbstractPluginParam;
+import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.utils.cycle.generics.PluginWithCyclicPojoCollection;
 import fr.cnes.regards.framework.utils.cycle.generics.PluginWithCyclicPojoMap;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 
@@ -48,10 +48,10 @@ public class PluginWithGenericsTest {
     @Test
     public void primitiveTest() {
 
-        Set<AbstractPluginParam> parameters = PluginParametersFactory.build()
-                .addParameter(PluginWithBoolean.FIELD_NAME_OBJECT, true)
-                .addParameter(PluginWithBoolean.FIELD_NAME_PRIMITIVE, false)
-                .addParameter(PluginWithBoolean.FIELD_NAME_STRING, "string").getParameters();
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(PluginWithBoolean.FIELD_NAME_OBJECT, true),
+                     IPluginParam.build(PluginWithBoolean.FIELD_NAME_PRIMITIVE, false),
+                     IPluginParam.build(PluginWithBoolean.FIELD_NAME_STRING, "string"));
 
         PluginUtils.setup(this.getClass().getPackage().getName());
         IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithBoolean.class, null);
@@ -63,8 +63,8 @@ public class PluginWithGenericsTest {
     public void stringCollectionTest() {
         List<String> infos = Arrays.asList("info 1", "info 2", "info 3");
 
-        Set<AbstractPluginParam> parameters = PluginParametersFactory.build()
-                .addParameter(PluginWithStringCollection.FIELD_NAME, infos).getParameters();
+        Set<IPluginParam> parameters = IPluginParam
+                .set(IPluginParam.build(PluginWithStringCollection.FIELD_NAME, infos));
 
         PluginUtils.setup(this.getClass().getPackage().getName());
         IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithStringCollection.class, null);
@@ -82,10 +82,9 @@ public class PluginWithGenericsTest {
         Info info3 = new Info();
         info3.setMessage("info 3");
 
-        List<Info> infos = Arrays.asList(info1, info2, info3);
+        Set<Info> infos = new HashSet<>(Arrays.asList(info1, info2, info3));
 
-        Set<AbstractPluginParam> parameters = PluginParametersFactory.build()
-                .addParameter(PluginWithPojoCollection.FIELD_NAME, infos).getParameters();
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(PluginWithPojoCollection.FIELD_NAME, infos));
 
         PluginUtils.setup(this.getClass().getPackage().getName());
         IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithPojoCollection.class, null);
@@ -101,8 +100,7 @@ public class PluginWithGenericsTest {
         infos.put("info2", "info 2");
         infos.put("info3", "info 3");
 
-        Set<AbstractPluginParam> parameters = PluginParametersFactory.build()
-                .addParameter(PluginWithStringMap.FIELD_NAME, infos).getParameters();
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(PluginWithStringMap.FIELD_NAME, infos));
 
         PluginUtils.setup(this.getClass().getPackage().getName());
         IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithStringMap.class, null);
@@ -124,8 +122,7 @@ public class PluginWithGenericsTest {
         infos.put("info2", info2);
         infos.put("info3", info3);
 
-        Set<AbstractPluginParam> parameters = PluginParametersFactory.build()
-                .addParameter(PluginWithPojoMap.PARAMETER_NAME, infos).getParameters();
+        Set<IPluginParam> parameters = IPluginParam.set(IPluginParam.build(PluginWithPojoMap.PARAMETER_NAME, infos));
 
         PluginUtils.setup(this.getClass().getPackage().getName());
         IPluginWithGenerics plugin = PluginUtils.getPlugin(parameters, PluginWithPojoMap.class, null);

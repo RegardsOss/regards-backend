@@ -91,7 +91,7 @@ public class PluginMetaData implements Comparable<PluginMetaData> {
     /**
      * The parameters of the plugin
      */
-    private List<PluginParameterType> parameters = new ArrayList<>();
+    private List<PluginParamDescriptor> parameters = new ArrayList<>();
 
     /**
      * Constructor initializing a plugin metadata from a plugin annotation
@@ -230,14 +230,14 @@ public class PluginMetaData implements Comparable<PluginMetaData> {
     /**
      * @return the plugin parameter types
      */
-    public List<PluginParameterType> getParameters() {
+    public List<PluginParamDescriptor> getParameters() {
         return parameters;
     }
 
     /**
      * Set the plugin parameter types
      */
-    public void setParameters(List<PluginParameterType> pParameters) {
+    public void setParameters(List<PluginParamDescriptor> pParameters) {
         if (pParameters == null) {
             this.parameters.clear();
         } else {

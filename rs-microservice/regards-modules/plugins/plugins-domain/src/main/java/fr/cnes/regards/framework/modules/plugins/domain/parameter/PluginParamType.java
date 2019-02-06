@@ -19,26 +19,23 @@
 package fr.cnes.regards.framework.modules.plugins.domain.parameter;
 
 /**
- * Supported plugin parameter
+ * Supported plugin parameter types
  *
  * @author Marc SORDI
  *
  */
-public class FloatPluginParam extends AbstractPluginParam<Float> {
+public enum PluginParamType {
 
-    public FloatPluginParam() {
-        super(PluginParamType.FLOAT);
-    }
-
-    @Override
-    public boolean supportsDefaultValue() {
-        return true;
-    }
-
-    @Override
-    public void applyDefaultValue(String value) {
-        if (!hasValue()) {
-            this.value = Float.valueOf(value);
-        }
-    }
+    STRING,
+    BYTE,
+    SHORT,
+    INTEGER,
+    LONG,
+    FLOAT,
+    DOUBLE,
+    BOOLEAN,
+    MAP,
+    COLLECTION,
+    POJO,
+    PLUGIN;
 }

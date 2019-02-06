@@ -49,7 +49,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParamDescriptor;
 import fr.cnes.regards.framework.modules.plugins.domain.parameter.IPluginParam;
 import fr.cnes.regards.framework.utils.plugins.bean.PluginUtilsBean;
 
@@ -385,10 +385,10 @@ public final class PluginUtils {
 
             // First lets check the plugin parameters
             // first simple test, are there enough parameters?
-            List<PluginParameterType> pluginParametersFromMeta = pluginMetadata.getParameters();
+            List<PluginParamDescriptor> pluginParametersFromMeta = pluginMetadata.getParameters();
             // the plugin configuration should not have any reference to plugin parameters that are only dynamic
             // lets check that all remaining parameters are correctly given
-            for (PluginParameterType plgParamMeta : pluginParametersFromMeta) {
+            for (PluginParamDescriptor plgParamMeta : pluginParametersFromMeta) {
                 if (!plgParamMeta.isOptional() && !plgParamMeta.getUnconfigurable()
                         && conf.getParameter(plgParamMeta.getName()) == null
                         && plgParamMeta.getDefaultValue() == null) {

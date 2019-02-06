@@ -56,7 +56,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameterType;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginParamDescriptor;
 import fr.cnes.regards.framework.modules.plugins.domain.event.BroadcastPluginConfEvent;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginConfEvent;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginServiceAction;
@@ -188,7 +188,7 @@ public class PluginService implements IPluginService {
         // Now that generic concerns on PluginConfiguration are dealt with, lets encrypt sensitive plugin parameter
         // only way to know if a plugin parameter is sensitive is via the plugin metadata
         PluginMetaData pluginMeta = PluginUtils.getPlugins().get(plgConf.getPluginId());
-        for (PluginParameterType paramMeta : pluginMeta.getParameters()) {
+        for (PluginParamDescriptor paramMeta : pluginMeta.getParameters()) {
             AbstractPluginParam param = plgConf.getParameter(paramMeta.getName());
             if (param != null && param.getValue() != null && !param.getStripParameterValue().isEmpty()) {
                 if (paramMeta.isSensible()) {
@@ -292,7 +292,7 @@ public class PluginService implements IPluginService {
         // Now that generic concerns on PluginConfiguration are dealt with, lets encrypt updated sensitive plugin parameter
         // only way to know if a plugin parameter is sensitive is via the plugin metadata
         PluginMetaData pluginMeta = PluginUtils.getPlugins().get(pluginConf.getPluginId());
-        for (PluginParameterType paramMeta : pluginMeta.getParameters()) {
+        for (PluginParamDescriptor paramMeta : pluginMeta.getParameters()) {
             AbstractPluginParam newParam = pluginConf.getParameter(paramMeta.getName());
             AbstractPluginParam oldParam = oldConf.getParameter(paramMeta.getName());
             if (newParam != null && newParam.getValue() != null && !newParam.getStripParameterValue().isEmpty()) {
@@ -493,8 +493,8 @@ public class PluginService implements IPluginService {
         // When pluginMap are loaded from database, maybe dependant pluginMap aren't yet loaded
         // So :
         // For all pluginMetada parameters, find PLUGIN ones, get key
-        for (PluginParameterType paramType : pluginMetadata.getParameters()) {
-            if (paramType.getParamType() == PluginParameterType.ParamType.PLUGIN) {
+        for (PluginParamDescriptor paramType : pluginMetadata.getParameters()) {
+            if (paramType.getParamType() == PluginParameterType.PluginParamDescriptor.PLUGIN) {
                 String paramName = paramType.getName();
                 // Now search from PluginConfiguration parameters associated Plugin
                 for (AbstractPluginParam param : pluginConf.getParameters()) {

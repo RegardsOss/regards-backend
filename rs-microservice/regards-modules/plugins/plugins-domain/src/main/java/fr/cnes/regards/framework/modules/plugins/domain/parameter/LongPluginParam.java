@@ -26,6 +26,10 @@ package fr.cnes.regards.framework.modules.plugins.domain.parameter;
  */
 public class LongPluginParam extends AbstractPluginParam<Long> {
 
+    public LongPluginParam() {
+        super(PluginParamType.LONG);
+    }
+
     @Override
     public boolean supportsDefaultValue() {
         return true;

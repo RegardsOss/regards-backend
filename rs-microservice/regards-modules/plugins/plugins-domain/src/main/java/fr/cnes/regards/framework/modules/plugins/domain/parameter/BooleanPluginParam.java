@@ -26,6 +26,10 @@ package fr.cnes.regards.framework.modules.plugins.domain.parameter;
  */
 public class BooleanPluginParam extends AbstractPluginParam<Boolean> {
 
+    public BooleanPluginParam() {
+        super(PluginParamType.BOOLEAN);
+    }
+
     @Override
     public boolean supportsDefaultValue() {
         return true;

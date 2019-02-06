@@ -37,7 +37,8 @@ public class FreePluginWithString implements IFreePlugin {
     private String sfield;
 
     @Override
-    public void doIt() {
+    public String doIt() {
         Assert.assertNotNull(sfield);
+        return sfield;
     }
 }

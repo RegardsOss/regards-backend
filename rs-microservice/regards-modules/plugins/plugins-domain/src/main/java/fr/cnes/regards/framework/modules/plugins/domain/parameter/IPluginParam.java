@@ -39,7 +39,7 @@ public interface IPluginParam {
     /**
      * Get parameter type
      */
-    String getType();
+    PluginParamType getType();
 
     /**
      * Check if parameter is dynamic (i.e. value depends on the processing context)
@@ -119,7 +119,7 @@ public interface IPluginParam {
         return new CollectionPluginParam().with(name, value);
     }
 
-    static MapPluginParam build(String name, Map<?, ?> value) {
+    static MapPluginParam build(String name, Map<String, ?> value) {
         return new MapPluginParam().with(name, value);
     }
 
@@ -130,7 +130,7 @@ public interface IPluginParam {
     /**
      * Build a plugin parameter referencing a nested plugin configuration
      */
-    static NestedPluginParam nested(String name, Long configurationId) {
+    static NestedPluginParam plugin(String name, Long configurationId) {
         return new NestedPluginParam().with(name, configurationId);
     }
 

@@ -27,4 +27,7 @@ package fr.cnes.regards.framework.modules.plugins.domain.parameter;
  */
 public class NestedPluginParam extends AbstractPluginParam<Long> {
 
+    public NestedPluginParam() {
+        super(PluginParamType.PLUGIN);
+    }
 }
