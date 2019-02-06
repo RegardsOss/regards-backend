@@ -27,6 +27,9 @@ import feign.Feign;
 import feign.Target;
 import feign.gson.GsonDecoder;
 import feign.gson.GsonEncoder;
+import feign.jaxb.JAXBContextFactory;
+import feign.jaxb.JAXBDecoder;
+import feign.jaxb.JAXBEncoder;
 
 /**
  * Helper class for building Feign client programmatically
@@ -69,6 +72,19 @@ public final class FeignClientBuilder {
     public static <T> T build(final Target<T> pTarget, Client client, Gson gson) {
         return Feign.builder().client(client) // Feign customization
                 .encoder(new GsonEncoder(gson)).decoder(new ResponseEntityDecoder(new GsonDecoder(gson)))
+                .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
+                .target(pTarget);
+    }
+
+    /**
+     * Generate client
+     * @param pTarget Target to add informations in header like Autorization.
+     * @return IResourcesClient a client instance
+     */
+    public static <T> T buildXml(final Target<T> pTarget, Client client) {
+        JAXBContextFactory jaxbFactory = new JAXBContextFactory.Builder().withMarshallerJAXBEncoding("UTF-8").build();
+        return Feign.builder().client(client) // Feign customization
+                .encoder(new JAXBEncoder(jaxbFactory)).decoder(new ResponseEntityDecoder(new JAXBDecoder(jaxbFactory)))
                 .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
                 .target(pTarget);
     }
