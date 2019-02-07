@@ -40,6 +40,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.validation.Validator;
@@ -172,9 +173,8 @@ public class IngestProcessingService implements IIngestProcessingService {
         }
     }
 
-    @MultitenantTransactional(propagation = Propagation.SUPPORTS)
-    // No transaction if not wrapped into already existing one
     @Override
+    @Transactional(readOnly = true)
     public void ingest() {
         // Retrieve all created sips
         // In order to avoid loading all rawSip in memory (can be huge), retrieve only the needed id and processing
@@ -241,6 +241,7 @@ public class IngestProcessingService implements IIngestProcessingService {
     /**
      * Schedule a new {@link IngestProcessingJob} to ingest given {@link SIPEntity}
      */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     public void scheduleIngestProcessingJob(Set<Long> entityIdsToProcess, String processingChain) {
         if (entityIdsToProcess.isEmpty()) {

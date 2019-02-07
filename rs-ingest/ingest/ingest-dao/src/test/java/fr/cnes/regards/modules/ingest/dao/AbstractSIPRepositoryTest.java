@@ -21,10 +21,13 @@ package fr.cnes.regards.modules.ingest.dao;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+import org.junit.After;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.transaction.BeforeTransaction;
 
+import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTest;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
 import fr.cnes.regards.framework.oais.builder.InformationPackagePropertiesBuilder;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -35,7 +38,12 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPSession;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema:ingest_dao" })
-public abstract class AbstractSIPRepositoryTest extends AbstractDaoTransactionalTest {
+public abstract class AbstractSIPRepositoryTest extends AbstractDaoTest {
+
+    @BeforeTransaction
+    public void beforeTransaction() {
+        injectDefaultToken();
+    }
 
     @Autowired
     protected ISIPRepository sipRepository;
@@ -119,5 +127,11 @@ public abstract class AbstractSIPRepositoryTest extends AbstractDaoTransactional
         sip4.setChecksum("123456789032");
 
         sip4 = sipRepository.save(sip4);
+    }
+
+    @After
+    public void cleanUp() {
+        sipRepository.deleteAll();
+        sipSessionRepository.deleteAll();
     }
 }
