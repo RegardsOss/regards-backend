@@ -53,6 +53,7 @@
 		<geojson.docs.version>4.0.0-SNAPSHOT</geojson.docs.version>
 		<geojson.starter.version>4.0.0-SNAPSHOT</geojson.starter.version>
 		<gson.starter.version>4.0.0-SNAPSHOT</gson.starter.version>
+		<proxy.starter.version>4.0.0-SNAPSHOT</proxy.starter.version>
 		<hateoas.starter.version>4.0.0-SNAPSHOT</hateoas.starter.version>
 		<jpa.data.version>4.0.0-SNAPSHOT</jpa.data.version>
 		<jpa.common.version>4.0.0-SNAPSHOT</jpa.common.version>
@@ -268,6 +269,12 @@
 				<artifactId>gson-regards</artifactId>
 				<version>${gson.starter.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.framework</groupId>
+				<artifactId>proxy-starter</artifactId>
+				<version>${proxy.starter.version}</version>
+			</dependency>
+			
 			<dependency>
 				<groupId>fr.cnes.regards.framework</groupId>
 				<artifactId>geojson-docs</artifactId>
