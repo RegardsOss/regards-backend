@@ -27,6 +27,11 @@ import fr.cnes.httpclient.HttpClientFactory;
 import fr.cnes.httpclient.HttpClientFactory.Type;
 
 /**
+ * Creates a {@link HttpClient} with proxy configuration.
+ * Proxy configuration is set with spring properties with the possibilities of the JSPNego library.
+ * This configuration is mained used for CNES specific proxy authorization.
+ *
+ * @see https://github.com/CNES/JSPNego
  * @author sbinda
  *
  */
@@ -44,14 +49,8 @@ public class ProxyConfiguration {
 
     @Bean("proxyHttpClient")
     public HttpClient getHttpClient() {
-
-        // Dependency : https://github.com/CNES/JSPNego
-        // Pour compiler la doc : mvn site
-        // Pour compiler la lib : mvn clean install
-        // Attention, il faut désactiver les tests en positionnant à false toutes les variables skip tests dans le pom
+        // https://github.com/CNES/JSPNego
         fr.cnes.httpclient.configuration.ProxyConfiguration.HTTP_PROXY.setValue(proxyHost + ":" + proxyPort);
-
-        // Ici, ce sont les noms de domaines des noms de docker sur VMPERF lors des tests.
         if ((noProxy != null) && !noProxy.isEmpty()) {
             fr.cnes.httpclient.configuration.ProxyConfiguration.NO_PROXY.setValue(noProxy);
         }
