@@ -20,22 +20,31 @@ package fr.cnes.regards.modules.acquisition.domain;
 
 /**
  *
+ *          ACQUIRING
+ *           /      \
+ *          /        \
+ *     COMPLETED --> INVALID
+ *         |
+ *      FINISHED
  * @author Christophe Mertz
- *
  */
 public enum ProductState {
     /**
-     * At least a mandatory file is missing
+     * At least one mandatory file is missing
      */
     ACQUIRING,
     /**
-     * All mandatory files is acquired
+     * All mandatory files are acquired
      */
     COMPLETED,
     /**
-     * Mandatory and optional files is acquired
+     * Mandatory and optional files are acquired
      */
-    FINISHED;
+    FINISHED,
+    /**
+     * Too many mandatory or optional have been acquired
+     */
+    INVALID;
 
     @Override
     public String toString() {
