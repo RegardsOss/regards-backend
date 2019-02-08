@@ -132,7 +132,7 @@ public class ProductService implements IProductService {
 
     @Override
     public Product loadProduct(Long id) throws ModuleException {
-        Product product = productRepository.findCompleteById(id);
+        Product product = productRepository.loadById(id);
         if (product == null) {
             throw new EntityNotFoundException(id, Product.class);
         }
@@ -141,7 +141,7 @@ public class ProductService implements IProductService {
 
     @Override
     public Product retrieve(String productName) throws ModuleException {
-        Product product = productRepository.findCompleteByProductName(productName);
+        Product product = productRepository.loadByProductName(productName);
         if (product == null) {
             String message = String.format("Product with name \"%s\" not found", productName);
             LOGGER.error(message);
@@ -152,12 +152,12 @@ public class ProductService implements IProductService {
 
     @Override
     public Set<Product> retrieve(Collection<String> productNames) throws ModuleException {
-        return productRepository.findCompleteByProductNameIn(productNames);
+        return productRepository.loadByProductNameIn(productNames);
     }
 
     @Override
     public Optional<Product> searchProduct(String productName) throws ModuleException {
-        return Optional.ofNullable(productRepository.findCompleteByProductName(productName));
+        return Optional.ofNullable(productRepository.loadByProductName(productName));
     }
 
     @Override
@@ -307,7 +307,7 @@ public class ProductService implements IProductService {
         }
 
         // Find all existing product by using one database request
-        Set<Product> products = productRepository.findCompleteByProductNameIn(productNames);
+        Set<Product> products = productRepository.loadByProductNameIn(productNames);
         Map<String, Product> productMap = products.stream()
                 .collect(Collectors.toMap(Product::getProductName, Function.identity()));
         Set<Product> productsToSchedule = new HashSet<>();
@@ -399,7 +399,7 @@ public class ProductService implements IProductService {
 
     @Override
     public void handleSIPEvent(SIPEvent event) {
-        Product product = productRepository.findCompleteByProductName(event.getProviderId());
+        Product product = productRepository.loadByProductName(event.getProviderId());
         if (product != null) {
             // Do post processing if SIP properly stored
             if (SIPState.STORED.equals(event.getState()) && product.getProcessingChain().getPostProcessSipPluginConf()
