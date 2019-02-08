@@ -174,7 +174,6 @@ public class IngestProcessingService implements IIngestProcessingService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public void ingest() {
         // Retrieve all created sips
         // In order to avoid loading all rawSip in memory (can be huge), retrieve only the needed id and processing
