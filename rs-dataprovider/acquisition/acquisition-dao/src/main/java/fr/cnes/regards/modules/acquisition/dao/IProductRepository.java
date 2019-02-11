@@ -56,13 +56,13 @@ import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
 
     @EntityGraph("graph.product.complete")
-    Product loadById(Long id);
+    Product findOneById(Long id);
 
     @EntityGraph("graph.product.complete")
-    Product loadByProductName(String productName);
+    Product findByProductName(String productName);
 
     @EntityGraph("graph.product.complete")
-    Set<Product> loadByProductNameIn(Collection<String> productNames);
+    Set<Product> findByProductNameIn(Collection<String> productNames);
 
     Page<Product> findByProcessingChainOrderByIdAsc(AcquisitionProcessingChain processingChain, Pageable pageable);
 
