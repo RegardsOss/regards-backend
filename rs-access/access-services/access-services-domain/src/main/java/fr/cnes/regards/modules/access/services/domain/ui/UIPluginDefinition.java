@@ -28,6 +28,7 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -93,10 +94,12 @@ public class UIPluginDefinition {
 
     /**
      * Application modes
+     *
+     * FetchType.EAGER : It is only an enumeration of values. No need to define a entity graph for this.
      */
     @NotNull
     @Column(name = "application_mode", nullable = false)
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "t_ui_plugin_application_mode", joinColumns = @JoinColumn(name = "ui_plugin_id"),
             foreignKey = @ForeignKey(name = "fk_ui_plugin_application_mode_ui_plugin_id"))
     @Enumerated(EnumType.STRING)
@@ -104,10 +107,12 @@ public class UIPluginDefinition {
 
     /**
      * Entity Types to which this plugin is applicable
+     *
+     * FetchType.EAGER : It is only an enumeration of values. No need to define a entity graph for this.
      */
     @NotNull
     @Column(name = "entity_type", nullable = false)
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "t_ui_plugin_entity_type", joinColumns = @JoinColumn(name = "ui_plugin_id"),
             foreignKey = @ForeignKey(name = "fk_ui_plugin_entity_type_ui_plugin_id"))
     @Enumerated(EnumType.STRING)

@@ -22,6 +22,7 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -29,8 +30,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.NamedAttributeNode;
-import javax.persistence.NamedEntityGraph;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -51,7 +50,6 @@ import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 @Table(name = "t_link_uiservice_dataset",
         uniqueConstraints = @UniqueConstraint(name = "uk_link_uiservice_dataset_dataset_id",
                 columnNames = "dataset_id"))
-@NamedEntityGraph(name = "graph.link.configurations", attributeNodes = @NamedAttributeNode(value = "services"))
 public class LinkUIPluginsDatasets {
 
     /**
@@ -68,8 +66,10 @@ public class LinkUIPluginsDatasets {
 
     /**
      * Ids of plugin configuration of type IService
+     *
+     * FetchType.EAGER : It is the only usefull information of this POJO. There is no need of getting LinkUIPluginsDatasets without services.
      */
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "ta_link_dataset_uiservices",
             joinColumns = @JoinColumn(name = "dataset_id",
                     foreignKey = @ForeignKey(name = "fk_link_dataset_uiservices_dataset_id_service_configuration_id")),
