@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.acquisition.service;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.ClosedByInterruptException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
@@ -651,6 +652,10 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
             info.setLastModificationDate(lmd);
             fileInfoRepository.save(info);
+        } catch (ClosedByInterruptException e) {
+            // This exception happens when you try to access files while thread has been interrupted.
+            // In this case lets ignore the file and act as we did not scanned it.
+            LOGGER.debug("File {} scanning has been interrupted during acquisition chain execution.", filePath);
         } catch (NoSuchAlgorithmException | IOException e) {
             // Continue silently but register error in database
             String errorMessage = String.format("Error registering file %s : %s", scannedFile.getFilePath().toString(),
