@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.catalog.services.dao;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
@@ -28,6 +29,7 @@ import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
  */
 public interface ILinkPluginsDatasetsRepository extends JpaRepository<LinkPluginsDatasets, Long> {
 
+    @EntityGraph(attributePaths = { "services" })
     LinkPluginsDatasets findOneByDatasetId(String pDatasetId);
 
 }
