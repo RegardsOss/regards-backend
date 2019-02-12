@@ -232,8 +232,7 @@ public class ProductService implements IProductService {
 
         // Compute product state
         for (AcquisitionFile file : product.getAcquisitionFiles()) {
-            if (AcquisitionFileState.VALID.equals(file.getState()) || AcquisitionFileState.ACQUIRED
-                    .equals(file.getState())) {
+            if (AcquisitionFileState.ACQUIRED.equals(file.getState())) {
                 if (file.getFileInfo().isMandatory()) {
                     nbActualMandatory++;
                 } else {

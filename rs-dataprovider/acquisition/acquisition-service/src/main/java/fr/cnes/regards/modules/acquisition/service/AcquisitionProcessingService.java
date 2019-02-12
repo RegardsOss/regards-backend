@@ -28,6 +28,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -136,7 +137,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
      * @throws IOException if error occurs!
      * @throws NoSuchAlgorithmException if error occurs!
      */
-    private static String computeMD5FileChecksum(Path filePath, String checksumAlgorithm)
+    private static String computeFileChecksum(Path filePath, String checksumAlgorithm)
             throws IOException, NoSuchAlgorithmException {
         InputStream inputStream = Files.newInputStream(filePath);
         return ChecksumUtils.computeHexChecksum(inputStream, checksumAlgorithm);
@@ -558,7 +559,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     public void scanAndRegisterFiles(AcquisitionProcessingChain processingChain) throws ModuleException {
 
         // Launch file scanning for each file information
-        for (AcquisitionFileInfo fileInfo : processingChain.getFileInfos()) {
+        Iterator<AcquisitionFileInfo> fileInfoIter = processingChain.getFileInfos().iterator();
+        while(fileInfoIter.hasNext() && !Thread.currentThread().isInterrupted()) {
+            AcquisitionFileInfo fileInfo = fileInfoIter.next();
             // Get plugin instance
             IScanPlugin scanPlugin = pluginService.getPlugin(fileInfo.getScanPlugin().getId());
 
@@ -585,7 +588,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             long startTime = System.currentTimeMillis();
             int fromIndex = 0;
             int toIndex = AcquisitionProperties.WORKING_UNIT;
-            while (toIndex <= scannedFiles.size()) {
+            while (toIndex <= scannedFiles.size() && !Thread.currentThread().isInterrupted()) {
                 long transactionStartTime = System.currentTimeMillis();
                 // Do it in one transaction
                 self.registerFiles(scannedFiles.subList(fromIndex, toIndex), fileInfo, scanningDate);
@@ -607,8 +610,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     public int registerFiles(List<Path> filePaths, AcquisitionFileInfo info, Optional<OffsetDateTime> scanningDate)
             throws ModuleException {
         int countRegistered = 0;
-        for (Path filePath : filePaths) {
-            if (registerFile(filePath, info, scanningDate)) {
+        Iterator<Path> filePathIter = filePaths.iterator();
+        while (filePathIter.hasNext() && !Thread.currentThread().isInterrupted()) {
+            if (registerFile(filePathIter.next(), info, scanningDate)) {
                 countRegistered++;
             }
         }
@@ -629,7 +633,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         // Compute checksum and manage last modification date
         try {
             // Compute and set checksum
-            scannedFile.setChecksum(computeMD5FileChecksum(filePath, AcquisitionProcessingChain.CHECKSUM_ALGORITHM));
+            scannedFile.setChecksum(computeFileChecksum(filePath, AcquisitionProcessingChain.CHECKSUM_ALGORITHM));
             scannedFile.setState(AcquisitionFileState.IN_PROGRESS);
 
             // Update last modification date
@@ -664,11 +668,11 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     @MultitenantTransactional(propagation = Propagation.SUPPORTS)
     @Override
     public void manageRegisteredFiles(AcquisitionProcessingChain processingChain) throws ModuleException {
-        while (!Thread.interrupted() && self.manageNewFilesByPage(processingChain)) {
+        while (!Thread.currentThread().isInterrupted() && self.manageNewFilesByPage(processingChain)) {
             // Works as long as there is at least one page left
         }
         // Just trace interruption
-        if (Thread.interrupted()) {
+        if (Thread.currentThread().isInterrupted()) {
             LOGGER.debug("{} thread has been interrupted", this.getClass().getName());
         }
     }
@@ -728,7 +732,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     @MultitenantTransactional(propagation = Propagation.SUPPORTS)
     @Override
     public void restartInterruptedJobs(AcquisitionProcessingChain processingChain) throws ModuleException {
-        while (!Thread.interrupted() && productService.restartInterruptedJobsByPage(processingChain)) {
+        while (!Thread.currentThread().isInterrupted() && productService.restartInterruptedJobsByPage(processingChain)) {
             // Works as long as there is at least one page left
         }
     }
@@ -736,7 +740,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     @MultitenantTransactional(propagation = Propagation.SUPPORTS)
     @Override
     public void retrySIPGeneration(AcquisitionProcessingChain processingChain) {
-        while (!Thread.interrupted() && productService.retrySIPGenerationByPage(processingChain)) {
+        while (!Thread.currentThread().isInterrupted() && productService.retrySIPGenerationByPage(processingChain)) {
             // Works as long as there is at least one page left
         }
     }
