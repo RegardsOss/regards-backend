@@ -126,6 +126,7 @@ import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 import fr.cnes.regards.modules.storage.domain.event.DataStorageEvent;
 import fr.cnes.regards.modules.storage.domain.event.StorageAction;
 import fr.cnes.regards.modules.storage.domain.event.StorageEventType;
+import fr.cnes.regards.modules.storage.domain.exception.InvalidDatastoragePluginConfException;
 import fr.cnes.regards.modules.storage.domain.job.AIPQueryFilters;
 import fr.cnes.regards.modules.storage.domain.job.AddAIPTagsFilters;
 import fr.cnes.regards.modules.storage.domain.job.RemoveAIPTagsFilters;
@@ -560,7 +561,7 @@ public class AIPService implements IAIPService {
             // 2. Check for online files. Online files don't need to be stored in the cache
             // they can be accessed directly where they are stored.
             for (StorageDataFile df : dataFilesWithAccess) {
-                if (df.getPrioritizedDataStorages() != null && !df.getPrioritizedDataStorages().isEmpty()) {
+                if ((df.getPrioritizedDataStorages() != null) && !df.getPrioritizedDataStorages().isEmpty()) {
                     Optional<PrioritizedDataStorage> onlinePrioritizedDataStorageOpt = df.getPrioritizedDataStorages()
                             .stream().filter(pds -> pds.getDataStorageType().equals(DataStorageType.ONLINE))
                             .findFirst();
@@ -692,7 +693,7 @@ public class AIPService implements IAIPService {
         // we have two cases: there is a date or not
         Page<AIP> aips;
         if (fromLastUpdateDate == null) {
-            if (tags == null || tags.isEmpty()) {
+            if ((tags == null) || tags.isEmpty()) {
                 aips = aipDao.findAllByState(state, pageable);
             } else {
                 aips = aipDao.findAll(
@@ -821,42 +822,60 @@ public class AIPService implements IAIPService {
      * @param storageWorkingSetMap List of {@link StorageDataFile} to storeAndCreate per {@link PluginConfiguration}.
      * @param storingData FALSE to store {@link DataType#AIP}, or TRUE for all other type of
      * {@link StorageDataFile}.
-     * @throws ModuleException
      */
-    private void scheduleStorage(Multimap<Long, StorageDataFile> storageWorkingSetMap, boolean storingData)
-            throws ModuleException {
-        Set<UUID> jobIds = Sets.newHashSet();
+    private void scheduleStorage(Multimap<Long, StorageDataFile> storageWorkingSetMap, boolean storingData) {
+        Set<StorageDataFile> scheduledFiles = Sets.newHashSet();
         for (Long dataStorageConfId : storageWorkingSetMap.keySet()) {
-            Set<IWorkingSubset> workingSubSets = getWorkingSubsets(storageWorkingSetMap.get(dataStorageConfId),
-                                                                   dataStorageConfId,
-                                                                   DataStorageAccessModeEnum.STORE_MODE);
-            LOGGER.trace("Preparing a job for each working subsets");
-            // lets instantiate every job for every DataStorage to use
-            for (IWorkingSubset workingSubset : workingSubSets) {
-                // for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets storeAndCreate a
-                // job for
-                // each of them
-                Set<JobParameter> parameters = Sets.newHashSet();
-                parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConfId));
-                parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
-                if (storingData) {
-                    jobIds.add(jobInfoService.createAsQueued(new JobInfo(false, StorageJobsPriority.STORE_DATA_JOB,
-                            parameters, authResolver.getUser(), StoreDataFilesJob.class.getName())).getId());
-                } else {
-                    jobIds.add(jobInfoService.createAsQueued(new JobInfo(false, StorageJobsPriority.STORE_METADATA_JOB,
-                            parameters, authResolver.getUser(), StoreMetadataFilesJob.class.getName())).getId());
-                }
-
+            try {
+                scheduledFiles.addAll(scheduleStorageForPluginConf(storageWorkingSetMap.get(dataStorageConfId),
+                                                                   dataStorageConfId, storingData));
+            } catch (InvalidDatastoragePluginConfException e) {
+                LOGGER.error(e.getMessage(), e);
+                notifyAdmins("Storage schedule", e.getMessage(), NotificationLevel.ERROR, MimeTypeUtils.TEXT_PLAIN);
             }
         }
         // now that files are given to the jobs, lets remove the source url so once stored we only have the good urls
-        Collection<StorageDataFile> storageDataFiles = storageWorkingSetMap.values();
-        storageDataFiles.forEach(file -> file.setUrls(new HashSet<>()));
-        for (StorageDataFile dataFile : storageDataFiles) {
+        for (StorageDataFile dataFile : scheduledFiles) {
+            dataFile.setUrls(new HashSet<>());
             dataFileDao.save(dataFile);
             em.flush();
             em.clear();
         }
+    }
+
+    /**
+     *
+     * @param dataFiles{@link StorageDataFile} to store
+     * @param dataStorageConfId {@link PluginConfiguration} to use for storage
+     * @param storingData FALSE to store {@link DataType#AIP}, or TRUE for all other type of {@link StorageDataFile}.
+     * @throws InvalidDatastoragePluginConfException If {@link PluginConfiguration} is invalid
+     *
+     * @return Scheduled {@link StorageDataFile}s
+     */
+    private Set<StorageDataFile> scheduleStorageForPluginConf(Collection<StorageDataFile> dataFiles,
+            Long dataStorageConfId, boolean storingData) throws InvalidDatastoragePluginConfException {
+        Set<StorageDataFile> scheduledFiles = Sets.newHashSet();
+        Set<IWorkingSubset> workingSubSets = getWorkingSubsets(dataFiles, dataStorageConfId,
+                                                               DataStorageAccessModeEnum.STORE_MODE);
+        LOGGER.trace("Preparing a job for each working subsets");
+        // lets instantiate every job for every DataStorage to use
+        for (IWorkingSubset workingSubset : workingSubSets) {
+            // for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets storeAndCreate a
+            // job for
+            // each of them
+            scheduledFiles.addAll(workingSubset.getDataFiles());
+            Set<JobParameter> parameters = Sets.newHashSet();
+            parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConfId));
+            parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
+            if (storingData) {
+                jobInfoService.createAsQueued(new JobInfo(false, StorageJobsPriority.STORE_DATA_JOB, parameters,
+                        authResolver.getUser(), StoreDataFilesJob.class.getName())).getId();
+            } else {
+                jobInfoService.createAsQueued(new JobInfo(false, StorageJobsPriority.STORE_METADATA_JOB, parameters,
+                        authResolver.getUser(), StoreMetadataFilesJob.class.getName())).getId();
+            }
+        }
+        return scheduledFiles;
     }
 
     /**
@@ -867,63 +886,68 @@ public class AIPService implements IAIPService {
      * @return {@link IWorkingSubset}s, empty if the plugin could not be instantiated
      */
     private Set<IWorkingSubset> getWorkingSubsets(Collection<StorageDataFile> dataFilesToSubSet, Long dataStorageConfId,
-            DataStorageAccessModeEnum accessMode) throws ModuleException {
-        if (pluginService.canInstantiate(dataStorageConfId)) {
-            IDataStorage<IWorkingSubset> storage = pluginService.getPlugin(dataStorageConfId);
-            LOGGER.debug("Getting working subsets for data storage of id {}", dataStorageConfId);
-            WorkingSubsetWrapper<?> workingSubsetWrapper = storage.prepare(dataFilesToSubSet, accessMode);
-            @SuppressWarnings("unchecked")
-            Set<IWorkingSubset> workingSubSets = (Set<IWorkingSubset>) workingSubsetWrapper.getWorkingSubSets();
-            LOGGER.debug("{} data objects were dispatched into {} working subsets", dataFilesToSubSet.size(),
-                         workingSubSets.size());
-            // as we are trusty people, we check that the prepare gave us back all DataFiles into the WorkingSubSets
-            Set<StorageDataFile> subSetDataFiles = workingSubSets.stream().flatMap(wss -> wss.getDataFiles().stream())
-                    .collect(Collectors.toSet());
-            if (subSetDataFiles.size() != dataFilesToSubSet.size()) {
-                Set<StorageDataFile> notSubSetDataFiles = Sets.newHashSet(dataFilesToSubSet);
-                notSubSetDataFiles.removeAll(subSetDataFiles);
-                // lets check that the plugin did not forget to reject some files
-                for (StorageDataFile notSubSetDataFile : notSubSetDataFiles) {
-                    if (!workingSubsetWrapper.getRejectedDataFiles().containsKey(notSubSetDataFile)) {
-                        workingSubsetWrapper.addRejectedDataFile(notSubSetDataFile, null);
-                    }
-                }
-                Set<Map.Entry<StorageDataFile, String>> rejectedSet = workingSubsetWrapper.getRejectedDataFiles()
-                        .entrySet();
-                for (Map.Entry<StorageDataFile, String> rejected : rejectedSet) {
-                    StorageDataFile dataFile = rejected.getKey();
-                    dataFile.setState(DataFileState.ERROR);
-                    dataFile.addFailureCause(rejected.getValue());
-                    AIP aip = dataFile.getAip();
-                    aip.setState(AIPState.STORAGE_ERROR);
-                    dataFileDao.save(dataFile);
-                    save(aip, true);
-                }
-                // lets prepare the notification message
-                Map<String, Object> dataMap = new HashMap<>();
-                dataMap.put("dataFilesMap", workingSubsetWrapper.getRejectedDataFiles());
-                dataMap.put("dataStorage", pluginService.getPluginConfiguration(dataStorageConfId));
-                // lets use the template service to get our message
-                SimpleMailMessage email;
-                try {
-                    email = templateService.writeToEmail(TemplateServiceConfiguration.NOT_SUBSETTED_DATA_FILES_CODE,
-                                                         dataMap);
-                } catch (EntityNotFoundException e) {
-                    throw new MaintenanceException(e.getMessage(), e);
-                }
-                notifyAdmins("Some file were not handled by a data storage", email.getText(), NotificationLevel.ERROR,
-                             MimeTypeUtils.TEXT_HTML);
+            DataStorageAccessModeEnum accessMode) throws InvalidDatastoragePluginConfException {
+
+        IDataStorage<IWorkingSubset> storage = null;
+        try {
+            if (pluginService.canInstantiate(dataStorageConfId)) {
+                storage = pluginService.getPlugin(dataStorageConfId);
+            } else {
+                throw new InvalidDatastoragePluginConfException(dataStorageConfId);
             }
-            return workingSubSets;
-        } else {
-            notifyAdmins("Some files could not be handled by their storage plugin.",
-                         String.format("Plugin Configuration %s could not be instanciated."
-                                 + " Please check the configuration.%n"
-                                 + " Skipping work(mode: %s) on this Plugin configuration for now.", dataStorageConfId,
-                                       accessMode),
-                         NotificationLevel.ERROR, MimeTypeUtils.TEXT_PLAIN);
-            return new HashSet<>();
+        } catch (ModuleException e) {
+            throw new InvalidDatastoragePluginConfException(dataStorageConfId, e);
         }
+
+        LOGGER.debug("Getting working subsets for data storage of id {}", dataStorageConfId);
+        WorkingSubsetWrapper<?> workingSubsetWrapper = storage.prepare(dataFilesToSubSet, accessMode);
+        @SuppressWarnings("unchecked")
+        Set<IWorkingSubset> workingSubSets = (Set<IWorkingSubset>) workingSubsetWrapper.getWorkingSubSets();
+        LOGGER.debug("{} data objects were dispatched into {} working subsets", dataFilesToSubSet.size(),
+                     workingSubSets.size());
+        // as we are trusty people, we check that the prepare gave us back all DataFiles into the WorkingSubSets
+        Set<StorageDataFile> subSetDataFiles = workingSubSets.stream().flatMap(wss -> wss.getDataFiles().stream())
+                .collect(Collectors.toSet());
+        if (subSetDataFiles.size() != dataFilesToSubSet.size()) {
+            Set<StorageDataFile> notSubSetDataFiles = Sets.newHashSet(dataFilesToSubSet);
+            notSubSetDataFiles.removeAll(subSetDataFiles);
+            // lets check that the plugin did not forget to reject some files
+            for (StorageDataFile notSubSetDataFile : notSubSetDataFiles) {
+                if (!workingSubsetWrapper.getRejectedDataFiles().containsKey(notSubSetDataFile)) {
+                    workingSubsetWrapper.addRejectedDataFile(notSubSetDataFile, null);
+                }
+            }
+            Set<Map.Entry<StorageDataFile, String>> rejectedSet = workingSubsetWrapper.getRejectedDataFiles()
+                    .entrySet();
+            for (Map.Entry<StorageDataFile, String> rejected : rejectedSet) {
+                StorageDataFile dataFile = rejected.getKey();
+                dataFile.setState(DataFileState.ERROR);
+                dataFile.addFailureCause(rejected.getValue());
+                AIP aip = dataFile.getAip();
+                aip.setState(AIPState.STORAGE_ERROR);
+                dataFileDao.save(dataFile);
+                save(aip, true);
+            }
+            // lets prepare the notification message
+            Map<String, Object> dataMap = new HashMap<>();
+            dataMap.put("dataFilesMap", workingSubsetWrapper.getRejectedDataFiles());
+            try {
+                dataMap.put("dataStorage", pluginService.getPluginConfiguration(dataStorageConfId));
+            } catch (EntityNotFoundException e1) {
+                LOGGER.error(e1.getMessage(), e1);
+            }
+            // lets use the template service to get our message
+            SimpleMailMessage email;
+            try {
+                email = templateService.writeToEmail(TemplateServiceConfiguration.NOT_SUBSETTED_DATA_FILES_CODE,
+                                                     dataMap);
+            } catch (EntityNotFoundException e) {
+                throw new MaintenanceException(e.getMessage(), e);
+            }
+            notifyAdmins("Some file were not handled by a data storage", email.getText(), NotificationLevel.ERROR,
+                         MimeTypeUtils.TEXT_HTML);
+        }
+        return workingSubSets;
     }
 
     /**
@@ -986,10 +1010,10 @@ public class AIPService implements IAIPService {
             scheduleStorage(storageWorkingSetMap, false);
             // to avoid making jobs for the same metadata all the time, lets change the metadataToStore AIP state to
             // STORING_METADATA
-            for (StorageDataFile dataFile : metadataToStore) {
+            for (StorageDataFile dataFile : storageWorkingSetMap.values()) {
                 AIP aip = dataFile.getAip();
                 aip.setState(AIPState.STORING_METADATA);
-                // StorageDataFile provided does not existsin db yet at this step see {@link WriteAIPMetadataJob}
+                // StorageDataFile provided does not exists in db yet at this step see {@link WriteAIPMetadataJob}
                 dataFileDao.save(dataFile);
                 save(aip, true);
                 em.flush();
@@ -1031,7 +1055,7 @@ public class AIPService implements IAIPService {
             LOGGER.trace("[METADATA STORE] Number of AIP in pending state ready for metadata storage {}/{}",
                          metadataToStore.size(), pendingAips.getTotalElements());
             page = pendingAips.nextPageable();
-        } while (pendingAips.hasNext() && metadataToStore.size() < dataFileLimit);
+        } while (pendingAips.hasNext() && (metadataToStore.size() < dataFileLimit));
         LOGGER.trace("[METADATA STORE] Number of AIP metadata {} to schedule for storage.", metadataToStore.size());
         return metadataToStore;
     }
@@ -1371,7 +1395,7 @@ public class AIPService implements IAIPService {
             // now, lets plan a job to delete those files
             try {
                 scheduleFileDeletion(filesToDelete, dataStorageId);
-            } catch (ModuleException e) {
+            } catch (InvalidDatastoragePluginConfException e) {
                 filesToDelete.forEach(sdf -> undeletableFileCauseMap
                         .put(sdf,
                              String.format("Deletion job could not be created for the following reason: %s. %n"
@@ -1491,12 +1515,18 @@ public class AIPService implements IAIPService {
         }
         Set<UUID> jobIds = Sets.newHashSet();
         for (Long dataStorageConfId : dataStorageDataFileMultimap.keySet()) {
-            jobIds.addAll(scheduleDeletionJob(dataStorageDataFileMultimap, dataStorageConfId));
+            try {
+                jobIds.addAll(scheduleDeletionJob(dataStorageDataFileMultimap, dataStorageConfId));
+            } catch (InvalidDatastoragePluginConfException e) {
+                LOGGER.error(e.getMessage(), e);
+                notificationClient.notify(e.getMessage(), "Storage - Schedule deletion error", NotificationLevel.ERROR,
+                                          DefaultRole.ADMIN);
+            }
         }
     }
 
     private void scheduleFileDeletion(Collection<StorageDataFile> dataFilesToDelete, Long dataStorageConfId)
-            throws ModuleException {
+            throws InvalidDatastoragePluginConfException {
         Multimap<Long, StorageDataFile> dataStorageDataFileMultimap = HashMultimap.create();
         LOGGER.debug("Start schedule file deletion for {} StorageDataFiles", dataFilesToDelete.size());
         dataStorageDataFileMultimap.putAll(dataStorageConfId, dataFilesToDelete);
@@ -1510,7 +1540,7 @@ public class AIPService implements IAIPService {
     }
 
     private Set<UUID> scheduleDeletionJob(Multimap<Long, StorageDataFile> dataStorageDataFileMultimap,
-            Long dataStorageConfId) throws ModuleException {
+            Long dataStorageConfId) throws InvalidDatastoragePluginConfException {
         Set<UUID> jobIds = new HashSet<>();
         Set<IWorkingSubset> workingSubSets = getWorkingSubsets(dataStorageDataFileMultimap.get(dataStorageConfId),
                                                                dataStorageConfId,

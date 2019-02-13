@@ -34,7 +34,6 @@ import org.springframework.util.MimeType;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -96,14 +95,13 @@ public class WriteAIPMetadataJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
-        if (aipIds != null && !aipIds.isEmpty()) {
+        if ((aipIds != null) && !aipIds.isEmpty()) {
             Set<StorageDataFile> metadataToStore = Sets.newHashSet();
 
             // Write metadata files into workspace
             for (String aipId : aipIds) {
-                AIP aip;
                 try {
-                    aip = aipService.retrieveAip(aipId);
+                    AIP aip = aipService.retrieveAip(aipId);
                     try {
                         logger.debug("[METADATA STORE] Writting meta-data for aip fully stored {}", aipId);
                         metadataToStore.add(writeMetaToWorkspace(aip));
@@ -111,24 +109,23 @@ public class WriteAIPMetadataJob extends AbstractJob<Void> {
                         logger.error(e.getMessage(), e);
                         aip.setState(AIPState.STORAGE_ERROR);
                         aipService.save(aip, true);
+
+                        String message = String.format("Error writing meta datafile for AIP %s. Cause : %s",
+                                                       aip.getProviderId(), e.getMessage());
+                        notificationClient.notify(message, "Storage error", NotificationLevel.ERROR, DefaultRole.ADMIN);
                     }
                 } catch (EntityNotFoundException e1) {
                     String message = String
                             .format("Unable to write metadata file for AIP fully stored %s. The AIP does not exists anymore.",
                                     aipId);
-                    FeignSecurityManager.asSystem();
-                    try {
-                        notificationClient.notify(message, "Storage error",
-
-                                                  NotificationLevel.ERROR, DefaultRole.ADMIN);
-                    } finally {
-                        FeignSecurityManager.reset();
-                    }
+                    notificationClient.notify(message, "Storage error", NotificationLevel.ERROR, DefaultRole.ADMIN);
                 }
             }
 
-            // Now, schdule storage metadata job for each file
-            aipService.scheduleStorageMetadata(metadataToStore);
+            if (!metadataToStore.isEmpty()) {
+                // Now, schedule storage metadata job for each file
+                aipService.scheduleStorageMetadata(metadataToStore);
+            }
         }
     }
 
