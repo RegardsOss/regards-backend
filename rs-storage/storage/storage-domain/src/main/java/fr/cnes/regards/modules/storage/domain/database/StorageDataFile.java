@@ -53,17 +53,15 @@ import fr.cnes.regards.modules.storage.domain.AIP;
                 @Index(name = "idx_data_file_state", columnList = "state"),
                 @Index(name = "idx_data_file_aip", columnList = "aip_ip_id") })
 // @formatter:off
-@NamedEntityGraph(name = "graph.datafile.full", attributeNodes = { @NamedAttributeNode("aipEntity"),
-        @NamedAttributeNode(value = "prioritizedDataStorages", subgraph = "graph.datafile.prioritizedDataStorages") },
+@NamedEntityGraph(name = "graph.datafile.full", attributeNodes = {
+            @NamedAttributeNode("aipEntity"),
+            @NamedAttributeNode(value = "prioritizedDataStorages", subgraph = "graph.datafile.prioritizedDataStorages")
+        },
         subgraphs = {
                 @NamedSubgraph(name = "graph.datafile.prioritizedDataStorages",
-                        attributeNodes = { @NamedAttributeNode(value = "dataStorageConfiguration",
-                                subgraph = "graph.datafile.prioritizedDataStorages.dataStorageConfiguration") }),
-                @NamedSubgraph(name = "graph.datafile.prioritizedDataStorages.dataStorageConfiguration",
-                        attributeNodes = { @NamedAttributeNode(value = "parameters",
-                                subgraph = "graph.datafile.prioritizedDataStorages.dataStorageConfiguration.parameters") }),
-                @NamedSubgraph(name = "graph.datafile.prioritizedDataStorages.dataStorageConfiguration.parameters",
-                        attributeNodes = { @NamedAttributeNode("dynamicsValues") }) })
+                        attributeNodes = { @NamedAttributeNode(value = "dataStorageConfiguration") }
+                )
+        })
 // @formatter:on
 public class StorageDataFile {
 
@@ -229,7 +227,7 @@ public class StorageDataFile {
      */
     public StorageDataFile(Set<URL> urls, String checksum, String algorithm, DataType type, Long fileSize,
             MimeType mimeType, AIPEntity aipEntity, String name, String storageDirectory) {
-        if(urls != null) {
+        if (urls != null) {
             this.urls.addAll(urls);
         }
         this.checksum = checksum;
