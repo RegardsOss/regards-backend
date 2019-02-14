@@ -224,6 +224,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         Queue queue;
         try {
             virtualHostAdmin.bind(virtualHost);
+            amqpAdmin.declareDeadLetter();
             Exchange exchange = amqpAdmin.declareExchange(eventType, workerMode, target);
             Optional<Class<? extends IHandler<?>>> handlerType = Optional.empty();
             if (handler != null) {
@@ -283,6 +284,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         // Init container
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
+        container.setDefaultRequeueRejected(false);
         container.setChannelTransacted(true);
 
         MessageListenerAdapter messageListener = new MessageListenerAdapter(handler, DEFAULT_HANDLING_METHOD);
@@ -293,7 +295,6 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         Set<String> queueNames = new HashSet<>();
         queues.forEach(q -> queueNames.add(q.getName()));
         container.addQueueNames(queueNames.toArray(new String[0]));
-
         vhostsContainers.put(virtualHost, container);
 
         container.start();

@@ -20,6 +20,7 @@ package fr.cnes.regards.framework.amqp.test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Assume;
@@ -27,17 +28,32 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.amqp.core.Exchange;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageProperties;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueBuilder;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.gson.Gson;
+import com.sun.xml.internal.bind.v2.TODO;
 import fr.cnes.regards.framework.amqp.AbstractSubscriber;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.VirtualHostMode;
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.event.Event;
+import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
+import fr.cnes.regards.framework.amqp.test.event.ErrorEvent;
 import fr.cnes.regards.framework.amqp.test.event.GsonInfo;
 import fr.cnes.regards.framework.amqp.test.event.Info;
 import fr.cnes.regards.framework.amqp.test.event.MicroserviceInfo;
@@ -48,6 +64,7 @@ import fr.cnes.regards.framework.amqp.test.handler.AbstractReceiver;
 import fr.cnes.regards.framework.amqp.test.handler.GsonInfoHandler;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 
 /**
  * Common subscriber tests for {@link VirtualHostMode#SINGLE} and {@link VirtualHostMode#MULTI} modes
@@ -69,6 +86,9 @@ public abstract class AbstractSubscriberIT {
 
     @Autowired
     protected IAmqpAdmin amqpAdmin;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     @Before
     public void init() throws RabbitMQVhostException {
@@ -249,5 +269,42 @@ public abstract class AbstractSubscriberIT {
 
     private class SingleReceiverB extends AbstractReceiver<OnePerMicroserviceInfo> {
 
+    }
+
+    @Test
+    public void testErrorMsg() throws InterruptedException {
+        // First lets subscribe to a queue
+        subscriber.subscribeTo(ErrorEvent.class, new ErrorHandler());
+        // sends a malformed message to the queue used by the handler (no tenant wrapper)
+        Target target = ErrorEvent.class.getAnnotation(Event.class).target();
+        String exchangeName = amqpAdmin.getBroadcastExchangeName(ErrorEvent.class.getName(), target);
+        // Purge DLQ before publishing anything
+        amqpAdmin.purgeQueue(RegardsAmqpAdmin.REGARDS_DLQ, true);
+        try {
+            rabbitVirtualHostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
+            TenantWrapper messageSended = new TenantWrapper(new OnePerMicroserviceInfo(), "PROJECT");
+            rabbitTemplate.convertAndSend(exchangeName, RegardsAmqpAdmin.DEFAULT_ROUTING_KEY, messageSended, pMessage -> {
+                MessageProperties messageProperties = pMessage.getMessageProperties();
+                messageProperties.setPriority(0);
+                return new Message(pMessage.getBody(), messageProperties);
+            });
+            int i = 10;
+            while (i-- > 0) {
+                Thread.sleep(100);
+            }
+            // Check that the number of message in DLQ is greater than initial.
+            // We only check with > because other message could have ended up into the DLQ
+            //TODO
+        } finally {
+            rabbitVirtualHostAdmin.unbind();
+        }
+    }
+
+    private class ErrorHandler extends AbstractReceiver<ErrorEvent> {
+
+        @Override
+        public void handle(TenantWrapper<ErrorEvent> wrapper) {
+            throw new RuntimeException("Because");
+        }
     }
 }
