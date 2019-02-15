@@ -45,16 +45,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.hateoas.Resource;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
@@ -67,6 +63,7 @@ import org.springframework.util.MimeType;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -94,7 +91,6 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IAIPSessionRepository;
 import fr.cnes.regards.modules.storage.dao.IAIPUpdateRequestRepository;
@@ -504,26 +500,24 @@ public class AIPServiceIT extends AbstractRegardsIT {
         // Now, lets ask for a replay
         AIP beforeRetry = aipService.retrieveAip(aip.getId().toString());
         Assert.assertEquals("To be able to test the retry, we need an AIP being in state STORE_ERROR",
-                            AIPState.STORAGE_ERROR,
-                            beforeRetry.getState());
+                            AIPState.STORAGE_ERROR, beforeRetry.getState());
         Set<String> aipIpIds = Sets.newHashSet(aip.getId().toString());
         List<RejectedAip> rejectedAips = aipService.applyRetryChecks(aipIpIds);
         Assert.assertEquals("There should be no aip rejected", 0, rejectedAips.size());
         aipService.storeRetry(aipIpIds);
         AIP afterAsking = aipService.retrieveAip(aip.getId().toString());
-        Assert.assertEquals("After asking for retry, AIP should be in state VALID",
-                            AIPState.VALID,
+        Assert.assertEquals("After asking for retry, AIP should be in state VALID", AIPState.VALID,
                             afterAsking.getState());
         // now state has been updated, lets do the job of schedules
         // no new jobs should be created with by first schedule
         long nbJobBeforeStorePage = jobInfoRepo.count();
         aipService.storePage(PageRequest.of(0, 1, Sort.Direction.ASC, "id"));
-        Assert.assertEquals("No new jobs should have been created by storePage",
-                            nbJobBeforeStorePage,
+        Assert.assertEquals("No new jobs should have been created by storePage", nbJobBeforeStorePage,
                             jobInfoRepo.count());
         AIP afterStorePage = aipService.retrieveAip(aip.getId().toString());
         // almost nothing should happens during this call: Only metadata could not be stored so it should be handled by storeMetadata not storePage
-        Assert.assertEquals("AIP state should be pending", AIPState.PENDING, afterStorePage.getState());
+        Assert.assertEquals("AIP state should be DATAFILES_STORED", AIPState.DATAFILES_STORED,
+                            afterStorePage.getState());
         Set<StorageDataFile> afterStorePageDataFiles = dataFileDao.findAllByAip(afterStorePage);
         for (StorageDataFile sdf : afterStorePageDataFiles) {
             if (sdf.getDataType() == DataType.AIP) {
@@ -553,30 +547,25 @@ public class AIPServiceIT extends AbstractRegardsIT {
         // Now, lets ask for a replay
         AIP beforeRetry = aipService.retrieveAip(aip.getId().toString());
         Assert.assertEquals("To be able to test the retry, we need an AIP being in state STORE_ERROR",
-                            AIPState.STORAGE_ERROR,
-                            beforeRetry.getState());
+                            AIPState.STORAGE_ERROR, beforeRetry.getState());
         // Lets fix it so we can retry by changing the data file origin url
         StorageDataFile errorSDF = dataFileDao.findAllByStateAndAip(DataFileState.ERROR, aip).stream().findFirst()
                 .get();
-        errorSDF.setOriginUrls(Sets.newHashSet(new URL("file",
-                                                       "",
-                                                       Paths.get("src", "test", "resources", "data.txt").toFile()
-                                                               .getAbsolutePath())));
+        errorSDF.setOriginUrls(Sets.newHashSet(new URL("file", "",
+                Paths.get("src", "test", "resources", "data.txt").toFile().getAbsolutePath())));
         dataFileDao.save(errorSDF);
         Set<String> aipIpIds = Sets.newHashSet(aip.getId().toString());
         List<RejectedAip> rejectedAips = aipService.applyRetryChecks(aipIpIds);
         Assert.assertEquals("There should be no aip rejected", 0, rejectedAips.size());
         aipService.storeRetry(aipIpIds);
         AIP afterAsking = aipService.retrieveAip(aip.getId().toString());
-        Assert.assertEquals("After asking for retry, AIP should be in state VALID",
-                            AIPState.VALID,
+        Assert.assertEquals("After asking for retry, AIP should be in state VALID", AIPState.VALID,
                             afterAsking.getState());
         // now state has been updated, lets do the job of schedules
         // 2 new jobs should be created with by first schedule (1 for each data storage)
         long nbJobBeforeStorePage = jobInfoRepo.count();
         aipService.storePage(PageRequest.of(0, 1, Sort.Direction.ASC, "id"));
-        Assert.assertEquals("No new jobs should have been created by storePage",
-                            nbJobBeforeStorePage + 2,
+        Assert.assertEquals("No new jobs should have been created by storePage", nbJobBeforeStorePage + 2,
                             jobInfoRepo.count());
         AIP afterStorePage = aipService.retrieveAip(aip.getId().toString());
         Assert.assertEquals("AIP state should be pending", AIPState.PENDING, afterStorePage.getState());
@@ -698,17 +687,15 @@ public class AIPServiceIT extends AbstractRegardsIT {
         // - AIP should be in VALID state. Ready to be handled by storage process (StorePage -> StoreMeta)
         // - Only last update request should be saved in db. This request will be handled by update scheduler.
         Optional<AIP> runningAip = aipDao.findOneByAipId(aip.getId().toString());
-        Assert.assertEquals("After an update request the AIP should be in VALID state",
-                            AIPState.VALID.toString(),
-                            runningAip.get().getState().toString());
+        Assert.assertEquals("After an update request the AIP should be in DATAFILES_STORED state as no new files needs to be store",
+                            AIPState.DATAFILES_STORED.toString(), runningAip.get().getState().toString());
         Assert.assertEquals("There should be only one AIP update request in db", 1, aipUpdateRepo.count());
 
         // Run update scheduler to check that the request cannot be handled yet cause the AIP is still not in STORED state.
         aipService.handleUpdateRequests();
         runningAip = aipDao.findOneByAipId(aip.getId().toString());
-        Assert.assertEquals("After an update request the AIP should be in VALID state",
-                            AIPState.VALID.toString(),
-                            runningAip.get().getState().toString());
+        Assert.assertEquals("After an update request the AIP should be in DATAFILES_STORED state as no new files needs to be store",
+                            AIPState.DATAFILES_STORED.toString(), runningAip.get().getState().toString());
         Assert.assertEquals("There should be only one AIP update request in db", 1, aipUpdateRepo.count());
 
         // Run process to end first update pending.
@@ -734,9 +721,8 @@ public class AIPServiceIT extends AbstractRegardsIT {
         LOG.info("==================> 11. Process second Update AIP Request");
         aipService.handleUpdateRequests();
         runningAip = aipDao.findOneByAipId(aip.getId().toString());
-        Assert.assertEquals("After an update request the AIP should be in VALID state",
-                            AIPState.VALID.toString(),
-                            runningAip.get().getState().toString());
+        Assert.assertEquals("After an update request the AIP should be in DATAFILES_STORED state as no new files needs to be store",
+                            AIPState.DATAFILES_STORED.toString(), runningAip.get().getState().toString());
         Assert.assertEquals("There should be no more AIP update request in db.", 0, aipUpdateRepo.count());
 
         LOG.info("==================> 12. Process second Update AIP Request done");

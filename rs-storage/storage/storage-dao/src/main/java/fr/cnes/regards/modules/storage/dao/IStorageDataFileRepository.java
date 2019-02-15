@@ -83,7 +83,7 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
      * @param dataFileId
      * @return the data file wrapped into an optional to avoid nulls
      */
-    @Lock(LockModeType.PESSIMISTIC_READ)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<StorageDataFile> findLockedOneById(Long dataFileId);
 
     /**

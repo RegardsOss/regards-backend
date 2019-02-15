@@ -421,7 +421,12 @@ public class AIPService implements IAIPService {
                 } else {
                     dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.PENDING, aip);
                 }
-                aip.setState(AIPState.PENDING);
+
+                if (dataFiles.size() > 0) {
+                    aip.setState(AIPState.PENDING);
+                } else {
+                    aip.setState(AIPState.DATAFILES_STORED);
+                }
                 aip.setRetry(false);
                 aipDao.updateAIPStateAndRetry(aip);
                 dataFilesToStore.addAll(dataFiles);
@@ -442,7 +447,7 @@ public class AIPService implements IAIPService {
     public long storeMetadata() {
         LOGGER.trace("[METADATA STORE] Start.");
         // first lets get AIP which all files are stored. So those AIP are ready to write the metadata file.
-        Set<AIP> metadataToStore = getMetadataFilesToStore(aipIterationLimit);
+        Set<AIP> metadataToStore = getMetadataFilesToStore();
         // now that we know all the metadata that should be stored, lets schedule their storage!
         if (!metadataToStore.isEmpty()) {
             LOGGER.debug("[METADATA STORE] Scheduling {} new metadata to be write.", metadataToStore.size());
@@ -874,6 +879,8 @@ public class AIPService implements IAIPService {
                 jobInfoService.createAsQueued(new JobInfo(false, StorageJobsPriority.STORE_METADATA_JOB, parameters,
                         authResolver.getUser(), StoreMetadataFilesJob.class.getName())).getId();
             }
+            // FIXME : If Jobs are interrupted, AIP is in PENDING state, DataFiles are in PENDING state
+            // It is a non recoverable state.
         }
         return scheduledFiles;
     }
@@ -1032,32 +1039,12 @@ public class AIPService implements IAIPService {
      * @param dataFileLimit maximum number of {@link StorageDataFile} to return
      * @return data files to store
      */
-    private Set<AIP> getMetadataFilesToStore(int dataFileLimit) {
-        Set<AIP> metadataToStore = Sets.newHashSet();
-        Pageable page = PageRequest.of(0, aipIterationLimit, Direction.ASC, "id");
-        Page<AIP> pendingAips = null;
-        do {
-            pendingAips = aipDao.findAllByState(AIPState.PENDING, page);
-            // first lets handle the case where every dataFiles of an AIP are successfully stored.
-            for (AIP aip : pendingAips) {
-                long nbNotStoredFile = dataFileDao.countByAipAndStateNotIn(aip, Sets.newHashSet(DataFileState.STORED));
-                if (nbNotStoredFile == 0) {
-                    metadataToStore.add(aip);
-                } else {
-                    LOGGER.debug("[METADATA STORE] There is still {} datafiles not stored for AIP {}. Metadata file cannot be generated yet.",
-                                 nbNotStoredFile, aip.getProviderId());
-                }
-                // If maximum number of results is reached, then stop.
-                if (metadataToStore.size() >= dataFileLimit) {
-                    break;
-                }
-            }
-            LOGGER.trace("[METADATA STORE] Number of AIP in pending state ready for metadata storage {}/{}",
-                         metadataToStore.size(), pendingAips.getTotalElements());
-            page = pendingAips.nextPageable();
-        } while (pendingAips.hasNext() && (metadataToStore.size() < dataFileLimit));
-        LOGGER.trace("[METADATA STORE] Number of AIP metadata {} to schedule for storage.", metadataToStore.size());
-        return metadataToStore;
+    private Set<AIP> getMetadataFilesToStore() {
+        Page<AIP> page = aipDao.findAllByState(AIPState.DATAFILES_STORED,
+                                               PageRequest.of(0, aipIterationLimit, Direction.ASC, "id"));
+        Set<AIP> aips = page.getContent().stream().collect(Collectors.toSet());
+        LOGGER.trace("[METADATA STORE] Number of AIP metadata {} to schedule for storage.", aips.size());
+        return aips;
     }
 
     @Override
@@ -1231,15 +1218,21 @@ public class AIPService implements IAIPService {
             }
         }
 
-        // Create new DataStoragFile to store, update DataStorageFile to delete.
-        handleContentInformationUpdate(newAIPBuilder, newAip, aipToUpdate);
+        // Create new DataStorageFile to store, update DataStorageFile to delete.
+        boolean isNewFilesToStore = handleContentInformationUpdate(newAIPBuilder, newAip, aipToUpdate);
 
         // Add update event
         newAIPBuilder.addEvent(EventType.UPDATE.toString(), updateMessage, OffsetDateTime.now());
         // now that all updates are set into the builder, lets build and save the updatedAip.
-        // AIP is set to VALID state to be handled for store process (datafiles and metadatas)
+
         AIP updatedAip = newAIPBuilder.build();
-        updatedAip.setState(AIPState.VALID);
+        if (isNewFilesToStore) {
+            // AIP is set to VALID state to be handled for store process new data files and metadata
+            updatedAip.setState(AIPState.VALID);
+        } else {
+            // AIP is set to DATAFILES_STORED state to be handled for store process metadata
+            updatedAip.setState(AIPState.DATAFILES_STORED);
+        }
         LOGGER.debug(String.format("[METADATA UPDATE] Update of aip %s metadata done", ipId));
         LOGGER.trace(String.format("[METADATA UPDATE] Updated aip : %s", gson.toJson(updatedAip)));
         return Optional.ofNullable(save(updatedAip, false));
@@ -1831,9 +1824,11 @@ public class AIPService implements IAIPService {
      * @param newAip new {@link AIP} values
      * @param aipToUpdate current {@link AIP} to update
      * @throws EntityNotFoundException
+     * @return TRUE if there is new {@link StorageDataFile} to store
      */
-    private void handleContentInformationUpdate(AIPBuilder newAIPBuilder, AIP newAip, AIP aipToUpdate)
+    private boolean handleContentInformationUpdate(AIPBuilder newAIPBuilder, AIP newAip, AIP aipToUpdate)
             throws EntityNotFoundException {
+        boolean newfilesToStore = false;
         Set<StorageDataFile> existingFiles = dataFileDao.findAllByAip(aipToUpdate);
         Optional<AIPEntity> aipEntity = aipEntityRepository.findOneByAipId(aipToUpdate.getId().toString());
         if (!aipEntity.isPresent()) {
@@ -1846,6 +1841,7 @@ public class AIPService implements IAIPService {
             if (existingFiles.contains(newFile)) {
                 toDelete.remove(newFile);
             } else {
+                newfilesToStore = true;
                 LOGGER.debug("[UPDATE AIP] Add new datastore file {} for AIP {}.", newFile.getName(),
                              newAip.getProviderId());
                 newAIPBuilder.getContentInformationBuilder()
@@ -1870,5 +1866,6 @@ public class AIPService implements IAIPService {
             em.flush();
             em.clear();
         });
+        return newfilesToStore;
     }
 }

@@ -23,30 +23,25 @@ package fr.cnes.regards.modules.storage.domain;
  * State transition from top to bottom unless indicated otherwise.
  *
  * <pre>
- *                o
- *                |_______ REJECTED
- *                |
- *              VALID <------------------
- *                |                     |
- *             PENDING                  |
- *             /     \                  |
- *            /       \                 |
- *           /  WRITING_METADATA        |
- *          /           \               |
- * STORAGE_ERROR <- STORING_METADATA    |
+ *                 o
+ *                 |_______ REJECTED
+ *                 |
+ *               VALID <----------------  update with new files to store
+ *                 |                    |
+ *              PENDING                 |
+ *              /     \                 |
+ *             /   DATAFILES_STORED <---| update with no new files to store
+ *            /         \               |
+ *           /     WRITING_METADATA     |
+ *          /             \             |
+ * STORAGE_ERROR <-  STORING_METADATA   |
  *        |                 |           |
  *        |                 |           |
- *        |              STORED----------
- *        |              /
- *        |             /
- *        |            /
- *        |           /
- *        |          /
- *        |         /
- *        |        /
- *        |       /
- *        |      /
- *        DELETED
+ *        |              STORED--------->  update request
+ *          \             /
+ *           \          /
+ *            \       /
+ *             DELETED
  * </pre>
  *
  * @author Sylvain Vissiere-Guerinet
@@ -65,6 +60,10 @@ public enum AIPState implements IAipState {
      * Data storage has been scheduled
      */
     PENDING,
+    /**
+     * Data files stored. AIP is ready to store his metadata
+     */
+    DATAFILES_STORED,
     /**
      * Metadata has been scheduled to be written
      */

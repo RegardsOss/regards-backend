@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.storage.domain.job.RemovedAipsInfos;
 import fr.cnes.regards.modules.storage.service.IAIPService;
 
 /**
- * Add or remove tags to several AIPs, inside a job.
+ * JOB to delete multiple AIPs. AIPs to delete are defined with the search query parameter named "query".
  * @author Léo Mieulet
  */
 public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
@@ -65,7 +65,7 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
     private INotificationClient notificationClient;
 
     /**
-     * Number of created AIPs processed on each iteration by project
+     * Limit number of AIPs to delete in one job.
      */
     @Value("${regards.storage.aips.iteration.limit:100}")
     private Integer aipIterationLimit;
@@ -141,10 +141,10 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
 
     @Override
     public int getCompletionCount() {
-        if (nbError.get() + nbEntityRemoved.get() == 0) {
+        if ((nbError.get() + nbEntityRemoved.get()) == 0) {
             return 0;
         }
-        return (int) Math.floor(100 * (nbError.get() + nbEntityRemoved.get()) / nbEntity);
+        return (int) Math.floor((100 * (nbError.get() + nbEntityRemoved.get())) / nbEntity);
     }
 
     @Override

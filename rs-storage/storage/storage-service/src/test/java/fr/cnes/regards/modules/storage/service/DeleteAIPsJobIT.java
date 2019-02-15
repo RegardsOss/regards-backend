@@ -36,7 +36,7 @@ public class DeleteAIPsJobIT extends AbstractJobIT {
 
         // Check the job is finished and has a result
         Optional<JobInfo> jobInfoRefreshed = jobInfoRepo.findById(jobInfo.getId());
-        Assert.assertEquals(jobInfoRefreshed.get().getStatus().getStatus(), JobStatus.SUCCEEDED);
+        Assert.assertEquals(JobStatus.SUCCEEDED, jobInfoRefreshed.get().getStatus().getStatus());
         RemovedAipsInfos result = jobInfoRefreshed.get().getResult();
         Assert.assertEquals("should not produce error", 0, result.getNbErrors());
         int nbUpdated = 20;

@@ -363,7 +363,7 @@ public class DataStorageService implements IDataStorageService {
 
         // If dataFile to delete contains given url to remove, remove URL from it and update associated AIP to add
         // URL remove event.
-        if (urlToRemove != null && dataFileDeleted.getUrls().contains(urlToRemove)) {
+        if ((urlToRemove != null) && dataFileDeleted.getUrls().contains(urlToRemove)) {
             LOGGER.info("Partial deletion of StorageDataFile {}. One of the location has been removed {}.",
                         dataFileDeleted.getName(), urlToRemove);
             associatedAIP.getProperties().getContentInformations().stream()
@@ -418,7 +418,7 @@ public class DataStorageService implements IDataStorageService {
 
         // If url to remove is null (so all the location are deleted) or if there is no longer any location for the datafile,
         // we can remove it from db and form AIP.
-        if (urlToRemove == null || dataFileDeleted.getUrls().isEmpty()) {
+        if ((urlToRemove == null) || dataFileDeleted.getUrls().isEmpty()) {
             LOGGER.info("Datafile to delete does not contains any location url. Deletion of the dataFile {}",
                         dataFileDeleted.getName());
             dataFileDao.remove(dataFileDeleted);
@@ -571,6 +571,13 @@ public class DataStorageService implements IDataStorageService {
                     associatedAIP.addEvent(EventType.STORAGE.name(),
                                            String.format(DATAFILE_STORED_SUCCESSFULLY, storedDataFile.getName()));
                 }
+
+                if (dataFileDao.countByAipAndStateNotIn(associatedAIP, Sets.newHashSet(DataFileState.STORED)) == 0) {
+                    LOGGER.info("[STORE FILE SUCCESS] All files stored for AIP {}. The  AIP metadata can be handled.",
+                                associatedAIP.getProviderId());
+                    associatedAIP.setState(AIPState.DATAFILES_STORED);
+                }
+
             }
             aipService.save(associatedAIP, false);
         } else {
