@@ -1278,36 +1278,8 @@ public class AIPService implements IAIPService {
         Set<StorageDataFile> dataFilesWithoutMetadata = dataFilesWithMetadata.stream()
                 .filter(df -> !DataType.AIP.equals(df.getDataType())).collect(Collectors.toSet());
         for (StorageDataFile dataFile : dataFilesWithoutMetadata) {
-            // If dataFile is in error state and no storage succeeded. So no urls are associated to the dataFile.
-            if (dataFile.getState().equals(DataFileState.ERROR) && dataFile.getUrls().isEmpty()) {
-                // we do not do remove immediately because the aip metadata has to be updated first
-                // and the logic is already implemented into DataStorageEventHandler
-                publisher.publish(new DataStorageEvent(dataFile, StorageAction.DELETION, StorageEventType.SUCCESSFULL,
-                        null, null));
-            } else {
-                if (dataFile.getState().equals(DataFileState.PENDING)) {
-                    notSuppressible.add(dataFile);
-                } else {
-                    // we order deletion of a file if and only if no other aip references the same file
-                    long daoFindOtherDataFileStart = System.currentTimeMillis();
-                    long nbDataFilesWithSameFile = dataFileDao
-                            .countByChecksumAndStorageDirectory(dataFile.getChecksum(), dataFile.getStorageDirectory());
-                    long daoFindOtherDataFileEnd = System.currentTimeMillis();
-                    LOGGER.trace("Counting {} other datafile with checksum {} took {} ms", nbDataFilesWithSameFile,
-                                 dataFile.getChecksum(), daoFindOtherDataFileEnd - daoFindOtherDataFileStart);
-                    if (nbDataFilesWithSameFile == 1) {
-                        // add to datafiles that should be removed
-                        dataFile.setState(DataFileState.TO_BE_DELETED);
-                        dataFileDao.save(dataFile);
-                    } else {
-                        // if other datafiles are referencing a file, we just remove the data file from the
-                        // database.
-                        // we do not do remove immediately because the aip metadata has to be updated first
-                        // and the logic is already implemented into DataStorageEventHandler
-                        publisher.publish(new DataStorageEvent(dataFile, StorageAction.DELETION,
-                                StorageEventType.SUCCESSFULL, null, null));
-                    }
-                }
+            if (!deleteAipFile(dataFile)) {
+                notSuppressible.add(dataFile);
             }
         }
         // schedule removal of data and metadata
@@ -1333,6 +1305,48 @@ public class AIPService implements IAIPService {
         long methodEnd = System.currentTimeMillis();
         LOGGER.trace("Deleting AIP {} took {} ms", toBeDeletedIpId, methodEnd - methodStart);
         return notSuppressible;
+    }
+
+    /**
+     * Do schedule deletion of given {@link StorageDataFile} if file is not in PENDING state.
+     * @param dataFile {@link StorageDataFile} to delete
+     * @return TRUE if file can be deleted.
+     */
+    private boolean deleteAipFile(StorageDataFile dataFile) {
+        boolean deletionReady = false;
+        // we order deletion of a file if and only if no other aip references the same file
+        long daoFindOtherDataFileStart = System.currentTimeMillis();
+        long nbDataFilesWithSameFile = dataFileDao.countByChecksumAndStorageDirectory(dataFile.getChecksum(),
+                                                                                      dataFile.getStorageDirectory());
+        long daoFindOtherDataFileEnd = System.currentTimeMillis();
+        LOGGER.trace("Counting {} other datafile with checksum {} took {} ms", nbDataFilesWithSameFile,
+                     dataFile.getChecksum(), daoFindOtherDataFileEnd - daoFindOtherDataFileStart);
+        if (nbDataFilesWithSameFile == 1) {
+            // The AIP to delete is the only one who own the data file. So we can delete it.
+            // If dataFile is in error state and no storage succeeded. So no URLs are associated to the dataFile.
+            if (dataFile.getState().equals(DataFileState.ERROR) && dataFile.getUrls().isEmpty()) {
+                // we do not do remove immediately because the AIP metadata has to be updated first
+                // and the logic is already implemented into DataStorageEventHandler
+                publisher.publish(new DataStorageEvent(dataFile, StorageAction.DELETION, StorageEventType.SUCCESSFULL,
+                        null, null));
+                deletionReady = true;
+            } else {
+                if (!dataFile.getState().equals(DataFileState.PENDING)) {
+                    // add to data files that should be removed
+                    dataFile.setState(DataFileState.TO_BE_DELETED);
+                    dataFileDao.save(dataFile);
+                    deletionReady = true;
+                }
+            }
+        } else {
+            // if other data files are referencing a file, we just remove the file from the
+            // database. We do not do remove it immediately because the AIP metadata has to be updated first
+            // and the logic is already implemented into DataStorageEventHandler
+            publisher.publish(new DataStorageEvent(dataFile, StorageAction.DELETION, StorageEventType.SUCCESSFULL, null,
+                    null));
+            deletionReady = true;
+        }
+        return deletionReady;
     }
 
     @Override
@@ -1608,34 +1622,43 @@ public class AIPService implements IAIPService {
         Page<AIP> aips = aipDao.findAllByStateService(AIPState.DELETED,
                                                       PageRequest.of(0, aipIterationLimit, Direction.ASC, "id"));
         for (AIP aip : aips) {
-            // lets count the number of datafiles per aip:
-            // if there is none:
-            long nbDataFile = dataFileDao.countByAip(aip);
-            if (nbDataFile == 0) {
-                // Error case recovering. If AIP is in DELETED state and there is no DataFile linked to it, we can
-                // delete aip from database.
+            Set<StorageDataFile> files = dataFileDao.findAllByAip(aip);
+            if (files.isEmpty()) {
+                // If AIP is in DELETED state and there is no DataFile linked to it, we can
+                // delete AIP metadata file from database.
                 LOGGER.warn("Delete AIP {} which is not associated to any datafile.", aip.getId());
                 publisher.publish(new AIPEvent(aip));
                 aipDao.remove(aip);
             } else {
-                // if there is one, it must be the metadata
-                if (nbDataFile == 1) {
-                    Set<StorageDataFile> metadatas = dataFileDao.findByAipAndType(aip, DataType.AIP);
-                    if (!metadatas.isEmpty()) {
-                        for (StorageDataFile meta : metadatas) {
-                            meta.setState(DataFileState.TO_BE_DELETED);
-                            dataFileDao.save(meta);
-                        }
-                    } else {
-                        LOGGER.error("AIP {} is in state {} and its metadata file cannot be found in DB while it has still "
-                                + "some file associated. Database coherence seems shady.", aip.getId().toString(),
-                                     aip.getState());
-                    }
-                }
-                //if there is more than one then deletion has not been executed yet, do nothing
+                files.forEach(this::deleteAIPMetadataFile);
             }
         }
         return aips.getNumberOfElements();
+    }
+
+    /**
+     * Check if the given {@link StorageDataFile} is an AIP typed DataFile and change is state to TO_BE_DELETED if it is.
+     * @param metadataFile {@link StorageDataFile}
+     */
+    private void deleteAIPMetadataFile(StorageDataFile metadataFile) {
+        // Data files deletion are scheduled during the AIP deletion action AIPService#deleteAip
+        if (metadataFile.getDataType().equals(DataType.AIP)) {
+            switch (metadataFile.getState()) {
+                case DELETION_PENDING:
+                case TO_BE_DELETED:
+                    // Nothing to do, file is already scheduled for deletion
+                    break;
+                case ERROR:
+                case PENDING:
+                case PARTIAL_DELETION_PENDING:
+                case STORED:
+                default:
+                    //Here we only schedule metadata files deletion.
+                    metadataFile.setState(DataFileState.TO_BE_DELETED);
+                    dataFileDao.save(metadataFile);
+                    break;
+            }
+        }
     }
 
     @Override
