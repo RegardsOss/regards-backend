@@ -1314,7 +1314,7 @@ public class AIPService implements IAIPService {
      */
     private boolean deleteAipFile(StorageDataFile dataFile) {
         boolean deletionReady = false;
-        // we order deletion of a file if and only if no other aip references the same file
+        // we order deletion of a file if and only if no other AIP references the same file
         long daoFindOtherDataFileStart = System.currentTimeMillis();
         long nbDataFilesWithSameFile = dataFileDao.countByChecksumAndStorageDirectory(dataFile.getChecksum(),
                                                                                       dataFile.getStorageDirectory());
@@ -1630,6 +1630,7 @@ public class AIPService implements IAIPService {
                 publisher.publish(new AIPEvent(aip));
                 aipDao.remove(aip);
             } else {
+                // AIP is in deleted state we can try to delete all meta data files
                 files.forEach(this::deleteAIPMetadataFile);
             }
         }
