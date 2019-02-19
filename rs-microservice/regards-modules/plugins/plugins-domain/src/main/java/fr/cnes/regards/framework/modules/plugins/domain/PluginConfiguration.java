@@ -19,6 +19,10 @@
 
 package fr.cnes.regards.framework.modules.plugins.domain;
 
+import java.net.URL;
+import java.util.Collection;
+import java.util.Set;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -36,15 +40,13 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.net.URL;
-import java.util.Collection;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converter.SetStringCsvConverter;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
@@ -132,7 +134,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
     /**
      * Configuration parameters of the plugin
      */
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @JoinColumn(name = "parent_conf_id", foreignKey = @ForeignKey(name = "fk_plg_conf_param_id"))
     private final Set<PluginParameter> parameters = Sets.newHashSet();
 
@@ -422,8 +424,9 @@ public class PluginConfiguration implements IIdentifiable<Long> {
         }
         if (pluginId == null) {
             return other.pluginId == null;
-        } else
+        } else {
             return pluginId.equals(other.pluginId);
+        }
     }
 
     @Override

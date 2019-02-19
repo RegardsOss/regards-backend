@@ -38,11 +38,11 @@ import fr.cnes.httpclient.HttpClientFactory.Type;
 @Configuration
 public class ProxyConfiguration {
 
-    @Value("${http.proxy.host}")
+    @Value("${http.proxy.host:#{null}}")
     private String proxyHost;
 
-    @Value("${http.proxy.port}")
-    private int proxyPort;
+    @Value("${http.proxy.port:#{null}}")
+    private Integer proxyPort;
 
     @Value(value = "${http.proxy.noproxy:#{null}}")
     private String noProxy;
@@ -50,11 +50,16 @@ public class ProxyConfiguration {
     @Bean("proxyHttpClient")
     public HttpClient getHttpClient() {
         // https://github.com/CNES/JSPNego
-        fr.cnes.httpclient.configuration.ProxyConfiguration.HTTP_PROXY.setValue(proxyHost + ":" + proxyPort);
-        if ((noProxy != null) && !noProxy.isEmpty()) {
-            fr.cnes.httpclient.configuration.ProxyConfiguration.NO_PROXY.setValue(noProxy);
+        if (proxyHost != null) {
+            fr.cnes.httpclient.configuration.ProxyConfiguration.HTTP_PROXY.setValue(proxyHost + ":" + proxyPort);
+            if ((noProxy != null) && !noProxy.isEmpty()) {
+                fr.cnes.httpclient.configuration.ProxyConfiguration.NO_PROXY.setValue(noProxy);
+            }
+            return HttpClientFactory.create(Type.PROXY_BASIC);
+        } else {
+            return HttpClientFactory.create(Type.NO_PROXY);
         }
-        return HttpClientFactory.create(Type.PROXY_BASIC);
+
     }
 
 }
