@@ -41,7 +41,7 @@ public class ProxyConfiguration {
     @Value("${http.proxy.host:#{null}}")
     private String proxyHost;
 
-    @Value("${http.proxy.port}:#{null}")
+    @Value("${http.proxy.port}:#{null}}")
     private Integer proxyPort;
 
     @Value(value = "${http.proxy.noproxy:#{null}}")
