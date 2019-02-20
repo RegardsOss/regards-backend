@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.retry.interceptor.RetryOperationsInterceptor;
 
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
@@ -34,8 +35,8 @@ import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 public class InstanceSubscriber extends AbstractSubscriber implements IInstanceSubscriber {
 
     public InstanceSubscriber(IRabbitVirtualHostAdmin pVirtualHostAdmin, IAmqpAdmin amqpAdmin,
-            MessageConverter jsonMessageConverters) {
-        super(pVirtualHostAdmin, amqpAdmin, jsonMessageConverters);
+            MessageConverter jsonMessageConverters, RetryOperationsInterceptor interceptor) {
+        super(pVirtualHostAdmin, amqpAdmin, jsonMessageConverters, interceptor);
     }
 
     @Override

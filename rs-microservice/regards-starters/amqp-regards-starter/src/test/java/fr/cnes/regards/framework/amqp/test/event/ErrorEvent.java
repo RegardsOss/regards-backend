@@ -13,14 +13,13 @@ import fr.cnes.regards.framework.amqp.event.Target;
 @Event(target = Target.ALL)
 public class ErrorEvent implements ISubscribable {
 
-    private String message2 = "Default message!";
+    private long long1 = 132;
 
-    public String getMessage2() {
-        return message2;
+    public long getLong1() {
+        return long1;
     }
 
-    public void setMessage2(String message2) {
-        this.message2 = message2;
+    public void setLong1(long long1) {
+        this.long1 = long1;
     }
-
 }

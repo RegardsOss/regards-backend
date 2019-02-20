@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.amqp.test;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Assume;
@@ -28,18 +27,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.AmqpTemplate;
-import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.gson.Gson;
-import com.sun.xml.internal.bind.v2.TODO;
 import fr.cnes.regards.framework.amqp.AbstractSubscriber;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
@@ -48,7 +41,6 @@ import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.VirtualHostMode;
-import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.Event;
 import fr.cnes.regards.framework.amqp.event.Target;
@@ -64,7 +56,6 @@ import fr.cnes.regards.framework.amqp.test.handler.AbstractReceiver;
 import fr.cnes.regards.framework.amqp.test.handler.GsonInfoHandler;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
 
 /**
  * Common subscriber tests for {@link VirtualHostMode#SINGLE} and {@link VirtualHostMode#MULTI} modes
@@ -138,10 +129,6 @@ public abstract class AbstractSubscriberIT {
 
         Assert.assertFalse(receiver.checkCount(1) && receiver2.checkCount(1));
         Assert.assertTrue(receiver.checkCount(1) || receiver2.checkCount(1));
-    }
-
-    private class MicroserviceReceiver extends AbstractReceiver<MicroserviceInfo> {
-
     }
 
     /**
@@ -224,10 +211,6 @@ public abstract class AbstractSubscriberIT {
         listeners2.forEach((k, v) -> Assert.assertEquals((int) refListeners.get(k), v.hashCode()));
     }
 
-    private class Receiver extends AbstractReceiver<Info> {
-
-    }
-
     @Test
     public void onePerMicroserviceTypeTest() {
 
@@ -263,41 +246,71 @@ public abstract class AbstractSubscriberIT {
         Assert.assertTrue(b1.checkCount(1) || b2.checkCount(1));
     }
 
+    @Test
+    public void testErrorMsg() throws InterruptedException {
+        // First lets subscribe to a queue
+        subscriber.subscribeTo(ErrorEvent.class, new ErrorHandler());
+        try {
+            rabbitVirtualHostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
+            // Purge DLQ before doing anything
+            amqpAdmin.purgeQueue(RegardsAmqpAdmin.REGARDS_DLQ, true);
+            // sends a malformed message to the queue used by the handler (no tenant wrapper)
+            Target target = ErrorEvent.class.getAnnotation(Event.class).target();
+            String exchangeName = amqpAdmin.getBroadcastExchangeName(ErrorEvent.class.getName(), target);
+
+            // Publish the wrong message on ErrorEvent queue
+            // To do so, we have to do it by hand
+            OnePerMicroserviceInfo wrongEvent = new OnePerMicroserviceInfo();
+            wrongEvent.setMessage(wrongEvent.getMessage() + Math.random());
+            TenantWrapper messageSended = new TenantWrapper(wrongEvent, "PROJECT");
+            rabbitTemplate
+                    .convertAndSend(exchangeName, RegardsAmqpAdmin.DEFAULT_ROUTING_KEY, messageSended, pMessage -> {
+                        MessageProperties messageProperties = pMessage.getMessageProperties();
+                        messageProperties.setPriority(0);
+                        return new Message(pMessage.getBody(), messageProperties);
+                    });
+        } finally {
+            rabbitVirtualHostAdmin.unbind();
+        }
+        try {
+            rabbitVirtualHostAdmin.bind(AmqpConstants.AMQP_INSTANCE_MANAGER);
+            Thread.sleep(1000);
+            // Check that the message ended up in DLQ
+            // To do so we have to poll on DLQ one message that is the right one
+            Object fromDlq = rabbitTemplate.receiveAndConvert(RegardsAmqpAdmin.REGARDS_DLQ, 0);
+            if (fromDlq == null) {
+                Assert.fail("There should be a message into DLQ.");
+                return;
+            }
+            if (fromDlq instanceof TenantWrapper) {
+                Object content = ((TenantWrapper) fromDlq).getContent();
+                if (!(content instanceof OnePerMicroserviceInfo)) {
+                    Assert.fail(String.format("Message from DLQ is not %s but %s",
+                                              OnePerMicroserviceInfo.class.getName(),
+                                              content.getClass().getName()));
+                }
+            } else {
+                Assert.fail("Message from DLQ is not a TenantWrapper. You might have been compromised by other tests.");
+            }
+        } finally {
+            rabbitVirtualHostAdmin.unbind();
+        }
+    }
+
+    private class MicroserviceReceiver extends AbstractReceiver<MicroserviceInfo> {
+
+    }
+
+    private class Receiver extends AbstractReceiver<Info> {
+
+    }
+
     private class SingleReceiverA extends AbstractReceiver<OnePerMicroserviceInfo> {
 
     }
 
     private class SingleReceiverB extends AbstractReceiver<OnePerMicroserviceInfo> {
 
-    }
-
-    @Test
-    public void testErrorMsg() throws InterruptedException {
-        // First lets subscribe to a queue
-        subscriber.subscribeTo(ErrorEvent.class, new ErrorHandler());
-        // sends a malformed message to the queue used by the handler (no tenant wrapper)
-        Target target = ErrorEvent.class.getAnnotation(Event.class).target();
-        String exchangeName = amqpAdmin.getBroadcastExchangeName(ErrorEvent.class.getName(), target);
-        // Purge DLQ before publishing anything
-        amqpAdmin.purgeQueue(RegardsAmqpAdmin.REGARDS_DLQ, true);
-        try {
-            rabbitVirtualHostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
-            TenantWrapper messageSended = new TenantWrapper(new OnePerMicroserviceInfo(), "PROJECT");
-            rabbitTemplate.convertAndSend(exchangeName, RegardsAmqpAdmin.DEFAULT_ROUTING_KEY, messageSended, pMessage -> {
-                MessageProperties messageProperties = pMessage.getMessageProperties();
-                messageProperties.setPriority(0);
-                return new Message(pMessage.getBody(), messageProperties);
-            });
-            int i = 10;
-            while (i-- > 0) {
-                Thread.sleep(100);
-            }
-            // Check that the number of message in DLQ is greater than initial.
-            // We only check with > because other message could have ended up into the DLQ
-            //TODO
-        } finally {
-            rabbitVirtualHostAdmin.unbind();
-        }
     }
 
     private class ErrorHandler extends AbstractReceiver<ErrorEvent> {

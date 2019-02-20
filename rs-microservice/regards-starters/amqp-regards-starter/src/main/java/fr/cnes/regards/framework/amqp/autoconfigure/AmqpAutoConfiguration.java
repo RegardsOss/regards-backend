@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.amqp.autoconfigure;
 
+import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.amqp.rabbit.config.RetryInterceptorBuilder;
 import org.springframework.amqp.rabbit.connection.SimpleRoutingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -26,6 +28,7 @@ import org.springframework.amqp.support.converter.Jackson2JavaTypeMapper.TypePre
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -33,6 +36,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.retry.interceptor.RetryOperationsInterceptor;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.client.RestOperations;
@@ -56,6 +60,7 @@ import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.MultitenantRabbitTransactionManager;
 import fr.cnes.regards.framework.amqp.configuration.MultitenantSimpleRoutingConnectionFactory;
+import fr.cnes.regards.framework.amqp.configuration.NotifyNRepublishMessageRecoverer;
 import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.VirtualHostMode;
@@ -101,6 +106,9 @@ public class AmqpAutoConfiguration {
     @Autowired
     private AmqpMicroserviceProperties amqpMicroserviceProperties;
 
+    @Value("${spring.application.name}")
+    private String microserviceName;
+
     @Bean
     @ConditionalOnMissingBean(IRabbitVirtualHostAdmin.class)
     public IRabbitVirtualHostAdmin rabbitVirtualHostAdmin(ITenantResolver pTenantResolver,
@@ -125,6 +133,20 @@ public class AmqpAutoConfiguration {
     public IAmqpAdmin regardsAmqpAdmin() {
         return new RegardsAmqpAdmin(amqpMicroserviceProperties.getTypeIdentifier(),
                 amqpMicroserviceProperties.getInstanceIdentifier());
+    }
+
+    @Bean
+    public NotifyNRepublishMessageRecoverer notifyNRepublishAdvice(AmqpTemplate errorTemplate,
+                            IInstancePublisher publisher, IRabbitVirtualHostAdmin rabbitVhostAdmin) {
+        return new NotifyNRepublishMessageRecoverer(errorTemplate, RegardsAmqpAdmin.REGARDS_DLX,
+                                                    RegardsAmqpAdmin.REGARDS_DLQ, publisher, microserviceName,
+                                                    rabbitVhostAdmin);
+    }
+
+    @Bean
+    public RetryOperationsInterceptor statefulRetryOperationsInterceptor(NotifyNRepublishMessageRecoverer recoverer) {
+        return RetryInterceptorBuilder.StatelessRetryInterceptorBuilder.stateless().maxAttempts(1)
+                                                                       .recoverer(recoverer).build();
     }
 
     @Bean
@@ -172,12 +194,12 @@ public class AmqpAutoConfiguration {
 
     @Bean
     public ISubscriber subscriber(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, IAmqpAdmin amqpAdmin,
-            MessageConverter jsonMessageConverters, ITenantResolver pTenantResolver) {
+            MessageConverter jsonMessageConverters, ITenantResolver pTenantResolver, RetryOperationsInterceptor interceptor) {
         if (VirtualHostMode.MULTI.equals(amqpManagmentProperties.getMode())) {
-            return new Subscriber(pRabbitVirtualHostAdmin, amqpAdmin, jsonMessageConverters, pTenantResolver);
+            return new Subscriber(pRabbitVirtualHostAdmin, amqpAdmin, jsonMessageConverters, pTenantResolver, interceptor);
         } else {
             return new SingleVhostSubscriber(pRabbitVirtualHostAdmin, amqpAdmin, jsonMessageConverters,
-                    pTenantResolver);
+                    pTenantResolver, interceptor);
         }
     }
 
@@ -199,8 +221,8 @@ public class AmqpAutoConfiguration {
 
     @Bean
     public IInstanceSubscriber instanceSubscriber(IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin, IAmqpAdmin amqpAdmin,
-            MessageConverter jsonMessageConverters, ITenantResolver pTenantResolver) {
-        return new InstanceSubscriber(pRabbitVirtualHostAdmin, amqpAdmin, jsonMessageConverters);
+            MessageConverter jsonMessageConverters, ITenantResolver pTenantResolver, RetryOperationsInterceptor interceptor) {
+        return new InstanceSubscriber(pRabbitVirtualHostAdmin, amqpAdmin, jsonMessageConverters, interceptor);
     }
 
     @Bean
