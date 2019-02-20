@@ -3,8 +3,8 @@ package fr.cnes.regards.modules.notification.client;
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
 
+import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.notification.domain.NotificationLevel;
 
 /**
  * Notification client interface

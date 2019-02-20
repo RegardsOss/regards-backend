@@ -21,15 +21,18 @@ package fr.cnes.regards.modules.notification.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
+import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.notification.domain.event.NotificationEvent;
+import fr.cnes.regards.modules.notification.domain.NotificationMode;
 
 /**
  * This handler absorbs the incoming notification events
@@ -37,12 +40,9 @@ import fr.cnes.regards.modules.notification.domain.event.NotificationEvent;
  */
 @Component
 public class NotificationEventHandler
-        implements ApplicationListener<ApplicationReadyEvent>, IHandler<NotificationEvent> {
+        implements IHandler<NotificationEvent>, ApplicationListener<ApplicationReadyEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NotificationEventHandler.class);
-
-    @Autowired
-    private ISubscriber subscriber;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -50,9 +50,22 @@ public class NotificationEventHandler
     @Autowired
     private INotificationService notificationService;
 
+    @Autowired
+    private IInstanceSubscriber instanceSubscriber;
+
+    @Autowired
+    private ISubscriber subscriber;
+
+    @Value("${regards.notification.mode:MULTITENANT}")
+    private NotificationMode notificationMode;
+
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        subscriber.subscribeTo(NotificationEvent.class, this);
+        if (notificationMode == NotificationMode.INSTANCE) {
+            instanceSubscriber.subscribeTo(NotificationEvent.class, this);
+        } else {
+            subscriber.subscribeTo(NotificationEvent.class, this);
+        }
     }
 
     @Override

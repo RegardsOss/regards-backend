@@ -5,9 +5,10 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceNotifier;
+import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
-import fr.cnes.regards.modules.notification.domain.NotificationLevel;
+
 
 /**
  * @author Sylvain VISSIERE-GUERINET

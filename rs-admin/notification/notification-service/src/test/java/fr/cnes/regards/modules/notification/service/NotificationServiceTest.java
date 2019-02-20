@@ -41,12 +41,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.google.common.collect.Sets;
-
+import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.notification.NotificationDTO;
+import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
@@ -58,8 +60,6 @@ import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationMode;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
-import fr.cnes.regards.modules.notification.domain.NotificationLevel;
-import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
 
 /**
  * Test class for {@link NotificationService}.
@@ -234,9 +234,14 @@ public class NotificationServiceTest {
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
 
         // Instanciate the tested service
-        notificationService = new NotificationService(notificationRepository, rolesClient, projectUserClient,
-                Mockito.mock(ApplicationEventPublisher.class), runtimeTenantResolver, authenticationResolver,
-                Mockito.mock(ISubscriber.class), NotificationMode.MULTITENANT);
+        notificationService = new NotificationService(notificationRepository,
+                                                      rolesClient,
+                                                      projectUserClient,
+                                                      Mockito.mock(ApplicationEventPublisher.class),
+                                                      runtimeTenantResolver,
+                                                      authenticationResolver,
+                                                      Mockito.mock(ISubscriber.class),
+                                                      NotificationMode.MULTITENANT);
     }
 
     /**
@@ -255,8 +260,8 @@ public class NotificationServiceTest {
         // Mock methods
         Mockito.when(authenticationResolver.getUser()).thenReturn(RECIPIENT_0);
         Mockito.when(authenticationResolver.getRole()).thenReturn(ROLE_NAME_0);
-        Mockito.when(notificationRepository.findByRecipientsContaining(RECIPIENT_0, ROLE_NAME_0,
-                                                                       PageRequest.of(0, 100)))
+        Mockito.when(notificationRepository
+                             .findByRecipientsContaining(RECIPIENT_0, ROLE_NAME_0, PageRequest.of(0, 100)))
                 .thenReturn(new PageImpl<>(expected));
 
         // Call tested method
@@ -266,8 +271,8 @@ public class NotificationServiceTest {
         Assert.assertThat(actual, CoreMatchers.is(CoreMatchers.equalTo(new PageImpl<>(expected))));
 
         // Check that the repository's method was called with right arguments
-        Mockito.verify(notificationRepository).findByRecipientsContaining(RECIPIENT_0, ROLE_NAME_0,
-                                                                          PageRequest.of(0, 100));
+        Mockito.verify(notificationRepository)
+                .findByRecipientsContaining(RECIPIENT_0, ROLE_NAME_0, PageRequest.of(0, 100));
     }
 
     /**
@@ -484,16 +489,16 @@ public class NotificationServiceTest {
 
         // Mock
         PagedResources<Resource<ProjectUser>> expectedFromClient = HateoasUtils.wrapToPagedResources(expected);
-        Mockito.when(projectUserClient.retrieveRoleProjectUsersList(Mockito.anyString(), Mockito.anyInt(),
-                                                                    Mockito.anyInt()))
+        Mockito.when(projectUserClient
+                             .retrieveRoleProjectUsersList(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
                 .thenReturn(new ResponseEntity<>(expectedFromClient, HttpStatus.OK));
         // Result
         List<String> actual = notificationService.findRecipients(notification).collect(Collectors.toList());
 
         // Compare
         Assert.assertEquals(expected.size(), actual.size());
-        Assert.assertTrue(actual
-                .containsAll(expected.stream().map(ProjectUser::getEmail).collect(Collectors.toList())));
+        Assert.assertTrue(actual.containsAll(expected.stream().map(ProjectUser::getEmail)
+                                                     .collect(Collectors.toList())));
     }
 
     /**

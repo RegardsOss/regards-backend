@@ -15,13 +15,16 @@
 	<dependencies>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>feign-regards-starter</artifactId>
-			<scope>provided</scope>
+			<artifactId>amqp-regards</artifactId>
 		</dependency>
 		<!-- Microservice internal dependencies -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.notification</groupId>
 			<artifactId>notification-domain</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>security-config</artifactId>
 		</dependency>
 	</dependencies>
 

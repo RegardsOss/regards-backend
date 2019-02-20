@@ -43,6 +43,7 @@ import org.springframework.util.MimeTypeUtils;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.framework.notification.NotificationLevel;
 
 /**
  * Models a notification.<br>

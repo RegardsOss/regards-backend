@@ -33,11 +33,12 @@
 	<dependencies>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>amqp-regards</artifactId>
+			<artifactId>jpa-commons-regards</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-commons-regards</artifactId>
+			<artifactId>notification-regards</artifactId>
+			<version>4.0.0-SNAPSHOT</version> <!-- FIXME -->
 		</dependency>
 		<!-- Tests -->
 		<dependency>
