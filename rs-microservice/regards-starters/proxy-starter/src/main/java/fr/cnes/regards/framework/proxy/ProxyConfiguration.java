@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.proxy;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,25 +40,43 @@ import fr.cnes.httpclient.HttpClientFactory.Type;
 @Configuration
 public class ProxyConfiguration {
 
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProxyConfiguration.class);
+
     @Value("${http.proxy.host:#{null}}")
     private String proxyHost;
+
+    @Value("${http.proxy.login:#{null}}")
+    private String proxyLogin;
+
+    @Value("${http.proxy.password:#{null}}")
+    private String proxyPassword;
 
     @Value("${http.proxy.port:#{null}}")
     private Integer proxyPort;
 
-    @Value(value = "${http.proxy.noproxy:#{null}}")
+    @Value("${http.proxy.noproxy:#{null}}")
     private String noProxy;
 
     @Bean("proxyHttpClient")
     public HttpClient getHttpClient() {
         // https://github.com/CNES/JSPNego
         if (proxyHost != null) {
+            LOGGER.info("HTTP Proxy initialized with values host={}, port={},login={}", proxyHost, proxyPort,
+                        proxyLogin);
             fr.cnes.httpclient.configuration.ProxyConfiguration.HTTP_PROXY.setValue(proxyHost + ":" + proxyPort);
             if ((noProxy != null) && !noProxy.isEmpty()) {
                 fr.cnes.httpclient.configuration.ProxyConfiguration.NO_PROXY.setValue(noProxy);
             }
+            if ((proxyLogin != null) && (proxyPassword != null)) {
+                fr.cnes.httpclient.configuration.ProxyConfiguration.USERNAME.setValue(proxyLogin);
+                fr.cnes.httpclient.configuration.ProxyConfiguration.PASSWORD.setValue(proxyPassword);
+            }
             return HttpClientFactory.create(Type.PROXY_BASIC);
         } else {
+            LOGGER.info("No HTTP Proxy configured.");
             return HttpClientFactory.create(Type.NO_PROXY);
         }
 
