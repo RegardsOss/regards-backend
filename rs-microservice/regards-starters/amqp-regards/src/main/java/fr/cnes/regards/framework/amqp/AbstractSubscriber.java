@@ -36,7 +36,7 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.support.converter.MessageConverter;
-import org.springframework.retry.interceptor.RetryOperationsInterceptor;
+import org.springframework.retry.interceptor.StatefulRetryOperationsInterceptor;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
@@ -94,10 +94,10 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
      */
     private final MessageConverter jsonMessageConverters;
 
-    private final RetryOperationsInterceptor interceptor;
+    private final StatefulRetryOperationsInterceptor interceptor;
 
     public AbstractSubscriber(IRabbitVirtualHostAdmin virtualHostAdmin, IAmqpAdmin amqpAdmin,
-            MessageConverter jsonMessageConverters, RetryOperationsInterceptor interceptor) {
+            MessageConverter jsonMessageConverters, StatefulRetryOperationsInterceptor interceptor) {
         this.virtualHostAdmin = virtualHostAdmin;
         this.amqpAdmin = amqpAdmin;
         this.jsonMessageConverters = jsonMessageConverters;

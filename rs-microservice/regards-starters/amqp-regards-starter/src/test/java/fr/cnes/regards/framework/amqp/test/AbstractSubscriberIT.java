@@ -246,14 +246,18 @@ public abstract class AbstractSubscriberIT {
         Assert.assertTrue(b1.checkCount(1) || b2.checkCount(1));
     }
 
-    @Test
     public void testErrorMsg() throws InterruptedException {
         // First lets subscribe to a queue
         subscriber.subscribeTo(ErrorEvent.class, new ErrorHandler());
         try {
-            rabbitVirtualHostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
+            rabbitVirtualHostAdmin.bind(AmqpConstants.AMQP_INSTANCE_MANAGER);
             // Purge DLQ before doing anything
             amqpAdmin.purgeQueue(RegardsAmqpAdmin.REGARDS_DLQ, true);
+        } finally {
+            rabbitVirtualHostAdmin.unbind();
+        }
+        try {
+            rabbitVirtualHostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
             // sends a malformed message to the queue used by the handler (no tenant wrapper)
             Target target = ErrorEvent.class.getAnnotation(Event.class).target();
             String exchangeName = amqpAdmin.getBroadcastExchangeName(ErrorEvent.class.getName(), target);
@@ -273,8 +277,8 @@ public abstract class AbstractSubscriberIT {
             rabbitVirtualHostAdmin.unbind();
         }
         try {
-            rabbitVirtualHostAdmin.bind(AmqpConstants.AMQP_INSTANCE_MANAGER);
             Thread.sleep(1000);
+            rabbitVirtualHostAdmin.bind(AmqpConstants.AMQP_INSTANCE_MANAGER);
             // Check that the message ended up in DLQ
             // To do so we have to poll on DLQ one message that is the right one
             Object fromDlq = rabbitTemplate.receiveAndConvert(RegardsAmqpAdmin.REGARDS_DLQ, 0);

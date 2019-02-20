@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.support.converter.MessageConverter;
-import org.springframework.retry.interceptor.RetryOperationsInterceptor;
+import org.springframework.retry.interceptor.StatefulRetryOperationsInterceptor;
 
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
@@ -52,7 +52,7 @@ public class Subscriber extends AbstractSubscriber implements ISubscriber {
     private final ITenantResolver tenantResolver;
 
     public Subscriber(IRabbitVirtualHostAdmin pVirtualHostAdmin, IAmqpAdmin amqpAdmin,
-            MessageConverter jsonMessageConverters, ITenantResolver pTenantResolver, RetryOperationsInterceptor interceptor) {
+            MessageConverter jsonMessageConverters, ITenantResolver pTenantResolver, StatefulRetryOperationsInterceptor interceptor) {
         super(pVirtualHostAdmin, amqpAdmin, jsonMessageConverters, interceptor);
         tenantResolver = pTenantResolver;
     }

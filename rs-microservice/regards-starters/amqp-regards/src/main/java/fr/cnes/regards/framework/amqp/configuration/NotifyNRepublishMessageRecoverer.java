@@ -41,7 +41,7 @@ public class NotifyNRepublishMessageRecoverer extends RepublishMessageRecoverer 
     public void recover(Message message, Throwable cause) {
         // Message#toString is already handling encoding and content type if possible
         NotificationDtoBuilder notifBuilder = new NotificationDtoBuilder(message.toString(),
-                                                                         "AMQP event has been routed to instance DLQ",
+                                                                         String.format("[%s]AMQP event has been routed to instance DLQ"),
                                                                          NotificationLevel.ERROR,
                                                                          microserviceName);
         notifBuilder.withMimeType(MimeTypeUtils.TEXT_PLAIN);
