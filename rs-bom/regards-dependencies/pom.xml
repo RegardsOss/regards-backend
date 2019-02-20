@@ -984,6 +984,11 @@
 				<artifactId>opensearch-domain</artifactId>
 				<version>${fr.cnes.regards.modules.opensearch.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>fr.cnes.regards.modules.opensearch</groupId>
+				<artifactId>opensearch-rest</artifactId>
+				<version>${fr.cnes.regards.modules.opensearch.version}</version>
+			</dependency>
 			<!-- Order -->
 			<dependency>
 				<groupId>fr.cnes.regards.modules.order</groupId>
