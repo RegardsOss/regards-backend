@@ -210,9 +210,7 @@ public class TemplateControllerTest {
         template.setId(TemplateTestConstants.ID);
         final List<Link> links = new ArrayList<>();
         links.add(new Link("/templates/" + TemplateTestConstants.ID, "self"));
-        links.add(new Link("/templates/" + TemplateTestConstants.ID, "delete"));
         links.add(new Link("/templates/" + TemplateTestConstants.ID, "update"));
-        links.add(new Link("/templates", "create"));
         final Resource<Template> expected = new Resource<>(template, links);
 
         // Define actual
