@@ -138,7 +138,7 @@ public class TemplateServiceTest {
 
     @Before
     public void setUp() {
-        template = new Template(CODE, CONTENT, DATA, SUBJECT);
+        template = new Template(CODE, CONTENT);
     }
 
     /**
@@ -161,26 +161,6 @@ public class TemplateServiceTest {
 
         // Check
         Assert.assertThat(actual, CoreMatchers.is(CoreMatchers.equalTo(expected)));
-    }
-
-    /**
-     * Test method for {@link TemplateService#create(Template)}.
-     */
-    @Test
-    @Purpose("Check that the system allows to create templates.")
-    @Requirement("REGARDS_DSL_SYS_ERG_310")
-    @Requirement("REGARDS_DSL_ADM_ADM_440")
-    @Requirement("REGARDS_DSL_ADM_ADM_460")
-    public final void testCreate() {
-        // Mock
-        Mockito.when(templateRepository.findById(ID)).thenReturn(Optional.empty());
-        Mockito.when(templateRepository.existsById(ID)).thenReturn(false);
-
-        // Call tested method
-        templateService.create(template);
-
-        // Check
-        Mockito.verify(templateRepository).save(Mockito.refEq(template, "id"));
     }
 
     /**
@@ -237,7 +217,6 @@ public class TemplateServiceTest {
     public final void testUpdate() throws EntityException {
         // Prepare the case
         template.setId(ID);
-        template.setDescription("Updated description");
 
         // Mock
         Mockito.when(templateRepository.findById(ID)).thenReturn(Optional.of(template));
@@ -297,43 +276,6 @@ public class TemplateServiceTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.templates.service.TemplateService#delete(java.lang.Long)}.
-     * @throws EntityNotFoundException if no template with passed id could be found
-     */
-    @Test
-    @Purpose("Check that the system allows to delete a single template.")
-    @Requirement("REGARDS_DSL_SYS_ERG_310")
-    @Requirement("REGARDS_DSL_ADM_ADM_440")
-    @Requirement("REGARDS_DSL_ADM_ADM_460")
-    public final void testDelete() throws EntityNotFoundException {
-        // Mock
-        Mockito.when(templateRepository.existsById(ID)).thenReturn(true);
-
-        // Call tested method
-        templateService.delete(ID);
-
-        // Check
-        Mockito.verify(templateRepository).deleteById(ID);
-    }
-
-    /**
-     * Test method for {@link fr.cnes.regards.modules.templates.service.TemplateService#delete(java.lang.Long)}.
-     * @throws EntityNotFoundException if no template with passed id could be found
-     */
-    @Test(expected = EntityNotFoundException.class)
-    @Purpose("Check that the system handles the case of deleting an inexistent template.")
-    @Requirement("REGARDS_DSL_SYS_ERG_310")
-    @Requirement("REGARDS_DSL_ADM_ADM_440")
-    @Requirement("REGARDS_DSL_ADM_ADM_460")
-    public final void testDeleteNotFound() throws EntityNotFoundException {
-        // Mock
-        Mockito.when(templateRepository.existsById(ID)).thenReturn(false);
-
-        // Trigger expected exception
-        templateService.delete(ID);
-    }
-
-    /**
      * Test method for SimpleMailMessageTemplateWriter#writeToEmail(Template, Map, String[]).
      * @throws EntityNotFoundException no template of passed code could be found
      */
@@ -350,12 +292,11 @@ public class TemplateServiceTest {
         String expectedText = "Hello Defaultname. You are 26 years old and 1.79 m tall.";
 
         // Define actual
-        SimpleMailMessage message = templateService.writeToEmail(CODE, DATA, RECIPIENTS);
+        String message = templateService.render(CODE, DATA);
 
         // Check
-        Assert.assertEquals("[Regards] " + SUBJECT, message.getSubject());
-        Assert.assertEquals(expectedText, message.getText());
-        Assert.assertArrayEquals(RECIPIENTS, message.getTo());
+        Assert.assertEquals("[Regards] " + SUBJECT, message);
+        Assert.assertEquals(expectedText, message);
     }
 
     @Configuration
