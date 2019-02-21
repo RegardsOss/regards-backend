@@ -24,7 +24,6 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -42,10 +41,10 @@ import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.Passwo
 import fr.cnes.regards.modules.accessrights.instance.service.IAccountService;
 import fr.cnes.regards.modules.accessrights.instance.service.accountunlock.IAccountUnlockTokenService;
 import fr.cnes.regards.modules.accessrights.instance.service.passwordreset.IPasswordResetService;
+import fr.cnes.regards.modules.accessrights.instance.service.workflow.AccessRightTemplateConf;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.project.service.ITenantService;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
-import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 
 /**
  * State class of the State Pattern implementing the available actions on a {@link Account} in status LOCKED.
@@ -76,22 +75,15 @@ public class LockedState extends AbstractDeletableState {
      */
     private final IEmailClient emailClient;
 
-    /**
-     * @param projectUsersClient
-     * @param accountRepository
-     * @param tenantService
-     * @param runtimeTenantResolver
-     * @param passwordResetService
-     * @param accountUnlockTokenService
-     * @param accountService
-     * @param templateService
-     * @param emailClient
-     */
     public LockedState(IProjectUsersClient projectUsersClient, IAccountRepository accountRepository,
             ITenantService tenantService, IRuntimeTenantResolver runtimeTenantResolver,
             IPasswordResetService passwordResetService, IAccountUnlockTokenService accountUnlockTokenService,
             IAccountService accountService, ITemplateService templateService, IEmailClient emailClient) {
-        super(projectUsersClient, accountRepository, tenantService, runtimeTenantResolver, passwordResetService,
+        super(projectUsersClient,
+              accountRepository,
+              tenantService,
+              runtimeTenantResolver,
+              passwordResetService,
               accountUnlockTokenService);
         this.accountService = accountService;
         this.templateService = templateService;
@@ -99,45 +91,40 @@ public class LockedState extends AbstractDeletableState {
     }
 
     @Override
-    public void requestUnlockAccount(final Account pAccount, final String pOriginUrl, final String pRequestLink) {
+    public void requestUnlockAccount(final Account account, final String originUrl, final String requestLink) {
         // Create the token
-        final String token = accountUnlockTokenService.create(pAccount);
-
-        // Build the list of recipients
-        final String[] recipients = { pAccount.getEmail() };
+        final String token = accountUnlockTokenService.create(account);
 
         // Create a hash map in order to store the data to inject in the mail
         final Map<String, String> data = new HashMap<>();
-        data.put("name", pAccount.getFirstName());
-        data.put("requestLink", pRequestLink);
-        data.put("originUrl", pOriginUrl);
+        data.put("name", account.getFirstName());
+        data.put("requestLink", requestLink);
+        data.put("originUrl", originUrl);
         data.put("token", token);
-        data.put("accountEmail", pAccount.getEmail());
+        data.put("accountEmail", account.getEmail());
 
-        SimpleMailMessage email;
+        String message;
         try {
-            email = templateService.writeToEmail(TemplateServiceConfiguration.ACCOUNT_UNLOCK_TEMPLATE_CODE, data,
-                                                 recipients);
+            message = templateService.render(AccessRightTemplateConf.ACCOUNT_UNLOCK_TEMPLATE_NAME, data);
         } catch (final EntityNotFoundException e) {
             LOG.warn("Could not find the template to generate a unlock account email. Falling back to default.", e);
-            email = new SimpleMailMessage();
-            email.setTo(recipients);
-            email.setSubject("REGARDS - Unlock account");
 
             String linkUrlTemplate;
-            if (pRequestLink.contains("?")) {
+            if (requestLink.contains("?")) {
                 linkUrlTemplate = "%s&origin_url=%s&token=%s&account_email=%s";
             } else {
                 linkUrlTemplate = "%s?origin_url=%s&token=%s&account_email=%s";
             }
-            final String linkUrl = String.format(linkUrlTemplate, pRequestLink, pOriginUrl, token, pAccount.getEmail());
-            email.setText("Please click on the following link unlock your account: " + linkUrl);
+            final String linkUrl = String.format(linkUrlTemplate, requestLink, originUrl, token, account.getEmail());
+            message = "Please click on the following link unlock your account: " + linkUrl;
         }
-
         // Send it
-        FeignSecurityManager.asSystem();
-        emailClient.sendEmail(email);
-        FeignSecurityManager.reset();
+        try {
+            FeignSecurityManager.asSystem();
+            emailClient.sendEmail(message, "[REGARDS] Account Unlock", null, account.getEmail());
+        } finally {
+            FeignSecurityManager.reset();
+        }
     }
 
     /*

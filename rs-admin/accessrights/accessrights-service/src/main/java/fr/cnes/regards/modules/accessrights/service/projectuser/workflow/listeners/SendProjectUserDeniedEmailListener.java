@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Component;
 
 import feign.FeignException;
@@ -38,7 +37,6 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnDenyEvent;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
-import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 
 /**
  * Listen to {@link OnDenyEvent} in order to warn the user its account request was refused.
@@ -47,50 +45,25 @@ import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 @Component
 public class SendProjectUserDeniedEmailListener implements ApplicationListener<OnDenyEvent> {
 
-    /**
-     * Class logger
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(SendProjectUserDeniedEmailListener.class);
 
-    /**
-     * Service handling CRUD operations on email templates
-     */
     private final ITemplateService templateService;
 
-    /**
-     * Client for sending emails
-     */
     private final IEmailClient emailClient;
 
-    /**
-     * Account service
-     */
     private final IAccountsClient accountsClient;
 
-    /**
-     * @param pTemplateService
-     * @param pEmailClient
-     * @param accountsClient
-     */
-    public SendProjectUserDeniedEmailListener(ITemplateService pTemplateService, IEmailClient pEmailClient,
+    public SendProjectUserDeniedEmailListener(ITemplateService templateService, IEmailClient emailClient,
             IAccountsClient accountsClient) {
-        super();
-        templateService = pTemplateService;
-        emailClient = pEmailClient;
+        this.templateService = templateService;
+        this.emailClient = emailClient;
         this.accountsClient = accountsClient;
     }
 
-    /**
-     * Send a password reset email based on information stored in the passed event
-     * @param pEvent the init event
-     */
     @Override
-    public void onApplicationEvent(final OnDenyEvent pEvent) {
+    public void onApplicationEvent(final OnDenyEvent event) {
         // Retrieve the user
-        ProjectUser projectUser = pEvent.getProjectUser();
-
-        // Build the list of recipients
-        String[] recipients = { projectUser.getEmail() };
+        ProjectUser projectUser = event.getProjectUser();
 
         // Create a hash map in order to store the data to inject in the mail
         Map<String, String> data = new HashMap<>();
@@ -109,35 +82,21 @@ public class SendProjectUserDeniedEmailListener implements ApplicationListener<O
             data.put("name", "");
         }
 
-        SimpleMailMessage email;
+        String message;
         try {
-            email = templateService
-                    .writeToEmail(TemplateServiceConfiguration.ACCOUNT_REFUSED_TEMPLATE_CODE, data, recipients);
+            message = templateService.render(AccessRightTemplateConf.USER_DENIED_TEMPLATE_NAME, data);
         } catch (final EntityNotFoundException e) {
             LOGGER.error(
                     "Could not find the template to generate the email notifying the account refusal. Falling back to default.",
                     e);
-            email = writeToEmailDefault(data, recipients);
+            message = "Your access request was refused by admin.";
         }
-
         // Send it
-        FeignSecurityManager.asSystem();
-        emailClient.sendEmail(email);
-        FeignSecurityManager.reset();
+        try {
+            FeignSecurityManager.asSystem();
+            emailClient.sendEmail(message, "[REGARDS] User access denied", null, projectUser.getEmail());
+        } finally {
+            FeignSecurityManager.reset();
+        }
     }
-
-    /**
-     * Send super simple mail in case the template service fails
-     * @param data the data
-     * @param recipients the recipients
-     * @return the result email
-     */
-    private SimpleMailMessage writeToEmailDefault(Map<String, String> data, String[] recipients) {
-        SimpleMailMessage email = new SimpleMailMessage();
-        email.setTo(recipients);
-        email.setSubject("REGARDS - Access refused");
-        email.setText("Your access request was refused by admin.");
-        return email;
-    }
-
 }

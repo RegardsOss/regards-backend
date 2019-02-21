@@ -30,10 +30,10 @@ import org.springframework.stereotype.Component;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.service.workflow.AccessRightTemplateConf;
 import fr.cnes.regards.modules.accessrights.instance.service.workflow.events.OnRefuseAccountEvent;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
-import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 
 /**
  * Listen to {@link OnRefuseAccountEvent} in order to warn the user its account request was refused.
@@ -83,41 +83,26 @@ public class SendAccountRefusedEmailListener implements ApplicationListener<OnRe
         // Retrieve the account
         final Account account = pEvent.getAccount();
 
-        // Build the list of recipients
-        final String[] recipients = { account.getEmail() };
-
         // Create a hash map in order to store the data to inject in the mail
         final Map<String, String> data = new HashMap<>();
         data.put("name", account.getFirstName());
 
-        SimpleMailMessage email;
+        String message;
         try {
-            email = templateService.writeToEmail(TemplateServiceConfiguration.ACCOUNT_REFUSED_TEMPLATE_CODE, data,
-                                                 recipients);
+            message = templateService.render(AccessRightTemplateConf.ACCOUNT_REFUSED_TEMPLATE_NAME, data);
         } catch (final EntityNotFoundException e) {
             LOG.error("Could not find the template to generate the email notifying the account refusal. Falling back to default.",
                       e);
-            email = writeToEmailDefault(data, recipients);
+            message = "Your access request was refused by admin.";
         }
 
         // Send it
-        FeignSecurityManager.asSystem();
-        emailClient.sendEmail(email);
-        FeignSecurityManager.reset();
-    }
-
-    /**
-     * Send super simple mail in case the template service fails
-     * @param data the data
-     * @param recipients the recipients
-     * @return the result email
-     */
-    private SimpleMailMessage writeToEmailDefault(Map<String, String> data, String[] recipients) {
-        SimpleMailMessage email = new SimpleMailMessage();
-        email.setTo(recipients);
-        email.setSubject("REGARDS - Access refused");
-        email.setText("Your access request was refused by admin.");
-        return email;
+        try {
+            FeignSecurityManager.asSystem();
+            emailClient.sendEmail(message, "[REGARDS] Account refused", null, account.getEmail());
+        } finally {
+            FeignSecurityManager.reset();
+        }
     }
 
 }

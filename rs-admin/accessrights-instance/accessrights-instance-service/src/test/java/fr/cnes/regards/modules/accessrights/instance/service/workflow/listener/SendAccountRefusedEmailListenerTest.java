@@ -46,7 +46,7 @@ public class SendAccountRefusedEmailListenerTest {
 
         ITemplateService templateService = Mockito.mock(ITemplateService.class);
         IEmailClient emailClient = Mockito.mock(IEmailClient.class);
-        Mockito.when(templateService.writeToEmail(Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
+        Mockito.when(templateService.render(Mockito.anyString(), Mockito.anyMap()))
                 .thenThrow(EntityNotFoundException.class);
 
         SendAccountRefusedEmailListener listener = new SendAccountRefusedEmailListener(templateService, emailClient);
@@ -66,8 +66,8 @@ public class SendAccountRefusedEmailListenerTest {
 
         ITemplateService templateService = Mockito.mock(ITemplateService.class);
         IEmailClient emailClient = Mockito.mock(IEmailClient.class);
-        Mockito.when(templateService.writeToEmail(Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
-                .thenReturn(new SimpleMailMessage());
+        Mockito.when(templateService.render(Mockito.anyString(), Mockito.anyMap()))
+                .thenReturn("");
 
         SendAccountRefusedEmailListener listener = new SendAccountRefusedEmailListener(templateService, emailClient);
         listener.onApplicationEvent(event);

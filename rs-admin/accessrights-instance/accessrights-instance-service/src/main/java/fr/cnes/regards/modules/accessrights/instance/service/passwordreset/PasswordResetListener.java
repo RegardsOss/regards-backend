@@ -23,15 +23,14 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.context.ApplicationListener;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
+import fr.cnes.regards.modules.accessrights.instance.service.workflow.AccessRightTemplateConf;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
-import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 
 /**
  * Listen to {@link OnPasswordResetEvent} in order to send a password reset to the user when required.
@@ -73,58 +72,54 @@ public class PasswordResetListener implements ApplicationListener<OnPasswordRese
     }
 
     @Override
-    public void onApplicationEvent(final OnPasswordResetEvent pEvent) {
-        sendPasswordResetEmail(pEvent);
+    public void onApplicationEvent(final OnPasswordResetEvent event) {
+        sendPasswordResetEmail(event);
     }
 
     /**
      * Send a password reset email based on information stored in the passed event
      *
-     * @param pEvent
+     * @param event
      *            the init event
      */
-    private void sendPasswordResetEmail(final OnPasswordResetEvent pEvent) {
+    private void sendPasswordResetEmail(final OnPasswordResetEvent event) {
         // Retrieve the account
-        final Account account = pEvent.getAccount();
+        final Account account = event.getAccount();
 
         // Create the token
         final String token = UUID.randomUUID().toString();
         passwordResetService.createPasswordResetToken(account, token);
 
-        // Build the list of recipients
-        final String[] recipients = { account.getEmail() };
-
         // Create a hash map in order to store the data to inject in the mail
         final Map<String, String> data = new HashMap<>();
         data.put("name", account.getFirstName());
-        data.put("requestLink", pEvent.getRequestLink());
-        data.put("originUrl", pEvent.getOriginUrl());
+        data.put("requestLink", event.getRequestLink());
+        data.put("originUrl", event.getOriginUrl());
         data.put("token", token);
         data.put("accountEmail", account.getEmail());
 
-        SimpleMailMessage email;
+        String message;
         try {
-            email = templateService.writeToEmail(TemplateServiceConfiguration.PASSWORD_RESET_TEMPLATE_CODE, data,
-                                                 recipients);
+            message = templateService.render(AccessRightTemplateConf.PASSWORD_RESET_TEMPLATE_NAME, data);
         } catch (final EntityNotFoundException e) {
-            email = new SimpleMailMessage();
-            email.setTo(recipients);
-            email.setSubject("REGARDS - Password Reset");
 
             String linkUrlTemplate;
-            if (pEvent.getRequestLink() != null && pEvent.getRequestLink().contains("?")) {
+            if (event.getRequestLink() != null && event.getRequestLink().contains("?")) {
                 linkUrlTemplate = "%s&origin_url=%s&token=%s&account_email=%s";
             } else {
                 linkUrlTemplate = "%s?origin_url=%s&token=%s&account_email=%s";
             }
-            final String linkUrl = String.format(linkUrlTemplate, pEvent.getRequestLink(), pEvent.getOriginUrl(), token,
-                                                 account.getEmail());
-            email.setText("Please click on the following link to set a new password for your account: " + linkUrl);
+            final String linkUrl = String
+                    .format(linkUrlTemplate, event.getRequestLink(), event.getOriginUrl(), token, account.getEmail());
+            message = "Please click on the following link to set a new password for your account: " + linkUrl;
         }
 
         // Send it
-        FeignSecurityManager.asSystem();
-        emailClient.sendEmail(email);
-        FeignSecurityManager.reset();
+        try {
+            FeignSecurityManager.asSystem();
+            emailClient.sendEmail(message, "[REGARDS] Password Reset", null, account.getEmail());
+        } finally {
+            FeignSecurityManager.reset();
+        }
     }
 }
