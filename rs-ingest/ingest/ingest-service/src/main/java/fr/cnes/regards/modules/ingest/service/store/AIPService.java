@@ -37,7 +37,6 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -64,6 +63,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.ingest.service.ISIPService;
+import fr.cnes.regards.modules.ingest.service.IngestTemplateConfiguration;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.client.IAipClient;
 import fr.cnes.regards.modules.storage.client.IAipEntityClient;
@@ -72,7 +72,6 @@ import fr.cnes.regards.modules.storage.domain.IAipState;
 import fr.cnes.regards.modules.storage.domain.RejectedSip;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
-import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 
 /**
  * Service to handle aip related issues in ingest, including sending bulk request of AIP to store to archival storage
@@ -343,13 +342,13 @@ public class AIPService implements IAIPService {
         Map<String, Object> dataMap = new HashMap<>();
         dataMap.put("rejectedSips", rejectedSips);
         // lets use the template service to get our message
-        SimpleMailMessage email;
+        String message;
         try {
-            email = templateService.writeToEmail(TemplateServiceConfiguration.REJECTED_SIPS_CODE, dataMap);
+            message = templateService.render(IngestTemplateConfiguration.REJECTED_SIPS_TEMPLATE_NAME, dataMap);
         } catch (EntityNotFoundException enf) {
             throw new MaintenanceException(enf.getMessage(), enf);
         }
-        notificationClient.notify(email.getText(), "Errors during SIPs deletions", NotificationLevel.ERROR,
+        notificationClient.notify(message, "Errors during SIPs deletions", NotificationLevel.ERROR,
                                   DefaultRole.ADMIN);
     }
 }
