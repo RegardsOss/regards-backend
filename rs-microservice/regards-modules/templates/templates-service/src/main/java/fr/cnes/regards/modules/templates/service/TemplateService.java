@@ -34,6 +34,8 @@ import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
@@ -111,6 +113,7 @@ public class TemplateService implements ITemplateService {
      * Init method
      */
     @EventListener
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void onApplicationStarted(ApplicationStartedEvent event) {
         if (microserviceType.equals(MICROSERVICE_TYPE)) {
             // Init default templates for this tenant
@@ -126,6 +129,7 @@ public class TemplateService implements ITemplateService {
     }
 
     @EventListener
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void onTenantConnectionReady(TenantConnectionReady event) {
         // Set working tenant
         runtimeTenantResolver.forceTenant(event.getTenant());
@@ -161,6 +165,9 @@ public class TemplateService implements ITemplateService {
     public Template update(Long id, Template template) throws EntityException {
         if (!id.equals(template.getId())) {
             throw new EntityInconsistentIdentifierException(id, template.getId(), Template.class);
+        }
+        if(!templateRepository.existsById(id)) {
+            throw new EntityNotFoundException(id, Template.class);
         }
         return templateRepository.save(template);
     }

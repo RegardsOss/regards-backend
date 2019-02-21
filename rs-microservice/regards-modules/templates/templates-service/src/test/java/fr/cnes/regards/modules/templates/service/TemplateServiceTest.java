@@ -34,7 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.mail.SimpleMailMessage;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -59,7 +59,42 @@ import fr.cnes.regards.modules.templates.domain.Template;
 @TestPropertySource(properties = { "spring.application.name=rs-admin", "regards.jpa.multitenant.enabled=false",
         "regards.amqp.enabled=false", "regards.cipher.key-location=src/test/resources/testKey",
         "regards.cipher.iv=1234567812345678" })
+@ContextConfiguration
 public class TemplateServiceTest {
+
+    @Configuration
+    static class TestConfiguration {
+
+        @Bean
+        public Template testTemplate() {
+            return new Template("name", "content");
+        }
+    }
+
+    @Configuration
+    @EnableAutoConfiguration
+    public static class Config {
+
+        @Bean
+        public ITemplateRepository templateRepository() {
+            return Mockito.mock(ITemplateRepository.class);
+        }
+
+        @Bean
+        public ITenantResolver tenantResolver() {
+            return Mockito.mock(ITenantResolver.class);
+        }
+
+        @Bean
+        public IRuntimeTenantResolver runtimeTenantResolver() {
+            return Mockito.mock(IRuntimeTenantResolver.class);
+        }
+
+        @Bean
+        public IInstanceSubscriber instanceSubscriber() {
+            return Mockito.mock(InstanceSubscriber.class);
+        }
+    }
 
     /**
      * Code
@@ -295,33 +330,7 @@ public class TemplateServiceTest {
         String message = templateService.render(CODE, DATA);
 
         // Check
-        Assert.assertEquals("[Regards] " + SUBJECT, message);
         Assert.assertEquals(expectedText, message);
-    }
-
-    @Configuration
-    @EnableAutoConfiguration
-    public static class Config {
-
-        @Bean
-        public ITemplateRepository templateRepository() {
-            return Mockito.mock(ITemplateRepository.class);
-        }
-
-        @Bean
-        public ITenantResolver tenantResolver() {
-            return Mockito.mock(ITenantResolver.class);
-        }
-
-        @Bean
-        public IRuntimeTenantResolver runtimeTenantResolver() {
-            return Mockito.mock(IRuntimeTenantResolver.class);
-        }
-
-        @Bean
-        public IInstanceSubscriber instanceSubscriber() {
-            return Mockito.mock(InstanceSubscriber.class);
-        }
     }
 
 }
