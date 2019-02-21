@@ -100,7 +100,7 @@ public class TemplateControllerTest {
         final ResponseEntity<List<Resource<Template>>> actual = templateController.findAll();
 
         // Check
-        Assert.assertEquals(template.getCode(), actual.getBody().get(0).getContent().getCode());
+        Assert.assertEquals(template.getName(), actual.getBody().get(0).getContent().getName());
         Assert.assertEquals(template.getContent(), actual.getBody().get(0).getContent().getContent());
         Assert.assertEquals(template.getDataStructure(), actual.getBody().get(0).getContent().getDataStructure());
         Assert.assertEquals(template.getDescription(), actual.getBody().get(0).getContent().getDescription());
@@ -125,7 +125,7 @@ public class TemplateControllerTest {
 
         // Check
         Mockito.verify(templateService).create(Mockito.refEq(template, "id"));
-        Assert.assertEquals(template.getCode(), actual.getBody().getContent().getCode());
+        Assert.assertEquals(template.getName(), actual.getBody().getContent().getName());
         Assert.assertEquals(template.getContent(), actual.getBody().getContent().getContent());
         Assert.assertEquals(template.getDataStructure(), actual.getBody().getContent().getDataStructure());
         Assert.assertEquals(template.getDescription(), actual.getBody().getContent().getDescription());
@@ -148,7 +148,7 @@ public class TemplateControllerTest {
         final ResponseEntity<Resource<Template>> actual = templateController.findById(TemplateTestConstants.ID);
 
         // Check
-        Assert.assertEquals(template.getCode(), actual.getBody().getContent().getCode());
+        Assert.assertEquals(template.getName(), actual.getBody().getContent().getName());
         Assert.assertEquals(template.getDescription(), actual.getBody().getContent().getDescription());
         Assert.assertEquals(template.getDataStructure(), actual.getBody().getContent().getDataStructure());
     }
@@ -286,7 +286,7 @@ public class TemplateControllerTest {
 
         // Check
         Assert.assertEquals(expected.getContent().getId(), actual.getContent().getId());
-        Assert.assertEquals(expected.getContent().getCode(), actual.getContent().getCode());
+        Assert.assertEquals(expected.getContent().getName(), actual.getContent().getName());
         Assert.assertEquals(expected.getContent().getContent(), actual.getContent().getContent());
         Assert.assertEquals(expected.getContent().getDataStructure(), actual.getContent().getDataStructure());
         Assert.assertEquals(expected.getContent().getDescription(), actual.getContent().getDescription());

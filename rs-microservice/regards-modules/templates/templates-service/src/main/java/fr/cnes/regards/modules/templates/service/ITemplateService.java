@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.mail.SimpleMailMessage;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -35,71 +37,35 @@ import fr.cnes.regards.modules.templates.domain.Template;
  */
 public interface ITemplateService {
 
-    void init(ApplicationReadyEvent event);
-
     /**
      * @return the list of templates
      */
     List<Template> findAll();
 
     /**
-     * Create a template
-     * @param pTemplate the template
-     * @return the created template
-     */
-    Template create(final Template pTemplate);
-
-    /**
-     * @param pId the retrieved template id
+     * @param id the retrieved template id
      * @return the template of given id
      * @throws EntityNotFoundException if no template with given id could be found
      */
-    Template findById(final Long pId) throws EntityNotFoundException;
+    Template findById(final Long id) throws EntityNotFoundException;
 
     /**
      * Update the template of given id
-     * @param pId the updated template id
-     * @param pTemplate the updated template
+     * @param id the updated template id
+     * @param template the updated template
      * @throws EntityException <br>
      *                         {@link EntityNotFoundException} if no template with given id could be found<br>
      *                         {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
      */
-    void update(final Long pId, final Template pTemplate) throws EntityException;
+    Template update(final Long id, final Template template) throws EntityException;
 
     /**
-     * Delete the template of given id
-     * @param pId the updated template id
-     * @throws EntityNotFoundException if no template with given id could be found
+     * Render the template found by name, from latest value found in database
+     * @param templateName template name
+     * @param dataModel data model used as dynamic values for rendering
+     * @return rendered template
+     * @throws EntityNotFoundException
      */
-    void delete(final Long pId) throws EntityNotFoundException;
-
-    /**
-     * Delete all templates
-     */
-    void deleteAll();
-
-    /**
-     * @param templateCode the code of the template
-     * @param subject email subject (can be null, in this case template one is used)
-     * @param dataModel the data to bind into to template
-     * @param recipients the array of recipients
-     * @return the mail
-     * @throws EntityNotFoundException when a {@link Template} of given <code>code</code> could not be found
-     */
-    SimpleMailMessage writeToEmail(String templateCode, String subject, Map<String, ?> dataModel,
-            String... recipients) throws EntityNotFoundException;
-
-    /**
-     * Write email with default subject
-     * @param templateCode the code of the template
-     * @param dataModel the data to bind into to template
-     * @param recipients the array of recipients
-     * @return the mail
-     * @throws EntityNotFoundException when a {@link Template} of given <code>code</code> could not be found
-     */
-    default SimpleMailMessage writeToEmail(String templateCode, Map<String, ?> dataModel,
-            String... recipients) throws EntityNotFoundException {
-        return writeToEmail(templateCode, null, dataModel, recipients);
-    }
+    String render(String templateName, Map<String, ?> dataModel) throws EntityNotFoundException;
 
 }

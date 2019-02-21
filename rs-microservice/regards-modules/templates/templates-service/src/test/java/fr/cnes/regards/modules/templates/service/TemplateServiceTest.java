@@ -344,7 +344,7 @@ public class TemplateServiceTest {
     @Requirement("REGARDS_DSL_ADM_ADM_460")
     public final void testWrite() throws EntityNotFoundException {
         // Mock
-        Mockito.when(templateRepository.findByCode(CODE)).thenReturn(Optional.ofNullable(template));
+        Mockito.when(templateRepository.findByName(CODE)).thenReturn(Optional.ofNullable(template));
 
         // Define expected
         String expectedText = "Hello Defaultname. You are 26 years old and 1.79 m tall.";
