@@ -211,7 +211,7 @@ public class IngestProcessingService implements IIngestProcessingService {
             publisher.publish(item);
         }
         // Update SIP entity state
-        entity.setState(SIPState.AIP_CREATED);
+        entity.setState(SIPState.AIP_SUBMITTED);
         sipService.saveSIPEntity(entity);
 
         return entity;

@@ -44,7 +44,6 @@ import org.springframework.web.client.HttpServerErrorException;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.microservice.maintenance.MaintenanceException;
@@ -54,6 +53,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEventType;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
+import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
@@ -65,7 +65,6 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.entity.SipAIPState;
 import fr.cnes.regards.modules.ingest.service.ISIPService;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
-import fr.cnes.regards.modules.notification.domain.NotificationLevel;
 import fr.cnes.regards.modules.storage.client.IAipClient;
 import fr.cnes.regards.modules.storage.client.IAipEntityClient;
 import fr.cnes.regards.modules.storage.domain.AIPState;
@@ -130,7 +129,8 @@ public class AIPService implements IAIPService {
             sip.setState(sipState);
             // Save the errorMessage inside SIP rejections errors
             sip.getRejectionCauses().add(String.format("Storage of AIP(%s) failed due to the following error: %s",
-                                                       aipId, errorMessage));
+                                                       aipId,
+                                                       errorMessage));
             sipService.saveSIPEntity(sip);
         }
     }
@@ -243,7 +243,9 @@ public class AIPService implements IAIPService {
     @Override
     public void handleAipEvent(AIPEvent aipEvent) {
         UniformResourceName aipId = UniformResourceName.fromString(aipEvent.getAipId());
-        LOGGER.info("[AIP Event received] {} - {} - {}", aipEvent.getAipId(), aipEvent.getAipState(),
+        LOGGER.info("[AIP Event received] {} - {} - {}",
+                    aipEvent.getAipId(),
+                    aipEvent.getAipState(),
                     aipEvent.getFailureCause() != null ? aipEvent.getFailureCause() : "ok");
         switch (aipEvent.getAipState()) {
             case STORAGE_ERROR:
@@ -278,10 +280,11 @@ public class AIPService implements IAIPService {
             FeignSecurityManager.asSystem();
             try {
                 response = aipClient.deleteAipFromSips(deletableSips.getContent().stream().map(SIPEntity::getSipId)
-                        .collect(Collectors.toSet()));
+                                                               .collect(Collectors.toSet()));
                 long askForAipDeletionEnd = System.currentTimeMillis();
                 LOGGER.trace("Asking SUCCESSFULLY for storage to delete {} sip took {} ms",
-                             deletableSips.getNumberOfElements(), askForAipDeletionEnd - askForAipDeletionStart);
+                             deletableSips.getNumberOfElements(),
+                             askForAipDeletionEnd - askForAipDeletionStart);
                 if (HttpUtils.isSuccess(response.getStatusCode())) {
                     if (response.getBody() != null) {
                         rejectedSips = response.getBody();
@@ -301,7 +304,8 @@ public class AIPService implements IAIPService {
                 rejectedSips = gson.fromJson(e.getResponseBodyAsString(), bodyTypeToken.getType());
             } finally {
                 long askForAipDeletionEnd = System.currentTimeMillis();
-                LOGGER.trace("Asking for storage to delete {} sip took {} ms", deletableSips.getNumberOfElements(),
+                LOGGER.trace("Asking for storage to delete {} sip took {} ms",
+                             deletableSips.getNumberOfElements(),
                              askForAipDeletionEnd - askForAipDeletionStart);
                 FeignSecurityManager.reset();
             }
