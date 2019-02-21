@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 import fr.cnes.httpclient.HttpClient;
 import fr.cnes.httpclient.HttpClientFactory;
@@ -61,7 +62,8 @@ public class ProxyConfiguration {
     private String noProxy;
 
     @Bean("proxyHttpClient")
-    public HttpClient getHttpClient() {
+    @Primary
+    public org.apache.http.client.HttpClient getHttpClient() {
         // https://github.com/CNES/JSPNego
         if (proxyHost != null) {
             LOGGER.info("HTTP Proxy initialized with values host={}, port={},login={}", proxyHost, proxyPort,
@@ -79,7 +81,6 @@ public class ProxyConfiguration {
             LOGGER.info("No HTTP Proxy configured.");
             return HttpClientFactory.create(Type.NO_PROXY);
         }
-
     }
 
 }
