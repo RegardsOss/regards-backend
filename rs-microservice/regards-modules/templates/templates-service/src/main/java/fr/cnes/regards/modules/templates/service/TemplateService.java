@@ -94,7 +94,7 @@ public class TemplateService implements ITemplateService {
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
-    @Autowired(required = false)
+    @Autowired
     private Set<Template> templates;
 
     @Value("${regards.microservice.type:multitenant}")
@@ -145,12 +145,10 @@ public class TemplateService implements ITemplateService {
     public void initDefaultTemplates() {
         // Look into classpath (via TemplateConfigUtil) if some templates are present. If yes, check if they
         // exist into Database, if not, create them
-        if (templates != null) {
-            for (Template template : templates) {
-                if (!templateRepository.findByName(template.getName()).isPresent()) {
-                    // Add the template (regards template POJO) to the loader
-                    templateRepository.save(template);
-                }
+        for (Template template : templates) {
+            if (!templateRepository.findByName(template.getName()).isPresent()) {
+                // Add the template (regards template POJO) to the loader
+                templateRepository.save(template);
             }
         }
     }
