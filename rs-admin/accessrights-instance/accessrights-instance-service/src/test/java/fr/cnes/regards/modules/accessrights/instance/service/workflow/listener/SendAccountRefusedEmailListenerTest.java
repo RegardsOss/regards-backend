@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.accessrights.instance.service.workflow.listener;
 
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.springframework.mail.SimpleMailMessage;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
@@ -36,24 +35,6 @@ import freemarker.template.TemplateException;
  */
 public class SendAccountRefusedEmailListenerTest {
 
-    /**
-     * Test method for {@link SendAccountRefusedEmailListener#onApplicationEvent(OnRefuseAccountEvent)}.
-     */
-    @Test
-    public final void testOnApplicationEvent_templateNotFound() throws TemplateException {
-        Account account = new Account("email@test.com", "firstname", "lastname", "password");
-        OnRefuseAccountEvent event = new OnRefuseAccountEvent(account);
-
-        ITemplateService templateService = Mockito.mock(ITemplateService.class);
-        IEmailClient emailClient = Mockito.mock(IEmailClient.class);
-        Mockito.when(templateService.render(Mockito.anyString(), Mockito.anyMap()))
-                .thenThrow(EntityNotFoundException.class);
-
-        SendAccountRefusedEmailListener listener = new SendAccountRefusedEmailListener(templateService, emailClient);
-        listener.onApplicationEvent(event);
-
-        Mockito.verify(emailClient).sendEmail(Mockito.any());
-    }
 
     /**
      * Test method for {@link SendAccountRefusedEmailListener#onApplicationEvent(OnRefuseAccountEvent)}.
@@ -65,13 +46,12 @@ public class SendAccountRefusedEmailListenerTest {
 
         ITemplateService templateService = Mockito.mock(ITemplateService.class);
         IEmailClient emailClient = Mockito.mock(IEmailClient.class);
-        Mockito.when(templateService.render(Mockito.anyString(), Mockito.anyMap()))
-                .thenReturn("");
+        Mockito.when(templateService.render(Mockito.anyString(), Mockito.anyMap())).thenReturn("");
 
         SendAccountRefusedEmailListener listener = new SendAccountRefusedEmailListener(templateService, emailClient);
         listener.onApplicationEvent(event);
 
-        Mockito.verify(emailClient).sendEmail(Mockito.any());
+        Mockito.verify(emailClient).sendEmail(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
     }
 
 }
