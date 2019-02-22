@@ -21,15 +21,11 @@ package fr.cnes.regards.modules.templates.service;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.boot.context.event.ApplicationStartedEvent;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.mail.SimpleMailMessage;
-
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.templates.domain.Template;
+import freemarker.template.TemplateException;
 
 /**
  * Define the base interface for any implementation of a Template Service.
@@ -53,19 +49,25 @@ public interface ITemplateService {
      * Update the template of given id
      * @param id the updated template id
      * @param template the updated template
-     * @throws EntityException <br>
-     *                         {@link EntityNotFoundException} if no template with given id could be found<br>
-     *                         {@link EntityInconsistentIdentifierException} if the path id differs from the template id<br>
+     * @throws EntityNotFoundException if no template with given id could be found<br>
+     * @throws EntityInconsistentIdentifierException} if the path id differs from the template id<br>
+     * @throws EntityInvalidException if template content could not be parsed
      */
-    Template update(final Long id, final Template template) throws EntityException;
+    Template update(final Long id, final Template template)
+            throws EntityInvalidException, EntityInconsistentIdentifierException, EntityNotFoundException;
 
     /**
      * Render the template found by name, from latest value found in database
      * @param templateName template name
      * @param dataModel data model used as dynamic values for rendering
      * @return rendered template
-     * @throws EntityNotFoundException
+     * @throws TemplateException in case dataModel is not coherent with the template
      */
-    String render(String templateName, Map<String, ?> dataModel) throws EntityNotFoundException;
+    String render(String templateName, Map<String, ?> dataModel) throws TemplateException;
+
+    /**
+     * Method into interface to get transaction into implementations. Should not be used anywhere else.
+     */
+    void initDefaultTemplates();
 
 }
