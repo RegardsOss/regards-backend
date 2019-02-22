@@ -33,13 +33,9 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
@@ -64,7 +60,6 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IAIPSessionRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
@@ -79,7 +74,7 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalWorkingSubset;
 import fr.cnes.regards.modules.templates.dao.ITemplateRepository;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
-import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
+import freemarker.template.TemplateException;
 
 /**
  * Set of visual tests on the result, allows to be sure that the default template is interpreted with no major issues
@@ -128,7 +123,7 @@ public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
     private IDataFileDao dataFileDao;
 
     @Test
-    public void testNotSubsetted() throws ModuleException, MalformedURLException {
+    public void testNotSubsetted() throws ModuleException, MalformedURLException, TemplateException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
 
         Map<String, Object> dataMap = new HashMap<>();
@@ -166,15 +161,16 @@ public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
         dataMap.put("dataFilesMap", workingSubsetWrapper.getRejectedDataFiles());
         dataMap.put("dataStorage", pluginService.getPluginConfiguration(prioritizedDataStorage.getId()));
         // lets use the template service to get our message
-        SimpleMailMessage email = templateService
-                .writeToEmail(TemplateServiceConfiguration.NOT_SUBSETTED_DATA_FILES_CODE, dataMap);
-        Assert.assertNotEquals(templateRepository.findByCode(TemplateServiceConfiguration.NOT_SUBSETTED_DATA_FILES_CODE)
-                                       .get().getContent(), email.getText());
-        LOGGER.info(email.getText());
+        String msg = templateService
+                .render(StorageTemplateConfiguration.NOT_SUBSETTED_DATA_FILES_TEMPLATE_NAME, dataMap);
+        Assert.assertNotEquals(templateRepository
+                                       .findByName(StorageTemplateConfiguration.NOT_SUBSETTED_DATA_FILES_TEMPLATE_NAME)
+                                       .get().getContent(), msg);
+        LOGGER.info(msg);
     }
 
     @Test
-    public void testNotDispatched() throws ModuleException, MalformedURLException {
+    public void testNotDispatched() throws ModuleException, MalformedURLException, TemplateException {
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         Map<String, Object> dataMap = new HashMap<>();
         PluginMetaData AlloMeta = PluginUtils.createPluginMetaData(DefaultAllocationStrategyPlugin.class);
@@ -194,12 +190,12 @@ public class TemplateIT extends AbstractRegardsServiceTransactionalIT {
         dataMap.put("dataFiles", dataFiles);
         dataMap.put("allocationStrategy", alloConf);
         // lets use the template service to get our message
-        SimpleMailMessage email = templateService
-                .writeToEmail(TemplateServiceConfiguration.NOT_DISPATCHED_DATA_FILES_CODE, dataMap);
+        String msg = templateService
+                .render(StorageTemplateConfiguration.NOT_DISPATCHED_DATA_FILES_TEMPLATE_NAME, dataMap);
         Assert.assertNotEquals(templateRepository
-                                       .findByCode(TemplateServiceConfiguration.NOT_DISPATCHED_DATA_FILES_CODE).get()
-                                       .getContent(), email.getText());
-        LOGGER.info(email.getText());
+                                       .findByName(StorageTemplateConfiguration.NOT_DISPATCHED_DATA_FILES_TEMPLATE_NAME)
+                                       .get().getContent(), msg);
+        LOGGER.info(msg);
     }
 
     private AIP getAIP() throws MalformedURLException {
