@@ -46,7 +46,6 @@ import com.google.gson.Gson;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.microservice.maintenance.MaintenanceException;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.utils.HttpUtils;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
@@ -72,6 +71,7 @@ import fr.cnes.regards.modules.storage.domain.IAipState;
 import fr.cnes.regards.modules.storage.domain.RejectedSip;
 import fr.cnes.regards.modules.storage.domain.event.AIPEvent;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
+import freemarker.template.TemplateException;
 
 /**
  * Service to handle aip related issues in ingest, including sending bulk request of AIP to store to archival storage
@@ -232,8 +232,7 @@ public class AIPService implements IAIPService {
     public void handleJobEvent(JobEvent jobEvent) {
         if (JobEventType.FAILED.equals(jobEvent.getJobEventType())) {
             // Load job info
-            @SuppressWarnings("unused")
-            JobInfo jobInfo = jobInfoService.retrieveJob(jobEvent.getJobId());
+            @SuppressWarnings("unused") JobInfo jobInfo = jobInfoService.retrieveJob(jobEvent.getJobId());
             // FIXME handle ingest job errors!
             LOGGER.warn("Unhandled job error : {}/{}", jobEvent.getClass().getName(), jobEvent.getJobId());
         }
@@ -345,10 +344,9 @@ public class AIPService implements IAIPService {
         String message;
         try {
             message = templateService.render(IngestTemplateConfiguration.REJECTED_SIPS_TEMPLATE_NAME, dataMap);
-        } catch (EntityNotFoundException enf) {
-            throw new MaintenanceException(enf.getMessage(), enf);
+        } catch (TemplateException e) {
+            throw new MaintenanceException(e.getMessage(), e);
         }
-        notificationClient.notify(message, "Errors during SIPs deletions", NotificationLevel.ERROR,
-                                  DefaultRole.ADMIN);
+        notificationClient.notify(message, "Errors during SIPs deletions", NotificationLevel.ERROR, DefaultRole.ADMIN);
     }
 }
