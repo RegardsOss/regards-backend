@@ -49,6 +49,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.templates.dao.ITemplateRepository;
 import fr.cnes.regards.modules.templates.domain.Template;
+import freemarker.template.TemplateException;
 
 /**
  * Test suite for {@link TemplateService}.
@@ -310,16 +311,12 @@ public class TemplateServiceTest {
         templateService.update(1L, template);
     }
 
-    /**
-     * Test method for SimpleMailMessageTemplateWriter#writeToEmail(Template, Map, String[]).
-     * @throws EntityNotFoundException no template of passed code could be found
-     */
     @Test
     @Purpose("Check that the system uses templates to send emails.")
     @Requirement("REGARDS_DSL_SYS_ERG_310")
     @Requirement("REGARDS_DSL_ADM_ADM_440")
     @Requirement("REGARDS_DSL_ADM_ADM_460")
-    public final void testWrite() throws EntityNotFoundException {
+    public final void testWrite() throws TemplateException {
         // Mock
         Mockito.when(templateRepository.findByName(CODE)).thenReturn(Optional.ofNullable(template));
 
