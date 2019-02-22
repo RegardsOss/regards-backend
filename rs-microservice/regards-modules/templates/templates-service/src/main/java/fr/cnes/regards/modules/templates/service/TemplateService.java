@@ -80,7 +80,7 @@ public class TemplateService implements ITemplateService {
     /**
      * The freemarker configuration
      */
-    private Configuration configuration;
+    private final Configuration configuration;
 
     /**
      * Tenant resolver to access all configured tenant
@@ -94,7 +94,7 @@ public class TemplateService implements ITemplateService {
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
-    @Autowired
+    @Autowired(required = false)
     private Set<Template> templates;
 
     @Value("${regards.microservice.type:multitenant}")
@@ -145,10 +145,12 @@ public class TemplateService implements ITemplateService {
     public void initDefaultTemplates() {
         // Look into classpath (via TemplateConfigUtil) if some templates are present. If yes, check if they
         // exist into Database, if not, create them
-        for (Template template : templates) {
-            if (!templateRepository.findByName(template.getName()).isPresent()) {
-                // Add the template (regards template POJO) to the loader
-                templateRepository.save(template);
+        if (templates != null) {
+            for (Template template : templates) {
+                if (!templateRepository.findByName(template.getName()).isPresent()) {
+                    // Add the template (regards template POJO) to the loader
+                    templateRepository.save(template);
+                }
             }
         }
     }
@@ -199,7 +201,7 @@ public class TemplateService implements ITemplateService {
             return out.toString();
         } catch (IOException e) {
             LOG.error("Unable to process the data into the template of code " + template.getName()
-                              + ". Falling back to the not templated content.", e);
+                    + ". Falling back to the not templated content.", e);
             throw new RsRuntimeException(e);
         }
     }
