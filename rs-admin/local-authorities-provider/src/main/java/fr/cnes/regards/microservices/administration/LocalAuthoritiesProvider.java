@@ -74,7 +74,6 @@ public class LocalAuthoritiesProvider implements IAuthoritiesProvider {
 
     public LocalAuthoritiesProvider(IRoleService roleService, IResourcesService resourcesService,
             IRuntimeTenantResolver runtimeTenantResolver) {
-        super();
         this.roleService = roleService;
         this.resourcesService = resourcesService;
         this.runtimeTenantResolver = runtimeTenantResolver;

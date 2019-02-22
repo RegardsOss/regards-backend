@@ -40,7 +40,7 @@ public class AccessRightTemplateConf {
     @Bean
     public Template emailAccountValidationTemplate() throws IOException {
         return TemplateConfigUtil.readTemplate(EMAIL_ACCOUNT_VALIDATION_TEMPLATE_NAME,
-                                               "template/email-account-validation-template-name.html");
+                                               "template/email-account-validation-template.html");
     }
 
 }
