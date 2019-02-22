@@ -31,6 +31,7 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.service.workflow.AccessRightTemplateConf;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
+import freemarker.template.TemplateException;
 
 /**
  * Listen to {@link OnPasswordResetEvent} in order to send a password reset to the user when required.
@@ -101,7 +102,7 @@ public class PasswordResetListener implements ApplicationListener<OnPasswordRese
         String message;
         try {
             message = templateService.render(AccessRightTemplateConf.PASSWORD_RESET_TEMPLATE_NAME, data);
-        } catch (final EntityNotFoundException e) {
+        } catch (final TemplateException e) {
 
             String linkUrlTemplate;
             if (event.getRequestLink() != null && event.getRequestLink().contains("?")) {

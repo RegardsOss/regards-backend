@@ -37,6 +37,7 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnDenyEvent;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
+import freemarker.template.TemplateException;
 
 /**
  * Listen to {@link OnDenyEvent} in order to warn the user its account request was refused.
@@ -85,7 +86,7 @@ public class SendProjectUserDeniedEmailListener implements ApplicationListener<O
         String message;
         try {
             message = templateService.render(AccessRightTemplateConf.USER_DENIED_TEMPLATE_NAME, data);
-        } catch (final EntityNotFoundException e) {
+        } catch (final TemplateException e) {
             LOGGER.error(
                     "Could not find the template to generate the email notifying the account refusal. Falling back to default.",
                     e);

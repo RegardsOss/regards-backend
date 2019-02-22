@@ -45,6 +45,7 @@ import fr.cnes.regards.modules.accessrights.instance.service.workflow.AccessRigh
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.project.service.ITenantService;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
+import freemarker.template.TemplateException;
 
 /**
  * State class of the State Pattern implementing the available actions on a {@link Account} in status LOCKED.
@@ -106,7 +107,7 @@ public class LockedState extends AbstractDeletableState {
         String message;
         try {
             message = templateService.render(AccessRightTemplateConf.ACCOUNT_UNLOCK_TEMPLATE_NAME, data);
-        } catch (final EntityNotFoundException e) {
+        } catch (final TemplateException e) {
             LOG.warn("Could not find the template to generate a unlock account email. Falling back to default.", e);
 
             String linkUrlTemplate;

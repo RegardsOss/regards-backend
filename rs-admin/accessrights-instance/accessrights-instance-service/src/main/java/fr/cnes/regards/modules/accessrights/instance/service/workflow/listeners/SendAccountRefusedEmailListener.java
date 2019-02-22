@@ -24,16 +24,15 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.service.workflow.AccessRightTemplateConf;
 import fr.cnes.regards.modules.accessrights.instance.service.workflow.events.OnRefuseAccountEvent;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
+import freemarker.template.TemplateException;
 
 /**
  * Listen to {@link OnRefuseAccountEvent} in order to warn the user its account request was refused.
@@ -90,9 +89,10 @@ public class SendAccountRefusedEmailListener implements ApplicationListener<OnRe
         String message;
         try {
             message = templateService.render(AccessRightTemplateConf.ACCOUNT_REFUSED_TEMPLATE_NAME, data);
-        } catch (final EntityNotFoundException e) {
-            LOG.error("Could not find the template to generate the email notifying the account refusal. Falling back to default.",
-                      e);
+        } catch (final TemplateException e) {
+            LOG.error(
+                    "Could not find the template to generate the email notifying the account refusal. Falling back to default.",
+                    e);
             message = "Your access request was refused by admin.";
         }
 

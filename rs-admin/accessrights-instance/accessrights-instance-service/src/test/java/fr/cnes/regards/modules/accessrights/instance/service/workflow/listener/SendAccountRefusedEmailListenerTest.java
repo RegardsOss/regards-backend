@@ -28,6 +28,7 @@ import fr.cnes.regards.modules.accessrights.instance.service.workflow.events.OnR
 import fr.cnes.regards.modules.accessrights.instance.service.workflow.listeners.SendAccountRefusedEmailListener;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
+import freemarker.template.TemplateException;
 
 /**
  *
@@ -37,10 +38,9 @@ public class SendAccountRefusedEmailListenerTest {
 
     /**
      * Test method for {@link SendAccountRefusedEmailListener#onApplicationEvent(OnRefuseAccountEvent)}.
-     * @throws EntityNotFoundException
      */
     @Test
-    public final void testOnApplicationEvent_templateNotFound() throws EntityNotFoundException {
+    public final void testOnApplicationEvent_templateNotFound() throws TemplateException {
         Account account = new Account("email@test.com", "firstname", "lastname", "password");
         OnRefuseAccountEvent event = new OnRefuseAccountEvent(account);
 
@@ -57,10 +57,9 @@ public class SendAccountRefusedEmailListenerTest {
 
     /**
      * Test method for {@link SendAccountRefusedEmailListener#onApplicationEvent(OnRefuseAccountEvent)}.
-     * @throws EntityNotFoundException
      */
     @Test
-    public final void testOnApplicationEvent() throws EntityNotFoundException {
+    public final void testOnApplicationEvent() throws TemplateException {
         Account account = new Account("email@test.com", "firstname", "lastname", "password");
         OnRefuseAccountEvent event = new OnRefuseAccountEvent(account);
 

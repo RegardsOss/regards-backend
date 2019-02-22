@@ -41,6 +41,7 @@ import fr.cnes.regards.modules.accessrights.service.projectuser.emailverificatio
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnGrantAccessEvent;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
+import freemarker.template.TemplateException;
 
 /**
  * Listen to {@link OnGrantAccessEvent} in order to warn the user its account request was refused.
@@ -121,7 +122,7 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
         String message;
         try {
             message = templateService.render(AccessRightTemplateConf.EMAIL_ACCOUNT_VALIDATION_TEMPLATE_NAME, data);
-        } catch (final EntityNotFoundException e) {
+        } catch (TemplateException e) {
             LOGGER.warn("Could not find the template for registration confirmation. Falling back to default template.",
                         e);
             message = "Please click on the following link to confirm your registration: " + data.get("confirmationUrl");
