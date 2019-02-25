@@ -51,10 +51,11 @@ public class Template implements IIdentifiable<Long> {
     private Long id;
 
     /**
-     * A human readable name identifying the template
+     * A human readable name identifying the template.
+     * Attribute and column does not have the same name for compatibility issue between versions
      */
     @NotBlank
-    @Column(name = "name", nullable = false, length = 100, updatable = false)
+    @Column(name = "code", nullable = false, length = 100, updatable = false)
     private String name;
 
     /**

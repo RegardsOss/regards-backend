@@ -45,20 +45,6 @@ public final class TemplateConfigUtil {
      */
     private static final String ASIDE_ORDERS_NOTIFICATION_TEMPLATE = "template/aside-orders-notification-template.html";
 
-    /**
-     * The not dispatched data files template as html
-     */
-    private static final String NOT_DISPATCHED_DATA_FILES_TEMPLATE = "template/not_dispatched_data_files_template.html";
-
-    /**
-     * The not subsetted data files template as html
-     */
-    private static final String NOT_SUBSETTED_DATA_FILES_TEMPLATE = "template/not_subsetted_data_files_template.html";
-
-    private static final String UNDELETABLES_DATA_FILES_TEMPLATE = "template/undeletable_data_files_template.html";
-
-    private static final String REJECTED_SIPS_TEMPLATE = "template/rejected_sips_template.html";
-
     private TemplateConfigUtil() {}
 
     public static Template readTemplate(String name, String path) throws IOException {
