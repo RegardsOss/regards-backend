@@ -505,6 +505,7 @@ public class AIPServiceIT extends AbstractRegardsIT {
         aipService.storePage(PageRequest.of(0, 1, Sort.Direction.ASC, "id"));
         Assert.assertEquals("No new jobs should have been created by storePage", nbJobBeforeStorePage,
                             jobInfoRepo.count());
+        waitForJobsFinished();
         AIP afterStorePage = aipService.retrieveAip(aip.getId().toString());
         // almost nothing should happens during this call: Only metadata could not be stored so it should be handled by storeMetadata not storePage
         Assert.assertEquals("AIP state should be DATAFILES_STORED", AIPState.DATAFILES_STORED,
@@ -520,6 +521,7 @@ public class AIPServiceIT extends AbstractRegardsIT {
         aipService.storeMetadata();
         waitForJobsFinished();
         Set<StorageDataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
+        AIP afterMetaStored = aipService.retrieveAip(aip.getId().toString());
         StorageDataFile aip = dataFiles.stream().filter(df -> df.getDataType().equals(DataType.AIP)).findFirst().get();
         Assert.assertTrue("stored metadata should have only 2 urls", aip.getUrls().size() == 2);
         String storedLocation1 = Paths
@@ -556,15 +558,12 @@ public class AIPServiceIT extends AbstractRegardsIT {
         // 2 new jobs should be created with by first schedule (1 for each data storage)
         long nbJobBeforeStorePage = jobInfoRepo.count();
         aipService.storePage(PageRequest.of(0, 1, Sort.Direction.ASC, "id"));
-        Assert.assertEquals("No new jobs should have been created by storePage", nbJobBeforeStorePage + 2,
+        Assert.assertEquals("Two new jobs should have been created by storePage", nbJobBeforeStorePage + 2,
                             jobInfoRepo.count());
-        AIP afterStorePage = aipService.retrieveAip(aip.getId().toString());
-        Assert.assertEquals("AIP state should be pending", AIPState.PENDING, afterStorePage.getState());
-        Set<StorageDataFile> afterStorePageDataFiles = dataFileDao.findAllByAip(afterStorePage);
-        for (StorageDataFile sdf : afterStorePageDataFiles) {
-            Assert.assertEquals("Data file should still be in error", DataFileState.ERROR, sdf.getState());
-        }
         waitForJobsFinished();
+        AIP afterStorePage = aipService.retrieveAip(aip.getId().toString());
+        Assert.assertEquals("AIP state should be DATAFILES_STORED", AIPState.DATAFILES_STORED,
+                            afterStorePage.getState());
         aipService.storeMetadata();
         waitForJobsFinished();
         Set<StorageDataFile> dataFiles = dataFileDao.findAllByStateAndAip(DataFileState.STORED, aip);
