@@ -80,7 +80,7 @@ public class TemplateService implements ITemplateService {
     /**
      * The freemarker configuration
      */
-    private Configuration configuration;
+    private final Configuration configuration;
 
     /**
      * Tenant resolver to access all configured tenant
@@ -199,7 +199,7 @@ public class TemplateService implements ITemplateService {
             return out.toString();
         } catch (IOException e) {
             LOG.error("Unable to process the data into the template of code " + template.getName()
-                              + ". Falling back to the not templated content.", e);
+                    + ". Falling back to the not templated content.", e);
             throw new RsRuntimeException(e);
         }
     }
