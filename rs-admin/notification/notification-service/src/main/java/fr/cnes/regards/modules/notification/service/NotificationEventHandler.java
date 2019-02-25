@@ -72,13 +72,17 @@ public class NotificationEventHandler
     public void handle(TenantWrapper<NotificationEvent> wrapper) {
         LOGGER.trace("New notification event for tenant {}", wrapper.getTenant());
         NotificationEvent notification = wrapper.getContent();
-
-        try {
-            // Set working tenant
-            runtimeTenantResolver.forceTenant(wrapper.getTenant());
+        //Either we are in multitenant mode and we have to force tenant or we aren't
+        if (notificationMode == NotificationMode.MULTITENANT) {
+            try {
+                // Set working tenant
+                runtimeTenantResolver.forceTenant(wrapper.getTenant());
+                notificationService.createNotification(notification.getNotification());
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
+        } else {
             notificationService.createNotification(notification.getNotification());
-        } finally {
-            runtimeTenantResolver.clearTenant();
         }
     }
 }
