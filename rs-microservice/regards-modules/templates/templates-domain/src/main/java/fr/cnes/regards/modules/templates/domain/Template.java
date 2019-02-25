@@ -39,7 +39,7 @@ import fr.cnes.regards.framework.jpa.IIdentifiable;
  * @author oroussel
  */
 @Entity
-@Table(name = "t_template", uniqueConstraints = @UniqueConstraint(name = "uk_template_name", columnNames = { "name" }))
+@Table(name = "t_template", uniqueConstraints = @UniqueConstraint(name = "uk_template_code", columnNames = { "code" }))
 @SequenceGenerator(name = "templateSequence", initialValue = 1, sequenceName = "seq_template")
 public class Template implements IIdentifiable<Long> {
 
