@@ -18,6 +18,14 @@
  */
 package fr.cnes.regards.modules.order.service;
 
+import javax.annotation.PostConstruct;
+import javax.transaction.Transactional;
+import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.SchemaFactory;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,15 +53,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-import javax.transaction.Transactional;
-import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.SchemaFactory;
-
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.slf4j.Logger;
@@ -66,7 +65,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -79,13 +77,11 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.TreeMultimap;
 import com.google.common.io.ByteStreams;
-
 import feign.Response;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
@@ -130,6 +126,7 @@ import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.domain.plugin.legacy.FacettedPagedResources;
 import fr.cnes.regards.modules.storage.client.IAipClient;
 import fr.cnes.regards.modules.templates.service.TemplateService;
+import freemarker.template.TemplateException;
 
 /**
  * @author oroussel
@@ -140,13 +137,13 @@ import fr.cnes.regards.modules.templates.service.TemplateService;
 @RefreshScope
 public class OrderService implements IOrderService {
 
+    public static final int MAX_PAGE_SIZE = 10_000;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderService.class);
 
     private static final String METALINK_XML_SCHEMA_NAME = "metalink.xsd";
 
     private static final int MAX_EXTERNAL_BUCKET_FILE_COUNT = 1_000;
-
-    public static final int MAX_PAGE_SIZE = 10_000;
 
     @Autowired
     private IOrderRepository repos;
@@ -225,18 +222,25 @@ public class OrderService implements IOrderService {
     // Storage bucket size in bytes
     private Long storageBucketSize = null;
 
+    private static String encode4Uri(String str) {
+        return new String(UriUtils.encode(str, Charset.defaultCharset().name()).getBytes(), StandardCharsets.US_ASCII);
+    }
+
     /**
      * Method called at creation AND after a resfresh
      */
     @PostConstruct
     public void init() {
         // Compute storageBucketSize from storageBucketSizeMb filled by Spring
-        storageBucketSize = storageBucketSizeMb * 1024l * 1024l;
+        storageBucketSize = storageBucketSizeMb * 1024L * 1024L;
         LOGGER.info("OrderService created/refreshed with storageBucketSize: {}, orderValidationPeriodDays: {}"
-                + ", daysBeforeSendingNotifEmail: {}...", storageBucketSize, orderValidationPeriodDays,
+                            + ", daysBeforeSendingNotifEmail: {}...",
+                    storageBucketSize,
+                    orderValidationPeriodDays,
                     daysBeforeSendingNotifEmail);
-        proxy = Strings.isNullOrEmpty(proxyHost) ? Proxy.NO_PROXY
-                : new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+        proxy = Strings.isNullOrEmpty(proxyHost) ?
+                Proxy.NO_PROXY :
+                new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
 
     }
 
@@ -291,7 +295,11 @@ public class OrderService implements IOrderService {
                 while (!features.isEmpty()) {
                     // For each DataObject
                     for (EntityFeature feature : features) {
-                        dispatchFeatureFilesInBuckets(basket, order, role, feature, storageBucketFiles,
+                        dispatchFeatureFilesInBuckets(basket,
+                                                      order,
+                                                      role,
+                                                      feature,
+                                                      storageBucketFiles,
                                                       externalBucketFiles);
                         // If sum of files size > storageBucketSize, add a new bucket
                         if (storageBucketFiles.stream().mapToLong(DataFile::getFilesize).sum() >= storageBucketSize) {
@@ -413,7 +421,9 @@ public class OrderService implements IOrderService {
             // To send a notification, NotificationClient needs it
             notificationClient
                     .notify(String.format("File \"%s\" is bigger than sub-order size", orderDataFile.getFilename()),
-                            "Order creation", NotificationLevel.WARNING, DefaultRole.PROJECT_ADMIN);
+                            "Order creation",
+                            NotificationLevel.WARNING,
+                            DefaultRole.PROJECT_ADMIN);
         }
     }
 
@@ -422,9 +432,14 @@ public class OrderService implements IOrderService {
      * order data files)
      */
     private String generateToken4PublicEndpoint(Order order) {
-        return jwtService.generateToken(runtimeTenantResolver.getTenant(), authResolver.getUser(),
-                                        authResolver.getUser(), authResolver.getRole(), order.getExpirationDate(),
-                                        Collections.singletonMap(ORDER_ID_KEY, order.getId().toString()), secret, true);
+        return jwtService.generateToken(runtimeTenantResolver.getTenant(),
+                                        authResolver.getUser(),
+                                        authResolver.getUser(),
+                                        authResolver.getRole(),
+                                        order.getExpirationDate(),
+                                        Collections.singletonMap(ORDER_ID_KEY, order.getId().toString()),
+                                        secret,
+                                        true);
     }
 
     private void sendOrderCreationEmail(Order order) {
@@ -443,24 +458,26 @@ public class OrderService implements IOrderService {
         dataMap.put("expiration_date", order.getExpirationDate().toString());
         dataMap.put("project", runtimeTenantResolver.getTenant());
         dataMap.put("order_id", order.getId().toString());
-        dataMap.put("metalink_download_url", urlStart + "/user/orders/metalink/download?" + tokenRequestParam
-                + "&scope=" + runtimeTenantResolver.getTenant());
+        dataMap.put("metalink_download_url",
+                    urlStart + "/user/orders/metalink/download?" + tokenRequestParam + "&scope=" + runtimeTenantResolver
+                            .getTenant());
         dataMap.put("regards_downloader_url", "https://github.com/RegardsOss/RegardsDownloader/releases");
         dataMap.put("orders_url", host + order.getFrontendUrl());
 
         // Create mail
-        SimpleMailMessage email;
+        String message;
         try {
-            email = templateService.writeToEmail(TemplateServiceConfiguration.ORDER_CREATED_TEMPLATE_CODE,
-                                                 String.format("Order number %d is confirmed", order.getId()), dataMap,
-                                                 order.getOwner());
-        } catch (EntityNotFoundException e) {
+            message = templateService.render(OrderTemplateConf.ORDER_CREATED_TEMPLATE_NAME, dataMap);
+        } catch (TemplateException e) {
             throw new RsRuntimeException(e);
         }
 
         // Send it
         FeignSecurityManager.asSystem();
-        emailClient.sendEmail(email);
+        emailClient.sendEmail(message,
+                              String.format("Order number %d is confirmed", order.getId()),
+                              null,
+                              order.getOwner());
         FeignSecurityManager.reset();
     }
 
@@ -495,7 +512,8 @@ public class OrderService implements IOrderService {
         JobInfo storageJobInfo = new JobInfo(true);
         storageJobInfo.setParameters(new FilesJobParameter(bucketFiles.toArray(new OrderDataFile[bucketFiles.size()])),
                                      new ExpirationDateJobParameter(expirationDate),
-                                     new UserJobParameter(order.getOwner()), new UserRoleJobParameter(role));
+                                     new UserJobParameter(order.getOwner()),
+                                     new UserRoleJobParameter(role));
         storageJobInfo.setOwner(basket.getOwner());
         storageJobInfo.setClassName("fr.cnes.regards.modules.order.service.job.StorageFilesJob");
         storageJobInfo.setPriority(priority);
@@ -606,9 +624,9 @@ public class OrderService implements IOrderService {
     private boolean orderEffectivelyInPause(Order order) {
         // No associated jobInfo or all associated jobs finished
         return (order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
-                .filter(ft -> ft.getJobInfo() != null).count() == 0)
-                || order.getDatasetTasks().stream().flatMap(dsTask -> dsTask.getReliantTasks().stream())
-                        .map(ft -> ft.getJobInfo().getStatus().getStatus()).allMatch(JobStatus::isFinished);
+                .filter(ft -> ft.getJobInfo() != null).count() == 0) || order.getDatasetTasks().stream()
+                .flatMap(dsTask -> dsTask.getReliantTasks().stream()).map(ft -> ft.getJobInfo().getStatus().getStatus())
+                .allMatch(JobStatus::isFinished);
     }
 
     @Override
@@ -689,7 +707,7 @@ public class OrderService implements IOrderService {
             zos.setCreateUnicodeExtraFields(ZipArchiveOutputStream.UnicodeExtraFieldPolicy.NOT_ENCODEABLE);
             // A multiset to manage multi-occurrences of files
             Multiset<String> dataFiles = HashMultiset.create();
-            for (Iterator<OrderDataFile> i = availableFiles.iterator(); i.hasNext();) {
+            for (Iterator<OrderDataFile> i = availableFiles.iterator(); i.hasNext(); ) {
                 OrderDataFile dataFile = i.next();
                 // Externally downloadable
                 if (dataFile.isReference()) {
@@ -697,13 +715,12 @@ public class OrderService implements IOrderService {
                     int timeout = 10_000;
                     String dataObjectIpId = dataFile.getIpId().toString();
                     dataFile.setDownloadError(null);
-                    try (InputStream is = DownloadUtils.getInputStreamThroughProxy(new URL(dataFile.getUrl()), proxy,
-                                                                                   timeout)) {
+                    try (InputStream is = DownloadUtils
+                            .getInputStreamThroughProxy(new URL(dataFile.getUrl()), proxy, timeout)) {
                         readInputStreamAndAddToZip(downloadErrorFiles, zos, dataFiles, i, dataFile, dataObjectIpId, is);
                     } catch (IOException e) {
                         LOGGER.error(String.format("Error while downloading external file (url : %s)",
-                                                   dataFile.getUrl()),
-                                     e);
+                                                   dataFile.getUrl()), e);
                         StringWriter sw = new StringWriter();
                         e.printStackTrace(new PrintWriter(sw));
                         dataFile.setDownloadError("Error while downloading external file\n" + sw.toString());
@@ -721,17 +738,19 @@ public class OrderService implements IOrderService {
                         LOGGER.error("Error while downloading file from Archival Storage", e);
                         StringWriter sw = new StringWriter();
                         e.printStackTrace(new PrintWriter(sw));
-                        dataFile.setDownloadError("Error while downloading file from Archival Storage\n"
-                                + sw.toString());
+                        dataFile.setDownloadError(
+                                "Error while downloading file from Archival Storage\n" + sw.toString());
                     }
                     // Unable to download file from storage
                     if ((response == null) || (response.status() != HttpStatus.OK.value())) {
                         downloadErrorFiles.add(dataFile);
                         i.remove();
-                        LOGGER.warn("Cannot retrieve data file from storage (aip : {}, checksum : {})", aip,
+                        LOGGER.warn("Cannot retrieve data file from storage (aip : {}, checksum : {})",
+                                    aip,
                                     dataFile.getChecksum());
-                        dataFile.setDownloadError("Cannot retrieve data file from storage, feign downloadFile method returns "
-                                + (response == null ? "null" : response.toString()));
+                        dataFile.setDownloadError(
+                                "Cannot retrieve data file from storage, feign downloadFile method returns " + (
+                                        response == null ? "null" : response.toString()));
                         continue;
                     } else { // Download ok
                         try (InputStream is = response.body().asInputStream()) {
@@ -788,9 +807,11 @@ public class OrderService implements IOrderService {
                 downloadErrorFiles.add(dataFile);
                 i.remove();
                 LOGGER.warn("Cannot completely download data file (data object IP_ID: {}, file name: {})",
-                            dataObjectIpId, dataFile.getFilename());
-                dataFile.setDownloadError("Cannot completely download data file from storage, only " + copiedBytes + "/"
-                        + dataFile.getFilesize() + " bytes");
+                            dataObjectIpId,
+                            dataFile.getFilename());
+                dataFile.setDownloadError(
+                        "Cannot completely download data file from storage, only " + copiedBytes + "/" + dataFile
+                                .getFilesize() + " bytes");
             }
         }
     }
@@ -816,8 +837,9 @@ public class OrderService implements IOrderService {
         // For all data files
         for (OrderDataFile file : files) {
             FileType xmlFile = factory.createFileType();
-            String filename = file.getFilename() != null ? file.getFilename()
-                    : file.getUrl().substring(file.getUrl().lastIndexOf('/') + 1);
+            String filename = file.getFilename() != null ?
+                    file.getFilename() :
+                    file.getUrl().substring(file.getUrl().lastIndexOf('/') + 1);
             xmlFile.setIdentity(filename);
             xmlFile.setName(filename);
             if (file.getFilesize() != null) {
@@ -869,10 +891,6 @@ public class OrderService implements IOrderService {
         }
     }
 
-    private static String encode4Uri(String str) {
-        return new String(UriUtils.encode(str, Charset.defaultCharset().name()).getBytes(), StandardCharsets.US_ASCII);
-    }
-
     @Override
     @Transactional(Transactional.TxType.NEVER) // Must not create a transaction, it is a multitenant method
     @Scheduled(fixedDelayString = "${regards.order.computation.update.rate.ms:1000}")
@@ -915,8 +933,8 @@ public class OrderService implements IOrderService {
     public void sendTenantPeriodicNotifications() {
         List<Order> asideOrders = repos.findAsideOrders(daysBeforeSendingNotifEmail);
 
-        Multimap<String, Order> orderMultimap = TreeMultimap.create(Comparator.naturalOrder(),
-                                                                    Comparator.comparing(Order::getCreationDate));
+        Multimap<String, Order> orderMultimap = TreeMultimap
+                .create(Comparator.naturalOrder(), Comparator.comparing(Order::getCreationDate));
         asideOrders.forEach(o -> orderMultimap.put(o.getOwner(), o));
 
         // For each owner
@@ -926,18 +944,16 @@ public class OrderService implements IOrderService {
             dataMap.put("orders", entry.getValue());
             dataMap.put("project", runtimeTenantResolver.getTenant());
             // Create mail
-            SimpleMailMessage email;
+            String message;
             try {
-                email = templateService
-                        .writeToEmail(TemplateServiceConfiguration.ASIDE_ORDERS_NOTIFICATION_TEMPLATE_CODE,
-                                      "Reminder: some orders are waiting for you", dataMap, entry.getKey());
-            } catch (EntityNotFoundException e) {
+                message = templateService.render(OrderTemplateConf.ASIDE_ORDERS_NOTIFICATION_TEMPLATE_NAME, dataMap);
+            } catch (TemplateException e) {
                 throw new RsRuntimeException(e);
             }
 
             // Send it
             FeignSecurityManager.asSystem();
-            emailClient.sendEmail(email);
+            emailClient.sendEmail(message, "Reminder: some orders are waiting for you", null, entry.getKey());
             FeignSecurityManager.reset();
             // Update order availableUpdateDate to avoid another microservice instance sending notification emails
             entry.getValue().forEach(order -> order.setAvailableUpdateDate(now));
@@ -991,6 +1007,7 @@ public class OrderService implements IOrderService {
             try {
                 Thread.sleep(1_000);
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 throw new RsRuntimeException(e); // NOSONAR
             }
             order = self.loadComplete(order.getId());
