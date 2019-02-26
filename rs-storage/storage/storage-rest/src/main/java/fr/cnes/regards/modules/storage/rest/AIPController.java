@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.storage.rest;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.OffsetDateTime;
@@ -41,7 +40,6 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.util.Pair;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -91,6 +89,7 @@ import fr.cnes.regards.modules.storage.domain.AipDataFiles;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.DataFileDto;
+import fr.cnes.regards.modules.storage.domain.DownloadableFile;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
 import fr.cnes.regards.modules.storage.domain.RejectedSip;
 import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
@@ -673,15 +672,13 @@ public class AIPController implements IResourceController<AIP> {
         // Retrieve file locale path, 404 if aip not found or bad checksum or no storage plugin
         // 403 if user has not right
         try {
-            Pair<StorageDataFile, InputStream> dataFileISPair = aipService.getAIPDataFile(aipId, checksum);
-            if (dataFileISPair != null) {
-                StorageDataFile dataFile = dataFileISPair.getFirst();
-                InputStreamResource isr = new InputStreamResource(dataFileISPair.getSecond());
-                Long fileSize = dataFile.getFileSize();
+            DownloadableFile downloadFile = aipService.getAIPDataFile(aipId, checksum);
+            if (downloadFile != null) {
+                InputStreamResource isr = new InputStreamResource(downloadFile.getFileInputStream());
                 HttpHeaders headers = new HttpHeaders();
-                headers.setContentLength(fileSize);
-                headers.setContentType(asMediaType(dataFile.getMimeType()));
-                headers.setContentDispositionFormData("attachement;filename=", dataFile.getName());
+                headers.setContentLength(downloadFile.getRealFileSize());
+                headers.setContentType(asMediaType(downloadFile.getDataFile().getMimeType()));
+                headers.setContentDispositionFormData("attachement;filename=", downloadFile.getDataFile().getName());
                 return new ResponseEntity<>(isr, headers, HttpStatus.OK);
             } else { // NEARLINE file not in cache
                 return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
