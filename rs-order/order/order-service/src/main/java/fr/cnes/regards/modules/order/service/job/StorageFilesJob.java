@@ -3,9 +3,14 @@ package fr.cnes.regards.modules.order.service.job;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -27,6 +32,8 @@ import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
  * @author oroussel
  */
 public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataFileEvent> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(StorageFilesJob.class);
 
     private OffsetDateTime expirationDate;
 
@@ -50,6 +57,12 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
      */
     private final Map<String, OrderDataFile> dataFilesMap = new HashMap<>();
 
+    /**
+     * Set of file checksums already handled by a DataStorageEvent.
+     * Used in order to avoid listening on two same available events from storage.
+     */
+    private final Set<String> alreadyHandledFiles = Sets.newHashSet();
+
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
             throws JobParameterMissingException, JobParameterInvalidException {
@@ -61,8 +74,8 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
                     "Four parameters are expected : 'files', 'expirationDate', 'user' and 'userRole'.");
         }
         for (JobParameter param : parameters.values()) {
-            if (!FilesJobParameter.isCompatible(param) && !(ExpirationDateJobParameter.isCompatible(param)) &&
-                    !UserJobParameter.isCompatible(param) && !UserRoleJobParameter.isCompatible(param)) {
+            if (!FilesJobParameter.isCompatible(param) && !(ExpirationDateJobParameter.isCompatible(param))
+                    && !UserJobParameter.isCompatible(param) && !UserRoleJobParameter.isCompatible(param)) {
                 throw new JobParameterInvalidException(
                         "Please use FilesJobParameter, ExpirationDateJobParameter, UserJobParameter and "
                                 + "UserRoleJobParameter in place of JobParameter (these "
@@ -98,12 +111,14 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
             boolean atLeastOneDataFileIntoResponse = false;
             for (String checksum : response.getAlreadyAvailable()) {
                 OrderDataFile dataFile = dataFilesMap.get(checksum);
+                LOGGER.debug("File {} - {} is already available.", dataFile.getFilename(), checksum);
                 dataFile.setState(FileState.AVAILABLE);
                 atLeastOneDataFileIntoResponse = true;
                 this.semaphore.release();
             }
             // Update all files in error
             for (String checksum : response.getErrors()) {
+                LOGGER.error("File {} cannot be retrieved.", checksum);
                 dataFilesMap.get(checksum).setState(FileState.ERROR);
                 atLeastOneDataFileIntoResponse = true;
                 this.semaphore.release();
@@ -112,12 +127,16 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
             if (atLeastOneDataFileIntoResponse) {
                 dataFileService.save(dataFilesMap.values());
             }
+            dataFilesMap.forEach((cs, f) -> LOGGER.debug("Order job is waiting for {} file {} - {} avaibility.",
+                                                         dataFilesMap.size(), f.getFilename(), cs));
             // Wait for remaining files availability from storage
             try {
                 this.semaphore.acquire();
             } catch (InterruptedException e) {
                 return;
             }
+
+            LOGGER.debug("All files ({}) are availables.", dataFilesMap.size());
             // All files have bean treated by storage, no more event subscriber needed...
             subscriber.unsubscribe(this);
             // ...and all order data files statuses are updated into database
@@ -142,12 +161,20 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
         if (!dataFilesMap.containsKey(event.getChecksum())) {
             return;
         }
+        if (alreadyHandledFiles.contains(event.getChecksum())) {
+            return;
+        }
+        OrderDataFile df = dataFilesMap.get(event.getChecksum());
         switch (event.getState()) {
             case AVAILABLE:
-                dataFilesMap.get(event.getChecksum()).setState(FileState.AVAILABLE);
+                LOGGER.debug("File {} - {} is now available.", df.getFilename(), df.getChecksum());
+                df.setState(FileState.AVAILABLE);
+                alreadyHandledFiles.add(event.getChecksum());
                 break;
             case ERROR:
-                dataFilesMap.get(event.getChecksum()).setState(FileState.ERROR);
+                LOGGER.debug("File {} - {} is now in error.", df.getFilename(), df.getChecksum());
+                df.setState(FileState.ERROR);
+                alreadyHandledFiles.add(event.getChecksum());
                 break;
         }
         this.semaphore.release();
