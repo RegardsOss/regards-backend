@@ -41,7 +41,7 @@ package fr.cnes.regards.modules.storage.domain;
  *          \             /
  *           \          /
  *            \       /
- *             DELETED
+ *             DELETED-----PARTIAL_DELETION
  * </pre>
  *
  * @author Sylvain Vissiere-Guerinet
@@ -80,6 +80,10 @@ public enum AIPState implements IAipState {
      * Data or metadata storage has encountered a problem
      */
     STORAGE_ERROR,
+    /**
+     * Error occurred during full deletion and file could not be deleted from all place
+     */
+    PARTIAL_DELETION,
     /**
      * AIP has been logically deleted
      */

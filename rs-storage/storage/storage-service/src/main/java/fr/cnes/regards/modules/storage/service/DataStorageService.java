@@ -300,10 +300,6 @@ public class DataStorageService implements IDataStorageService {
                     } catch (EntityNotFoundException e) {
                         LOGGER.error(e.getMessage(), e);
                     }
-                    // In case we were on a partial deletion, lets reset data storage removed by IAIPService#deleteFilesFromDataStorage(Collection, Long)
-                    if (data.getState() == DataFileState.PARTIAL_DELETION_PENDING) {
-                        data.getPrioritizedDataStorages().add(storageConf);
-                    }
                     // IDataStorage plugin used to delete the file is not able to delete the file right now.
                     // Notify administrator and set data file to STORED, because it is its real state for now.
                     String message = String.format(
@@ -313,6 +309,14 @@ public class DataStorageService implements IDataStorageService {
                                                    storageConf == null ? null
                                                            : storageConf.getDataStorageConfiguration().getLabel(),
                                                    event.getFailureCause());
+                    // In case we were on a partial deletion, lets reset data storage removed by IAIPService#deleteFilesFromDataStorage(Collection, Long)
+                    if (data.getState() == DataFileState.PARTIAL_DELETION_PENDING) {
+                        data.getPrioritizedDataStorages().add(storageConf);
+                    } else {
+                        AIP aip = data.getAip();
+                        aip.setState(AIPState.PARTIAL_DELETION);
+                        aipDao.updateAIPStateAndRetry(aip);
+                    }
                     data.setState(DataFileState.STORED);
                     dataFileDao.save(data);
                     LOGGER.error(message);
