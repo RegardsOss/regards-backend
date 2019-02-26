@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.storage.service;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -29,7 +28,6 @@ import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.util.Pair;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
@@ -46,6 +44,7 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.AipDataFiles;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
+import fr.cnes.regards.modules.storage.domain.DownloadableFile;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
 import fr.cnes.regards.modules.storage.domain.RejectedSip;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
@@ -187,12 +186,11 @@ public interface IAIPService {
      * Retrieve the input stream towards the desired file.
      * @param pAipId
      * @param pChecksum
-     * @return the input stream to the file and its metadata, null if the file is not stored online or in cache
+     * @return {@link DownloadableFile} needs to be closed as there is an opened stream in it.
      * @throws ModuleException
      * @throws IOException
      */
-    Pair<StorageDataFile, InputStream> getAIPDataFile(String pAipId, String pChecksum)
-            throws ModuleException, IOException;
+    DownloadableFile getAIPDataFile(String pAipId, String pChecksum) throws ModuleException, IOException;
 
     /**
      * Retrieve the history of event that occurred to an aip, represented by its ip id

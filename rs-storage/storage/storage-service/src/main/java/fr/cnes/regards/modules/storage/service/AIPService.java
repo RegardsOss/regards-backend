@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -111,6 +112,7 @@ import fr.cnes.regards.modules.storage.domain.AipDataFiles;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.CoupleAvailableError;
+import fr.cnes.regards.modules.storage.domain.DownloadableFile;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
 import fr.cnes.regards.modules.storage.domain.RejectedSip;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
@@ -1572,8 +1574,7 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public Pair<StorageDataFile, InputStream> getAIPDataFile(String pAipId, String pChecksum)
-            throws ModuleException, IOException {
+    public DownloadableFile getAIPDataFile(String pAipId, String pChecksum) throws ModuleException, IOException {
         // First find the AIP
         Optional<AIP> oaip = aipDao.findOneByAipId(pAipId);
         if (oaip.isPresent()) {
@@ -1598,12 +1599,18 @@ public class AIPService implements IAIPService {
                         @SuppressWarnings("rawtypes")
                         InputStream dataFileIS = ((IOnlineDataStorage) pluginService
                                 .getPlugin(onlinePrioritizedDataStorageOpt.get().getId())).retrieve(dataFile);
-                        return Pair.of(dataFile, dataFileIS);
+                        return new DownloadableFile(dataFile, dataFileIS, dataFile.getFileSize());
                     } else {
                         // Check if file is available from cache
                         Optional<CachedFile> ocf = cachedFileService.getAvailableCachedFile(pChecksum);
                         if (ocf.isPresent()) {
-                            return Pair.of(dataFile, new FileInputStream(ocf.get().getLocation().getPath()));
+                            Long realFileSizeInCache = Paths.get(ocf.get().getLocation().getPath()).toFile().length();
+                            if (!dataFile.getFileSize().equals(realFileSizeInCache)) {
+                                LOGGER.warn("File {} size in database ({}octets) is different from real file size in cache ({}octets).",
+                                            dataFile.getName(), dataFile.getFileSize(), realFileSizeInCache);
+                            }
+                            return new DownloadableFile(dataFile,
+                                    new FileInputStream(ocf.get().getLocation().getPath()), realFileSizeInCache);
                         } else {
                             return null;
                         }
