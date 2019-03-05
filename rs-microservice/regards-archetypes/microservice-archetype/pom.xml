@@ -4,11 +4,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>fr.cnes.regards.microservices</groupId>
-	<artifactId>helloworld-microservice-archetype</artifactId>
+	<artifactId>microservice-archetype</artifactId>
 	<version>3.1.0-RC</version>
 	<packaging>maven-archetype</packaging>
 
-	<name>helloworld-microservice-archetype</name>
+	<name>microservice-archetype</name>
 
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
