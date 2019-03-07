@@ -436,7 +436,7 @@ public class AIPController implements IResourceController<AIP> {
             + "available files", role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<AvailabilityResponse> makeFilesAvailable(
             @Valid @RequestBody AvailabilityRequest availabilityRequest) throws ModuleException {
-        return ResponseEntity.ok(aipService.loadFiles(availabilityRequest));
+        return ResponseEntity.ok(aipService.makeFilesAvailable(availabilityRequest));
     }
 
     /**

@@ -38,13 +38,10 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -54,7 +51,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.MimeType;
 
@@ -85,7 +81,6 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.ICachedFileRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
@@ -300,12 +295,12 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
     public void loadUnavailableFilesTest() throws ModuleException {
         LOG.info("Start test loadUnavailableFilesTest ...");
         AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "1", "2", "3");
-        AvailabilityResponse response = aipService.loadFiles(request);
+        AvailabilityResponse response = aipService.makeFilesAvailable(request);
         Assert.assertTrue(
-                "No file should be directly available after AIPService::loadFiles. Cause : files to load does not exists !",
+                "No file should be directly available after AIPService::makeFilesAvailable. Cause : files to load does not exists !",
                 response.getAlreadyAvailable().isEmpty());
         Assert.assertTrue(
-                "All files should be in error after AIPService::loadFiles. Cause : files to load does not exists !",
+                "All files should be in error after AIPService::makeFilesAvailable. Cause : files to load does not exists !",
                 response.getErrors().size() == 3);
         LOG.info("End test loadUnavailableFilesTest ...");
     }
@@ -321,12 +316,12 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         LOG.info("Start test loadOnlineFilesTest ...");
         fillOnlineDataFileDb(50L);
         AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "1", "2", "3");
-        AvailabilityResponse response = aipService.loadFiles(request);
+        AvailabilityResponse response = aipService.makeFilesAvailable(request);
         Assert.assertEquals(
-                "All files should be directly available after AIPService::loadFiles. Cause : files to load are online.",
+                "All files should be directly available after AIPService::makeFilesAvailable. Cause : files to load are online.",
                 3,
                 response.getAlreadyAvailable().size());
-        Assert.assertTrue("No file should be in error after AIPService::loadFiles. Cause : All files exists !.",
+        Assert.assertTrue("No file should be in error after AIPService::makeFilesAvailable. Cause : All files exists !.",
                           response.getErrors().isEmpty());
         LOG.info("End test loadOnlineFilesTest ...");
     }
@@ -343,12 +338,12 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         LOG.info("Start test loadOnlineNNearlineFilesTest ...");
         fillOnlineNNearlineDataFileDb(50L);
         AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "1", "2", "3");
-        AvailabilityResponse response = aipService.loadFiles(request);
+        AvailabilityResponse response = aipService.makeFilesAvailable(request);
         Assert.assertEquals(
-                "All files should be directly available after AIPService::loadFiles. Cause : files to load are online.",
+                "All files should be directly available after AIPService::makeFilesAvailable. Cause : files to load are online.",
                 3,
                 response.getAlreadyAvailable().size());
-        Assert.assertTrue("No file should be in error after AIPService::loadFiles. Cause : All files exists !.",
+        Assert.assertTrue("No file should be in error after AIPService::makeFilesAvailable. Cause : All files exists !.",
                           response.getErrors().isEmpty());
         LOG.info("End test loadOnlineNNearlineFilesTest ...");
     }
@@ -389,7 +384,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
                                                               "dataFile1",
                                                               "dataFile2",
                                                               "dataFile3");
-        AvailabilityResponse response = aipService.loadFiles(request);
+        AvailabilityResponse response = aipService.makeFilesAvailable(request);
         Assert.assertTrue(String.format("Invalid number of available files %d", response.getAlreadyAvailable().size()),
                           response.getAlreadyAvailable().isEmpty());
         Assert.assertTrue(String.format("Invalid number of error files %d", response.getErrors().size()),
@@ -463,7 +458,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
                                                               "dataFile2",
                                                               "dataFile3",
                                                               "dataFile4");
-        AvailabilityResponse response = aipService.loadFiles(request);
+        AvailabilityResponse response = aipService.makeFilesAvailable(request);
         Assert.assertTrue(String.format("Invalid number of available files %d", response.getAlreadyAvailable().size()),
                           response.getAlreadyAvailable().isEmpty());
         Assert.assertTrue(String.format("Invalid number of error files %d", response.getAlreadyAvailable().size()),
@@ -558,7 +553,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
                                                               "dataFile1",
                                                               "dataFile2",
                                                               "dataFile3");
-        AvailabilityResponse response = aipService.loadFiles(request);
+        AvailabilityResponse response = aipService.makeFilesAvailable(request);
         Assert.assertTrue(String.format("Invalid number of available files %d", response.getAlreadyAvailable().size()),
                           response.getAlreadyAvailable().isEmpty());
         Assert.assertTrue(String.format("Invalid number of error files %d", response.getErrors().size()),
@@ -818,12 +813,12 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(15),
                                                               "fileInCache1",
                                                               "fileInCache2");
-        aipService.loadFiles(request);
+        aipService.makeFilesAvailable(request);
         request = new AvailabilityRequest(OffsetDateTime.now().plusDays(15),
                                           "fileInCache3",
                                           "fileInCache4",
                                           "fileInCache5");
-        aipService.loadFiles(request);
+        aipService.makeFilesAvailable(request);
         waitRestorationJobEnds(nbFiles);
 
         Assert.assertEquals("There should be 5 cached files in AVAILABLE status.",
@@ -835,12 +830,12 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         // Run a new restore process with other files to simulare a request when the cahced directory is full.
         // All files request should stay in QUEUD state.
         request = new AvailabilityRequest(OffsetDateTime.now().plusDays(15), "fileNotInCache1", "fileNotInCache2");
-        aipService.loadFiles(request);
+        aipService.makeFilesAvailable(request);
         request = new AvailabilityRequest(OffsetDateTime.now().plusDays(15),
                                           "fileNotInCache3",
                                           "fileNotInCache4",
                                           "fileNotInCache5");
-        aipService.loadFiles(request);
+        aipService.makeFilesAvailable(request);
         Thread.sleep(1000);
         Page<CachedFile> queuedFiles = cachedFileRepository
                 .findAllByState(CachedFileState.QUEUED, PageRequest.of(0, 100));
@@ -963,7 +958,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
                                                               "dataFile1",
                                                               "dataFile2",
                                                               "dataFile3");
-        AvailabilityResponse response = aipService.loadFiles(request);
+        AvailabilityResponse response = aipService.makeFilesAvailable(request);
         waitRestorationJobEnds(3);
         // Expected result : No restoration jjob success cause the files are alrady in cache.
         Assert.assertTrue("No queued files should be in cache.",

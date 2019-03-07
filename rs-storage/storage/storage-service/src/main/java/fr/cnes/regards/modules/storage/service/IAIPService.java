@@ -126,7 +126,7 @@ public interface IAIPService {
      * @return checksums of files that are already available
      * @throws ModuleException
      */
-    AvailabilityResponse loadFiles(AvailabilityRequest availabilityRequest) throws ModuleException;
+    AvailabilityResponse makeFilesAvailable(AvailabilityRequest availabilityRequest) throws ModuleException;
 
     /**
      * Retrieve pages of AIP filtered according to the parameters

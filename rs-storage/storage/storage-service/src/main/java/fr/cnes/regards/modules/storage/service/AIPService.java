@@ -51,7 +51,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
-import org.springframework.data.util.Pair;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeType;
@@ -534,7 +533,7 @@ public class AIPService implements IAIPService {
     }
 
     @Override
-    public AvailabilityResponse loadFiles(AvailabilityRequest availabilityRequest) throws ModuleException {
+    public AvailabilityResponse makeFilesAvailable(AvailabilityRequest availabilityRequest) throws ModuleException {
         // lets define result variables
         Set<StorageDataFile> onlineFiles = Sets.newHashSet();
         CoupleAvailableError nearlineAvailableAndError = new CoupleAvailableError(new HashSet<>(), new HashSet<>());
@@ -1814,7 +1813,7 @@ public class AIPService implements IAIPService {
     @Override
     public AIPSession getSessionWithStats(String sessionId) throws EntityNotFoundException {
         AIPSession session = getSession(sessionId, false);
-        return addSessionSipInformations(session);
+        return addAipSessionInformations(session);
     }
 
     @Override
@@ -1822,15 +1821,11 @@ public class AIPService implements IAIPService {
         Page<AIPSession> pagedSessions = aipSessionRepository.findAll(AIPSessionSpecifications.search(id, from, to),
                                                                       pageable);
         List<AIPSession> sessions = new ArrayList<>();
-        pagedSessions.forEach(s -> sessions.add(this.addSessionSipInformations(s)));
+        pagedSessions.forEach(s -> sessions.add(this.addAipSessionInformations(s)));
         return new PageImpl<>(sessions, pageable, pagedSessions.getTotalElements());
     }
 
-    /**
-     * Create a {@link AIPSession} for the session id.
-     * @return {@link AIPSession}
-     */
-    private AIPSession addSessionSipInformations(AIPSession session) {
+    private AIPSession addAipSessionInformations(AIPSession session) {
         long aipsCount = aipDao.countBySessionId(session.getId());
         long queuedAipsCount = aipDao.countBySessionIdAndStateIn(session.getId(), Sets
                 .newHashSet(AIPState.VALID, AIPState.PENDING, AIPState.STORING_METADATA));
