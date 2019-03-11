@@ -1,3 +1,26 @@
+#set( $symbol_pound = '#' )
+#set( $symbol_dollar = '$' )
+#set( $symbol_escape = '\' )
+/*
+ * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
+package ${package}.rest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpEntity;
@@ -11,33 +34,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 
-#set($symbol_pound='#')
-        #set($symbol_dollar='$')
-        #set($symbol_escape='\' )
-        /*
-         * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
-         *
-         * This file is part of REGARDS.
-         *
-         * REGARDS is free software: you can redistribute it and/or modify
-         * it under the terms of the GNU General Public License as published by
-         * the Free Software Foundation, either version 3 of the License, or
-         * (at your option) any later version.
-         *
-         * REGARDS is distributed in the hope that it will be useful,
-         * but WITHOUT ANY WARRANTY; without even the implied warranty of
-         * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-         * GNU General Public License for more details.
-         *
-         * You should have received a copy of the GNU General Public License
-         * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
-         */
-        package ${package}.rest;
-        {package}.domain.Greeting;
-        {package}.service.GreetingsService;
+import ${package}.domain.Greeting;
+import ${package}.service.GreetingsService;
 
 /**
  * REST module controller
@@ -46,8 +46,6 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
  * @author TODO
  */
 @RestController
-@ModuleInfo(name = "${parentArtifactId}-rest", version = "${version}", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping("/api")
 public class GreetingsController implements IResourceController<Greeting> {
 

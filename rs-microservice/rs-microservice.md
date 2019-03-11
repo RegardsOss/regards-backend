@@ -8,9 +8,9 @@ REGARDS Microservices are REST services exposed by a Jetty web server contained 
 
 Requirements for development:
 
--	git client 1.8
--	maven 3.x
--	JDK 1.8
+*	git client 1.8
+* Maven 3.3+
+* OpenJDK 8
 
 Create a new microservice
 -------------------------
@@ -20,14 +20,14 @@ To create a new microservice you have to create a new maven project with the mic
 -	Clone the git rs-microservice repository<br>
 
 ```bash
-  git clone https://<user>@thor.si.c-s.fr/git/rs-microservice
-```
+  git clone https://github.com/RegardsOss/regards-microservice.git
+  ```
 
 -	Compile and install the maven project<br>
 
 ```bash
-  cd rs-microservice
-  mvn clean install
+  cd regards-microservice
+  mvn install -DskipTests -P install,delivery
 ```
 
 -	Generate the new microservice maven project thanks to one of the following method:
@@ -53,7 +53,7 @@ You have many archetype proposed to you, under the format `number: [local|remote
   -DarchetypeRepository=</path/to/git/repo/rs-microservice/microservice-archetype/target?>
 ```
 
-**NOTE** : You better create the microservice in another folder than rs-microservice. Otherwise if you delete your microservice you will need to clean the `rs-microservice/pom.xml`.
+**NOTE** : You better create the microservice in another folder than rs-microservice. Otherwise if you delete your microservice you will need to clean the `regards-microservice/pom.xml`.
 
 Create the first module
 -----------------------

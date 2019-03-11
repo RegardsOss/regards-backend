@@ -121,8 +121,8 @@ public final class PluginParameterUtils {
         // Create PluginParameter
         if (pluginParameter == null) {
             // Guess values
-            result = PluginParameterType
-                    .create(field.getName(), field.getName(), null, field.getType(), paramType, false, false, false);
+            result = PluginParameterType.create(field.getName(), field.getName(), null, field.getType(), paramType,
+                                                false, false, false);
         } else {
             // Report values from annotation
             String name = getFieldName(field, pluginParameter);

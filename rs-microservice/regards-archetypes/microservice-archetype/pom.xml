@@ -7,7 +7,7 @@
     <artifactId>helloworld-microservice-archetype</artifactId>
     <packaging>maven-archetype</packaging>
 
-    <name>helloworld-microservice-archetype</name>
+	<name>microservice-archetype</name>
 
     <parent>
         <groupId>fr.cnes.regards</groupId>
