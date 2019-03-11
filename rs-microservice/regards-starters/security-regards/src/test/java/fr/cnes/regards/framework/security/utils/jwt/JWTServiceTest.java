@@ -99,14 +99,6 @@ public class JWTServiceTest {
                 .generateToken(TENANT, LOGIN, EMAIL, ROLE, OffsetDateTime.now().plus(3, ChronoUnit.DAYS), addParams,
                                "pouet", true);
 
-            {
-                put("toto", "titi");
-            }
-        };
-        String token = jwtService.generateToken(TENANT, LOGIN, EMAIL, ROLE,
-                                                OffsetDateTime.now().plus(3, ChronoUnit.DAYS), addParams, "pouet",
-                                                true);
-
         try {
             jwtService.parseToken(token, "teuop");
             Assert.fail("An exception should have been thrown here caused to an invalid secret key");
