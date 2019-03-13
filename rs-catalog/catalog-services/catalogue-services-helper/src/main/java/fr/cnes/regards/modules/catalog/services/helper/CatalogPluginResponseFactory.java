@@ -38,6 +38,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.google.common.io.ByteStreams;
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 /**
@@ -105,7 +106,7 @@ public class CatalogPluginResponseFactory {
             case XML:
                 return createXmlSuccessResponse(response, responseContent);
             case JSON:
-                return createJsonSuccessResponse(response, responseContent);
+                return createJsonSuccessResponse(response, responseContent, true);
             case FILE_IMG_PNG:
             case FILE_IMG_JPG:
             case FILE_DOWNLOAD:
@@ -213,10 +214,11 @@ public class CatalogPluginResponseFactory {
      * Create a  streaming response by serializing into JSON format the given object.
      * @param response {@link HttpServletResponse} spring http response
      * @param responseContent {@link Object} to serialize.
+     * @param prettyPrint
      * @return {@link ResponseEntity}
      */
     public static ResponseEntity<StreamingResponseBody> createJsonSuccessResponse(HttpServletResponse response,
-            Object responseContent) {
+            Object responseContent, boolean prettyPrint) {
         GsonBuilder builder = new GsonBuilder();
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.CONTENT_DISPOSITION, getContentDisposition("result.json"));
@@ -225,8 +227,13 @@ public class CatalogPluginResponseFactory {
         List<String> exposedHeaders = new ArrayList<>();
         exposedHeaders.add(HttpHeaders.CONTENT_DISPOSITION);
         headers.setAccessControlExposeHeaders(exposedHeaders);
-        return new ResponseEntity<>(toStreamingResponseBody(builder.create().toJson(responseContent)), headers,
-                HttpStatus.OK);
+        Gson gson;
+        if (prettyPrint) {
+            gson = builder.setPrettyPrinting().create();
+        } else {
+            gson = builder.create();
+        }
+        return new ResponseEntity<>(toStreamingResponseBody(gson.toJson(responseContent)), headers, HttpStatus.OK);
     }
 
     /**
