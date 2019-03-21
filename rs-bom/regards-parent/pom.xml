@@ -60,7 +60,8 @@
 		<resource.delimiter>@</resource.delimiter> <!-- delimiter that doesn't clash with Spring ${} placeholders -->
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
-        <docker.registry.host>172.26.46.158</docker.registry.host>
+		<docker.registry.host>172.26.46.158</docker.registry.host>
+		<docker.registry.baseImage>rs-alpine-openjdk8</docker.registry.baseImage>
         <sonar.language>java</sonar.language>
         <sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
         <jacoco.outputDir>${project.basedir}/target/coverage-reports</jacoco.outputDir>
