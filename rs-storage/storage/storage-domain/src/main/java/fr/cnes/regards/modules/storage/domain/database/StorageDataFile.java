@@ -71,6 +71,8 @@ public class StorageDataFile {
      */
     public static final int CHECKSUM_MAX_LENGTH = 128;
 
+    public static final String NOT_VALID_CHECKSUM_SUFFIX = "_nvc";
+
     @Convert(converter = SetStringCsvConverter.class)
     @Column(name = "failure_causes")
     private final Set<String> failureCauses = new HashSet<>();
