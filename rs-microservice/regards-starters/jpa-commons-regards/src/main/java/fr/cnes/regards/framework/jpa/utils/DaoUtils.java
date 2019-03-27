@@ -169,7 +169,7 @@ public final class DaoUtils {
             return DaoUtils.TEST_PACKAGE + "." + packageEnd.substring(0, packageEnd.indexOf('.'));
         } else {
             throw new Error(String
-                    .format("Package %s is not valid. REGARDS only handle classes on package with sufixes : %s, %s and %s",
+                    .format("Package %s is not valid. REGARDS only handle classes on package with prefixes : %s, %s and %s",
                             pPackageName, DaoUtils.FRAMEWORK_PACKAGE, DaoUtils.MODULES_PACKAGE, DaoUtils.TEST_PACKAGE)); // NOSONAR
         }
     }
