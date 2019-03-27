@@ -110,7 +110,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
 
         // Launch generation plugin
         for (Product product : products) {
-            if (Thread.interrupted()) {
+            if (Thread.currentThread().isInterrupted()) {
                 debugInterruption = "before thread interruption";
                 break;
             }
