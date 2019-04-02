@@ -22,6 +22,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -181,5 +182,24 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         // Try load it
         @SuppressWarnings("unused")
         InnerParamTestPlugin plugin = pluginService.getPlugin(pluginConf.getId());
+    }
+
+    @Test
+    public void saveConfWithInvalidParameters() {
+        // Inner plugin creation
+        ResultActions result = performDefaultPost(PluginController.PLUGINS_PLUGINID_CONFIGS,
+                                                  readJsonContract("innerConf.json"),
+                                                  customizer().expectStatusCreated(), "Configuration should be saved!",
+                                                  "InnerParamTestPlugin");
+        String resultAsString = payload(result);
+        Integer innerConfigId = JsonPath.read(resultAsString, "$.content.id");
+
+        // Creation plugin with inner plugin as parameter
+        String json = readJsonContract("fakeConfInvalid.json").replace("\"id\":-1", "\"id\": " + innerConfigId.toString());
+        // Errors should be on each numerical value: pByte, pShort, pInteger, pLong
+        // Error case on double and float is not tested because large float or double are interpreted as Infinity unless gson breaks.
+        performDefaultPost(PluginController.PLUGINS_PLUGINID_CONFIGS, json, customizer().expectStatus(
+                HttpStatus.UNPROCESSABLE_ENTITY).expectIsArray("$.messages").expectToHaveSize("$.messages", 4),
+                                    "Configuration should not be saved!", "ParamTestPlugin");
     }
 }
