@@ -40,6 +40,6 @@ public interface ITemplateRepository extends JpaRepository<Template, Long> {
      * @param code The {@link Template}'s <code>code</code>
      * @return An optional template
      */
-    Optional<Template> findByCode(String code);
+    Optional<Template> findByName(String code);
 
 }

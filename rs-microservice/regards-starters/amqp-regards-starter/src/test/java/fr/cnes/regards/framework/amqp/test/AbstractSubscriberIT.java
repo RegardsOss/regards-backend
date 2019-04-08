@@ -27,17 +27,25 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageProperties;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.amqp.AbstractSubscriber;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
+import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.VirtualHostMode;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.amqp.event.Event;
+import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.exception.RabbitMQVhostException;
+import fr.cnes.regards.framework.amqp.test.event.ErrorEvent;
 import fr.cnes.regards.framework.amqp.test.event.GsonInfo;
 import fr.cnes.regards.framework.amqp.test.event.Info;
 import fr.cnes.regards.framework.amqp.test.event.MicroserviceInfo;
@@ -69,6 +77,9 @@ public abstract class AbstractSubscriberIT {
 
     @Autowired
     protected IAmqpAdmin amqpAdmin;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     @Before
     public void init() throws RabbitMQVhostException {
@@ -118,10 +129,6 @@ public abstract class AbstractSubscriberIT {
 
         Assert.assertFalse(receiver.checkCount(1) && receiver2.checkCount(1));
         Assert.assertTrue(receiver.checkCount(1) || receiver2.checkCount(1));
-    }
-
-    private class MicroserviceReceiver extends AbstractReceiver<MicroserviceInfo> {
-
     }
 
     /**
@@ -204,10 +211,6 @@ public abstract class AbstractSubscriberIT {
         listeners2.forEach((k, v) -> Assert.assertEquals((int) refListeners.get(k), v.hashCode()));
     }
 
-    private class Receiver extends AbstractReceiver<Info> {
-
-    }
-
     @Test
     public void onePerMicroserviceTypeTest() {
 
@@ -243,11 +246,82 @@ public abstract class AbstractSubscriberIT {
         Assert.assertTrue(b1.checkCount(1) || b2.checkCount(1));
     }
 
+    public void testErrorMsg() throws InterruptedException {
+        // First lets subscribe to a queue
+        subscriber.subscribeTo(ErrorEvent.class, new ErrorHandler());
+        try {
+            rabbitVirtualHostAdmin.bind(AmqpConstants.AMQP_INSTANCE_MANAGER);
+            // Purge DLQ before doing anything
+            amqpAdmin.purgeQueue(RegardsAmqpAdmin.REGARDS_DLQ, true);
+        } finally {
+            rabbitVirtualHostAdmin.unbind();
+        }
+        try {
+            rabbitVirtualHostAdmin.bind(AmqpConstants.AMQP_MULTITENANT_MANAGER);
+            // sends a malformed message to the queue used by the handler (no tenant wrapper)
+            Target target = ErrorEvent.class.getAnnotation(Event.class).target();
+            String exchangeName = amqpAdmin.getBroadcastExchangeName(ErrorEvent.class.getName(), target);
+
+            // Publish the wrong message on ErrorEvent queue
+            // To do so, we have to do it by hand
+            OnePerMicroserviceInfo wrongEvent = new OnePerMicroserviceInfo();
+            wrongEvent.setMessage(wrongEvent.getMessage() + Math.random());
+            TenantWrapper messageSended = new TenantWrapper(wrongEvent, "PROJECT");
+            rabbitTemplate
+                    .convertAndSend(exchangeName, RegardsAmqpAdmin.DEFAULT_ROUTING_KEY, messageSended, pMessage -> {
+                        MessageProperties messageProperties = pMessage.getMessageProperties();
+                        messageProperties.setPriority(0);
+                        return new Message(pMessage.getBody(), messageProperties);
+                    });
+        } finally {
+            rabbitVirtualHostAdmin.unbind();
+        }
+        try {
+            Thread.sleep(1000);
+            rabbitVirtualHostAdmin.bind(AmqpConstants.AMQP_INSTANCE_MANAGER);
+            // Check that the message ended up in DLQ
+            // To do so we have to poll on DLQ one message that is the right one
+            Object fromDlq = rabbitTemplate.receiveAndConvert(RegardsAmqpAdmin.REGARDS_DLQ, 0);
+            if (fromDlq == null) {
+                Assert.fail("There should be a message into DLQ.");
+                return;
+            }
+            if (fromDlq instanceof TenantWrapper) {
+                Object content = ((TenantWrapper) fromDlq).getContent();
+                if (!(content instanceof OnePerMicroserviceInfo)) {
+                    Assert.fail(String.format("Message from DLQ is not %s but %s",
+                                              OnePerMicroserviceInfo.class.getName(),
+                                              content.getClass().getName()));
+                }
+            } else {
+                Assert.fail("Message from DLQ is not a TenantWrapper. You might have been compromised by other tests.");
+            }
+        } finally {
+            rabbitVirtualHostAdmin.unbind();
+        }
+    }
+
+    private class MicroserviceReceiver extends AbstractReceiver<MicroserviceInfo> {
+
+    }
+
+    private class Receiver extends AbstractReceiver<Info> {
+
+    }
+
     private class SingleReceiverA extends AbstractReceiver<OnePerMicroserviceInfo> {
 
     }
 
     private class SingleReceiverB extends AbstractReceiver<OnePerMicroserviceInfo> {
 
+    }
+
+    private class ErrorHandler extends AbstractReceiver<ErrorEvent> {
+
+        @Override
+        public void handle(TenantWrapper<ErrorEvent> wrapper) {
+            throw new RuntimeException("Because");
+        }
     }
 }

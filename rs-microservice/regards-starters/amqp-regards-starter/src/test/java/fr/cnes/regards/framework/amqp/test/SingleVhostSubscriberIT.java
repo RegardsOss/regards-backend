@@ -40,7 +40,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 @RunWith(SpringRunner.class)
 @EnableAutoConfiguration
 @TestPropertySource(properties = { "regards.amqp.management.mode=SINGLE", "regards.tenants=PROJECT, PROJECT1",
-        "regards.tenant=PROJECT", "regards.amqp.internal.transaction=true", "spring.jmx.enabled=false" },
+        "regards.tenant=PROJECT", "regards.amqp.internal.transaction=true", "spring.jmx.enabled=false", "" },
         locations = "classpath:amqp.properties")
 public class SingleVhostSubscriberIT extends AbstractSubscriberIT {
 
@@ -95,5 +95,10 @@ public class SingleVhostSubscriberIT extends AbstractSubscriberIT {
     @Override
     public void publishInfoWithGson() {
         super.publishInfoWithGson();
+    }
+
+    @Override
+    public void testErrorMsg() throws InterruptedException {
+        super.testErrorMsg();
     }
 }

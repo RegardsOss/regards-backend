@@ -46,6 +46,17 @@ public interface IAmqpAdmin {
     Exchange declareExchange(Class<?> eventType, WorkerMode workerMode, Target target);
 
     /**
+     * Broadcast exchange name by event
+     * @return exchange name
+     */
+    String getBroadcastExchangeName(String eventType, Target target);
+
+    /**
+     * Declare dead letter exchange and queue
+     */
+    void declareDeadLetter();
+
+    /**
      * Declare a queue that can handle priority
      * @param tenant tenant for which the queue is created
      * @param eventType event type inheriting {@link IPollable} or {@link ISubscribable}

@@ -52,16 +52,16 @@
         </developer>
     </developers>
 
-    <dependencies>
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>regards-core-jpa-data</artifactId>
-        </dependency>
-        <!-- Test -->
-        <dependency>
-            <groupId>fr.cnes.regards.framework.test</groupId>
-            <artifactId>regards-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+	<dependencies>
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>jpa-commons-regards</artifactId>
+		</dependency>
+		<!-- Test -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework.test</groupId>
+			<artifactId>regards-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 </project>

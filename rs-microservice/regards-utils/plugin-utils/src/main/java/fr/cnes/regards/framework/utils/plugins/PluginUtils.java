@@ -149,16 +149,19 @@ public final class PluginUtils {
             // Check a plugin does not already exists with the same plugin id
             if (pluginMetadataCache.containsKey(plugin.getPluginId())) {
                 PluginMetaData pMeta = pluginMetadataCache.get(plugin.getPluginId());
-                String message = String
-                        .format("Plugin identifier must be unique : %s for plugin \"%s\" already used in plugin \"%s\"!",
-                                plugin.getPluginId(), plugin.getPluginClassName(), pMeta.getPluginClassName());
+                String message = String.format(
+                        "Plugin identifier must be unique : %s for plugin \"%s\" already used in plugin \"%s\"!",
+                        plugin.getPluginId(),
+                        plugin.getPluginClassName(),
+                        pMeta.getPluginClassName());
                 LOGGER.warn(message);
             }
 
             // Store plugin reference
             pluginMetadataCache.put(plugin.getPluginId(), plugin);
 
-            LOGGER.info(String.format("Plugin \"%s\" with identifier \"%s\" loaded.", plugin.getPluginClassName(),
+            LOGGER.info(String.format("Plugin \"%s\" with identifier \"%s\" loaded.",
+                                      plugin.getPluginClassName(),
                                       plugin.getPluginId()));
         }
         LOGGER.info("{} Plugins loaded!", HR);
@@ -360,7 +363,7 @@ public final class PluginUtils {
         try {
             Class<?> pluginClass = Class.forName(conf.getPluginClassName());
             PluginMetaData pluginMetadata = createPluginMetaData(pluginClass);
-            // Now that we have the metadata, lets check everything and eventualy set some properties
+            // Now that we have the metadata, lets check everything and eventually set some properties
             // as version (a null version means a plugin configuration creation
             if (conf.getVersion() == null) {
                 conf.setVersion(pluginMetadata.getVersion());
@@ -394,11 +397,51 @@ public final class PluginUtils {
                         && plgParamMeta.getDefaultValue() == null) {
                     validationErrors.add(String.format("Plugin Parameter %s is missing.", plgParamMeta.getName()));
                 }
+                // lets add some basic type validation while we are iterating over parameters
+                // in case it is not optional or missing
+                if (parameterFromConf != null) {
+                    checkPrimitiveBoundaries(validationErrors, plgParamMeta, parameterFromConf);
+                }
             }
         } catch (ClassNotFoundException e) {
             LOGGER.error(e.getMessage(), e);
             validationErrors.add(e.getMessage());
         }
         return validationErrors.isEmpty() ? null : new EntityInvalidException(validationErrors);
+    }
+
+    private static void checkPrimitiveBoundaries(List<String> validationErrors, PluginParameterType plgParamMeta,
+            PluginParameter parameterFromConf) throws ClassNotFoundException {
+        if (plgParamMeta.getParamType() == PluginParameterType.ParamType.PRIMITIVE) {
+            // String are not checked as we cannot imagine a string which is not valid in term of java representation
+            // Boolean aren't either because unless its string representation is "true" if it considered false
+            Class<?> clazz = Class.forName(plgParamMeta.getType());
+            try {
+                // paramStrippedValue nullability is not a problem here.
+                // If it is null it means that the parameter is of type string with an empty value and we do not check them here.
+                String paramStrippedValue = parameterFromConf.getStripParameterValue();
+                // check numbers boundaries
+                if (clazz.isAssignableFrom(Long.class)) {
+                    Long.parseLong(paramStrippedValue);
+                } else if (clazz.isAssignableFrom(Integer.class)) {
+                    Integer.parseInt(paramStrippedValue);
+                } else if (clazz.isAssignableFrom(Short.class)) {
+                    Short.parseShort(paramStrippedValue);
+                } else if (clazz.isAssignableFrom(Byte.class)) {
+                    Byte.parseByte(paramStrippedValue);
+                } else if (clazz.isAssignableFrom(Float.class)) {
+                    Float.parseFloat(paramStrippedValue);
+                } else if (clazz.isAssignableFrom(Double.class)) {
+                    Double.parseDouble(paramStrippedValue);
+                }
+            } catch (NumberFormatException e) {
+                LOGGER.error(e.getMessage(), e);
+                validationErrors.add(String.format(
+                        "Plugin Parameter %s has an invalid value. " + "It is of type %s and could not be parsed. "
+                                + "Value might be too high or too low.",
+                        plgParamMeta.getName(),
+                        clazz.getSimpleName()));
+            }
+        }
     }
 }

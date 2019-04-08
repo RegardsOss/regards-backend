@@ -170,6 +170,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
         try {
             // Bind the connection to the right vHost (i.e. tenant to publish the message)
             rabbitVirtualHostAdmin.bind(virtualHost);
+            amqpAdmin.declareDeadLetter();
 
             // Declare exchange
             Exchange exchange = amqpAdmin.declareExchange(eventType, workerMode, target);
@@ -203,7 +204,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
      * @param <T> event type
      * @param tenant tenant
      * @param exchangeName {@link Exchange} name
-     * @param routingKey routing key (really useful for direct exchange). Use {@link Publisher#DEFAULT_ROUTING_KEY} for fanout.
+     * @param routingKey routing key (really useful for direct exchange).
      * @param event the event to publish
      * @param priority the event priority
      */

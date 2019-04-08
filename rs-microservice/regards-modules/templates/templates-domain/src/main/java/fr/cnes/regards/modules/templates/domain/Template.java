@@ -18,23 +18,15 @@
  */
 package fr.cnes.regards.modules.templates.domain;
 
-import javax.persistence.CollectionTable;
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.MapKeyColumn;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.hibernate.annotations.Type;
 
@@ -59,11 +51,12 @@ public class Template implements IIdentifiable<Long> {
     private Long id;
 
     /**
-     * A human readable code identifying the template
+     * A human readable name identifying the template.
+     * Attribute and column does not have the same name for compatibility issue between versions
      */
     @NotBlank
-    @Column(name = "code", nullable = false, length = 100)
-    private final String code;
+    @Column(name = "code", nullable = false, length = 100, updatable = false)
+    private String name;
 
     /**
      * The template as a string for db persistence
@@ -74,54 +67,18 @@ public class Template implements IIdentifiable<Long> {
     private String content;
 
     /**
-     * For a specific template, this attribute is intendend to store the skeleton of values to be injected in the
-     * template
-     */
-    @NotNull
-    @ElementCollection
-    @MapKeyColumn(name = "name", length = 48)
-    @Column(name = "value", length = 128)
-    @CollectionTable(name = "t_template_data", joinColumns = @JoinColumn(name = "template_id"),
-            foreignKey = @ForeignKey(name = "fk_template_data_template_id"))
-    private Map<String, String> dataStructure;
-
-    /**
-     * A subject if the template should be written to something with a subject, title...
-     */
-    @NotBlank
-    @Column(name = "subject", length = 100)
-    private final String subject;
-
-    /**
-     * A description for the template
-     */
-    @Column(name = "description", length = 100)
-    private String description;
-
-    /**
      * Create a new {@link Template} with default values.
      */
     public Template() {
-        super();
-        code = "DEFAULT";
-        content = "Hello $name.";
-        dataStructure = new HashMap<>();
-        dataStructure.put("name", "Defaultname");
-        subject = "Default subject";
     }
 
     /**
-     * @param pCode the code
-     * @param pContent the content
-     * @param pData the data
-     * @param pSubject the subject if the template should be written to something with a subject or title (like an email)
+     * @param name the name
+     * @param content the content
      */
-    public Template(final String pCode, final String pContent, final Map<String, String> pData, final String pSubject) {
-        super();
-        code = pCode;
-        content = pContent;
-        dataStructure = pData;
-        subject = pSubject;
+    public Template(String name, String content) {
+        this.name = name;
+        this.content = content;
     }
 
     /**
@@ -154,45 +111,14 @@ public class Template implements IIdentifiable<Long> {
     }
 
     /**
-     * @return the dataStructure
+     * @return the name
      */
-    public Map<String, String> getDataStructure() {
-        return dataStructure;
+    public String getName() {
+        return name;
     }
 
-    /**
-     * @param pDataStructure the data structure to set
-     */
-    public void setDataStructure(final Map<String, String> pDataStructure) {
-        dataStructure = pDataStructure;
-    }
-
-    /**
-     * @return the description
-     */
-    public String getDescription() {
-        return description;
-    }
-
-    /**
-     * @param pDescription the description to set
-     */
-    public void setDescription(final String pDescription) {
-        description = pDescription;
-    }
-
-    /**
-     * @return the code
-     */
-    public String getCode() {
-        return code;
-    }
-
-    /**
-     * @return the subject
-     */
-    public String getSubject() {
-        return subject;
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
@@ -206,11 +132,11 @@ public class Template implements IIdentifiable<Long> {
 
         Template template = (Template) o;
 
-        return code.equals(template.code);
+        return name.equals(template.name);
     }
 
     @Override
     public int hashCode() {
-        return code.hashCode();
+        return name.hashCode();
     }
 }

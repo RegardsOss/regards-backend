@@ -36,10 +36,10 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.retry.interceptor.StatefulRetryOperationsInterceptor;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -75,11 +75,6 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     protected final IRabbitVirtualHostAdmin virtualHostAdmin;
 
     /**
-     * bean handling the conversion using either Jackson or Gson
-     */
-    private final MessageConverter jsonMessageConverters;
-
-    /**
      * Reference to running listeners per handlers and virtual hosts
      */
     protected final Map<Class<?>, Map<String, SimpleMessageListenerContainer>> listeners;
@@ -94,14 +89,22 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
      */
     protected final Map<Class<?>, IHandler<? extends ISubscribable>> handlerInstances;
 
+    /**
+     * bean handling the conversion using either Jackson or Gson
+     */
+    private final MessageConverter jsonMessageConverters;
+
+    private final StatefulRetryOperationsInterceptor interceptor;
+
     public AbstractSubscriber(IRabbitVirtualHostAdmin virtualHostAdmin, IAmqpAdmin amqpAdmin,
-            MessageConverter jsonMessageConverters) {
+            MessageConverter jsonMessageConverters, StatefulRetryOperationsInterceptor interceptor) {
         this.virtualHostAdmin = virtualHostAdmin;
         this.amqpAdmin = amqpAdmin;
         this.jsonMessageConverters = jsonMessageConverters;
-        listeners = new HashMap<>();
-        handledEvents = new HashMap<>();
-        handlerInstances = new HashMap<>();
+        this.listeners = new HashMap<>();
+        this.handledEvents = new HashMap<>();
+        this.handlerInstances = new HashMap<>();
+        this.interceptor = interceptor;
     }
 
     @Override
@@ -128,14 +131,20 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
     @Override
     public <T extends ISubscribable> void subscribeTo(Class<T> eventType, IHandler<T> receiver) {
-        subscribeTo(eventType, receiver, EventUtils.getWorkerMode(eventType),
-                    EventUtils.getTargetRestriction(eventType), false);
+        subscribeTo(eventType,
+                    receiver,
+                    EventUtils.getWorkerMode(eventType),
+                    EventUtils.getTargetRestriction(eventType),
+                    false);
     }
 
     @Override
     public <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, boolean purgeQueue) {
-        subscribeTo(eventType, receiver, EventUtils.getWorkerMode(eventType),
-                    EventUtils.getTargetRestriction(eventType), purgeQueue);
+        subscribeTo(eventType,
+                    receiver,
+                    EventUtils.getWorkerMode(eventType),
+                    EventUtils.getTargetRestriction(eventType),
+                    purgeQueue);
     }
 
     @Override
@@ -146,7 +155,9 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
             String virtualHost = resolveVirtualHost(tenant);
             try {
                 virtualHostAdmin.bind(virtualHost);
-                Queue queue = amqpAdmin.declareQueue(tenant, eventType, EventUtils.getWorkerMode(eventType),
+                Queue queue = amqpAdmin.declareQueue(tenant,
+                                                     eventType,
+                                                     EventUtils.getWorkerMode(eventType),
                                                      EventUtils.getTargetRestriction(eventType),
                                                      Optional.of(handlerType));
                 amqpAdmin.purgeQueue(queue.getName(), false);
@@ -224,6 +235,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         Queue queue;
         try {
             virtualHostAdmin.bind(virtualHost);
+            amqpAdmin.declareDeadLetter();
             Exchange exchange = amqpAdmin.declareExchange(eventType, workerMode, target);
             Optional<Class<? extends IHandler<?>>> handlerType = Optional.empty();
             if (handler != null) {
@@ -283,17 +295,19 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         // Init container
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
+        //        container.setDefaultRequeueRejected(false);
+        container.setAdviceChain(interceptor);
         container.setChannelTransacted(true);
 
         MessageListenerAdapter messageListener = new MessageListenerAdapter(handler, DEFAULT_HANDLING_METHOD);
         messageListener.setMessageConverter(messageConverter);
+        //        messageListener.setMRecoveryCallback(new NotifyNRepublishMessageRecoverer(null, null, null, null, null));
         container.setMessageListener(messageListener);
 
         // Prevent duplicate queue
         Set<String> queueNames = new HashSet<>();
         queues.forEach(q -> queueNames.add(q.getName()));
         container.addQueueNames(queueNames.toArray(new String[0]));
-
         vhostsContainers.put(virtualHost, container);
 
         container.start();
@@ -304,24 +318,22 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
      * @param tenant new tenant to manage
      */
     protected void addTenantListeners(String tenant) {
-        if (listeners != null) {
-            for (Map.Entry<Class<?>, Map<String, SimpleMessageListenerContainer>> entry : listeners.entrySet()) {
-                Class<?> handlerClass = entry.getKey();
-                Class<? extends ISubscribable> eventType = handledEvents.get(handlerClass);
-                IHandler<? extends ISubscribable> handler = handlerInstances.get(handlerClass);
-                String virtualHost = resolveVirtualHost(tenant);
+        for (Map.Entry<Class<?>, Map<String, SimpleMessageListenerContainer>> entry : listeners.entrySet()) {
+            Class<?> handlerClass = entry.getKey();
+            Class<? extends ISubscribable> eventType = handledEvents.get(handlerClass);
+            IHandler<? extends ISubscribable> handler = handlerInstances.get(handlerClass);
+            String virtualHost = resolveVirtualHost(tenant);
 
-                // Declare AMQP elements
-                WorkerMode workerMode = EventUtils.getWorkerMode(eventType);
-                Target target = EventUtils.getTargetRestriction(eventType);
+            // Declare AMQP elements
+            WorkerMode workerMode = EventUtils.getWorkerMode(eventType);
+            Target target = EventUtils.getTargetRestriction(eventType);
 
-                // Declare AMQP elements
-                Queue queue = declareElements(eventType, tenant, virtualHost, handler, workerMode, target, false);
-                // Manage listeners
-                List<Queue> queues = new ArrayList<>();
-                queues.add(queue);
-                declareListener(virtualHost, jsonMessageConverters, handler, queues);
-            }
+            // Declare AMQP elements
+            Queue queue = declareElements(eventType, tenant, virtualHost, handler, workerMode, target, false);
+            // Manage listeners
+            List<Queue> queues = new ArrayList<>();
+            queues.add(queue);
+            declareListener(virtualHost, jsonMessageConverters, handler, queues);
         }
     }
 
@@ -336,4 +348,5 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         }
         return null;
     }
+
 }

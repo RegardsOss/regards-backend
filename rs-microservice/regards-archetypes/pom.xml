@@ -47,8 +47,6 @@
     </developers>
 
     <modules>
-        <module>helloworld-module</module>
-        <module>helloworld-microservice</module>
         <module>microservice-archetype</module>
         <module>module-archetype</module>
     </modules>

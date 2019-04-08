@@ -62,22 +62,17 @@ public class TemplateControllerTest {
      */
     private ITemplateService templateService;
 
-    /**
-     * Mocked resource service
-     */
-    private IResourceService resourceService;
-
     @Before
     public void setUp() {
         // Init a template
-        template = new Template(TemplateTestConstants.CODE, TemplateTestConstants.CONTENT, TemplateTestConstants.DATA,
-                null);
+        template = new Template(TemplateTestConstants.CODE, TemplateTestConstants.CONTENT);
         template.setId(TemplateTestConstants.ID);
 
         // Mock stuff
         templateService = Mockito.mock(ITemplateService.class);
         AccessDecisionManager accessDecisionManager = Mockito.mock(AccessDecisionManager.class);
-        resourceService = new MockDefaultResourceService(accessDecisionManager);
+
+        IResourceService resourceService = new MockDefaultResourceService(accessDecisionManager);
 
         // Instanciate the tested class
         templateController = new TemplateController(templateService, resourceService);
@@ -100,36 +95,11 @@ public class TemplateControllerTest {
         final ResponseEntity<List<Resource<Template>>> actual = templateController.findAll();
 
         // Check
-        Assert.assertEquals(template.getCode(), actual.getBody().get(0).getContent().getCode());
+        Assert.assertEquals(template.getName(), actual.getBody().get(0).getContent().getName());
         Assert.assertEquals(template.getContent(), actual.getBody().get(0).getContent().getContent());
-        Assert.assertEquals(template.getDataStructure(), actual.getBody().get(0).getContent().getDataStructure());
-        Assert.assertEquals(template.getDescription(), actual.getBody().get(0).getContent().getDescription());
         Mockito.verify(templateService).findAll();
     }
 
-    /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.templates.rest.TemplateController#create(fr.cnes.regards.modules.templates.domain.Template)}.
-     */
-    @Test
-    @Purpose("Check that the system allows to create templates.")
-    @Requirement("REGARDS_DSL_SYS_ERG_310")
-    @Requirement("REGARDS_DSL_ADM_ADM_440")
-    @Requirement("REGARDS_DSL_ADM_ADM_460")
-    public final void testCreate() {
-        // Mock service
-        Mockito.when(templateService.create(Mockito.any())).thenReturn(template);
-
-        // Define actual
-        final ResponseEntity<Resource<Template>> actual = templateController.create(template);
-
-        // Check
-        Mockito.verify(templateService).create(Mockito.refEq(template, "id"));
-        Assert.assertEquals(template.getCode(), actual.getBody().getContent().getCode());
-        Assert.assertEquals(template.getContent(), actual.getBody().getContent().getContent());
-        Assert.assertEquals(template.getDataStructure(), actual.getBody().getContent().getDataStructure());
-        Assert.assertEquals(template.getDescription(), actual.getBody().getContent().getDescription());
-    }
 
     /**
      * Test method for {@link fr.cnes.regards.modules.templates.rest.TemplateController#findById(java.lang.Long)}.
@@ -148,9 +118,7 @@ public class TemplateControllerTest {
         final ResponseEntity<Resource<Template>> actual = templateController.findById(TemplateTestConstants.ID);
 
         // Check
-        Assert.assertEquals(template.getCode(), actual.getBody().getContent().getCode());
-        Assert.assertEquals(template.getDescription(), actual.getBody().getContent().getDescription());
-        Assert.assertEquals(template.getDataStructure(), actual.getBody().getContent().getDataStructure());
+        Assert.assertEquals(template.getName(), actual.getBody().getContent().getName());
     }
 
     /**
@@ -233,40 +201,6 @@ public class TemplateControllerTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.templates.rest.TemplateController#delete(java.lang.Long)}.
-     * @throws EntityNotFoundException if no template with passed id could be found
-     */
-    @Test
-    @Purpose("Check that the system allows to delete a single template.")
-    @Requirement("REGARDS_DSL_SYS_ERG_310")
-    @Requirement("REGARDS_DSL_ADM_ADM_440")
-    @Requirement("REGARDS_DSL_ADM_ADM_460")
-    public final void testDelete() throws EntityNotFoundException {
-        // Call tested method
-        templateController.delete(TemplateTestConstants.ID);
-
-        // Check
-        Mockito.verify(templateService).delete(TemplateTestConstants.ID);
-    }
-
-    /**
-     * Test method for {@link fr.cnes.regards.modules.templates.rest.TemplateController#delete(java.lang.Long)}.
-     * @throws EntityNotFoundException if no template with passed id could be found
-     */
-    @Test(expected = EntityNotFoundException.class)
-    @Purpose("Check that the system handles the case of deleting an inexistent template.")
-    @Requirement("REGARDS_DSL_SYS_ERG_310")
-    @Requirement("REGARDS_DSL_ADM_ADM_440")
-    @Requirement("REGARDS_DSL_ADM_ADM_460")
-    public final void testDeleteNotFound() throws EntityNotFoundException {
-        // Mock
-        Mockito.doThrow(EntityNotFoundException.class).when(templateService).delete(TemplateTestConstants.ID);
-
-        // Trigger exception
-        templateController.delete(TemplateTestConstants.ID);
-    }
-
-    /**
      * Test method for
      * {@link fr.cnes.regards.modules.templates.rest.TemplateController#toResource(fr.cnes.regards.modules.templates.domain.Template, java.lang.Object[])}.
      */
@@ -276,9 +210,7 @@ public class TemplateControllerTest {
         template.setId(TemplateTestConstants.ID);
         final List<Link> links = new ArrayList<>();
         links.add(new Link("/templates/" + TemplateTestConstants.ID, "self"));
-        links.add(new Link("/templates/" + TemplateTestConstants.ID, "delete"));
         links.add(new Link("/templates/" + TemplateTestConstants.ID, "update"));
-        links.add(new Link("/templates", "create"));
         final Resource<Template> expected = new Resource<>(template, links);
 
         // Define actual
@@ -286,10 +218,8 @@ public class TemplateControllerTest {
 
         // Check
         Assert.assertEquals(expected.getContent().getId(), actual.getContent().getId());
-        Assert.assertEquals(expected.getContent().getCode(), actual.getContent().getCode());
+        Assert.assertEquals(expected.getContent().getName(), actual.getContent().getName());
         Assert.assertEquals(expected.getContent().getContent(), actual.getContent().getContent());
-        Assert.assertEquals(expected.getContent().getDataStructure(), actual.getContent().getDataStructure());
-        Assert.assertEquals(expected.getContent().getDescription(), actual.getContent().getDescription());
         Assert.assertEquals(expected.getLinks(), actual.getLinks());
     }
 

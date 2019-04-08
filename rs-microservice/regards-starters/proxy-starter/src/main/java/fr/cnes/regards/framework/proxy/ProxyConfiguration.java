@@ -18,44 +18,69 @@
  */
 package fr.cnes.regards.framework.proxy;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 import fr.cnes.httpclient.HttpClient;
 import fr.cnes.httpclient.HttpClientFactory;
 import fr.cnes.httpclient.HttpClientFactory.Type;
 
 /**
+ * Creates a {@link HttpClient} with proxy configuration.
+ * Proxy configuration is set with spring properties with the possibilities of the JSPNego library.
+ * This configuration is mained used for CNES specific proxy authorization.
+ *
+ * @see https://github.com/CNES/JSPNego
  * @author sbinda
  *
  */
 @Configuration
 public class ProxyConfiguration {
 
-    @Value("${http.proxy.host}")
+    /**
+     * Class logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProxyConfiguration.class);
+
+    @Value("${http.proxy.host:#{null}}")
     private String proxyHost;
 
-    @Value("${http.proxy.port}")
-    private int proxyPort;
+    @Value("${http.proxy.login:#{null}}")
+    private String proxyLogin;
 
-    @Value(value = "${http.proxy.noproxy:#{null}}")
+    @Value("${http.proxy.password:#{null}}")
+    private String proxyPassword;
+
+    @Value("${http.proxy.port:#{null}}")
+    private Integer proxyPort;
+
+    @Value("${http.proxy.noproxy:#{null}}")
     private String noProxy;
 
     @Bean("proxyHttpClient")
-    public HttpClient getHttpClient() {
-
-        // Dependency : https://github.com/CNES/JSPNego
-        // Pour compiler la doc : mvn site
-        // Pour compiler la lib : mvn clean install
-        // Attention, il faut désactiver les tests en positionnant à false toutes les variables skip tests dans le pom
-        fr.cnes.httpclient.configuration.ProxyConfiguration.HTTP_PROXY.setValue(proxyHost + ":" + proxyPort);
-
-        // Ici, ce sont les noms de domaines des noms de docker sur VMPERF lors des tests.
-        if ((noProxy != null) && !noProxy.isEmpty()) {
-            fr.cnes.httpclient.configuration.ProxyConfiguration.NO_PROXY.setValue(noProxy);
+    @Primary
+    public org.apache.http.client.HttpClient getHttpClient() {
+        // https://github.com/CNES/JSPNego
+        if (proxyHost != null) {
+            LOGGER.info("HTTP Proxy initialized with values host={}, port={},login={}", proxyHost, proxyPort,
+                        proxyLogin);
+            fr.cnes.httpclient.configuration.ProxyConfiguration.HTTP_PROXY.setValue(proxyHost + ":" + proxyPort);
+            if ((noProxy != null) && !noProxy.isEmpty()) {
+                fr.cnes.httpclient.configuration.ProxyConfiguration.NO_PROXY.setValue(noProxy);
+            }
+            if ((proxyLogin != null) && (proxyPassword != null)) {
+                fr.cnes.httpclient.configuration.ProxyConfiguration.USERNAME.setValue(proxyLogin);
+                fr.cnes.httpclient.configuration.ProxyConfiguration.PASSWORD.setValue(proxyPassword);
+            }
+            return HttpClientFactory.create(Type.PROXY_BASIC);
+        } else {
+            LOGGER.info("No HTTP Proxy configured.");
+            return HttpClientFactory.create(Type.NO_PROXY);
         }
-        return HttpClientFactory.create(Type.PROXY_BASIC);
     }
 
 }

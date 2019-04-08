@@ -18,10 +18,11 @@
  */
 package fr.cnes.regards.framework.security.filter;
 
+import java.io.IOException;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -81,7 +82,7 @@ public class JWTAuthenticationFilterTest {
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
 
         final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
-                                                                           Mockito.mock(IRuntimeTenantResolver.class));
+                Mockito.mock(IRuntimeTenantResolver.class));
 
         try {
             filter.doFilter(mockedRequest, mockedResponse, new MockFilterChain());
@@ -117,7 +118,7 @@ public class JWTAuthenticationFilterTest {
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
         Mockito.when(mockedManager.authenticate(token)).thenReturn(token);
         final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
-                                                                           Mockito.mock(IRuntimeTenantResolver.class));
+                Mockito.mock(IRuntimeTenantResolver.class));
 
         DispatcherServlet servlet = Mockito.mock(DispatcherServlet.class);
         MockFilterChain mockedFilterChain = new MockFilterChain(servlet, publicFilter, filter);
@@ -160,7 +161,7 @@ public class JWTAuthenticationFilterTest {
         // As generateToken seems to have some random added into computation, we cannot specify what is expected
         Mockito.when(mockedManager.authenticate(ArgumentMatchers.any())).thenReturn(token);
         final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
-                                                                           Mockito.mock(IRuntimeTenantResolver.class));
+                Mockito.mock(IRuntimeTenantResolver.class));
 
         DispatcherServlet servlet = Mockito.mock(DispatcherServlet.class);
         MockFilterChain mockedFilterChain = new MockFilterChain(servlet, publicFilter, filter);
@@ -197,7 +198,7 @@ public class JWTAuthenticationFilterTest {
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
 
         final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
-                                                                           Mockito.mock(IRuntimeTenantResolver.class));
+                Mockito.mock(IRuntimeTenantResolver.class));
 
         // Header whithout Bearer: prefix.
         Mockito.when(mockedRequest.getHeader(HttpConstants.AUTHORIZATION)).thenReturn(token.getJwt());
@@ -234,7 +235,7 @@ public class JWTAuthenticationFilterTest {
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
         Mockito.when(mockedManager.authenticate(token)).thenReturn(token);
         final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
-                                                                           Mockito.mock(IRuntimeTenantResolver.class));
+                Mockito.mock(IRuntimeTenantResolver.class));
 
         Mockito.when(mockedRequest.getHeader(HttpConstants.AUTHORIZATION))
                 .thenReturn(String.format("%s %s", HttpConstants.BEARER, token.getJwt()));

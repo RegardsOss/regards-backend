@@ -195,6 +195,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
      * Constructor initializing a new plugin configuration from an other one
+     * @param other
      */
     public PluginConfiguration(PluginConfiguration other) {
         active = other.active;
@@ -263,6 +264,7 @@ public class PluginConfiguration implements IIdentifiable<Long> {
 
     /**
      * This setter <b>must</b> only be used while TESTING
+     * @param version
      */
     public void setVersion(String version) {
         this.version = version;

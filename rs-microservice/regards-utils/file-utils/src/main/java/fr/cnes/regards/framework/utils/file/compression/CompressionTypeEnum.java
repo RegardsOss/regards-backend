@@ -18,48 +18,64 @@
  */
 package fr.cnes.regards.framework.utils.file.compression;
 
+import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Sets;
+
 /**
- * <code>CompressionTypeEnum</code> definit une liste d'enumere des modes de compression possibles.
+ * Enumeration for compression modes
+ * @author Sébastien Binda
  */
 public enum CompressionTypeEnum {
 
-    /**
-     * Constante definissant le mode ZIP
-     */
-    ZIP("zip"),
+    ZIP("zip", "zip"),
+    GZIP("gz", "gz", "z"),
+    TAR("tar", "tar");
 
     /**
-     * Constante definissant le mode ZIP
+     * Attribut permettant la journalisation.
      */
-    GZIP("gz"),
+    private static final Logger LOGGER = LoggerFactory.getLogger(CompressionTypeEnum.class);
 
     /**
-     * Constante définissant le mode TAR
-     */
-    TAR("tar");
-
-    /**
-     * Contient la chaine de caractère correspondant à l'extension des fichiers de ce type
+     * Main extension for the compression type
      */
     private final String fileExtension;
 
-    CompressionTypeEnum(String fileExtension) {
+    /**
+     * List of extensions handled by the compression type
+     */
+    private final Set<String> handledExtensions = Sets.newHashSet();
+
+    CompressionTypeEnum(String fileExtension, String... handledExtensions) {
         this.fileExtension = fileExtension;
+        if (handledExtensions != null) {
+            for (String ext : handledExtensions) {
+                this.handledExtensions.add(ext);
+            }
+        }
     }
 
     public String getFileExtension() {
         return fileExtension;
     }
 
-    /**
-     * permet de recuperer l'instance de CompressionTypeEnum qui correspond a name. si name ne correspond a aucun
-     * type, renvoie null
-     */
+    public Set<String> getHandledExtensions() {
+        return this.handledExtensions;
+    }
+
     public static CompressionTypeEnum parse(String name) {
-        try {
-            return CompressionTypeEnum.valueOf(name);
-        } catch (IllegalArgumentException e) {
-            return null;
+        if (name != null) {
+            for (CompressionTypeEnum type : CompressionTypeEnum.values()) {
+                if (type.getHandledExtensions().contains(name.toLowerCase())) {
+                    return type;
+                }
+            }
         }
+        LOGGER.error("Unhandled extension \"{}\" for compression tools", name);
+        return null;
     }
 }

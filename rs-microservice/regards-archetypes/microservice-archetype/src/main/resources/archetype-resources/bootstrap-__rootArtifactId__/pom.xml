@@ -43,93 +43,18 @@
         </developer>
     </developers>
 
-    <properties>
-        <fr.cnes.regards.docker.image.name>helloworld-microservice</fr.cnes.regards.docker.image.name>
-    </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>microservice-core-starter</artifactId>
-        </dependency>
-        <!-- Module dependencies -->
-        <dependency>
-            <groupId>fr.cnes.regards.framework</groupId>
-            <artifactId>amqp-monitoring-regards-starter</artifactId>
-        </dependency>
-    </dependencies>
-
-    <profiles>
-        <profile>
-            <id>default</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <!-- Default properties -->
-                <filter.name>development</filter.name>
-            </properties>
-            <build>
-                <resources>
-                    <resource>
-                        <directory>src/main/resources</directory>
-                        <filtering>true</filtering>
-                    </resource>
-                </resources>
-                <filters>
-                    <filter>src/main/filters/${filter.name}.properties</filter>
-                </filters>
-            </build>
-        </profile>
-        <profile>
-            <id>docker</id>
-            <properties>
-                <!-- Default properties -->
-                <filter.name>docker</filter.name>
-            </properties>
-            <build>
-                <resources>
-                    <resource>
-                        <directory>src/main/resources</directory>
-                        <filtering>true</filtering>
-                    </resource>
-                </resources>
-                <filters>
-                    <filter>src/main/filters/${filter.name}.properties</filter>
-                </filters>
-            </build>
-        </profile>
-        <profile>
-            <id>delivery</id>
-        </profile>
-    </profiles>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>com.spotify</groupId>
-                <artifactId>docker-maven-plugin</artifactId>
-                <configuration>
-                    <forceTags>true</forceTags>
-                    <imageName>${docker.registry.host}/${fr.cnes.regards.docker.image.name}</imageName>
-                    <baseImage>${docker.registry.host}/rs-alpine-oraclejdk8</baseImage>
-                    <entryPoint>["./wait-for-it.sh", "rs-config:9031", "-t", "0", "--",
-                        "./wait-for-it.sh", "rs-registry:9032", "-t", "0",
-                        "--","./wait-for-it.sh", "rs-admin:9033", "-t", "0", "--", "java",
-                        "-Xmx1500m", "-Djava.security.egd=file:/dev/./urandom",
-                        "-agentlib:jdwp=transport=dt_socket,address=10500,server=y,suspend=n",
-                        "-jar", "/${project.build.finalName}.${project.packaging}"]
-                    </entryPoint>
-                    <resources>
-                        <resource>
-                            <targetPath>/</targetPath>
-                            <directory>${project.build.directory}</directory>
-                            <include>${project.build.finalName}.${project.packaging}</include>
-                        </resource>
-                    </resources>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+	<dependencies>
+		<!-- Framework core dependencies -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>microservice-core-starter</artifactId>
+		</dependency>
+		<!-- Module to retrieve tenant information from remote admin-instance microservice -->
+		<dependency>
+			<groupId>fr.cnes.regards.microservices.administration</groupId>
+			<artifactId>remote-tenant-resolver</artifactId>
+		</dependency>
+		<!-- Module dependencies -->
+	</dependencies>
 
 </project>

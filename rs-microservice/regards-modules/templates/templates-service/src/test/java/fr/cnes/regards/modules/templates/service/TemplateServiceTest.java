@@ -34,7 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.mail.SimpleMailMessage;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -49,6 +49,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.templates.dao.ITemplateRepository;
 import fr.cnes.regards.modules.templates.domain.Template;
+import freemarker.template.TemplateException;
 
 /**
  * Test suite for {@link TemplateService}.
@@ -59,7 +60,42 @@ import fr.cnes.regards.modules.templates.domain.Template;
 @TestPropertySource(properties = { "spring.application.name=rs-admin", "regards.jpa.multitenant.enabled=false",
         "regards.amqp.enabled=false", "regards.cipher.key-location=src/test/resources/testKey",
         "regards.cipher.iv=1234567812345678" })
+@ContextConfiguration
 public class TemplateServiceTest {
+
+    @Configuration
+    static class TestConfiguration {
+
+        @Bean
+        public Template testTemplate() {
+            return new Template("name", "content");
+        }
+    }
+
+    @Configuration
+    @EnableAutoConfiguration
+    public static class Config {
+
+        @Bean
+        public ITemplateRepository templateRepository() {
+            return Mockito.mock(ITemplateRepository.class);
+        }
+
+        @Bean
+        public ITenantResolver tenantResolver() {
+            return Mockito.mock(ITenantResolver.class);
+        }
+
+        @Bean
+        public IRuntimeTenantResolver runtimeTenantResolver() {
+            return Mockito.mock(IRuntimeTenantResolver.class);
+        }
+
+        @Bean
+        public IInstanceSubscriber instanceSubscriber() {
+            return Mockito.mock(InstanceSubscriber.class);
+        }
+    }
 
     /**
      * Code
@@ -138,7 +174,7 @@ public class TemplateServiceTest {
 
     @Before
     public void setUp() {
-        template = new Template(CODE, CONTENT, DATA, SUBJECT);
+        template = new Template(CODE, CONTENT);
     }
 
     /**
@@ -161,26 +197,6 @@ public class TemplateServiceTest {
 
         // Check
         Assert.assertThat(actual, CoreMatchers.is(CoreMatchers.equalTo(expected)));
-    }
-
-    /**
-     * Test method for {@link TemplateService#create(Template)}.
-     */
-    @Test
-    @Purpose("Check that the system allows to create templates.")
-    @Requirement("REGARDS_DSL_SYS_ERG_310")
-    @Requirement("REGARDS_DSL_ADM_ADM_440")
-    @Requirement("REGARDS_DSL_ADM_ADM_460")
-    public final void testCreate() {
-        // Mock
-        Mockito.when(templateRepository.findById(ID)).thenReturn(Optional.empty());
-        Mockito.when(templateRepository.existsById(ID)).thenReturn(false);
-
-        // Call tested method
-        templateService.create(template);
-
-        // Check
-        Mockito.verify(templateRepository).save(Mockito.refEq(template, "id"));
     }
 
     /**
@@ -237,7 +253,6 @@ public class TemplateServiceTest {
     public final void testUpdate() throws EntityException {
         // Prepare the case
         template.setId(ID);
-        template.setDescription("Updated description");
 
         // Mock
         Mockito.when(templateRepository.findById(ID)).thenReturn(Optional.of(template));
@@ -296,91 +311,23 @@ public class TemplateServiceTest {
         templateService.update(1L, template);
     }
 
-    /**
-     * Test method for {@link fr.cnes.regards.modules.templates.service.TemplateService#delete(java.lang.Long)}.
-     * @throws EntityNotFoundException if no template with passed id could be found
-     */
-    @Test
-    @Purpose("Check that the system allows to delete a single template.")
-    @Requirement("REGARDS_DSL_SYS_ERG_310")
-    @Requirement("REGARDS_DSL_ADM_ADM_440")
-    @Requirement("REGARDS_DSL_ADM_ADM_460")
-    public final void testDelete() throws EntityNotFoundException {
-        // Mock
-        Mockito.when(templateRepository.existsById(ID)).thenReturn(true);
-
-        // Call tested method
-        templateService.delete(ID);
-
-        // Check
-        Mockito.verify(templateRepository).deleteById(ID);
-    }
-
-    /**
-     * Test method for {@link fr.cnes.regards.modules.templates.service.TemplateService#delete(java.lang.Long)}.
-     * @throws EntityNotFoundException if no template with passed id could be found
-     */
-    @Test(expected = EntityNotFoundException.class)
-    @Purpose("Check that the system handles the case of deleting an inexistent template.")
-    @Requirement("REGARDS_DSL_SYS_ERG_310")
-    @Requirement("REGARDS_DSL_ADM_ADM_440")
-    @Requirement("REGARDS_DSL_ADM_ADM_460")
-    public final void testDeleteNotFound() throws EntityNotFoundException {
-        // Mock
-        Mockito.when(templateRepository.existsById(ID)).thenReturn(false);
-
-        // Trigger expected exception
-        templateService.delete(ID);
-    }
-
-    /**
-     * Test method for SimpleMailMessageTemplateWriter#writeToEmail(Template, Map, String[]).
-     * @throws EntityNotFoundException no template of passed code could be found
-     */
     @Test
     @Purpose("Check that the system uses templates to send emails.")
     @Requirement("REGARDS_DSL_SYS_ERG_310")
     @Requirement("REGARDS_DSL_ADM_ADM_440")
     @Requirement("REGARDS_DSL_ADM_ADM_460")
-    public final void testWrite() throws EntityNotFoundException {
+    public final void testWrite() throws TemplateException {
         // Mock
-        Mockito.when(templateRepository.findByCode(CODE)).thenReturn(Optional.ofNullable(template));
+        Mockito.when(templateRepository.findByName(CODE)).thenReturn(Optional.ofNullable(template));
 
         // Define expected
         String expectedText = "Hello Defaultname. You are 26 years old and 1.79 m tall.";
 
         // Define actual
-        SimpleMailMessage message = templateService.writeToEmail(CODE, DATA, RECIPIENTS);
+        String message = templateService.render(CODE, DATA);
 
         // Check
-        Assert.assertEquals("[Regards] " + SUBJECT, message.getSubject());
-        Assert.assertEquals(expectedText, message.getText());
-        Assert.assertArrayEquals(RECIPIENTS, message.getTo());
-    }
-
-    @Configuration
-    @EnableAutoConfiguration
-    public static class Config {
-
-        @Bean
-        public ITemplateRepository templateRepository() {
-            return Mockito.mock(ITemplateRepository.class);
-        }
-
-        @Bean
-        public ITenantResolver tenantResolver() {
-            return Mockito.mock(ITenantResolver.class);
-        }
-
-        @Bean
-        public IRuntimeTenantResolver runtimeTenantResolver() {
-            return Mockito.mock(IRuntimeTenantResolver.class);
-        }
-
-        @Bean
-        public IInstanceSubscriber instanceSubscriber() {
-            return Mockito.mock(InstanceSubscriber.class);
-        }
+        Assert.assertEquals(expectedText, message);
     }
 
 }

@@ -21,17 +21,5 @@
          along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
         -->
 <configuration>
-
-    <include resource="fr/cnes/regards/framework/logbackappender/defaults.xml"/>
-
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>${symbol_dollar}{CONSOLE_LOG_PATTERN}</pattern>
-        </encoder>
-    </appender>
-
-    <root level="info">
-        <appender-ref ref="STDOUT"/>
-    </root>
-
+	<include resource="fr/cnes/regards/framework/logbackappender/defaults.xml" />
 </configuration>

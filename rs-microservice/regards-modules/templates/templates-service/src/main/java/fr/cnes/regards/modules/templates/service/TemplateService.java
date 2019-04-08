@@ -18,36 +18,39 @@
  */
 package fr.cnes.regards.modules.templates.service;
 
-import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
+import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
+import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.templates.dao.ITemplateRepository;
 import fr.cnes.regards.modules.templates.domain.Template;
 import freemarker.cache.StringTemplateLoader;
+import freemarker.core.ParseException;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
-import freemarker.template.Version;
 
 /**
  * {@link ITemplateService} implementation.
@@ -55,6 +58,7 @@ import freemarker.template.Version;
  * @author Marc Sordi
  */
 @Service
+@RegardsTransactional
 public class TemplateService implements ITemplateService {
 
     /**
@@ -63,27 +67,9 @@ public class TemplateService implements ITemplateService {
     private static final Logger LOG = LoggerFactory.getLogger(TemplateService.class);
 
     /**
-     * Freemarker version-major number. Needed for configuring the Freemarker library.
-     * @see {@link Configuration#Configuration(Version)}
-     */
-    private static final int INCOMPATIBLE_IMPROVEMENTS_VERSION_MAJOR = 2;
-
-    /**
-     * Freemarker version-minor number. Needed for configuring the Freemarker library.
-     * @see {@link Configuration#Configuration(Version)}
-     */
-    private static final int INCOMPATIBLE_IMPROVEMENTS_VERSION_MINOR = 3;
-
-    /**
-     * Freemarker version-micro number. Needed for configuring the Freemarker library.
-     * @see {@link Configuration#Configuration(Version)}
-     */
-    private static final int INCOMPATIBLE_IMPROVEMENTS_VERSION_MICRO = 25;
-
-    /**
      * Instance microservice type
      */
-    private static final String MS_INSTANCE_TYPE = "instance";
+    private static final String MICROSERVICE_TYPE = "instance";
 
     /**
      * The JPA repository managing CRUD operation on templates. Autowired by Spring.
@@ -92,14 +78,9 @@ public class TemplateService implements ITemplateService {
     private ITemplateRepository templateRepository;
 
     /**
-     * The string template loader
-     */
-    private StringTemplateLoader loader;
-
-    /**
      * The freemarker configuration
      */
-    private Configuration configuration;
+    private final Configuration configuration;
 
     /**
      * Tenant resolver to access all configured tenant
@@ -114,28 +95,28 @@ public class TemplateService implements ITemplateService {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    @Resource(name = TemplateServiceConfiguration.TEMPLATES)
-    private List<Template> templates;
-
-    @Value("${spring.mail.sender.no.reply:regards@noreply.fr}")
-    private String noReplyAdress;
-
-    @Value("${spring.application.name}")
-    private String microserviceName;
+    private Set<Template> templates;
 
     @Value("${regards.microservice.type:multitenant}")
     private String microserviceType;
 
     public TemplateService() {
-        configureTemplateLoader();
+        // Configure Freemarker
+        configuration = new Configuration(Configuration.VERSION_2_3_25);
+
+        configuration.setTemplateLoader(new StringTemplateLoader());
+        configuration.setDefaultEncoding("UTF-8");
+        configuration.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+        configuration.setLogTemplateExceptions(false);
     }
 
     /**
      * Init method
      */
     @EventListener
-    public void init(ApplicationReadyEvent event) {
-        if (microserviceType.equals(MS_INSTANCE_TYPE)) {
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public void onApplicationStarted(ApplicationStartedEvent event) {
+        if (microserviceType.equals(MICROSERVICE_TYPE)) {
             // Init default templates for this tenant
             initDefaultTemplates();
         } else {
@@ -149,7 +130,8 @@ public class TemplateService implements ITemplateService {
     }
 
     @EventListener
-    public void processEvent(TenantConnectionReady event) {
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public void onTenantConnectionReady(TenantConnectionReady event) {
         // Set working tenant
         runtimeTenantResolver.forceTenant(event.getTenant());
         // Init default templates for this tenant
@@ -159,17 +141,15 @@ public class TemplateService implements ITemplateService {
     /**
      * Populate the templates with default
      */
-    private void initDefaultTemplates() {
-        // Look into classpath (via TemplateServiceConfiguration) if some templates are present. If yes, check if they
+    @Override
+    public void initDefaultTemplates() {
+        // Look into classpath (via TemplateConfigUtil) if some templates are present. If yes, check if they
         // exist into Database, if not, create them
         for (Template template : templates) {
-            checkAndSaveIfNecessary(template);
-        }
-    }
-
-    private void checkAndSaveIfNecessary(Template template) {
-        if ((template != null) && !templateRepository.findByCode(template.getCode()).isPresent()) {
-            templateRepository.save(template);
+            if (!templateRepository.findByName(template.getName()).isPresent()) {
+                // Add the template (regards template POJO) to the loader
+                templateRepository.save(template);
+            }
         }
     }
 
@@ -179,88 +159,53 @@ public class TemplateService implements ITemplateService {
     }
 
     @Override
-    public Template create(final Template template) {
-        final Template toCreate = new Template(template.getCode(), template.getContent(), template.getDataStructure(),
-                                               template.getSubject());
-        return templateRepository.save(toCreate);
-    }
-
-    @Override
-    public Template findById(final Long id) throws EntityNotFoundException {
+    public Template findById(Long id) throws EntityNotFoundException {
         final Optional<Template> template = templateRepository.findById(id);
         return template.orElseThrow(() -> new EntityNotFoundException(id, Template.class));
     }
 
     @Override
-    public void update(final Long id, Template template) throws EntityException {
+    public Template update(Long id, Template template)
+            throws EntityInconsistentIdentifierException, EntityNotFoundException, EntityInvalidException {
         if (!id.equals(template.getId())) {
             throw new EntityInconsistentIdentifierException(id, template.getId(), Template.class);
         }
-        template = findById(id);
-        template.setContent(template.getContent());
-        template.setDataStructure(template.getDataStructure());
-        template.setDescription(template.getDescription());
-
-        templateRepository.save(template);
-    }
-
-    @Override
-    public void delete(final Long id) throws EntityNotFoundException {
         if (!templateRepository.existsById(id)) {
             throw new EntityNotFoundException(id, Template.class);
         }
-        templateRepository.deleteById(id);
+        try {
+            //try to parse the template to be sure that user didn't give us some bad things
+            getTemplateLoader().putTemplate(template.getName(), template.getContent());
+            configuration.getTemplate(template.getName());
+        } catch (ParseException e) {
+            throw new EntityInvalidException("Given template content could not be parsed by Freemarker.", e);
+        } catch (IOException e) {
+            LOG.error("Template could not be retrieve from Freemarker configuration", e);
+            throw new RsRuntimeException(e);
+        }
+        return templateRepository.save(template);
     }
 
     @Override
-    public void deleteAll() {
-        templateRepository.deleteAll();
-    }
-
-    /**
-     * Configure the template loader
-     * @throws IOException when error occurs during template loading
-     */
-    private void configureTemplateLoader() {
-        configuration = new Configuration(
-                new Version(INCOMPATIBLE_IMPROVEMENTS_VERSION_MAJOR, INCOMPATIBLE_IMPROVEMENTS_VERSION_MINOR,
-                            INCOMPATIBLE_IMPROVEMENTS_VERSION_MICRO));
-        loader = new StringTemplateLoader();
-        configuration.setTemplateLoader(loader);
-        configuration.setDefaultEncoding("UTF-8");
-        configuration.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-    }
-
-    @Override
-    public SimpleMailMessage writeToEmail(String templateCode, String subject, Map<String, ?> dataModel,
-            String... recipients) throws EntityNotFoundException {
+    public String render(String templateName, Map<String, ?> dataModel) throws TemplateException {
         // Retrieve the template of given code
-        Template template = templateRepository.findByCode(templateCode)
-                .orElseThrow(() -> new EntityNotFoundException(templateCode, Template.class));
+        Template template = templateRepository.findByName(templateName).get();
 
-        // Add the template (regards template POJO) to the loader
-        loader.putTemplate(template.getCode(), template.getContent());
-
-        // Define the email message
-        String text;
+        getTemplateLoader().putTemplate(templateName, template.getContent());
         try {
             final Writer out = new StringWriter();
             // Retrieve the template (freemarker Template) and process it with the data model
-            configuration.getTemplate(template.getCode()).process(dataModel, out);
-            text = out.toString();
-        } catch (TemplateException | IOException e) {
-            LOG.warn("Unable to process the data into the template of code " + template.getCode()
-                             + ". Falling back to the not templated content.", e);
-            text = template.getContent();
+            configuration.getTemplate(template.getName()).process(dataModel, out);
+            return out.toString();
+        } catch (IOException e) {
+            LOG.error("Unable to process the data into the template of code " + template.getName()
+                    + ". Falling back to the not templated content.", e);
+            throw new RsRuntimeException(e);
         }
+    }
 
-        final SimpleMailMessage message = new SimpleMailMessage();
-        message.setSubject("[Regards] " + ((subject == null) ? template.getSubject() : subject));
-        message.setText(text);
-        message.setTo(recipients);
-        message.setFrom(noReplyAdress);
-
-        return message;
+    private StringTemplateLoader getTemplateLoader() {
+        return (StringTemplateLoader) configuration.getTemplateLoader();
     }
 
 }

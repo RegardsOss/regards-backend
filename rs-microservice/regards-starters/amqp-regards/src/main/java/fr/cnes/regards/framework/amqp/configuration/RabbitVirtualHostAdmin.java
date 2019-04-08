@@ -242,7 +242,7 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
 
     /**
      * Unregister {@link ConnectionFactory}
-     * @param pTenant tenant
+     * @param virtualHost tenant
      */
     private void unregisterConnectionFactory(String virtualHost) {
         // if there is a connection factory for this vhost then unregister it

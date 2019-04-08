@@ -68,7 +68,7 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     /**
      * Default routing key
      */
-    private static final String DEFAULT_ROUTING_KEY = "";
+    public static final String DEFAULT_ROUTING_KEY = "";
 
     /**
      * This constant allows to defined a message to send with a high priority
@@ -80,6 +80,10 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
      */
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(RegardsAmqpAdmin.class);
+
+    public static final String REGARDS_DLX = "regards.DLX";
+
+    public static final String REGARDS_DLQ = "regards.DLQ";
 
     /**
      * Bean allowing us to declare queue, exchange, binding
@@ -151,11 +155,8 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
         return UNICAST_NAMESPACE;
     }
 
-    /**
-     * Broadcast exchange name by event
-     * @return exchange name
-     */
-    private String getBroadcastExchangeName(String eventType, Target target) {
+    @Override
+    public String getBroadcastExchangeName(String eventType, Target target) {
         StringBuilder builder = new StringBuilder();
         builder.append(BROADCAST_NAMESPACE);
         if (Target.MICROSERVICE.equals(target)) {
@@ -169,11 +170,27 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     }
 
     @Override
+    public void declareDeadLetter() {
+        // Create DLX(Dead Letter Exchange)
+        // DLX is a fanout so it doesn't require any binding and message in error can be recovered by multiple
+        // consumers at same time if needed
+        Exchange dlx = ExchangeBuilder.topicExchange(REGARDS_DLX).durable(true).build();
+        rabbitAdmin.declareExchange(dlx);
+        //create DLQ(Dead Letter Queue)
+        Queue dlq = QueueBuilder.durable(REGARDS_DLQ).withArgument("x-max-priority", MAX_PRIORITY).build();
+        rabbitAdmin.declareQueue(dlq);
+        Binding binding = BindingBuilder.bind(dlq).to(dlx).with(REGARDS_DLQ).noargs();
+        rabbitAdmin.declareBinding(binding);
+    }
+
+    @Override
     public Queue declareQueue(String tenant, Class<?> eventType, WorkerMode workerMode, Target target,
             Optional<Class<? extends IHandler<?>>> handlerType) {
 
         Map<String, Object> args = new ConcurrentHashMap<>();
         args.put("x-max-priority", MAX_PRIORITY);
+        args.put("x-dead-letter-exchange", REGARDS_DLX);
+        args.put("x-dead-letter-routing-key", REGARDS_DLQ);
 
         Queue queue;
         switch (workerMode) {

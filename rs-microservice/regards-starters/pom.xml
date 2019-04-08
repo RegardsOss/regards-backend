@@ -92,7 +92,8 @@
         <module>encryption-starter</module>
         <module>microservice-logger</module>
 	    <module>proxy-starter</module>
-  </modules>
+        <module>notification-regards</module>
+    </modules>
 
     <dependencies>
         <dependency>

@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.retry.interceptor.StatefulRetryOperationsInterceptor;
 
 import fr.cnes.regards.framework.amqp.AbstractSubscriber;
 import fr.cnes.regards.framework.amqp.ISubscriber;
@@ -44,8 +45,8 @@ public class SingleVhostSubscriber extends AbstractSubscriber implements ISubscr
     private final ITenantResolver tenantResolver;
 
     public SingleVhostSubscriber(IRabbitVirtualHostAdmin virtualHostAdmin, IAmqpAdmin amqpAdmin,
-            MessageConverter jsonMessageConverters, ITenantResolver tenantResolver) {
-        super(virtualHostAdmin, amqpAdmin, jsonMessageConverters);
+            MessageConverter jsonMessageConverters, ITenantResolver tenantResolver, StatefulRetryOperationsInterceptor interceptor) {
+        super(virtualHostAdmin, amqpAdmin, jsonMessageConverters, interceptor);
         this.tenantResolver = tenantResolver;
     }
 
