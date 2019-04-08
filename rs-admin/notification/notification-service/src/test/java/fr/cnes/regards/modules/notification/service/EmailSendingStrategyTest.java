@@ -92,7 +92,6 @@ public class EmailSendingStrategyTest {
     public void send() {
         // Define expected mail
         final SimpleMailMessage expected = new SimpleMailMessage();
-        expected.setFrom("regards@noreply.com");
         expected.setSubject("[" + SENDER + "]" + notification.getTitle());
         expected.setText(MESSAGE);
         expected.setTo(RECIPIENTS);

@@ -57,14 +57,13 @@ public class EmailSendingStrategy implements ISendingStrategy {
      * notification.domain.Notification)
      */
     @Override
-    public void send(final Notification pNotification, final String[] pRecipients) {
+    public void send(final Notification notification, final String[] recipients) {
         // Build the email from the notification and add recipients
         final SimpleMailMessage email = new SimpleMailMessage();
-        email.setFrom("regards@noreply.com");
         email.setSentDate(new Date());
-        email.setSubject("[" + pNotification.getSender() + "]" + pNotification.getTitle());
-        email.setText(pNotification.getMessage());
-        email.setTo(pRecipients);
+        email.setSubject("[" + notification.getSender() + "]" + notification.getTitle());
+        email.setText(notification.getMessage());
+        email.setTo(recipients);
 
         // Send the email
         emailClient.sendEmail(email);

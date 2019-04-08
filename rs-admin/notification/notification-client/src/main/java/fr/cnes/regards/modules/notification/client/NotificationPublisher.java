@@ -28,12 +28,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.MimeType;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
+import fr.cnes.regards.framework.notification.NotificationDTO;
+import fr.cnes.regards.framework.notification.NotificationDtoBuilder;
+import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.notification.domain.NotificationLevel;
-import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
-import fr.cnes.regards.modules.notification.domain.dto.NotificationDtoBuilder;
-import fr.cnes.regards.modules.notification.domain.event.NotificationEvent;
 
 /**
  * An implementation of the notification client using asynchronous messaging

@@ -23,7 +23,7 @@ import org.springframework.context.ApplicationEvent;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 
 /**
- * Use this event in order to react to when the admin denies access of a project user.
+ * Use this event in order to react when the admin denies access of a project user.
  *
  * @author Xavier-Alexandre Brochard
  */
