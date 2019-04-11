@@ -77,7 +77,7 @@ public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements 
     }
 
     @Override
-    protected void addAttributesTopSip(SIPBuilder sipBuilder, SortedMap<Integer, Attribute> mapAttrs)
+    public void addAttributesTopSip(SIPBuilder sipBuilder, SortedMap<Integer, Attribute> mapAttrs)
             throws ModuleException {
         mapAttrs.forEach((k, v) -> {
             switch (v.getAttributeKey()) {

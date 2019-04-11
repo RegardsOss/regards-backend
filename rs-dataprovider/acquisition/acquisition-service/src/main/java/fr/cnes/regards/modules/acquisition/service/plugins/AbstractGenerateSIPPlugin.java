@@ -96,7 +96,7 @@ public abstract class AbstractGenerateSIPPlugin extends AbstractStorageInformati
         aSip.getProperties().setPdi(pdiBuilder.build());
     }
 
-    protected abstract void addAttributesTopSip(SIPBuilder sipBuilder, SortedMap<Integer, Attribute> mapAttrs)
+    public abstract void addAttributesTopSip(SIPBuilder sipBuilder, SortedMap<Integer, Attribute> mapAttrs)
             throws ModuleException;
 
     protected abstract void addDataObjectsToSip(SIPBuilder sipBuilder, List<AcquisitionFile> acqFiles)
