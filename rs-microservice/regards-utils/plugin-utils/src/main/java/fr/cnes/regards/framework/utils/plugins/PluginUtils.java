@@ -439,9 +439,40 @@ public final class PluginUtils {
     private static void checkPrimitiveBoundaries(List<String> validationErrors, PluginParameterType plgParamMeta,
             PluginParameter parameterFromConf) throws ClassNotFoundException {
         if (plgParamMeta.getParamType() == PluginParameterType.ParamType.PRIMITIVE) {
+            String plgParamType = plgParamMeta.getType();
+            // first handle real primitive types then use class.forName
+            Class clazz;
+            switch (plgParamType) {
+                case "long":
+                    clazz = Long.TYPE;
+                    break;
+                case "int":
+                    clazz = Integer.TYPE;
+                    break;
+                case "short":
+                    clazz = Short.TYPE;
+                    break;
+                case "byte":
+                    clazz = Byte.TYPE;
+                    break;
+                case "float":
+                    clazz = Float.TYPE;
+                    break;
+                case "double":
+                    clazz = Double.TYPE;
+                    break;
+                case "char":
+                    clazz = Character.TYPE;
+                    break;
+                case "void":
+                    clazz = Void.TYPE;
+                    break;
+                default:
+                    clazz = Class.forName(plgParamType);
+                    break;
+            }
             // String are not checked as we cannot imagine a string which is not valid in term of java representation
             // Boolean aren't either because unless its string representation is "true" if it considered false
-            Class<?> clazz = Class.forName(plgParamMeta.getType());
             try {
                 // paramStrippedValue nullability is not a problem here.
                 // If it is null it means that the parameter is of type string with an empty value and we do not check them here.
