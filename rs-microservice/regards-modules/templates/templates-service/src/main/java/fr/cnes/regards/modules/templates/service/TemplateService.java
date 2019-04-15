@@ -142,6 +142,7 @@ public class TemplateService implements ITemplateService {
      * Populate the templates with default
      */
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void initDefaultTemplates() {
         // Look into classpath (via TemplateConfigUtil) if some templates are present. If yes, check if they
         // exist into Database, if not, create them
