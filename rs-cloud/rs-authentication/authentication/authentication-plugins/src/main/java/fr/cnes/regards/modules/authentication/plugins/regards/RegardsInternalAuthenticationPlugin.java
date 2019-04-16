@@ -89,6 +89,9 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
             if (validateResponse.getBody()) {
                 accessGranted = validateResponse.getBody();
             } else {
+                // This probably means that the password is not correct.
+                // As we are afraid from hackers,
+                // we do not want the end user to know that the account exists so we are lying.
                 errorMessage = String
                         .format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists", pEmail);
             }
