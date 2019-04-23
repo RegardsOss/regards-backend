@@ -129,6 +129,16 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     }
 
     @Test
+    public void searchOneDataobject() {
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        addCommontMatchers(customizer);
+        customizer.expectValue("$.content[0].content.providerId", JUPITER);
+        customizer.addParameter(SEARCH_TERMS_QUERY, StaticProperties.FEATURE_PROVIDER_ID + ":juPiteR");
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
+    }
+
+    @Test
     public void fullTextSearchDataobjects() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         addCommontMatchers(customizer);
