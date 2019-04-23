@@ -190,7 +190,7 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.expect(MockMvcResultMatchers.xpath(geoJsonUrl).exists());
 
         // Check url parameters
-        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "[count(Parameter)=14]").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "[count(Parameter)=15]").exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='q']").exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='planet']").exists());
         customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='planet_type']").exists());
