@@ -22,6 +22,7 @@ import java.net.URI;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -134,9 +135,13 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
     protected static final String STOP_DATE = "stopDate";
 
+    protected static final String PLANET_PARAMS = "params";
+
     protected static final String MERCURY = "Mercury";
 
     protected static final String JUPITER = "Jupiter";
+
+    protected static final String ALPHA_PARAM = "alpha";
 
     @Autowired
     protected ModelService modelService;
@@ -392,10 +397,12 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         // Create planets
         List<DataObject> planets = new ArrayList<>();
         planets.add(createMercury(planetModel));
-        planets.add(createPlanet(planetModel, "Venus", PLANET_TYPE_TELLURIC, 12104, 108_000_000L));
+        planets.add(createPlanet(planetModel, "Venus", PLANET_TYPE_TELLURIC, 12104, 108_000_000L,
+                                 createParams("near", "sun")));
         planets.add(createPlanet(planetModel, "Earth", PLANET_TYPE_TELLURIC, 12756, 150_000_000L));
         planets.add(createPlanet(planetModel, "Mars", PLANET_TYPE_TELLURIC, 6800, 228_000_000L));
-        planets.add(createPlanet(planetModel, JUPITER, PLANET_TYPE_GAS_GIANT, 143_000, 778_000_000L));
+        planets.add(createPlanet(planetModel, JUPITER, PLANET_TYPE_GAS_GIANT, 143_000, 778_000_000L,
+                                 createParams(ALPHA_PARAM, "beta", "gamma")));
         planets.add(createPlanet(planetModel, "Saturn", PLANET_TYPE_GAS_GIANT, 120_536, 1_427_000_000L));
         planets.add(createPlanet(planetModel, "Uranus", PLANET_TYPE_ICE_GIANT, 51_800, 2_800_000_000L));
         planets.add(createPlanet(planetModel, "Neptune", PLANET_TYPE_ICE_GIANT, 49_500, 4_489_435_980L));
@@ -450,7 +457,8 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         return null;
     }
 
-    protected DataObject createPlanet(Model planetModel, String name, String type, Integer diameter, Long sunDistance) {
+    protected DataObject createPlanet(Model planetModel, String name, String type, Integer diameter, Long sunDistance,
+            Set<String> params) {
         DataObject planet = createEntity(planetModel, name);
         planet.setGroups(getAccessGroups());
         planet.setCreationDate(OffsetDateTime.now());
@@ -458,7 +466,19 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         planet.addProperty(AttributeBuilder.buildString(PLANET_TYPE, type));
         planet.addProperty(AttributeBuilder.buildInteger(PLANET_DIAMETER, diameter));
         planet.addProperty(AttributeBuilder.buildLong(PLANET_SUN_DISTANCE, sunDistance));
+        if (params != null && !params.isEmpty()) {
+            planet.addProperty(AttributeBuilder.buildStringArray(PLANET_PARAMS,
+                                                                 params.toArray(new String[params.size()])));
+        }
         return planet;
+    }
+
+    protected Set<String> createParams(String... params) {
+        return new HashSet<>(Arrays.asList(params));
+    }
+
+    protected DataObject createPlanet(Model planetModel, String name, String type, Integer diameter, Long sunDistance) {
+        return createPlanet(planetModel, name, type, diameter, sunDistance, null);
     }
 
     /**

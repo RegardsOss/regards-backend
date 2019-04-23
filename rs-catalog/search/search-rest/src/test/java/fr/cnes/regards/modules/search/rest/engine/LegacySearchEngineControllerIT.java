@@ -132,7 +132,32 @@ public class LegacySearchEngineControllerIT extends AbstractEngineIT {
     public void fullTextSearchDataobjects() {
         RequestBuilderCustomizer customizer = customizer().expectStatusOk();
         addCommontMatchers(customizer);
+        customizer.addParameter("sort", "providerId" + ",ASC");
+        customizer.expectValue("$.content[0].content.providerId", JUPITER);
+        customizer.expectValue("$.content[1].content.providerId", MERCURY);
         addFullTextSearchQuery(customizer, "\"" + MERCURY + " " + JUPITER + "\"");
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
+    }
+
+    @Test
+    public void fullTextSearchDataobjectsWithWildcards() {
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        addCommontMatchers(customizer);
+        customizer.addParameter("sort", "providerId" + ",ASC");
+        customizer.expectValue("$.content[0].content.providerId", JUPITER);
+        customizer.expectValue("$.content[1].content.providerId", MERCURY);
+        addFullTextSearchQuery(customizer, JUPITER.substring(0, 3) + "* OR " + MERCURY.substring(0, 4) + "*");
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
+    }
+
+    @Test
+    public void fullTextSearchDataobjectsIntoStringArray() {
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        addCommontMatchers(customizer);
+        customizer.expectValue("$.content[0].content.providerId", JUPITER);
+        addFullTextSearchQuery(customizer, ALPHA_PARAM);
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
