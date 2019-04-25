@@ -46,7 +46,6 @@
 
         <!-- Framework starters -->
         <amqp.starter.version>4.0.0-SNAPSHOT</amqp.starter.version>
-        <amqp.monitoring.starter.version>4.0.0-SNAPSHOT</amqp.monitoring.starter.version>
         <authentication.starter.version>4.0.0-SNAPSHOT</authentication.starter.version>
         <cloud.starter.version>4.0.0-SNAPSHOT</cloud.starter.version>
         <feign.starter.version>4.0.0-SNAPSHOT</feign.starter.version>
@@ -247,11 +246,6 @@
                 <groupId>fr.cnes.regards.framework</groupId>
                 <artifactId>amqp-regards</artifactId>
                 <version>${amqp.starter.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.framework</groupId>
-                <artifactId>amqp-monitoring-regards-starter</artifactId>
-                <version>${amqp.monitoring.starter.version}</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.framework</groupId>
