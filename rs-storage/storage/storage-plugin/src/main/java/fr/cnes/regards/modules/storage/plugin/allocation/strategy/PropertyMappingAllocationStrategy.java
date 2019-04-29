@@ -20,8 +20,7 @@ package fr.cnes.regards.modules.storage.plugin.allocation.strategy;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.google.gson.Gson;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
@@ -134,51 +134,51 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
     @Override
     public Multimap<Long, StorageDataFile> dispatch(Collection<StorageDataFile> dataFilesToHandle,
             DispatchErrors errors) {
-        Multimap<Long, StorageDataFile> dispatch = HashMultimap.create();
+        HashMultimap<Long, StorageDataFile> dispatch = HashMultimap.create();
         // First lets construct a map, which is way better to manipulate
-        Map<String, Long> valueConfIdMap = propertyDataStorageMappings.stream().collect(Collectors.toMap(
+        HashMultimap<String, Long> valueConfIdMap = propertyDataStorageMappings.stream().collect(Multimaps.toMultimap(
                 PropertyDataStorageMapping::getPropertyValue,
-                PropertyDataStorageMapping::getDataStorageConfId));
+                PropertyDataStorageMapping::getDataStorageConfId,
+                HashMultimap::create));
         for (StorageDataFile dataFile : dataFilesToHandle) {
             if (storageDirectory != null) {
                 dataFile.setStorageDirectory(storageDirectory);
             }
             // now lets extract the property value from the AIP
             if (dataFile.isOnlineMandatory()) {
-                //This allocation strategy only allows files to be stored into 1 DataStorage
                 dispatch.put(quicklookDataStorageConfigurationId, dataFile);
-            } else {
-                try {
-                    String propertyValue = JsonPath.read(gson.toJson(dataFile.getAip()), propertyPath);
-                    Long chosenOne = valueConfIdMap.get(propertyValue);
-                    if (chosenOne == null) {
-                        // in case the value is unknown, lets set it into the default
-                        if (defaultDataStorageConfId != null) {
-                            dispatch.put(defaultDataStorageConfId, dataFile);
-                        } else {
-                            String failureCause = String.format(
-                                    "File(urls: %s) could not be associated to any data storage the allocation strategy do not have any mapping for the value of the property.",
-                                    dataFile.getUrls());
-                            LOG.error(failureCause);
-                            errors.addDispatchError(dataFile, failureCause);
-                        }
-                    } else {
-                        //This allocation strategy only allows files to be stored into 1 DataStorage
-                        dispatch.put(chosenOne, dataFile);
-                    }
-                } catch (PathNotFoundException e) {
-                    // in case the property is not present, lets set it into the default too.
+            }
+            try {
+                String propertyValue = JsonPath.read(gson.toJson(dataFile.getAip()), propertyPath);
+                Set<Long> chosenOnes = valueConfIdMap.get(propertyValue);
+                if (chosenOnes == null || chosenOnes.isEmpty()) {
+                    // in case the value is unknown, lets set it into the default
                     if (defaultDataStorageConfId != null) {
                         dispatch.put(defaultDataStorageConfId, dataFile);
                     } else {
                         String failureCause = String.format(
-                                "File(url: %s) could not be associated to any data storage because the aip associated(ipId: %s) do not have the following property: %s",
-                                dataFile.getUrls(),
-                                dataFile.getAip().getId(),
-                                propertyPath);
-                        LOG.error(failureCause, e);
+                                "File(urls: %s) could not be associated to any data storage the allocation strategy do not have any mapping for the value of the property.",
+                                dataFile.getUrls());
+                        LOG.error(failureCause);
                         errors.addDispatchError(dataFile, failureCause);
                     }
+                } else {
+                    for (Long chosenOne : chosenOnes) {
+                        dispatch.put(chosenOne, dataFile);
+                    }
+                }
+            } catch (PathNotFoundException e) {
+                // in case the property is not present, lets set it into the default too.
+                if (defaultDataStorageConfId != null) {
+                    dispatch.put(defaultDataStorageConfId, dataFile);
+                } else {
+                    String failureCause = String.format(
+                            "File(url: %s) could not be associated to any data storage because the aip associated(ipId: %s) do not have the following property: %s",
+                            dataFile.getUrls(),
+                            dataFile.getAip().getId(),
+                            propertyPath);
+                    LOG.error(failureCause, e);
+                    errors.addDispatchError(dataFile, failureCause);
                 }
             }
         }
