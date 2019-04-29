@@ -58,8 +58,6 @@ import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acquisition_it" })
 public class AcquisitionFileControllerIT extends AbstractRegardsTransactionalIT {
 
-    private Long chainId;
-
     @Autowired
     private IAcquisitionFileInfoRepository fileInfoRepository;
 
@@ -80,7 +78,7 @@ public class AcquisitionFileControllerIT extends AbstractRegardsTransactionalIT 
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         AcquisitionProcessingChain processingChain = AcquisitionTestUtils.getNewChain("Test");
         processingChain = processingService.createChain(processingChain);
-        chainId = processingChain.getId();
+        processingChain.getId();
         Path basePath = Paths.get("src", "test", "resources", "input");
         for (int i = 1; i < 3; i++) {
             Path file1 = basePath.resolve("data_" + i + ".txt");
@@ -101,9 +99,8 @@ public class AcquisitionFileControllerIT extends AbstractRegardsTransactionalIT 
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         documentRequestParameters(requestBuilderCustomizer);
 
-        requestBuilderCustomizer.document(PayloadDocumentation.relaxedResponseFields(Attributes.attributes(Attributes
-                                                                                                                   .key(RequestBuilderCustomizer.PARAM_TITLE)
-                                                                                                                   .value("Acquisition file")),
+        requestBuilderCustomizer.document(PayloadDocumentation.relaxedResponseFields(Attributes
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE).value("Acquisition file")),
                                                                                      documentAcquisitionFile()));
 
         performDefaultGet(AcquisitionFileController.TYPE_PATH, requestBuilderCustomizer, "Should retrieve files");
@@ -111,9 +108,9 @@ public class AcquisitionFileControllerIT extends AbstractRegardsTransactionalIT 
 
     @Test
     public void searchFilesByState() throws ModuleException {
-        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk().addParameter(
-                AcquisitionFileController.REQUEST_PARAM_STATE,
-                AcquisitionFileState.IN_PROGRESS.toString());
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk()
+                .addParameter(AcquisitionFileController.REQUEST_PARAM_STATE,
+                              AcquisitionFileState.IN_PROGRESS.toString());
         documentRequestParameters(requestBuilderCustomizer);
         performDefaultGet(AcquisitionFileController.TYPE_PATH, requestBuilderCustomizer, "Should retrieve files");
     }
@@ -135,7 +132,7 @@ public class AcquisitionFileControllerIT extends AbstractRegardsTransactionalIT 
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                 .description("Acquisition file state filter")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                    .value("Optional. Multiple values allowed. Allowed values : " + joiner.toString()));
+                        .value("Optional. Multiple values allowed. Allowed values : " + joiner.toString()));
 
         ParameterDescriptor paramProductId = RequestDocumentation
                 .parameterWithName(AcquisitionFileController.REQUEST_PARAM_PRODUCT_ID).optional()
@@ -154,14 +151,11 @@ public class AcquisitionFileControllerIT extends AbstractRegardsTransactionalIT 
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                 .description("ISO Date time filter")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_CONSTRAINTS)
-                                    .value("Optional. Required format : yyyy-MM-dd'T'HH:mm:ss.SSSZ"));
+                        .value("Optional. Required format : yyyy-MM-dd'T'HH:mm:ss.SSSZ"));
 
         // Add request parameters documentation
-        requestBuilderCustomizer.document(RequestDocumentation.requestParameters(paramFilepath,
-                                                                                 paramState,
-                                                                                 paramProductId,
-                                                                                 paramChainId,
-                                                                                 paramFrom));
+        requestBuilderCustomizer.document(RequestDocumentation
+                .requestParameters(paramFilepath, paramState, paramProductId, paramChainId, paramFrom));
     }
 
     private List<FieldDescriptor> documentAcquisitionFile() {
@@ -177,12 +171,12 @@ public class AcquisitionFileControllerIT extends AbstractRegardsTransactionalIT 
         for (AcquisitionFileState mode : AcquisitionFileState.values()) {
             joiner.add(mode.name());
         }
-        fields.add(constrainedFields
-                           .withPath(prefix + "state", "state", "State", "Allowed values : " + joiner.toString()));
+        fields.add(constrainedFields.withPath(prefix + "state", "state", "State",
+                                              "Allowed values : " + joiner.toString()));
 
         fields.add(constrainedFields
-                           .withPath(prefix + "error", "error", "Error details when acquisition file state is in ERROR")
-                           .optional().type(JSON_STRING_TYPE));
+                .withPath(prefix + "error", "error", "Error details when acquisition file state is in ERROR").optional()
+                .type(JSON_STRING_TYPE));
 
         fields.add(constrainedFields.withPath(prefix + "acqDate", "acqDate", "ISO 8601 acquisition date"));
 
