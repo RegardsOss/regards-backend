@@ -57,14 +57,14 @@
 		<!-- Module accessrights -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.accessrights</groupId>
-			<artifactId>accessrights-client</artifactId>
+			<artifactId>accessrights-service</artifactId>
 		</dependency>
-		<!-- Tests -->
+        <!-- Tests -->
 		<dependency>
 			<groupId>fr.cnes.regards.framework.test</groupId>
 			<artifactId>regards-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
+    </dependencies>
 
 </project>

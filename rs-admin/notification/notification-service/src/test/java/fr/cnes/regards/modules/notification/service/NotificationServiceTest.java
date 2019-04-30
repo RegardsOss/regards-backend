@@ -35,27 +35,26 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
-import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationDTO;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
-import fr.cnes.regards.modules.accessrights.client.IRolesClient;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
+import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
+import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationMode;
@@ -158,12 +157,12 @@ public class NotificationServiceTest {
     /**
      * CRUD repository managing roles. Autowired by Spring.
      */
-    private IRolesClient rolesClient;
+    private IRoleService roleService;
 
     /**
      * Feign client for {@link ProjectUser}s. Autowired by Spring.
      */
-    private IProjectUsersClient projectUserClient;
+    private IProjectUserService projectUserService;
 
     private IRuntimeTenantResolver runtimeTenantResolver;
 
@@ -229,14 +228,12 @@ public class NotificationServiceTest {
         // Mock services
         authenticationResolver = Mockito.mock(IAuthenticationResolver.class);
         notificationRepository = Mockito.mock(INotificationRepository.class);
-        rolesClient = Mockito.mock(IRolesClient.class);
-        projectUserClient = Mockito.mock(IProjectUsersClient.class);
+        roleService = Mockito.mock(IRoleService.class);
+        projectUserService = Mockito.mock(IProjectUserService.class);
         runtimeTenantResolver = Mockito.mock(IRuntimeTenantResolver.class);
 
         // Instanciate the tested service
-        notificationService = new NotificationService(notificationRepository,
-                                                      rolesClient,
-                                                      projectUserClient,
+        notificationService = new NotificationService(notificationRepository, roleService, projectUserService,
                                                       Mockito.mock(ApplicationEventPublisher.class),
                                                       runtimeTenantResolver,
                                                       authenticationResolver,
@@ -283,7 +280,7 @@ public class NotificationServiceTest {
     @Requirement("REGARDS_DSL_CMP_ARC_150")
     @Requirement("REGARDS_DSL_STO_CMD_140")
     @Purpose("Check that the system allorws to create notifications in order to send to users.")
-    public void createNotification() {
+    public void createNotification() throws EntityNotFoundException {
         // Define input
         NotificationDTO dto = new NotificationDTO();
         dto.setMessage(MESSAGE);
@@ -298,8 +295,8 @@ public class NotificationServiceTest {
         dto.setSender(SENDER);
         dto.setLevel(NotificationLevel.INFO);
 
-        Mockito.when(rolesClient.retrieveRoleDescendants(ROLE_NAME_0))
-                .thenReturn(new ResponseEntity<>(Sets.newHashSet(new Role(ROLE_NAME_0)), HttpStatus.OK));
+        Mockito.when(roleService.getDescendants(roleService.retrieveRole(ROLE_NAME_0)))
+                .thenReturn(Sets.newHashSet(new Role(ROLE_NAME_0)));
 
         // Define expected
         Notification expected = new Notification();
@@ -480,20 +477,19 @@ public class NotificationServiceTest {
      */
     @Test
     @Purpose("Check that the system properly aggregates the list of notification recipients.")
-    public void findRecipients() {
+    public void findRecipients() throws EntityNotFoundException {
         // Define expected
         List<ProjectUser> expected = new ArrayList<>();
         expected.add(projectUser0); // Expected from the notif roleRecipients attribute
         expected.add(projectUser1); // Expected from the notif projectUserRecipients attribute
         expected.add(projectUser2); // Expected from the notif roleRecipients attribute via parent role
 
+        PageImpl<ProjectUser> expectedPage = new PageImpl<>(expected);
         // Mock
-        PagedResources<Resource<ProjectUser>> expectedFromClient = HateoasUtils.wrapToPagedResources(expected);
-        Mockito.when(projectUserClient
-                             .retrieveRoleProjectUsersList(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
-                .thenReturn(new ResponseEntity<>(expectedFromClient, HttpStatus.OK));
+        Mockito.when(roleService.retrieveRoleProjectUserList(Mockito.anyString(), Mockito.any(Pageable.class)))
+                .thenReturn(expectedPage);
         // Result
-        List<String> actual = notificationService.findRecipients(notification).collect(Collectors.toList());
+        Set<String> actual = notificationService.findRecipients(notification);
 
         // Compare
         Assert.assertEquals(expected.size(), actual.size());

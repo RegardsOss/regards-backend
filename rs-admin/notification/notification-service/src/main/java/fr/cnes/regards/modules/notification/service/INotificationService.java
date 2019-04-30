@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.notification.service;
 
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -108,19 +108,7 @@ public interface INotificationService {
      *            The notification
      * @return The stream of project users
      */
-    Stream<String> findRecipients(Notification pNotification);
-
-    /**
-     * Remove a user, represented by its email, from all the notification receiver
-     * @param email
-     */
-    void removeReceiver(String email);
-
-    /**
-     * Remove a role, represented by its name, from all the notification receiver
-     * @param role
-     */
-    void removeRoleReceiver(String role);
+    Set<String> findRecipients(Notification pNotification);
 
     /**
      * Retrieve notifications for the given status
