@@ -110,7 +110,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     @Override
     public <T extends ISubscribable> void unsubscribeFrom(Class<T> eventType) {
 
-        LOGGER.debug("Stopping all listeners for event {}", eventType.getName());
+        LOGGER.info("Stopping all listeners for event {}", eventType.getName());
 
         for (Map.Entry<Class<?>, Class<? extends ISubscribable>> handleEvent : handledEvents.entrySet()) {
             if (handleEvent.getValue().equals(eventType)) {
@@ -181,7 +181,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
     protected <E extends ISubscribable, H extends IHandler<E>> void subscribeTo(final Class<E> eventType, H handler,
             final WorkerMode workerMode, final Target target, boolean purgeQueue) {
 
-        LOGGER.debug("Subscribing to event {} with target {} and mode {}", eventType.getName(), target, workerMode);
+        LOGGER.info("Subscribing to event {} with target {} and mode {}", eventType.getName(), target, workerMode);
 
         Set<String> tenants = resolveTenants();
 
