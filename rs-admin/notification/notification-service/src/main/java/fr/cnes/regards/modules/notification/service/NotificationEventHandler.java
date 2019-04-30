@@ -31,6 +31,7 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.notification.domain.NotificationMode;
 
@@ -77,8 +78,10 @@ public class NotificationEventHandler
             try {
                 // Set working tenant
                 runtimeTenantResolver.forceTenant(wrapper.getTenant());
+                FeignSecurityManager.asSystem();
                 notificationService.createNotification(notification.getNotification());
             } finally {
+                FeignSecurityManager.reset();
                 runtimeTenantResolver.clearTenant();
             }
         } else {
