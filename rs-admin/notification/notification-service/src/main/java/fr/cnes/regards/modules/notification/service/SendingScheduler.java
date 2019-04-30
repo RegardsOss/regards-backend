@@ -149,7 +149,7 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
             stream.forEach(notification -> {
                 runtimeTenantResolver.forceTenant(tenant);
                 // Build the list of recipients
-                String[] recipients = notificationService.findRecipients(notification)
+                String[] recipients = notificationService.findRecipients(notification).stream()
                         .map(projectUser -> new NotificationUserSetting(notification, projectUser,
                                 notificationSettingsService.retrieveNotificationSettings(projectUser)))
                         .filter(pFilter).map(NotificationUserSetting::getProjectUser).distinct().toArray(String[]::new);
@@ -196,7 +196,7 @@ public class SendingScheduler implements ApplicationListener<NotificationToSendE
     @Override
     public void onApplicationEvent(NotificationToSendEvent event) {
         Notification notif = event.getNotification();
-        String[] recipients = notificationService.findRecipients(notif).distinct().toArray(String[]::new);
+        String[] recipients = notificationService.findRecipients(notif).toArray(new String[0]);
         sendNotification(notif, recipients);
     }
 }
