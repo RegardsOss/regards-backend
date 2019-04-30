@@ -80,6 +80,7 @@ import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
 import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.StopChainThread;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
  * Acquisition processing service
@@ -356,7 +357,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     private void checkProcessingChainMode(AcquisitionProcessingChain processingChain) throws ModuleException {
 
         if (AcquisitionProcessingChainMode.AUTO.equals(processingChain.getMode())
-                && (processingChain.getPeriodicity() == null)) {
+                && processingChain.getPeriodicity() == null) {
             throw new EntityInvalidException("Missing periodicity for automatic acquisition processing chain");
         }
     }
@@ -430,7 +431,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
         // Stop all active jobs for current processing chain
         JobInfo jobInfo = processingChain.getLastProductAcquisitionJobInfo();
-        if ((jobInfo != null) && !jobInfo.getStatus().getStatus().isFinished()) {
+        if (jobInfo != null && !jobInfo.getStatus().getStatus().isFinished()) {
             jobInfoService.stopJob(jobInfo.getId());
         }
         productService.stopProductJobs(processingChain);
@@ -440,7 +441,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     public boolean isChainJobStoppedAndCleaned(Long processingChainId) throws ModuleException {
         AcquisitionProcessingChain processingChain = getChain(processingChainId);
         JobInfo jobInfo = processingChain.getLastProductAcquisitionJobInfo();
-        boolean acqJobStopped = (jobInfo == null) || jobInfo.getStatus().getStatus().isFinished();
+        boolean acqJobStopped = jobInfo == null || jobInfo.getStatus().getStatus().isFinished();
         return acqJobStopped && productService.isProductJobStoppedAndCleaned(processingChain);
     }
 
@@ -480,7 +481,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         for (AcquisitionProcessingChain processingChain : processingChains) {
 
             // Check periodicity
-            if ((processingChain.getLastActivationDate() != null) && processingChain.getLastActivationDate()
+            if (processingChain.getLastActivationDate() != null && processingChain.getLastActivationDate()
                     .plusSeconds(processingChain.getPeriodicity()).isAfter(OffsetDateTime.now())) {
                 LOGGER.debug("Acquisition processing chain \"{}\" will not be started due to periodicity",
                              processingChain.getLabel());
@@ -561,7 +562,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
         // Launch file scanning for each file information
         Iterator<AcquisitionFileInfo> fileInfoIter = processingChain.getFileInfos().iterator();
-        while(fileInfoIter.hasNext() && !Thread.currentThread().isInterrupted()) {
+        while (fileInfoIter.hasNext() && !Thread.currentThread().isInterrupted()) {
             AcquisitionFileInfo fileInfo = fileInfoIter.next();
             // Get plugin instance
             IScanPlugin scanPlugin = pluginService.getPlugin(fileInfo.getScanPlugin().getId());
@@ -737,7 +738,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     @MultitenantTransactional(propagation = Propagation.SUPPORTS)
     @Override
     public void restartInterruptedJobs(AcquisitionProcessingChain processingChain) throws ModuleException {
-        while (!Thread.currentThread().isInterrupted() && productService.restartInterruptedJobsByPage(processingChain)) {
+        while (!Thread.currentThread().isInterrupted()
+                && productService.restartInterruptedJobsByPage(processingChain)) {
             // Works as long as there is at least one page left
         }
     }
@@ -799,8 +801,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         AcquisitionProcessingChainMonitor summary = new AcquisitionProcessingChainMonitor(chain);
 
         // Handle product summary
-        summary.setNbProductErrors(productService
-                .countByProcessingChainAndSipStateIn(chain, Arrays.asList(ProductSIPState.GENERATION_ERROR)));
+        summary.setNbProductErrors(productService.countByProcessingChainAndSipStateIn(chain, Arrays
+                .asList(ProductSIPState.GENERATION_ERROR, ProductSIPState.NOT_SCHEDULED_INVALID, SIPState.REJECTED)));
         summary.setNbProducts(productService.countByChain(chain));
         summary.setNbProductsInProgress(productService.countByProcessingChainAndSipStateIn(chain, Arrays
                 .asList(ProductSIPState.NOT_SCHEDULED, ProductSIPState.SCHEDULED)));
@@ -815,7 +817,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                                         Arrays.asList(AcquisitionFileState.IN_PROGRESS, AcquisitionFileState.VALID)));
 
         // Handle job summary
-        if ((chain.getLastProductAcquisitionJobInfo() != null)
+        if (chain.getLastProductAcquisitionJobInfo() != null
                 && !chain.getLastProductAcquisitionJobInfo().getStatus().getStatus().isFinished()) {
             summary.setNbProductAcquisitionJob(1);
         }

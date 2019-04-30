@@ -246,6 +246,8 @@ public class ProductService implements IProductService {
                 product.setState(ProductState.FINISHED);
             } else if (nbActualOptional >= nbExpectedOptional) {
                 product.setState(ProductState.INVALID);
+                // Propagate to SIP state
+                product.setSipState(ProductSIPState.NOT_SCHEDULED_INVALID);
                 product.setError(String
                         .format("This product should only have %s optional files according to configuration. "
                                 + "We found %s files matching. Please check your configuration and reacquire.",
@@ -253,6 +255,8 @@ public class ProductService implements IProductService {
             }
         } else if (nbActualMandatory >= nbExpectedMandatory) {
             product.setState(ProductState.INVALID);
+            // Propagate to SIP state
+            product.setSipState(ProductSIPState.NOT_SCHEDULED_INVALID);
             product.setError(String
                     .format("This product should only have %s mandatory files according to configuration. "
                             + "We found %s files matching. Please check your configuration and reacquire.",
