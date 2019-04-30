@@ -27,7 +27,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  *
  * <pre>
  *
- *          NOT_SCHEDULED
+ *          NOT_SCHEDULED_________NOT_SCHEDULED_INVALID
  *             |
  *          SCHEDULED
  *             |_______ GENERATION_ERROR or SCHEDULED_INTERRUPTED
@@ -48,6 +48,11 @@ public enum ProductSIPState implements ISipState {
      * {@link ProductState#COMPLETED}.
      */
     NOT_SCHEDULED,
+    /**
+     * SIP is not scheduled because related product is {@link ProductState#INVALID}.
+     * Data provider has to resubmits its files to fix the problem.
+     */
+    NOT_SCHEDULED_INVALID,
     /**
      * SIP generation has been scheduled as a job.
      */
