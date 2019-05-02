@@ -902,6 +902,11 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.emails</groupId>
+                <artifactId>emails-service</artifactId>
+                <version>${fr.cnes.regards.modules.emails.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.modules.emails</groupId>
                 <artifactId>emails-rest</artifactId>
                 <version>${fr.cnes.regards.modules.emails.version}</version>
             </dependency>
