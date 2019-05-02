@@ -23,6 +23,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Set;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -37,7 +38,6 @@ import org.springframework.test.context.TestPropertySource;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
@@ -65,7 +65,6 @@ import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
  *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acq_product" })
-@MultitenantTransactional
 public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTest {
 
     @SuppressWarnings("unused")
@@ -86,6 +85,10 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
 
     @Autowired
     private IAcquisitionFileService fileService;
+
+    @After
+    public void cleanAfter() {
+    }
 
     public AcquisitionProcessingChain createProcessingChain(Path searchDir) throws ModuleException {
 
@@ -140,6 +143,18 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         // Save processing chain
         return processingService.createChain(processingChain);
     }
+
+    //    @Test
+    //    public void scanTest() throws ModuleException {
+    //
+    //        AcquisitionProcessingChain processingChain = createProcessingChain(Paths.get("src", "test", "resources", "data",
+    //                                                                                     "plugins", "scan"));
+    //        processingService.scanAndRegisterFiles(processingChain);
+    //
+    //        processingService.scanAndRegisterFiles(processingChain);
+    //
+    //        processingService.scanAndRegisterFiles(processingChain);
+    //    }
 
     @Test
     public void acquisitionWorkflowTest() throws ModuleException {
