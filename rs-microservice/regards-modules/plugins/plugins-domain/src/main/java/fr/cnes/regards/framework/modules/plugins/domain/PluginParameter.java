@@ -183,14 +183,14 @@ public class PluginParameter implements IIdentifiable<Long> {
 
     public List<String> getDynamicsValuesAsString() {
         final List<String> result = new ArrayList<>();
-        if ((dynamicsValues != null) && !dynamicsValues.isEmpty()) {
+        if (dynamicsValues != null && !dynamicsValues.isEmpty()) {
             dynamicsValues.forEach(d -> result.add(d.getValue()));
         }
         return result;
     }
 
     public boolean isValidDynamicValue(String value) {
-        if ((dynamicsValues == null) || dynamicsValues.isEmpty()) {
+        if (dynamicsValues == null || dynamicsValues.isEmpty()) {
             // No restriction
             return true;
         } else {
@@ -235,13 +235,15 @@ public class PluginParameter implements IIdentifiable<Long> {
     public String getStripParameterValue() {
         // Strip quotes using Gson
         Gson gson = new Gson();
-        String value;
-        String tmp = this.value.getValue();
-        if (tmp.startsWith("\"")) {
-            JsonElement el = gson.fromJson(tmp, JsonElement.class);
-            value = (el == null) ? null : el.getAsString();
-        } else {
-            value = tmp;
+        String value = null;
+        if (this.value != null) {
+            String tmp = this.value.getValue();
+            if (tmp.startsWith("\"")) {
+                JsonElement el = gson.fromJson(tmp, JsonElement.class);
+                value = el == null ? null : el.getAsString();
+            } else {
+                value = tmp;
+            }
         }
         return value;
     }
@@ -250,7 +252,7 @@ public class PluginParameter implements IIdentifiable<Long> {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = (prime * result) + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + (name == null ? 0 : name.hashCode());
         return result;
     }
 
