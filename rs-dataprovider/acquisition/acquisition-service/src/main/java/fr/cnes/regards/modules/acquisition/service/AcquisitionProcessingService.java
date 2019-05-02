@@ -556,7 +556,6 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     }
 
-    @MultitenantTransactional(propagation = Propagation.SUPPORTS)
     @Override
     public void scanAndRegisterFiles(AcquisitionProcessingChain processingChain) throws ModuleException {
 
@@ -590,24 +589,34 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             long startTime = System.currentTimeMillis();
             int fromIndex = 0;
             int toIndex = AcquisitionProperties.WORKING_UNIT;
+            int totalCount = 0;
             while (toIndex <= scannedFiles.size() && !Thread.currentThread().isInterrupted()) {
                 long transactionStartTime = System.currentTimeMillis();
                 // Do it in one transaction
-                self.registerFiles(scannedFiles.subList(fromIndex, toIndex), fileInfo, scanningDate);
-                LOGGER.debug("{}/{} new file(s) registered in {} milliseconds", toIndex, scannedFiles.size(),
+                LOGGER.debug("Trying to register {}/{} of the new file(s) scanned", toIndex, scannedFiles.size());
+                int count = self.registerFiles(scannedFiles.subList(fromIndex, toIndex), fileInfo, scanningDate);
+                totalCount += count;
+                LOGGER.debug("{}/{} new file(s) registered in {} milliseconds", count, toIndex,
                              System.currentTimeMillis() - transactionStartTime);
                 fromIndex = toIndex;
                 toIndex = toIndex + AcquisitionProperties.WORKING_UNIT;
             }
             // Do it in one transaction
-            self.registerFiles(scannedFiles.subList(fromIndex, scannedFiles.size()), fileInfo, scanningDate);
+            long transactionStartTime = System.currentTimeMillis();
+            List<Path> remainingFiles = scannedFiles.subList(fromIndex, scannedFiles.size());
+            LOGGER.debug("Trying to register the last {} of the new file(s) scanned", remainingFiles.size());
+            int count = self.registerFiles(remainingFiles, fileInfo, scanningDate);
+            totalCount += count;
+            LOGGER.debug("{}/{} new file(s) registered in {} milliseconds", count, remainingFiles.size(),
+                         System.currentTimeMillis() - transactionStartTime);
 
-            LOGGER.info("{} new file(s) registered in {} milliseconds", scannedFiles.size(),
+            LOGGER.info("{} new file(s) registered in {} milliseconds", totalCount,
                         System.currentTimeMillis() - startTime);
         }
 
     }
 
+    @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     public int registerFiles(List<Path> filePaths, AcquisitionFileInfo info, Optional<OffsetDateTime> scanningDate)
             throws ModuleException {
@@ -645,8 +654,8 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             if (scanningDate.isPresent() && scanningDate.get().isEqual(lmd)) {
                 // Check if file not already registered
                 if (acqFileRepository.countByFileInfoAndChecksum(info, scannedFile.getChecksum()) != 0) {
-                    LOGGER.info("Duplicate file with path \"{}\" and checksum \"{}\" detected, skipping registration",
-                                scannedFile.getFilePath(), scannedFile.getChecksum());
+                    LOGGER.debug("Duplicate file with path \"{}\" and checksum \"{}\" detected, skipping registration",
+                                 scannedFile.getFilePath(), scannedFile.getChecksum());
                     return false;
                 }
             }
@@ -671,7 +680,6 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         return true;
     }
 
-    @MultitenantTransactional(propagation = Propagation.SUPPORTS)
     @Override
     public void manageRegisteredFiles(AcquisitionProcessingChain processingChain) throws ModuleException {
         while (!Thread.currentThread().isInterrupted() && self.manageNewFilesByPage(processingChain)) {
@@ -683,6 +691,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         }
     }
 
+    @MultitenantTransactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     public boolean manageNewFilesByPage(AcquisitionProcessingChain processingChain) throws ModuleException {
 
