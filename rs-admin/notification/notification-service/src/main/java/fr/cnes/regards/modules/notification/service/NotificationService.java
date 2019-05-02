@@ -35,11 +35,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationDTO;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -85,11 +83,7 @@ public class NotificationService implements INotificationService {
      */
     private final NotificationMode notificationMode;
 
-    private final IRuntimeTenantResolver runtimeTenantResolver;
-
     private final IAuthenticationResolver authenticationResolver;
-
-    private final ISubscriber subscriber;
 
     /**
      * Creates a {@link NotificationService} wired to the given {@link INotificationRepository}.
@@ -99,17 +93,14 @@ public class NotificationService implements INotificationService {
      */
     public NotificationService(INotificationRepository notificationRepository, IRoleService roleService,
             IProjectUserService projectUserClient, ApplicationEventPublisher applicationEventPublisher,
-            IRuntimeTenantResolver runtimeTenantResolver, IAuthenticationResolver authenticationResolver,
-            ISubscriber subscriber,
+            IAuthenticationResolver authenticationResolver,
             @Value("${regards.notification.mode:MULTITENANT}") NotificationMode notificationMode) {
         super();
         this.notificationRepository = notificationRepository;
         this.roleService = roleService;
         this.applicationEventPublisher = applicationEventPublisher;
         this.notificationMode = notificationMode;
-        this.runtimeTenantResolver = runtimeTenantResolver;
         this.authenticationResolver = authenticationResolver;
-        this.subscriber = subscriber;
     }
 
     @Override
@@ -141,8 +132,7 @@ public class NotificationService implements INotificationService {
     public Page<Notification> retrieveNotifications(Pageable page) {
         if (notificationMode == NotificationMode.MULTITENANT) {
             return notificationRepository.findByRecipientsContaining(authenticationResolver.getUser(),
-                                                                     authenticationResolver.getRole(),
-                                                                     page);
+                                                                     authenticationResolver.getRole(), page);
         } else {
             return notificationRepository.findAll(page);
         }
@@ -157,13 +147,14 @@ public class NotificationService implements INotificationService {
             try {
                 return roleService.retrieveRole(roleName);
             } catch (EntityNotFoundException e) {
-                LOG.error(String.format(
-                        "Notification should have been sent to %s but that role does not exist anymore. Sending it to PROJECT_ADMIN",
-                        roleName), e);
+                LOG.error(String
+                        .format("Notification should have been sent to %s but that role does not exist anymore. Sending it to PROJECT_ADMIN",
+                                roleName),
+                          e);
                 return new Role(DefaultRole.PROJECT_ADMIN.toString());
             }
-        }).filter(Objects::nonNull).flatMap(role -> roleService.getDescendants(role).stream())
-                .map(Role::getName).collect(Collectors.toSet());
+        }).filter(Objects::nonNull).flatMap(role -> roleService.getDescendants(role).stream()).map(Role::getName)
+                .collect(Collectors.toSet());
     }
 
     @Override
@@ -220,9 +211,10 @@ public class NotificationService implements INotificationService {
                     page = page.next();
                 } while (hasNext);
             } catch (EntityNotFoundException e) {
-                LOG.error(String.format(
-                        "Notification should have been sent to %s but that role does not exist anymore. Silently skipping part of the recipients",
-                        roleName), e);
+                LOG.error(String
+                        .format("Notification should have been sent to %s but that role does not exist anymore. Silently skipping part of the recipients",
+                                roleName),
+                          e);
             }
         }
         // Merge the two streams
@@ -235,10 +227,9 @@ public class NotificationService implements INotificationService {
             throws EntityNotFoundException {
         if (state != null) {
             if (notificationMode == NotificationMode.MULTITENANT) {
-                return notificationRepository.findByStatusAndRecipientsContaining(state,
-                                                                                  authenticationResolver.getUser(),
-                                                                                  authenticationResolver.getRole(),
-                                                                                  page);
+                return notificationRepository
+                        .findByStatusAndRecipientsContaining(state, authenticationResolver.getUser(),
+                                                             authenticationResolver.getRole(), page);
             } else {
                 return notificationRepository.findByStatus(state, page);
             }
