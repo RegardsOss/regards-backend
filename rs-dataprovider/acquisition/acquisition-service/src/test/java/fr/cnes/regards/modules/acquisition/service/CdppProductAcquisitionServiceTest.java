@@ -37,7 +37,6 @@ import org.springframework.test.context.TestPropertySource;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
@@ -64,7 +63,6 @@ import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
  *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acq_cdpp_product" })
-@MultitenantTransactional
 public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServiceTest {
 
     @SuppressWarnings("unused")

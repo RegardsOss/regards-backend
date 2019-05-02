@@ -18,16 +18,9 @@
  */
 package fr.cnes.regards.modules.acquisition.service;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -161,41 +154,5 @@ public class AcquisitionProcessingServiceTest extends AbstractMultitenantService
         List<AcquisitionProcessingChain> manualChains = processingChainRepository
                 .findByModeAndActiveTrueAndLockedFalse(AcquisitionProcessingChainMode.MANUAL);
         Assert.assertTrue(!manualChains.isEmpty() && manualChains.size() == 1);
-    }
-
-    @Test
-    public void registerWithDuplicates() throws ModuleException, IOException {
-
-        // Create an acquisition file info
-        AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();
-        fileInfo.setMandatory(Boolean.TRUE);
-        fileInfo.setComment("A comment");
-        fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
-        fileInfo.setDataType(DataType.RAWDATA);
-
-        Set<PluginParameter> param = PluginParametersFactory.build()
-                .addParameter(GlobDiskScanning.FIELD_DIRS, new ArrayList<>()).getParameters();
-        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(param, GlobDiskScanning.class);
-        scanPlugin.setIsActive(true);
-        scanPlugin.setLabel("Scan plugin");
-        pluginService.savePluginConfiguration(scanPlugin);
-
-        fileInfo.setScanPlugin(scanPlugin);
-
-        fileInfoRepository.save(fileInfo);
-
-        Path searchDir = Paths.get("src", "test", "resources", "data", "plugins", "scan");
-        // Register file
-        Path first = searchDir.resolve("CSSI_PRODUCT_01.md");
-        Assert.assertTrue(processingService.registerFile(first, fileInfo, Optional.empty()));
-
-        // Register same file with its lmd
-        OffsetDateTime lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(first).toInstant(), ZoneOffset.UTC);
-        List<Path> filePaths = new ArrayList<>();
-        filePaths.add(first);
-        filePaths.add(searchDir.resolve("CSSI_PRODUCT_02.md"));
-        filePaths.add(searchDir.resolve("CSSI_PRODUCT_03.md"));
-        Assert.assertTrue(processingService.registerFiles(filePaths, fileInfo, Optional.of(lmd)) == 2);
-
     }
 }
