@@ -29,13 +29,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import feign.FeignException;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnInactiveEvent;
-import fr.cnes.regards.modules.emails.client.IEmailClient;
+import fr.cnes.regards.modules.emails.service.IEmailService;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import freemarker.template.TemplateException;
 
@@ -51,14 +49,14 @@ public class SendProjectUserInactivatedEmailListener implements ApplicationListe
 
     private final ITemplateService templateService;
 
-    private final IEmailClient emailClient;
+    private final IEmailService emailService;
 
     private final IAccountsClient accountsClient;
 
-    public SendProjectUserInactivatedEmailListener(ITemplateService pTemplateService, IEmailClient pEmailClient,
+    public SendProjectUserInactivatedEmailListener(ITemplateService pTemplateService, IEmailService emailService,
             IAccountsClient accountsClient) {
         templateService = pTemplateService;
-        emailClient = pEmailClient;
+        this.emailService = emailService;
         this.accountsClient = accountsClient;
     }
 
@@ -93,12 +91,7 @@ public class SendProjectUserInactivatedEmailListener implements ApplicationListe
                     e);
             message = "Your access has been deactivated.";
         }
-        // Send it
-        try {
-            FeignSecurityManager.asSystem();
-            emailClient.sendEmail(message, "[REGARDS] User disabled", null, projectUser.getEmail());
-        } finally {
-            FeignSecurityManager.reset();
-        }
+        emailService.sendEmail(message, "[REGARDS] User disabled", null, projectUser.getEmail());
+
     }
 }

@@ -25,12 +25,11 @@ import org.springframework.mail.SimpleMailMessage;
 
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.emails.service.IEmailService;
 import fr.cnes.regards.modules.notification.domain.Notification;
 
 /**
- * Test class for {@link IEmailClient}.
+ * Test class for {@link IEmailService}.
  *
  * @author Xavier-Alexandre Brochard
  */
