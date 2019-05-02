@@ -40,6 +40,7 @@
 		<module>accessrights-instance</module>
 		<module>emails</module>
 		<module>notification</module>
+		<module>notification-instance</module>
 		<module>local-tenant-resolver</module>
 		<module>local-authorities-provider</module>
 		<module>remote-tenant-resolver</module>
