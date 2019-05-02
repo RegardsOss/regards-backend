@@ -21,31 +21,24 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.modules.notification</groupId>
-	<artifactId>notification-dao</artifactId>
+	<groupId>fr.cnes.regards.modules.notification-instance</groupId>
+	<artifactId>notification-instance-rest</artifactId>
 	<packaging>jar</packaging>
 
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
-		<artifactId>notification</artifactId>
+		<artifactId>notification-instance</artifactId>
 		<version>0.4.0</version>
 	</parent>
 
 	<dependencies>
 		<dependency>
-			<groupId>fr.cnes.regards.modules.notification</groupId>
-			<artifactId>notification-domain</artifactId>
-		</dependency>
-		<!-- Tests dependencies -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-multitenant-regards-starter</artifactId>
-			<scope>test</scope>
+			<groupId>fr.cnes.regards.modules.notification-instance</groupId>
+			<artifactId>notification-instance-service</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-multitenant-regards-test</artifactId>
-			<scope>test</scope>
+			<artifactId>hateoas-regards-starter</artifactId>
 		</dependency>
 	</dependencies>
 
