@@ -39,6 +39,22 @@ public interface IEmailService {
     List<Email> retrieveEmails();
 
     /**
+     * Helper method to send mail without creating SimpleMailMessage before call
+     * @param message email message
+     * @param subject email subject
+     * @param from email sender, if you don't care about who is sending, set null to use default.
+     * @param to recipients
+     */
+    default Email sendEmail(String message, String subject, String from, String... to) {
+        SimpleMailMessage mail = new SimpleMailMessage();
+        mail.setSubject(subject);
+        mail.setFrom(from);
+        mail.setText(message);
+        mail.setTo(to);
+        return sendEmail(mail);
+    }
+
+    /**
      * Send given email to given recipients and save a representation in DB.
      * @param pEmail The ready-to-send email. Must not be <code>null</code>.
      * @return The sent email

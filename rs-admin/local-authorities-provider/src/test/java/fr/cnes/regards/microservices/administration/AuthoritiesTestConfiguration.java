@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.microservices.administration;
 
+import javax.mail.internet.MimeMessage;
+
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -25,6 +27,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.mail.javamail.JavaMailSender;
 
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
@@ -33,7 +36,7 @@ import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
-import fr.cnes.regards.modules.emails.client.IEmailClient;
+import fr.cnes.regards.modules.emails.service.IEmailService;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
@@ -63,6 +66,13 @@ public class AuthoritiesTestConfiguration {
      */
     @Value("${spring.application.name}")
     private String microserviceName;
+
+    @Bean
+    public JavaMailSender mockSender() {
+        final JavaMailSender mailSender = Mockito.mock(JavaMailSender.class);
+        Mockito.when(mailSender.createMimeMessage()).thenReturn(Mockito.mock(MimeMessage.class));
+        return mailSender;
+    }
 
     @Bean
     public IAuthenticationResolver mockAuthenticationResolver() {
@@ -108,8 +118,8 @@ public class AuthoritiesTestConfiguration {
     }
 
     @Bean
-    public IEmailClient emailClient() {
-        return Mockito.mock(IEmailClient.class);
+    public IEmailService emailClient() {
+        return Mockito.mock(IEmailService.class);
     }
 
     @Bean

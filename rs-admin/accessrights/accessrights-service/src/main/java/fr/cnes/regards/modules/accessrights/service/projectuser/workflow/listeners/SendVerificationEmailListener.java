@@ -31,7 +31,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriUtils;
 
 import feign.FeignException;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -39,7 +38,7 @@ import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnGrantAccessEvent;
-import fr.cnes.regards.modules.emails.client.IEmailClient;
+import fr.cnes.regards.modules.emails.service.IEmailService;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
 import freemarker.template.TemplateException;
 
@@ -54,7 +53,7 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
 
     private final ITemplateService templateService;
 
-    private final IEmailClient emailClient;
+    private final IEmailService emailService;
 
     private final IAccountsClient accountsClient;
 
@@ -63,13 +62,13 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
      */
     private final IEmailVerificationTokenService emailVerificationTokenService;
 
-    public SendVerificationEmailListener(ITemplateService pTemplateService, IEmailClient pEmailClient,
-            IAccountsClient accountsClient, IEmailVerificationTokenService pEmailVerificationTokenService) {
+    public SendVerificationEmailListener(ITemplateService templateService, IEmailService emailService,
+            IAccountsClient accountsClient, IEmailVerificationTokenService emailVerificationTokenService) {
         super();
-        templateService = pTemplateService;
-        emailClient = pEmailClient;
+        this.templateService = templateService;
+        this.emailService = emailService;
         this.accountsClient = accountsClient;
-        emailVerificationTokenService = pEmailVerificationTokenService;
+        this.emailVerificationTokenService = emailVerificationTokenService;
     }
 
     @Override
@@ -127,13 +126,6 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
                         e);
             message = "Please click on the following link to confirm your registration: " + data.get("confirmationUrl");
         }
-
-        // Send it
-        try {
-            FeignSecurityManager.asSystem();
-            emailClient.sendEmail(message, "[REGARDS] Account Confirmation", null, userEmail);
-        } finally {
-            FeignSecurityManager.reset();
-        }
+        emailService.sendEmail(message, "[REGARDS] Account Confirmation", null, userEmail);
     }
 }
