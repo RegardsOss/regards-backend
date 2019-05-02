@@ -23,7 +23,7 @@ import java.util.Date;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.modules.emails.client.IEmailClient;
+import fr.cnes.regards.modules.emails.service.IEmailService;
 import fr.cnes.regards.modules.notification.domain.Notification;
 
 /**
@@ -38,16 +38,16 @@ public class EmailSendingStrategy implements ISendingStrategy {
     /**
      * Feign client from module Email
      */
-    private final IEmailClient emailClient;
+    private final IEmailService emailService;
 
     /**
      * Creates new strategy with passed email client
      *
-     * @param pEmailClient
+     * @param emailService
      *            The email feign client
      */
-    public EmailSendingStrategy(final IEmailClient pEmailClient) {
-        emailClient = pEmailClient;
+    public EmailSendingStrategy(final IEmailService emailService) {
+        this.emailService = emailService;
     }
 
     /*
@@ -66,7 +66,7 @@ public class EmailSendingStrategy implements ISendingStrategy {
         email.setTo(recipients);
 
         // Send the email
-        emailClient.sendEmail(email);
+        emailService.sendEmail(email);
     }
 
 }
