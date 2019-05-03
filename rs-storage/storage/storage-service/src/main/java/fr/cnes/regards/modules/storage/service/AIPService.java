@@ -1424,19 +1424,23 @@ public class AIPService implements IAIPService {
         }
         // now that everything has been schedule, lets create a notification for all undeletables
         // lets prepare the notification message
-        Map<String, Object> dataMap = new HashMap<>();
-        dataMap.put("dataFilesMap", undeletableFileCauseMap);
-        dataMap.put("dataStorage", oDataStorage.isPresent() ? oDataStorage.get() : dataStorageId);
-        // lets use the template service to get our message
-        String message;
-        try {
-            message = templateService.render(StorageTemplateConfiguration.UNDELETABLES_DATA_FILES_TEMPLATE_NAME,
-                                             dataMap);
-        } catch (TemplateException e) {
-            throw new MaintenanceException(e.getMessage(), e);
+        if(!undeletableFileCauseMap.isEmpty()) {
+            Map<String, Object> dataMap = new HashMap<>();
+            dataMap.put("dataFilesMap", undeletableFileCauseMap);
+            dataMap.put("dataStorage", oDataStorage.isPresent() ? oDataStorage.get().getId() : dataStorageId);
+            // lets use the template service to get our message
+            String message;
+            try {
+                message = templateService
+                        .render(StorageTemplateConfiguration.UNDELETABLES_DATA_FILES_TEMPLATE_NAME, dataMap);
+            } catch (TemplateException e) {
+                throw new MaintenanceException(e.getMessage(), e);
+            }
+            notifyAdmins("REGARDS - Some files could not be deleted from data storage",
+                         message,
+                         NotificationLevel.WARNING,
+                         MimeTypeUtils.TEXT_HTML);
         }
-        notifyAdmins("REGARDS - Some files could not be deleted from data storage", message, NotificationLevel.WARNING,
-                     MimeTypeUtils.TEXT_HTML);
         // now that we are done with pure removal logic, lets create an update request for the AIPs to write changes
         // made to DataFiles.
         return undeletableFileCauseMap;
