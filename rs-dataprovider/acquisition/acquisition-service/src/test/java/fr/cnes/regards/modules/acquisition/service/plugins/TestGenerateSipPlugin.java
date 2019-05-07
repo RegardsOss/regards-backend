@@ -20,8 +20,8 @@
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -67,7 +67,7 @@ public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements 
     private static final Random random = new Random();
 
     @Override
-    protected void addDataObjectsToSip(SIPBuilder sipBuilder, List<AcquisitionFile> acqFiles) throws ModuleException {
+    protected void addDataObjectsToSip(SIPBuilder sipBuilder, Set<AcquisitionFile> acqFiles) throws ModuleException {
         for (AcquisitionFile af : acqFiles) {
             sipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, af.getFilePath().toAbsolutePath(),
                                                                     af.getChecksumAlgorithm(), af.getChecksum());
@@ -103,9 +103,9 @@ public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements 
     }
 
     @Override
-    public SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles) throws ModuleException {
+    public SortedMap<Integer, Attribute> createMetadataPlugin(Set<AcquisitionFile> acqFiles) throws ModuleException {
         int n = 0;
-        String productName = acqFiles.get(0).getProduct().getProductName();
+        String productName = acqFiles.iterator().next().getProduct().getProductName();
 
         LOGGER.info("Start create MetaData for the product <{}> ", productName);
 
