@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
-import java.util.List;
+import java.util.Set;
 import java.util.SortedMap;
 
 import org.slf4j.Logger;
@@ -99,6 +99,6 @@ public abstract class AbstractGenerateSIPPlugin extends AbstractStorageInformati
     public abstract void addAttributesTopSip(SIPBuilder sipBuilder, SortedMap<Integer, Attribute> mapAttrs)
             throws ModuleException;
 
-    protected abstract void addDataObjectsToSip(SIPBuilder sipBuilder, List<AcquisitionFile> acqFiles)
+    protected abstract void addDataObjectsToSip(SIPBuilder sipBuilder, Set<AcquisitionFile> acqFiles)
             throws ModuleException;
 }
