@@ -55,11 +55,11 @@ import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChainMode;
-import fr.cnes.regards.modules.acquisition.plugins.Arcad3IsoprobeDensiteProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
 import fr.cnes.regards.modules.acquisition.service.plugins.DefaultFileValidation;
-import fr.cnes.regards.modules.acquisition.service.plugins.DefaultSIPGeneration;
-import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
+import fr.cnes.regards.modules.acquisition.service.plugins.DefaultProductPlugin;
+import fr.cnes.regards.modules.acquisition.service.plugins.GeoJsonFeatureCollectionParserPlugin;
+import fr.cnes.regards.modules.acquisition.service.plugins.GeoJsonSIPGeneration;
 
 /**
  * Test {@link AcquisitionProcessingService} for {@link Product} workflow
@@ -67,11 +67,11 @@ import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
  * @author Marc Sordi
  *
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acq_cdpp_product" })
-public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServiceTest {
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acq_geojson_product" })
+public class GeojsonProductAcquisitionServiceTest extends AbstractMultitenantServiceTest {
 
     @SuppressWarnings("unused")
-    private static final Logger LOGGER = LoggerFactory.getLogger(CdppProductAcquisitionServiceTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GeojsonProductAcquisitionServiceTest.class);
 
     @Autowired
     private IAcquisitionProcessingService processingService;
@@ -82,20 +82,17 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
     @Autowired
     private IProductService productService;
 
-    @SuppressWarnings("unused")
     @Autowired
     private AutowireCapableBeanFactory beanFactory;
 
     public AcquisitionProcessingChain createProcessingChain() throws ModuleException {
 
         // Pathes
-        Path basePath = Paths.get("src", "test", "resources", "data", "plugins", "cdpp");
-        Path dataPath = basePath.resolve("data");
-        Path browsePath = basePath.resolve("browse");
+        Path dataPath = Paths.get("src", "test", "resources", "data", "plugins", "geojson");
 
         // Create a processing chain
         AcquisitionProcessingChain processingChain = new AcquisitionProcessingChain();
-        processingChain.setLabel("Product");
+        processingChain.setLabel("French departments");
         processingChain.setActive(Boolean.TRUE);
         processingChain.setMode(AcquisitionProcessingChainMode.MANUAL);
         processingChain.setIngestChain("DefaultIngestChain");
@@ -103,52 +100,18 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         // RAW DATA file infos
         AcquisitionFileInfo fileInfo = new AcquisitionFileInfo();
         fileInfo.setMandatory(Boolean.TRUE);
-        fileInfo.setComment("RAWDATA");
-        fileInfo.setMimeType(MediaType.APPLICATION_OCTET_STREAM);
+        fileInfo.setComment("GeoJson");
+        fileInfo.setMimeType(MediaType.APPLICATION_JSON);
         fileInfo.setDataType(DataType.RAWDATA);
 
         Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(GlobDiskScanning.FIELD_DIRS, Arrays.asList(dataPath.toString())).getParameters();
+                .addParameter(GeoJsonFeatureCollectionParserPlugin.FIELD_FEATURE_ID, "nom")
+                .addParameter(GeoJsonFeatureCollectionParserPlugin.FIELD_DIR, dataPath.toString()).getParameters();
 
-        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(parameters, GlobDiskScanning.class);
+        PluginConfiguration scanPlugin = PluginUtils.getPluginConfiguration(parameters,
+                                                                            GeoJsonFeatureCollectionParserPlugin.class);
         scanPlugin.setIsActive(true);
         scanPlugin.setLabel("Scan plugin RAWDATA" + Math.random());
-        fileInfo.setScanPlugin(scanPlugin);
-
-        processingChain.addFileInfo(fileInfo);
-
-        // QUICKLOOK SD file infos
-        fileInfo = new AcquisitionFileInfo();
-        fileInfo.setMandatory(Boolean.TRUE);
-        fileInfo.setComment("QUICKLOOK_SD");
-        fileInfo.setMimeType(MediaType.IMAGE_PNG);
-        fileInfo.setDataType(DataType.QUICKLOOK_SD);
-
-        parameters = PluginParametersFactory.build()
-                .addParameter(GlobDiskScanning.FIELD_DIRS, Arrays.asList(browsePath.toString()))
-                .addParameter(GlobDiskScanning.FIELD_GLOB, "*B.png").getParameters();
-
-        scanPlugin = PluginUtils.getPluginConfiguration(parameters, GlobDiskScanning.class);
-        scanPlugin.setIsActive(true);
-        scanPlugin.setLabel("Scan plugin QUICKLOOK_SD" + Math.random());
-        fileInfo.setScanPlugin(scanPlugin);
-
-        processingChain.addFileInfo(fileInfo);
-
-        // QUICKLOOK MD file infos
-        fileInfo = new AcquisitionFileInfo();
-        fileInfo.setMandatory(Boolean.TRUE);
-        fileInfo.setComment("QUICKLOOK_MD");
-        fileInfo.setMimeType(MediaType.IMAGE_PNG);
-        fileInfo.setDataType(DataType.QUICKLOOK_MD);
-
-        parameters = PluginParametersFactory.build()
-                .addParameter(GlobDiskScanning.FIELD_DIRS, Arrays.asList(browsePath.toString()))
-                .addParameter(GlobDiskScanning.FIELD_GLOB, "*C.png").getParameters();
-
-        scanPlugin = PluginUtils.getPluginConfiguration(parameters, GlobDiskScanning.class);
-        scanPlugin.setIsActive(true);
-        scanPlugin.setLabel("Scan plugin QUICKLOOK_MD" + Math.random());
         fileInfo.setScanPlugin(scanPlugin);
 
         processingChain.addFileInfo(fileInfo);
@@ -161,15 +124,15 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         processingChain.setValidationPluginConf(validationPlugin);
 
         // Product
-        PluginConfiguration productPlugin = PluginUtils
-                .getPluginConfiguration(Sets.newHashSet(), Arcad3IsoprobeDensiteProductPlugin.class);
+        PluginConfiguration productPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
+                                                                               DefaultProductPlugin.class);
         productPlugin.setIsActive(true);
         productPlugin.setLabel("Product plugin" + Math.random());
         processingChain.setProductPluginConf(productPlugin);
 
         // SIP generation
         PluginConfiguration sipGenPlugin = PluginUtils.getPluginConfiguration(Sets.newHashSet(),
-                                                                              DefaultSIPGeneration.class);
+                                                                              GeoJsonSIPGeneration.class);
         sipGenPlugin.setIsActive(true);
         sipGenPlugin.setLabel("SIP generation plugin" + Math.random());
         processingChain.setGenerateSipPluginConf(sipGenPlugin);
@@ -185,7 +148,7 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
     public void acquisitionWorkflowTest() throws ModuleException {
 
         AcquisitionProcessingChain processingChain = createProcessingChain();
-        // AcquisitionProcessingChain processingChain = processingService.getFullChains().get(0);
+        //AcquisitionProcessingChain processingChain = processingService.getFullChains().get(0);
 
         processingService.scanAndRegisterFiles(processingChain);
 
@@ -215,7 +178,7 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
             Assert.assertTrue(acquiredFiles.getTotalElements() == 1);
         }
 
-        // Find product to schedule
+        // Find product scheduled
         long scheduled = productService.countByProcessingChainAndSipStateIn(processingChain,
                                                                             Arrays.asList(ProductSIPState.SCHEDULED));
         Assert.assertTrue(scheduled == 1);
@@ -228,7 +191,7 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         parameters.put(SIPGenerationJob.CHAIN_PARAMETER_ID,
                        new JobParameter(SIPGenerationJob.CHAIN_PARAMETER_ID, processingChain.getId()));
         Set<String> productNames = new HashSet<>();
-        productNames.add("ISO_DENS_20330518_0533");
+        productNames.add("Vaucluse.json");
         parameters.put(SIPGenerationJob.PRODUCT_NAMES, new JobParameter(SIPGenerationJob.PRODUCT_NAMES, productNames));
 
         genJob.setParameters(parameters);
@@ -238,5 +201,6 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
         long submitted = productService.countByProcessingChainAndSipStateIn(processingChain,
                                                                             Arrays.asList(ProductSIPState.SUBMITTED));
         Assert.assertTrue(submitted == 1);
+
     }
 }
