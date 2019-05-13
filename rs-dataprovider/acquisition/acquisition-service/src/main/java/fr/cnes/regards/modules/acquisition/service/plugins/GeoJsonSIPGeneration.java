@@ -22,6 +22,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -52,7 +54,8 @@ public class GeoJsonSIPGeneration implements ISipGenerationPlugin {
         if (product.getActiveAcquisitionFiles().size() != 1) {
             throw new ModuleException("Each product should have only one json file");
         }
-        AcquisitionFile file = product.getAcquisitionFiles().get(0);
+        // we cannot get NoSuchElementException here because we know there is exactly one AcquisitionFile link to this Product
+        AcquisitionFile file = product.getAcquisitionFiles().iterator().next();
         Path sipFile = file.getFilePath();
         try (JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(sipFile.toFile())))) {
             SIP sip = gson.fromJson(reader, SIP.class);

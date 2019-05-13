@@ -43,9 +43,10 @@ import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.hibernate.annotations.Type;
@@ -88,7 +89,7 @@ public class Product {
     @GsonIgnore
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "product_id", foreignKey = @ForeignKey(name = "fk_product_id"))
-    private final List<AcquisitionFile> fileList = new ArrayList<>();
+    private final Set<AcquisitionFile> fileList = (Set<AcquisitionFile>) new HashSet<AcquisitionFile>();
 
     /**
      * Unique id
@@ -212,7 +213,7 @@ public class Product {
         this.fileList.addAll(acqFiles);
     }
 
-    public List<AcquisitionFile> getAcquisitionFiles() {
+    public Set<AcquisitionFile> getAcquisitionFiles() {
         return fileList;
     }
 
@@ -220,9 +221,9 @@ public class Product {
      * Filter acquisition files to only retrieve active ones (useful for SIP generation)
      * @return active {@link AcquisitionFile} (i.e. in {@link AcquisitionFileState#ACQUIRED} state)
      */
-    public List<AcquisitionFile> getActiveAcquisitionFiles() {
+    public Set<AcquisitionFile> getActiveAcquisitionFiles() {
         return fileList.stream().filter(af -> AcquisitionFileState.ACQUIRED.equals(af.getState()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
     }
 
     public void removeAcquisitionFile(AcquisitionFile acqFile) {
