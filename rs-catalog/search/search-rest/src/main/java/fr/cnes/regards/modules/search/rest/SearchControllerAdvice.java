@@ -50,6 +50,6 @@ public class SearchControllerAdvice {
         if (exception.getCause() != null) {
             message += ". Cause: " + exception.getCause().getMessage();
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(message));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ServerErrorResponse(message, exception));
     }
 }
