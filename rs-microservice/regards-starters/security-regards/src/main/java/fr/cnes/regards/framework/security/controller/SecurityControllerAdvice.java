@@ -44,6 +44,6 @@ public class SecurityControllerAdvice {
      */
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ServerErrorResponse> accessDeniedException(final AccessDeniedException pException) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ServerErrorResponse(pException.getMessage()));
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ServerErrorResponse(pException.getMessage(), pException));
     }
 }
