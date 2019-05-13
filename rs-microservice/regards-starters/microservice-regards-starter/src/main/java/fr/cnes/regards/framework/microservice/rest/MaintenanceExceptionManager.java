@@ -62,7 +62,7 @@ public class MaintenanceExceptionManager {
         MaintenanceManager.setMaintenance(resolver.getTenant());
         LOGGER.error("Maintenance mode activated for tenant {}", resolver.getTenant());
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                .body(new ServerErrorResponse(pException.getMessage()));
+                .body(new ServerErrorResponse(pException.getMessage(), pException));
     }
 
     /**
@@ -74,7 +74,7 @@ public class MaintenanceExceptionManager {
     public ResponseEntity<ServerErrorResponse> handleThrowable(Throwable throwable) {
         LOGGER.error("Unexpected server error", throwable);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ServerErrorResponse(throwable.getMessage()));
+                .body(new ServerErrorResponse(throwable.getMessage(), throwable));
     }
 
 }
