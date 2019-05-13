@@ -18,6 +18,10 @@
  */
 package fr.cnes.regards.modules.acquisition.domain;
 
+import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.time.OffsetDateTime;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -35,9 +39,6 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.nio.file.Path;
-import java.security.MessageDigest;
-import java.time.OffsetDateTime;
 
 import org.hibernate.annotations.Type;
 
@@ -189,29 +190,17 @@ public class AcquisitionFile {
         this.filePath = filePath;
     }
 
-    /*
-     * Auto generated hashCode has been modified
-     * Either id is set and we compute hashcode based on id
-     * Or id is not set then we compute hashcode based on object hashcode
-     */
     @Override
     public int hashCode() {
-        if (id != null) {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + id.hashCode();
-            return result;
-        } else {
-            return super.hashCode();
-        }
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (acqDate == null ? 0 : acqDate.hashCode());
+        result = prime * result + (checksum == null ? 0 : checksum.hashCode());
+        result = prime * result + (checksumAlgorithm == null ? 0 : checksumAlgorithm.hashCode());
+        result = prime * result + (fileInfo == null ? 0 : fileInfo.hashCode());
+        return result;
     }
 
-    /*
-     * Auto generated equals has been modified.
-     * Rule is:
-     *  - if both acq file come from DB and then we compare ids
-     *  - if one of them come from DB(id not null), then there are not equals
-     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -224,9 +213,32 @@ public class AcquisitionFile {
             return false;
         }
         AcquisitionFile other = (AcquisitionFile) obj;
-        if (id == null) {
+        if (acqDate == null) {
+            if (other.acqDate != null) {
+                return false;
+            }
+        } else if (!acqDate.equals(other.acqDate)) {
             return false;
-        } else if (!id.equals(other.id)) {
+        }
+        if (checksum == null) {
+            if (other.checksum != null) {
+                return false;
+            }
+        } else if (!checksum.equals(other.checksum)) {
+            return false;
+        }
+        if (checksumAlgorithm == null) {
+            if (other.checksumAlgorithm != null) {
+                return false;
+            }
+        } else if (!checksumAlgorithm.equals(other.checksumAlgorithm)) {
+            return false;
+        }
+        if (fileInfo == null) {
+            if (other.fileInfo != null) {
+                return false;
+            }
+        } else if (!fileInfo.equals(other.fileInfo)) {
             return false;
         }
         return true;

@@ -185,7 +185,7 @@ public class CdppProductAcquisitionServiceTest extends AbstractMultitenantServic
     public void acquisitionWorkflowTest() throws ModuleException {
 
         AcquisitionProcessingChain processingChain = createProcessingChain();
-        // AcquisitionProcessingChain processingChain = processingService.getFullChains().get(0);
+        //AcquisitionProcessingChain processingChain = processingService.getFullChains().get(0);
 
         processingService.scanAndRegisterFiles(processingChain);
 
