@@ -133,4 +133,19 @@ public final class PluginServiceDto {
         return type;
     }
 
+    @Override
+    public boolean equals(Object arg0) {
+        if (arg0 instanceof PluginServiceDto) {
+            PluginServiceDto ps = (PluginServiceDto) arg0;
+            return this.getConfigId().equals(ps.getConfigId());
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return this.getConfigId().hashCode();
+    }
+
 }
