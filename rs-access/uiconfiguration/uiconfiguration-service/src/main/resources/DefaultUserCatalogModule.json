@@ -1,40 +1,108 @@
 {
-	"primaryPane":"ALWAYS_EXPANDED",
-	"facettesInitiallySelected":false,
-	"enableFacettes":false,
-	"enableQuicklooks":false,
-	"enableDownload":true,
-	"initialViewMode":"list",
-	"displayMode":"data",
-	"displayConf":{
-		"quicklookColumnWidth":400,
-		"quicklookColumnSpacing":20
-	},
-	"attributes":[
-		{
-			"attributeFullQualifiedName":"ipId",
-			"visibility":true,
-			"facetable":false,
-			"initialSort":false,
-			"order":2
-		}, {
-			"attributeFullQualifiedName":"label",
-			"visibility":true,
-			"facetable":false,
-			"initialSort":false,
-			"order":3
-		}, {
-			"attributeFullQualifiedName":"creationDate",
-			"visibility":true,
-			"facetable":false,
-			"initialSort":false,
-			"order":4
-		}, {
-			"attributeFullQualifiedName":"thumbnail",
-			"visibility":true,
-			"facetable":false,
-			"initialSort":false,
-			"order":1
-		}
-	]
+  "primaryPane": "ALWAYS_EXPANDED",
+  "viewsGroups": {
+    "DATA": {
+      "enableDownload": true,
+      "tabTitle": {"en":"","fr":""},
+      "initialMode": "TABLE",
+      "sorting": [],
+      "enabled": true,
+      "views": {
+        "TABLE": {
+          "attributes": [
+	          {
+	          	"attributes": [
+					{
+						"name": "label"
+					}
+				],
+				"label": {
+					"en": "Label",
+					"fr": "Libellé"
+				}
+	          },
+	          {
+	          	"attributes": [
+					{
+						"name": "id"
+					}
+				],
+				"label": {
+					"en": "Identifier",
+					"fr": "Identifiant"
+				}
+	          },
+	          {
+	          	"attributes": [
+					{
+						"name": "files.THUMBNAIL[0]"
+					}
+				],
+				"label": {
+					"en": "Thumbnail",
+					"fr": "Vignette"
+				}
+	          }
+          ],
+          "enabled": false
+        },
+        "QUICKLOOK": {
+          "attributes": [],
+          "enabled": false
+        },
+        "MAP": {
+          "attributes": [],
+          "enabled": false
+        }
+      },
+      "facets": {
+        "initiallyEnabled": false,
+        "list": [],
+        "enabled": false
+      }
+    },
+    "DATASET": {
+      "tabTitle": {},
+      "initialMode": "LIST",
+      "sorting": [],
+      "enabled": false,
+      "views": {
+        "TABLE": {
+          "attributes": [],
+          "enabled": false
+        },
+        "QUICKLOOK": {
+          "attributes": [],
+          "enabled": false
+        },
+        "MAP": {
+          "attributes": [],
+          "enabled": false
+        }
+      }
+    },
+    "DOCUMENT": {
+      "tabTitle": {
+        "en": "",
+        "fr": ""
+      },
+      "initialMode": "LIST",
+      "sorting": [],
+      "enabled": false,
+      "views": {
+        "TABLE": {
+          "attributes": [],
+          "enabled": false
+        },
+        "QUICKLOOK": {
+          "attributes": [],
+          "enabled": false
+        },
+        "MAP": {
+          "attributes": [],
+          "enabled": false
+        }
+      }
+    }
+  }
 }
