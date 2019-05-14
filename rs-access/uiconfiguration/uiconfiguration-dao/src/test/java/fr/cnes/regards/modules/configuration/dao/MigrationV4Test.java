@@ -34,7 +34,7 @@ public class MigrationV4Test {
 
     @Test
     public void testMigrationV4() {
-        String result = V4_0_0__update_modules_conf.updateConf(oldConf);
+        String result = V4_0_0__update_modules_conf.updateConf(oldConf, 0);
         System.out.println(result);
     }
 
