@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.configuration.dao;
 
 import org.junit.Test;
 
-import fr.cnes.regards.modules.configuration.dao.scripts.uiconfiguration.V4_0_0__update_modules_conf;
+import scripts.uiconfiguration.V4_0_0__update_modules_conf;
 
 /**
  * @author sbinda
