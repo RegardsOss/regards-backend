@@ -60,7 +60,7 @@ public class V4_0_0__update_modules_conf extends BaseJavaMigration {
                                 update.execute("UPDATE t_ui_module SET conf='" + updatedConf + "' WHERE id=" + id);
                             }
                             break;
-                        case "search-result":
+                        case "search-results":
                             updatedConf = updateSearchResult(conf, id);
                             try (Statement update = context.getConnection().createStatement()) {
                                 update.execute("UPDATE t_ui_module SET conf='" + updatedConf + "' WHERE id=" + id);
