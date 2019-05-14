@@ -43,7 +43,7 @@ public class SetStringCsvConverter implements AttributeConverter<Set<String>, St
      */
     @Override
     public String convertToDatabaseColumn(Set<String> set) {
-        if (set == null) {
+        if (set == null || set.isEmpty()) {
             return null;
         }
         StringJoiner sj = new StringJoiner(DELIMITER);
