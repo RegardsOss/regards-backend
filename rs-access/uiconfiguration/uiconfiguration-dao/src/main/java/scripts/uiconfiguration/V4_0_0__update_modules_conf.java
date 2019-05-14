@@ -46,7 +46,7 @@ public class V4_0_0__update_modules_conf extends BaseJavaMigration {
     @Override
     public void migrate(Context context) throws Exception {
         try (Statement select = context.getConnection().createStatement()) {
-            try (ResultSet rows = select.executeQuery("SELECT id, type, conf FROM t_ui_module where ORDER BY id")) {
+            try (ResultSet rows = select.executeQuery("SELECT id, type, conf FROM t_ui_module ORDER BY id")) {
                 while (rows.next()) {
                     int id = rows.getInt(1);
                     String type = rows.getString(2);
