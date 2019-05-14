@@ -25,6 +25,8 @@ import java.util.Map;
 
 import org.flywaydb.core.api.migration.BaseJavaMigration;
 import org.flywaydb.core.api.migration.Context;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -36,37 +38,69 @@ import com.google.gson.Gson;
  */
 public class V4_0_0__update_modules_conf extends BaseJavaMigration {
 
-    /* (non-Javadoc)
-     * @see org.flywaydb.core.api.migration.JavaMigration#migrate(org.flywaydb.core.api.migration.Context)
+    /**
+     * Class logger
      */
+    private static final Logger LOG = LoggerFactory.getLogger(V4_0_0__update_modules_conf.class);
+
     @Override
     public void migrate(Context context) throws Exception {
         try (Statement select = context.getConnection().createStatement()) {
-            try (ResultSet rows = select.executeQuery("SELECT id, conf FROM t_ui_module ORDER BY id")) {
+            try (ResultSet rows = select.executeQuery("SELECT id, type, conf FROM t_ui_module where ORDER BY id")) {
                 while (rows.next()) {
                     int id = rows.getInt(1);
-                    String conf = rows.getString(2);
-                    String updatedConf = updateConf(conf);
-                    try (Statement update = context.getConnection().createStatement()) {
-                        update.execute("UPDATE t_ui_module SET conf='" + updatedConf + "' WHERE id=" + id);
+                    String type = rows.getString(2);
+                    String conf = rows.getString(3);
+                    String updatedConf = conf;
+                    switch (type) {
+                        case "search-graph":
+                        case "search-form":
+                            updatedConf = updateConf(conf, id);
+                            try (Statement update = context.getConnection().createStatement()) {
+                                update.execute("UPDATE t_ui_module SET conf='" + updatedConf + "' WHERE id=" + id);
+                            }
+                            break;
+                        case "search-result":
+                            updatedConf = updateSearchResult(conf, id);
+                            try (Statement update = context.getConnection().createStatement()) {
+                                update.execute("UPDATE t_ui_module SET conf='" + updatedConf + "' WHERE id=" + id);
+                            }
+                            break;
+                        default:
+                            break;
                     }
                 }
             }
         }
     }
 
-    public static String updateConf(String conf) {
+    @SuppressWarnings("unchecked")
+    public static String updateSearchResult(String conf, int id) {
+        Gson gson = new Gson();
+        Map<String, Object> rootConf = gson.fromJson(conf, Map.class);
+        updateSearchResult(rootConf, id);
+        return gson.toJson(rootConf);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static String updateConf(String conf, int id) {
         Gson gson = new Gson();
         Map<String, Object> rootConf = gson.fromJson(conf, Map.class);
 
         // 1. Search results conf
-        updateSearchResult((Map<String, Object>) rootConf.get("searchResult"));
+        updateSearchResult((Map<String, Object>) rootConf.get("searchResult"), id);
 
         return gson.toJson(rootConf);
     }
 
-    public static void updateSearchResult(Map<String, Object> searchResultConfRoot) {
-        searchResultConfRoot.put("viewsGroup", createViewsGroup(searchResultConfRoot));
+    public static void updateSearchResult(Map<String, Object> searchResultConfRoot, Integer id) {
+        if (searchResultConfRoot.get("viewsGroups") == null) {
+            LOG.info("---> UI Module Migration V4 for conf {} !", id);
+            searchResultConfRoot.put("viewsGroups", createViewsGroup(searchResultConfRoot));
+        } else {
+            // Do not update, the configuration is already in the good version
+            LOG.info("---> UI Module Migration V4 skipped for conf {} already in V4 version", id);
+        }
     }
 
     public static Map<String, Object> createTitle(String en, String fr) {
@@ -76,39 +110,51 @@ public class V4_0_0__update_modules_conf extends BaseJavaMigration {
         return title;
     }
 
-    public static Map<String, Object> createFacets(Boolean enabled, Boolean initialViewMode) {
-        Map<String, Object> facets = Maps.newHashMap();
-        facets.put("enabled", enabled);
-        facets.put("initialViewMode", initialViewMode);
-        return facets;
+    public static Map<String, Object> createFacets(Boolean enabled, Boolean initialViewMode, List<Object> facets) {
+        Map<String, Object> facetsObject = Maps.newHashMap();
+        facetsObject.put("enabled", enabled);
+        facetsObject.put("initiallyEnabled", initialViewMode);
+        facetsObject.put("list", facets);
+        return facetsObject;
     }
 
     public static Map<String, Object> createViews(List<Object> tableColumns) {
 
         Map<String, Object> views = Maps.newHashMap();
-        Map<String, Object> view = Maps.newHashMap();
+        Map<String, Object> tableView = Maps.newHashMap();
+        Map<String, Object> qlView = Maps.newHashMap();
+        Map<String, Object> mapView = Maps.newHashMap();
 
-        view.put("enabled", true);
         if (tableColumns != null) {
-            view.put("attributes", tableColumns);
+            tableView.put("attributes", tableColumns);
+            tableView.put("enabled", !tableColumns.isEmpty());
         } else {
-            view.put("attributes", Lists.newArrayList());
+            tableView.put("attributes", Lists.newArrayList());
+            tableView.put("enabled", false);
         }
 
-        views.put("TABLE", view);
-        views.put("LIST", view);
+        qlView.put("attributes", Lists.newArrayList());
+        qlView.put("enabled", false);
+
+        mapView.put("attributes", Lists.newArrayList());
+        mapView.put("enabled", false);
+
+        views.put("TABLE", tableView);
+        views.put("QUICKLOOK", qlView);
+        views.put("MAP", mapView);
+
         return views;
     }
 
+    @SuppressWarnings("unchecked")
     public static Map<String, Object> createViewsGroup(Map<String, Object> rootConf) {
         Map<String, Object> viewGroups = Maps.newHashMap();
         String displayMode = (String) rootConf.get("displayMode");
         Boolean facets = (Boolean) rootConf.get("facettesInitiallySelected");
         Boolean enableDownload = (Boolean) rootConf.get("enableDownload");
         Boolean enableFacettes = (Boolean) rootConf.get("enableFacettes");
-        String initialViewMode = (String) rootConf.get("initialViewMode");
 
-        Boolean dataViewEnabled = (displayMode == "data") || (displayMode == "data_dataset");
+        Boolean dataViewEnabled = (displayMode.equals("data")) || (displayMode.equals("data_dataset"));
         Boolean datasetViewEnabled = (displayMode == "data_dataset");
         Boolean documentViewEnabled = (displayMode == "document");
 
@@ -121,9 +167,17 @@ public class V4_0_0__update_modules_conf extends BaseJavaMigration {
         List<Object> dataColumns = Lists.newArrayList();
         if ((data != null) && (data.get("columns") != null)) {
             dataColumns = (List<Object>) data.get("columns");
-            List<Object> dataFacets = (List<Object>) data.get("facets");
-            rootConf.remove("data");
         }
+        List<Object> dataSorting = Lists.newArrayList();
+        if ((data != null) && (data.get("sorting") != null)) {
+            dataSorting = (List<Object>) data.get("sorting");
+        }
+        List<Object> dataFacets = Lists.newArrayList();
+        if ((data != null) && (data.get("facets") != null)) {
+            dataFacets = (List<Object>) data.get("facets");
+        }
+        rootConf.remove("data");
+
         Map<String, Object> dataset = (Map<String, Object>) rootConf.get("dataset");
         List<Object> datasetColumns = Lists.newArrayList();
         if ((dataset != null) && (dataset.get("columns") != null)) {
@@ -153,27 +207,23 @@ public class V4_0_0__update_modules_conf extends BaseJavaMigration {
         Map<String, Object> dataGroup = Maps.newHashMap();
         dataGroup.put("enabled", dataViewEnabled);
         dataGroup.put("enableDownload", enableDownload);
-        dataGroup.put("facets", createFacets(enableFacettes, facets));
-        dataGroup.put("title", createTitle(dataSectionLabelEn, dataSectionLabelFr));
+        dataGroup.put("facets", createFacets(enableFacettes, facets, dataFacets));
         dataGroup.put("views", createViews(dataColumns));
         dataGroup.put("initialMode", "TABLE");
-        dataGroup.put("sorting", Lists.newArrayList());
-        dataGroup.put("tabTitle", createTitle("", ""));
+        dataGroup.put("sorting", dataSorting);
+        dataGroup.put("tabTitle", createTitle(dataSectionLabelEn, dataSectionLabelFr));
 
         Map<String, Object> datasetGroup = Maps.newHashMap();
         datasetGroup.put("enabled", datasetViewEnabled);
-        datasetGroup.put("initialViewMode", initialViewMode);
-        datasetGroup.put("title", createTitle(datasetsSectionLabelEn, datasetsSectionLabelFr));
-        dataGroup.put("views", createViews(datasetColumns));
-        datasetGroup.put("initialMode", "TABLE");
+        datasetGroup.put("views", createViews(datasetColumns));
+        datasetGroup.put("initialMode", "LIST");
         datasetGroup.put("sorting", Lists.newArrayList());
-        datasetGroup.put("tabTitle", createTitle("", ""));
+        datasetGroup.put("tabTitle", createTitle(datasetsSectionLabelEn, datasetsSectionLabelFr));
 
         Map<String, Object> documentGroup = Maps.newHashMap();
         documentGroup.put("enabled", documentViewEnabled);
-        documentGroup.put("initialViewMode", initialViewMode);
         documentGroup.put("views", createViews(documentColumns));
-        documentGroup.put("initialMode", "TABLE");
+        documentGroup.put("initialMode", "LIST");
         documentGroup.put("sorting", Lists.newArrayList());
         documentGroup.put("tabTitle", createTitle("", ""));
 
