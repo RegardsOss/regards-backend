@@ -44,6 +44,8 @@ import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
 @Configuration
 public class ServiceAggregatorClientITConfiguration {
 
+    private static Long ID = 0L;
+
     @Bean
     public ICatalogServicesClient catalogServicesClient() {
         ICatalogServicesClient client = Mockito.mock(ICatalogServicesClient.class);
@@ -61,6 +63,8 @@ public class ServiceAggregatorClientITConfiguration {
         metaData.getInterfaceNames().add(IService.class.getName());
         metaData.setPluginClassName(SampleServicePlugin.class.getName());
         PluginConfiguration pluginConfiguration = new PluginConfiguration(metaData, "testConf");
+        pluginConfiguration.setId(ID);
+        ID = ID + 1;
         return new PluginConfigurationDto(pluginConfiguration);
     }
 
