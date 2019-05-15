@@ -235,6 +235,7 @@ public class BackendForFrontendTestUtils {
         metaData.getInterfaceNames().add(IService.class.getName());
         metaData.setPluginClassName(SampleServicePlugin.class.getName());
         PluginConfiguration pluginConfiguration = new PluginConfiguration(metaData, "conf0");
+        pluginConfiguration.setId(1L);
         PluginConfigurationDto pluginConfigurationDto = new PluginConfigurationDto(pluginConfiguration);
         PLUGIN_SERVICE_DTO_A = PluginServiceDto.fromPluginConfigurationDto(pluginConfigurationDto);
     }
@@ -244,6 +245,7 @@ public class BackendForFrontendTestUtils {
         metaData.getInterfaceNames().add(IService.class.getName());
         metaData.setPluginClassName(SampleServicePlugin.class.getName());
         PluginConfiguration pluginConfiguration = new PluginConfiguration(metaData, "conf1");
+        pluginConfiguration.setId(2L);
         PluginConfigurationDto pluginConfigurationDto = new PluginConfigurationDto(pluginConfiguration);
         PLUGIN_SERVICE_DTO_B = PluginServiceDto.fromPluginConfigurationDto(pluginConfigurationDto);
     }
@@ -251,7 +253,7 @@ public class BackendForFrontendTestUtils {
     static {
         UIPluginConfiguration uiPluginConfiguration = new UIPluginConfiguration();
         UIPluginDefinition pluginDefinition = new UIPluginDefinition();
-        uiPluginConfiguration.setId(2L);
+        uiPluginConfiguration.setId(3L);
         uiPluginConfiguration.setLabel("uiPluginConfiguration2");
         uiPluginConfiguration.setPluginDefinition(pluginDefinition);
         pluginDefinition.setApplicationModes(Sets.newHashSet(ServiceScope.MANY));

@@ -21,6 +21,8 @@ package fr.cnes.regards.modules.access.services.domain.aggregator;
 import java.net.URL;
 import java.util.Set;
 
+import org.springframework.util.Assert;
+
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
@@ -57,6 +59,7 @@ public final class PluginServiceDto {
     private PluginServiceDto(Long configId, String label, URL iconUrl, Set<ServiceScope> applicationModes,
             Set<EntityType> entityTypes, PluginServiceType type) {
         super();
+        Assert.notNull(configId, "Plugin configuration is mandatory to create a PluginServiceDTO");
         this.configId = configId;
         this.label = label;
         this.iconUrl = iconUrl;
