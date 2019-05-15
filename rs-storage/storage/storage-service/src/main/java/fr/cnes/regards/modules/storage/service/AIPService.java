@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -421,15 +420,9 @@ public class AIPService implements IAIPService {
                         // first reset datafiles urls
                         retryDataFile.getUrls().clear();
                         retryDataFile.getUrls().addAll(retryDataFile.getOriginUrls());
-                        // then remove errors and for each error from DataStorages, decrease the notYetStoredBy counter
-                        Iterator<String> failureCausesIterator = retryDataFile.getFailureCauses().iterator();
-                        while (failureCausesIterator.hasNext()) {
-                            String cause = failureCausesIterator.next();
-                            if (!cause.startsWith(DISPATCH_ERROR_FLAG)) {
-                                retryDataFile.decreaseNotYetStoredBy();
-                            }
-                            failureCausesIterator.remove();
-                        }
+                        // then remove errors and for each error from DataStorages, reset the notYetStoredBy counter
+                        retryDataFile.resetNotYetStoredBy();
+                        retryDataFile.emptyFailureCauses();
                     }
                     if (dataFiles.stream().filter(f -> f.getDataType() != DataType.AIP).count() > 0) {
                         // Data files in error are not AIP metadata files. So the retry is made to retry storage of those files.
