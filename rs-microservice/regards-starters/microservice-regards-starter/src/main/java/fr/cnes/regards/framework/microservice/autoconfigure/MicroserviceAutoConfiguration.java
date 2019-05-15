@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.framework.microservice.autoconfigure;
 
+import javax.servlet.Filter;
+
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -27,6 +29,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.web.filter.ForwardedHeaderFilter;
 
 import fr.cnes.regards.framework.microservice.configurer.MaintenanceWebSecurityConfiguration;
 import fr.cnes.regards.framework.microservice.maintenance.MaintenanceHealthIndicator;
@@ -81,5 +84,13 @@ public class MicroserviceAutoConfiguration {
             matchIfMissing = true)
     public ICustomWebSecurityConfiguration maintenanceWebSecurity(IRuntimeTenantResolver runtimeTenantResolver) {
         return new MaintenanceWebSecurityConfiguration(runtimeTenantResolver);
+    }
+
+    /**
+     * Propagate forward headers (useful for HATEOAS link builder)
+     */
+    @Bean
+    public Filter forwardedHeaderFilter() {
+        return new ForwardedHeaderFilter();
     }
 }

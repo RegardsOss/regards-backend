@@ -223,7 +223,8 @@ public class RequestBuilderCustomizer {
     }
 
     /**
-     * Set or add given value to associated header name values
+     * Set or add given value to associated header name values.<br/>
+     * Warning : calling this method, {@link #DEFAULT_HEADERS} are not added to the request so you have to do it by yourself if needed.
      */
     public RequestBuilderCustomizer addHeader(String name, String value) {
         headers.add(name, value);
@@ -231,7 +232,8 @@ public class RequestBuilderCustomizer {
     }
 
     /**
-     * Set or replace given values to associated header name values
+     * Set or replace given values to associated header name values.<br/>
+     * Warning : calling this method, {@link #DEFAULT_HEADERS} are not added to the request so you have to do it by yourself if needed.
      */
     public RequestBuilderCustomizer addHeader(String name, List<String> values) {
         headers.put(name, values);
@@ -239,7 +241,8 @@ public class RequestBuilderCustomizer {
     }
 
     /**
-     * Set or replace given values to associated header name values
+     * Set or replace given values to associated header name values.<br/>
+     * Warning : calling this method, {@link #DEFAULT_HEADERS} are not added to the request so you have to do it by yourself if needed.
      */
     public RequestBuilderCustomizer addHeaders(Map<String, List<String>> headers) {
         this.headers.putAll(headers);
