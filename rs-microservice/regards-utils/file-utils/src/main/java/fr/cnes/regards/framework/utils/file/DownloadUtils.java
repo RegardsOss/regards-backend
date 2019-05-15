@@ -1,8 +1,10 @@
 package fr.cnes.regards.framework.utils.file;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
@@ -110,6 +112,17 @@ public final class DownloadUtils {
             connection.setConnectTimeout(pConnectTimeout);
         }
         connection.connect();
+
+        // Handle specific case of HTTP URLs.
+        if (connection instanceof HttpURLConnection) {
+            HttpURLConnection conn = (HttpURLConnection) connection;
+            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                conn.disconnect();
+                throw new FileNotFoundException(
+                        String.format("Error during http/https access for URL %s, got response code : %d",
+                                      source.toString(), conn.getResponseCode()));
+            }
+        }
         return connection.getInputStream();
     }
 
