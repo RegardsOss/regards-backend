@@ -443,6 +443,7 @@ public class AIPService implements IAIPService {
                         if (!dataFiles.isEmpty()) {
                             aip.setState(AIPState.PENDING);
                         } else {
+                            // Case of metadata updates. All files are already stored.
                             aip.setState(AIPState.DATAFILES_STORED);
                         }
                     }
