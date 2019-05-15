@@ -1895,6 +1895,7 @@ public class AIPService implements IAIPService {
                                        newFile.getUrls().toArray(new URL[newFile.getUrls().size()]));
                 newAIPBuilder.getContentInformationBuilder().setSyntax(newFile.getMimeType());
                 newFile.setState(DataFileState.PENDING);
+                newFile.setOriginUrls(newFile.getUrls());
                 dataFileDao.save(newFile);
                 em.flush();
                 em.clear();
