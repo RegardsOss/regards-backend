@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.catalog.services.helper;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -242,7 +243,13 @@ public class CatalogPluginResponseFactory {
      * @return {@link StreamingResponseBody}
      */
     public static StreamingResponseBody toStreamingResponseBody(String value) {
-        return outputStream -> outputStream.write(value.getBytes());
+        return outputStream -> {
+            try {
+                outputStream.write(value.getBytes());
+            } catch (IOException e) {
+                LOGGER.error(e.getMessage(), e);
+            }
+        };
     }
 
     /**
@@ -252,9 +259,13 @@ public class CatalogPluginResponseFactory {
      */
     public static StreamingResponseBody toStreamingResponseBody(File file) {
         return outputStream -> {
-            Path path = file.toPath();
-            Files.copy(path, outputStream);
-            outputStream.flush();
+            try {
+                Path path = file.toPath();
+                Files.copy(path, outputStream);
+                outputStream.flush();
+            } catch (IOException e) {
+                LOGGER.error(e.getMessage(), e);
+            }
         };
     }
 
@@ -265,8 +276,12 @@ public class CatalogPluginResponseFactory {
      */
     public static StreamingResponseBody toStreamingResponseBody(InputStream is) {
         return outputStream -> {
-            ByteStreams.copy(is, outputStream);
-            outputStream.flush();
+            try {
+                ByteStreams.copy(is, outputStream);
+                outputStream.flush();
+            } catch (IOException e) {
+                LOGGER.error(e.getMessage(), e);
+            }
         };
     }
 
