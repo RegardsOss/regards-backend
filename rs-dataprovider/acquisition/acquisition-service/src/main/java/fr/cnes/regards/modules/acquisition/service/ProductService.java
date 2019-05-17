@@ -474,9 +474,6 @@ public class ProductService implements IProductService {
             products = productRepository.findWithLockByProcessingChainAndSipStateOrderByIdAsc(processingChain,
                                                                                               ProductSIPState.SCHEDULED,
                                                                                               pageable);
-            if (products.hasNext()) {
-                pageable = products.nextPageable();
-            }
             for (Product product : products) {
                 if (!product.getLastSIPGenerationJobInfo().getStatus().getStatus().isFinished()) {
                     return false;
