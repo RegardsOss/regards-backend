@@ -246,6 +246,7 @@ public class CatalogPluginResponseFactory {
         return outputStream -> {
             try {
                 outputStream.write(value.getBytes());
+                outputStream.flush();
             } catch (IOException e) {
                 LOGGER.error(e.getMessage(), e);
             }
@@ -279,7 +280,7 @@ public class CatalogPluginResponseFactory {
             try {
                 ByteStreams.copy(is, outputStream);
                 outputStream.flush();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 LOGGER.error(e.getMessage(), e);
             }
         };
