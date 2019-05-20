@@ -330,6 +330,9 @@ public class AIPServiceIT extends AbstractRegardsIT {
         // Simulate deletion of data files scheduler
         aipService.doDelete();
         waitForJobsFinished();
+        // Simulate force deletion of data files scheduler
+        aipService.doForceDelete();
+        waitForJobsFinished();
     }
 
     // Test for storage performance with 500 AIPs to store.
@@ -595,13 +598,15 @@ public class AIPServiceIT extends AbstractRegardsIT {
                 .containsAll(Sets.newHashSet(storedLocation1, storedLocation2)));
     }
 
+    /**
+     * Aim here is to disallow delete on data storages and verify that update still work
+     * @throws InterruptedException
+     * @throws ModuleException
+     * @throws URISyntaxException
+     */
     @Test
     @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_030"), @Requirement("REGARDS_DSL_STO_AIP_040") })
-    public void testUpdate() throws InterruptedException, ModuleException, URISyntaxException {
-        // Allow deletion for all files to allow update.
-        dsConfWithDeleteDisabled.getParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION)
-                .setValue(Boolean.TRUE.toString());
-        pluginService.updatePluginConfiguration(dsConfWithDeleteDisabled);
+    public void testUpdateWithoutLogicalPermission() throws InterruptedException, ModuleException, URISyntaxException {
         // first lets storeAndCreate the aip
         createSuccessTest();
         mockEventHandler.clear();
@@ -638,6 +643,16 @@ public class AIPServiceIT extends AbstractRegardsIT {
             Assert.assertTrue("The new data file should exists !" + url.getPath(),
                               Files.exists(Paths.get(url.getPath())));
         }
+    }
+
+    @Test
+    @Requirements({ @Requirement("REGARDS_DSL_STO_AIP_030"), @Requirement("REGARDS_DSL_STO_AIP_040") })
+    public void testUpdate() throws InterruptedException, ModuleException, URISyntaxException {
+        // Allow deletion for all files.
+        dsConfWithDeleteDisabled.getParameter(LocalDataStorage.LOCAL_STORAGE_DELETE_OPTION)
+                .setValue(Boolean.TRUE.toString());
+        pluginService.updatePluginConfiguration(dsConfWithDeleteDisabled);
+        testUpdateWithoutLogicalPermission();
     }
 
     @Test

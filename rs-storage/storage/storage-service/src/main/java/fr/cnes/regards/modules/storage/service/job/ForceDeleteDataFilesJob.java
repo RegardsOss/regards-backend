@@ -14,7 +14,7 @@ import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-public class DeleteDataFilesJob extends AbstractStoreFilesJob {
+public class ForceDeleteDataFilesJob extends AbstractStoreFilesJob {
 
     /**
      * Failure causes message format
@@ -31,7 +31,7 @@ public class DeleteDataFilesJob extends AbstractStoreFilesJob {
             // now that we have the plugin instance, lets retrieve the aip from the job parameters and ask the plugin to do the deletion
             IWorkingSubset workingSubset = parameterMap.get(WORKING_SUB_SET_PARAMETER_NAME).getValue();
             try {
-                storagePlugin.safeDelete(workingSubset, progressManager);
+                storagePlugin.delete(workingSubset, progressManager);
             } catch (IllegalStateException e) {
                 workingSubset.getDataFiles()
                         .forEach(file -> progressManager.deletionFailed(file, Optional.empty(), e.getMessage()));

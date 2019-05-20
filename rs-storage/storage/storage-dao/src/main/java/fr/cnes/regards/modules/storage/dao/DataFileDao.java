@@ -239,6 +239,15 @@ public class DataFileDao implements IDataFileDao {
             return 0;
         }
     }
+    @Override
+    public long countByAipAndTypeAndState(AIP aip, DataType type, DataFileState state) {
+        Optional<AIPEntity> fromDbOpt = getAipDataBase(aip);
+        if (fromDbOpt.isPresent()) {
+            return repository.countByAipEntityAndDataTypeAndState(fromDbOpt.get(), type, state);
+        } else {
+            return 0;
+        }
+    }
 
     @Override
     public long findAllByAipSession(String id) {
