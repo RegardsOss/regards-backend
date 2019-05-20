@@ -31,13 +31,16 @@ public class DeleteDataFilesJob extends AbstractStoreFilesJob {
             // now that we have the plugin instance, lets retrieve the aip from the job parameters and ask the plugin to do the deletion
             IWorkingSubset workingSubset = parameterMap.get(WORKING_SUB_SET_PARAMETER_NAME).getValue();
             try {
+                // FIXME :  Dispatch dataFiles en deux liste pour safeDelete et pour unsafeDelete.
+                // Chaque dataFile doit avoir un nouveau champ indiquant cette information.
                 storagePlugin.safeDelete(workingSubset, progressManager);
             } catch (IllegalStateException e) {
                 workingSubset.getDataFiles()
                         .forEach(file -> progressManager.deletionFailed(file, Optional.empty(), e.getMessage()));
-                throw new IllegalStateException(String.format(
-                        "Could not delete data for plugin configuration with label: %s",
-                        pluginService.getPluginConfiguration(confIdToUse).getLabel()), e);
+                throw new IllegalStateException(
+                        String.format("Could not delete data for plugin configuration with label: %s",
+                                      pluginService.getPluginConfiguration(confIdToUse).getLabel()),
+                        e);
             }
         } catch (ModuleException e) {
             //throwing new runtime allows us to make the job fail.

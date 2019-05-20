@@ -325,23 +325,28 @@ public class DataStorageService implements IDataStorageService {
                     }
                     // IDataStorage plugin used to delete the file is not able to delete the file right now.
                     // Notify administrator and set data file to STORED, because it is its real state for now.
-                    String message = String.format("Error deleting file (id: %s, checksum: %s).%n"
+                    String message = String.format(
+                                                   "Error deleting file (id: %s, checksum: %s).%n"
                                                            + "Data Storage configuration: %s(%s)%n" + "Error:%s",
-                                                   event.getDataFileId(),
-                                                   event.getChecksum(),
-                                                   event.getStorageConfId(),
-                                                   storageConf == null ?
-                                                           null :
-                                                           storageConf.getDataStorageConfiguration().getLabel(),
+                                                   event.getDataFileId(), event.getChecksum(), event.getStorageConfId(),
+                                                   storageConf == null ? null
+                                                           : storageConf.getDataStorageConfiguration().getLabel(),
                                                    event.getFailureCause());
                     // In case we were on a partial deletion, lets reset data storage removed by IAIPService#deleteFilesFromDataStorage(Collection, Long)
                     if (data.getState() == DataFileState.PARTIAL_DELETION_PENDING) {
                         data.getPrioritizedDataStorages().add(storageConf);
                     } else {
+                        // FIXME : S'assurer qu'il n'y a jamais deux dataFiles de type AIP a l'état STORED !
+                        // Si oui
+                        // : L'AIP ne change pas d'état (reste à STORED)
                         AIP aip = data.getAip();
                         aip.setState(AIPState.PARTIAL_DELETION);
                         aipDao.updateAIPStateAndRetry(aip);
                     }
+
+                    // FIXME : S'assurer qu'il n'y a jamais deux dataFiles de type AIP a l'état STORED !
+                    // Si oui
+                    // : Le fichier de type AIP en erreur de suppression passe en DELETION_ERROR
                     data.setState(DataFileState.STORED);
                     dataFileDao.save(data);
                     LOGGER.error(message);
@@ -588,9 +593,9 @@ public class DataStorageService implements IDataStorageService {
                 dataFileDao.findByAipAndType(associatedAIP, DataType.AIP).forEach(df -> {
                     if (!df.getId().equals(storedDataFile.getId())) {
                         LOGGER.debug("[STORE FILE SUCCESS] Schedule old AIP metadata file {} to be deleted for AIP {}",
-                                     df.getName(),
-                                     associatedAIP.getProviderId());
+                                     df.getName(), associatedAIP.getProviderId());
                         df.setState(DataFileState.TO_BE_DELETED);
+                        // FIXME :  df.setForceDelete(true)
                         dataFileDao.save(df);
                     }
                 });
