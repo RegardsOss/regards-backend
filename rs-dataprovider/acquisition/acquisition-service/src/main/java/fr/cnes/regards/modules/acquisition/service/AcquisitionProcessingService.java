@@ -813,8 +813,11 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         summary.setNbProductErrors(productService.countByProcessingChainAndSipStateIn(chain, Arrays
                 .asList(ProductSIPState.GENERATION_ERROR, ProductSIPState.NOT_SCHEDULED_INVALID, SIPState.REJECTED)));
         summary.setNbProducts(productService.countByChain(chain));
-        summary.setNbProductsInProgress(productService.countByProcessingChainAndSipStateIn(chain, Arrays
-                .asList(ProductSIPState.NOT_SCHEDULED, ProductSIPState.SCHEDULED)));
+        summary.setNbProductsInProgress(productService
+                .countByProcessingChainAndSipStateIn(chain,
+                                                     Arrays.asList(ProductSIPState.NOT_SCHEDULED,
+                                                                   ProductSIPState.SCHEDULED,
+                                                                   ProductSIPState.SCHEDULED_INTERRUPTED)));
 
         // Handle file summary
         summary.setNbFileErrors(acqFileService
