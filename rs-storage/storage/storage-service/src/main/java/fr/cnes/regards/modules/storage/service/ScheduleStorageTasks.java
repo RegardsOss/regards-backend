@@ -146,6 +146,18 @@ public class ScheduleStorageTasks {
         }
     }
 
+    @Scheduled(fixedDelayString = "${regards.storage.delete.aip.data.delay:120000}") // 2 minutes
+    public void forceDeleteFiles() {
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            runtimeTenantResolver.forceTenant(tenant);
+            long startTime = System.currentTimeMillis();
+            Long nbScheduled = aipService.doForceDelete();
+            LOGGER.trace("AIP data delete scheduled in {}ms for {} aips", System.currentTimeMillis() - startTime,
+                         nbScheduled);
+            runtimeTenantResolver.clearTenant();
+        }
+    }
+
     /**
      * Periodicly check the cache total size and delete expired files or/and older files if needed.
      * Default : scheduled to be run every 5minutes.

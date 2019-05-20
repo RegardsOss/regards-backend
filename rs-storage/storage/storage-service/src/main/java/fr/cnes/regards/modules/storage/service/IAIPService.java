@@ -272,6 +272,12 @@ public interface IAIPService {
     Long doDelete();
 
     /**
+     * Schedule deletion of datafiles marked for force deletion(following an update)
+     * @return number of scheduled aip to delete
+     */
+    Long doForceDelete();
+
+    /**
      * Remove {@link AIP}s associated the given sip, through its ip id
      * @param sipId
      * @return {@link StorageDataFile}s
