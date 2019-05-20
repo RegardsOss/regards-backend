@@ -1423,7 +1423,7 @@ public class AIPService implements IAIPService {
             dataFileDao.save(filesToDelete);
             // now, lets plan a job to delete those files
             try {
-                scheduleFileDeletion(filesToDelete, dataStorageId);
+                scheduleFilesDeletionByStorage(filesToDelete, dataStorageId);
             } catch (InvalidDatastoragePluginConfException e) {
                 filesToDelete.forEach(sdf -> undeletableFileCauseMap
                         .put(sdf,
@@ -1479,7 +1479,7 @@ public class AIPService implements IAIPService {
         Page<StorageDataFile> pageToDelete;
         do {
             pageToDelete = dataFileDao.findPageByState(DataFileState.TO_BE_DELETED, page);
-            scheduleAIPDeletion(pageToDelete.getContent());
+            scheduleFilesDeletion(pageToDelete.getContent());
             page = pageToDelete.nextPageable();
         } while (pageToDelete.hasNext());
 
@@ -1529,7 +1529,7 @@ public class AIPService implements IAIPService {
         updateAip(toUpdate.getId().toString(), toUpdate, updateMessage);
     }
 
-    private void scheduleAIPDeletion(Collection<StorageDataFile> dataFilesToDelete) {
+    private void scheduleFilesDeletion(Collection<StorageDataFile> dataFilesToDelete) {
         // when we delete DataFiles, we have to get the DataStorages to use thanks to DB informations
         Multimap<Long, StorageDataFile> dataStorageDataFileMultimap = HashMultimap.create();
         LOGGER.debug("Start schedule AIP deletion for {} StorageDataFiles", dataFilesToDelete.size());
@@ -1552,7 +1552,7 @@ public class AIPService implements IAIPService {
         }
     }
 
-    private void scheduleFileDeletion(Collection<StorageDataFile> dataFilesToDelete, Long dataStorageConfId)
+    private void scheduleFilesDeletionByStorage(Collection<StorageDataFile> dataFilesToDelete, Long dataStorageConfId)
             throws InvalidDatastoragePluginConfException {
         Multimap<Long, StorageDataFile> dataStorageDataFileMultimap = HashMultimap.create();
         LOGGER.debug("Start schedule file deletion for {} StorageDataFiles", dataFilesToDelete.size());
