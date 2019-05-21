@@ -66,14 +66,19 @@ public class DataFileDao implements IDataFileDao {
     }
 
     @Override
-    public Page<StorageDataFile> findAllByState(DataFileState state, Pageable page) {
-        return repository.findAllByState(state, page);
-    }
-
-    @Override
     public Page<StorageDataFile> findPageByState(DataFileState state, Pageable pageable) {
         // first lets get the storageDataFile without any join(no graph)
         Page<Long> ids = repository.findIdPageByState(state, pageable);
+        Set<StorageDataFile> pageContent = repository.findAllDistinctByIdIn(ids.getContent());
+        return new PageImpl<>(pageContent.stream().collect(Collectors.toList()),
+                PageRequest.of(ids.getNumber(), ids.getSize()), ids.getTotalElements());
+    }
+
+    @Override
+    public Page<StorageDataFile> findPageByStateAndForceDelete(DataFileState state, Boolean forceDelete,
+            Pageable pageable) {
+        // first lets get the storageDataFile without any join(no graph)
+        Page<Long> ids = repository.findIdPageByStateAndForceDelete(state, forceDelete, pageable);
         Set<StorageDataFile> pageContent = repository.findAllDistinctByIdIn(ids.getContent());
         return new PageImpl<>(pageContent.stream().collect(Collectors.toList()),
                 PageRequest.of(ids.getNumber(), ids.getSize()), ids.getTotalElements());
@@ -239,6 +244,7 @@ public class DataFileDao implements IDataFileDao {
             return 0;
         }
     }
+
     @Override
     public long countByAipAndTypeAndState(AIP aip, DataType type, DataFileState state) {
         Optional<AIPEntity> fromDbOpt = getAipDataBase(aip);

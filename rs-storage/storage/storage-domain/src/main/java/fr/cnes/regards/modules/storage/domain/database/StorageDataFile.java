@@ -1,5 +1,9 @@
 package fr.cnes.regards.modules.storage.domain.database;
 
+import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -21,14 +25,12 @@ import javax.persistence.NamedSubgraph;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.Min;
-import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.springframework.util.MimeType;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.jpa.converter.SetStringCsvConverter;
 import fr.cnes.regards.framework.jpa.converter.SetURLCsvConverter;
@@ -46,9 +48,10 @@ import fr.cnes.regards.modules.storage.domain.AIP;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Entity
-@Table(name = "t_data_file", indexes = { @Index(name = "idx_data_file_checksum", columnList = "checksum"),
-        @Index(name = "idx_data_file_state", columnList = "state"),
-        @Index(name = "idx_data_file_aip", columnList = "aip_ip_id") })
+@Table(name = "t_data_file",
+        indexes = { @Index(name = "idx_data_file_checksum", columnList = "checksum"),
+                @Index(name = "idx_data_file_state", columnList = "state"),
+                @Index(name = "idx_data_file_aip", columnList = "aip_ip_id") })
 // @formatter:off
 @NamedEntityGraph(name = "graph.datafile.full", attributeNodes = {
             @NamedAttributeNode("aipEntity"),
@@ -78,8 +81,9 @@ public class StorageDataFile {
      * Data storage plugin configuration used to store the file
      */
     @ManyToMany
-    @JoinTable(name = "ta_data_file_plugin_conf", joinColumns = @JoinColumn(name = "data_file_id",
-            foreignKey = @ForeignKey(name = "fk_data_file_plugin_conf_data_file")),
+    @JoinTable(name = "ta_data_file_plugin_conf",
+            joinColumns = @JoinColumn(name = "data_file_id",
+                    foreignKey = @ForeignKey(name = "fk_data_file_plugin_conf_data_file")),
             inverseJoinColumns = @JoinColumn(name = "data_storage_conf_id",
                     foreignKey = @ForeignKey(name = "fk_plugin_conf_data_file_plugin_conf")))
     private final Set<PrioritizedDataStorage> prioritizedDataStorages = new HashSet<>();
@@ -145,6 +149,15 @@ public class StorageDataFile {
     private DataFileState state;
 
     /**
+     * Flag to enable deletion without checking data storage permission.
+     * See {@link fr.cnes.regards.modules.storage.domain.plugin.IDataStorage#safeDelete} for more information.
+     * <br/><br/>
+     * NOTE : Used to force deletion of old metadata AIP file during update process.
+     */
+    @Column(name = "force_delete")
+    private Boolean forceDelete = false;
+
+    /**
      * File mime type
      */
     @Column(nullable = false, name = "mime_type")
@@ -202,15 +215,8 @@ public class StorageDataFile {
      * @param aipEntity
      */
     public StorageDataFile(OAISDataObject file, MimeType mimeType, AIPEntity aipEntity) {
-        this(file.getUrls(),
-             file.getChecksum(),
-             file.getAlgorithm(),
-             file.getRegardsDataType(),
-             file.getFileSize(),
-             mimeType,
-             aipEntity,
-             null,
-             null);
+        this(file.getUrls(), file.getChecksum(), file.getAlgorithm(), file.getRegardsDataType(), file.getFileSize(),
+             mimeType, aipEntity, null, null);
         String name = file.getFilename();
         if (Strings.isNullOrEmpty(name)) {
             String[] pathParts = file.getUrls().iterator().next().getPath().split("/");
@@ -550,10 +556,8 @@ public class StorageDataFile {
         if (notYetStoredBy > 0L) {
             notYetStoredBy--;
         } else {
-            throw new EntityOperationForbiddenException(String.format(
-                    "Forbidden decrease <notYetStoredBy> for dataFile %s - %s",
-                    this.id,
-                    this.name));
+            throw new EntityOperationForbiddenException(
+                    String.format("Forbidden decrease <notYetStoredBy> for dataFile %s - %s", this.id, this.name));
         }
     }
 
@@ -565,10 +569,8 @@ public class StorageDataFile {
         if (notYetDeletedBy > 0L) {
             notYetDeletedBy--;
         } else {
-            throw new EntityOperationForbiddenException(String.format(
-                    "Forbidden decrease <notYetDeletedBy> for dataFile %s - %s",
-                    this.id,
-                    this.name));
+            throw new EntityOperationForbiddenException(
+                    String.format("Forbidden decrease <notYetDeletedBy> for dataFile %s - %s", this.id, this.name));
         }
     }
 
@@ -597,4 +599,13 @@ public class StorageDataFile {
     public void resetNotYetStoredBy() {
         notYetStoredBy = 0L;
     }
+
+    public Boolean getForceDelete() {
+        return forceDelete;
+    }
+
+    public void setForceDelete(Boolean forceDelete) {
+        this.forceDelete = forceDelete;
+    }
+
 }

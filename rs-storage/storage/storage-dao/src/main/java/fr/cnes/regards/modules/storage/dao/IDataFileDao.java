@@ -32,13 +32,20 @@ public interface IDataFileDao {
     long findAllByStateAndAipSession(DataFileState stored, String session);
 
     /**
-     * Find all data files which state is the given one
+     * Find page of data files which state is the given one
      * @param state
      * @return data files which state is the given one
      */
-    Page<StorageDataFile> findAllByState(DataFileState state, Pageable pageable);
-
     Page<StorageDataFile> findPageByState(DataFileState state, Pageable pageable);
+
+    /**
+     * Find page of data files by state and forceDelete flag
+     * @param state
+     * @param forceDelete
+     * @param pageable
+     * @return data files by state and forceDelete flag
+     */
+    Page<StorageDataFile> findPageByStateAndForceDelete(DataFileState state, Boolean forceDelete, Pageable pageable);
 
     /**
      * Find all data files which state is the provided one and that are associated to at least one of the provided aips
@@ -107,7 +114,8 @@ public interface IDataFileDao {
 
     Page<StorageDataFile> findPageByChecksumIn(Set<String> checksums, Pageable pageable);
 
-    Page<StorageDataFile> findPageByStateAndChecksumIn(DataFileState stored, Set<String> requestedChecksums, Pageable page);
+    Page<StorageDataFile> findPageByStateAndChecksumIn(DataFileState stored, Set<String> requestedChecksums,
+            Pageable page);
 
     /**
      * Remove a data file from the database
