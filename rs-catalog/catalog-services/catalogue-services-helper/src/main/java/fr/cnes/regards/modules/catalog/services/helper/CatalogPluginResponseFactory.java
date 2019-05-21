@@ -56,7 +56,7 @@ public class CatalogPluginResponseFactory {
     /**
      * CONTENT_DISPOSITION for streaming response body.
      */
-    private static final String INLINE_FILE_CONTENT_DISPOSITION_FORMAT = "inline; filename=%s";
+    private static final String INLINE_FILE_CONTENT_DISPOSITION_FORMAT = "attachment; filename=%s";
 
     /**
      * Catalog plugin service response body type allowed
