@@ -18,11 +18,12 @@
  */
 package fr.cnes.regards.framework.amqp.configuration;
 
-import javax.annotation.PostConstruct;
 import java.util.Base64;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -200,8 +201,8 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
         final HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.AUTHORIZATION, setBasic());
         final HttpEntity<Void> request = new HttpEntity<>(headers);
-        final ResponseEntity<List<RabbitVhost>> response = restOperations
-                .exchange(host, HttpMethod.GET, request, typeRef);
+        final ResponseEntity<List<RabbitVhost>> response = restOperations.exchange(host, HttpMethod.GET, request,
+                                                                                   typeRef);
         vhostList = response.getBody().stream().map(RabbitVhost::getName).collect(Collectors.toList());
         return vhostList;
     }
@@ -269,12 +270,12 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
             HttpEntity<Void> request = new HttpEntity<>(headers);
 
             // Add VHOST using a PUT request
-            ResponseEntity<String> response = restOperations
-                    .exchange(getRabbitApiVhostEndpoint() + SLASH + virtualHost, HttpMethod.PUT, request, String.class);
+            ResponseEntity<String> response = restOperations.exchange(getRabbitApiVhostEndpoint() + SLASH + virtualHost,
+                                                                      HttpMethod.PUT, request, String.class);
             int statusValue = response.getStatusCodeValue();
             if (!isSuccess(statusValue)) {
-                String errorMessage = String
-                        .format("Cannot add vhost %s (status %s) : %s", virtualHost, statusValue, response.getBody());
+                String errorMessage = String.format("Cannot add vhost %s (status %s) : %s", virtualHost, statusValue,
+                                                    response.getBody());
                 LOGGER.error(errorMessage);
                 throw new RemovingRabbitMQVhostException(errorMessage);
             }
@@ -286,8 +287,7 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
 
         String[] rabbitHostAndPort = parseRabbitAddresses(rabbitAddresses);
         CachingConnectionFactory connectionFactory = new CachingConnectionFactory(rabbitHostAndPort[0],
-                                                                                  Integer.parseInt(
-                                                                                          rabbitHostAndPort[1]));
+                Integer.parseInt(rabbitHostAndPort[1]));
         connectionFactory.setVirtualHost(virtualHost);
         connectionFactory.setUsername(rabbitmqUserName);
         connectionFactory.setPassword(rabbitmqPassword);
@@ -305,12 +305,11 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.add(HttpHeaders.AUTHORIZATION, setBasic());
             HttpEntity<Void> request = new HttpEntity<>(headers);
-            ResponseEntity<String> response = restOperations
-                    .exchange(getRabbitApiVhostEndpoint() + SLASH + virtualHost, HttpMethod.DELETE, request,
-                              String.class);
+            ResponseEntity<String> response = restOperations.exchange(getRabbitApiVhostEndpoint() + SLASH + virtualHost,
+                                                                      HttpMethod.DELETE, request, String.class);
             int statusValue = response.getStatusCodeValue();
             // if successful or 404 then the broker is clean
-            if (!(isSuccess(statusValue) || (statusValue == HttpStatus.NOT_FOUND.value()))) {
+            if (!(isSuccess(statusValue) || statusValue == HttpStatus.NOT_FOUND.value())) {
                 String errorMessage = String.format("Cannot remove vhost %s (status %s) : %s", virtualHost, statusValue,
                                                     response.getBody());
                 LOGGER.error(errorMessage);
@@ -350,7 +349,7 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
     @Override
     public boolean isSuccess(int statusValue) {
         final int hundred = 100;
-        return (statusValue / hundred) == 2;
+        return statusValue / hundred == 2;
     }
 
     @Override
@@ -396,6 +395,10 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
     @Override
     public boolean isBound(String virtualHost) {
         String boundVhost = (String) SimpleResourceHolder.get(simpleRoutingConnectionFactory);
-        return (virtualHost != null) && virtualHost.equals(boundVhost);
+        return virtualHost != null && virtualHost.equals(boundVhost);
+    }
+
+    public VirtualHostMode getMode() {
+        return mode;
     }
 }

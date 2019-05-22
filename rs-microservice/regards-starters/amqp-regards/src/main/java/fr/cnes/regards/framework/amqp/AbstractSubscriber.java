@@ -40,6 +40,7 @@ import org.springframework.retry.interceptor.StatefulRetryOperationsInterceptor;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
@@ -131,20 +132,14 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
     @Override
     public <T extends ISubscribable> void subscribeTo(Class<T> eventType, IHandler<T> receiver) {
-        subscribeTo(eventType,
-                    receiver,
-                    EventUtils.getWorkerMode(eventType),
-                    EventUtils.getTargetRestriction(eventType),
-                    false);
+        subscribeTo(eventType, receiver, EventUtils.getWorkerMode(eventType),
+                    EventUtils.getTargetRestriction(eventType), false);
     }
 
     @Override
     public <E extends ISubscribable> void subscribeTo(Class<E> eventType, IHandler<E> receiver, boolean purgeQueue) {
-        subscribeTo(eventType,
-                    receiver,
-                    EventUtils.getWorkerMode(eventType),
-                    EventUtils.getTargetRestriction(eventType),
-                    purgeQueue);
+        subscribeTo(eventType, receiver, EventUtils.getWorkerMode(eventType),
+                    EventUtils.getTargetRestriction(eventType), purgeQueue);
     }
 
     @Override
@@ -155,9 +150,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
             String virtualHost = resolveVirtualHost(tenant);
             try {
                 virtualHostAdmin.bind(virtualHost);
-                Queue queue = amqpAdmin.declareQueue(tenant,
-                                                     eventType,
-                                                     EventUtils.getWorkerMode(eventType),
+                Queue queue = amqpAdmin.declareQueue(tenant, eventType, EventUtils.getWorkerMode(eventType),
                                                      EventUtils.getTargetRestriction(eventType),
                                                      Optional.of(handlerType));
                 amqpAdmin.purgeQueue(queue.getName(), false);
@@ -295,9 +288,10 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         // Init container
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
-        //        container.setDefaultRequeueRejected(false);
+        container.setDefaultRequeueRejected(false);
         container.setAdviceChain(interceptor);
         container.setChannelTransacted(true);
+        //        container.setErrorHandler(errorHandler);
 
         MessageListenerAdapter messageListener = new MessageListenerAdapter(handler, DEFAULT_HANDLING_METHOD);
         messageListener.setMessageConverter(messageConverter);

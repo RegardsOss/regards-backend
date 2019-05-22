@@ -113,4 +113,9 @@ public interface IRabbitVirtualHostAdmin {
      * @return true if the virtual host {@link ConnectionFactory} is already bound
      */
     boolean isBound(String virtualHost);
+
+    /**
+     * Retrieve Virtual host mode
+     */
+    public VirtualHostMode getMode();
 }
