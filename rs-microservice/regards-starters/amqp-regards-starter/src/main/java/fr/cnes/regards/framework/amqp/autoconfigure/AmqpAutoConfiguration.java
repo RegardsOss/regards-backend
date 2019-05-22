@@ -132,27 +132,10 @@ public class AmqpAutoConfiguration {
                 amqpMicroserviceProperties.getInstanceIdentifier());
     }
 
-    //    @Bean
-    //    public NotifyNRepublishMessageRecoverer notifyNRepublishAdvice(AmqpTemplate errorTemplate,
-    //            IInstancePublisher publisher, IRabbitVirtualHostAdmin rabbitVhostAdmin) {
-    //        return new NotifyNRepublishMessageRecoverer(errorTemplate,
-    //                                                    RegardsAmqpAdmin.REGARDS_DLX,
-    //                                                    RegardsAmqpAdmin.REGARDS_DLQ,
-    //                                                    publisher,
-    //                                                    microserviceName,
-    //                                                    rabbitVhostAdmin);
-    //    }
-
-    //    @Bean
-    //    public StatefulRetryOperationsInterceptor statefulRetryOperationsInterceptor(
-    //            NotifyNRepublishMessageRecoverer recoverer) {
-    //        return RetryInterceptorBuilder.StatefulRetryInterceptorBuilder.stateful().maxAttempts(1).recoverer(recoverer)
-    //                .build();
-    //    }
-
     @Bean
-    public RegardsErrorHandler errorHandler(IInstancePublisher instancePublisher, IPublisher publisher) {
-        return new RegardsErrorHandler(instancePublisher, publisher, microserviceName);
+    public RegardsErrorHandler errorHandler(IRuntimeTenantResolver runtimeTenantResolver,
+            IInstancePublisher instancePublisher, IPublisher publisher) {
+        return new RegardsErrorHandler(runtimeTenantResolver, instancePublisher, publisher, microserviceName);
     }
 
     @Bean
