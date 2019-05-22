@@ -36,13 +36,13 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.support.converter.MessageConverter;
-import org.springframework.retry.interceptor.StatefulRetryOperationsInterceptor;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.configuration.RegardsErrorHandler;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
@@ -95,17 +95,17 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
      */
     private final MessageConverter jsonMessageConverters;
 
-    private final StatefulRetryOperationsInterceptor interceptor;
+    private final RegardsErrorHandler errorHandler;
 
     public AbstractSubscriber(IRabbitVirtualHostAdmin virtualHostAdmin, IAmqpAdmin amqpAdmin,
-            MessageConverter jsonMessageConverters, StatefulRetryOperationsInterceptor interceptor) {
+            MessageConverter jsonMessageConverters, RegardsErrorHandler errorHandler) {
         this.virtualHostAdmin = virtualHostAdmin;
         this.amqpAdmin = amqpAdmin;
         this.jsonMessageConverters = jsonMessageConverters;
         this.listeners = new HashMap<>();
         this.handledEvents = new HashMap<>();
         this.handlerInstances = new HashMap<>();
-        this.interceptor = interceptor;
+        this.errorHandler = errorHandler;
     }
 
     @Override
@@ -289,9 +289,9 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
         container.setDefaultRequeueRejected(false);
-        container.setAdviceChain(interceptor);
+        // container.setAdviceChain(interceptor);
         container.setChannelTransacted(true);
-        //        container.setErrorHandler(errorHandler);
+        container.setErrorHandler(errorHandler);
 
         MessageListenerAdapter messageListener = new MessageListenerAdapter(handler, DEFAULT_HANDLING_METHOD);
         messageListener.setMessageConverter(messageConverter);

@@ -22,11 +22,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.amqp.support.converter.MessageConverter;
-import org.springframework.retry.interceptor.StatefulRetryOperationsInterceptor;
 
 import fr.cnes.regards.framework.amqp.configuration.AmqpConstants;
 import fr.cnes.regards.framework.amqp.configuration.IAmqpAdmin;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.configuration.RegardsErrorHandler;
 
 /**
  * {@link InstanceSubscriber} uses a fixed tenant to subscribe to instance events.
@@ -35,8 +35,8 @@ import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 public class InstanceSubscriber extends AbstractSubscriber implements IInstanceSubscriber {
 
     public InstanceSubscriber(IRabbitVirtualHostAdmin pVirtualHostAdmin, IAmqpAdmin amqpAdmin,
-            MessageConverter jsonMessageConverters, StatefulRetryOperationsInterceptor interceptor) {
-        super(pVirtualHostAdmin, amqpAdmin, jsonMessageConverters, interceptor);
+            MessageConverter jsonMessageConverters, RegardsErrorHandler errorHandler) {
+        super(pVirtualHostAdmin, amqpAdmin, jsonMessageConverters, errorHandler);
     }
 
     @Override
