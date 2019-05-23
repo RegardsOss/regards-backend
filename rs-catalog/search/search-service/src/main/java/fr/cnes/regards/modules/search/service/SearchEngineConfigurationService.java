@@ -18,9 +18,10 @@
  */
 package fr.cnes.regards.modules.search.service;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
+
+import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,10 +34,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Lists;
+
 import feign.FeignException;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -107,10 +110,10 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
         } catch (LockException e) {
             // lock could not be acquired, mainly because thread was interrupted while sleeping. Lets log and do nothing
             LOGGER.error("Default search engine could not be initialized.", e);
-            noticationClient.notify("You can initialize it by going to relevant part of HMI. Plugin type: \"legacy\"."
+            noticationClient.notify(
+                                    "You can initialize it by going to relevant part of HMI. Plugin type: \"legacy\"."
                                             + " Select use this search protocol for every search on catalog.",
-                                    "Default search engine could not be initialized",
-                                    NotificationLevel.INFO,
+                                    "Default search engine could not be initialized", NotificationLevel.INFO,
                                     DefaultRole.ADMIN);
         }
         // if the lock is null it means it could not be acquired
@@ -123,9 +126,9 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
                     // Create the new one
                     conf = new SearchEngineConfiguration();
                     conf.setLabel("REGARDS search protocol");
-                    conf.setConfiguration(PluginUtils.getPluginConfiguration(PluginParametersFactory.build()
-                                                                                     .getParameters(),
-                                                                             legacySearchEnginePluginClass));
+                    conf.setConfiguration(PluginUtils
+                            .getPluginConfiguration(PluginParametersFactory.build().getParameters(),
+                                                    legacySearchEnginePluginClass));
                     try {
                         createConf(conf);
                     } catch (ModuleException e) {
@@ -206,7 +209,7 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
 
         if (conf == null) {
             throw new EntityNotFoundException(String.format("SearchType=%s and Dataset=%s", pluginId, ds),
-                                              SearchEngineConfiguration.class);
+                    SearchEngineConfiguration.class);
         }
 
         return addDatasetLabel(conf, Lists.newArrayList());
@@ -228,11 +231,10 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
                     .findByDatasetUrnIsNullAndConfigurationPluginId(conf.getConfiguration().getPluginId());
         }
 
-        if (foundConf != null && !foundConf.getId().equals(conf.getId())) {
-            throw new EntityInvalidException(String.format(
-                    "Search engine already defined for engine <%s> and dataset <%s>",
-                    conf.getConfiguration().getPluginId(),
-                    conf.getDatasetUrn()));
+        if ((foundConf != null) && !foundConf.getId().equals(conf.getId())) {
+            throw new EntityInvalidException(
+                    String.format("Search engine already defined for engine <%s> and dataset <%s>",
+                                  conf.getConfiguration().getPluginId(), conf.getDatasetUrn()));
         }
     }
 
@@ -264,14 +266,18 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
             } else {
                 // Retrieve dataset from dam
                 try {
+                    FeignSecurityManager.asSystem();
                     ResponseEntity<Resource<Dataset>> response = datasetClient.retrieveDataset(conf.getDatasetUrn());
-                    if (response != null && response.getBody() != null && response.getBody().getContent() != null) {
+                    if ((response != null) && (response.getBody() != null)
+                            && (response.getBody().getContent() != null)) {
                         conf.setDataset(response.getBody().getContent());
                         // Add new retrieved dataset into cached ones
                         cachedDatasets.add(response.getBody().getContent());
                     }
                 } catch (FeignException e) {
                     LOGGER.error(String.format("Error retrieving dataset with ipId %s", conf.getDatasetUrn()), e);
+                } finally {
+                    FeignSecurityManager.reset();
                 }
             }
         }
@@ -287,11 +293,11 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
 
         @Override
         public void handle(final TenantWrapper<BroadcastEntityEvent> pWrapper) {
-            if (pWrapper.getContent() != null && EventType.DELETE.equals(pWrapper.getContent().getEventType())) {
+            if ((pWrapper.getContent() != null) && EventType.DELETE.equals(pWrapper.getContent().getEventType())) {
                 runtimeTenantResolver.forceTenant(pWrapper.getTenant());
                 for (final UniformResourceName ipId : pWrapper.getContent().getAipIds()) {
                     List<SearchEngineConfiguration> confs = repository.findByDatasetUrn(ipId.toString());
-                    if (confs != null && !confs.isEmpty()) {
+                    if ((confs != null) && !confs.isEmpty()) {
                         confs.forEach(repository::delete);
                     }
                 }

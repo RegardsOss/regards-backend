@@ -143,6 +143,10 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
     protected static final String ALPHA_PARAM = "alpha";
 
+    protected static final OffsetDateTime startDateValue = OffsetDateTime.now();
+
+    protected static final OffsetDateTime stopDateValue = OffsetDateTime.now().plusMonths(36);
+
     @Autowired
     protected ModelService modelService;
 
@@ -443,9 +447,9 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
                                          IGeometry.position(10.0, 10.0))));
         planet.setGeometry(geo);
         planet.setWgs84(geo);
-        planet.addProperty(AttributeBuilder
-                .buildObject("TimePeriod", AttributeBuilder.buildDate(START_DATE, OffsetDateTime.now()),
-                             AttributeBuilder.buildDate(STOP_DATE, OffsetDateTime.now().plusMonths(36))));
+        planet.addProperty(AttributeBuilder.buildObject("TimePeriod",
+                                                        AttributeBuilder.buildDate(START_DATE, startDateValue),
+                                                        AttributeBuilder.buildDate(STOP_DATE, stopDateValue)));
 
         return planet;
     }
@@ -466,7 +470,7 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
         planet.addProperty(AttributeBuilder.buildString(PLANET_TYPE, type));
         planet.addProperty(AttributeBuilder.buildInteger(PLANET_DIAMETER, diameter));
         planet.addProperty(AttributeBuilder.buildLong(PLANET_SUN_DISTANCE, sunDistance));
-        if (params != null && !params.isEmpty()) {
+        if ((params != null) && !params.isEmpty()) {
             planet.addProperty(AttributeBuilder.buildStringArray(PLANET_PARAMS,
                                                                  params.toArray(new String[params.size()])));
         }
