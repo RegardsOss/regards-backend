@@ -18,12 +18,14 @@
  */
 package fr.cnes.regards.modules.storage.domain.exception;
 
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+
 /**
  * Exception thrown when a PluginConfiguration of a Datastorage is needed and is not well configured.
  * @author sbinda
  */
 @SuppressWarnings("serial")
-public class InvalidDatastoragePluginConfException extends Exception {
+public class InvalidDatastoragePluginConfException extends ModuleException {
 
     private static String errorMessage = "Invalid Datastorage Plugin configuration for plugin id %s";
 
