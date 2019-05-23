@@ -478,7 +478,7 @@ public class AccountsController implements IResourceController<Account> {
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
      */
     @RequestMapping(value = REFUSE_ACCOUNT_RELATIVE_PATH, method = RequestMethod.PUT)
-    @ResourceAccess(description = "Accepts the access request", role = DefaultRole.INSTANCE_ADMIN)
+    @ResourceAccess(description = "Refuses the access request", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Void> refuseAccount(@PathVariable("account_email") String accountEmail)
             throws EntityException {
         // Retrieve the account

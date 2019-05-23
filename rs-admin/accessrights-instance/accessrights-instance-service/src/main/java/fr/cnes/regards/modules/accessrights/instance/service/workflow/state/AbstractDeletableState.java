@@ -190,6 +190,7 @@ abstract class AbstractDeletableState implements IAccountTransitions {
         try {
             for (String tenant : tenantService.getAllActiveTenants(IProjectUsersClient.TARGET_NAME)) {
                 runtimeTenantResolver.forceTenant(tenant);
+                FeignSecurityManager.asSystem();
                 //lets get the project user
                 ResponseEntity<Resource<ProjectUser>> projectUserResponse = projectUsersClient
                         .retrieveProjectUserByEmail(email);
@@ -199,6 +200,8 @@ abstract class AbstractDeletableState implements IAccountTransitions {
                 }
             }
         } finally {
+            // tenant being forced on each iteration, we only need to clear it once the loop has ended
+            FeignSecurityManager.reset();
             runtimeTenantResolver.clearTenant();
         }
     }
