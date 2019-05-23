@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.search.rest.engine;
 
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 
 import javax.xml.xpath.XPathExpressionException;
@@ -143,6 +144,30 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         customizer.addParameter("page", "1");
         customizer.addParameter("maxRecords", "100");
         customizer.addParameter("box", "15.0,15.0,20.0,20.0");
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(1)));
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
+    }
+
+    @Test
+    public void searchDataJsonWithTimeParams() {
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        customizer.addParameter("page", "1");
+        customizer.addParameter("maxRecords", "100");
+        customizer.addParameter("TimePeriod.startDate",
+                                startDateValue.plusHours(1).format(DateTimeFormatter.ISO_DATE_TIME));
+        customizer.addParameter("TimePeriod.stopDate", stopDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(0)));
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
+
+        customizer = customizer().expectStatusOk();
+        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        customizer.addParameter("page", "1");
+        customizer.addParameter("maxRecords", "100");
+        customizer.addParameter("TimePeriod.startDate", startDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
+        customizer.addParameter("TimePeriod.stopDate", stopDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
         customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(1)));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
