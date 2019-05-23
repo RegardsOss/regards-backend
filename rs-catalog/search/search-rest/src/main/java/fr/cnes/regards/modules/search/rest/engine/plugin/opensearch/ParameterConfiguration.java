@@ -30,14 +30,22 @@ public class ParameterConfiguration {
     /**
      * Opensearch parameter name
      */
-    @PluginParameter(name = "name", label = "Opensearch name of the parameter",
+    @PluginParameter(name = "allias",
+            label = "Opensearch name of the parameter to request. If not specified the attributeModelJsonPath is used.",
+            description = "Name of the parameter that will be used in opensearch requests.", optional = true)
+    private String allias;
+
+    /**
+     * Opensearch parameter name
+     */
+    @PluginParameter(name = "name", label = "Name of the extension parameter",
             description = "Name that will be handled by opensearch parameters extensions. Example in time extension the parameter {time:start} name is start")
     private String name;
 
     /**
      * Opensearch parameter namespace
      */
-    @PluginParameter(name = "namespace", label = "Opensearch namespace of the parameter",
+    @PluginParameter(name = "namespace", label = "Namespace of the exntesion parameter",
             description = "Namespace that will be handled by opensearch parameters extensions. Example in time extension the parameter {time:start} namespace is time")
     private String namespace;
 
@@ -100,6 +108,14 @@ public class ParameterConfiguration {
 
     public void setNamespace(String namespace) {
         this.namespace = namespace;
+    }
+
+    public String getAllias() {
+        return allias;
+    }
+
+    public void setAllias(String allias) {
+        this.allias = allias;
     }
 
 }
