@@ -326,11 +326,13 @@ public abstract class AbstractEngineIT extends AbstractRegardsTransactionalIT {
 
         ParameterConfiguration startTimeParameter = new ParameterConfiguration();
         startTimeParameter.setAttributeModelJsonPath("properties.TimePeriod.startDate");
+        startTimeParameter.setAllias("début");
         startTimeParameter.setName("start");
         startTimeParameter.setNamespace("time");
         paramConfigurations.add(startTimeParameter);
         ParameterConfiguration endTimeParameter = new ParameterConfiguration();
         endTimeParameter.setAttributeModelJsonPath("properties.TimePeriod.stopDate");
+        endTimeParameter.setAllias("fin");
         endTimeParameter.setName("end");
         endTimeParameter.setNamespace("time");
         paramConfigurations.add(endTimeParameter);
