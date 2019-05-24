@@ -62,8 +62,6 @@ public class SIPSessionController implements IResourceController<SIPSession> {
 
     public static final String REQUEST_PARAM_TO = "to";
 
-    public static final String RETRY_SUBMISSION_MAPPING = ID_PATH + "/retry/submission";
-
     public static final String RETRY_GENERATION_MAPPING = ID_PATH + "/retry/generation";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SIPSessionController.class);
