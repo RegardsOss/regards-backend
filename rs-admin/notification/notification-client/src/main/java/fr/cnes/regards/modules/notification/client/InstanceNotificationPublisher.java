@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.notification.client;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IPublisherContract;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 
@@ -33,10 +33,11 @@ import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
  */
 @Service
 @RegardsTransactional
-public class NotificationPublisher extends AbstractNotificationPublisher implements INotificationClient {
+public class InstanceNotificationPublisher extends AbstractNotificationPublisher
+        implements IInstanceNotificationClient {
 
     @Autowired
-    private IPublisher publisher;
+    private IInstancePublisher publisher;
 
     @Override
     protected IPublisherContract getPublisher() {
