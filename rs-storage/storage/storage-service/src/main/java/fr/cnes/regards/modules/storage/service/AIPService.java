@@ -1524,10 +1524,15 @@ public class AIPService implements IAIPService {
                 sdf.increaseNotYetDeletedBy();
                 sdf.getPrioritizedDataStorages().remove(finalDataStorage);
             });
-            dataFileDao.save(filesToDelete);
             // now, lets plan a job to delete those files
             try {
                 scheduleFilesDeletionByStorage(filesToDelete, dataStorageId);
+                for (StorageDataFile toDelete : filesToDelete) {
+                    toDelete.setState(DataFileState.PARTIAL_DELETION_PENDING);
+                    dataFileDao.save(toDelete);
+                    em.flush();
+                    em.clear();
+                }
             } catch (InvalidDatastoragePluginConfException e) {
                 filesToDelete.forEach(sdf -> undeletableFileCauseMap.put(sdf,
                                                                          String.format(
@@ -1687,12 +1692,6 @@ public class AIPService implements IAIPService {
         Multimap<Long, StorageDataFile> dataStorageDataFileMultimap = HashMultimap.create();
         LOGGER.debug("Start schedule file deletion for {} StorageDataFiles", dataFilesToDelete.size());
         dataStorageDataFileMultimap.putAll(dataStorageConfId, dataFilesToDelete);
-        for (StorageDataFile toDelete : dataFilesToDelete) {
-            toDelete.setState(DataFileState.PARTIAL_DELETION_PENDING);
-            dataFileDao.save(toDelete);
-            em.flush();
-            em.clear();
-        }
         scheduleDeletionJob(dataStorageDataFileMultimap, dataStorageConfId, false);
     }
 
