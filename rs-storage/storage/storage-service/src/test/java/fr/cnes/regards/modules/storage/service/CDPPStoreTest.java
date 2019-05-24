@@ -44,6 +44,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -62,6 +63,7 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultAllocationStrategyPlugin;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
+import fr.cnes.regards.modules.storage.plugin.security.NoCatalogSecurityDelegationPlugin;
 
 /**
  * Test CDPP storage
@@ -141,8 +143,8 @@ public class CDPPStoreTest extends AbstractMultitenantServiceTest {
                               Paths.get("target", "localstorage").toUri().toString())
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 100_000_000).getParameters();
 
-        PluginConfiguration localDataStorageConf = PluginUtils
-                .getPluginConfiguration(parameters, LocalDataStorage.class);
+        PluginConfiguration localDataStorageConf = PluginUtils.getPluginConfiguration(parameters,
+                                                                                      LocalDataStorage.class);
         localDataStorageConf.setIsActive(true);
         localDataStorageConf.setLabel("Local data storage");
         prioritizedDataStorageService.create(localDataStorageConf);
@@ -151,6 +153,10 @@ public class CDPPStoreTest extends AbstractMultitenantServiceTest {
         PluginConfiguration defaultAllocStrategyConf = PluginUtils
                 .getPluginConfiguration(null, DefaultAllocationStrategyPlugin.class);
         pluginService.savePluginConfiguration(defaultAllocStrategyConf);
+
+        PluginConfiguration defaultSecurity = PluginUtils
+                .getPluginConfiguration(null, NoCatalogSecurityDelegationPlugin.class);
+        pluginService.savePluginConfiguration(defaultSecurity);
     }
 
     @Test
@@ -176,7 +182,7 @@ public class CDPPStoreTest extends AbstractMultitenantServiceTest {
             Thread.sleep(1_000);
             storedAIP = aipRepository.findAllByStateIn(AIPState.STORED, PageRequest.of(0, 100)).getTotalElements();
             loops--;
-        } while (storedAIP != expected && loops != 0);
+        } while ((storedAIP != expected) && (loops != 0));
 
         long stopTime = System.currentTimeMillis();
         LOGGER.info("Time elapsed : {}", stopTime - startTime);
