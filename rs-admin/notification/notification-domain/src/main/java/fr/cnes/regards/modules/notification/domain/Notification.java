@@ -78,16 +78,6 @@ public class Notification implements IIdentifiable<Long> {
     private String message;
 
     /**
-     * The project user recipients represented by their email
-     */
-    @NotNull
-    @ElementCollection
-    @CollectionTable(name = "ta_notification_projectuser_email", joinColumns = @JoinColumn(name = "notification_id"),
-            foreignKey = @javax.persistence.ForeignKey(name = "fk_notification_projectuser_email_notification_id"))
-    @Column(name = "projectuser_email", length = 200)
-    private Set<String> projectUserRecipients;
-
-    /**
      * The role recipients represented by their name
      */
     @NotNull
@@ -96,6 +86,16 @@ public class Notification implements IIdentifiable<Long> {
             foreignKey = @javax.persistence.ForeignKey(name = "fk_notification_role_name_notification_id"))
     @Column(name = "role_name", length = 200)
     private Set<String> roleRecipients;
+
+    /**
+     * The project user recipients represented by their email
+     */
+    @NotNull
+    @ElementCollection
+    @CollectionTable(name = "ta_notification_projectuser_email", joinColumns = @JoinColumn(name = "notification_id"),
+            foreignKey = @javax.persistence.ForeignKey(name = "fk_notification_projectuser_email_notification_id"))
+    @Column(name = "projectuser_email", length = 200)
+    private Set<String> projectUserRecipients;
 
     /**
      * The notification sender<br>

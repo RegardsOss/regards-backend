@@ -25,6 +25,8 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
@@ -40,7 +42,6 @@ import fr.cnes.regards.modules.notification.domain.NotificationStatus;
  * @author Christophe Mertz
  *
  */
-@Ignore("Fix multitenant and instance conflicts")
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema:notif_dao" })
 @ContextConfiguration(classes = { NotificationDaoTestConfig.class })
 public class NotificationDaoIT extends AbstractDaoTransactionalTest {
@@ -101,5 +102,21 @@ public class NotificationDaoIT extends AbstractDaoTransactionalTest {
     public void testUpdateAll() {
         notificationRepository.updateAllNotificationStatusByRole(NotificationStatus.READ.toString(), "ADMIN");
         notificationRepository.updateAllNotificationStatusByUser(NotificationStatus.READ.toString(), "regards@c-s.fr");
+    }
+
+    @Test
+    public void testRetrievePage() {
+        //create 2 UNREAD notification
+        createNotification();
+        // create read notification
+        final Notification readNotif = getNotification("Hello READ!", "Rid", NotificationStatus.READ);
+        readNotif.setProjectUserRecipients(Sets.newHashSet("read-regards@c-s.fr"));
+        readNotif.setRoleRecipients(Sets.newHashSet(DefaultRole.PROJECT_ADMIN.name()));
+        notificationRepository.save(readNotif);
+
+        // now lets retrieve them by status
+        Page<Notification> notifPage = notificationRepository.findByStatusAndRecipientsContaining(NotificationStatus.UNREAD, "jo-regards@c-s.fr", DefaultRole.PUBLIC.toString(),
+                                                                                      PageRequest.of(0,20));
+        Assert.assertTrue("There should be 2 notification: 2 notifications UNREAD for role PUBLIC", notifPage.getTotalElements() == 2);
     }
 }
