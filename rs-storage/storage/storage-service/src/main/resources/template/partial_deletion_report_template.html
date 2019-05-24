@@ -4,7 +4,7 @@
     	Deletion schedule request -> ${filters}<br/> 
     </p>
     <p>
-        <#if report.deletionScheduled>
+        <#if !report.deletionScheduled>
         	Partial deletion could not be scheduled.<br/>
         	<ul>
         	<#list report.deletionErrorCauses as cause>
