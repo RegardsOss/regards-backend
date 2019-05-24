@@ -151,4 +151,19 @@ public class AIPQueryFilters {
     public void setStoredOn(Set<Long> storedOn) {
         this.storedOn = storedOn;
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return "Filters: [" + (state != null ? "state=" + state + ", " : "")
+                + (providerId != null ? "providerId=" + providerId + ", " : "")
+                + (from != null ? "from=" + from + ", " : "") + (to != null ? "to=" + to + ", " : "")
+                + (aipIds != null ? "aipIds=" + aipIds + ", " : "")
+                + (aipIdsExcluded != null ? "aipIdsExcluded=" + aipIdsExcluded + ", " : "")
+                + (tags != null ? "tags=" + tags + ", " : "") + (storedOn != null ? "storedOn=" + storedOn + ", " : "")
+                + (session != null ? "session=" + session : "") + "]";
+    }
+
 }
