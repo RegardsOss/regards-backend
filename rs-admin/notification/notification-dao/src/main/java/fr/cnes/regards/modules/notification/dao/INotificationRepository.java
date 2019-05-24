@@ -18,10 +18,12 @@
  */
 package fr.cnes.regards.modules.notification.dao;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -53,7 +55,8 @@ public interface INotificationRepository
     }
 
     @EntityGraph(attributePaths = { "projectUserRecipients", "roleRecipients" })
-    Page<Notification> findByProjectUserRecipientsContainingOrRoleRecipientsContaining(String projectUser, String role, Pageable pageable);
+    Page<Notification> findByProjectUserRecipientsContainingOrRoleRecipientsContaining(String projectUser, String role,
+            Pageable pageable);
 
     @EntityGraph(attributePaths = { "projectUserRecipients", "roleRecipients" })
     Optional<Notification> findById(Long id);
@@ -64,15 +67,34 @@ public interface INotificationRepository
      * @param role The required role recipient
      * @return The list of found notifications
      */
-    @Query(value = "select distinct n from Notification n left join fetch n.roleRecipients "
-            + "left join fetch n.projectUserRecipients "
-            + " where n.status= ?1 and (?2 member of n.projectUserRecipients or "
-            + " ?3 member of n.roleRecipients)",
-            countQuery = "select count(distinct n) from Notification n "
-            + " where n.status= ?1 and (?2 member of n.projectUserRecipients or "
-            + " ?3 member of n.roleRecipients)")
-    Page<Notification> findByStatusAndRecipientsContaining(NotificationStatus status, String projectUser, String role,
-            Pageable pageable);
+    default Page<Notification> findByStatusAndRecipientsContaining(NotificationStatus status, String projectUser,
+            String role, Pageable pageable) {
+        // handling pagination by hand here is a bit touchy as we have conditions on joined tables
+        // first lets get all notification ids that respect our wishes
+        List<Long> allNotifIds = findAllIdByStatusAndRecipientsContainingSortedByIdDesc(status, projectUser, role);
+        // now, lets extract ids corresponding to the page wished
+        int from = pageable.getPageNumber() * pageable.getPageSize();
+        int to = (pageable.getPageNumber() + 1) * pageable.getPageSize();
+        int nbNotifs = allNotifIds.size();
+        List<Long> pageIds;
+        if(to < nbNotifs) {
+            pageIds = allNotifIds.subList(from, to + 1);
+        } else {
+            pageIds = allNotifIds.subList(from, nbNotifs);
+        }
+        // now let get all the notif according to extracted ids
+        List<Notification> notifs = findAllByIdInOrderByIdDesc(pageIds);
+        // eventually, reconstruct a page
+        return new PageImpl<>(notifs, pageable, nbNotifs);
+    }
+
+    @EntityGraph(attributePaths = {"projectUserRecipients", "roleRecipients"})
+    List<Notification> findAllByIdInOrderByIdDesc(List<Long> pageIds);
+
+    @Query(value = "select distinct n.id from Notification n"
+            + " where n.status= ?1 and (?2 member of n.projectUserRecipients or " + " ?3 member of n.roleRecipients) ORDER BY id DESC")
+    List<Long> findAllIdByStatusAndRecipientsContainingSortedByIdDesc(NotificationStatus status, String projectUser,
+            String role);
 
     /**
      * Find all notifications with passed <code>status</code>
@@ -96,8 +118,7 @@ public interface INotificationRepository
 
     @Modifying
     @Query(value = "UPDATE {h-schema}t_notification set status = ?1 FROM {h-schema}ta_notification_role_name recipient "
-            + "WHERE t_notification.id = recipient.notification_id AND recipient.role_name = ?2",
-            nativeQuery = true)
+            + "WHERE t_notification.id = recipient.notification_id AND recipient.role_name = ?2", nativeQuery = true)
     void updateAllNotificationStatusByRole(String status, String role);
 
     @Modifying
