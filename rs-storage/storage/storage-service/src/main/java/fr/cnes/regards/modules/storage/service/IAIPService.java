@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -45,6 +44,7 @@ import fr.cnes.regards.modules.storage.domain.AipDataFiles;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.DownloadableFile;
+import fr.cnes.regards.modules.storage.domain.PartialDeletionReport;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
 import fr.cnes.regards.modules.storage.domain.RejectedSip;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
@@ -144,7 +144,8 @@ public interface IAIPService {
     Page<AIP> retrieveAIPs(AIPState pState, OffsetDateTime pFrom, OffsetDateTime pTo, List<String> tags,
             String sessionId, String providerId, Set<Long> storedOn, Pageable pageable) throws ModuleException;
 
-    AIPPageWithDataStorages retrieveAIPWithDataStorageIds(AIPQueryFilters filters, Pageable pageable) throws ModuleException;
+    AIPPageWithDataStorages retrieveAIPWithDataStorageIds(AIPQueryFilters filters, Pageable pageable)
+            throws ModuleException;
 
     /**
      * Retrieve pages of AIP with files public information filtered according to the parameters
@@ -258,7 +259,7 @@ public interface IAIPService {
     /**
      * Remove given AIPs files from given data storage
      */
-    Map<StorageDataFile, String> deleteFilesFromDataStorage(Collection<String> ipId, Long dataStorageId);
+    PartialDeletionReport deleteFilesFromDataStorage(Collection<String> ipId, Long dataStorageId);
 
     /**
      * Remove from given data storage filtered AIPs files
