@@ -5,16 +5,16 @@
     </p>
     <p>
         <#if !report.deletionScheduled>
-        	Partial deletion could not be scheduled.<br/>
+        	Partial deletion could not be scheduled.<br>
         	<ul>
         	<#list report.deletionErrorCauses as cause>
         		<li>${cause}</li>
         	</#list>
         	</ul>
         <#else>
-        	<ul>
-	        	<li>Number of files scheduled for partial deletion : ${report.nbFilesToDelete}</li>
-	        	<li>Number of files not scheduled for partial deletion : ${report.getNbFilesNotScheduled()}</li>
+	        Total number of files scheduled for partial deletion : ${report.nbFilesToDelete}<br>
+	        Total number of files not scheduled for partial deletion : ${report.getNbFilesNotScheduled()}
+	        <ul>
 	        	<#if report.nbFilesNotHandled gt 0>
 	        		<li>Number of files ignored because the storage was the last one : ${report.nbFilesNotHandled}</li>	
 	        	</#if>
