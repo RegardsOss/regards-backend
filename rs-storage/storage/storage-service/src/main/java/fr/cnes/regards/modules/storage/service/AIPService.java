@@ -729,11 +729,11 @@ public class AIPService implements IAIPService {
             content.add(new AIPWithDataStorageIds(aipIdAipMap.get(aipId), aipIdDataStorageIdsMap.get(aipId)));
         }
         // now lets get information for metadata
-        String pdsIdQuery = "SELECT data_storage_conf_id FROM {h-schema}ta_data_file_plugin_conf WHERE data_file_id IN "
+        String pdsIdQuery = "SELECT distinct data_storage_conf_id FROM {h-schema}ta_data_file_plugin_conf WHERE data_file_id IN "
                 + "(SELECT id FROM {h-schema}t_data_file WHERE aip_ip_id IN (" + aipQueryWithoutPage + "))";
         q = em.createNativeQuery(pdsIdQuery);
-        @SuppressWarnings("unchecked") List<Long> dataStorageIds = q.getResultList().stream()
-                .mapToLong(r -> ((BigInteger) r).longValue()).boxed().collect(Collectors.toList());
+        @SuppressWarnings("unchecked") Set<Long> dataStorageIds = q.getResultList().stream()
+                .mapToLong(r -> ((BigInteger) r).longValue()).boxed().collect(Collectors.toSet());
         Set<PrioritizedDataStorage> dataStorages = prioritizedDataStorageRepo.findAllByIdIn(dataStorageIds);
 
         return new AIPPageWithDataStorages(dataStorages,
