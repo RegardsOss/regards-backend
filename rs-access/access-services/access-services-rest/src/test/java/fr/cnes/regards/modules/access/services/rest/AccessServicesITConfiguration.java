@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.access.services.rest;
 
-import java.net.URL;
 import java.util.List;
 import java.util.Set;
 
@@ -58,8 +57,6 @@ public class AccessServicesITConfiguration {
 
     private static final Set<EntityType> ENTITY_TYPES = Sets.newHashSet(EntityType.COLLECTION);
 
-    private static URL ICON_URL;
-
     @Bean
     public ICatalogServicesClient catalogServicesClient() {
         ICatalogServicesClient client = Mockito.mock(ICatalogServicesClient.class);
@@ -90,7 +87,7 @@ public class AccessServicesITConfiguration {
         pluginConfiguration.setLabel(LABEL);
         pluginConfiguration.setPluginDefinition(pluginDefinition);
 
-        pluginDefinition.setIconUrl(ICON_URL.toString());
+        pluginDefinition.setIconUrl("/plop.png");
         pluginDefinition.setApplicationModes(APPLICATION_MODES);
         pluginDefinition.setEntityTypes(ENTITY_TYPES);
 
