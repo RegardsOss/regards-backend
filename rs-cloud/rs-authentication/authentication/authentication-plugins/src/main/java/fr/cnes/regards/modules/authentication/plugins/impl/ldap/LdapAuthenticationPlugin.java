@@ -189,6 +189,7 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
 
         final EntryCursor cursor;
         String userMail = null;
+        boolean userFound = false;
         final String searchFilter = "(&" + ldapSearchUserFilter + "(" + ldapUserLoginAttribute + "=" + pLogin + "))";
         try {
 
@@ -199,6 +200,7 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
             cursor = pLdapContext.search(pDn, searchFilter, SearchScope.SUBTREE, ldapEmailAttribute);
 
             while (cursor.next() && (userMail == null)) {
+                userFound = true;
                 final Entry entry = cursor.get();
                 final Attribute attribute = entry.get(ldapEmailAttribute);
                 if ((attribute != null) && (attribute.getString() != null)) {
@@ -207,6 +209,11 @@ public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
             }
         } catch (final LdapException | CursorException | IOException e) {
             LOGGER.error(e.getMessage(), e);
+        }
+
+        if (!userFound) {
+            throw new LdapException(
+                    String.format("Unable to find user %s from LDAP Server with request %s.", pLogin, searchFilter));
         }
 
         if ((userMail == null) || userMail.isEmpty()) {
