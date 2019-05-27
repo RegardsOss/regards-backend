@@ -108,7 +108,7 @@ public class PluginServiceDtoTest {
     private void checkDto(PluginServiceDto pPluginServiceDto) {
         Assert.assertEquals(ID, pPluginServiceDto.getConfigId());
         Assert.assertEquals(LABEL, pPluginServiceDto.getLabel());
-        Assert.assertEquals(ICON_URL, pPluginServiceDto.getIconUrl());
+        Assert.assertEquals(ICON_URL.toString(), pPluginServiceDto.getIconUrl());
         Assert.assertEquals(APPLICATION_MODES, pPluginServiceDto.getApplicationModes());
         Assert.assertEquals(ENTITY_TYPES, pPluginServiceDto.getEntityTypes());
     }
