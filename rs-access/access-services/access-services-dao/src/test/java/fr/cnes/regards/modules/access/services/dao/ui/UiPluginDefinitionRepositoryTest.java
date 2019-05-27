@@ -19,13 +19,13 @@
 package fr.cnes.regards.modules.access.services.dao.ui;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginDefinition;
@@ -47,7 +47,7 @@ public class UiPluginDefinitionRepositoryTest extends AbstractDaoTransactionalTe
     public void save() throws MalformedURLException {
         UIPluginDefinition uiPluginDefinition = new UIPluginDefinition();
         uiPluginDefinition.setId(0L);
-        uiPluginDefinition.setIconUrl(new URL("http://wwww.google.com"));
+        uiPluginDefinition.setIconUrl("http://wwww.google.com");
         uiPluginDefinition.setName("My Cool Plugin");
         uiPluginDefinition.setSourcePath("the/source/path");
         uiPluginDefinition.setType(UIPluginTypesEnum.SERVICE);

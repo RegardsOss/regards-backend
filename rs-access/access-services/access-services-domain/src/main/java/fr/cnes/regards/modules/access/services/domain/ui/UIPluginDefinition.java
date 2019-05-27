@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.access.services.domain.ui;
 
-import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -90,7 +89,7 @@ public class UIPluginDefinition {
      * Icon of the plugin. It must be an URL to a svg file.
      */
     @Column(name = "icon_url")
-    private URL iconUrl;
+    private String iconUrl;
 
     /**
      * Application modes
@@ -153,14 +152,14 @@ public class UIPluginDefinition {
     /**
      * @return the iconUrl
      */
-    public URL getIconUrl() {
+    public String getIconUrl() {
         return iconUrl;
     }
 
     /**
      * @param iconUrl the iconUrl to set
      */
-    public void setIconUrl(URL iconUrl) {
+    public void setIconUrl(String iconUrl) {
         this.iconUrl = iconUrl;
     }
 

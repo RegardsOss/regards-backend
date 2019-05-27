@@ -91,7 +91,7 @@ public class PluginServiceDtoTest {
         pluginConfiguration.setLabel(LABEL);
         pluginConfiguration.setPluginDefinition(pluginDefinition);
 
-        pluginDefinition.setIconUrl(ICON_URL);
+        pluginDefinition.setIconUrl(ICON_URL.toString());
         pluginDefinition.setApplicationModes(APPLICATION_MODES);
         pluginDefinition.setEntityTypes(ENTITY_TYPES);
 
