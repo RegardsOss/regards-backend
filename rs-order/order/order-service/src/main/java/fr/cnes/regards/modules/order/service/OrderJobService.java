@@ -18,13 +18,12 @@
  */
 package fr.cnes.regards.modules.order.service;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 import javax.annotation.PreDestroy;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
