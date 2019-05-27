@@ -157,7 +157,7 @@ public class MultitenantJpaEventHandler implements ApplicationListener<Applicati
 
     private void updateConnectionState(String tenant, TenantConnectionState state, Optional<String> errorCause) {
         try {
-            multitenantResolver.updateState(microserviceName, tenant, TenantConnectionState.ERROR, errorCause);
+            multitenantResolver.updateState(microserviceName, tenant, state, errorCause);
         } catch (JpaMultitenantException ex) {
             LOGGER.error(String.format("Cannot update datasource for tenant %s and microservice %s. Update fails.",
                                        tenant, microserviceName),
