@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.access.services.domain.aggregator;
 
-import java.net.URL;
 import java.util.Set;
 
 import org.springframework.util.Assert;
@@ -39,7 +38,7 @@ public final class PluginServiceDto {
 
     private final String label;
 
-    private final URL iconUrl;
+    private final String iconUrl;
 
     private final Set<ServiceScope> applicationModes;
 
@@ -56,7 +55,7 @@ public final class PluginServiceDto {
      * @param entityTypes
      * @param type
      */
-    private PluginServiceDto(Long configId, String label, URL iconUrl, Set<ServiceScope> applicationModes,
+    private PluginServiceDto(Long configId, String label, String iconUrl, Set<ServiceScope> applicationModes,
             Set<EntityType> entityTypes, PluginServiceType type) {
         super();
         Assert.notNull(configId, "Plugin configuration is mandatory to create a PluginServiceDTO");
@@ -78,8 +77,13 @@ public final class PluginServiceDto {
         Set<ServiceScope> appModes = pluginConfigurationDto.getApplicationModes();
         Set<EntityType> entTypes = pluginConfigurationDto.getEntityTypes();
 
-        return new PluginServiceDto(pluginConfigurationDto.getId(), pluginConfigurationDto.getLabel(),
-                pluginConfigurationDto.getIconUrl(), appModes, entTypes, PluginServiceType.CATALOG);
+        String iconUrl = null;
+        if (pluginConfigurationDto.getIconUrl() != null) {
+            iconUrl = pluginConfigurationDto.getIconUrl().toString();
+        }
+
+        return new PluginServiceDto(pluginConfigurationDto.getId(), pluginConfigurationDto.getLabel(), iconUrl,
+                appModes, entTypes, PluginServiceType.CATALOG);
     }
 
     /**
@@ -111,7 +115,7 @@ public final class PluginServiceDto {
     /**
      * @return the iconUrl
      */
-    public URL getIconUrl() {
+    public String getIconUrl() {
         return iconUrl;
     }
 
