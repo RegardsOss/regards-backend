@@ -98,6 +98,11 @@ public interface INotificationRepository
     List<Long> findAllIdByStatusAndRecipientsContainingSortedByIdDesc(NotificationStatus status, String projectUser,
             String role);
 
+    @Query(value = "select COUNT(distinct n.id) from Notification n"
+            + " where n.status= ?1 and (?2 member of n.projectUserRecipients or "
+            + " ?3 member of n.roleRecipients) GROUP BY id ORDER BY id DESC")
+    Long countByStatus(NotificationStatus status, String projectUser, String role);
+
     /**
      * Find all notifications with passed <code>status</code>
      * @param pStatus The notification status
@@ -105,6 +110,8 @@ public interface INotificationRepository
      */
     @EntityGraph(attributePaths = { "projectUserRecipients", "roleRecipients" })
     Page<Notification> findByStatus(NotificationStatus pStatus, Pageable page);
+
+    Long countByStatus(NotificationStatus pStatus);
 
     /**
      * Find all notifications which recipients contains the given user, represented by its email

@@ -116,4 +116,16 @@ public interface INotificationService {
      * @throws EntityNotFoundException
      */
     Page<Notification> retrieveNotifications(Pageable page, NotificationStatus state) throws EntityNotFoundException;
+
+    /**
+     * Counter number of unread notifications for current used
+     * @return long
+     */
+    Long countUnreadNotifications();
+
+    /**
+     * Counter number of read notifications for current used
+     * @return long
+     */
+    Long countReadNotifications();
 }

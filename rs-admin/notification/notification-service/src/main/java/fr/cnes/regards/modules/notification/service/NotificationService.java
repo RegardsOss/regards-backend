@@ -118,7 +118,8 @@ public class NotificationService implements INotificationService {
         notification.setRoleRecipients(getAllRecipientRoles(dto.getRoleRecipients()));
 
         // check the notification type and send it immediately if FATAL or ERROR
-        if (notification.getLevel() == NotificationLevel.FATAL || notification.getLevel() == NotificationLevel.ERROR) {
+        if ((notification.getLevel() == NotificationLevel.FATAL)
+                || (notification.getLevel() == NotificationLevel.ERROR)) {
             applicationEventPublisher.publishEvent(new NotificationToSendEvent(notification));
         }
 
@@ -207,7 +208,7 @@ public class NotificationService implements INotificationService {
                 do {
                     Page<ProjectUser> roleProjectUsers = roleService.retrieveRoleProjectUserList(roleName, page);
                     roleProjectUsers.getContent().forEach(pu -> roleUsers.add(pu.getEmail()));
-                    hasNext = roleProjectUsers.getNumber() < roleProjectUsers.getTotalPages() - 1;
+                    hasNext = roleProjectUsers.getNumber() < (roleProjectUsers.getTotalPages() - 1);
                     page = page.next();
                 } while (hasNext);
             } catch (EntityNotFoundException e) {
@@ -235,6 +236,32 @@ public class NotificationService implements INotificationService {
             }
         } else {
             return retrieveNotifications(page);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.modules.notification.service.INotificationService#countUnreadNotifications()
+     */
+    @Override
+    public Long countUnreadNotifications() {
+        if (notificationMode == NotificationMode.MULTITENANT) {
+            return notificationRepository.countByStatus(NotificationStatus.UNREAD, authenticationResolver.getUser(),
+                                                        authenticationResolver.getRole());
+        } else {
+            return notificationRepository.countByStatus(NotificationStatus.UNREAD);
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.modules.notification.service.INotificationService#countReadNotifications()
+     */
+    @Override
+    public Long countReadNotifications() {
+        if (notificationMode == NotificationMode.MULTITENANT) {
+            return notificationRepository.countByStatus(NotificationStatus.READ, authenticationResolver.getUser(),
+                                                        authenticationResolver.getRole());
+        } else {
+            return notificationRepository.countByStatus(NotificationStatus.READ);
         }
     }
 }
