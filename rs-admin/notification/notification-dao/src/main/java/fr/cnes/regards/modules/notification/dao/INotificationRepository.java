@@ -58,6 +58,7 @@ public interface INotificationRepository
     Page<Notification> findByProjectUserRecipientsContainingOrRoleRecipientsContaining(String projectUser, String role,
             Pageable pageable);
 
+    @Override
     @EntityGraph(attributePaths = { "projectUserRecipients", "roleRecipients" })
     Optional<Notification> findById(Long id);
 
@@ -77,8 +78,8 @@ public interface INotificationRepository
         int to = (pageable.getPageNumber() + 1) * pageable.getPageSize();
         int nbNotifs = allNotifIds.size();
         List<Long> pageIds;
-        if(to < nbNotifs) {
-            pageIds = allNotifIds.subList(from, to + 1);
+        if (to < nbNotifs) {
+            pageIds = allNotifIds.subList(from, to);
         } else {
             pageIds = allNotifIds.subList(from, nbNotifs);
         }
@@ -88,11 +89,12 @@ public interface INotificationRepository
         return new PageImpl<>(notifs, pageable, nbNotifs);
     }
 
-    @EntityGraph(attributePaths = {"projectUserRecipients", "roleRecipients"})
+    @EntityGraph(attributePaths = { "projectUserRecipients", "roleRecipients" })
     List<Notification> findAllByIdInOrderByIdDesc(List<Long> pageIds);
 
     @Query(value = "select distinct n.id from Notification n"
-            + " where n.status= ?1 and (?2 member of n.projectUserRecipients or " + " ?3 member of n.roleRecipients) ORDER BY id DESC")
+            + " where n.status= ?1 and (?2 member of n.projectUserRecipients or "
+            + " ?3 member of n.roleRecipients) ORDER BY id DESC")
     List<Long> findAllIdByStatusAndRecipientsContainingSortedByIdDesc(NotificationStatus status, String projectUser,
             String role);
 
