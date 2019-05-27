@@ -103,7 +103,7 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
 
     @Override
     public void run() {
-        this.semaphore = new Semaphore(-dataFilesMultimap.keys().size() + 1);
+        this.semaphore = new Semaphore(-dataFilesMultimap.keySet().size() + 1);
         subscriber.subscribe(this);
         AvailabilityRequest request = new AvailabilityRequest();
         request.setChecksums(dataFilesMultimap.keySet());
@@ -142,7 +142,7 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
                 return;
             }
 
-            LOGGER.debug("All files ({}) are available.", dataFilesMultimap.keys().size());
+            LOGGER.debug("All files ({}) are available.", dataFilesMultimap.keySet().size());
             // All files have bean treated by storage, no more event subscriber needed...
             subscriber.unsubscribe(this);
             // ...and all order data files statuses are updated into database
@@ -192,6 +192,6 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
 
     @Override
     public int getCompletionCount() {
-        return dataFilesMultimap.keys().size();
+        return dataFilesMultimap.keySet().size();
     }
 }
