@@ -32,7 +32,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
  */
 @Plugin(id = "Arcad3IsoprobeDensiteProductPlugin", version = "1.0.0-SNAPSHOT",
         description = "Compute the product name from data and browse filenames", author = "REGARDS Team",
-        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
+        contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class Arcad3IsoprobeDensiteProductPlugin implements IProductPlugin {
 
     private static final String BASE_PRODUCT_NAME = "ISO_DENS_";

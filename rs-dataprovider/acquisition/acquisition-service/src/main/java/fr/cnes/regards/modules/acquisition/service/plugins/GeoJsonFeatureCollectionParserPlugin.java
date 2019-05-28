@@ -62,7 +62,7 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
  */
 @Plugin(id = "GeoJsonFeatureCollectionParserPlugin", version = "1.0.0-SNAPSHOT",
         description = "Scan directory to detect geosjson files. Generate a file to acquire for each feature found in it.",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
 

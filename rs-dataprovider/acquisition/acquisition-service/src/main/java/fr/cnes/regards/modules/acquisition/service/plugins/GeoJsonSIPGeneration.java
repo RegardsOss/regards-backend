@@ -22,8 +22,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -43,7 +41,7 @@ import fr.cnes.regards.modules.ingest.domain.SIP;
  */
 @Plugin(id = "ReadSIPFromFile", version = "1.0.0-SNAPSHOT",
         description = "Read the SIP to generate from the file content.", author = "REGARDS Team",
-        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
+        contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class GeoJsonSIPGeneration implements ISipGenerationPlugin {
 
     @Autowired
