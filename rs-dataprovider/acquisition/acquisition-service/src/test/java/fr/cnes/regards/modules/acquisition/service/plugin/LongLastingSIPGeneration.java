@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
  */
 @Plugin(id = "LongLastingSIPGeneration", version = "1.0.0-SNAPSHOT",
         description = "Generate SIP using product information", author = "REGARDS Team", contact = "regards@c-s.fr",
-        licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
+        license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class LongLastingSIPGeneration implements ISipGenerationPlugin {
 
     //    private static final Logger LOGGER = LoggerFactory.getLogger(ProductService.class);

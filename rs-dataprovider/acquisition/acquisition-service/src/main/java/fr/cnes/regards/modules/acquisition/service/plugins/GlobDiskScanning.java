@@ -46,7 +46,7 @@ import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
  */
 @Plugin(id = "GlobDiskScanning", version = "1.0.0-SNAPSHOT",
         description = "Scan directories to detect files filtering with a glob pattern",
-        markdown = "GlobDiskScanning.md", author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0",
+        markdown = "GlobDiskScanning.md", author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3",
         owner = "CSSI", url = "https://github.com/RegardsOss")
 public class GlobDiskScanning implements IScanPlugin {
 
