@@ -29,7 +29,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
  * @author Marc Sordi
  */
 @Plugin(author = "REGARDS Team", description = "Plugin with string collection parameter",
-        id = "PluginWithStringCollection", version = "1.0.0", contact = "regards@c-s.fr", licence = "GPLv3",
+        id = "PluginWithStringCollection", version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3",
         owner = "CNES", url = "https://regardsoss.github.io/")
 public class PluginWithStringCollection implements IPluginWithGenerics {
 

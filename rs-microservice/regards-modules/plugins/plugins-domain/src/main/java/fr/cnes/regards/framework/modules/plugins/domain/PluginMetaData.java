@@ -84,9 +84,9 @@ public class PluginMetaData implements Comparable<PluginMetaData> {
     private String owner;
 
     /**
-     * Licence of the plugin.
+     * license of the plugin.
      */
-    private String licence;
+    private String license;
 
     /**
      * The parameters of the plugin
@@ -104,7 +104,7 @@ public class PluginMetaData implements Comparable<PluginMetaData> {
         url = plugin.url();
         contact = plugin.contact();
         owner = plugin.owner();
-        licence = plugin.licence();
+        license = plugin.license();
     }
 
     /**
@@ -118,16 +118,16 @@ public class PluginMetaData implements Comparable<PluginMetaData> {
         return pluginId;
     }
 
-    public void setPluginId(String pPluginId) {
-        pluginId = pPluginId;
+    public void setPluginId(String pluginId) {
+        this.pluginId = pluginId;
     }
 
     public String getPluginClassName() {
         return pluginClassName;
     }
 
-    public void setPluginClassName(String pPluginClassName) {
-        pluginClassName = pPluginClassName;
+    public void setPluginClassName(String pluginClassName) {
+        this.pluginClassName = pluginClassName;
     }
 
     /**
@@ -143,32 +143,32 @@ public class PluginMetaData implements Comparable<PluginMetaData> {
     /**
      * Set the interface names
      */
-    public void setInterfaceNames(Set<String> pInterfaceNames) {
-        interfaceNames = pInterfaceNames;
+    public void setInterfaceNames(Set<String> interfaceNames) {
+        this.interfaceNames = interfaceNames;
     }
 
     public String getAuthor() {
         return author;
     }
 
-    public void setAuthor(String pAuthor) {
-        author = pAuthor;
+    public void setAuthor(String author) {
+        this.author = author;
     }
 
     public String getVersion() {
         return version;
     }
 
-    public void setVersion(String pVersion) {
-        version = pVersion;
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String pDescription) {
-        description = pDescription;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     /**
@@ -181,8 +181,8 @@ public class PluginMetaData implements Comparable<PluginMetaData> {
     /**
      * Set the url
      */
-    public void setUrl(String pUrl) {
-        url = pUrl;
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     /**
@@ -209,22 +209,22 @@ public class PluginMetaData implements Comparable<PluginMetaData> {
     /**
      * Set the owner
      */
-    public void setOwner(String pOwner) {
-        owner = pOwner;
+    public void setOwner(String owner) {
+        this.owner = owner;
     }
 
     /**
-     * @return the licence
+     * @return the license
      */
-    public String getLicence() {
-        return licence;
+    public String getLicense() {
+        return license;
     }
 
     /**
      * Set the licence
      */
-    public void setLicence(String pLicence) {
-        licence = pLicence;
+    public void setLicence(String license) {
+        this.license = license;
     }
 
     /**
@@ -237,11 +237,11 @@ public class PluginMetaData implements Comparable<PluginMetaData> {
     /**
      * Set the plugin parameter types
      */
-    public void setParameters(List<PluginParameterType> pParameters) {
-        if (pParameters == null) {
+    public void setParameters(List<PluginParameterType> parameters) {
+        if (parameters == null) {
             this.parameters.clear();
         } else {
-            parameters = pParameters;
+            this.parameters = parameters;
         }
     }
 

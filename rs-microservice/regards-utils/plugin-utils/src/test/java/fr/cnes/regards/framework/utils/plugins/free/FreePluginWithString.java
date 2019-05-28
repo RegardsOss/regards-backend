@@ -28,7 +28,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
  * @author Marc Sordi
  */
 @Plugin(author = "REGARDS Team", description = "Plugin with string", id = "FreePluginWithString", version = "1.0.0",
-        contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES", url = "https://regardsoss.github.io/")
+        contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES", url = "https://regardsoss.github.io/")
 public class FreePluginWithString implements IFreePlugin {
 
     public static final String FIELD_NAME_STRING = "sfield";

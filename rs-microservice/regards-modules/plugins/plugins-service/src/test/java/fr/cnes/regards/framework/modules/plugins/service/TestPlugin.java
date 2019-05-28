@@ -28,7 +28,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
  * @author sbinda
  */
 @Plugin(description = "Complex Plugin de test", id = "complexPlugin", version = "0.0.1", author = "REGARDS Dream Team",
-        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
+        contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class TestPlugin implements ITestPlugin {
 
     public static final String FIELD_NAME_STRING_PARAM = "stringParam";
