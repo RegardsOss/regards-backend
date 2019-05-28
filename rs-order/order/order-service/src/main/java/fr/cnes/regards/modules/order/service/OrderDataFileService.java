@@ -46,6 +46,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 
 import feign.Response;
@@ -96,12 +97,20 @@ public class OrderDataFileService implements IOrderDataFileService {
     @Value("${http.proxy.port}")
     private int proxyPort;
 
+    @Value("${http.proxy.noproxy:#{null}}")
+    private String noProxyHostsString;
+
     private Proxy proxy;
+
+    private final Set<String> noProxyHosts = Sets.newHashSet();
 
     @PostConstruct
     public void init() {
         proxy = Strings.isNullOrEmpty(proxyHost) ? Proxy.NO_PROXY
                 : new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+        if (noProxyHostsString != null) {
+            Collections.addAll(noProxyHosts, noProxyHostsString.split("\\s*,\\s*"));
+        }
     }
 
     @Override
@@ -116,8 +125,8 @@ public class OrderDataFileService implements IOrderDataFileService {
         FilesTask filesTask = filesTasksRepository.findDistinctByFilesIn(dataFile);
         // In case FilesTask does not yet exist
         if (filesTask != null) {
-            if (filesTask.getFiles().stream().allMatch(f -> f.getState() == FileState.DOWNLOADED
-                    || f.getState() == FileState.ERROR || f.getState() == FileState.DOWNLOAD_ERROR)) {
+            if (filesTask.getFiles().stream().allMatch(f -> (f.getState() == FileState.DOWNLOADED)
+                    || (f.getState() == FileState.ERROR) || (f.getState() == FileState.DOWNLOAD_ERROR))) {
                 filesTask.setEnded(true);
             }
             // ...and if it is waiting for user
@@ -140,8 +149,8 @@ public class OrderDataFileService implements IOrderDataFileService {
         Long orderId = null;
         // Update all these FileTasks
         for (FilesTask filesTask : filesTasks) {
-            if (filesTask.getFiles().stream().allMatch(f -> f.getState() == FileState.DOWNLOADED
-                    || f.getState() == FileState.ERROR || f.getState() == FileState.DOWNLOAD_ERROR)) {
+            if (filesTask.getFiles().stream().allMatch(f -> (f.getState() == FileState.DOWNLOADED)
+                    || (f.getState() == FileState.ERROR) || (f.getState() == FileState.DOWNLOAD_ERROR))) {
                 filesTask.setEnded(true);
             }
             // Save order id for later
@@ -194,7 +203,7 @@ public class OrderDataFileService implements IOrderDataFileService {
         int timeout = 10_000;
         if (dataFile.isReference()) {
             try (InputStream is = DownloadUtils.getInputStreamThroughProxy(new URL(dataFile.getUrl()), proxy,
-                                                                           timeout)) {
+                                                                           noProxyHosts, timeout)) {
                 ByteStreams.copy(is, os);
                 os.close();
             } catch (IOException e) {
@@ -212,7 +221,7 @@ public class OrderDataFileService implements IOrderDataFileService {
                 e.printStackTrace(new PrintWriter(sw));
                 dataFile.setDownloadError("Error while downloading file from Archival Storage\n" + sw.toString());
             }
-            error = response == null || response.status() != HttpStatus.OK.value();
+            error = (response == null) || (response.status() != HttpStatus.OK.value());
             if (!error) {
                 try (InputStream is = response.body().asInputStream()) {
                     long copiedBytes = ByteStreams.copy(is, os);
