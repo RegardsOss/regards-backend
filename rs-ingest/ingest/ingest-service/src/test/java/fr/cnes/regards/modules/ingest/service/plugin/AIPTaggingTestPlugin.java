@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.storage.domain.AIP;
  * @author Sébastien Binda
  */
 @Plugin(author = "REGARDS Team", description = "Test plugin for AIP tagging", id = "TestAIPTagging", version = "1.0.0",
-        contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES", url = "https://regardsoss.github.io/")
+        contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES", url = "https://regardsoss.github.io/")
 public class AIPTaggingTestPlugin implements IAipTagging {
 
     @Autowired

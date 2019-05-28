@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.ingest.service.chain.ProcessingChainTestErrorSimu
  * @author Sébastien Binda
  */
 @Plugin(author = "REGARDS Team", description = "Test plugin for SIP validation", id = "TestSIPValidation",
-        version = "1.0.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
+        version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
 public class ValidationTestPlugin implements ISipValidation {
 

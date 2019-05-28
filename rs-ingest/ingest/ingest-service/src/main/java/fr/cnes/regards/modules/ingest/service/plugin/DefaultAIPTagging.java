@@ -52,7 +52,7 @@ import fr.cnes.regards.modules.storage.domain.AIPBuilder;
  *
  */
 @Plugin(author = "REGARDS Team", description = "Default plugin for AIP tagging", id = "DefaultAIPTagging",
-        version = "1.0.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
+        version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
 public class DefaultAIPTagging implements IAipTagging {
 

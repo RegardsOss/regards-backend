@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.ingest.service.ISIPService;
  * @author Olivier Rousselot
  */
 @Plugin(author = "REGARDS Team", description = "Unique provider id SIP validation plugin",
-        id = "UniqueProviderIdSipValidation", version = "1.0.0", contact = "regards@c-s.fr", licence = "GPLv3",
+        id = "UniqueProviderIdSipValidation", version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3",
         owner = "CNES", url = "https://regardsoss.github.io/")
 public class UniqueProviderIdSipValidation implements ISipValidation {
 

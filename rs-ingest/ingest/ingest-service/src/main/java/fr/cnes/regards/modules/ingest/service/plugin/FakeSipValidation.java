@@ -34,15 +34,15 @@ import fr.cnes.regards.modules.ingest.domain.plugin.ISipValidation;
  *
  */
 @Plugin(author = "REGARDS Team", description = "Fake no effect SIP validation plugin (do not use in production)",
-        id = "FakeSipValidation", version = "1.0.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
+        id = "FakeSipValidation", version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
 public class FakeSipValidation implements ISipValidation {
 
-    @PluginParameter(label = "Simple string", description = "Simple string description", defaultValue = "Ah ! Mesdames, voilà du bon fromage,\n"
-            + "Celui qui l'a fait il est de son village\n" + "Voilà du bon fromage au lait\n"
-            + "Il est du pays de celui qui l'a fait !\n" + "\n" + "Celui qui l'a fait il est de son village\n"
-            + "Ah ! Mesdames, voilà du bon fromage\n" + "Voilà du bon fromage au lait,\n"
-            + "Il est du pays de celui qui l'a fait !")
+    @PluginParameter(label = "Simple string", description = "Simple string description",
+            defaultValue = "Ah ! Mesdames, voilà du bon fromage,\n" + "Celui qui l'a fait il est de son village\n"
+                    + "Voilà du bon fromage au lait\n" + "Il est du pays de celui qui l'a fait !\n" + "\n"
+                    + "Celui qui l'a fait il est de son village\n" + "Ah ! Mesdames, voilà du bon fromage\n"
+                    + "Voilà du bon fromage au lait,\n" + "Il est du pays de celui qui l'a fait !")
     private String pString;
 
     @PluginParameter(label = "Simple byte", description = "Simple byte description", defaultValue = "1")
