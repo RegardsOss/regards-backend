@@ -18,21 +18,20 @@
  */
 package fr.cnes.regards.framework.oais;
 
-import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 
+import javax.validation.constraints.NotNull;
+
 import fr.cnes.regards.framework.geojson.AbstractFeature;
 import fr.cnes.regards.framework.oais.urn.EntityType;
-import fr.cnes.regards.framework.oais.validator.DataWithRawdata;
 
 /**
  * OAIS Information package base structure
  * @author Marc Sordi
  * @author Sylvain Vissiere-Guerinet
  */
-@DataWithRawdata
 public abstract class AbstractInformationPackage<ID> extends AbstractFeature<InformationPackageProperties, ID> {
 
     @NotNull(message = "Information package type is required")
@@ -97,7 +96,7 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = (prime * result) + ((ipType == null) ? 0 : ipType.hashCode());
+        result = prime * result + (ipType == null ? 0 : ipType.hashCode());
         return result;
     }
 
@@ -115,8 +114,9 @@ public abstract class AbstractInformationPackage<ID> extends AbstractFeature<Inf
         if (getClass() != obj.getClass()) {
             return false;
         }
-        @SuppressWarnings("rawtypes") AbstractInformationPackage other = (AbstractInformationPackage) obj;
-        return (ipType == other.ipType);
+        @SuppressWarnings("rawtypes")
+        AbstractInformationPackage other = (AbstractInformationPackage) obj;
+        return ipType == other.ipType;
     }
 
 }
