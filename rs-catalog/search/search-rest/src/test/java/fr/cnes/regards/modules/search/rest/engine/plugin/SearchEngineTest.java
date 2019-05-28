@@ -36,7 +36,7 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchType;
  * @author Sébastien Binda
  */
 @Plugin(id = SearchEngineTest.ENGINE_ID, author = "REGARDS Team", contact = "regards@c-s.fr",
-        description = "Test search engine", licence = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss",
+        description = "Test search engine", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss",
         version = "1.0.0")
 public class SearchEngineTest implements ISearchEngine<Object, Object, Object, List<String>> {
 

@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.catalog.services.helper.CatalogPluginResponseFact
  * @author Christophe Mertz
  */
 @Plugin(description = "Sample plugin test", id = SampleServicePlugin.PLUGIN_ID, version = "0.0.1",
-        author = "REGARDS Dream Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        author = "REGARDS Dream Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 @CatalogServicePlugin(applicationModes = { ServiceScope.ONE, ServiceScope.MANY }, entityTypes = { EntityType.DATA })
 public class SampleServicePlugin extends AbstractCatalogServicePlugin implements ISampleServicePlugin {
