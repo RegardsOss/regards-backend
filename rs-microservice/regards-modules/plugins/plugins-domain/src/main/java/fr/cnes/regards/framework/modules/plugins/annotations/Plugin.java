@@ -85,9 +85,9 @@ public @interface Plugin {
     String owner();
 
     /**
-     * Licence of the plugin.
-     * @return the plugin's licence
+     * License of the plugin.
+     * @return the plugin's license
      */
-    String licence();
+    String license();
 
 }

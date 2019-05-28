@@ -25,7 +25,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
  * @author oroussel
  */
 @Plugin(author = "REGARDS Team", description = "Plugin for plugin configuration plugin parameter type testing",
-        id = "InnerParamTestPlugin", version = "1.0.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
+        id = "InnerParamTestPlugin", version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
 public class InnerParamTestPlugin implements IParamTestPlugin {
 
