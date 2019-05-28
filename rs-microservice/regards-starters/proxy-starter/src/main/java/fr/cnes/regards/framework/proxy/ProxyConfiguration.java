@@ -76,6 +76,7 @@ public class ProxyConfiguration {
                 fr.cnes.httpclient.configuration.ProxyConfiguration.USERNAME.setValue(proxyLogin);
                 fr.cnes.httpclient.configuration.ProxyConfiguration.PASSWORD.setValue(proxyPassword);
             }
+
             return HttpClientFactory.create(Type.PROXY_BASIC);
         } else {
             LOGGER.info("No HTTP Proxy configured.");
