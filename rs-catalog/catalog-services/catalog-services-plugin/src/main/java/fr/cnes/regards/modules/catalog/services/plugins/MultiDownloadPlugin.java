@@ -26,6 +26,7 @@ import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -71,7 +72,7 @@ import fr.cnes.regards.modules.opensearch.service.exception.OpenSearchParseExcep
 
 @Plugin(description = "Plugin to allow download on multiple data selection by creating an archive.",
         id = "MultiDownloadPlugin", version = "1.0.0", author = "REGARDS Team", contact = "regards@c-s.fr",
-        licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
+        license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
 @CatalogServicePlugin(applicationModes = { ServiceScope.MANY }, entityTypes = { EntityType.DATA })
 public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements IEntitiesServicePlugin {
 
@@ -92,7 +93,12 @@ public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements
     @Value("${http.proxy.port}")
     private int proxyPort;
 
+    @Value("${http.proxy.noproxy:#{null}}")
+    private String noProxyHostsString;
+
     private Proxy proxy;
+
+    private final Set<String> noProxyHosts = Sets.newHashSet();
 
     @PluginParameter(label = "Maximum number of files", name = "maxFilesToDownload", defaultValue = "1000",
             description = "Maximum number of files that this plugin allow to download.")
@@ -110,6 +116,9 @@ public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements
     public void init() {
         proxy = Strings.isNullOrEmpty(proxyHost) ? Proxy.NO_PROXY
                 : new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+        if (noProxyHostsString != null) {
+            Collections.addAll(noProxyHosts, noProxyHostsString.split("\\s*,\\s*"));
+        }
     }
 
     @Override
@@ -144,7 +153,7 @@ public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements
     private ResponseEntity<StreamingResponseBody> apply(List<DataObject> dataObjects, HttpServletResponse response) {
         // Retrieve all onlines files from each DataObject
         Map<DataObject, Set<DataFile>> toDownloadFilesMap = Maps.newHashMap();
-        if (dataObjects != null && !dataObjects.isEmpty()) {
+        if ((dataObjects != null) && !dataObjects.isEmpty()) {
             dataObjects.forEach(dataObject -> toDownloadFilesMap.put(dataObject, getOnlineFiles(dataObject)));
         }
 
@@ -165,7 +174,7 @@ public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements
                 .sum();
         LOGGER.debug(String.format("Total size of files to download : %d", filesSizeInBytes));
         // If size exceed maximum configured, return a JSON message with the error.
-        if (filesSizeInBytes > maxFilesSizeToDownload * 1024 * 1024) {
+        if (filesSizeInBytes > (maxFilesSizeToDownload * 1024 * 1024)) {
             return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON, String
                     .format("Total size of selected files exceeded maximum allowed of %d (Mo)", maxFilesToDownload));
         }
@@ -202,9 +211,9 @@ public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements
      */
     private Set<DataFile> getOnlineFiles(DataObject dataObject) {
         Set<DataFile> files = Sets.newHashSet();
-        if (dataObject != null && dataObject.getFiles() != null) {
+        if ((dataObject != null) && (dataObject.getFiles() != null)) {
             dataObject.getFiles().forEach((type, file) -> {
-                if (DataType.RAWDATA.equals(type) && Boolean.TRUE.equals(file.isOnline()) && file.getUri() != null) {
+                if (DataType.RAWDATA.equals(type) && Boolean.TRUE.equals(file.isOnline()) && (file.getUri() != null)) {
                     files.add(file);
                 }
             });
@@ -251,7 +260,7 @@ public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements
         try {
             LOGGER.debug(String.format("Adding file %s into ZIP archive", fileName));
             zos.putNextEntry(new ZipEntry(fileName));
-            ByteStreams.copy(DownloadUtils.getInputStreamThroughProxy(getDataFileURL(file), proxy), zos);
+            ByteStreams.copy(DownloadUtils.getInputStreamThroughProxy(getDataFileURL(file), proxy, noProxyHosts), zos);
         } catch (IOException e) {
             LOGGER.error(String.format("Error downloading file %s", file.getUri()), e);
         } finally {

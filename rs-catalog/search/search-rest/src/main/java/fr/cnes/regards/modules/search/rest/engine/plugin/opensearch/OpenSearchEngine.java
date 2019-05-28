@@ -84,7 +84,7 @@ import fr.cnes.regards.modules.search.service.ICatalogSearchService;
  * @author Sébastien Binda
  */
 @Plugin(id = OpenSearchEngine.ENGINE_ID, author = "REGARDS Team", contact = "regards@c-s.fr",
-        description = "Native search engine", licence = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss",
+        description = "Native search engine", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss",
         version = "1.0.0", markdown = "OpensearchEngine.md")
 public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescription, Object, List<String>> {
 

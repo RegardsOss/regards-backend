@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.dam.domain.models.Model;
  * @author Sylvain Vissiere-Guerinet
  */
 @Plugin(id = "tata", description = "plugin for test", author = "REGARDS Team", contact = "regards@c-s.fr",
-        licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss", version = "1.0.0")
+        license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss", version = "1.0.0")
 @CatalogServicePlugin(applicationModes = { ServiceScope.ONE, ServiceScope.MANY }, entityTypes = { EntityType.DATA })
 public class TestService implements IService {
 
