@@ -36,7 +36,7 @@ import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPlugi
  * @since 1.0
  */
 @Plugin(author = "CS-SI", description = "LDAP authentication plugin", id = "LdapAuthenticationPlugin", version = "1.0",
-        contact = "regards@c-s.fr", licence = "GPL V3", owner = "CNES", url = "www.cnes.fr")
+        contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES", url = "www.cnes.fr")
 public class LdapAuthenticationPlugin implements IAuthenticationPlugin {
 
     /**
