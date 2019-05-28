@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.modules.backendforfrontend.rest;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,7 @@ import fr.cnes.regards.modules.catalog.services.domain.annotations.CatalogServic
  * @author Christophe Mertz
  */
 @Plugin(description = "Sample plugin test", id = "aSampleServicePlugin", version = "0.0.1",
-        author = "REGARDS Dream Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        author = "REGARDS Dream Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 @CatalogServicePlugin(applicationModes = { ServiceScope.ONE, ServiceScope.MANY }, entityTypes = { EntityType.DATA })
 public class SampleServicePlugin implements ISampleServicePlugin {
