@@ -36,7 +36,7 @@ import fr.cnes.regards.modules.storage.domain.AIPBuilder;
  * @author Marc Sordi
  */
 @Plugin(author = "REGARDS Team", description = "Default single AIP generation", id = "DefaultSingleAIPGeneration",
-        version = "1.0.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
+        version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
 public class DefaultSingleAIPGeneration implements IAipGeneration {
 

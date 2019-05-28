@@ -30,7 +30,7 @@ import fr.cnes.regards.modules.ingest.domain.plugin.ISipValidation;
  * @author Marc Sordi
  */
 @Plugin(author = "REGARDS Team", description = "Default no effect SIP validation plugin", id = "DefaultSipValidation",
-        version = "1.0.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
+        version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
 public class DefaultSipValidation implements ISipValidation {
 
