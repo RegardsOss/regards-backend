@@ -55,7 +55,7 @@ import fr.cnes.regards.modules.authentication.plugins.domain.ExternalAuthenticat
  * @author Sébastien Binda
  */
 @Plugin(author = "CS-SI", description = "Kerberos Service Provider", id = "KerberosServiceProviderPlugin",
-        version = "1.0", contact = "regards@c-s.fr", licence = "GPL V3", owner = "CNES", url = "www.cnes.fr")
+        version = "1.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES", url = "www.cnes.fr")
 public class KerberosServiceProviderPlugin implements IServiceProviderPlugin {
 
     /**
@@ -174,18 +174,19 @@ public class KerberosServiceProviderPlugin implements IServiceProviderPlugin {
 
         // Get credential
         final UserDetails userDetails = new UserDetails(pAuthInformations.getProject(), pAuthInformations.getUserName(),
-                                                        null, null);
+                null, null);
         if ((validateAction != null) && (validateAction.getGssContext() != null)) {
             try {
                 final GSSCredential credentialDeleg = validateAction.getGssContext().getDelegCred();
-                @SuppressWarnings("restriction") final Subject subject = com.sun.security.jgss.GSSUtil
-                        .createSubject(credentialDeleg.getName(), credentialDeleg); // NOSONAR
+                @SuppressWarnings("restriction")
+                final Subject subject = com.sun.security.jgss.GSSUtil.createSubject(credentialDeleg.getName(),
+                                                                                    credentialDeleg); // NOSONAR
                 // LDAP : connection.
                 final KerberosLdapAction ldapAction = new KerberosLdapAction(ldapAdress, Integer.valueOf(ldapPort),
-                                                                             pAuthInformations.getUserName());
+                        pAuthInformations.getUserName());
                 Subject.doAs(subject, ldapAction);
-                final String mail = ldapAction
-                        .getUserEmail(ldapCN, ldapEmailAttribute, ldapSearchUserFilter, ldapUserLoginAttribute);
+                final String mail = ldapAction.getUserEmail(ldapCN, ldapEmailAttribute, ldapSearchUserFilter,
+                                                            ldapUserLoginAttribute);
                 userDetails.setEmail(mail);
             } catch (final GSSException | LdapException e) {
                 LOG.error(e.getMessage(), e);
@@ -221,9 +222,8 @@ public class KerberosServiceProviderPlugin implements IServiceProviderPlugin {
                 options.put("storeKey", Boolean.TRUE.toString());
                 options.put("isInitiator", Boolean.FALSE.toString());
                 options.put("debug", Boolean.FALSE.toString());
-                return new AppConfigurationEntry[] {
-                        new AppConfigurationEntry("com.sun.security.auth.module.Krb5LoginModule",
-                                                  LoginModuleControlFlag.REQUIRED, options) };
+                return new AppConfigurationEntry[] { new AppConfigurationEntry(
+                        "com.sun.security.auth.module.Krb5LoginModule", LoginModuleControlFlag.REQUIRED, options) };
             }
         };
     }
