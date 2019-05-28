@@ -1,22 +1,27 @@
 package fr.cnes.regards.framework.oais.validator;
 
-import javax.validation.Constraint;
-import javax.validation.Payload;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import javax.validation.Constraint;
+import javax.validation.Payload;
+
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
 import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * Ensure that {@link AbstractInformationPackage} of type {@link EntityType#DATA} have at least one
  * {@link OAISDataObject} of type {@link DataType#RAWDATA}
  * @author Sylvain Vissiere-Guerinet
+ *
+ * FIXME removed from {@link AbstractInformationPackage} because an AIP might not have any RAWDATA, class to remove with its validator.
+ *
  */
 @Target({ ElementType.TYPE })
 @Retention(RUNTIME)
