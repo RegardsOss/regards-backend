@@ -28,11 +28,12 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.context.ApplicationContextException;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import com.google.common.collect.Sets;
 
@@ -107,7 +108,7 @@ public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChe
 
     @Override
     public void registerEndpoints(final String microserviceName, final String tenant,
-            final List<ResourceMapping> localEndpoints) {
+            final List<ResourceMapping> localEndpoints) throws SecurityException {
 
         // Specified the working tenant
         runtimeTenantResolver.forceTenant(tenant);
@@ -115,11 +116,20 @@ public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChe
 
         // Register endpoints to administration service and retrieve configured ones
         FeignSecurityManager.asSystem();
-        final ResponseEntity<Void> response = resourcesClient.registerMicroserviceEndpoints(microserviceName,
-                                                                                            localEndpoints);
-        if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            throw new ApplicationContextException("Error registering endpoints to administration service");
+        try {
+            final ResponseEntity<Void> response = resourcesClient.registerMicroserviceEndpoints(microserviceName,
+                                                                                                localEndpoints);
+            if (!response.getStatusCode().equals(HttpStatus.OK)) {
+                throw new SecurityException(
+                        String.format("Error registering endpoints to administration service for tenant %s", tenant));
+            }
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            throw new SecurityException(
+                    String.format("Error registering endpoints to administration service for tenant %s. Cause : ",
+                                  tenant, e.getMessage()),
+                    e);
         }
+
     }
 
     @Override
@@ -157,7 +167,7 @@ public class RemoteAuthoritiesProvider extends AbstractProjectDiscoveryClientChe
             final List<Resource<ResourcesAccess>> body = resourcesResponse.getBody();
             final List<ResourcesAccess> resources = HateoasUtils.unwrapList(body);
             return resources.stream().filter(resource -> resource.getMicroservice().equals(microserviceName))
-//                    .peek((resource) -> LOGGER.info("Building resource mapping of {}", resource.toString()))
+                    //                    .peek((resource) -> LOGGER.info("Building resource mapping of {}", resource.toString()))
                     .map(resource -> buildResourceMapping(resource, Collections.singleton(new Role(roleName))))
                     .collect(Collectors.toSet());
         }
