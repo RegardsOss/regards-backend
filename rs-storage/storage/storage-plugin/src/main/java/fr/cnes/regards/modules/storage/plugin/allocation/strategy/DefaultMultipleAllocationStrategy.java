@@ -37,7 +37,7 @@ import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
  */
 @Plugin(author = "REGARDS Team",
         description = "Allocation Strategy plugin that allocates files to multiple data storage",
-        id = "DefaultMultipleAllocationStrategy", version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3",
+        id = "DefaultMultipleAllocationStrategy", version = "1.0", contact = "regards@c-s.fr", license = "GPLv3",
         owner = "CNES", url = "https://regardsoss.github.io/")
 public class DefaultMultipleAllocationStrategy implements IAllocationStrategy {
 

@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
  * @author Christophe Mertz
  */
 @Plugin(author = "REGARDS Team", description = "Plugin does not apply any security control",
-        id = "NoCatalogSecurityDelegation", version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3",
+        id = "NoCatalogSecurityDelegation", version = "1.0", contact = "regards@c-s.fr", license = "GPLv3",
         owner = "CNES", url = "https://regardsoss.github.io/")
 public class NoCatalogSecurityDelegationPlugin implements ISecurityDelegation {
 

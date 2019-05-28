@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+
 import fr.cnes.regards.framework.microservice.maintenance.MaintenanceException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -43,7 +44,7 @@ import fr.cnes.regards.modules.storage.domain.plugin.IAllocationStrategy;
  */
 @Plugin(author = "REGARDS Team",
         description = "Finds Online data storage with the highest priority and associate all the dataFiles to it.",
-        id = "DefaultAllocationStrategyPlugin", version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3",
+        id = "DefaultAllocationStrategyPlugin", version = "1.0", contact = "regards@c-s.fr", license = "GPLv3",
         owner = "CNES", url = "https://regardsoss.github.io/")
 public class DefaultAllocationStrategyPlugin implements IAllocationStrategy {
 
@@ -59,7 +60,8 @@ public class DefaultAllocationStrategyPlugin implements IAllocationStrategy {
                 .findAllByDataStorageTypeOrderByPriorityAsc(DataStorageType.ONLINE).stream()
                 .filter(pds -> pds.getDataStorageConfiguration().isActive()).sorted().findFirst()
                 .orElseThrow(() -> new MaintenanceException(
-                        "There is no active plugin configuration of type IDataStorage")).getDataStorageConfiguration();
+                        "There is no active plugin configuration of type IDataStorage"))
+                .getDataStorageConfiguration();
         HashMultimap<Long, StorageDataFile> result = HashMultimap.create(2, dataFilesToHandle.size());
 
         dataFilesToHandle.forEach(dataFile -> result.put(dataStorageConfToUse.getId(), dataFile));

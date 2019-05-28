@@ -60,7 +60,7 @@ import fr.cnes.regards.modules.storage.domain.plugin.WorkingSubsetWrapper;
  *
  */
 @Plugin(author = "REGARDS Team", description = "Plugin handling the storage on local file system", id = "Local",
-        version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
+        version = "1.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
 public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> {
 
