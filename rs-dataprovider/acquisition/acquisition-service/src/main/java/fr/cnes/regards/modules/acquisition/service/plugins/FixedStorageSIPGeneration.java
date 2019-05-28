@@ -36,7 +36,7 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
  */
 @Plugin(id = "FixedStorageSIPGeneration", version = "1.0.0",
         description = "Generate SIP by adding storage information configured in the miscInformation.storage section",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class FixedStorageSIPGeneration extends AbstractStorageInformation implements ISipGenerationPlugin {
 

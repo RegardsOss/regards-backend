@@ -50,7 +50,7 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
  * @author Christophe Mertz
  */
 @Plugin(id = "TestGenerateSipPlugin", version = "1.0.0-SNAPSHOT", description = "TestGenerateSipPlugin",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class TestGenerateSipPlugin extends AbstractGenerateSIPPlugin implements ISipGenerationPlugin {
 

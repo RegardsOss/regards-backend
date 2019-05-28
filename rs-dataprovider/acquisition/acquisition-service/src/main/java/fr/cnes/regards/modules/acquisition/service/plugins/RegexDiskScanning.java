@@ -48,7 +48,7 @@ import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
  */
 @Plugin(id = "RegexDiskScanning", version = "1.0.0-SNAPSHOT",
         description = "Scan directories to detect files filtering with a regular expression pattern",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class RegexDiskScanning implements IScanPlugin {
 
