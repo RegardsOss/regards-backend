@@ -53,7 +53,7 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalWorkingSubs
  *
  */
 @Plugin(author = "REGARDS Team", description = "Plugin handling the storage on local file system",
-        id = "SimpleOnlineTest", version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
+        id = "SimpleOnlineTest", version = "1.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
 public class SimpleOnlineDataStorage implements IOnlineDataStorage<LocalWorkingSubset> {
 

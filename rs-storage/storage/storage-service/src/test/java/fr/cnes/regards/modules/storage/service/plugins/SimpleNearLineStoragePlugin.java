@@ -45,7 +45,7 @@ import fr.cnes.regards.modules.storage.domain.plugin.WorkingSubsetWrapper;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalWorkingSubset;
 
 @Plugin(author = "REGARDS Team", description = "SImple test plugin.", id = "SimpleTestNearLineStoragePlugin",
-        version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
+        version = "1.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
 public class SimpleNearLineStoragePlugin implements INearlineDataStorage<LocalWorkingSubset> {
 

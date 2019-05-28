@@ -39,7 +39,7 @@ import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalWorkingSubs
  *
  */
 @Plugin(author = "REGARDS Team", description = "NEarline test plugin.", id = NearlineDataStorageTestPlugin.PLUGIN_ID,
-        version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
+        version = "1.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
 public class NearlineDataStorageTestPlugin implements INearlineDataStorage<LocalWorkingSubset> {
 

@@ -13,7 +13,7 @@ import fr.cnes.regards.modules.storage.domain.plugin.ISecurityDelegation;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Plugin(author = "REGARDS Team", description = "Fake security delegation plugin for tests, do not check",
-        id = "FalseSecurityDelegation", version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
+        id = "FalseSecurityDelegation", version = "1.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
 public class FalseSecurityDelegation implements ISecurityDelegation {
 

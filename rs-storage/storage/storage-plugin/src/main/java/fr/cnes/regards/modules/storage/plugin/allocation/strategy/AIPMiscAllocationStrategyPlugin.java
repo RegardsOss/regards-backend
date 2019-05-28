@@ -71,7 +71,7 @@ import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
  */
 @Plugin(author = "REGARDS Team",
         description = "Define where to store files by reading informations from the misc information of supplied AIPs",
-        id = "AIPMiscStrategy", version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
+        id = "AIPMiscStrategy", version = "1.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/", markdown = "AIPMiscAllocationStrategyPlugin.md")
 public class AIPMiscAllocationStrategyPlugin implements IAllocationStrategy {
 

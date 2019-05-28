@@ -32,6 +32,7 @@ import com.google.common.collect.Multimaps;
 import com.google.gson.Gson;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
+
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.modules.plugins.annotations.Plugin;
@@ -51,7 +52,7 @@ import fr.cnes.regards.modules.storage.domain.plugin.IOnlineDataStorage;
 @Plugin(author = "REGARDS Team",
         description = "Allocation Strategy plugin that map a property value to a data storage. "
                 + "In case the property is not set or the value is not mapped, it can be dispatched to a default datastorage.",
-        id = "PropertyMappingAllocationStrategy", version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3",
+        id = "PropertyMappingAllocationStrategy", version = "1.0", contact = "regards@c-s.fr", license = "GPLv3",
         owner = "CNES", url = "https://regardsoss.github.io/")
 public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
 
@@ -136,10 +137,9 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
             DispatchErrors errors) {
         HashMultimap<Long, StorageDataFile> dispatch = HashMultimap.create();
         // First lets construct a map, which is way better to manipulate
-        HashMultimap<String, Long> valueConfIdMap = propertyDataStorageMappings.stream().collect(Multimaps.toMultimap(
-                PropertyDataStorageMapping::getPropertyValue,
-                PropertyDataStorageMapping::getDataStorageConfId,
-                HashMultimap::create));
+        HashMultimap<String, Long> valueConfIdMap = propertyDataStorageMappings.stream()
+                .collect(Multimaps.toMultimap(PropertyDataStorageMapping::getPropertyValue,
+                                              PropertyDataStorageMapping::getDataStorageConfId, HashMultimap::create));
         for (StorageDataFile dataFile : dataFilesToHandle) {
             if (storageDirectory != null) {
                 dataFile.setStorageDirectory(storageDirectory);
@@ -151,14 +151,14 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
             try {
                 String propertyValue = JsonPath.read(gson.toJson(dataFile.getAip()), propertyPath);
                 Set<Long> chosenOnes = valueConfIdMap.get(propertyValue);
-                if (chosenOnes == null || chosenOnes.isEmpty()) {
+                if ((chosenOnes == null) || chosenOnes.isEmpty()) {
                     // in case the value is unknown, lets set it into the default
                     if (defaultDataStorageConfId != null) {
                         dispatch.put(defaultDataStorageConfId, dataFile);
                     } else {
-                        String failureCause = String.format(
-                                "File(urls: %s) could not be associated to any data storage the allocation strategy do not have any mapping for the value of the property.",
-                                dataFile.getUrls());
+                        String failureCause = String
+                                .format("File(urls: %s) could not be associated to any data storage the allocation strategy do not have any mapping for the value of the property.",
+                                        dataFile.getUrls());
                         LOG.error(failureCause);
                         errors.addDispatchError(dataFile, failureCause);
                     }
@@ -172,11 +172,9 @@ public class PropertyMappingAllocationStrategy implements IAllocationStrategy {
                 if (defaultDataStorageConfId != null) {
                     dispatch.put(defaultDataStorageConfId, dataFile);
                 } else {
-                    String failureCause = String.format(
-                            "File(url: %s) could not be associated to any data storage because the aip associated(ipId: %s) do not have the following property: %s",
-                            dataFile.getUrls(),
-                            dataFile.getAip().getId(),
-                            propertyPath);
+                    String failureCause = String
+                            .format("File(url: %s) could not be associated to any data storage because the aip associated(ipId: %s) do not have the following property: %s",
+                                    dataFile.getUrls(), dataFile.getAip().getId(), propertyPath);
                     LOG.error(failureCause, e);
                     errors.addDispatchError(dataFile, failureCause);
                 }
