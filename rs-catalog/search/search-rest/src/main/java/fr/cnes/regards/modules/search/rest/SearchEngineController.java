@@ -18,12 +18,9 @@
  */
 package fr.cnes.regards.modules.search.rest;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map.Entry;
 
 import javax.validation.Valid;
 
@@ -132,8 +129,8 @@ public class SearchEngineController {
             @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
             Pageable pageable) throws ModuleException {
         LOGGER.debug("Search on all entities delegated to engine \"{}\"", engineType);
-        return dispatcher.dispatchRequest(SearchContext.build(SearchType.ALL, engineType, headers,
-                                                              getDecodedParams(queryParams), pageable));
+        return dispatcher
+                .dispatchRequest(SearchContext.build(SearchType.ALL, engineType, headers, queryParams, pageable));
     }
 
     /**
@@ -146,7 +143,7 @@ public class SearchEngineController {
             @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) throws ModuleException {
         LOGGER.debug("Extra mapping \"{}\" handling delegated to engine \"{}\"", extra, engineType);
         return dispatcher.dispatchRequest(SearchContext
-                .build(SearchType.ALL, engineType, headers, getDecodedParams(queryParams), pageable).withExtra(extra));
+                .build(SearchType.ALL, engineType, headers, queryParams, pageable).withExtra(extra));
     }
 
     /**
@@ -173,8 +170,8 @@ public class SearchEngineController {
             @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
             Pageable pageable) throws ModuleException {
         LOGGER.debug("Search on all collections delegated to engine \"{}\"", engineType);
-        return dispatcher.dispatchRequest(SearchContext.build(SearchType.COLLECTIONS, engineType, headers,
-                                                              getDecodedParams(queryParams), pageable));
+        return dispatcher.dispatchRequest(SearchContext.build(SearchType.COLLECTIONS, engineType, headers, queryParams,
+                                                              pageable));
     }
 
     /**
@@ -189,8 +186,7 @@ public class SearchEngineController {
         LOGGER.debug("Search all collections extra mapping \"{}\" handling delegated to engine \"{}\"", extra,
                      engineType);
         return dispatcher.dispatchRequest(SearchContext
-                .build(SearchType.COLLECTIONS, engineType, headers, getDecodedParams(queryParams), pageable)
-                .withExtra(extra));
+                .build(SearchType.COLLECTIONS, engineType, headers, queryParams, pageable).withExtra(extra));
     }
 
     /**
@@ -205,9 +201,9 @@ public class SearchEngineController {
             @RequestParam(SearchEngineMappings.MAX_COUNT) int maxCount) throws ModuleException {
         LOGGER.debug("Search collection property values for \"{}\" delegated to engine \"{}\"", propertyName,
                      engineType);
-        return dispatcher.dispatchRequest(SearchContext
-                .build(SearchType.COLLECTIONS, engineType, headers, getDecodedParams(queryParams), null)
-                .withPropertyName(propertyName).withMaxCount(maxCount));
+        return dispatcher
+                .dispatchRequest(SearchContext.build(SearchType.COLLECTIONS, engineType, headers, queryParams, null)
+                        .withPropertyName(propertyName).withMaxCount(maxCount));
     }
 
     /**
@@ -234,8 +230,8 @@ public class SearchEngineController {
             @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
             Pageable pageable) throws ModuleException {
         LOGGER.debug("Search on all documents delegated to engine \"{}\"", engineType);
-        return dispatcher.dispatchRequest(SearchContext.build(SearchType.DOCUMENTS, engineType, headers,
-                                                              getDecodedParams(queryParams), pageable));
+        return dispatcher
+                .dispatchRequest(SearchContext.build(SearchType.DOCUMENTS, engineType, headers, queryParams, pageable));
     }
 
     /**
@@ -249,8 +245,7 @@ public class SearchEngineController {
         LOGGER.debug("Search all documents extra mapping \"{}\" handling delegated to engine \"{}\"", extra,
                      engineType);
         return dispatcher.dispatchRequest(SearchContext
-                .build(SearchType.DOCUMENTS, engineType, headers, getDecodedParams(queryParams), pageable)
-                .withExtra(extra));
+                .build(SearchType.DOCUMENTS, engineType, headers, queryParams, pageable).withExtra(extra));
     }
 
     /**
@@ -264,9 +259,9 @@ public class SearchEngineController {
             @RequestParam MultiValueMap<String, String> queryParams,
             @RequestParam(SearchEngineMappings.MAX_COUNT) int maxCount) throws ModuleException {
         LOGGER.debug("Search document property values for \"{}\" delegated to engine \"{}\"", propertyName, engineType);
-        return dispatcher.dispatchRequest(SearchContext
-                .build(SearchType.DOCUMENTS, engineType, headers, getDecodedParams(queryParams), null)
-                .withPropertyName(propertyName).withMaxCount(maxCount));
+        return dispatcher
+                .dispatchRequest(SearchContext.build(SearchType.DOCUMENTS, engineType, headers, queryParams, null)
+                        .withPropertyName(propertyName).withMaxCount(maxCount));
     }
 
     /**
@@ -293,8 +288,8 @@ public class SearchEngineController {
             @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
             Pageable pageable) throws ModuleException {
         LOGGER.debug("Search on all datasets delegated to engine \"{}\"", engineType);
-        return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATASETS, engineType, headers,
-                                                              getDecodedParams(queryParams), pageable));
+        return dispatcher
+                .dispatchRequest(SearchContext.build(SearchType.DATASETS, engineType, headers, queryParams, pageable));
     }
 
     /**
@@ -307,8 +302,7 @@ public class SearchEngineController {
             @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) throws ModuleException {
         LOGGER.debug("Search all datasets extra mapping \"{}\" handling delegated to engine \"{}\"", extra, engineType);
         return dispatcher.dispatchRequest(SearchContext
-                .build(SearchType.DATASETS, engineType, headers, getDecodedParams(queryParams), pageable)
-                .withExtra(extra));
+                .build(SearchType.DATASETS, engineType, headers, queryParams, pageable).withExtra(extra));
     }
 
     /**
@@ -322,9 +316,9 @@ public class SearchEngineController {
             @RequestParam MultiValueMap<String, String> queryParams,
             @RequestParam(SearchEngineMappings.MAX_COUNT) int maxCount) throws ModuleException {
         LOGGER.debug("Search dataset property values for \"{}\" delegated to engine \"{}\"", propertyName, engineType);
-        return dispatcher.dispatchRequest(SearchContext
-                .build(SearchType.DATASETS, engineType, headers, getDecodedParams(queryParams), null)
-                .withPropertyName(propertyName).withMaxCount(maxCount));
+        return dispatcher
+                .dispatchRequest(SearchContext.build(SearchType.DATASETS, engineType, headers, queryParams, null)
+                        .withPropertyName(propertyName).withMaxCount(maxCount));
     }
 
     /**
@@ -351,8 +345,8 @@ public class SearchEngineController {
             @RequestHeader HttpHeaders headers, @RequestParam MultiValueMap<String, String> queryParams,
             Pageable pageable) throws ModuleException {
         LOGGER.debug("Search on all dataobjects delegated to engine \"{}\"", engineType);
-        return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers,
-                                                              getDecodedParams(queryParams), pageable));
+        return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, queryParams,
+                                                              pageable));
     }
 
     /**
@@ -367,8 +361,7 @@ public class SearchEngineController {
         LOGGER.debug("Search all dataobjects extra mapping \"{}\" handling delegated to engine \"{}\"", extra,
                      engineType);
         return dispatcher.dispatchRequest(SearchContext
-                .build(SearchType.DATAOBJECTS, engineType, headers, getDecodedParams(queryParams), pageable)
-                .withExtra(extra));
+                .build(SearchType.DATAOBJECTS, engineType, headers, queryParams, pageable).withExtra(extra));
     }
 
     /**
@@ -383,9 +376,9 @@ public class SearchEngineController {
             @RequestParam(SearchEngineMappings.MAX_COUNT) int maxCount) throws ModuleException {
         LOGGER.debug("Search dataobject property values for \"{}\" delegated to engine \"{}\"", propertyName,
                      engineType);
-        return dispatcher.dispatchRequest(SearchContext
-                .build(SearchType.DATAOBJECTS, engineType, headers, getDecodedParams(queryParams), null)
-                .withPropertyName(propertyName).withMaxCount(maxCount));
+        return dispatcher
+                .dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, queryParams, null)
+                        .withPropertyName(propertyName).withMaxCount(maxCount));
     }
 
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATAOBJECTS_PROPERTIES_BOUNDS)
@@ -395,9 +388,9 @@ public class SearchEngineController {
             @RequestParam(name = SearchEngineMappings.PROPERTY_NAMES) List<String> propertyNames,
             @RequestParam MultiValueMap<String, String> queryParams) throws SearchException, ModuleException {
         LOGGER.debug("Search dataobject properties bounds valuesdelegated to engine \"{}\"", engineType);
-        return dispatcher.dispatchRequest(SearchContext
-                .build(SearchType.DATAOBJECTS, engineType, headers, getDecodedParams(queryParams), null)
-                .withPropertyNames(propertyNames).withBoundCalculation());
+        return dispatcher
+                .dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, queryParams, null)
+                        .withPropertyNames(propertyNames).withBoundCalculation());
     }
 
     /**
@@ -430,8 +423,7 @@ public class SearchEngineController {
                      engineType);
         UniformResourceName urn = UniformResourceName.fromString(datasetUrn);
         return dispatcher.dispatchRequest(SearchContext
-                .build(SearchType.DATAOBJECTS, engineType, headers, getDecodedParams(queryParams), pageable)
-                .withDatasetUrn(urn));
+                .build(SearchType.DATAOBJECTS, engineType, headers, queryParams, pageable).withDatasetUrn(urn));
     }
 
     /**
@@ -449,9 +441,9 @@ public class SearchEngineController {
         LOGGER.debug("Search dataobjects on dataset \"{}\" extra mapping \"{}\" handling delegated to engine \"{}\"",
                      datasetUrn, extra, engineType);
         UniformResourceName urn = UniformResourceName.fromString(datasetUrn);
-        return dispatcher.dispatchRequest(SearchContext
-                .build(SearchType.DATAOBJECTS, engineType, headers, getDecodedParams(queryParams), pageable)
-                .withDatasetUrn(urn).withExtra(extra));
+        return dispatcher
+                .dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, queryParams, pageable)
+                        .withDatasetUrn(urn).withExtra(extra));
     }
 
     /**
@@ -468,9 +460,9 @@ public class SearchEngineController {
         LOGGER.debug("Search dataobject property values for \"{}\" on dataset \"{}\" delegated to engine \"{}\"",
                      propertyName, datasetUrn, engineType);
         UniformResourceName urn = UniformResourceName.fromString(datasetUrn);
-        return dispatcher.dispatchRequest(SearchContext
-                .build(SearchType.DATAOBJECTS, engineType, headers, getDecodedParams(queryParams), null)
-                .withDatasetUrn(urn).withPropertyName(propertyName).withMaxCount(maxCount));
+        return dispatcher
+                .dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS, engineType, headers, queryParams, null)
+                        .withDatasetUrn(urn).withPropertyName(propertyName).withMaxCount(maxCount));
     }
 
     // Search on dataobjects returning datasets
@@ -486,7 +478,7 @@ public class SearchEngineController {
             @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) throws ModuleException {
         LOGGER.debug("Search datasets with dataobject criterions delegated to engine \"{}\"", engineType);
         return dispatcher.dispatchRequest(SearchContext.build(SearchType.DATAOBJECTS_RETURN_DATASETS, engineType,
-                                                              headers, getDecodedParams(queryParams), pageable));
+                                                              headers, queryParams, pageable));
     }
 
     /**
@@ -680,24 +672,5 @@ public class SearchEngineController {
         if (link != null) {
             links.add(link);
         }
-    }
-
-    // FIXME : fix issue in frontend to avoid double decoding
-    private MultiValueMap<String, String> getDecodedParams(MultiValueMap<String, String> queryParams)
-            throws SearchException {
-
-        MultiValueMap<String, String> allDecodedParams = new LinkedMultiValueMap<>();
-        for (Entry<String, List<String>> kvp : queryParams.entrySet()) {
-            for (String value : kvp.getValue()) {
-                try {
-                    allDecodedParams.add(kvp.getKey(), URLDecoder.decode(value, "UTF-8"));
-                } catch (UnsupportedEncodingException e) {
-                    String message = String.format("Unsupported query parameters \"%s\" with value \"%s\"",
-                                                   kvp.getKey(), value);
-                    throw new SearchException(message, e);
-                }
-            }
-        }
-        return allDecodedParams;
     }
 }
