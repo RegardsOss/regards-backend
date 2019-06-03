@@ -665,7 +665,9 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         } catch (ClosedByInterruptException e) {
             // This exception happens when you try to access files while thread has been interrupted.
             // In this case lets ignore the file and act as we did not scanned it.
-            LOGGER.debug("File {} scanning has been interrupted during acquisition chain execution.", filePath);
+            LOGGER.warn(String.format("File %s scanning has been interrupted during acquisition chain execution.",
+                                      filePath),
+                        e);
         } catch (NoSuchAlgorithmException | IOException e) {
             // Continue silently but register error in database
             String errorMessage = String.format("Error registering file %s : %s", scannedFile.getFilePath().toString(),
