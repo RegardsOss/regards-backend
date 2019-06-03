@@ -40,6 +40,8 @@ public class StopChainThread extends Thread {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StopChainThread.class);
 
+    private static final String NOTIFICATION_TITLE = "Acquisition processing chain stopped";
+
     @Autowired
     private IAcquisitionProcessingService processingService;
 
@@ -91,14 +93,14 @@ public class StopChainThread extends Thread {
                 notificationClient
                         .notify(String.format("Acquisition processing chain \"%s\" was properly stopped and cleaned.",
                                               processingChain.getLabel()),
-                                "Acquisition processing chain stopped", NotificationLevel.INFO, DefaultRole.ADMIN);
+                                NOTIFICATION_TITLE, NotificationLevel.INFO, DefaultRole.ADMIN);
                 // Unlock chain
                 processingService.unlockChain(processingChainId);
             } else {
                 notificationClient.notify(String
                         .format("Acquisition processing chain \"%s\" is not yet stopped and cleaned. You have to retry stopping the chain before restarting properly!",
-                                processingChain.getLabel()), "Acquisition processing chain stopped",
-                                          NotificationLevel.ERROR, DefaultRole.ADMIN);
+                                processingChain.getLabel()), NOTIFICATION_TITLE, NotificationLevel.ERROR,
+                                          DefaultRole.ADMIN);
             }
 
         } catch (ModuleException | InterruptedException ex) {
@@ -112,8 +114,7 @@ public class StopChainThread extends Thread {
             String message = String
                     .format("Acquisition processing chain \"%s\" is not yet stopped and cleaned. An exception was thrown during stop process (%s).You have to retry stopping the chain before restarting properly!",
                             processingNameOrId, ex.getMessage());
-            notificationClient.notify(message, "Acquisition processing chain stopped", NotificationLevel.ERROR,
-                                      DefaultRole.ADMIN);
+            notificationClient.notify(message, NOTIFICATION_TITLE, NotificationLevel.ERROR, DefaultRole.ADMIN);
         }
     }
 }

@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
  * @author Sébastien Binda
  *
  */
-public class AcquisitionProcessingChainSpecifications {
+public final class AcquisitionProcessingChainSpecifications {
 
     private static final String LIKE_CHAR = "%";
 
