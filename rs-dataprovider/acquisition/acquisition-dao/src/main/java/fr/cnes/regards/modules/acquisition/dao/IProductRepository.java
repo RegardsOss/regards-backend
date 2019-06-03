@@ -18,12 +18,12 @@
  */
 package fr.cnes.regards.modules.acquisition.dao;
 
-import javax.persistence.LockModeType;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.persistence.LockModeType;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -178,8 +178,8 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
         // now that we have the ids, lets load the products and keep the same sort
         List<Product> loadedProducts = findAllByIdIn(productIds, pageable.getSort());
         return new PageImpl<>(loadedProducts,
-                              PageRequest.of(products.getNumber(), products.getSize(), products.getSort()),
-                              products.getTotalElements());
+                PageRequest.of(products.getNumber(), products.getSize(), products.getSort()),
+                products.getTotalElements());
     }
 
     @EntityGraph("graph.product.complete")
