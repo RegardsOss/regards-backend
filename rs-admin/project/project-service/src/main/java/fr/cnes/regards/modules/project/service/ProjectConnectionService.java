@@ -225,6 +225,16 @@ public class ProjectConnectionService implements IProjectConnectionService {
     }
 
     @Override
+    public void deleteProjectConnections(Project project) {
+        List<ProjectConnection> connections = projectConnectionRepository.deleteByProjectId(project.getId());
+        // Publish configuration deletion
+        for (ProjectConnection connection : connections) {
+            instancePublisher.publish(new TenantConnectionConfigurationDeleted(toTenantConnection(connection),
+                    connection.getMicroservice()));
+        }
+    }
+
+    @Override
     public ProjectConnection updateProjectConnection(Long projectConnectionId, ProjectConnection projectConnection)
             throws ModuleException {
         ProjectConnection connection;

@@ -99,15 +99,14 @@ public class ProjectServiceTest extends AbstractRegardsServiceIT {
     @Purpose("Check that the system allows to create a project.")
     public void createProjectTest() {
         Project projectToCreate = new Project(project1.getId(), COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, false,
-                                              PROJECT_TEST_1);
+                PROJECT_TEST_1);
         try {
             projectService.createProject(projectToCreate);
             Assert.fail("Project already exists there must be an exception thrown here");
         } catch (final ModuleException e) {
             /// Nothing to do
         }
-        projectToCreate = new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, false,
-                                      "new-project-test");
+        projectToCreate = new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, false, "new-project-test");
         projectToCreate.setLabel("projectToCreate");
         try {
             projectService.createProject(projectToCreate);
@@ -157,7 +156,7 @@ public class ProjectServiceTest extends AbstractRegardsServiceIT {
 
         final String invalidProjectName = "project-invalid-update";
         final Project invalidProject = new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, false,
-                                                   invalidProjectName);
+                invalidProjectName);
         try {
             projectService.updateProject(invalidProjectName, invalidProject);
         } catch (final ModuleException e) {
@@ -185,7 +184,6 @@ public class ProjectServiceTest extends AbstractRegardsServiceIT {
             Assert.fail(e.getMessage());
         }
         Assert.assertNotNull("The project to update exists. The returned project shouldn't be null", existingProject);
-
     }
 
 }

@@ -86,6 +86,11 @@ public interface IProjectConnectionRepository extends JpaRepository<ProjectConne
     Page<ProjectConnection> findByProjectName(String projectName, Pageable pageable);
 
     /**
+     * Delete all project connections
+     */
+    List<ProjectConnection> deleteByProjectId(Long projectId);
+
+    /**
      * List all active connections for specified microservice. Connections from deleted projects are rejected.
      * @param microservice microservice
      * @return list of {@link ProjectConnection}
