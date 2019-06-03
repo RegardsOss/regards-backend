@@ -124,7 +124,9 @@ public class SIPGenerationJob extends AbstractJob<Void> {
                 productService.saveAndSubmitSIP(product);
                 generatedCount++;
             } catch (ModuleException e) {
-                logger.debug("Error while generating product \"{}\"", product.getProductName());
+                String message = String.format("Error while generating product \"%s\"", product.getProductName());
+                // Message already logged!
+                logger.debug(message, e);
                 product.setSipState(ProductSIPState.GENERATION_ERROR);
                 product.setError(e.getMessage());
                 productService.save(product);

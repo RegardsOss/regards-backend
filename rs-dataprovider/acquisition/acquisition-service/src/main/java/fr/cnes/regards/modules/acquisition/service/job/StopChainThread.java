@@ -103,10 +103,17 @@ public class StopChainThread extends Thread {
 
         } catch (ModuleException | InterruptedException ex) {
             LOGGER.error("Processing chain clean thread failure", ex);
-            notificationClient.notify(String
+            String processingNameOrId;
+            if (processingChain != null) {
+                processingNameOrId = processingChain.getLabel();
+            } else {
+                processingNameOrId = String.valueOf(processingChainId);
+            }
+            String message = String
                     .format("Acquisition processing chain \"%s\" is not yet stopped and cleaned. An exception was thrown during stop process (%s).You have to retry stopping the chain before restarting properly!",
-                            processingChain.getLabel(), ex.getMessage()), "Acquisition processing chain stopped",
-                                      NotificationLevel.ERROR, DefaultRole.ADMIN);
+                            processingNameOrId, ex.getMessage());
+            notificationClient.notify(message, "Acquisition processing chain stopped", NotificationLevel.ERROR,
+                                      DefaultRole.ADMIN);
         }
     }
 }
