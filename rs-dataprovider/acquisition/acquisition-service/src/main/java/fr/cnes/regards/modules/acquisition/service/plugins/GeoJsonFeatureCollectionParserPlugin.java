@@ -175,7 +175,7 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
                 SIP sip = builder.build();
                 sip.setGeometry(feature.getGeometry());
 
-                if (sip.getProperties().getContentInformations().size() > 0) {
+                if (!sip.getProperties().getContentInformations().isEmpty()) {
                     Path file = Paths.get(entry.getParent().toString(), name + ".json");
                     generatedFiles.add(Files.write(file, Arrays.asList(gson.toJson(sip)), Charset.forName("UTF-8")));
                 }

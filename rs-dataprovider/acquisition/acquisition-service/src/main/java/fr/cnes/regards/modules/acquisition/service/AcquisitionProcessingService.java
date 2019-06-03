@@ -780,6 +780,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         if (acqChain.isPresent()) {
             for (AcquisitionFileInfo fileInfo : acqChain.get().getFileInfos()) {
                 while (handleProductAcquisitionErrorByPage(fileInfo)) {
+                    // Nothing to do
                 }
             }
         } else {
@@ -798,11 +799,13 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         return page.hasNext();
     }
 
-    private AcquisitionProcessingChainMonitor buildAcquisitionProcessingChainSummary(AcquisitionProcessingChain chain) {
+    private AcquisitionProcessingChainMonitor buildAcquisitionProcessingChainSummary(
+            AcquisitionProcessingChain chainToProcess) {
 
+        AcquisitionProcessingChain chain;
         //first lets handle all those lazy initialization issues on the chain
         try {
-            chain = getChain(chain.getId());
+            chain = getChain(chainToProcess.getId());
         } catch (ModuleException e) {
             // it should not happens, as the chain has just been recovered from DB, but anyway lets log it and rethrow it
             LOGGER.error(e.getMessage(), e);
