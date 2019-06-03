@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
  * @author Marc Sordi
  *
  */
-public class ProductToSIPHelper {
+public final class ProductToSIPHelper {
 
     private ProductToSIPHelper() {
         // Nothing to do

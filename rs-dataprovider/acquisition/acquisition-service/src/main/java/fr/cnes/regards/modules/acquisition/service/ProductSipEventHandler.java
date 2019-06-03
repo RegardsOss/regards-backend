@@ -55,7 +55,7 @@ public class ProductSipEventHandler implements ApplicationListener<ApplicationRe
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    IProductService productService;
+    private IProductService productService;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {

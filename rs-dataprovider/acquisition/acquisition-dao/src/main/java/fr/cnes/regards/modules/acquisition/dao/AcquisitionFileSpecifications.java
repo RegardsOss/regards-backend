@@ -38,7 +38,7 @@ import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingCha
  * Specification class to filter DAO searches on {@link AcquisitionFile} entities.
  * @author Sébastien Binda
  */
-public class AcquisitionFileSpecifications {
+public final class AcquisitionFileSpecifications {
 
     private static final String LIKE_CHAR = "%";
 

@@ -56,8 +56,7 @@ public class GeoJsonSIPGeneration implements ISipGenerationPlugin {
         AcquisitionFile file = product.getAcquisitionFiles().iterator().next();
         Path sipFile = file.getFilePath();
         try (JsonReader reader = new JsonReader(new InputStreamReader(new FileInputStream(sipFile.toFile())))) {
-            SIP sip = gson.fromJson(reader, SIP.class);
-            return sip;
+            return gson.fromJson(reader, SIP.class);
         } catch (IOException e) {
             throw new ModuleException(e);
         }

@@ -28,7 +28,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  * @author Marc Sordi
  *
  */
-public class SipStateManager {
+public final class SipStateManager {
 
     private SipStateManager() {
         // Nothing to do
