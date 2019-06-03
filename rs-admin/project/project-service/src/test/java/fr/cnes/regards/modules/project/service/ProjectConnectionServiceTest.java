@@ -143,7 +143,7 @@ public class ProjectConnectionServiceTest extends AbstractRegardsServiceIT {
         project1 = projectRepo.save(project1);
 
         project2 = new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_2);
-        project2.setLabel("Project1");
+        project2.setLabel("Project2");
         project2 = projectRepo.save(project2);
 
         projectCtx = new ProjectConnection(project1, MS_TEST_1, COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD,
@@ -151,6 +151,9 @@ public class ProjectConnectionServiceTest extends AbstractRegardsServiceIT {
         projectCtx = projectConnectionRepo.save(projectCtx);
         projectConnectionRepo.save(new ProjectConnection(project2, MS_TEST_2, COMMON_PROJECT_USER_NAME,
                 COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT2_URL));
+        projectConnectionRepo.save(new ProjectConnection(project2, "ms-test-3", COMMON_PROJECT_USER_NAME,
+                COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT2_URL));
+
     }
 
     /**
@@ -220,7 +223,18 @@ public class ProjectConnectionServiceTest extends AbstractRegardsServiceIT {
         } catch (final EntityNotFoundException e) {
             // Nothing to do
         }
+    }
 
+    @Test
+    public void testProjectDeletion() throws ModuleException {
+
+        Page<ProjectConnection> page = projectConnectionRepo.findByProjectName(PROJECT_TEST_2, Pageable.unpaged());
+        Assert.assertTrue(page.getTotalElements() == 2);
+
+        projectService.deleteProject(PROJECT_TEST_2);
+
+        page = projectConnectionRepo.findByProjectName(PROJECT_TEST_2, Pageable.unpaged());
+        Assert.assertTrue(page.isEmpty());
     }
 
     /**

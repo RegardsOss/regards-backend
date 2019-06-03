@@ -36,7 +36,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
@@ -93,7 +92,6 @@ public class ProjectController implements IResourceController<Project> {
      * @return List of projects
      */
     @RequestMapping(method = RequestMethod.GET, produces = "application/json")
-    @ResponseBody
     @ResourceAccess(description = "retrieve the list of project of instance", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<PagedResources<Resource<Project>>> retrieveProjectList(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
@@ -109,7 +107,6 @@ public class ProjectController implements IResourceController<Project> {
      * @return List of projects
      */
     @RequestMapping(value = "/public", method = RequestMethod.GET, produces = "application/json")
-    @ResponseBody
     @ResourceAccess(description = "retrieve the list of project of instance", role = DefaultRole.PUBLIC)
     public ResponseEntity<PagedResources<Resource<Project>>> retrievePublicProjectList(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
@@ -125,7 +122,6 @@ public class ProjectController implements IResourceController<Project> {
      * @throws ModuleException If Project already exists for the given name
      */
     @RequestMapping(method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
-    @ResponseBody
     @ResourceAccess(description = "create a new project", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<Project>> createProject(@Valid @RequestBody Project newProject)
             throws ModuleException {
@@ -140,7 +136,6 @@ public class ProjectController implements IResourceController<Project> {
      * @throws ModuleException {@link EntityNotFoundException} project does not exists
      */
     @RequestMapping(method = RequestMethod.GET, value = "/{project_name}", produces = "application/json")
-    @ResponseBody
     @ResourceAccess(description = "retrieve the project project_name", role = DefaultRole.PUBLIC)
     public ResponseEntity<Resource<Project>> retrieveProject(@PathVariable("project_name") String projectName)
             throws ModuleException {
@@ -171,7 +166,6 @@ public class ProjectController implements IResourceController<Project> {
      * @throws ModuleException {@link EntityNotFoundException} project does not exists
      */
     @RequestMapping(method = RequestMethod.PUT, value = "/{project_name}")
-    @ResponseBody
     @ResourceAccess(description = "update the project project_name", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Resource<Project>> updateProject(@PathVariable("project_name") String projectName,
             @Valid @RequestBody Project projectToUpdate) throws ModuleException {
@@ -186,7 +180,6 @@ public class ProjectController implements IResourceController<Project> {
      * @throws ModuleException {@link EntityNotFoundException} project does not exists
      */
     @RequestMapping(method = RequestMethod.DELETE, value = "/{project_name}")
-    @ResponseBody
     @ResourceAccess(description = "remove the project project_name", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Void> deleteProject(@PathVariable("project_name") String projectName) throws ModuleException {
         projectService.deleteProject(projectName);
@@ -196,7 +189,7 @@ public class ProjectController implements IResourceController<Project> {
     @Override
     public Resource<Project> toResource(Project project, Object... extras) {
         Resource<Project> resource = null;
-        if ((project != null) && (project.getName() != null)) {
+        if (project != null && project.getName() != null) {
             resource = resourceService.toResource(project);
             resourceService.addLink(resource, this.getClass(), "retrieveProject", LinkRels.SELF,
                                     MethodParamFactory.build(String.class, project.getName()));

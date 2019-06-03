@@ -46,6 +46,7 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionStat
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
 /**
@@ -90,6 +91,11 @@ public interface IProjectConnectionService {
      * @throws EntityNotFoundException The ProjectConnection to delete doesn't exists
      */
     void deleteProjectConnection(Long pProjectConnectionId) throws EntityNotFoundException;
+
+    /**
+     * Delete all project connections
+     */
+    void deleteProjectConnections(Project project);
 
     /**
      * Update an existing project connection
