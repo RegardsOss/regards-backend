@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.modules.notification.rest;
 
-import javax.validation.Valid;
 import java.util.List;
+
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -50,6 +51,7 @@ import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationSettings;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
 import fr.cnes.regards.modules.notification.domain.dto.NotificationSettingsDTO;
+import fr.cnes.regards.modules.notification.rest.dto.NotificationSummary;
 import fr.cnes.regards.modules.notification.service.INotificationService;
 import fr.cnes.regards.modules.notification.service.INotificationSettingsService;
 
@@ -96,6 +98,11 @@ public class NotificationController implements IResourceController<Notification>
      * Controller path for notification settings
      */
     public static final String NOTIFICATION_SETTINGS = "/settings";
+
+    /**
+     * Controller path to retrieve notifications summary. Used for long pooling by frontend.
+     */
+    public static final String SUMMARY = "/summary";
 
     /**
      * The service responsible for managing notifications
@@ -248,6 +255,20 @@ public class NotificationController implements IResourceController<Notification>
             @RequestBody NotificationSettingsDTO notificationSettings) throws EntityNotFoundException {
         NotificationSettings settings = notificationSettingsService.updateNotificationSettings(notificationSettings);
         return new ResponseEntity<>(settings, HttpStatus.OK);
+    }
+
+    /**
+     * Define the endpoint for updating the {@link Notification#status}
+     * @param notificationSettings The facade exposing user updatable fields of notification settings
+     * @return The updated {@link NotificationSettings} wrapped in a {@link ResponseEntity}
+     * @throws EntityNotFoundException Thrown when no notification settings with passed <code>id</code> could be found
+     */
+    @RequestMapping(value = SUMMARY, method = RequestMethod.GET)
+    @ResourceAccess(description = "Retrieve summary infos about notifications", role = DefaultRole.REGISTERED_USER)
+    public ResponseEntity<NotificationSummary> summary() throws EntityNotFoundException {
+        Long unReads = notificationService.countUnreadNotifications();
+        Long reads = notificationService.countReadNotifications();
+        return new ResponseEntity<>(new NotificationSummary(unReads, reads), HttpStatus.OK);
     }
 
     @Override
