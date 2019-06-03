@@ -117,7 +117,7 @@ public class RegardsErrorHandler implements ErrorHandler {
                             runtimeTenantResolver.clearTenant();
                         }
                     }
-                } catch (Exception e) {
+                } catch (Exception e) { // NOSONAR avoid any exception trying to retrieve tenant
                     // Cannot retrieve tenant if message cannot be parsed
                     LOGGER.warn("Cannot parse AMQP message, skipping project admin notification", e);
                 }
