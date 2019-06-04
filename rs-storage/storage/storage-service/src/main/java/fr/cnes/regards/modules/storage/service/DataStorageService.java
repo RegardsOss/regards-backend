@@ -273,9 +273,12 @@ public class DataStorageService implements IDataStorageService {
             switch (type) {
                 case SUCCESSFULL:
                     StorageDataFile data = oData.get();
+                    cachedFileService.handleRestorationSuccess(data, restorationPath);
+                    // It seems that application listener can be executed in same thread.
+                    // So to avoid issues with restoration success logic, we need to publish the event AFTER.
+                    // That way, data can be updated and restoration is still a success
                     springPublisher.publishEvent(new RestorationSuccessApplicationEvent(data, restorationPath,
                             event.getStorageConfId(), runtimeTenantResolver.getTenant()));
-                    cachedFileService.handleRestorationSuccess(data, restorationPath);
                     break;
                 case FAILED:
                     cachedFileService.handleRestorationFailure(oData.get());
