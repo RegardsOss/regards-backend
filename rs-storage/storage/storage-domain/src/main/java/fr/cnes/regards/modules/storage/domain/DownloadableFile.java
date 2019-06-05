@@ -24,8 +24,7 @@ import java.io.InputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
+import org.springframework.util.MimeType;
 
 /**
  * POJO to represent a file inline or in the cache system that is ready to be downloaded.
@@ -39,11 +38,6 @@ public class DownloadableFile implements Closeable {
     private static final Logger LOGGER = LoggerFactory.getLogger(DownloadableFile.class);
 
     /**
-     * Associated {@link StorageDataFile} to the physical file on disk.
-     */
-    private final StorageDataFile dataFile;
-
-    /**
      * Stream to read file content
      */
     private final InputStream fileInputStream;
@@ -53,18 +47,16 @@ public class DownloadableFile implements Closeable {
      */
     private final Long realFileSize;
 
-    public DownloadableFile(StorageDataFile dataFile, InputStream fileInputStream, Long realFileSize) {
+    private final String fileName;
+
+    private final MimeType mimeType;
+
+    public DownloadableFile(InputStream fileInputStream, Long realFileSize, String fileName, MimeType mediaType) {
         super();
-        this.dataFile = dataFile;
         this.fileInputStream = fileInputStream;
         this.realFileSize = realFileSize;
-    }
-
-    /**
-     * @return the dataFile
-     */
-    public StorageDataFile getDataFile() {
-        return dataFile;
+        this.fileName = fileName;
+        this.mimeType = mediaType;
     }
 
     /**
@@ -79,6 +71,14 @@ public class DownloadableFile implements Closeable {
      */
     public Long getRealFileSize() {
         return realFileSize;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public MimeType getMimeType() {
+        return mimeType;
     }
 
     @Override
