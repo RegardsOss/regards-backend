@@ -1,5 +1,6 @@
 package fr.cnes.regards.modules.storage.domain.database;
 
+import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -16,6 +17,8 @@ import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import java.net.URL;
 import java.time.OffsetDateTime;
+
+import org.springframework.util.MimeType;
 
 /**
  * Representation of a StorageDataFile which is in the cache
@@ -44,10 +47,10 @@ public class CachedFile {
     private String checksum;
 
     /**
-     * the cached file size
+     * the cached file size, this field is final because it should mirror the information from StorageDataFile
      */
     @Column(name = "file_size")
-    private Long fileSize;
+    private final Long fileSize;
 
     /**
      * location into the cache
@@ -82,10 +85,18 @@ public class CachedFile {
     @Column(length = 512, name = "failure_cause")
     private String failureCause;
 
+    @Column
+    private String fileName;
+
+    @Column(nullable = false, name = "mime_type")
+    @Convert(converter = MimeTypeConverter.class)
+    private MimeType mimeType;
+
     /**
      * Default constructor
      */
     public CachedFile() {
+        fileSize = 0L;
     }
 
     /**
@@ -97,6 +108,8 @@ public class CachedFile {
     public CachedFile(StorageDataFile df, OffsetDateTime expirationDate, CachedFileState fileState) {
         checksum = df.getChecksum();
         fileSize = df.getFileSize();
+        fileName = df.getName();
+        mimeType = df.getMimeType();
         expiration = expirationDate;
         lastRequestDate = OffsetDateTime.now();
         state = fileState;
@@ -200,14 +213,6 @@ public class CachedFile {
     }
 
     /**
-     * Set the file size
-     * @param pFileSize
-     */
-    public void setFileSize(Long pFileSize) {
-        fileSize = pFileSize;
-    }
-
-    /**
      * @return the checksum
      */
     public String getChecksum() {
@@ -220,6 +225,22 @@ public class CachedFile {
      */
     public void setChecksum(String pChecksum) {
         checksum = pChecksum;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public MimeType getMimeType() {
+        return mimeType;
+    }
+
+    public void setMimeType(MimeType mimeType) {
+        this.mimeType = mimeType;
     }
 
     @Override

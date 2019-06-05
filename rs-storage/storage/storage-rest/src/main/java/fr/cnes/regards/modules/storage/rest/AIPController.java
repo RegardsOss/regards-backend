@@ -677,8 +677,8 @@ public class AIPController implements IResourceController<AIP> {
                 InputStreamResource isr = new InputStreamResource(downloadFile.getFileInputStream());
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentLength(downloadFile.getRealFileSize());
-                headers.setContentType(asMediaType(downloadFile.getDataFile().getMimeType()));
-                headers.setContentDispositionFormData("attachement;filename=", downloadFile.getDataFile().getName());
+                headers.setContentType(asMediaType(downloadFile.getMimeType()));
+                headers.setContentDispositionFormData("attachement;filename=", downloadFile.getFileName());
                 return new ResponseEntity<>(isr, headers, HttpStatus.OK);
             } else { // NEARLINE file not in cache
                 return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
