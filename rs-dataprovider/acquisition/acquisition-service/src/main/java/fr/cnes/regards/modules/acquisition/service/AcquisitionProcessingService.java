@@ -29,8 +29,10 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -60,6 +62,8 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
 import fr.cnes.regards.modules.acquisition.dao.AcquisitionProcessingChainSpecifications;
@@ -81,6 +85,9 @@ import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.StopChainThread;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
+import fr.cnes.regards.modules.templates.service.ITemplateService;
+import freemarker.template.TemplateException;
 
 /**
  * Acquisition processing service
@@ -126,6 +133,12 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
     @Autowired
     private IAcquisitionProcessingService self;
+
+    @Autowired
+    private INotificationClient notificationClient;
+
+    @Autowired
+    private ITemplateService templateService;
 
     @SuppressWarnings("unused")
     @Autowired
@@ -357,7 +370,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     private void checkProcessingChainMode(AcquisitionProcessingChain processingChain) throws ModuleException {
 
         if (AcquisitionProcessingChainMode.AUTO.equals(processingChain.getMode())
-                && processingChain.getPeriodicity() == null) {
+                && (processingChain.getPeriodicity() == null)) {
             throw new EntityInvalidException("Missing periodicity for automatic acquisition processing chain");
         }
     }
@@ -431,7 +444,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
 
         // Stop all active jobs for current processing chain
         JobInfo jobInfo = processingChain.getLastProductAcquisitionJobInfo();
-        if (jobInfo != null && !jobInfo.getStatus().getStatus().isFinished()) {
+        if ((jobInfo != null) && !jobInfo.getStatus().getStatus().isFinished()) {
             jobInfoService.stopJob(jobInfo.getId());
         }
         productService.stopProductJobs(processingChain);
@@ -441,7 +454,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
     public boolean isChainJobStoppedAndCleaned(Long processingChainId) throws ModuleException {
         AcquisitionProcessingChain processingChain = getChain(processingChainId);
         JobInfo jobInfo = processingChain.getLastProductAcquisitionJobInfo();
-        boolean acqJobStopped = jobInfo == null || jobInfo.getStatus().getStatus().isFinished();
+        boolean acqJobStopped = (jobInfo == null) || jobInfo.getStatus().getStatus().isFinished();
         return acqJobStopped && productService.isProductJobStoppedAndCleaned(processingChain);
     }
 
@@ -481,7 +494,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         for (AcquisitionProcessingChain processingChain : processingChains) {
 
             // Check periodicity
-            if (processingChain.getLastActivationDate() != null && processingChain.getLastActivationDate()
+            if ((processingChain.getLastActivationDate() != null) && processingChain.getLastActivationDate()
                     .plusSeconds(processingChain.getPeriodicity()).isAfter(OffsetDateTime.now())) {
                 LOGGER.debug("Acquisition processing chain \"{}\" will not be started due to periodicity",
                              processingChain.getLabel());
@@ -590,7 +603,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
             int fromIndex = 0;
             int toIndex = AcquisitionProperties.WORKING_UNIT;
             int totalCount = 0;
-            while (toIndex <= scannedFiles.size() && !Thread.currentThread().isInterrupted()) {
+            while ((toIndex <= scannedFiles.size()) && !Thread.currentThread().isInterrupted()) {
                 long transactionStartTime = System.currentTimeMillis();
                 // Do it in one transaction
                 LOGGER.debug("Trying to register {}/{} of the new file(s) scanned", toIndex, scannedFiles.size());
@@ -709,6 +722,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
         // Get validation plugin
         IValidationPlugin validationPlugin = pluginService.getPlugin(processingChain.getValidationPluginConf().getId());
         List<AcquisitionFile> validFiles = new ArrayList<>();
+        List<AcquisitionFile> invalidFiles = new ArrayList<>();
         for (AcquisitionFile inProgressFile : page.getContent()) {
             // Validate files
             if (validationPlugin.validate(inProgressFile.getFilePath())) {
@@ -718,6 +732,22 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 // FIXME move invalid files? Might be delegated to validation plugin!
                 inProgressFile.setState(AcquisitionFileState.INVALID);
                 acqFileRepository.save(inProgressFile);
+                invalidFiles.add(inProgressFile);
+            }
+        }
+
+        // Send Notification for invalid files
+        if (!invalidFiles.isEmpty()) {
+            Map<String, Object> dataMap = new HashMap<>();
+            dataMap.put("invalidFiles", invalidFiles);
+            String message;
+            try {
+                message = templateService.render(AcquisitionTemplateConfiguration.ACQUISITION_INVALID_FILES_TEMPLATE,
+                                                 dataMap);
+                notificationClient.notify(message, "Acquisition invalid files report", NotificationLevel.WARNING,
+                                          DefaultRole.PROJECT_ADMIN);
+            } catch (TemplateException e) {
+                LOGGER.error(e.getMessage(), e);
             }
         }
 
@@ -834,7 +864,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                                         Arrays.asList(AcquisitionFileState.IN_PROGRESS, AcquisitionFileState.VALID)));
 
         // Handle job summary
-        if (chain.getLastProductAcquisitionJobInfo() != null
+        if ((chain.getLastProductAcquisitionJobInfo() != null)
                 && !chain.getLastProductAcquisitionJobInfo().getStatus().getStatus().isFinished()) {
             summary.setNbProductAcquisitionJob(1);
         }
