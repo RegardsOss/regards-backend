@@ -107,12 +107,29 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
         return new ResponseEntity<>(os -> dataFileService.downloadFile(dataFile, os), HttpStatus.OK);
     }
 
+    @ResourceAccess(description = "Test file download availability", role = DefaultRole.PUBLIC)
+    @RequestMapping(method = RequestMethod.HEAD, path = ORDERS_AIPS_AIP_ID_FILES_ID)
+    public ResponseEntity<StreamingResponseBody> testDownloadFile(@PathVariable("aipId") String aipId,
+            @PathVariable("dataFileId") Long dataFileId, @RequestParam(name = IOrderService.ORDER_TOKEN) String token,
+            HttpServletResponse response) throws NoSuchElementException {
+        return manageFile(Boolean.TRUE, aipId, dataFileId, token, response);
+    }
+
     @ResourceAccess(description = "Download a file that is part of an order granted by token",
             role = DefaultRole.PUBLIC)
     @RequestMapping(method = RequestMethod.GET, path = ORDERS_AIPS_AIP_ID_FILES_ID)
     public ResponseEntity<StreamingResponseBody> publicDownloadFile(@PathVariable("aipId") String aipId,
             @PathVariable("dataFileId") Long dataFileId, @RequestParam(name = IOrderService.ORDER_TOKEN) String token,
             HttpServletResponse response) throws NoSuchElementException {
+        return manageFile(Boolean.FALSE, aipId, dataFileId, token, response);
+    }
+
+    /**
+     * Above controller endpoints are duplicated to fit security single endpoint policy.
+     * (Otherwise, we could have set 2 HTTP method in a single endpoint!)
+     */
+    private ResponseEntity<StreamingResponseBody> manageFile(Boolean headRequest, String aipId, Long dataFileId,
+            String token, HttpServletResponse response) throws NoSuchElementException {
         OrderDataFile dataFile;
         String user;
         String role;
@@ -142,15 +159,20 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
                 // Error from storage
                 return new ResponseEntity<>(HttpStatus.UNPROCESSABLE_ENTITY);
             default:
-                // Stream the response
-                return new ResponseEntity<>(os -> {
-                    FeignSecurityManager.asUser(user, role);
-                    try {
-                        dataFileService.downloadFile(dataFile, os);
-                    } finally {
-                        FeignSecurityManager.reset();
-                    }
-                }, HttpStatus.OK);
+                if (headRequest) {
+                    // Omit payload, just send an OK response
+                    return new ResponseEntity<>(HttpStatus.OK);
+                } else {
+                    // Stream the response
+                    return new ResponseEntity<>(os -> {
+                        FeignSecurityManager.asUser(user, role);
+                        try {
+                            dataFileService.downloadFile(dataFile, os);
+                        } finally {
+                            FeignSecurityManager.reset();
+                        }
+                    }, HttpStatus.OK);
+                }
         }
     }
 
