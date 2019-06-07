@@ -75,7 +75,7 @@ public class AIPSessionController implements IResourceController<AIPSession> {
      * @param pAssembler
      * @return {@link AIPSession}s
      */
-    @ResourceAccess(description = "Search for SIPSession with optional criterion.")
+    @ResourceAccess(description = "Search for AIPSession with optional criterion.")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<PagedResources<Resource<AIPSession>>> search(
             @RequestParam(name = "id", required = false) String id,
