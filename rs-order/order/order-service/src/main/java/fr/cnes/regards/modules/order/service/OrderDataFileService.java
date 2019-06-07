@@ -125,8 +125,8 @@ public class OrderDataFileService implements IOrderDataFileService {
         FilesTask filesTask = filesTasksRepository.findDistinctByFilesIn(dataFile);
         // In case FilesTask does not yet exist
         if (filesTask != null) {
-            if (filesTask.getFiles().stream().allMatch(f -> (f.getState() == FileState.DOWNLOADED)
-                    || (f.getState() == FileState.ERROR) || (f.getState() == FileState.DOWNLOAD_ERROR))) {
+            if (filesTask.getFiles().stream().allMatch(f -> f.getState() == FileState.DOWNLOADED
+                    || f.getState() == FileState.ERROR || f.getState() == FileState.DOWNLOAD_ERROR)) {
                 filesTask.setEnded(true);
             }
             // ...and if it is waiting for user
@@ -149,8 +149,8 @@ public class OrderDataFileService implements IOrderDataFileService {
         Long orderId = null;
         // Update all these FileTasks
         for (FilesTask filesTask : filesTasks) {
-            if (filesTask.getFiles().stream().allMatch(f -> (f.getState() == FileState.DOWNLOADED)
-                    || (f.getState() == FileState.ERROR) || (f.getState() == FileState.DOWNLOAD_ERROR))) {
+            if (filesTask.getFiles().stream().allMatch(f -> f.getState() == FileState.DOWNLOADED
+                    || f.getState() == FileState.ERROR || f.getState() == FileState.DOWNLOAD_ERROR)) {
                 filesTask.setEnded(true);
             }
             // Save order id for later
@@ -205,7 +205,7 @@ public class OrderDataFileService implements IOrderDataFileService {
             try (InputStream is = DownloadUtils.getInputStreamThroughProxy(new URL(dataFile.getUrl()), proxy,
                                                                            noProxyHosts, timeout)) {
                 ByteStreams.copy(is, os);
-                os.close();
+                os.flush();
             } catch (IOException e) {
                 LOGGER.error("Error while downloading file", e);
                 StringWriter sw = new StringWriter();
@@ -221,11 +221,11 @@ public class OrderDataFileService implements IOrderDataFileService {
                 e.printStackTrace(new PrintWriter(sw));
                 dataFile.setDownloadError("Error while downloading file from Archival Storage\n" + sw.toString());
             }
-            error = (response == null) || (response.status() != HttpStatus.OK.value());
+            error = response == null || response.status() != HttpStatus.OK.value();
             if (!error) {
                 try (InputStream is = response.body().asInputStream()) {
                     long copiedBytes = ByteStreams.copy(is, os);
-                    os.close();
+                    os.flush();
                     // File has not completly been copied
                     if (copiedBytes != dataFile.getFilesize()) {
                         error = true;
