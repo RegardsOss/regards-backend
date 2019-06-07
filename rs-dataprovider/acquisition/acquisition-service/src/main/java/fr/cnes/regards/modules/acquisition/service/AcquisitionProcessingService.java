@@ -49,6 +49,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
+import org.springframework.util.MimeTypeUtils;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -745,7 +746,7 @@ public class AcquisitionProcessingService implements IAcquisitionProcessingServi
                 message = templateService.render(AcquisitionTemplateConfiguration.ACQUISITION_INVALID_FILES_TEMPLATE,
                                                  dataMap);
                 notificationClient.notify(message, "Acquisition invalid files report", NotificationLevel.WARNING,
-                                          DefaultRole.PROJECT_ADMIN);
+                                          MimeTypeUtils.TEXT_HTML, DefaultRole.PROJECT_ADMIN);
             } catch (TemplateException e) {
                 LOGGER.error(e.getMessage(), e);
             }
