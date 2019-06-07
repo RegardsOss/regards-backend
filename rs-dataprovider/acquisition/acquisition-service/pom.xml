@@ -106,6 +106,14 @@
 			<groupId>fr.cnes.regards.modules.notification</groupId>
 			<artifactId>notification-client</artifactId>
 		</dependency>
+		 <dependency>
+            <groupId>fr.cnes.regards.modules.templates</groupId>
+            <artifactId>templates-service</artifactId>
+        </dependency>
+        <dependency>
+			<groupId>fr.cnes.regards.framework.modules.workspace</groupId>
+			<artifactId>workspace-service</artifactId>
+		</dependency>
 		<!-- TEST dependencies -->
 		<dependency>
             <groupId>fr.cnes.regards.framework.test</groupId>
