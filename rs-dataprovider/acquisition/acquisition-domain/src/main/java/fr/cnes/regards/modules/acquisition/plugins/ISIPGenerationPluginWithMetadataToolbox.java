@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins;
 
-import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 
