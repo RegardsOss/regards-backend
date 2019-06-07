@@ -38,7 +38,7 @@ import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
  * Specification class to filter DAO searches on {@link Product} entities.
  * @author Sébastien Binda
  */
-public class ProductSpecifications {
+public final class ProductSpecifications {
 
     private static final String LIKE_CHAR = "%";
 
@@ -62,7 +62,7 @@ public class ProductSpecifications {
             if (productName != null) {
                 predicates.add(cb.like(root.get("productName"), LIKE_CHAR + productName + LIKE_CHAR));
             }
-            if (noSession != null && Boolean.TRUE.equals(noSession)) {
+            if (Boolean.TRUE.equals(noSession)) {
                 predicates.add(cb.isNull(root.get("session")));
             } else if (session != null) {
                 predicates.add(cb.like(root.get("session"), LIKE_CHAR + session + LIKE_CHAR));
