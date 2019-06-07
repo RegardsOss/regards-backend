@@ -207,7 +207,7 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
                                                                         data.getAlgorithm(), data.getChecksum());
             if (!downloadOk) {
                 String failureCause = String
-                        .format("Storage of StorageDataFile(%s) failed at the following location: %s. Its checksum once stored do not match with expected",
+                        .format("Storage of StorageDataFile(%s) failed at the following location: %s. Its checksum once stored does not match with expected one",
                                 data.getChecksum(), fullPathToFile);
                 Files.deleteIfExists(Paths.get(fullPathToFile));
                 progressManager.storageFailed(data, Optional.of(new URL("file", "", fullPathToFile)), failureCause);
