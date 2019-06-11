@@ -211,7 +211,7 @@ public class OrderService implements IOrderService {
     @Value("${zuul.prefix}")
     private String urlPrefix;
 
-    @Value("${http.proxy.host}")
+    @Value("${http.proxy.host:#{null}}")
     private String proxyHost;
 
     @Value("${http.proxy.port}")
