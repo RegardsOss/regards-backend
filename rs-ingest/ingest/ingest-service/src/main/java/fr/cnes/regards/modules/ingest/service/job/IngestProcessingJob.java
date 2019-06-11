@@ -23,11 +23,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.reflect.TypeToken;
-
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -35,6 +35,8 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.modules.jobs.domain.step.IProcessingStep;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
@@ -46,6 +48,7 @@ import fr.cnes.regards.modules.ingest.service.chain.step.PreprocessingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.StoreStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.TaggingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.ValidationStep;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.domain.AIP;
 
 /**
@@ -65,10 +68,13 @@ public class IngestProcessingJob extends AbstractJob<Void> {
     @Autowired
     private IPluginService pluginService;
 
-    private IngestProcessingChain processingChain;
-
     @Autowired
     private IIngestProcessingService ingestProcessingService;
+
+    @Autowired
+    private INotificationClient notificationClient;
+
+    private IngestProcessingChain processingChain;
 
     private Set<SIPEntity> entities;
 
@@ -95,6 +101,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
         // Load entities
         Type type = new TypeToken<Set<Long>>() {
+
         }.getType();
         Set<Long> ids = getValue(parameters, IDS_PARAMETER, type);
         entities = ingestProcessingService.getAllSipEntities(ids);
@@ -102,6 +109,10 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
     @Override
     public void run() {
+        // Lets prepare a fex things in case there is errors
+        StringJoiner notifMsg = new StringJoiner("\n");
+        notifMsg.add("Errors occurred during SIPs processing using " + processingChain.getName() + ":");
+        boolean errorOccured = false;
 
         // Initializing steps
         // Step 1 : optional preprocessing
@@ -135,11 +146,22 @@ public class IngestProcessingJob extends AbstractJob<Void> {
                 // Step 7 : optional postprocessing
                 postprocessingStep.execute(sip);
             } catch (ProcessingStepException e) {
-                super.logger.error("Error while ingesting SIP \"{}\" with provider id \"{}\"", currentEntity.getSipId(),
-                                   currentEntity.getProviderId());
+                errorOccured = true;
+                String msg = String.format("Error while ingesting SIP \"%s\" with provider id \"%s\"",
+                                           currentEntity.getSipId(),
+                                           currentEntity.getProviderId());
+                notifMsg.add(msg);
+                super.logger.error(msg);
                 super.logger.error("Ingestion step error", e);
                 // Continuing with following SIPs
             }
+        }
+        // notify if errors occured
+        if (errorOccured) {
+            notificationClient.notify(notifMsg.toString(),
+                                      "Error occurred during SIPs Ingestion.",
+                                      NotificationLevel.INFO,
+                                      DefaultRole.ADMIN);
         }
     }
 
