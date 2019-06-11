@@ -233,11 +233,12 @@ public class AIPService implements IAIPService {
         if (JobEventType.FAILED.equals(jobEvent.getJobEventType())) {
             // Load job info
             @SuppressWarnings("unused") JobInfo jobInfo = jobInfoService.retrieveJob(jobEvent.getJobId());
-            String msg = String.format("Unhandled job error : %s/%s", jobEvent.getClass().getName(), jobEvent.getJobId());
-            LOGGER.warn(msg);
+            String jobClass = jobInfo.getClassName();
+            String title = "Unhandled job error";
+            LOGGER.warn(title + String.format(" %s/%s", jobClass, jobInfo.getId().toString()));
             String stacktrace = jobInfo.getStatus().getStackTrace();
             LOGGER.warn(stacktrace);
-            notificationClient.notify(stacktrace, msg, NotificationLevel.ERROR, DefaultRole.ADMIN);
+            notificationClient.notify(stacktrace, title, NotificationLevel.ERROR, DefaultRole.ADMIN);
         }
     }
 
