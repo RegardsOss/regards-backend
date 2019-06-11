@@ -91,11 +91,11 @@ public class OrderDataFileService implements IOrderDataFileService {
     @Autowired
     private IOrderRepository orderRepository;
 
-    @Value("${http.proxy.host}")
+    @Value("${http.proxy.host:#{null}}")
     private String proxyHost;
 
-    @Value("${http.proxy.port}")
-    private int proxyPort;
+    @Value("${http.proxy.port:#{null}}")
+    private Integer proxyPort;
 
     @Value("${http.proxy.noproxy:#{null}}")
     private String noProxyHostsString;
