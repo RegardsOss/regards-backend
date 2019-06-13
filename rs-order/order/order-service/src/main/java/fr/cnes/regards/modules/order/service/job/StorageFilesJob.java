@@ -35,8 +35,6 @@ import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
  */
 public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataFileEvent> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(StorageFilesJob.class);
-
     private OffsetDateTime expirationDate;
 
     private String user;
@@ -116,7 +114,7 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
             boolean atLeastOneDataFileIntoResponse = false;
             for (String checksum : response.getAlreadyAvailable()) {
                 for (OrderDataFile dataFile : dataFilesMultimap.get(checksum)) {
-                    LOGGER.debug("File {} - {} is already available.", dataFile.getFilename(), checksum);
+                    logger.debug("File {} - {} is already available.", dataFile.getFilename(), checksum);
                     dataFile.setState(FileState.AVAILABLE);
                     atLeastOneDataFileIntoResponse = true;
                 }
@@ -124,7 +122,7 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
             }
             // Update all files in error
             for (String checksum : response.getErrors()) {
-                LOGGER.error("File {} cannot be retrieved.", checksum);
+                logger.error("File {} cannot be retrieved.", checksum);
                 dataFilesMultimap.get(checksum).forEach(f -> f.setState(FileState.ERROR));
                 atLeastOneDataFileIntoResponse = true;
                 this.semaphore.release();
@@ -142,7 +140,7 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
                 return;
             }
 
-            LOGGER.debug("All files ({}) are available.", dataFilesMultimap.keySet().size());
+            logger.debug("All files ({}) are available.", dataFilesMultimap.keySet().size());
             // All files have bean treated by storage, no more event subscriber needed...
             subscriber.unsubscribe(this);
             // ...and all order data files statuses are updated into database
@@ -174,14 +172,14 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
         switch (event.getState()) {
             case AVAILABLE:
                 for (OrderDataFile df : dataFiles) {
-                    LOGGER.debug("File {} - {} is now available.", df.getFilename(), df.getChecksum());
+                    logger.debug("File {} - {} is now available.", df.getFilename(), df.getChecksum());
                     df.setState(FileState.AVAILABLE);
                 }
                 alreadyHandledFiles.add(event.getChecksum());
                 break;
             case ERROR:
                 for (OrderDataFile df : dataFiles) {
-                    LOGGER.debug("File {} - {} is now in error.", df.getFilename(), df.getChecksum());
+                    logger.debug("File {} - {} is now in error.", df.getFilename(), df.getChecksum());
                     df.setState(FileState.ERROR);
                 }
                 alreadyHandledFiles.add(event.getChecksum());
