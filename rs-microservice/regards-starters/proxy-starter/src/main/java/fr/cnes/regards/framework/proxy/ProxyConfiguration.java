@@ -65,10 +65,14 @@ public class ProxyConfiguration {
     @Primary
     public org.apache.http.client.HttpClient getHttpClient() {
         // https://github.com/CNES/JSPNego
-        if (proxyHost != null) {
+        if ((proxyHost != null) && !proxyHost.isEmpty()) {
             LOGGER.info("HTTP Proxy initialized with values host={}, port={},login={}", proxyHost, proxyPort,
                         proxyLogin);
-            fr.cnes.httpclient.configuration.ProxyConfiguration.HTTP_PROXY.setValue(proxyHost + ":" + proxyPort);
+            if (proxyPort != null) {
+                fr.cnes.httpclient.configuration.ProxyConfiguration.HTTP_PROXY.setValue(proxyHost + ":" + proxyPort);
+            } else {
+                fr.cnes.httpclient.configuration.ProxyConfiguration.HTTP_PROXY.setValue(proxyHost);
+            }
             if ((noProxy != null) && !noProxy.isEmpty()) {
                 fr.cnes.httpclient.configuration.ProxyConfiguration.NO_PROXY.setValue(noProxy);
             }
