@@ -56,6 +56,7 @@ public enum CompressionTypeEnum {
             return CompressionTypeEnum.valueOf(name);
         } catch (IllegalArgumentException e) {
             LOGGER.error("unknown compression tools type : \"{}\"", name);
+            LOGGER.error(e.getMessage(), e);
             return CompressionTypeEnum.UNKNOWN;
         }
     }
