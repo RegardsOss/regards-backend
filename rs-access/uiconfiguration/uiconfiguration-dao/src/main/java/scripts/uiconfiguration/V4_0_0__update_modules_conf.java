@@ -18,6 +18,7 @@
  */
 package scripts.uiconfiguration;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
@@ -52,18 +53,25 @@ public class V4_0_0__update_modules_conf extends BaseJavaMigration {
                     String type = rows.getString(2);
                     String conf = rows.getString(3);
                     String updatedConf = conf;
+                    String sqlRequest = String.format("UPDATE t_ui_module SET conf= ? WHERE id= ?", updatedConf, id);
                     switch (type) {
                         case "search-graph":
                         case "search-form":
                             updatedConf = updateConf(conf, id);
-                            try (Statement update = context.getConnection().createStatement()) {
-                                update.execute("UPDATE t_ui_module SET conf='" + updatedConf + "' WHERE id=" + id);
+                            try (PreparedStatement preparedStatement = context.getConnection()
+                                    .prepareStatement(sqlRequest)) {
+                                preparedStatement.setString(1, updatedConf);
+                                preparedStatement.setInt(2, id);
+                                preparedStatement.executeUpdate();
                             }
                             break;
                         case "search-results":
                             updatedConf = updateSearchResult(conf, id);
-                            try (Statement update = context.getConnection().createStatement()) {
-                                update.execute("UPDATE t_ui_module SET conf='" + updatedConf + "' WHERE id=" + id);
+                            try (PreparedStatement preparedStatement = context.getConnection()
+                                    .prepareStatement(sqlRequest)) {
+                                preparedStatement.setString(1, updatedConf);
+                                preparedStatement.setInt(2, id);
+                                preparedStatement.executeUpdate();
                             }
                             break;
                         default:
