@@ -19,7 +19,6 @@
 package fr.cnes.regards.framework.authentication.internal;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -114,7 +113,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         String name = authentication.getName();
         String password = (String) authentication.getCredentials();
 
-        if ((name == null) || (password == null)) {
+        if (name == null || password == null) {
             throw new BadCredentialsException("User login / password cannot be empty");
         }
 
@@ -123,7 +122,8 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         String requestLink;
         String scope;
         if (details instanceof Map) {
-            @SuppressWarnings("unchecked") Map<String, String> detailsMap = (Map<String, String>) details;
+            @SuppressWarnings("unchecked")
+            Map<String, String> detailsMap = (Map<String, String>) details;
             scope = detailsMap.get("scope");
             if (scope == null) {
                 String message = "Attribute scope is missing";
@@ -174,23 +174,24 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         // Before returning generating token, check user status.
         AuthenticationStatus status = checkUserStatus(response.getEmail(), scope);
         // If authentication is granted and user does not exists and plugin is not the regards internal authentication.
-        if (response.getAccessGranted() && (status.equals(AuthenticationStatus.USER_UNKNOWN) || status
-                .equals(AuthenticationStatus.ACCOUNT_UNKNOWN)) && (!response.getPluginClassName()
-                .equals(defaultAuthenticationPlugin.getClass().getName()))) {
+        if (response.getAccessGranted()
+                && (status.equals(AuthenticationStatus.USER_UNKNOWN)
+                        || status.equals(AuthenticationStatus.ACCOUNT_UNKNOWN))
+                && !response.getPluginClassName().equals(defaultAuthenticationPlugin.getClass().getName())) {
             this.createExternalProjectUser(response.getEmail(), status, origineUrl, requestLink);
             status = checkUserStatus(response.getEmail(), scope);
         }
 
         if (!status.equals(AuthenticationStatus.ACCESS_GRANTED)) {
-            String message = String
-                    .format("Access denied for user %s. cause : user status is %s", response.getEmail(), status.name());
+            String message = String.format("Access denied for user %s. cause : user status is %s", response.getEmail(),
+                                           status.name());
             throw new AuthenticationException(message, status);
         }
 
         // If access is not allowed then return an unknown account error response
         if (!response.getAccessGranted()) {
-            String message = String
-                    .format("Access denied for user %s. cause: %s", response.getEmail(), response.getErrorMessage());
+            String message = String.format("Access denied for user %s. cause: %s", response.getEmail(),
+                                           response.getErrorMessage());
             throw new AuthenticationException(message, AuthenticationStatus.ACCOUNT_UNKNOWN);
         }
 
@@ -219,11 +220,11 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
         // Get all available authentication plugins
         List<PluginConfiguration> plgConfs = pluginService.getPluginConfigurationsByType(IAuthenticationPlugin.class);
-        for (Iterator<PluginConfiguration> it = plgConfs.iterator(); it.hasNext(); ) {
+        for (PluginConfiguration pluginConfiguration : plgConfs) {
             if (!pluginResponse.getAccessGranted()) {
                 try {
-                    pluginResponse = doPluginAuthentication(pluginService.getPlugin(it.next().getId()), login, password,
-                                                            scope);
+                    pluginResponse = doPluginAuthentication(pluginService.getPlugin(pluginConfiguration.getId()), login,
+                                                            password, scope);
                 } catch (ModuleException e) {
                     LOG.error(e.getMessage(), e);
                 }
@@ -267,17 +268,16 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
             switch (userStatus) {
                 case ACCOUNT_UNKNOWN:
                 case USER_UNKNOWN:
-                    client.requestExternalAccess(
-                            new AccessRequestDto(userEmail, userEmail, userEmail, DefaultRole.PUBLIC.name(), null, null,
-                                                 originUrl, requestLink));
+                    client.requestExternalAccess(new AccessRequestDto(userEmail, userEmail, userEmail,
+                            DefaultRole.PUBLIC.name(), null, null, originUrl, requestLink));
                     break;
                 default:
                     // Nothing to do
                     break;
             }
         } catch (FeignException e) {
-            String message = String
-                    .format("Error creation new account for user %s. Cause : %s", userEmail, e.getMessage());
+            String message = String.format("Error creation new account for user %s. Cause : %s", userEmail,
+                                           e.getMessage());
             LOG.error(message);
             throw new BadCredentialsException(message);
         } finally {
@@ -344,8 +344,8 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
         // Check for project user status if the tenant to access is not instance and the user logged is not instance
         // root user.
-        if (status.equals(AuthenticationStatus.ACCESS_GRANTED) && (tenant != null) && !runTimeTenantResolver
-                .isInstance() && !userEmail.equals(staticRootLogin)) {
+        if (status.equals(AuthenticationStatus.ACCESS_GRANTED) && tenant != null && !runTimeTenantResolver.isInstance()
+                && !userEmail.equals(staticRootLogin)) {
             // Retrieve user projectUser
             try {
                 FeignSecurityManager.asSystem();
@@ -396,13 +396,12 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
         // Check user/password
         AuthenticationPluginResponse response = plugin.authenticate(userName, userPassword, scope);
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        Validator validator = factory.getValidator();
-
-        if ((response == null) || !validator.validate(response).isEmpty()) {
-            return new AuthenticationPluginResponse(false, userName);
+        try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
+            Validator validator = factory.getValidator();
+            if (response == null || !validator.validate(response).isEmpty()) {
+                return new AuthenticationPluginResponse(false, userName);
+            }
         }
-
         response.setPluginClassName(plugin.getClass().getName());
 
         return response;
@@ -432,7 +431,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         } else {
             // Unauthorized access to instance tenant for authenticated user.
             throw new AuthenticationException("Access denied to REGARDS instance administration for user " + login,
-                                              AuthenticationStatus.INSTANCE_ACCESS_DENIED);
+                    AuthenticationStatus.INSTANCE_ACCESS_DENIED);
         }
         grantedAuths.add(new SimpleGrantedAuthority(userDetails.getRole()));
         return new UsernamePasswordAuthenticationToken(userDetails, password, grantedAuths);
@@ -463,8 +462,8 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
                     // In regards system login is same as email
                     user = new UserDetails(scope, projectUser.getEmail(), login, projectUser.getRole().getName());
                 } else {
-                    String message = String
-                            .format("Remote administration request error. Returned code %s", response.getStatusCode());
+                    String message = String.format("Remote administration request error. Returned code %s",
+                                                   response.getStatusCode());
                     LOG.error(message);
                     throw new EntityNotFoundException(email, ProjectUser.class);
                 }
