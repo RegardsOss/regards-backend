@@ -1529,7 +1529,7 @@ public class AIPService implements IAIPService {
                         .format("Deletion job could not be created for the following reason: %s.", e.getMessage());
                 report.setDeletionScheduled(false);
                 report.addDeletionErrorCause(errorCause);
-                LOGGER.error(errorCause);
+                LOGGER.error(errorCause, e);
 
             }
         } else {

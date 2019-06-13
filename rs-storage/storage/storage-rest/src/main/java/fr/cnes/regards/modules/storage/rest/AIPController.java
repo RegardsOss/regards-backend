@@ -753,7 +753,7 @@ public class AIPController implements IResourceController<AIP> {
         dataFile.setUrl(downloadUrl);
     }
 
-    private class ResourcedAIPPageWithDataStorages extends PagedResources<Resource<AIPWithDataStorageIds>> {
+    private static class ResourcedAIPPageWithDataStorages extends PagedResources<Resource<AIPWithDataStorageIds>> {
 
         private Set<PrioritizedDataStorage> dataStorages = new HashSet<>();
 
