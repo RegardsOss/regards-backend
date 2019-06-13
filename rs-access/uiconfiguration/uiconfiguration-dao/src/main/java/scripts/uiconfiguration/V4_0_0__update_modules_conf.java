@@ -155,8 +155,8 @@ public class V4_0_0__update_modules_conf extends BaseJavaMigration {
         Boolean enableFacettes = (Boolean) rootConf.get("enableFacettes");
 
         Boolean dataViewEnabled = (displayMode.equals("data")) || (displayMode.equals("data_dataset"));
-        Boolean datasetViewEnabled = (displayMode == "data_dataset");
-        Boolean documentViewEnabled = (displayMode == "document");
+        Boolean datasetViewEnabled = (displayMode.equals("data_dataset"));
+        Boolean documentViewEnabled = (displayMode.equals("document"));
 
         String dataSectionLabelEn = (String) rootConf.get("dataSectionLabelEn");
         String dataSectionLabelFr = (String) rootConf.get("dataSectionLabelFr");
