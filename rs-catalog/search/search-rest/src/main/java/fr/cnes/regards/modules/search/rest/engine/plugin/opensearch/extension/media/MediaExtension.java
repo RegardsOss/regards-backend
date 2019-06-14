@@ -69,6 +69,8 @@ public class MediaExtension extends AbstractExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MediaExtension.class);
 
+    public static final String GEO_JSON_RAWDATA_KEY = "rawdata";
+
     public static final String GEO_JSON_QUICKLOOK_KEY = "quicklook";
 
     public static final String GEO_JSON_THUMBNAIL_KEY = "thumbnail";
@@ -92,6 +94,7 @@ public class MediaExtension extends AbstractExtension {
             @SuppressWarnings("unchecked")
             List<GeoJsonLink> links = (List<GeoJsonLink>) obj;
             medias.get(DataType.RAWDATA).forEach(f -> {
+                feature.addProperty(GEO_JSON_RAWDATA_KEY, GeoJsonLinkBuilder.getDataFileHref(f, token));
                 links.add(getGeoJsonLink(f, token));
             });
             medias.get(DataType.QUICKLOOK_SD).forEach(f -> {
