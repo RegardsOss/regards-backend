@@ -97,6 +97,7 @@ public class GeojsonResponseBuilder implements IResponseBuilder<FeatureWithPrope
                                                        GeoJsonMediaType.APPLICATION_GEOJSON_VALUE, token))
                     .collect(Collectors.toList()));
             feature.setTitle(entity.getLabel());
+            feature.addProperty("providerId", entity.getProviderId());
             if (entityLastUpdate.isPresent()) {
                 feature.setUpdated(entityLastUpdate.get());
             }
