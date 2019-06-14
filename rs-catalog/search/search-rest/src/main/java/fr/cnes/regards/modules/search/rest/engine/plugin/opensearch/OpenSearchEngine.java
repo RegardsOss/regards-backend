@@ -326,7 +326,8 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
         IResponseBuilder<?> responseBuilder;
         if (context.getHeaders().getAccept().contains(MediaType.APPLICATION_ATOM_XML)) {
             responseBuilder = new AtomResponseBuilder(gson, authResolver.getToken());
-        } else if (context.getHeaders().getAccept().contains(MediaType.APPLICATION_JSON)) {
+        } else if (context.getHeaders().getAccept().contains(MediaType.APPLICATION_JSON)
+                || context.getHeaders().getAccept().contains(MediaType.ALL)) {
             responseBuilder = new GeojsonResponseBuilder(authResolver.getToken());
         } else {
             throw new UnsupportedMediaTypesException(context.getHeaders().getAccept());
