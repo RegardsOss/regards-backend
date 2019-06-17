@@ -73,6 +73,8 @@ public class ProxyfiedHttpClient extends CloseableHttpClient {
 
         if ((context != null) && (host != null)) {
             response = this.client.execute(host, request, context);
+        } else if (host != null) {
+            response = this.client.execute(host, request);
         } else {
             response = this.client.execute((HttpUriRequest) request);
         }
