@@ -66,8 +66,6 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.indexer.domain.DataFile;
-import fr.cnes.regards.modules.notification.client.INotificationClient;
-import fr.cnes.regards.modules.notification.domain.dto.NotificationDTO;
 import fr.cnes.regards.modules.order.dao.IBasketRepository;
 import fr.cnes.regards.modules.order.dao.IFilesTasksRepository;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
@@ -130,9 +128,6 @@ public class OrderServiceIT {
 
     @Autowired
     private IEmailClient emailClient;
-
-    @Autowired
-    private INotificationClient notificationClient;
 
     private static final String USER_EMAIL = "leo.mieulet@margoulin.com";
 
@@ -298,10 +293,6 @@ public class OrderServiceIT {
     @Requirement("REGARDS_DSL_STO_ARC_490")
     public void testBucketsJobs() throws IOException, InterruptedException {
         AtomicInteger notifCount = new AtomicInteger(0);
-        Mockito.when(notificationClient.createNotification(Mockito.any(NotificationDTO.class))).then(invocation -> {
-            notifCount.addAndGet(1);
-            return null;
-        });
 
         String user = "tulavu@qui.fr";
         Basket basket = new Basket(user);

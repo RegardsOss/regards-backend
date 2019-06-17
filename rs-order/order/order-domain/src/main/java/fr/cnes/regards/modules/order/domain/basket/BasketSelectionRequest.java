@@ -21,7 +21,8 @@ package fr.cnes.regards.modules.order.domain.basket;
 import java.time.OffsetDateTime;
 import java.util.Set;
 
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
+
 import org.springframework.util.MultiValueMap;
 
 /**

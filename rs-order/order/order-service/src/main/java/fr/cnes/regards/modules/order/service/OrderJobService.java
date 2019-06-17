@@ -22,6 +22,7 @@ import javax.annotation.PreDestroy;
 import javax.transaction.Transactional;
 import javax.transaction.Transactional.TxType;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,6 +75,7 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent> {
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
 
+    @Override
     @EventListener
     @Transactional(TxType.NOT_SUPPORTED) // Doesn't need a transaction (make Controller IT tests failed otherwise)
     public void handleApplicationReadyEvent(ApplicationReadyEvent event) {
@@ -85,6 +87,7 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent> {
         subscriber.unsubscribeFrom(JobEvent.class);
     }
 
+    @Override
     @EventListener
     public void handleRefreshScopeRefreshedEvent(RefreshScopeRefreshedEvent event) {
         subscriber.subscribeTo(JobEvent.class, this);
@@ -97,14 +100,14 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent> {
         // Total running and future jobs of user
         long currentUser = jobInfoRepository.countUserFutureAndRunningJobs(user);
         // rate : current user jobs / current total jobs
-        double rate = (currentTotal == 0l) ? 1. : (double) currentUser / (double) currentTotal;
+        double rate = currentTotal == 0l ? 1. : (double) currentUser / (double) currentTotal;
         // a user PUBLIC cannot be here so there are two cases : REGISTERED_USER and all ADMIN roles (near a thousand)
         if (role.equals(DefaultRole.REGISTERED_USER.toString())) {
             // User : Priority between 0 and 80 depending on rate
             return (int) (80 * (1 - rate));
         }
         // Admin : Priority between 80 and 100 depending on rate
-        return (int) (100 - (20 * (1 - rate)));
+        return (int) (100 - 20 * (1 - rate));
     }
 
     @Override
@@ -124,7 +127,7 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent> {
                 for (JobInfo jobInfo : jobInfos) {
                     jobInfo.updateStatus(JobStatus.QUEUED);
                 }
-                jobInfoRepository.save(jobInfos);
+                jobInfoRepository.saveAll(jobInfos);
             }
         }
     }
@@ -142,9 +145,9 @@ public class OrderJobService implements IOrderJobService, IHandler<JobEvent> {
             case SUCCEEDED:
                 UUID jobId = event.getJobId();
                 tenantResolver.forceTenant(wrapper.getTenant());
-                JobInfo endedJobInfo = jobInfoRepository.findOne(jobId);
-                if (endedJobInfo != null) {
-                    self.manageUserOrderJobInfos(endedJobInfo.getOwner());
+                Optional<JobInfo> endedJobInfo = jobInfoRepository.findById(jobId);
+                if (endedJobInfo.isPresent()) {
+                    self.manageUserOrderJobInfos(endedJobInfo.get().getOwner());
                 }
                 break;
             default:

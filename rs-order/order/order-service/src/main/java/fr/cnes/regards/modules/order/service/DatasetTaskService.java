@@ -18,28 +18,61 @@
  */
 package fr.cnes.regards.modules.order.service;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.order.dao.IDatasetTaskRepository;
 import fr.cnes.regards.modules.order.domain.DatasetTask;
+import fr.cnes.regards.modules.order.domain.FilesTask;
+import fr.cnes.regards.modules.order.domain.OrderDataFile;
 
 /**
  * @author oroussel
  */
 @Service
+@MultitenantTransactional
 public class DatasetTaskService implements IDatasetTaskService {
 
     @Autowired
     private IDatasetTaskRepository repos;
 
     @Override
-    public DatasetTask loadSimple(Long datasetId) {
-        return repos.findOne(datasetId);
+    public DatasetTask loadSimple(Long datasetId) throws EntityNotFoundException {
+        Optional<DatasetTask> task = repos.findById(datasetId);
+        return task.orElseThrow(() -> new EntityNotFoundException(datasetId, DatasetTask.class));
     }
 
     @Override
     public DatasetTask loadComplete(Long datasetId) {
         return repos.findCompleteById(datasetId);
+    }
+
+    @Override
+    public Page<OrderDataFile> loadDataFiles(Long datasetId, Pageable pageable) {
+        DatasetTask dsTask = repos.findCompleteById(datasetId);
+        int cpt = 0;
+        List<OrderDataFile> dataFiles = new ArrayList<>();
+        for (FilesTask filesTask : dsTask.getReliantTasks()) {
+            // Sort by filename before managing pagination
+            List<OrderDataFile> sortedDataFiles = new ArrayList<>(filesTask.getFiles());
+            sortedDataFiles.sort(Comparator.comparing(OrderDataFile::getFilename));
+            for (OrderDataFile dataFile : filesTask.getFiles()) {
+                if (cpt >= pageable.getOffset() && cpt < pageable.getOffset() + pageable.getPageSize()) {
+                    dataFiles.add(dataFile);
+                }
+                cpt++;
+            }
+        }
+        return new PageImpl<>(dataFiles, pageable, cpt);
     }
 }

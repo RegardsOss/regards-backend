@@ -46,52 +46,52 @@ public class OrderControllerAdvice {
 
     @ExceptionHandler(EmptyBasketException.class)
     public ResponseEntity<ServerErrorResponse> handleEmptyBasketException(EmptyBasketException ebe) {
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ServerErrorResponse(ebe.getMessage()));
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ServerErrorResponse(ebe.getMessage(), ebe));
     }
 
     @ExceptionHandler(EmptySelectionException.class)
     public ResponseEntity<ServerErrorResponse> handleEmptySelectionException(EmptySelectionException ebe) {
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ServerErrorResponse(ebe.getMessage()));
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new ServerErrorResponse(ebe.getMessage(), ebe));
     }
 
     @ExceptionHandler(NotYetAvailableException.class)
     public ResponseEntity<ServerErrorResponse> handleNotYetAvailableException(NotYetAvailableException e) {
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(new ServerErrorResponse(e.getMessage()));
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(new ServerErrorResponse(e.getMessage(), e));
     }
 
     @ExceptionHandler(CannotPauseOrderException.class)
     public ResponseEntity<ServerErrorResponse> handleCannotPauseOrderException(CannotPauseOrderException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ServerErrorResponse(e.getMessage()));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ServerErrorResponse(e.getMessage(), e));
     }
 
     @ExceptionHandler(CannotDeleteOrderException.class)
     public ResponseEntity<ServerErrorResponse> handleCannotDeleteOrderException(CannotDeleteOrderException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ServerErrorResponse(e.getMessage()));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ServerErrorResponse(e.getMessage(), e));
     }
 
     @ExceptionHandler(CannotResumeOrderException.class)
     public ResponseEntity<ServerErrorResponse> handleCannotResumeOrderException(CannotResumeOrderException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ServerErrorResponse(e.getMessage()));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ServerErrorResponse(e.getMessage(), e));
     }
 
     @ExceptionHandler(CannotRemoveOrderException.class)
     public ResponseEntity<ServerErrorResponse> handleCannotRemoveOrderException(CannotRemoveOrderException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ServerErrorResponse(e.getMessage()));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ServerErrorResponse(e.getMessage(), e));
     }
 
     @ExceptionHandler(BadBasketSelectionRequestException.class)
     public ResponseEntity<ServerErrorResponse> handleBadBasketSelectionRequestException(
             BadBasketSelectionRequestException e) {
-        return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new ServerErrorResponse(e.getMessage()));
+        return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new ServerErrorResponse(e.getMessage(), e));
     }
 
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<ServerErrorResponse> handleNoSuchElementException(NoSuchElementException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(e.getMessage()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(e.getMessage(), e));
     }
 
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ServerErrorResponse> handleIllegalStateException(IllegalStateException e) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ServerErrorResponse(e.getMessage()));
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ServerErrorResponse(e.getMessage(), e));
     }
 }

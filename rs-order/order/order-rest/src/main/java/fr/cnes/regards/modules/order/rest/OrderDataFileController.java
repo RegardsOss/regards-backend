@@ -18,16 +18,13 @@
  */
 package fr.cnes.regards.modules.order.rest;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 import java.util.NoSuchElementException;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.PagedResources;
@@ -49,8 +46,6 @@ import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 import fr.cnes.regards.framework.security.utils.jwt.exception.InvalidJwtException;
-import fr.cnes.regards.modules.order.domain.DatasetTask;
-import fr.cnes.regards.modules.order.domain.FilesTask;
 import fr.cnes.regards.modules.order.domain.OrderDataFile;
 import fr.cnes.regards.modules.order.service.IDatasetTaskService;
 import fr.cnes.regards.modules.order.service.IOrderDataFileService;
@@ -91,21 +86,8 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
     public ResponseEntity<PagedResources<Resource<OrderDataFile>>> findFiles(@PathVariable("orderId") Long orderId,
             @PathVariable("datasetId") Long datasetId, Pageable pageRequest,
             PagedResourcesAssembler<OrderDataFile> assembler) {
-        DatasetTask dsTask = datasetTaskService.loadComplete(datasetId);
-        int cpt = 0;
-        List<OrderDataFile> dataFiles = new ArrayList<>();
-        for (FilesTask filesTask : dsTask.getReliantTasks()) {
-            // Sort by filename before managinf pagination
-            List<OrderDataFile> sortedDataFiles = new ArrayList<>(filesTask.getFiles());
-            sortedDataFiles.sort(Comparator.comparing(OrderDataFile::getFilename));
-            for (OrderDataFile dataFile : filesTask.getFiles()) {
-                if ((cpt >= pageRequest.getOffset()) && (cpt < (pageRequest.getOffset() + pageRequest.getPageSize()))) {
-                    dataFiles.add(dataFile);
-                }
-                cpt++;
-            }
-        }
-        return ResponseEntity.ok(toPagedResources(new PageImpl<>(dataFiles, pageRequest, cpt), assembler));
+        Page<OrderDataFile> dataFiles = datasetTaskService.loadDataFiles(datasetId, pageRequest);
+        return ResponseEntity.ok(toPagedResources(dataFiles, assembler));
     }
 
     @ResourceAccess(description = "Download a file that is part of an order", role = DefaultRole.REGISTERED_USER)
@@ -115,7 +97,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
         // Throws a NoSuchElementException if not found
         OrderDataFile dataFile = dataFileService.load(dataFileId);
         // External files haven't necessarily a file name (but they have an URL)
-        String filename = (dataFile.getFilename() != null) ? dataFile.getFilename()
+        String filename = dataFile.getFilename() != null ? dataFile.getFilename()
                 : dataFile.getUrl().substring(dataFile.getUrl().lastIndexOf('/') + 1);
         response.addHeader("Content-disposition", "attachment;filename=" + filename);
         if (dataFile.getMimeType() != null) {
@@ -125,12 +107,29 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
         return new ResponseEntity<>(os -> dataFileService.downloadFile(dataFile, os), HttpStatus.OK);
     }
 
+    @ResourceAccess(description = "Test file download availability", role = DefaultRole.PUBLIC)
+    @RequestMapping(method = RequestMethod.HEAD, path = ORDERS_AIPS_AIP_ID_FILES_ID)
+    public ResponseEntity<StreamingResponseBody> testDownloadFile(@PathVariable("aipId") String aipId,
+            @PathVariable("dataFileId") Long dataFileId, @RequestParam(name = IOrderService.ORDER_TOKEN) String token,
+            HttpServletResponse response) throws NoSuchElementException {
+        return manageFile(Boolean.TRUE, aipId, dataFileId, token, response);
+    }
+
     @ResourceAccess(description = "Download a file that is part of an order granted by token",
             role = DefaultRole.PUBLIC)
     @RequestMapping(method = RequestMethod.GET, path = ORDERS_AIPS_AIP_ID_FILES_ID)
     public ResponseEntity<StreamingResponseBody> publicDownloadFile(@PathVariable("aipId") String aipId,
             @PathVariable("dataFileId") Long dataFileId, @RequestParam(name = IOrderService.ORDER_TOKEN) String token,
             HttpServletResponse response) throws NoSuchElementException {
+        return manageFile(Boolean.FALSE, aipId, dataFileId, token, response);
+    }
+
+    /**
+     * Above controller endpoints are duplicated to fit security single endpoint policy.
+     * (Otherwise, we could have set 2 HTTP method in a single endpoint!)
+     */
+    private ResponseEntity<StreamingResponseBody> manageFile(Boolean headRequest, String aipId, Long dataFileId,
+            String token, HttpServletResponse response) throws NoSuchElementException {
         OrderDataFile dataFile;
         String user;
         String role;
@@ -145,7 +144,7 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        String filename = (dataFile.getFilename() != null) ? dataFile.getFilename()
+        String filename = dataFile.getFilename() != null ? dataFile.getFilename()
                 : dataFile.getUrl().substring(dataFile.getUrl().lastIndexOf('/') + 1);
         response.addHeader("Content-disposition", "attachment;filename=" + filename);
         if (dataFile.getMimeType() != null) {
@@ -160,15 +159,20 @@ public class OrderDataFileController implements IResourceController<OrderDataFil
                 // Error from storage
                 return new ResponseEntity<>(HttpStatus.UNPROCESSABLE_ENTITY);
             default:
-                // Stream the response
-                return new ResponseEntity<>(os -> {
-                    FeignSecurityManager.asUser(user, role);
-                    try {
-                        dataFileService.downloadFile(dataFile, os);
-                    } finally {
-                        FeignSecurityManager.reset();
-                    }
-                }, HttpStatus.OK);
+                if (headRequest) {
+                    // Omit payload, just send an OK response
+                    return new ResponseEntity<>(HttpStatus.OK);
+                } else {
+                    // Stream the response
+                    return new ResponseEntity<>(os -> {
+                        FeignSecurityManager.asUser(user, role);
+                        try {
+                            dataFileService.downloadFile(dataFile, os);
+                        } finally {
+                            FeignSecurityManager.reset();
+                        }
+                    }, HttpStatus.OK);
+                }
         }
     }
 

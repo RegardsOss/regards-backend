@@ -11,6 +11,7 @@ import fr.cnes.regards.modules.order.domain.DatasetTask;
  */
 @Repository
 public interface IDatasetTaskRepository extends JpaRepository<DatasetTask, Long> {
+
     @EntityGraph("graph.datasetTask.complete")
     DatasetTask findCompleteById(Long id);
 }

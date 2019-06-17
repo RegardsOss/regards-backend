@@ -1,11 +1,18 @@
 package fr.cnes.regards.modules.order.service.job;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import java.time.OffsetDateTime;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
@@ -23,7 +30,7 @@ import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
 
 /**
- * Job that ask files availability to storage microservice and wait for all files acailability or error
+ * Job that ask files availability to storage microservice and wait for all files availability or error
  * @author oroussel
  */
 public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataFileEvent> {
@@ -46,9 +53,18 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
     private Semaphore semaphore;
 
     /**
-     * Map { checksum -> dataFile } of data files.
+     * Map { checksum -> ( dataFiles) } of data files.
+     * Same file can be part of 2 or more data objects so with same checksum but different OrderDataFile (thanks to
+     * uri)
+     * The case where checksum is the same for 2 different files is abandoned (never mind)
      */
-    private final Map<String, OrderDataFile> dataFilesMap = new HashMap<>();
+    private final Multimap<String, OrderDataFile> dataFilesMultimap = HashMultimap.create();
+
+    /**
+     * Set of file checksums already handled by a DataStorageEvent.
+     * Used in order to avoid listening on two same available events from storage.
+     */
+    private final Set<String> alreadyHandledFiles = Sets.newHashSet();
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
@@ -61,8 +77,8 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
                     "Four parameters are expected : 'files', 'expirationDate', 'user' and 'userRole'.");
         }
         for (JobParameter param : parameters.values()) {
-            if (!FilesJobParameter.isCompatible(param) && !(ExpirationDateJobParameter.isCompatible(param)) &&
-                    !UserJobParameter.isCompatible(param) && !UserRoleJobParameter.isCompatible(param)) {
+            if (!FilesJobParameter.isCompatible(param) && !(ExpirationDateJobParameter.isCompatible(param))
+                    && !UserJobParameter.isCompatible(param) && !UserRoleJobParameter.isCompatible(param)) {
                 throw new JobParameterInvalidException(
                         "Please use FilesJobParameter, ExpirationDateJobParameter, UserJobParameter and "
                                 + "UserRoleJobParameter in place of JobParameter (these "
@@ -71,7 +87,7 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
             if (FilesJobParameter.isCompatible(param)) {
                 OrderDataFile[] files = param.getValue();
                 for (OrderDataFile dataFile : files) {
-                    dataFilesMap.put(dataFile.getChecksum(), dataFile);
+                    dataFilesMultimap.put(dataFile.getChecksum(), dataFile);
                 }
             } else if (ExpirationDateJobParameter.isCompatible(param)) {
                 expirationDate = param.getValue();
@@ -85,10 +101,10 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
 
     @Override
     public void run() {
-        this.semaphore = new Semaphore(-dataFilesMap.size() + 1);
+        this.semaphore = new Semaphore(-dataFilesMultimap.keySet().size() + 1);
         subscriber.subscribe(this);
         AvailabilityRequest request = new AvailabilityRequest();
-        request.setChecksums(dataFilesMap.keySet());
+        request.setChecksums(dataFilesMultimap.keySet());
         request.setExpirationDate(expirationDate);
         try {
             FeignSecurityManager.asUser(user, role);
@@ -97,35 +113,42 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
             // Update all already available files
             boolean atLeastOneDataFileIntoResponse = false;
             for (String checksum : response.getAlreadyAvailable()) {
-                OrderDataFile dataFile = dataFilesMap.get(checksum);
-                dataFile.setState(FileState.AVAILABLE);
-                atLeastOneDataFileIntoResponse = true;
+                for (OrderDataFile dataFile : dataFilesMultimap.get(checksum)) {
+                    logger.debug("File {} - {} is already available.", dataFile.getFilename(), checksum);
+                    dataFile.setState(FileState.AVAILABLE);
+                    atLeastOneDataFileIntoResponse = true;
+                }
                 this.semaphore.release();
             }
             // Update all files in error
             for (String checksum : response.getErrors()) {
-                dataFilesMap.get(checksum).setState(FileState.ERROR);
+                logger.error("File {} cannot be retrieved.", checksum);
+                dataFilesMultimap.get(checksum).forEach(f -> f.setState(FileState.ERROR));
                 atLeastOneDataFileIntoResponse = true;
                 this.semaphore.release();
             }
             // Update all dataFiles state if at least one is already available or in error
             if (atLeastOneDataFileIntoResponse) {
-                dataFileService.save(dataFilesMap.values());
+                dataFileService.save(dataFilesMultimap.values());
             }
+            dataFilesMultimap.forEach((cs, f) -> LOGGER.debug("Order job is waiting for {} file {} - {} availability.",
+                                                         dataFilesMultimap.size(), f.getFilename(), cs));
             // Wait for remaining files availability from storage
             try {
                 this.semaphore.acquire();
             } catch (InterruptedException e) {
                 return;
             }
+
+            logger.debug("All files ({}) are available.", dataFilesMultimap.keySet().size());
             // All files have bean treated by storage, no more event subscriber needed...
             subscriber.unsubscribe(this);
             // ...and all order data files statuses are updated into database
-            dataFileService.save(dataFilesMap.values());
+            dataFileService.save(dataFilesMultimap.values());
         } catch (RuntimeException e) { // Feign or network or ... exception
             // Put All data files in ERROR and propagate exception to make job fail
-            dataFilesMap.values().forEach(df -> df.setState(FileState.ERROR));
-            dataFileService.save(dataFilesMap.values());
+            dataFilesMultimap.values().forEach(df -> df.setState(FileState.ERROR));
+            dataFileService.save(dataFilesMultimap.values());
             throw e;
         } finally {
             FeignSecurityManager.reset();
@@ -139,15 +162,27 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
     @Override
     public void handle(TenantWrapper<DataFileEvent> wrapper) {
         DataFileEvent event = wrapper.getContent();
-        if (!dataFilesMap.containsKey(event.getChecksum())) {
+        if (!dataFilesMultimap.containsKey(event.getChecksum())) {
             return;
         }
+        if (alreadyHandledFiles.contains(event.getChecksum())) {
+            return;
+        }
+        Collection<OrderDataFile> dataFiles = dataFilesMultimap.get(event.getChecksum());
         switch (event.getState()) {
             case AVAILABLE:
-                dataFilesMap.get(event.getChecksum()).setState(FileState.AVAILABLE);
+                for (OrderDataFile df : dataFiles) {
+                    logger.debug("File {} - {} is now available.", df.getFilename(), df.getChecksum());
+                    df.setState(FileState.AVAILABLE);
+                }
+                alreadyHandledFiles.add(event.getChecksum());
                 break;
             case ERROR:
-                dataFilesMap.get(event.getChecksum()).setState(FileState.ERROR);
+                for (OrderDataFile df : dataFiles) {
+                    logger.debug("File {} - {} is now in error.", df.getFilename(), df.getChecksum());
+                    df.setState(FileState.ERROR);
+                }
+                alreadyHandledFiles.add(event.getChecksum());
                 break;
         }
         this.semaphore.release();
@@ -155,6 +190,6 @@ public class StorageFilesJob extends AbstractJob<Void> implements IHandler<DataF
 
     @Override
     public int getCompletionCount() {
-        return dataFilesMap.size();
+        return dataFilesMultimap.keySet().size();
     }
 }

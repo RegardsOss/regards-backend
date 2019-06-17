@@ -21,7 +21,9 @@ package fr.cnes.regards.modules.order.rest;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.Collections;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -31,12 +33,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.ResponseEntity;
 
+import com.google.common.collect.Maps;
+
+import feign.Request;
 import feign.Response;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.modules.dam.client.models.IAttributeModelClient;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.indexer.domain.summary.DocFilesSummary;
-import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
@@ -95,10 +99,13 @@ public class OrderConfiguration {
 
     private class AipClientProxy {
 
-        @SuppressWarnings("deprecation")
+        Map<String, Collection<String>> headers = new HashMap<>();
+
+        @SuppressWarnings("unused")
         public Response downloadFile(String aipId, String checksum) {
-            return Response.create(200, "ignore", Collections.emptyMap(),
-                                   getClass().getResourceAsStream("/files/" + checksum), 1000);
+            return Response.builder().status(200).headers(headers)
+                    .request(Request.create(feign.Request.HttpMethod.GET, "", Maps.newHashMap(), null))
+                    .body(getClass().getResourceAsStream("/files/" + checksum), 1000).build();
         }
     }
 
@@ -110,10 +117,5 @@ public class OrderConfiguration {
     @Bean
     public IEmailClient emailClient() {
         return Mockito.mock(IEmailClient.class);
-    }
-
-    @Bean
-    public INotificationClient notificationClient() {
-        return Mockito.mock(INotificationClient.class);
     }
 }

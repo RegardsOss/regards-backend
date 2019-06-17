@@ -36,8 +36,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
@@ -48,7 +48,6 @@ import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.modules.order.dao.IOrderDataFileRepository;
@@ -65,6 +64,8 @@ import fr.cnes.regards.modules.order.domain.OrderDataFile;
  */
 @ContextConfiguration(classes = OrderConfiguration.class)
 @DirtiesContext
+@TestPropertySource(
+        properties = { "regards.tenant=orderdata", "spring.jpa.properties.hibernate.default_schema=orderdata" })
 public class OrderDataFileControllerIT extends AbstractRegardsIT {
 
     @Autowired
@@ -94,11 +95,8 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
 
     @Test
     public void testDownloadFileFailed() {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isNotFound());
-
-        performDefaultGet(OrderDataFileController.ORDERS_FILES_DATA_FILE_ID, customizer, "Should return result",
-                          6465465);
+        performDefaultGet(OrderDataFileController.ORDERS_FILES_DATA_FILE_ID, customizer().expectStatusNotFound(),
+                          "Should return result", 6465465);
     }
 
     @Test
@@ -141,15 +139,13 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
         order = orderRepository.save(order);
         ds1Task = order.getDatasetTasks().first();
 
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-
         File resultFile;
         int count = 0;
         do {
             count++;
             ResultActions resultActions = performDefaultGet(OrderDataFileController.ORDERS_FILES_DATA_FILE_ID,
-                                                            customizer, "Should return result", dataFile1.getId());
+                                                            customizer().expectStatusOk(), "Should return result",
+                                                            dataFile1.getId());
 
             assertMediaType(resultActions, MediaType.TEXT_PLAIN);
             resultFile = File.createTempFile("ORDER", "");
@@ -163,7 +159,7 @@ public class OrderDataFileControllerIT extends AbstractRegardsIT {
                 ByteStreams.copy(is, fos);
                 is.close();
             }
-        } while ((resultFile.length() == 0) && (count < 4));
+        } while (resultFile.length() == 0 && count < 4);
         Assert.assertTrue(Files.equal(testFile, resultFile));
 
         tenantResolver.forceTenant(getDefaultTenant()); // ?

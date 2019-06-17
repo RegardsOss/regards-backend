@@ -46,6 +46,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 
 import feign.Response;
@@ -90,23 +91,31 @@ public class OrderDataFileService implements IOrderDataFileService {
     @Autowired
     private IOrderRepository orderRepository;
 
-    @Value("${http.proxy.host}")
+    @Value("${http.proxy.host:#{null}}")
     private String proxyHost;
 
-    @Value("${http.proxy.port}")
-    private int proxyPort;
+    @Value("${http.proxy.port:#{null}}")
+    private Integer proxyPort;
+
+    @Value("${http.proxy.noproxy:#{null}}")
+    private String noProxyHostsString;
 
     private Proxy proxy;
 
+    private final Set<String> noProxyHosts = Sets.newHashSet();
+
     @PostConstruct
     public void init() {
-        proxy = (Strings.isNullOrEmpty(proxyHost)) ? Proxy.NO_PROXY
+        proxy = Strings.isNullOrEmpty(proxyHost) ? Proxy.NO_PROXY
                 : new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+        if (noProxyHostsString != null) {
+            Collections.addAll(noProxyHosts, noProxyHostsString.split("\\s*,\\s*"));
+        }
     }
 
     @Override
     public Iterable<OrderDataFile> create(Iterable<OrderDataFile> dataFiles) {
-        return repos.save(dataFiles);
+        return repos.saveAll(dataFiles);
     }
 
     @Override
@@ -116,8 +125,8 @@ public class OrderDataFileService implements IOrderDataFileService {
         FilesTask filesTask = filesTasksRepository.findDistinctByFilesIn(dataFile);
         // In case FilesTask does not yet exist
         if (filesTask != null) {
-            if (filesTask.getFiles().stream().allMatch(f -> (f.getState() == FileState.DOWNLOADED)
-                    || (f.getState() == FileState.ERROR) || (f.getState() == FileState.DOWNLOAD_ERROR))) {
+            if (filesTask.getFiles().stream().allMatch(f -> f.getState() == FileState.DOWNLOADED
+                    || f.getState() == FileState.ERROR || f.getState() == FileState.DOWNLOAD_ERROR)) {
                 filesTask.setEnded(true);
             }
             // ...and if it is waiting for user
@@ -134,14 +143,14 @@ public class OrderDataFileService implements IOrderDataFileService {
 
     @Override
     public Iterable<OrderDataFile> save(Iterable<OrderDataFile> inDataFiles) {
-        List<OrderDataFile> dataFiles = repos.save(inDataFiles);
+        List<OrderDataFile> dataFiles = repos.saveAll(inDataFiles);
         // Look at FilesTasks if they are ended (no more file to download)...
         List<FilesTask> filesTasks = filesTasksRepository.findDistinctByFilesIn(dataFiles);
         Long orderId = null;
         // Update all these FileTasks
         for (FilesTask filesTask : filesTasks) {
-            if (filesTask.getFiles().stream().allMatch(f -> (f.getState() == FileState.DOWNLOADED)
-                    || (f.getState() == FileState.ERROR) || (f.getState() == FileState.DOWNLOAD_ERROR))) {
+            if (filesTask.getFiles().stream().allMatch(f -> f.getState() == FileState.DOWNLOADED
+                    || f.getState() == FileState.ERROR || f.getState() == FileState.DOWNLOAD_ERROR)) {
                 filesTask.setEnded(true);
             }
             // Save order id for later
@@ -162,11 +171,9 @@ public class OrderDataFileService implements IOrderDataFileService {
 
     @Override
     public OrderDataFile load(Long dataFileId) throws NoSuchElementException {
-        OrderDataFile dataFile = repos.findOne(dataFileId);
-        if (dataFile == null) {
-            throw new NoSuchElementException(String.format("Data file with id: %d doesn't exist.", dataFileId));
-        }
-        return dataFile;
+        Optional<OrderDataFile> dataFile = repos.findById(dataFileId);
+        return dataFile.orElseThrow(() -> new NoSuchElementException(
+                String.format("Data file with id: %d doesn't exist.", dataFileId)));
     }
 
     @Override
@@ -196,9 +203,9 @@ public class OrderDataFileService implements IOrderDataFileService {
         int timeout = 10_000;
         if (dataFile.isReference()) {
             try (InputStream is = DownloadUtils.getInputStreamThroughProxy(new URL(dataFile.getUrl()), proxy,
-                                                                           timeout)) {
+                                                                           noProxyHosts, timeout)) {
                 ByteStreams.copy(is, os);
-                os.close();
+                os.flush();
             } catch (IOException e) {
                 LOGGER.error("Error while downloading file", e);
                 StringWriter sw = new StringWriter();
@@ -214,11 +221,11 @@ public class OrderDataFileService implements IOrderDataFileService {
                 e.printStackTrace(new PrintWriter(sw));
                 dataFile.setDownloadError("Error while downloading file from Archival Storage\n" + sw.toString());
             }
-            error = (response == null) || (response.status() != HttpStatus.OK.value());
+            error = response == null || response.status() != HttpStatus.OK.value();
             if (!error) {
                 try (InputStream is = response.body().asInputStream()) {
                     long copiedBytes = ByteStreams.copy(is, os);
-                    os.close();
+                    os.flush();
                     // File has not completly been copied
                     if (copiedBytes != dataFile.getFilesize()) {
                         error = true;
