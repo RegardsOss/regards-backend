@@ -31,17 +31,15 @@ import org.springframework.stereotype.Component;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.acquisition.service.job.ProductAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
-import fr.cnes.regards.modules.acquisition.service.job.SIPSubmissionJob;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
-import fr.cnes.regards.modules.notification.domain.NotificationType;
 
 /**
  *
@@ -104,11 +102,9 @@ public class AcquisitionChainJobEventHandler implements ApplicationListener<Appl
                 LOGGER.error("Error occurs during job event handling", e);
                 StringWriter sw = new StringWriter();
                 e.printStackTrace(new PrintWriter(sw));
-                FeignSecurityManager.asSystem();
-                notificationClient.notifyRoles(sw.toString(), "Error occurs during job event handling",
-                                               "rs-dataprovider", NotificationType.ERROR, DefaultRole.ADMIN);
+                notificationClient.notify(sw.toString(), "Error occurs during job event handling",
+                                          NotificationLevel.ERROR, DefaultRole.ADMIN);
             } finally {
-                FeignSecurityManager.reset();
                 runtimeTenantResolver.clearTenant();
             }
         }
@@ -119,9 +115,7 @@ public class AcquisitionChainJobEventHandler implements ApplicationListener<Appl
             if (jobInfo != null) {
                 // First lets check which job failed. Then lets responsible service handle errors.
                 String jobClassName = jobInfo.getClassName();
-                if (SIPSubmissionJob.class.getName().equals(jobClassName)) {
-                    productService.handleSIPSubmissiontError(jobInfo);
-                } else if (SIPGenerationJob.class.getName().equals(jobClassName)) {
+                if (SIPGenerationJob.class.getName().equals(jobClassName)) {
                     productService.handleSIPGenerationError(jobInfo);
                 } else if (ProductAcquisitionJob.class.getName().equals(jobClassName)) {
                     acquisitionProcessingService.handleProductAcquisitionError(jobInfo);

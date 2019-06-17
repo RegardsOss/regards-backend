@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.plugins;
 
-import java.util.List;
+import java.util.Set;
 import java.util.SortedMap;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -43,5 +43,5 @@ public interface ISIPGenerationPluginWithMetadataToolbox extends ISipGenerationP
      * @return an ordered map of attribute
      * @throws ModuleException
      */
-    SortedMap<Integer, Attribute> createMetadataPlugin(List<AcquisitionFile> acqFiles) throws ModuleException;
+    SortedMap<Integer, Attribute> createMetadataPlugin(Set<AcquisitionFile> acqFiles) throws ModuleException;
 }

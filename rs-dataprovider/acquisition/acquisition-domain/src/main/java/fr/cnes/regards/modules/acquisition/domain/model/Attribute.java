@@ -26,7 +26,7 @@ import fr.cnes.regards.modules.acquisition.domain.metamodel.MetaAttribute;
 
 /**
  * Cette interface permet d'abstraire la relation d'une entite avec la valeur d'un attribut qui la compose.
- * 
+ *
  * @author Christophe Mertz
  *
  */
@@ -59,7 +59,7 @@ public class Attribute {
 
     /**
      * Cette methode existe uniquement pour pouvoir facilement acceder au type de l'attribut.
-     * 
+     *
      * @return Le type de l'attribut.
      */
     public AttributeTypeEnum getType() {
@@ -68,7 +68,7 @@ public class Attribute {
 
     /**
      * Retourne la liste de valeurs de l'attribut.
-     * 
+     *
      * @return Une List
      */
     public List<Object> getValueList() {
@@ -77,7 +77,7 @@ public class Attribute {
 
     /**
      * Ajoute une valeur a l'attribut. La classe de l'objet en entree doit correspondre avec la classe de l'attribut.
-     * 
+     *
      * @param pValue
      *            La nouvelle valeur de l'attribut.
      */
@@ -93,7 +93,7 @@ public class Attribute {
     }
 
     /**
-     * @param positionne
+     * @param pAttribute positionne
      *            le méta attribut
      */
     public void setMetaAttribute(MetaAttribute pAttribute) {
@@ -103,7 +103,7 @@ public class Attribute {
     /**
      * Cette methode permet de ajouter le nom du meta-attribut definissant l'attribut non-standard. La methode est
      * utilisee lors de l'ingestion. Cette methode ne fonctionnera pas sur un plate-forme Windows.
-     * 
+     *
      * @param pString
      *            Le chemin xml contenant le nom de l'attribut non-standard.
      */
@@ -116,7 +116,7 @@ public class Attribute {
     /**
      * Cette methode permet de mettre a jour le nom du meta-attribut definissant l'objet attribut. Cette methode est
      * utilisee lors de la lecture des fichiers descriptor.
-     * 
+     *
      * @param pString
      *            Le nom du meta-attribut.
      */
@@ -135,7 +135,7 @@ public class Attribute {
     /**
      * renvoie une cle unique identifiant un meta-attribut en tenant compte de son appartenance a un attribut compose
      * Utilise pour les ajout aux hashmaps.
-     * 
+     *
      * @return une cle
      */
     public String getAttributeKey() {
@@ -151,7 +151,7 @@ public class Attribute {
 
     /**
      * Ecrit le contenu de l'attribut Réservé au mode debug
-     * 
+     *
      * @return une representation de l'attribut
      */
     @Override
@@ -168,7 +168,7 @@ public class Attribute {
             localBuffer.append(metaAttribute.getComputationRule());
         }
         localBuffer.append(":{");
-        if ((valueList != null) && !valueList.isEmpty()) { // NOSONAR
+        if (valueList != null && !valueList.isEmpty()) { // NOSONAR
             for (Object o : valueList) {
                 localBuffer.append(o);
             }
@@ -181,7 +181,7 @@ public class Attribute {
 
     /**
      * Set method.
-     * 
+     *
      * @param pValueList
      *            the valueList to set
      */

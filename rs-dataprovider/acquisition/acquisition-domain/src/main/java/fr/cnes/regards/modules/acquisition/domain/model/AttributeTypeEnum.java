@@ -19,16 +19,23 @@
 package fr.cnes.regards.modules.acquisition.domain.model;
 
 /**
- * 
+ *
  * Cette classe modelise le type de critere : date, chaine de caractere, entier ou reel.
- * 
+ *
  * @author Christophe Mertz
  */
 public enum AttributeTypeEnum {
 
-    TYPE_UNKNOWN("UNKNOWN"), TYPE_REAL("REAL"), TYPE_INTEGER("INTEGER"), TYPE_STRING("STRING"), TYPE_DATE_TIME(
-            "DATE_TIME"), TYPE_DATE("DATE"), TYPE_CLOB("CLOB"), TYPE_URL("URL"), TYPE_LONG_STRING("LONG_STRING"), TYPE_GEO_LOCATION(
-            "GEO_LOCATION");
+    TYPE_UNKNOWN("UNKNOWN"),
+    TYPE_REAL("REAL"),
+    TYPE_INTEGER("INTEGER"),
+    TYPE_STRING("STRING"),
+    TYPE_DATE_TIME("DATE_TIME"),
+    TYPE_DATE("DATE"),
+    TYPE_CLOB("CLOB"),
+    TYPE_URL("URL"),
+    TYPE_LONG_STRING("LONG_STRING"),
+    TYPE_GEO_LOCATION("GEO_LOCATION");
 
     /**
      * Type de flux
@@ -36,9 +43,9 @@ public enum AttributeTypeEnum {
     private String typeName;
 
     /**
-     * 
+     *
      * Constructeur
-     * 
+     *
      * @param pTypeName
      *            le nom du type
      */
@@ -46,17 +53,10 @@ public enum AttributeTypeEnum {
         typeName = pTypeName;
     }
 
-    /**
-     * 
-     * Renvoie le type de l'attribut
-     * 
-     * @param pTypeName
-     * @return
-     */
     public static AttributeTypeEnum parse(String pTypeName) {
         AttributeTypeEnum type = TYPE_UNKNOWN;
         AttributeTypeEnum[] vals = AttributeTypeEnum.values();
-        for (int i = 0; (i < vals.length) && type.equals(TYPE_UNKNOWN); i++) {
+        for (int i = 0; i < vals.length && type.equals(TYPE_UNKNOWN); i++) {
             if (pTypeName.equals(vals[i].getTypeName())) {
                 type = vals[i];
             }

@@ -32,7 +32,7 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
  * @author Marc Sordi
  */
 @Plugin(id = "DefaultSIPGeneration", version = "1.0.0-SNAPSHOT", description = "Generate SIP using product information",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class DefaultSIPGeneration implements ISipGenerationPlugin {
 

@@ -38,7 +38,11 @@ public interface IScanPlugin {
 
     /**
      * Scan disk to detect and retrieve files.<br/>
-     * Warning : if last modification date is not used, file might be acquired several times!
+     * Warning : if last modification date is not used, file might be acquired several times!<br/>
+     * <b>When using last modification date, we assume scan plugin is working with a precision to the second at least.
+     * Plugin has to return files with last modification date equals or after the given last modification date.
+     *  The system will filter duplicates if any!</b>
+     *
      * @param lastModificationDate The last most recent last modification date of all the last scanned files. May be
      *            null for first scan!
      * @return list of detected files

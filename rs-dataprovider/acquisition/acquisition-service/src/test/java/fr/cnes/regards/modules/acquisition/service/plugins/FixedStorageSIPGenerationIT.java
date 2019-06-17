@@ -19,7 +19,6 @@
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,8 +27,6 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.MimeType;
-
-import com.google.common.collect.Maps;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
@@ -59,13 +56,9 @@ public class FixedStorageSIPGenerationIT extends AbstractMultitenantServiceTest 
         // Init plugin conf
         PluginMetaData plugin = PluginUtils.createPluginMetaData(FixedStorageSIPGeneration.class);
 
-        Map<String, String> mapping = Maps.newHashMap();
-        mapping.put("plugin1", "dir1");
-        mapping.put("plugin2", "dir2");
-        mapping.put("plugin3", "dir3");
-        mapping.put("plugin4", "");
         Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(FixedStorageSIPGeneration.PLUGINID_STORAGEDIR_MAP, mapping).getParameters();
+                .addParameter(FixedStorageSIPGeneration.STAF_STORAGE_NODE, "node1")
+                .addParameter(FixedStorageSIPGeneration.DATASET, "dataset1").getParameters();
         PluginConfiguration pluginConf = pluginService
                 .savePluginConfiguration(new PluginConfiguration(plugin, "sipGenerationPlugin", parameters));
 
@@ -84,11 +77,10 @@ public class FixedStorageSIPGenerationIT extends AbstractMultitenantServiceTest 
         product.addAcquisitionFile(acqFile);
         SIP sip = pluginImp.generate(product);
         Assert.assertNotNull(sip);
-        @SuppressWarnings("unchecked")
-        List<MiscStorageInformation> miscStorage = (List<MiscStorageInformation>) sip.getProperties()
-                .getMiscInformation().get(FixedStorageSIPGeneration.SIP_MISC_STORAGE_KEY);
-        Assert.assertNotNull(miscStorage);
-        Assert.assertEquals(miscStorage.size(), mapping.size());
+        Map<String, Object> infos = sip.getProperties().getDescriptiveInformation();
+        Assert.assertNotNull(infos);
+        Assert.assertEquals("node1", infos.get(FixedStorageSIPGeneration.SIP_STAF_STORAGE_NODE_KEY));
+        Assert.assertEquals("dataset1", infos.get(FixedStorageSIPGeneration.SIP_DATASET_KEY));
     }
 
 }

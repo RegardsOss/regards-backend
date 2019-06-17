@@ -62,7 +62,7 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
  */
 @Plugin(id = "GeoJsonFeatureCollectionParserPlugin", version = "1.0.0-SNAPSHOT",
         description = "Scan directory to detect geosjson files. Generate a file to acquire for each feature found in it.",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
 
@@ -105,7 +105,7 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
                     if (lastModificationDate.isPresent()) {
                         OffsetDateTime lmd = OffsetDateTime.ofInstant(Files.getLastModifiedTime(entry).toInstant(),
                                                                       ZoneOffset.UTC);
-                        if (lmd.isAfter(lastModificationDate.get())) {
+                        if (lmd.isAfter(lastModificationDate.get()) || lmd.isEqual(lastModificationDate.get())) {
                             genetateFeatureFiles.addAll(generateFeatureFiles(entry));
                         }
                     } else {
@@ -175,7 +175,7 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
                 SIP sip = builder.build();
                 sip.setGeometry(feature.getGeometry());
 
-                if (sip.getProperties().getContentInformations().size() > 0) {
+                if (!sip.getProperties().getContentInformations().isEmpty()) {
                     Path file = Paths.get(entry.getParent().toString(), name + ".json");
                     generatedFiles.add(Files.write(file, Arrays.asList(gson.toJson(sip)), Charset.forName("UTF-8")));
                 }
