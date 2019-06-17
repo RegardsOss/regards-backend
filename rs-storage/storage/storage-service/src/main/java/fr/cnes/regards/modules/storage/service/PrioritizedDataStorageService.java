@@ -59,10 +59,10 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
         } else if (dataStorageConf.getInterfaceNames().contains(INearlineDataStorage.class.getName())) {
             dataStorageType = DataStorageType.NEARLINE;
         } else {
-            throw new EntityInvalidException(
-                    String.format("Given plugin configuration(label: %s) is not a configuration for an online or nearline data storage (respectfully %s or %s)!",
-                                  dataStorageConf.getLabel(), IOnlineDataStorage.class.getName(),
-                                  INearlineDataStorage.class.getName()));
+            throw new EntityInvalidException(String
+                    .format("Given plugin configuration(label: %s) is not a configuration for an online or nearline data storage (respectfully %s or %s)!",
+                            dataStorageConf.getLabel(), IOnlineDataStorage.class.getName(),
+                            INearlineDataStorage.class.getName()));
         }
         Long actualLowestPriority = getLowestPriority(dataStorageType);
         return prioritizedDataStorageRepository.save(new PrioritizedDataStorage(dataStorageConf,
@@ -88,9 +88,8 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
     @Override
     @Nullable
     public PrioritizedDataStorage getFirstActiveByType(DataStorageType dataStorageType) {
-        PrioritizedDataStorage prioritizedDataStorage = prioritizedDataStorageRepository
+        return prioritizedDataStorageRepository
                 .findFirstByDataStorageTypeAndDataStorageConfigurationActiveOrderByPriorityAsc(dataStorageType, true);
-        return prioritizedDataStorage;
     }
 
     @Override
@@ -133,11 +132,11 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
 
     @Override
     public PrioritizedDataStorage retrieve(Long id) throws EntityNotFoundException {
-        PrioritizedDataStorage actual = prioritizedDataStorageRepository.findOne(id);
-        if (actual == null) {
+        Optional<PrioritizedDataStorage> actual = prioritizedDataStorageRepository.findById(id);
+        if (!actual.isPresent()) {
             throw new EntityNotFoundException(id, PrioritizedDataStorage.class);
         }
-        return actual;
+        return actual.get();
     }
 
     @Override
@@ -148,8 +147,9 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
         }
 
         PluginConfUpdatable updatable = null;
-        
-        if (oldOne.getDataStorageConfiguration().isActive()) {
+        boolean oldConfActive = oldOne.getDataStorageConfiguration().isActive();
+
+        if (oldConfActive) {
             // Count number of files stored by the plugin configuration
             Long nbfilesAlreadyStored = storageDataFileRepository.countByPrioritizedDataStoragesId(id);
 
@@ -158,8 +158,9 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
             updatable = plugin.allowConfigurationUpdate(updated.getDataStorageConfiguration(),
                                                         oldOne.getDataStorageConfiguration(), nbfilesAlreadyStored > 0);
         }
-        
-        if (!oldOne.getDataStorageConfiguration().isActive() || updatable.isUpdateAllowed()) {
+
+        // if oldConfActive is true, updatable cannot be null
+        if (!oldConfActive || updatable.isUpdateAllowed()) {
             PluginConfiguration updatedConf = pluginService
                     .updatePluginConfiguration(updated.getDataStorageConfiguration());
             oldOne.setDataStorageConfiguration(updatedConf);
@@ -172,7 +173,7 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
 
     @Override
     public void delete(Long pluginConfId) throws ModuleException {
-        Optional<PrioritizedDataStorage> toDeleteOpt = prioritizedDataStorageRepository.findOneById(pluginConfId);
+        Optional<PrioritizedDataStorage> toDeleteOpt = prioritizedDataStorageRepository.findById(pluginConfId);
         if (toDeleteOpt.isPresent()) {
             // first we need to increase all the priorities of those which are less prioritized than the one to delete
             PrioritizedDataStorage toDelete = toDeleteOpt.get();
@@ -186,7 +187,7 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
                 for (PrioritizedDataStorage lessPrioritized : lessPrioritizeds) {
                     lessPrioritized.setPriority(lessPrioritized.getPriority() - 1);
                 }
-                prioritizedDataStorageRepository.save(lessPrioritizeds);
+                prioritizedDataStorageRepository.saveAll(lessPrioritizeds);
             } else {
                 String msg = String.format("Data storage %s could not be deleted because it contains files",
                                            toDelete.getDataStorageConfiguration().getLabel());

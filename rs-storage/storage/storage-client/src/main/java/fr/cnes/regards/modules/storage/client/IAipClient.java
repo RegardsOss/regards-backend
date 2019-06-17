@@ -53,7 +53,7 @@ import fr.cnes.regards.modules.storage.domain.RejectedSip;
  * @author Sylvain VISSIERE-GUERINET
  * @author Sébastien Binda
  */
-@RestClient(name = "rs-storage")
+@RestClient(name = "rs-storage", contextId = "rs-storage.aip.client")
 @RequestMapping(value = IAipClient.AIP_PATH, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IAipClient {

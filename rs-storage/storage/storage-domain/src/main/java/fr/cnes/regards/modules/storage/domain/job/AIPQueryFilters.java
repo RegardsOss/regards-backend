@@ -24,8 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.validation.constraints.NotNull;
-
 import fr.cnes.regards.modules.storage.domain.AIPState;
 
 /**
@@ -70,9 +68,13 @@ public class AIPQueryFilters {
     private List<String> tags = new ArrayList<>();
 
     /**
+     * Data storage ids on which filtered aip should be stored on
+     */
+    private Set<Long> storedOn = new HashSet<>();
+
+    /**
      * Regards session id
      */
-    @NotNull
     private String session;
 
     public AIPQueryFilters() {
@@ -141,4 +143,27 @@ public class AIPQueryFilters {
     public void setProviderId(String providerId) {
         this.providerId = providerId;
     }
+
+    public Set<Long> getStoredOn() {
+        return storedOn;
+    }
+
+    public void setStoredOn(Set<Long> storedOn) {
+        this.storedOn = storedOn;
+    }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return "Filters: [" + (state != null ? "state=" + state + ", " : "")
+                + (providerId != null ? "providerId=" + providerId + ", " : "")
+                + (from != null ? "from=" + from + ", " : "") + (to != null ? "to=" + to + ", " : "")
+                + (aipIds != null ? "aipIds=" + aipIds + ", " : "")
+                + (aipIdsExcluded != null ? "aipIdsExcluded=" + aipIdsExcluded + ", " : "")
+                + (tags != null ? "tags=" + tags + ", " : "") + (storedOn != null ? "storedOn=" + storedOn + ", " : "")
+                + (session != null ? "session=" + session : "") + "]";
+    }
+
 }

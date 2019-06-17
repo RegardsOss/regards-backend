@@ -23,44 +23,37 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
-import org.springframework.util.MimeTypeUtils;
 
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.modules.notification.domain.NotificationType;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.dao.AIPQueryGenerator;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.job.AIPQueryFilters;
 import fr.cnes.regards.modules.storage.domain.job.AddAIPTagsFilters;
 import fr.cnes.regards.modules.storage.domain.job.RemoveAIPTagsFilters;
 import fr.cnes.regards.modules.storage.domain.job.UpdateAIPsTagJobType;
 import fr.cnes.regards.modules.storage.domain.job.UpdatedAipsInfos;
 import fr.cnes.regards.modules.storage.service.IAIPService;
-import fr.cnes.regards.modules.storage.service.IDataStorageService;
 
 /**
  * Add or remove tags to several AIPs, inside a job.
  * @author Léo Mieulet
  */
 public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
-
-    /**
-     * Class logger
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(UpdateAIPsTagJob.class);
 
     /**
      * Job parameter name for the AIP User request id to use
@@ -85,7 +78,7 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
     private Integer aipIterationLimit;
 
     @Autowired
-    private IDataStorageService dataStorageService;
+    private INotificationClient notificationClient;
 
     private Map<String, JobParameter> parameters;
 
@@ -100,26 +93,26 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
     @Override
     public void run() {
         UpdateAIPsTagJobType updateType = parameters.get(UPDATE_TYPE_PARAMETER_NAME).getValue();
-        AIPQueryFilters tagFilter = getFilter(updateType);
-        AIPSession aipSession = aipService.getSession(tagFilter.getSession(), false);
-        Pageable pageRequest = new PageRequest(0, aipIterationLimit, Direction.ASC, "id");
+        AIPQueryFilters tagFilter = parameters.get(FILTER_PARAMETER_NAME).getValue();
+        Pageable pageRequest = PageRequest.of(0, aipIterationLimit, Direction.ASC, "id");
         Page<AIP> aipsPage;
         nbError = new AtomicInteger(0);
         nbEntityUpdated = new AtomicInteger(0);
         entityFailed = new ArrayList<>();
         do {
-            aipsPage = aipDao
-                    .findAll(AIPQueryGenerator.searchAIPContainingAllTags(tagFilter.getState(), tagFilter.getFrom(), tagFilter.getTo(),
-                                                      tagFilter.getTags(), aipSession, tagFilter.getProviderId(),
-                                                      tagFilter.getAipIds(), tagFilter.getAipIdsExcluded()),
-                             pageRequest);
+            aipsPage = aipDao.findAll(AIPQueryGenerator
+                    .searchAIPContainingAllTags(tagFilter.getState(), tagFilter.getFrom(), tagFilter.getTo(),
+                                                tagFilter.getTags(), tagFilter.getSession(), tagFilter.getProviderId(),
+                                                tagFilter.getAipIds(), tagFilter.getAipIdsExcluded(),
+                                                tagFilter.getStoredOn()),
+                                      pageRequest);
             aipsPage.forEach(aip -> {
                 try {
                     if (updateType == UpdateAIPsTagJobType.ADD) {
-                        AddAIPTagsFilters query = parameters.get(FILTER_PARAMETER_NAME).getValue();
+                        AddAIPTagsFilters query = (AddAIPTagsFilters) tagFilter;
                         aipService.addTags(aip, query.getTagsToAdd());
                     } else {
-                        RemoveAIPTagsFilters query = parameters.get(FILTER_PARAMETER_NAME).getValue();
+                        RemoveAIPTagsFilters query = (RemoveAIPTagsFilters) tagFilter;
                         aipService.removeTags(aip, query.getTagsToRemove());
                     }
                     nbEntityUpdated.incrementAndGet();
@@ -130,7 +123,7 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
                     }
                     nbError.incrementAndGet();
                     // Exception thrown while updating tag list on AIP
-                    LOGGER.error(e.getMessage(), e);
+                    logger.error(e.getMessage(), e);
                 }
             });
         } while (aipsPage.hasNext());
@@ -157,7 +150,12 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
                 message.append(ipId);
                 message.append("  \\n");
             }
-            dataStorageService.notifyAdmins(title, message.toString(), NotificationType.ERROR, MimeTypeUtils.TEXT_PLAIN);
+            FeignSecurityManager.asSystem();
+            try {
+                notificationClient.notify(message.toString(), title, NotificationLevel.ERROR, DefaultRole.ADMIN);
+            } finally {
+                FeignSecurityManager.reset();
+            }
         }
     }
 
@@ -168,10 +166,10 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
 
     @Override
     public int getCompletionCount() {
-        if ((nbError.get() + nbEntityUpdated.get()) == 0) {
+        if (nbError.get() + nbEntityUpdated.get() == 0) {
             return 0;
         }
-        return (int) Math.floor((100 * (nbError.get() + nbEntityUpdated.get())) / nbEntity);
+        return (int) Math.floor(100 * (nbError.get() + nbEntityUpdated.get()) / nbEntity);
     }
 
     @Override
@@ -208,44 +206,14 @@ public class UpdateAIPsTagJob extends AbstractJob<UpdatedAipsInfos> {
             throw e;
         }
         // Check if the filterParam can be correctly parsed, depending of its type
-        if (((typeParam.getValue() == UpdateAIPsTagJobType.ADD)
-                && !(filterParam.getValue() instanceof AddAIPTagsFilters))
-                || ((typeParam.getValue() == UpdateAIPsTagJobType.REMOVE)
-                        && !(filterParam.getValue() instanceof RemoveAIPTagsFilters))) {
+        if (typeParam.getValue() == UpdateAIPsTagJobType.ADD && !(filterParam.getValue() instanceof AddAIPTagsFilters)
+                || typeParam.getValue() == UpdateAIPsTagJobType.REMOVE
+                        && !(filterParam.getValue() instanceof RemoveAIPTagsFilters)) {
             JobParameterInvalidException e = new JobParameterInvalidException(String
                     .format("Job %s: cannot read the parameter %s", this.getClass().getName(), FILTER_PARAMETER_NAME));
             logger.error(e.getMessage(), e);
             throw e;
         }
-    }
-
-    /**
-     * This job can handle add and remove tag on AIP,
-     * @param updateType type of job
-     * @return user query filters commonly used whenever the type of job
-     */
-    private AIPQueryFilters getFilter(UpdateAIPsTagJobType updateType) {
-        AIPQueryFilters tagFilter = new AIPQueryFilters();
-        if (updateType == UpdateAIPsTagJobType.ADD) {
-            AddAIPTagsFilters query = parameters.get(FILTER_PARAMETER_NAME).getValue();
-            tagFilter.setSession(query.getSession());
-            tagFilter.setState(query.getState());
-            tagFilter.setProviderId(query.getProviderId());
-            tagFilter.setFrom(query.getFrom());
-            tagFilter.setTo(query.getTo());
-            tagFilter.setAipIds(query.getAipIds());
-            tagFilter.setAipIdsExcluded(query.getAipIdsExcluded());
-        } else {
-            RemoveAIPTagsFilters query = parameters.get(FILTER_PARAMETER_NAME).getValue();
-            tagFilter.setSession(query.getSession());
-            tagFilter.setState(query.getState());
-            tagFilter.setProviderId(query.getProviderId());
-            tagFilter.setFrom(query.getFrom());
-            tagFilter.setTo(query.getTo());
-            tagFilter.setAipIds(query.getAipIds());
-            tagFilter.setAipIdsExcluded(query.getAipIdsExcluded());
-        }
-        return tagFilter;
     }
 
 }

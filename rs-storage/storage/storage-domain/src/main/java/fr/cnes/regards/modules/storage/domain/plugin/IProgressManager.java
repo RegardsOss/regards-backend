@@ -43,7 +43,6 @@ public interface IProgressManager {
      * @param storedDataFile {@link StorageDataFile} stored.
      * @param storedUrl {@link URL} new URL of the successfully stored file.
      * @param storedFileSize file size fo the stored file
-     * @param sourceUrls former urls of the data file,
      */
     public void storageSucceed(StorageDataFile storedDataFile, URL storedUrl, Long storedFileSize);
 

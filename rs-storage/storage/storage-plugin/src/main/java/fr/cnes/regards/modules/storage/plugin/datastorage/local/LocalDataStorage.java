@@ -26,6 +26,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.FileAttribute;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -59,7 +60,7 @@ import fr.cnes.regards.modules.storage.domain.plugin.WorkingSubsetWrapper;
  *
  */
 @Plugin(author = "REGARDS Team", description = "Plugin handling the storage on local file system", id = "Local",
-        version = "1.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
+        version = "1.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
 public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> {
 
@@ -206,7 +207,7 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
                                                                         data.getAlgorithm(), data.getChecksum());
             if (!downloadOk) {
                 String failureCause = String
-                        .format("Storage of StorageDataFile(%s) failed at the following location: %s. Its checksum once stored do not match with expected",
+                        .format("Storage of StorageDataFile(%s) failed at the following location: %s. Its checksum once stored does not match with expected one",
                                 data.getChecksum(), fullPathToFile);
                 Files.deleteIfExists(Paths.get(fullPathToFile));
                 progressManager.storageFailed(data, Optional.of(new URL("file", "", fullPathToFile)), failureCause);
@@ -234,6 +235,13 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
         }
     }
 
+    /**
+     * This method mainly does 2 things:<br>
+     *  - Create directories necessary for storage.
+     *  - Return file path
+     * @return file path
+     * @throws IOException from {@link Files#createDirectories(Path, FileAttribute[])}
+     */
     private String getStorageLocation(StorageDataFile data) throws IOException {
         String checksum = data.getChecksum();
         String storageLocation = baseStorageLocation.getPath() + "/";
@@ -247,7 +255,7 @@ public class LocalDataStorage implements IOnlineDataStorage<LocalWorkingSubset> 
             // Storage directory is not provided, generate new one with checksum
             storageLocation = storageLocation + checksum.substring(0, 3);
         }
-        if (!Paths.get(storageLocation).toFile().exists()) {
+        if (Files.notExists(Paths.get(storageLocation))) {
             Files.createDirectories(Paths.get(storageLocation));
         }
         // files are stored with the checksum as their name and their extension is based on the url, first '.' after the last '/' of the url

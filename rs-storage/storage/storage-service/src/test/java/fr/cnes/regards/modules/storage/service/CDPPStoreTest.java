@@ -63,6 +63,7 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
 import fr.cnes.regards.modules.storage.plugin.allocation.strategy.DefaultAllocationStrategyPlugin;
 import fr.cnes.regards.modules.storage.plugin.datastorage.local.LocalDataStorage;
+import fr.cnes.regards.modules.storage.plugin.security.NoCatalogSecurityDelegationPlugin;
 
 /**
  * Test CDPP storage
@@ -152,6 +153,10 @@ public class CDPPStoreTest extends AbstractMultitenantServiceTest {
         PluginConfiguration defaultAllocStrategyConf = PluginUtils
                 .getPluginConfiguration(null, DefaultAllocationStrategyPlugin.class);
         pluginService.savePluginConfiguration(defaultAllocStrategyConf);
+
+        PluginConfiguration defaultSecurity = PluginUtils
+                .getPluginConfiguration(null, NoCatalogSecurityDelegationPlugin.class);
+        pluginService.savePluginConfiguration(defaultSecurity);
     }
 
     @Test
@@ -175,7 +180,7 @@ public class CDPPStoreTest extends AbstractMultitenantServiceTest {
         int loops = 120;
         do {
             Thread.sleep(1_000);
-            storedAIP = aipRepository.findAllByStateIn(AIPState.STORED, new PageRequest(0, 100)).getTotalElements();
+            storedAIP = aipRepository.findAllByStateIn(AIPState.STORED, PageRequest.of(0, 100)).getTotalElements();
             loops--;
         } while ((storedAIP != expected) && (loops != 0));
 

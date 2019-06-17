@@ -22,41 +22,33 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
-import org.springframework.util.MimeTypeUtils;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.modules.notification.domain.NotificationType;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.dao.AIPQueryGenerator;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
-import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.job.AIPQueryFilters;
 import fr.cnes.regards.modules.storage.domain.job.RemovedAipsInfos;
 import fr.cnes.regards.modules.storage.service.IAIPService;
-import fr.cnes.regards.modules.storage.service.IDataStorageService;
 
 /**
- * Add or remove tags to several AIPs, inside a job.
+ * JOB to delete multiple AIPs. AIPs to delete are defined with the search query parameter named "query".
  * @author Léo Mieulet
  */
 public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
-
-    /**
-     * Class logger
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(DeleteAIPsJob.class);
 
     /**
      * Job parameter name for the AIP User request id to use
@@ -70,10 +62,10 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
     private IAIPDao aipDao;
 
     @Autowired
-    private IDataStorageService dataStorageService;
+    private INotificationClient notificationClient;
 
     /**
-     * Number of created AIPs processed on each iteration by project
+     * Limit number of AIPs to delete in one job.
      */
     @Value("${regards.storage.aips.iteration.limit:100}")
     private Integer aipIterationLimit;
@@ -91,19 +83,18 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
     @Override
     public void run() {
         AIPQueryFilters tagFilter = parameters.get(FILTER_PARAMETER_NAME).getValue();
-        AIPSession aipSession = aipService.getSession(tagFilter.getSession(), false);
-        Pageable pageRequest = new PageRequest(0, aipIterationLimit, Direction.ASC, "id");
+        Pageable pageRequest = PageRequest.of(0, aipIterationLimit, Direction.ASC, "id");
         Page<AIP> aipsPage;
         nbError = new AtomicInteger(0);
         nbEntityRemoved = new AtomicInteger(0);
         entityFailed = new ArrayList<>();
         do {
-            aipsPage = aipDao
-                    .findAll(AIPQueryGenerator.searchAIPContainingAllTags(tagFilter.getState(), tagFilter.getFrom(), tagFilter.getTo(),
-                                                      tagFilter.getTags(), aipSession, tagFilter.getProviderId(),
-                                                      tagFilter.getAipIds(), tagFilter.getAipIdsExcluded()),
-                             pageRequest);
-
+            aipsPage = aipDao.findAll(AIPQueryGenerator
+                    .searchAIPContainingAllTags(tagFilter.getState(), tagFilter.getFrom(), tagFilter.getTo(),
+                                                tagFilter.getTags(), tagFilter.getSession(), tagFilter.getProviderId(),
+                                                tagFilter.getAipIds(), tagFilter.getAipIdsExcluded(),
+                                                tagFilter.getStoredOn()),
+                                      pageRequest);
             aipsPage.forEach(aip -> {
                 try {
                     aipService.deleteAip(aip);
@@ -114,7 +105,7 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
                         entityFailed.add(aip.getId().toString());
                     }
                     // Exception thrown while removing AIP
-                    LOGGER.error(e.getMessage(), e);
+                    logger.error(e.getMessage(), e);
                     nbError.incrementAndGet();
                 }
             });
@@ -139,7 +130,7 @@ public class DeleteAIPsJob extends AbstractJob<RemovedAipsInfos> {
                 message.append(ipId);
                 message.append("  \\n");
             }
-            dataStorageService.notifyAdmins(title, message.toString(), NotificationType.ERROR, MimeTypeUtils.TEXT_PLAIN);
+            notificationClient.notify(message.toString(), title, NotificationLevel.ERROR, DefaultRole.ADMIN);
         }
     }
 

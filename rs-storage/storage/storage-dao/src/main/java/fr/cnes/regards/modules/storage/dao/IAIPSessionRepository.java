@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.dao;
 
-import java.util.Optional;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
@@ -30,11 +28,4 @@ import fr.cnes.regards.modules.storage.domain.database.AIPSession;
  * @author Sébastien Binda
  */
 public interface IAIPSessionRepository extends JpaRepository<AIPSession, String>, JpaSpecificationExecutor<AIPSession> {
-
-    /**
-     * Return an Optional AIPSession using its id
-     * @param id
-     * @return
-     */
-    Optional<AIPSession> findById(String id);
 }

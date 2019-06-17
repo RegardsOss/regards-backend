@@ -19,15 +19,14 @@
 package fr.cnes.regards.modules.storage.service;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.util.Pair;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
@@ -39,10 +38,13 @@ import fr.cnes.regards.framework.oais.OAISDataObject;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPCollection;
+import fr.cnes.regards.modules.storage.domain.AIPPageWithDataStorages;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.AipDataFiles;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
+import fr.cnes.regards.modules.storage.domain.DownloadableFile;
+import fr.cnes.regards.modules.storage.domain.PartialDeletionReport;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
 import fr.cnes.regards.modules.storage.domain.RejectedSip;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
@@ -81,6 +83,11 @@ public interface IAIPService {
     List<RejectedAip> validateAndStore(AIPCollection aips) throws ModuleException;
 
     /**
+     * Asynchronous method for validating and storing a single AIP from data flow
+     */
+    void validateAndStore(AIP aip);
+
+    /**
      * Asynchronusly makes the heavy work of storing AIP metadata.<ul>
      * <li>1. Search for all AIP ready to store their metadata (all DataFile are in STORED state).</li>
      * <li>2. Schedule a unique job perf IDataStorage configuration to store all AIP metadata files found.</li>
@@ -105,7 +112,6 @@ public interface IAIPService {
      * <li>Aip is known in the system</li>
      * </ul>
      * @param aipIpIds
-     * @return  {@link RejectedAip}s
      */
     List<RejectedAip> applyRetryChecks(Set<String> aipIpIds);
 
@@ -120,7 +126,7 @@ public interface IAIPService {
      * @return checksums of files that are already available
      * @throws ModuleException
      */
-    AvailabilityResponse loadFiles(AvailabilityRequest availabilityRequest) throws ModuleException;
+    AvailabilityResponse makeFilesAvailable(AvailabilityRequest availabilityRequest) throws ModuleException;
 
     /**
      * Retrieve pages of AIP filtered according to the parameters
@@ -131,12 +137,15 @@ public interface IAIPService {
      * @param tags
      * @param sessionId
      * @param providerId
-     * @param pageable {@link Pageable} Pagination information
-     * @return {@link AIP}s corresponding to parameters given.
+     * @param storedOn
+     *@param pageable {@link Pageable} Pagination information  @return {@link AIP}s corresponding to parameters given.
      * @throws ModuleException
      */
     Page<AIP> retrieveAIPs(AIPState pState, OffsetDateTime pFrom, OffsetDateTime pTo, List<String> tags,
-            String sessionId, String providerId, Pageable pageable) throws ModuleException;
+            String sessionId, String providerId, Set<Long> storedOn, Pageable pageable) throws ModuleException;
+
+    AIPPageWithDataStorages retrieveAIPWithDataStorageIds(AIPQueryFilters filters, Pageable pageable)
+            throws ModuleException;
 
     /**
      * Retrieve pages of AIP with files public information filtered according to the parameters
@@ -147,7 +156,7 @@ public interface IAIPService {
      * @param pageable
      * @return {@link AIP}s corresponding to parameters given.
      */
-    Page<AipDataFiles> retrieveAipDataFiles(AIPState state, Set<String> tags, OffsetDateTime fromLastUpdateDate,
+    Page<AipDataFiles> retrieveAIPDataFiles(AIPState state, Set<String> tags, OffsetDateTime fromLastUpdateDate,
             Pageable pageable);
 
     /**
@@ -178,12 +187,11 @@ public interface IAIPService {
      * Retrieve the input stream towards the desired file.
      * @param pAipId
      * @param pChecksum
-     * @return the input stream to the file and its metadata, null if the file is not stored online or in cache
+     * @return {@link DownloadableFile} needs to be closed as there is an opened stream in it.
      * @throws ModuleException
      * @throws IOException
      */
-    Pair<StorageDataFile, InputStream> getAIPDataFile(String pAipId, String pChecksum)
-            throws ModuleException, IOException;
+    DownloadableFile getAIPDataFile(String pAipId, String pChecksum) throws ModuleException, IOException;
 
     /**
      * Retrieve the history of event that occurred to an aip, represented by its ip id
@@ -226,10 +234,9 @@ public interface IAIPService {
      * @return aip stored into the system after changes have been propagated
      * @throws EntityNotFoundException if no aip with ipId as identifier can be found
      * @throws EntityInconsistentIdentifierException if ipId and updated ipId are different
-     * @throws EntityOperationForbiddenException if aip in the system is not in the right state
      */
     Optional<AIP> updateAip(String ipId, AIP updated, String updateMessage)
-            throws EntityNotFoundException, EntityInconsistentIdentifierException, EntityOperationForbiddenException;
+            throws EntityNotFoundException, EntityInconsistentIdentifierException;
 
     /**
      * Remove an aip from the system. Its file are deleted if and only if no other aip point to them.
@@ -250,10 +257,26 @@ public interface IAIPService {
     Set<StorageDataFile> deleteAip(AIP aip) throws ModuleException;
 
     /**
+     * Remove given AIPs files from given data storage
+     */
+    PartialDeletionReport deleteFilesFromDataStorage(Collection<String> ipId, Long dataStorageId);
+
+    /**
+     * Remove from given data storage filtered AIPs files
+     */
+    void deleteFilesFromDataStorageByQuery(AIPQueryFilters filters, Long dataStorageId);
+
+    /**
      * Schedule deletion of datafiles marked for deletion
      * @return number of scheduled aip to delete
      */
     Long doDelete();
+
+    /**
+     * Schedule deletion of datafiles marked for force deletion(following an update)
+     * @return number of scheduled aip to delete
+     */
+    Long doForceDelete();
 
     /**
      * Remove {@link AIP}s associated the given sip, through its ip id
@@ -321,15 +344,16 @@ public interface IAIPService {
      * @param sessionId {@link String}
      * @param createIfNotExists if true, the session with sessionId is created is it does not exists.
      * @return {@link AIPSession}
+     * @throws EntityNotFoundException if session cannot be found AND parameter createIfNotExists is false
      */
-    AIPSession getSession(String sessionId, Boolean createIfNotExists);
+    AIPSession getSession(String sessionId, Boolean createIfNotExists) throws EntityNotFoundException;
 
     /**
      * Retrieve one {@link AIPSession} by id, and compute its stats.
      * @param sessionId {@link String}
      * @return {@link AIPSession}
      */
-    AIPSession getSessionWithStats(String sessionId);
+    AIPSession getSessionWithStats(String sessionId) throws EntityNotFoundException;
 
     /**
      * Retrieve all {@link AIPSession} that match provided filters

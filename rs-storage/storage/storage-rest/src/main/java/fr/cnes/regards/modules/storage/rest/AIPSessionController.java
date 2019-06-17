@@ -39,6 +39,7 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
@@ -74,7 +75,7 @@ public class AIPSessionController implements IResourceController<AIPSession> {
      * @param pAssembler
      * @return {@link AIPSession}s
      */
-    @ResourceAccess(description = "Search for SIPSession with optional criterion.")
+    @ResourceAccess(description = "Search for AIPSession with optional criterion.")
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<PagedResources<Resource<AIPSession>>> search(
             @RequestParam(name = "id", required = false) String id,
@@ -95,7 +96,8 @@ public class AIPSessionController implements IResourceController<AIPSession> {
      */
     @ResourceAccess(description = "Get one session using its name.")
     @RequestMapping(value = ID_PATH, method = RequestMethod.GET)
-    public ResponseEntity<Resource<AIPSession>> getAipSession(@PathVariable(name = "id") String id) {
+    public ResponseEntity<Resource<AIPSession>> getAipSession(@PathVariable(name = "id") String id)
+            throws EntityNotFoundException {
         AIPSession session = aipService.getSessionWithStats(id);
         return new ResponseEntity<>(toResource(session), HttpStatus.OK);
     }
@@ -110,14 +112,14 @@ public class AIPSessionController implements IResourceController<AIPSession> {
     }
 
     @Override
-    public Resource<AIPSession> toResource(AIPSession sipSession, Object... pExtras) {
-        final Resource<AIPSession> resource = resourceService.toResource(sipSession);
+    public Resource<AIPSession> toResource(AIPSession aipSession, Object... pExtras) {
+        final Resource<AIPSession> resource = resourceService.toResource(aipSession);
         resourceService.addLink(resource, this.getClass(), "getAipSession", LinkRels.SELF,
-                                MethodParamFactory.build(String.class, sipSession.getId()));
+                                MethodParamFactory.build(String.class, aipSession.getId()));
         // If the session has some deletable AIPS, add the delete key
-        if ((sipSession.getStoredAipsCount() + sipSession.getQueuedAipsCount()) > 0) {
+        if ((aipSession.getStoredAipsCount() + aipSession.getQueuedAipsCount() + aipSession.getErrorAipsCount()) > 0) {
             resourceService.addLink(resource, this.getClass(), "deleteAipEntityBySessionId", LinkRels.DELETE,
-                                    MethodParamFactory.build(String.class, sipSession.getId()));
+                                    MethodParamFactory.build(String.class, aipSession.getId()));
         }
         return resource;
     }

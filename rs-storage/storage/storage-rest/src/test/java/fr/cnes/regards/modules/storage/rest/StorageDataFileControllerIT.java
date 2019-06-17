@@ -65,16 +65,13 @@ public class StorageDataFileControllerIT extends AbstractAIPControllerIT {
         file.setRegardsDataType(DataType.RAWDATA);
         file.setAlgorithm("toto");
         MimeType mimetype = new MimeType("png");
-        StorageDataFile ds = new StorageDataFile(file, mimetype, new AIPEntity(aipWaiting1, aipSession), aipSession);
+        StorageDataFile ds = new StorageDataFile(file, mimetype, new AIPEntity(aipWaiting1, aipSession));
         ds.setUrls(new HashSet<>());
         dao.save(ds);
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(1)));
-
-        requestBuilderCustomizer
-                .addExpectation(MockMvcResultMatchers.jsonPath("$.[0].content.name", Matchers.is(filename)));
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(1)));
+        requestBuilderCustomizer.expect(MockMvcResultMatchers.jsonPath("$.[0].content.name", Matchers.is(filename)));
 
         performDefaultGet(StorageDataFileController.TYPE_MAPPING + StorageDataFileController.AIP_PATH,
                           requestBuilderCustomizer, "we should have the list of session",

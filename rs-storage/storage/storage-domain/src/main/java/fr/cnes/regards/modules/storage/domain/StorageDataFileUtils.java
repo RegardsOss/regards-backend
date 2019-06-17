@@ -11,7 +11,7 @@ import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-public class StorageDataFileUtils {
+public final class StorageDataFileUtils {
 
     public static final String FILE_PROTOCOL = "file";
 
@@ -20,6 +20,9 @@ public class StorageDataFileUtils {
     public static final String HTTPS_PROTOCOL = "https";
 
     public static final Set<String> PROTOCOLS = Sets.newHashSet(FILE_PROTOCOL, HTTP_PROTOCOL, HTTPS_PROTOCOL);
+
+    private StorageDataFileUtils() {
+    }
 
     /**
      * Allows to extract one of the accessible urls from {@link StorageDataFile} urls

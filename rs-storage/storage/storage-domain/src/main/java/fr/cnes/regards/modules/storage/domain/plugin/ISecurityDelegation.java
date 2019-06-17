@@ -11,7 +11,7 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
  * @author Sylvain VISSIERE-GUERINET
  */
 @PluginInterface(description = "Contract to respect by any security delegation plugin",
-        allowMultipleConfigurationActive = false)
+        allowMultipleActiveConfigurations = false)
 public interface ISecurityDelegation {
 
     /**

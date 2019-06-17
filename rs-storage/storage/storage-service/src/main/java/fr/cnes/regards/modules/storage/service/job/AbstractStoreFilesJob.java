@@ -46,6 +46,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.file.CommonFileUtils;
 import fr.cnes.regards.framework.utils.file.DownloadUtils;
+import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.storage.domain.StorageException;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
@@ -254,7 +255,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
             @SuppressWarnings("rawtypes")
             IDataStorage storagePlugin = pluginService.getPlugin(confIdToUse);
             storagePlugin.store(workingSubset, replaceMode, progressManager);
-        } catch (ModuleException e) {
+        } catch (ModuleException | PluginUtilsRuntimeException e) {
             // throwing new runtime allows us to make the job fail.
             throw new JobRuntimeException(e);
         }
@@ -262,7 +263,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
 
     private void setQuicklookProperties(StorageDataFile storageDataFile) throws IOException, NoSuchAlgorithmException {
         // first to get the quicklook properties(height and width), we need to download it.
-        // unless it is already on filesystem
+        // unless it is already on filesystem TODO: use StorageDataFileUtils in place of lambda
         Optional<URL> dataFileUrlOpt = storageDataFile.getUrls().stream()
                 .filter(url -> url.getProtocol().equals("file")).findAny();
         if (!dataFileUrlOpt.isPresent()) {

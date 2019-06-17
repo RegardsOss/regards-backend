@@ -1,0 +1,1 @@
+delete from t_template where code = 'UNDELETABLES_DATA_FILES';

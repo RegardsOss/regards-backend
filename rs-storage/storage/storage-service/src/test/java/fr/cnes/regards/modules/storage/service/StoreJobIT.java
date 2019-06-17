@@ -52,7 +52,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
-
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
@@ -76,6 +75,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
+import fr.cnes.regards.modules.storage.dao.IPrioritizedDataStorageRepository;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
@@ -91,7 +91,7 @@ import fr.cnes.regards.modules.storage.service.job.StoreMetadataFilesJob;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-@ContextConfiguration(classes = { TestConfig.class, StoreJobIT.Config.class })
+@ContextConfiguration(classes = { TestConfig.class })
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=storage_test", "regards.amqp.enabled=true" },
         locations = { "classpath:storage.properties" })
@@ -142,6 +142,9 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
     @Autowired
     private Gson gson;
 
+    @Autowired
+    private IPrioritizedDataStorageRepository prioritizedDataStorageRepository;
+
     @Before
     public void init() throws IOException, URISyntaxException, ModuleException {
         tenantResolver.forceTenant(getDefaultTenant());
@@ -164,8 +167,15 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
         aipSession.setLastActivationDate(OffsetDateTime.now());
         aipSession.setId(aip.getSession());
 
-        df = new StorageDataFile(Sets.newHashSet(source), "de89a907d33a9716d11765582102b2e0", "MD5", DataType.OTHER, 0L,
-                new MimeType("text", "plain"), new AIPEntity(aip, aipSession), aipSession, "data.txt", null);
+        df = new StorageDataFile(Sets.newHashSet(source),
+                                 "de89a907d33a9716d11765582102b2e0",
+                                 "MD5",
+                                 DataType.OTHER,
+                                 0L,
+                                 new MimeType("text", "plain"),
+                                 new AIPEntity(aip, aipSession),
+                                 "data.txt",
+                                 null);
         workingSubset = new LocalWorkingSubset(Sets.newHashSet(df));
         // now that we have some parameters, lets storeAndCreate the job
         parameters = Sets.newHashSet();
@@ -185,17 +195,24 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
 
     @Test
     public void storeQuicklookJobTest() throws IOException {
-        URL source = new URL("file", "",
-                Paths.get("src", "test", "resources", "quicklook.png").toAbsolutePath().toString());
+        URL source = new URL("file",
+                             "",
+                             Paths.get("src", "test", "resources", "quicklook.png").toAbsolutePath().toString());
         AIP aip = getAipFromFile(true);
         aip.addEvent(EventType.SUBMISSION.name(), "submission into our beautiful system");
         AIPSession aipSession = new AIPSession();
         aipSession.setLastActivationDate(OffsetDateTime.now());
         aipSession.setId(aip.getSession());
 
-        StorageDataFile df = new StorageDataFile(Sets.newHashSet(source), "540e72d5ac22f25c70d9c72b9b36fb96", "MD5",
-                DataType.QUICKLOOK_SD, 0L, new MimeType("image", "png"), new AIPEntity(aip, aipSession), aipSession,
-                "quicklook.png", null);
+        StorageDataFile df = new StorageDataFile(Sets.newHashSet(source),
+                                                 "540e72d5ac22f25c70d9c72b9b36fb96",
+                                                 "MD5",
+                                                 DataType.QUICKLOOK_SD,
+                                                 0L,
+                                                 new MimeType("image", "png"),
+                                                 new AIPEntity(aip, aipSession),
+                                                 "quicklook.png",
+                                                 null);
         IWorkingSubset workingSubset = new LocalWorkingSubset(Sets.newHashSet(df));
 
         Set<JobParameter> jobParameters = Sets.newHashSet();
@@ -209,16 +226,21 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
         StorageJobProgressManager progressManager = job.getProgressManager();
         Assert.assertFalse("there was a problem during the job", progressManager.isProcessError());
         Assert.assertTrue(progressManager.getHandledDataFile().size() == 1);
-        Assert.assertEquals("PNG should have a width of 1123 pixel", Integer.valueOf(1123),
+        Assert.assertEquals("PNG should have a width of 1123 pixel",
+                            Integer.valueOf(1123),
                             progressManager.getHandledDataFile().toArray(new StorageDataFile[0])[0].getWidth());
-        Assert.assertEquals("PNG should have a height of 764 pixel", Integer.valueOf(794),
+        Assert.assertEquals("PNG should have a height of 764 pixel",
+                            Integer.valueOf(794),
                             progressManager.getHandledDataFile().toArray(new StorageDataFile[0])[0].getHeight());
     }
 
     @Test
     public void storeMetadataFilesJobTest() {
-        JobInfo toTest = new JobInfo(false, 0, parameters, getDefaultUserEmail(),
-                StoreMetadataFilesJob.class.getName());
+        JobInfo toTest = new JobInfo(false,
+                                     0,
+                                     parameters,
+                                     getDefaultUserEmail(),
+                                     StoreMetadataFilesJob.class.getName());
         StoreMetadataFilesJob job = (StoreMetadataFilesJob) runJob(toTest);
         // now that we synchronously ran the job, lets do some asserts
         StorageJobProgressManager progressManager = job.getProgressManager();
@@ -284,15 +306,11 @@ public class StoreJobIT extends AbstractRegardsServiceTransactionalIT {
         dataFileDao.deleteAll();
         pluginRepo.deleteAll();
         aipDao.deleteAll();
-    }
-
-    @Configuration
-    static class Config {
-
-        @Bean
-        public INotificationClient notificationClient() {
-            return Mockito.mock(INotificationClient.class);
-        }
+        jobInfoRepo.deleteAll();
+        dataFileDao.deleteAll();
+        aipDao.deleteAll();
+        prioritizedDataStorageRepository.deleteAll();
+        pluginRepo.deleteAll();
     }
 
 }

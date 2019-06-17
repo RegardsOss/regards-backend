@@ -29,19 +29,15 @@ import java.util.UUID;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.MimeType;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
@@ -53,22 +49,25 @@ import fr.cnes.regards.framework.oais.EventType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
-import fr.cnes.regards.modules.notification.client.INotificationClient;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
+import fr.cnes.regards.modules.storage.dao.IAIPSessionRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
+import fr.cnes.regards.modules.storage.dao.IPrioritizedDataStorageRepository;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 
-@ContextConfiguration(classes = { TestConfig.class, AIPServiceIT.Config.class })
+@ContextConfiguration(classes = { TestConfig.class })
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=storage_test", "regards.amqp.enabled=true" },
         locations = { "classpath:storage.properties" })
 @ActiveProfiles({ "testAmqp", "disableStorageTasks", "noschdule" })
 @EnableAsync
-@RunWith(SpringRunner.class)
-public abstract class AbstractJobIT extends AbstractMultitenantServiceTest {
+public abstract class AbstractJobIT extends AbstractRegardsServiceTransactionalIT {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractJobIT.class);
 
     public static final String SESSION = "SESSION 42";
 
@@ -95,9 +94,18 @@ public abstract class AbstractJobIT extends AbstractMultitenantServiceTest {
     @Autowired
     protected IAIPService aipService;
 
+    @Autowired
+    private IPrioritizedDataStorageRepository prioritizedDataStorageRepository;
+
+    @Autowired
+    private IAIPSessionRepository sessionRepo;
+
     @Before
     public void init() throws IOException, URISyntaxException, ModuleException {
         tenantResolver.forceTenant(getDefaultTenant());
+
+        // Clear jobs
+        jobInfoRepo.deleteAll();
 
         AIPSession aipSession = aipService.getSession(SESSION, true);
         for (int i = 0; i < 20; i++) {
@@ -110,14 +118,16 @@ public abstract class AbstractJobIT extends AbstractMultitenantServiceTest {
     protected JobInfo waitForJobFinished() throws InterruptedException {
         // Wait until the job finishes
         Iterable<JobInfo> jobs = jobInfoRepo.findAll();
+        LOG.debug("Number of jobs in db : {}", jobInfoRepo.count());
         Assert.assertTrue("should have 1 job queued/running", jobs.iterator().hasNext());
         JobInfo jobInfo = jobs.iterator().next();
+        LOG.debug("Waiting for job {} to end succeed ...", jobInfo.getClassName());
         // this loop acts like a timeout
         for (int i = 0; i < 40; i++) {
             // Pause for 1 seconds
             Thread.sleep(1000);
-            JobInfo jobInfoRefreshed = jobInfoRepo.findById(jobInfo.getId());
-            if (JobStatus.SUCCEEDED.equals(jobInfoRefreshed.getStatus().getStatus())) {
+            Optional<JobInfo> jobInfoRefreshed = jobInfoRepo.findById(jobInfo.getId());
+            if (JobStatus.SUCCEEDED.equals(jobInfoRefreshed.get().getStatus().getStatus())) {
                 break;
             }
         }
@@ -146,16 +156,9 @@ public abstract class AbstractJobIT extends AbstractMultitenantServiceTest {
         tenantResolver.forceTenant(getDefaultTenant());
         jobInfoRepo.deleteAll();
         dataFileDao.deleteAll();
+        prioritizedDataStorageRepository.deleteAll();
         pluginRepo.deleteAll();
         aipDao.deleteAll();
-    }
-
-    @Configuration
-    static class Config {
-
-        @Bean
-        public INotificationClient notificationClient() {
-            return Mockito.mock(INotificationClient.class);
-        }
+        sessionRepo.deleteAll();
     }
 }

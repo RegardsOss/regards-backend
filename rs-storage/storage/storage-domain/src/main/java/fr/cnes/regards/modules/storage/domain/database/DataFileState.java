@@ -23,9 +23,17 @@ public enum DataFileState {
     TO_BE_DELETED,
 
     /**
-     * Data file deletion is scheduled
+     * Data file deletion is scheduled on all data storages
      */
-    DELETION_PENDING;
+    DELETION_PENDING,
+    /**
+     * Data file deletion is scheduled on some data storages
+     */
+    PARTIAL_DELETION_PENDING,
+    /**
+     * Deletion error. Final state to disable deletion automatic retry.
+     */
+    DELETION_ERROR;
 
     @Override
     public String toString() {

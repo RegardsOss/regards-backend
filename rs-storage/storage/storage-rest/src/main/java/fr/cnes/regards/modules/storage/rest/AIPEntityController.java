@@ -88,8 +88,12 @@ public class AIPEntityController implements IResourceController<AIPEntity> {
     @Override
     public Resource<AIPEntity> toResource(AIPEntity pElement, Object... pExtras) {
         Resource<AIPEntity> resource = new Resource<>(pElement);
-        resourceService.addLink(resource, this.getClass(), "retrieveAIPEntities", LinkRels.LIST,
-                                MethodParamFactory.build(String.class), MethodParamFactory.build(Pageable.class),
+        resourceService.addLink(resource,
+                                this.getClass(),
+                                "retrieveAIPEntities",
+                                LinkRels.LIST,
+                                MethodParamFactory.build(String.class, pElement.getSipId()),
+                                MethodParamFactory.build(Pageable.class),
                                 MethodParamFactory.build(PagedResourcesAssembler.class));
         return resource;
     }

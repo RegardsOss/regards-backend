@@ -38,7 +38,7 @@ public class StorageRestControllerAdvice {
 
     @ExceptionHandler(NoSuchFileException.class)
     public ResponseEntity<ServerErrorResponse> entityNotFound(final NoSuchFileException exception) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(exception.getMessage()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ServerErrorResponse(exception.getMessage(), exception));
     }
 
 }

@@ -20,7 +20,7 @@ package fr.cnes.regards.modules.storage.domain;
 
 import java.util.Optional;
 
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.oais.AbstractInformationPackage;
@@ -115,15 +115,15 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
         this.retry = retry;
     }
 
+    public String getProviderId() {
+        return providerId;
+    }
+
     /**
      * @return the session identifier linked to this AIP
      */
     public String getSession() {
         return this.getProperties().getPdi().getProvenanceInformation().getSession();
-    }
-
-    public String getProviderId() {
-        return providerId;
     }
 
     public void setProviderId(String providerId) {
@@ -135,7 +135,7 @@ public class AIP extends AbstractInformationPackage<UniformResourceName> {
         if (this == o) {
             return true;
         }
-        if ((o == null) || (getClass() != o.getClass())) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
         return super.equals(o);

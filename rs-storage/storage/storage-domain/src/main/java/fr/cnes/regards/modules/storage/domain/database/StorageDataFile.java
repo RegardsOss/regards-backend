@@ -53,17 +53,15 @@ import fr.cnes.regards.modules.storage.domain.AIP;
                 @Index(name = "idx_data_file_state", columnList = "state"),
                 @Index(name = "idx_data_file_aip", columnList = "aip_ip_id") })
 // @formatter:off
-@NamedEntityGraph(name = "graph.datafile.full", attributeNodes = { @NamedAttributeNode("aipEntity"),
-        @NamedAttributeNode(value = "prioritizedDataStorages", subgraph = "graph.datafile.prioritizedDataStorages") },
+@NamedEntityGraph(name = "graph.datafile.full", attributeNodes = {
+            @NamedAttributeNode("aipEntity"),
+            @NamedAttributeNode(value = "prioritizedDataStorages", subgraph = "graph.datafile.prioritizedDataStorages")
+        },
         subgraphs = {
                 @NamedSubgraph(name = "graph.datafile.prioritizedDataStorages",
-                        attributeNodes = { @NamedAttributeNode(value = "dataStorageConfiguration",
-                                subgraph = "graph.datafile.prioritizedDataStorages.dataStorageConfiguration") }),
-                @NamedSubgraph(name = "graph.datafile.prioritizedDataStorages.dataStorageConfiguration",
-                        attributeNodes = { @NamedAttributeNode(value = "parameters",
-                                subgraph = "graph.datafile.prioritizedDataStorages.dataStorageConfiguration.parameters") }),
-                @NamedSubgraph(name = "graph.datafile.prioritizedDataStorages.dataStorageConfiguration.parameters",
-                        attributeNodes = { @NamedAttributeNode("dynamicsValues") }) })
+                        attributeNodes = { @NamedAttributeNode(value = "dataStorageConfiguration") }
+                )
+        })
 // @formatter:on
 public class StorageDataFile {
 
@@ -73,9 +71,22 @@ public class StorageDataFile {
      */
     public static final int CHECKSUM_MAX_LENGTH = 128;
 
+    public static final String NOT_VALID_CHECKSUM_SUFFIX = "_nvc";
+
     @Convert(converter = SetStringCsvConverter.class)
     @Column(name = "failure_causes")
     private final Set<String> failureCauses = new HashSet<>();
+
+    /**
+     * Data storage plugin configuration used to store the file
+     */
+    @ManyToMany
+    @JoinTable(name = "ta_data_file_plugin_conf",
+            joinColumns = @JoinColumn(name = "data_file_id",
+                    foreignKey = @ForeignKey(name = "fk_data_file_plugin_conf_data_file")),
+            inverseJoinColumns = @JoinColumn(name = "data_storage_conf_id",
+                    foreignKey = @ForeignKey(name = "fk_plugin_conf_data_file_plugin_conf")))
+    private final Set<PrioritizedDataStorage> prioritizedDataStorages = new HashSet<>();
 
     /**
      * The id
@@ -90,7 +101,14 @@ public class StorageDataFile {
      */
     @Column(columnDefinition = "text")
     @Convert(converter = SetURLCsvConverter.class)
-    private Set<URL> urls;
+    private Set<URL> urls = new HashSet<>();
+
+    /**
+     * File origin urls
+     */
+    @Column(columnDefinition = "text", name = "origin_urls")
+    @Convert(converter = SetURLCsvConverter.class)
+    private Set<URL> originUrls = new HashSet<>();
 
     /**
      * File name
@@ -131,6 +149,15 @@ public class StorageDataFile {
     private DataFileState state;
 
     /**
+     * Flag to enable deletion without checking data storage permission.
+     * See {@link fr.cnes.regards.modules.storage.domain.plugin.IDataStorage#safeDelete} for more information.
+     * <br/><br/>
+     * NOTE : Used to force deletion of old metadata AIP file during update process.
+     */
+    @Column(name = "force_delete")
+    private Boolean forceDelete = false;
+
+    /**
      * File mime type
      */
     @Column(nullable = false, name = "mime_type")
@@ -151,17 +178,6 @@ public class StorageDataFile {
     private String storageDirectory;
 
     /**
-     * Data storage plugin configuration used to store the file
-     */
-    @ManyToMany
-    @JoinTable(name = "ta_data_file_plugin_conf",
-            joinColumns = @JoinColumn(name = "data_file_id",
-                    foreignKey = @ForeignKey(name = "fk_data_file_plugin_conf_data_file")),
-            inverseJoinColumns = @JoinColumn(name = "data_storage_conf_id",
-                    foreignKey = @ForeignKey(name = "fk_plugin_conf_data_file_plugin_conf")))
-    private final Set<PrioritizedDataStorage> prioritizedDataStorages = new HashSet<>();
-
-    /**
      * Reversed mapping compared to reality. This is because it is easier to work like this.
      */
     @ManyToOne(fetch = FetchType.LAZY)
@@ -176,6 +192,15 @@ public class StorageDataFile {
     private Long notYetStoredBy = 0L;
 
     /**
+     * Indicates the number of archives that have to delete this data file. Archives <=> IDataStorage configurations.
+     * This attribute is only used with state {@link DataFileState#PARTIAL_DELETION_PENDING}. In case of total deletion,
+     * this value is irrelevant.
+     */
+    @Column(name = "not_yet_deleted_by")
+    @Min(value = 0, message = "Attribute notYetDeletedBy cannot be negative. Actual value : ${validatedValue}")
+    private Long notYetDeletedBy = 0L;
+
+    /**
      * Default constructor
      */
     @SuppressWarnings("unused")
@@ -187,11 +212,11 @@ public class StorageDataFile {
      * Initialize the data file from the parameters
      * @param file
      * @param mimeType
-     * @param aip
+     * @param aipEntity
      */
-    public StorageDataFile(OAISDataObject file, MimeType mimeType, AIPEntity aipEntity, AIPSession aipSession) {
+    public StorageDataFile(OAISDataObject file, MimeType mimeType, AIPEntity aipEntity) {
         this(file.getUrls(), file.getChecksum(), file.getAlgorithm(), file.getRegardsDataType(), file.getFileSize(),
-             mimeType, aipEntity, aipSession, null, null);
+             mimeType, aipEntity, null, null);
         String name = file.getFilename();
         if (Strings.isNullOrEmpty(name)) {
             String[] pathParts = file.getUrls().iterator().next().getPath().split("/");
@@ -208,12 +233,14 @@ public class StorageDataFile {
      * @param type
      * @param fileSize
      * @param mimeType
-     * @param aip
+     * @param aipEntity
      * @param name
      */
     public StorageDataFile(Set<URL> urls, String checksum, String algorithm, DataType type, Long fileSize,
-            MimeType mimeType, AIPEntity aipEntity, AIPSession aipSession, String name, String storageDirectory) {
-        this.urls = urls;
+            MimeType mimeType, AIPEntity aipEntity, String name, String storageDirectory) {
+        if (urls != null) {
+            this.urls.addAll(urls);
+        }
         this.checksum = checksum;
         this.algorithm = algorithm;
         this.dataType = type;
@@ -230,18 +257,17 @@ public class StorageDataFile {
      * @return extracted data files
      */
     public static Set<StorageDataFile> extractDataFiles(AIP aip, AIPSession aipSession) {
-        return extractDataFilesForExistingAIP(aip, new AIPEntity(aip, aipSession), aipSession);
+        return extractDataFilesForExistingAIP(aip, new AIPEntity(aip, aipSession));
     }
 
-    public static Set<StorageDataFile> extractDataFilesForExistingAIP(AIP aip, AIPEntity aipEntity,
-            AIPSession aipSession) {
+    public static Set<StorageDataFile> extractDataFilesForExistingAIP(AIP aip, AIPEntity aipEntity) {
         Set<StorageDataFile> dataFiles = Sets.newHashSet();
         for (ContentInformation ci : aip.getProperties().getContentInformations()) {
             OAISDataObject file = ci.getDataObject();
             if ((file != null) && !file.isReference()) {
                 // Only non reference data object is managed by storage
                 MimeType mimeType = ci.getRepresentationInformation().getSyntax().getMimeType();
-                dataFiles.add(new StorageDataFile(file, mimeType, aipEntity, aipSession));
+                dataFiles.add(new StorageDataFile(file, mimeType, aipEntity));
             }
         }
         return dataFiles;
@@ -478,10 +504,8 @@ public class StorageDataFile {
         return notYetStoredBy;
     }
 
-    public void setNotYetStoredBy(Long notYetStoredBy) {
-        if (notYetStoredBy != null) {
-            this.notYetStoredBy = notYetStoredBy;
-        }
+    public Long getNotYetDeletedBy() {
+        return notYetDeletedBy;
     }
 
     public String getStorageDirectory() {
@@ -537,6 +561,19 @@ public class StorageDataFile {
         }
     }
 
+    public void increaseNotYetDeletedBy() {
+        notYetDeletedBy++;
+    }
+
+    public void decreaseNotYetDeletedBy() throws EntityOperationForbiddenException {
+        if (notYetDeletedBy > 0L) {
+            notYetDeletedBy--;
+        } else {
+            throw new EntityOperationForbiddenException(
+                    String.format("Forbidden decrease <notYetDeletedBy> for dataFile %s - %s", this.id, this.name));
+        }
+    }
+
     public void emptyFailureCauses() {
         this.failureCauses.clear();
     }
@@ -550,4 +587,25 @@ public class StorageDataFile {
             this.failureCauses.add(failureCause);
         }
     }
+
+    public Set<URL> getOriginUrls() {
+        return originUrls;
+    }
+
+    public void setOriginUrls(Set<URL> originUrls) {
+        this.originUrls = originUrls;
+    }
+
+    public void resetNotYetStoredBy() {
+        notYetStoredBy = 0L;
+    }
+
+    public Boolean getForceDelete() {
+        return forceDelete;
+    }
+
+    public void setForceDelete(Boolean forceDelete) {
+        this.forceDelete = forceDelete;
+    }
+
 }

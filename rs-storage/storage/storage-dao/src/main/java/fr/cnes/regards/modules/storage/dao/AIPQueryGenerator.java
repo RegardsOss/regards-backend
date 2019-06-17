@@ -23,13 +23,12 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
-import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 
 /**
  * Specification class to filter DAO searches on {@link AIP} entities
@@ -46,25 +45,42 @@ public class AIPQueryGenerator {
     /**
      * Return an SQL query that retrieve all entities matching provided criteria
      * @param tags must be present in the AIP
+     * @param storedOn
      */
-    public static String searchAIPContainingAllTags(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags,
-            AIPSession session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded) {
-        Set<String> predicates = generatePredicates(state, from, to, session, providerId, aipIds, aipIdsExcluded);
+    public static String searchAIPContainingAllTags(AIPState state, OffsetDateTime from, OffsetDateTime to,
+            List<String> tags, String session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded,
+            Set<Long> storedOn) {
+        Set<String> predicates = generatePredicates(state, from, to, session, providerId, aipIds, aipIdsExcluded, storedOn);
         if (tags != null && !tags.isEmpty()) {
             predicates.add(getConjunctionTagPredicate(tags));
         }
         return createQuery(predicates);
-
     }
 
+    /**
+     * Return an SQL query that retrieve all AIPEntity ids matching provided criteria
+     * @param tags must be present in the AIP
+     * @param storedOn
+     */
+    public static String searchAIPIdContainingAllTags(AIPState state, OffsetDateTime from, OffsetDateTime to,
+            List<String> tags, String session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded,
+            Set<Long> storedOn) {
+        Set<String> predicates = generatePredicates(state, from, to, session, providerId, aipIds, aipIdsExcluded, storedOn);
+        if ((tags != null) && !tags.isEmpty()) {
+            predicates.add(getConjunctionTagPredicate(tags));
+        }
+        return createIdQuery(predicates);
+    }
 
     /**
      * Return an SQL query that retrieve all entities matching provided criteria
      * @param tags At least one provided tag will be present in the AIP
+     * @param storedOn
      */
-    public static String searchAIPContainingAtLeastOneTag(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags,
-            AIPSession session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded) {
-        Set<String> predicates = generatePredicates(state, from, to, session, providerId, aipIds, aipIdsExcluded);
+    public static String searchAIPContainingAtLeastOneTag(AIPState state, OffsetDateTime from, OffsetDateTime to,
+            List<String> tags, String session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded,
+            Set<Long> storedOn) {
+        Set<String> predicates = generatePredicates(state, from, to, session, providerId, aipIds, aipIdsExcluded, storedOn);
         if (tags != null && !tags.isEmpty()) {
             predicates.add(getDisjunctionTagPredicate(tags));
         }
@@ -76,11 +92,12 @@ public class AIPQueryGenerator {
      * Return an SQL query that retrieve all tags used by a set of entities
      */
     public static String searchAipTagsUsingSQL(AIPState state, OffsetDateTime from, OffsetDateTime to,
-            List<String> tags, AIPSession session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded) {
+            List<String> tags, String session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded,
+            Set<Long> storedOn) {
         StringBuilder request = new StringBuilder(
                 "SELECT distinct jsonb_array_elements_text(json_aip#>'{properties,pdi,contextInformation,tags}') "
                         + "FROM {h-schema}t_aip ");
-        Set<String> predicates = generatePredicates(state, from, to, session, providerId, aipIds, aipIdsExcluded);
+        Set<String> predicates = generatePredicates(state, from, to, session, providerId, aipIds, aipIdsExcluded, storedOn);
         if (tags != null && !tags.isEmpty()) {
             predicates.add(getConjunctionTagPredicate(tags));
         }
@@ -93,7 +110,7 @@ public class AIPQueryGenerator {
     }
 
     private static Set<String> generatePredicates(AIPState state, OffsetDateTime from, OffsetDateTime to,
-            AIPSession session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded) {
+            String session, String providerId, Set<String> aipIds, Set<String> aipIdsExcluded, Set<Long> storedOn) {
         Set<String> predicates = Sets.newHashSet();
         if (state != null) {
             predicates.add("(state = '" + state.getName() + "')");
@@ -107,7 +124,7 @@ public class AIPQueryGenerator {
             predicates.add("(date < '" + time.toString() + "')");
         }
         if (session != null) {
-            predicates.add("(session = '" + session.getId() + "')");
+            predicates.add("(session = '" + session + "')");
         }
         if (aipIds != null && !aipIds.isEmpty()) {
             Set<String> aipIncludedPredicates = Sets.newHashSet();
@@ -115,6 +132,16 @@ public class AIPQueryGenerator {
                 aipIncludedPredicates.add("'" + aipId + "'");
             }
             predicates.add("(aip_id in (" + String.join(" , ", aipIncludedPredicates) + "))");
+        }
+        if (storedOn != null && !storedOn.isEmpty()) {
+            Set<String> storedOnPredicates = Sets.newHashSet();
+            for (Long storedOnId : storedOn) {
+                storedOnPredicates.add("'" + storedOnId + "'");
+            }
+            storedOnPredicates.stream().collect(Collectors.joining("' , '", "'", "'"));
+            predicates.add("(id IN (SELECT aip_ip_id FROM storage.t_data_file WHERE id IN ("
+                                   + "SELECT data_file_id FROM storage.ta_data_file_plugin_conf WHERE data_storage_conf_id IN ("
+                                   + String.join(" , ", storedOnPredicates) + ") ) ))");
         }
         if (aipIdsExcluded != null && !aipIdsExcluded.isEmpty()) {
             Set<String> aipExcludedPredicates = Sets.newHashSet();
@@ -130,11 +157,22 @@ public class AIPQueryGenerator {
     }
 
     private static String createQuery(Set<String> predicates) {
-        StringBuilder request = new StringBuilder("SELECT * FROM {h-schema}t_aip ");;
+        StringBuilder request = new StringBuilder("SELECT * ");
+        return addFromNWhere(predicates, request);
+    }
+
+    private static String createIdQuery(Set<String> predicates) {
+        StringBuilder request = new StringBuilder("SELECT id ");
+        return addFromNWhere(predicates, request);
+    }
+
+    private static String addFromNWhere(Set<String> predicates, StringBuilder request) {
+        request.append("FROM {h-schema}t_aip ");
         if (!predicates.isEmpty()) {
             request.append("WHERE ");
             Joiner.on(" AND ").appendTo(request, predicates);
         }
+        request.append(" ORDER BY id");
         return request.toString();
     }
 
@@ -143,8 +181,8 @@ public class AIPQueryGenerator {
         for (String tag : tags) {
             tagPredicates.add("'" + tag + "'");
         }
-        return "(json_aip#>'{properties,pdi,contextInformation,tags}' @> jsonb_build_array("
-                + String.join(" , ", tagPredicates) + "))";
+        return "(json_aip#>'{properties,pdi,contextInformation,tags}' @> jsonb_build_array(" + String
+                .join(" , ", tagPredicates) + "))";
     }
 
     /**
@@ -159,10 +197,8 @@ public class AIPQueryGenerator {
         for (String tag : tags) {
             tagPredicates.add("'" + tag + "'");
         }
-        return "(jsonb_exists_any(json_aip#>'{properties,pdi,contextInformation,tags}', array["
-                + String.join(" , ", tagPredicates) + "]))";
+        return "(jsonb_exists_any(json_aip#>'{properties,pdi,contextInformation,tags}', array[" + String
+                .join(" , ", tagPredicates) + "]))";
     }
-
-
 
 }

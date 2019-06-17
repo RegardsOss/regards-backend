@@ -1,10 +1,14 @@
 package fr.cnes.regards.modules.storage.dao;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import fr.cnes.regards.modules.storage.domain.database.DataStorageType;
 import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
@@ -23,13 +27,13 @@ public interface IPrioritizedDataStorageRepository extends JpaRepository<Priorit
      */
     PrioritizedDataStorage findFirstByDataStorageTypeOrderByPriorityDesc(DataStorageType dataStorageType);
 
-    Optional<PrioritizedDataStorage> findOneByDataStorageConfigurationId(Long pluginConfId);
-
-    Optional<PrioritizedDataStorage> findOneById(Long pluginConfId);
+    @EntityGraph(attributePaths = { "dataStorageConfiguration.parameters", "dataStorageConfiguration.parameters.dynamicsValues" })
+    Optional<PrioritizedDataStorage> findById(Long pluginConfId);
 
     Set<PrioritizedDataStorage> findAllByDataStorageTypeAndPriorityGreaterThanOrderByPriorityAsc(
             DataStorageType dataStorageType, Long priority);
 
+    @EntityGraph(attributePaths = { "dataStorageConfiguration.parameters", "dataStorageConfiguration.parameters.dynamicsValues" })
     List<PrioritizedDataStorage> findAllByDataStorageTypeOrderByPriorityAsc(DataStorageType dataStorageType);
 
     /**
@@ -44,4 +48,7 @@ public interface IPrioritizedDataStorageRepository extends JpaRepository<Priorit
             DataStorageType dataStorageType, boolean pluginConfActivity);
 
     PrioritizedDataStorage findOneByDataStorageTypeAndPriority(DataStorageType dataStorageType, long priority);
+
+    @EntityGraph(attributePaths = { "dataStorageConfiguration.parameters", "dataStorageConfiguration.parameters.dynamicsValues" })
+    Set<PrioritizedDataStorage> findAllByIdIn(Collection<Long> allIdUsedByAipInQuery);
 }

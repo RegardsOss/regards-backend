@@ -1,0 +1,29 @@
+<#setting datetime_format='yyyy-MM-dd HH:mm:ss z'>
+    <b>REGARDS - Partial deletion report</b><br/>
+    <p>
+    	Deletion schedule request -> ${filters}<br/> 
+    </p>
+    <p>
+        <#if !report.deletionScheduled>
+        	Partial deletion could not be scheduled.<br>
+        	<ul>
+        	<#list report.deletionErrorCauses as cause>
+        		<li>${cause}</li>
+        	</#list>
+        	</ul>
+        <#else>
+	        Total number of files scheduled for partial deletion : ${report.nbFilesToDelete}<br>
+	        Total number of files not scheduled for partial deletion : ${report.getNbFilesNotScheduled()}
+	        <ul>
+	        	<#if report.nbFilesNotHandled gt 0>
+	        		<li>Number of files ignored because the storage was the last one : ${report.nbFilesNotHandled}</li>	
+	        	</#if>
+	        	<#if report.nbFilesWithOnlyOneStorage gt 0>
+	        		<li>Number of files not stored on the storage to delete from : ${report.nbFilesWithOnlyOneStorage}</li>
+	        	</#if>
+	        	<#if report.nbFilesNeededOnline gt 0>
+	        		<li>Number of files mandatory online : ${report.report.nbFilesNeededOnline}</li>
+	        	</#if>
+        	</ul>
+        </#if>
+    </p>

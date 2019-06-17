@@ -185,7 +185,6 @@ public class StorageJobProgressManager implements IProgressManager {
     private void publishWithTenant(DataStorageEvent event) {
         runtimeTenantResolver.forceTenant(tenant);
         publisher.publish(event);
-        runtimeTenantResolver.clearTenant();
     }
 
     /**

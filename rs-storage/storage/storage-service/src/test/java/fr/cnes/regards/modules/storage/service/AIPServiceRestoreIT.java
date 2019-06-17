@@ -38,13 +38,10 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -54,18 +51,16 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.HierarchyMode;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.MimeType;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
-import fr.cnes.regards.framework.hateoas.IResourceService;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
@@ -86,7 +81,6 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.test.report.annotation.Requirements;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.ICachedFileRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
@@ -100,6 +94,7 @@ import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.CachedFile;
 import fr.cnes.regards.modules.storage.domain.database.CachedFileState;
+import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.event.DataFileEvent;
@@ -118,7 +113,6 @@ import fr.cnes.regards.modules.storage.service.plugins.SimpleNearLineStoragePlug
  * @author Sylvain Vissiere-Guerinet
  * @author Sébastien Binda
  */
-@ContextConfiguration(classes = AIPServiceRestoreIT.Config.class)
 @TestPropertySource(
         properties = { "spring.jpa.properties.hibernate.default_schema=storage_test", "regards.amqp.enabled=true" },
         locations = { "classpath:storage.properties" })
@@ -130,11 +124,13 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
 
     private static final String CATALOG_SECURITY_DELEGATION_LABEL = "AIPServiceRestoreIT";
 
+    private static final String SESSION = "Session 1";
+
     private static TestDataStorageEventHandler dataHandler = new TestDataStorageEventHandler();
 
     private static Path cacheDir = Paths.get("target/cache");
 
-    private static final String SESSION = "Session 1";
+    private final Set<StorageDataFile> nearlineFiles = Sets.newHashSet();
 
     @Autowired
     private IAIPService aipService;
@@ -204,8 +200,6 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
 
     private PrioritizedDataStorage onlineNoRetrieveDataStorageConf;
 
-    private final Set<StorageDataFile> nearlineFiles = Sets.newHashSet();
-
     public void initCacheDir() throws IOException {
         if (cacheDir.toFile().exists()) {
             Files.walk(cacheDir).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
@@ -228,11 +222,12 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         // while (!handler.isFailed() && handler.getJobSucceeds().isEmpty()
         // && (dataHandler.getRestoredChecksum().size() < nbRestoredFiles) && (count < 50)) {
         LOG.info("Waiting for {} restored files ...", nbRestoredFiles);
-        while ((dataHandler.getRestoredChecksum().size() < nbRestoredFiles) && (count < 10)) {
+        while (dataHandler.getRestoredChecksum().size() < nbRestoredFiles && count < 10) {
             count++;
             Thread.sleep(500);
         }
-        LOG.info("End of wait for {} restored files. Nb restored files={}", nbRestoredFiles,
+        LOG.info("End of wait for {} restored files. Nb restored files={}",
+                 nbRestoredFiles,
                  dataHandler.getRestoredChecksum().size());
     }
 
@@ -242,8 +237,9 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
      */
     private void initDb() throws Exception {
         nearlineFiles.clear();
-        baseStorageLocation = new URL("file", "",
-                Paths.get("target/AIPServiceRestoreIT/normal").toFile().getAbsolutePath());
+        baseStorageLocation = new URL("file",
+                                      "",
+                                      Paths.get("target/AIPServiceRestoreIT/normal").toFile().getAbsolutePath());
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
 
         // second, lets storeAndCreate a plugin configuration for IAllocationStrategy
@@ -256,26 +252,25 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 10000000)
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                              gson.toJson(baseStorageLocation))
-                .getParameters();
+                              gson.toJson(baseStorageLocation)).getParameters();
         PluginConfiguration onlineDSConf = new PluginConfiguration(dataStoMeta, "dsConfLabel", parameters, 0);
         onlineDSConf.setIsActive(true);
         onlineDataStorageConf = prioritizedDataStorageService.create(onlineDSConf);
 
         parameters = PluginParametersFactory.build().addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 10000000)
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                              gson.toJson(baseStorageLocation))
-                .getParameters();
+                              gson.toJson(baseStorageLocation)).getParameters();
         PluginMetaData onlineNoRetrieveDataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
         PluginConfiguration onlineNoRetrieveDSConf = new PluginConfiguration(onlineNoRetrieveDataStoMeta,
-                "onlineNoRetrieveDsConfLabel", parameters, 1);
+                                                                             "onlineNoRetrieveDsConfLabel",
+                                                                             parameters,
+                                                                             1);
         onlineNoRetrieveDSConf.setIsActive(true);
         onlineNoRetrieveDataStorageConf = prioritizedDataStorageService.create(onlineNoRetrieveDSConf);
 
         parameters = PluginParametersFactory.build().addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 10000000)
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                              gson.toJson(baseStorageLocation))
-                .getParameters();
+                              gson.toJson(baseStorageLocation)).getParameters();
         PluginMetaData nearlineMeta = PluginUtils.createPluginMetaData(SimpleNearLineStoragePlugin.class);
         // parameters = PluginParametersFactory.build().getParameters();
         LOG.info("parameters {}", parameters.size());
@@ -286,7 +281,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
 
         PluginMetaData dataStoNoRetrieveMeta = PluginUtils.createPluginMetaData(NearlineNoRetrieveDataStorage.class);
         PluginConfiguration nearlineNoRetrieveDSConf = new PluginConfiguration(dataStoNoRetrieveMeta,
-                "dsNoRetrieveConfLabel");
+                                                                               "dsNoRetrieveConfLabel");
         nearlineNoRetrieveDSConf.setIsActive(true);
         nearlineNoRetrieveDataStorageConf = prioritizedDataStorageService.create(nearlineNoRetrieveDSConf);
     }
@@ -300,11 +295,13 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
     public void loadUnavailableFilesTest() throws ModuleException {
         LOG.info("Start test loadUnavailableFilesTest ...");
         AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "1", "2", "3");
-        AvailabilityResponse response = aipService.loadFiles(request);
-        Assert.assertTrue("No file should be directly available after AIPService::loadFiles. Cause : files to load does not exists !",
-                          response.getAlreadyAvailable().isEmpty());
-        Assert.assertTrue("All files should be in error after AIPService::loadFiles. Cause : files to load does not exists !",
-                          response.getErrors().size() == 3);
+        AvailabilityResponse response = aipService.makeFilesAvailable(request);
+        Assert.assertTrue(
+                "No file should be directly available after AIPService::makeFilesAvailable. Cause : files to load does not exists !",
+                response.getAlreadyAvailable().isEmpty());
+        Assert.assertTrue(
+                "All files should be in error after AIPService::makeFilesAvailable. Cause : files to load does not exists !",
+                response.getErrors().size() == 3);
         LOG.info("End test loadUnavailableFilesTest ...");
     }
 
@@ -319,10 +316,12 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         LOG.info("Start test loadOnlineFilesTest ...");
         fillOnlineDataFileDb(50L);
         AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "1", "2", "3");
-        AvailabilityResponse response = aipService.loadFiles(request);
-        Assert.assertTrue("All files should be directly available after AIPService::loadFiles. Cause : files to load are online.",
-                          response.getAlreadyAvailable().size() == 3);
-        Assert.assertTrue("No file should be in error after AIPService::loadFiles. Cause : All files exists !.",
+        AvailabilityResponse response = aipService.makeFilesAvailable(request);
+        Assert.assertEquals(
+                "All files should be directly available after AIPService::makeFilesAvailable. Cause : files to load are online.",
+                3,
+                response.getAlreadyAvailable().size());
+        Assert.assertTrue("No file should be in error after AIPService::makeFilesAvailable. Cause : All files exists !.",
                           response.getErrors().isEmpty());
         LOG.info("End test loadOnlineFilesTest ...");
     }
@@ -339,19 +338,21 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         LOG.info("Start test loadOnlineNNearlineFilesTest ...");
         fillOnlineNNearlineDataFileDb(50L);
         AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "1", "2", "3");
-        AvailabilityResponse response = aipService.loadFiles(request);
-        Assert.assertTrue("All files should be directly available after AIPService::loadFiles. Cause : files to load are online.",
-                          response.getAlreadyAvailable().size() == 3);
-        Assert.assertTrue("No file should be in error after AIPService::loadFiles. Cause : All files exists !.",
+        AvailabilityResponse response = aipService.makeFilesAvailable(request);
+        Assert.assertEquals(
+                "All files should be directly available after AIPService::makeFilesAvailable. Cause : files to load are online.",
+                3,
+                response.getAlreadyAvailable().size());
+        Assert.assertTrue("No file should be in error after AIPService::makeFilesAvailable. Cause : All files exists !.",
                           response.getErrors().isEmpty());
         LOG.info("End test loadOnlineNNearlineFilesTest ...");
     }
 
     @Test
-    public void testRetrieveDistinctSotageDataFiles() throws MalformedURLException {
+    public void testRetrieveDistinctSotageDataFiles() throws MalformedURLException, EntityNotFoundException {
         fillNearlineDataFileDb(50L, 3, "dataFile");
         Set<String> checksums = nearlineFiles.stream().map(f -> f.getChecksum()).collect(Collectors.toSet());
-        Page<Long> ids = repository.findIdPageByChecksumIn(checksums, new PageRequest(0, 500));
+        Page<Long> ids = repository.findIdPageByChecksumIn(checksums, PageRequest.of(0, 500));
         Set<StorageDataFile> result = repository.findAllDistinctByIdIn(ids.getContent());
         Assert.assertEquals("There should be only 3 storage data files found", 3, result.size());
     }
@@ -379,9 +380,11 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
 
         Assert.assertTrue("Initialization error. The test shouldn't start with cachd files in AVAILABLE status.",
                           cachedFileRepository.countByState(CachedFileState.AVAILABLE) == 0);
-        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "dataFile1",
-                "dataFile2", "dataFile3");
-        AvailabilityResponse response = aipService.loadFiles(request);
+        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10),
+                                                              "dataFile1",
+                                                              "dataFile2",
+                                                              "dataFile3");
+        AvailabilityResponse response = aipService.makeFilesAvailable(request);
         Assert.assertTrue(String.format("Invalid number of available files %d", response.getAlreadyAvailable().size()),
                           response.getAlreadyAvailable().isEmpty());
         Assert.assertTrue(String.format("Invalid number of error files %d", response.getErrors().size()),
@@ -394,24 +397,21 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         Optional<CachedFile> ocf = cachedFileRepository.findOneByChecksum("dataFile1");
         Assert.assertTrue("The nearLine file dataFile1 should be present in db as a cachedFile", ocf.isPresent());
         Assert.assertTrue(String.format("The nearLine file dataFile1 should be have status AVAILABLE not %s.",
-                                        ocf.get().getState()),
-                          ocf.get().getState().equals(CachedFileState.AVAILABLE));
+                                        ocf.get().getState()), ocf.get().getState().equals(CachedFileState.AVAILABLE));
         Assert.assertTrue("The file should be physicly in cache directory",
                           Paths.get(ocf.get().getLocation().getPath()).toFile().exists());
 
         ocf = cachedFileRepository.findOneByChecksum("dataFile2");
         Assert.assertTrue("The nearLine file dataFile2 should be present in db as a cachedFile", ocf.isPresent());
         Assert.assertTrue(String.format("The nearLine file dataFile2 should be have status AVAILABLE not %s.",
-                                        ocf.get().getState()),
-                          ocf.get().getState().equals(CachedFileState.AVAILABLE));
+                                        ocf.get().getState()), ocf.get().getState().equals(CachedFileState.AVAILABLE));
         Assert.assertTrue("The file should be physicly in cache directory",
                           Paths.get(ocf.get().getLocation().getPath()).toFile().exists());
 
         ocf = cachedFileRepository.findOneByChecksum("dataFile3");
         Assert.assertTrue("The nearLine file dataFile3 should be present in db as a cachedFile", ocf.isPresent());
         Assert.assertTrue(String.format("The nearLine file dataFile3 should be have status AVAILABLE not %s.",
-                                        ocf.get().getState()),
-                          ocf.get().getState().equals(CachedFileState.AVAILABLE));
+                                        ocf.get().getState()), ocf.get().getState().equals(CachedFileState.AVAILABLE));
         Assert.assertTrue("The file should be physicly in cache directory",
                           Paths.get(ocf.get().getLocation().getPath()).toFile().exists());
 
@@ -446,16 +446,19 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
     @Test
     public void loadNearlineFilesWithQueuedTest() throws MalformedURLException, InterruptedException, ModuleException {
         // Force each file to restore to a big size to simulate cache overflow.
-        Long fileSize = ((this.cacheSizeLimitKo * 1024) / 2) - 1;
+        Long fileSize = this.cacheSizeLimitKo * 1024 / 2 - 1;
         fillNearlineDataFileDb(fileSize, 4, "dataFile");
 
         Assert.assertTrue("Initialization error. The test shouldn't start with cached files in AVAILABLE status.",
                           cachedFileRepository.countByState(CachedFileState.AVAILABLE) == 0);
         Assert.assertTrue("Initialization error. The test shouldn't start with cached files in QUEUED status.",
                           cachedFileRepository.countByState(CachedFileState.QUEUED) == 0);
-        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "dataFile1",
-                "dataFile2", "dataFile3", "dataFile4");
-        AvailabilityResponse response = aipService.loadFiles(request);
+        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10),
+                                                              "dataFile1",
+                                                              "dataFile2",
+                                                              "dataFile3",
+                                                              "dataFile4");
+        AvailabilityResponse response = aipService.makeFilesAvailable(request);
         Assert.assertTrue(String.format("Invalid number of available files %d", response.getAlreadyAvailable().size()),
                           response.getAlreadyAvailable().isEmpty());
         Assert.assertTrue(String.format("Invalid number of error files %d", response.getAlreadyAvailable().size()),
@@ -519,18 +522,38 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         Assert.assertTrue("Initialization error. The test shouldn't start with cachd files in AVAILABLE status.",
                           cachedFileRepository.countByState(CachedFileState.AVAILABLE) == 0);
         // Simulate cache size full by adding files with big size.
-        Long fileSize = ((this.cacheSizeLimitKo * 1024) / 3);
-        fillCache(aip, aipSession, "dataFile4", "dataFile4", fileSize, OffsetDateTime.now().plusDays(10),
-                  OffsetDateTime.now(), "target/cache");
-        fillCache(aip, aipSession, "dataFile5", "dataFile5", fileSize, OffsetDateTime.now().plusDays(10),
-                  OffsetDateTime.now(), "target/cache");
-        fillCache(aip, aipSession, "dataFile6", "dataFile6", fileSize, OffsetDateTime.now().plusDays(10),
-                  OffsetDateTime.now(), "target/cache");
+        Long fileSize = this.cacheSizeLimitKo * 1024 / 3;
+        fillCache(aip,
+                  aipSession,
+                  "dataFile4",
+                  "dataFile4",
+                  fileSize,
+                  OffsetDateTime.now().plusDays(10),
+                  OffsetDateTime.now(),
+                  "target/cache");
+        fillCache(aip,
+                  aipSession,
+                  "dataFile5",
+                  "dataFile5",
+                  fileSize,
+                  OffsetDateTime.now().plusDays(10),
+                  OffsetDateTime.now(),
+                  "target/cache");
+        fillCache(aip,
+                  aipSession,
+                  "dataFile6",
+                  "dataFile6",
+                  fileSize,
+                  OffsetDateTime.now().plusDays(10),
+                  OffsetDateTime.now(),
+                  "target/cache");
 
         // All files to restore should be initialized in QUEUED state waiting for available size into cache
-        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10), "dataFile1",
-                "dataFile2", "dataFile3");
-        AvailabilityResponse response = aipService.loadFiles(request);
+        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(10),
+                                                              "dataFile1",
+                                                              "dataFile2",
+                                                              "dataFile3");
+        AvailabilityResponse response = aipService.makeFilesAvailable(request);
         Assert.assertTrue(String.format("Invalid number of available files %d", response.getAlreadyAvailable().size()),
                           response.getAlreadyAvailable().isEmpty());
         Assert.assertTrue(String.format("Invalid number of error files %d", response.getErrors().size()),
@@ -596,26 +619,50 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     @Requirements({ @Requirement("REGARDS_DSL_STO_ARC_450") })
-    public void cleanCacheDeleteExpiredFilesTest() throws InterruptedException, IOException {
+    public void cleanCacheDeleteExpiredFilesTest() throws InterruptedException, IOException, EntityNotFoundException {
         LOG.info("Start test testCleanCacheDeleteExpiredFiles ...");
-        Long fileSize = (this.cacheSizeLimitKo * 1024) / 2;
+        Long fileSize = this.cacheSizeLimitKo * 1024 / 2;
         AIP aip = fillNearlineDataFileDb(fileSize, 3, "dataFile");
         AIPSession aipSession = aipService.getSession(aip.getSession(), true);
 
         Assert.assertTrue("Initialization error. The test shouldn't start with cachd files in AVAILABLE status.",
                           cachedFileRepository.countByState(CachedFileState.AVAILABLE) == 0);
         Path file1 = Files.createFile(Paths.get(cacheDir.toString(), "dataFile1"));
-        fillCache(aip, aipSession, file1.getFileName().toString(), file1.getFileName().toString(), fileSize,
-                  OffsetDateTime.now().minusDays(1), OffsetDateTime.now(), cacheDir.toFile().getAbsolutePath());
+        fillCache(aip,
+                  aipSession,
+                  file1.getFileName().toString(),
+                  file1.getFileName().toString(),
+                  fileSize,
+                  OffsetDateTime.now().minusDays(1),
+                  OffsetDateTime.now(),
+                  cacheDir.toFile().getAbsolutePath());
         Path file2 = Files.createFile(Paths.get(cacheDir.toString(), "dataFile2"));
-        fillCache(aip, aipSession, file2.getFileName().toString(), file2.getFileName().toString(), fileSize,
-                  OffsetDateTime.now().minusDays(2), OffsetDateTime.now(), cacheDir.toFile().getAbsolutePath());
+        fillCache(aip,
+                  aipSession,
+                  file2.getFileName().toString(),
+                  file2.getFileName().toString(),
+                  fileSize,
+                  OffsetDateTime.now().minusDays(2),
+                  OffsetDateTime.now(),
+                  cacheDir.toFile().getAbsolutePath());
         Path file3 = Files.createFile(Paths.get(cacheDir.toString(), "dataFile3"));
-        fillCache(aip, aipSession, file3.getFileName().toString(), file3.getFileName().toString(), fileSize,
-                  OffsetDateTime.now(), OffsetDateTime.now(), cacheDir.toFile().getAbsolutePath());
+        fillCache(aip,
+                  aipSession,
+                  file3.getFileName().toString(),
+                  file3.getFileName().toString(),
+                  fileSize,
+                  OffsetDateTime.now(),
+                  OffsetDateTime.now(),
+                  cacheDir.toFile().getAbsolutePath());
         Path file4 = Paths.get(cacheDir.toString(), "dataFile4");
-        fillCache(aip, aipSession, file4.getFileName().toString(), file4.getFileName().toString(), fileSize,
-                  OffsetDateTime.now().plusDays(1), OffsetDateTime.now(), cacheDir.toFile().getAbsolutePath());
+        fillCache(aip,
+                  aipSession,
+                  file4.getFileName().toString(),
+                  file4.getFileName().toString(),
+                  fileSize,
+                  OffsetDateTime.now().plusDays(1),
+                  OffsetDateTime.now(),
+                  cacheDir.toFile().getAbsolutePath());
 
         Assert.assertTrue("Init error. File does not exists", file1.toFile().exists());
         Assert.assertTrue("Init error. File does not exists", file2.toFile().exists());
@@ -627,9 +674,9 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         // Run clean process
         cachedFileService.purge();
         Long size = cachedFileRepository.countByState(CachedFileState.AVAILABLE);
-        Assert.assertTrue(String
-                .format("After the cache clean process ran, there should be only one AVAILABLE file remaining not %s.",
-                        size), size == 1);
+        Assert.assertTrue(String.format(
+                "After the cache clean process ran, there should be only one AVAILABLE file remaining not %s.",
+                size), size == 1);
 
         Assert.assertFalse("File should be deleted", file1.toFile().exists());
         Assert.assertFalse("File should be deleted", file2.toFile().exists());
@@ -646,10 +693,10 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
      */
     @Test
     @Requirements({ @Requirement("REGARDS_DSL_STO_ARC_450") })
-    public void cleanCacheDeleteOlderFilesTest() throws InterruptedException, IOException {
+    public void cleanCacheDeleteOlderFilesTest() throws InterruptedException, IOException, EntityNotFoundException {
         LOG.info("Start test testCleanCacheDeleteOlderFiles ...");
         // Simulate each file size as the cache is full with 4 files and fill it.
-        Long fileSize = (this.cacheSizeLimitKo * 1024) / 4;
+        Long fileSize = this.cacheSizeLimitKo * 1024 / 4;
         AIP aip = fillNearlineDataFileDb(fileSize, 5, "dataFile");
         AIPSession aipSession = aipService.getSession(aip.getSession(), true);
 
@@ -658,23 +705,43 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         // Simulate files in cache
         // 1. expirationDate: now+1day requestDate : now-2days
         Path file1 = Files.createFile(Paths.get(cacheDir.toString(), "dataFile1"));
-        fillCache(aip, aipSession, file1.getFileName().toString(), file1.getFileName().toString(), fileSize,
-                  OffsetDateTime.now().plusDays(1), OffsetDateTime.now().minusDays(2),
+        fillCache(aip,
+                  aipSession,
+                  file1.getFileName().toString(),
+                  file1.getFileName().toString(),
+                  fileSize,
+                  OffsetDateTime.now().plusDays(1),
+                  OffsetDateTime.now().minusDays(2),
                   cacheDir.toFile().getAbsolutePath());
         // 2. expirationDate: now+2day requestDate : now-5days
         Path file2 = Files.createFile(Paths.get(cacheDir.toString(), "dataFile2"));
-        fillCache(aip, aipSession, file2.getFileName().toString(), file2.getFileName().toString(), fileSize,
-                  OffsetDateTime.now().plusDays(2), OffsetDateTime.now().minusDays(5),
+        fillCache(aip,
+                  aipSession,
+                  file2.getFileName().toString(),
+                  file2.getFileName().toString(),
+                  fileSize,
+                  OffsetDateTime.now().plusDays(2),
+                  OffsetDateTime.now().minusDays(5),
                   cacheDir.toFile().getAbsolutePath());
         // 3. expirationDate: now+3day requestDate : now-4days
         Path file3 = Files.createFile(Paths.get(cacheDir.toString(), "dataFile3"));
-        fillCache(aip, aipSession, file3.getFileName().toString(), file3.getFileName().toString(), fileSize,
-                  OffsetDateTime.now().plusDays(3), OffsetDateTime.now().minusDays(4),
+        fillCache(aip,
+                  aipSession,
+                  file3.getFileName().toString(),
+                  file3.getFileName().toString(),
+                  fileSize,
+                  OffsetDateTime.now().plusDays(3),
+                  OffsetDateTime.now().minusDays(4),
                   cacheDir.toFile().getAbsolutePath());
         // 3. expirationDate: now+4day requestDate : now-3days
         Path file4 = Files.createFile(Paths.get(cacheDir.toString(), "dataFile4"));
-        fillCache(aip, aipSession, file4.getFileName().toString(), file4.getFileName().toString(), fileSize,
-                  OffsetDateTime.now().plusDays(4), OffsetDateTime.now().minusDays(3),
+        fillCache(aip,
+                  aipSession,
+                  file4.getFileName().toString(),
+                  file4.getFileName().toString(),
+                  fileSize,
+                  OffsetDateTime.now().plusDays(4),
+                  OffsetDateTime.now().minusDays(3),
                   cacheDir.toFile().getAbsolutePath());
 
         Assert.assertTrue("Init error. File does not exists", file1.toFile().exists());
@@ -688,7 +755,8 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         cachedFileService.restore(nearlineFiles, OffsetDateTime.now().plusDays(10));
         Thread.sleep(1000);
         // There should be only one file in QUEUD cause all other files are already in cach
-        Assert.assertEquals("There should be only one QUEUED file to restore in cache", 1L,
+        Assert.assertEquals("There should be only one QUEUED file to restore in cache",
+                            1L,
                             cachedFileRepository.countByState(CachedFileState.QUEUED).longValue());
 
         // Run clean process
@@ -703,9 +771,9 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         cachedFileService.purge();
 
         Long size = cachedFileRepository.countByState(CachedFileState.AVAILABLE);
-        Assert.assertTrue(String
-                .format("After the cache clean process ran, there should be 2 AVAILABLE files remaining not %s.", size),
-                          size == 2);
+        Assert.assertTrue(String.format(
+                "After the cache clean process ran, there should be 2 AVAILABLE files remaining not %s.",
+                size), size == 2);
 
         Assert.assertTrue("File should not be deleted", file1.toFile().exists());
         Assert.assertFalse("File should be deleted", file2.toFile().exists());
@@ -730,7 +798,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         int nbFiles = 5;
         // Simulare 5 files for an AIP at STORED state with size calculated to full the restoration cache directory if
         // restored.
-        float fullFileSize = ((this.cacheSizeLimitKo * 1024) / nbFiles) - 1;
+        float fullFileSize = this.cacheSizeLimitKo * 1024 / nbFiles - 1;
         Long fileSize = (long) Math.ceil(fullFileSize);
         int nbFilesToDeleteToReachLimit = 3;
         // Simulate other 5 files on the same AIP at STORED state with same size. To simulate a restoration request when
@@ -742,15 +810,19 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
                           cachedFileRepository.countByState(CachedFileState.AVAILABLE) == 0);
 
         // Run a restore process to cache all files with two availbility requests.
-        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(15), "fileInCache1",
-                "fileInCache2");
-        aipService.loadFiles(request);
-        request = new AvailabilityRequest(OffsetDateTime.now().plusDays(15), "fileInCache3", "fileInCache4",
-                "fileInCache5");
-        aipService.loadFiles(request);
+        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(15),
+                                                              "fileInCache1",
+                                                              "fileInCache2");
+        aipService.makeFilesAvailable(request);
+        request = new AvailabilityRequest(OffsetDateTime.now().plusDays(15),
+                                          "fileInCache3",
+                                          "fileInCache4",
+                                          "fileInCache5");
+        aipService.makeFilesAvailable(request);
         waitRestorationJobEnds(nbFiles);
 
-        Assert.assertEquals("There should be 5 cached files in AVAILABLE status.", nbFiles,
+        Assert.assertEquals("There should be 5 cached files in AVAILABLE status.",
+                            nbFiles,
                             cachedFileRepository.countByState(CachedFileState.AVAILABLE).longValue());
         Assert.assertTrue("There should not be cached files in QUEUED status.",
                           cachedFileRepository.countByState(CachedFileState.QUEUED) == 0);
@@ -758,27 +830,33 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         // Run a new restore process with other files to simulare a request when the cahced directory is full.
         // All files request should stay in QUEUD state.
         request = new AvailabilityRequest(OffsetDateTime.now().plusDays(15), "fileNotInCache1", "fileNotInCache2");
-        aipService.loadFiles(request);
-        request = new AvailabilityRequest(OffsetDateTime.now().plusDays(15), "fileNotInCache3", "fileNotInCache4",
-                "fileNotInCache5");
-        aipService.loadFiles(request);
+        aipService.makeFilesAvailable(request);
+        request = new AvailabilityRequest(OffsetDateTime.now().plusDays(15),
+                                          "fileNotInCache3",
+                                          "fileNotInCache4",
+                                          "fileNotInCache5");
+        aipService.makeFilesAvailable(request);
         Thread.sleep(1000);
-        Page<CachedFile> queuedFiles = cachedFileRepository.findAllByState(CachedFileState.QUEUED,
-                                                                           new PageRequest(0, 100));
+        Page<CachedFile> queuedFiles = cachedFileRepository
+                .findAllByState(CachedFileState.QUEUED, PageRequest.of(0, 100));
         Assert.assertEquals(String.format("After loadfiles process there should 5 files in QUEUED mode not %s",
                                           queuedFiles.getNumberOfElements()),
-                            nbFiles, queuedFiles.getNumberOfElements());
+                            nbFiles,
+                            queuedFiles.getNumberOfElements());
         queuedFiles.forEach(f -> LOG.info("Queued File exp date={}", f.getExpiration()));
 
         // Simulate run of cache purge with no expired files and only recent files (minimum time to live not reached).
         cachedFileService.purge();
-        Assert.assertEquals("There should be 5 cached files in AVAILABLE status.", nbFiles,
+        Assert.assertEquals("There should be 5 cached files in AVAILABLE status.",
+                            nbFiles,
                             cachedFileRepository.countByState(CachedFileState.AVAILABLE).longValue());
-        Assert.assertEquals("All files requested should always be in queued mode, as the cache can not be cleared and is full",
-                            nbFiles, cachedFileRepository.countByState(CachedFileState.QUEUED).longValue());
+        Assert.assertEquals(
+                "All files requested should always be in queued mode, as the cache can not be cleared and is full",
+                nbFiles,
+                cachedFileRepository.countByState(CachedFileState.QUEUED).longValue());
 
         // Simulate time pass by changing date of files in cache
-        cachedFileRepository.findAllByState(CachedFileState.AVAILABLE, new PageRequest(0, 100)).getContent().stream()
+        cachedFileRepository.findAllByState(CachedFileState.AVAILABLE, PageRequest.of(0, 100)).getContent().stream()
                 .forEach(fileInCache -> {
                     fileInCache.setLastRequestDate(OffsetDateTime.now().minusHours(this.minTtl + 1));
                     cachedFileRepository.save(fileInCache);
@@ -786,11 +864,14 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
 
         // Simulate run of cache purge with no expired files and only recent files (minimum time to live not reached).
         cachedFileService.purge();
-        Assert.assertEquals("There should deletion of cached files in AVAILABLE status as the purge as cleared the older files to reach the limit avaialble size.",
-                            nbFiles - nbFilesToDeleteToReachLimit,
-                            cachedFileRepository.countByState(CachedFileState.AVAILABLE).longValue());
-        Assert.assertEquals("All files requested should always be in queued mode, as the cache can not be cleared and is full",
-                            nbFiles, cachedFileRepository.countByState(CachedFileState.QUEUED).longValue());
+        Assert.assertEquals(
+                "There should deletion of cached files in AVAILABLE status as the purge as cleared the older files to reach the limit avaialble size.",
+                nbFiles - nbFilesToDeleteToReachLimit,
+                cachedFileRepository.countByState(CachedFileState.AVAILABLE).longValue());
+        Assert.assertEquals(
+                "All files requested should always be in queued mode, as the cache can not be cleared and is full",
+                nbFiles,
+                cachedFileRepository.countByState(CachedFileState.QUEUED).longValue());
 
         dataHandler.reset();
         // Simulate handle of queued files
@@ -798,15 +879,18 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         // Wait for restoration jobs ends
         waitRestorationJobEnds(nbFiles);
 
-        Assert.assertEquals("All files should be available in cache", nbFiles,
+        Assert.assertEquals("All files should be available in cache",
+                            nbFiles,
                             cachedFileRepository.countByState(CachedFileState.AVAILABLE).longValue());
 
         cachedFileRepository.findAll().stream()
                 .forEach(f -> LOG.info("CACHED FILE : {} - {}", f.getLocation(), f.getState()));
         // Files should be create successfully.
-        Assert.assertEquals("There should be 5 AVAILABLE files", nbFiles,
+        Assert.assertEquals("There should be 5 AVAILABLE files",
+                            nbFiles,
                             cachedFileRepository.countByState(CachedFileState.AVAILABLE).longValue());
-        Assert.assertEquals("There should be 2 remaining files in QUEUED", 2,
+        Assert.assertEquals("There should be 2 remaining files in QUEUED",
+                            2,
                             cachedFileRepository.countByState(CachedFileState.QUEUED).longValue());
 
         Optional<CachedFile> ocf = cachedFileRepository.findOneByChecksum("fileNotInCache1");
@@ -842,28 +926,48 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         AIPSession aipSession = new AIPSession();
         aipSession.setId(aip.getSession());
         Path file1 = Files.createFile(Paths.get(cacheDir.toString(), "dataFile1"));
-        fillCache(aip, aipSession, file1.getFileName().toString(), file1.getFileName().toString(), fileSize,
-                  OffsetDateTime.now().plusDays(5), OffsetDateTime.now(), cacheDir.toFile().getAbsolutePath());
+        fillCache(aip,
+                  aipSession,
+                  file1.getFileName().toString(),
+                  file1.getFileName().toString(),
+                  fileSize,
+                  OffsetDateTime.now().plusDays(5),
+                  OffsetDateTime.now(),
+                  cacheDir.toFile().getAbsolutePath());
         Path file2 = Files.createFile(Paths.get(cacheDir.toString(), "dataFile2"));
-        fillCache(aip, aipSession, file2.getFileName().toString(), file2.getFileName().toString(), fileSize,
-                  OffsetDateTime.now().plusDays(5), OffsetDateTime.now(), cacheDir.toFile().getAbsolutePath());
+        fillCache(aip,
+                  aipSession,
+                  file2.getFileName().toString(),
+                  file2.getFileName().toString(),
+                  fileSize,
+                  OffsetDateTime.now().plusDays(5),
+                  OffsetDateTime.now(),
+                  cacheDir.toFile().getAbsolutePath());
         Path file3 = Files.createFile(Paths.get(cacheDir.toString(), "dataFile3"));
-        fillCache(aip, aipSession, file3.getFileName().toString(), file3.getFileName().toString(), fileSize,
-                  OffsetDateTime.now().plusDays(5), OffsetDateTime.now(), cacheDir.toFile().getAbsolutePath());
+        fillCache(aip,
+                  aipSession,
+                  file3.getFileName().toString(),
+                  file3.getFileName().toString(),
+                  fileSize,
+                  OffsetDateTime.now().plusDays(5),
+                  OffsetDateTime.now(),
+                  cacheDir.toFile().getAbsolutePath());
 
         // Now request to restore the same 3 files.
-        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(15), "dataFile1",
-                "dataFile2", "dataFile3");
-        AvailabilityResponse response = aipService.loadFiles(request);
+        AvailabilityRequest request = new AvailabilityRequest(OffsetDateTime.now().plusDays(15),
+                                                              "dataFile1",
+                                                              "dataFile2",
+                                                              "dataFile3");
+        AvailabilityResponse response = aipService.makeFilesAvailable(request);
         waitRestorationJobEnds(3);
         // Expected result : No restoration jjob success cause the files are alrady in cache.
         Assert.assertTrue("No queued files should be in cache.",
                           cachedFileRepository.countByState(CachedFileState.QUEUED) == 0);
-        Assert.assertTrue(String
-                .format("Files with checksum: dataFile1, dataFile2, dataFile3 should already be available. For now there is only %s available according to the database. From the resonse: %s",
-                        Iterables.toString(cachedFileRepository.findAllByState(CachedFileState.AVAILABLE,
-                                                                               new PageRequest(0, 100))),
-                        Iterables.toString(response.getAlreadyAvailable())),
+        Assert.assertTrue(String.format(
+                "Files with checksum: dataFile1, dataFile2, dataFile3 should already be available. For now there is only %s available according to the database. From the resonse: %s",
+                Iterables.toString(cachedFileRepository
+                                           .findAllByState(CachedFileState.AVAILABLE, PageRequest.of(0, 100))),
+                Iterables.toString(response.getAlreadyAvailable())),
                           response.getAlreadyAvailable()
                                   .containsAll(Sets.newHashSet("dataFile1", "dataFile2", "dataFile3")));
 
@@ -885,9 +989,15 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
             OffsetDateTime expiration, OffsetDateTime lastRequestDate, String location) throws MalformedURLException {
         // Simulate cache files to force cache limit size reached before restoring new files.
         // First create StorageDataFile
-        StorageDataFile df = new StorageDataFile(Sets.newHashSet(new URL("file://test/" + fileName)), checksum, "MD5",
-                DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession),
-                aipSession, fileName, null);
+        StorageDataFile df = new StorageDataFile(Sets.newHashSet(new URL("file://test/" + fileName)),
+                                                 checksum,
+                                                 "MD5",
+                                                 DataType.RAWDATA,
+                                                 fileSize,
+                                                 MimeType.valueOf("application/text"),
+                                                 new AIPEntity(aip, aipSession),
+                                                 fileName,
+                                                 null);
         df.addDataStorageUsed(nearlineDataStorageConf);
         dataFileDao.save(df);
         // Then create cached file associated
@@ -910,28 +1020,52 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
      * @param fileSize
      * @throws MalformedURLException
      */
-    private void fillOnlineDataFileDb(Long fileSize) throws MalformedURLException {
+    private void fillOnlineDataFileDb(Long fileSize) throws MalformedURLException, EntityNotFoundException {
         AIP aip = getAIP();
         AIPSession aipSession = aipService.getSession(aip.getSession(), true);
         aipDao.save(aip, aipSession);
         Set<StorageDataFile> datafiles = Sets.newHashSet();
         URL url = new URL(Paths.get(baseStorageLocation.toString(), "file1.test").toString());
-        StorageDataFile df = new StorageDataFile(Sets.newHashSet(url), "1", "MD5", DataType.RAWDATA, fileSize,
-                MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), aipSession, "file1.test", null);
+        StorageDataFile df = new StorageDataFile(Sets.newHashSet(url),
+                                                 "1",
+                                                 "MD5",
+                                                 DataType.RAWDATA,
+                                                 fileSize,
+                                                 MimeType.valueOf("application/text"),
+                                                 new AIPEntity(aip, aipSession),
+                                                 "file1.test",
+                                                 null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(onlineNoRetrieveDataStorageConf);
+        df.setState(DataFileState.STORED);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file2.test").toString());
-        df = new StorageDataFile(Sets.newHashSet(url), "2", "MD5", DataType.RAWDATA, fileSize,
-                MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), aipSession, "file2.test", null);
+        df = new StorageDataFile(Sets.newHashSet(url),
+                                 "2",
+                                 "MD5",
+                                 DataType.RAWDATA,
+                                 fileSize,
+                                 MimeType.valueOf("application/text"),
+                                 new AIPEntity(aip, aipSession),
+                                 "file2.test",
+                                 null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(onlineNoRetrieveDataStorageConf);
+        df.setState(DataFileState.STORED);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file3.test").toString());
-        df = new StorageDataFile(Sets.newHashSet(url), "3", "MD5", DataType.RAWDATA, fileSize,
-                MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), aipSession, "file3.test", null);
+        df = new StorageDataFile(Sets.newHashSet(url),
+                                 "3",
+                                 "MD5",
+                                 DataType.RAWDATA,
+                                 fileSize,
+                                 MimeType.valueOf("application/text"),
+                                 new AIPEntity(aip, aipSession),
+                                 "file3.test",
+                                 null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(onlineNoRetrieveDataStorageConf);
+        df.setState(DataFileState.STORED);
         datafiles.add(df);
         dataFileDao.save(datafiles);
     }
@@ -943,32 +1077,55 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
      * @param fileSize
      * @throws MalformedURLException
      */
-    private void fillOnlineNNearlineDataFileDb(Long fileSize) throws MalformedURLException {
+    private void fillOnlineNNearlineDataFileDb(Long fileSize) throws MalformedURLException, EntityNotFoundException {
         AIP aip = getAIP();
         AIPSession aipSession = aipService.getSession(aip.getSession(), true);
         aipDao.save(aip, aipSession);
         Set<StorageDataFile> datafiles = Sets.newHashSet();
         URL url = new URL(Paths.get(baseStorageLocation.toString(), "file1.test").toString());
         URL urlNearline = new URL("file://PLOP/Node/file1.test");
-        StorageDataFile df = new StorageDataFile(Sets.newHashSet(url, urlNearline), "1", "MD5", DataType.RAWDATA,
-                fileSize, MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), aipSession,
-                "file1.test", null);
+        StorageDataFile df = new StorageDataFile(Sets.newHashSet(url, urlNearline),
+                                                 "1",
+                                                 "MD5",
+                                                 DataType.RAWDATA,
+                                                 fileSize,
+                                                 MimeType.valueOf("application/text"),
+                                                 new AIPEntity(aip, aipSession),
+                                                 "file1.test",
+                                                 null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(nearlineDataStorageConf);
+        df.setState(DataFileState.STORED);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file2.test").toString());
         urlNearline = new URL("file://PLOP/Node/file2.test");
-        df = new StorageDataFile(Sets.newHashSet(url, urlNearline), "2", "MD5", DataType.RAWDATA, fileSize,
-                MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), aipSession, "file2.test", null);
+        df = new StorageDataFile(Sets.newHashSet(url, urlNearline),
+                                 "2",
+                                 "MD5",
+                                 DataType.RAWDATA,
+                                 fileSize,
+                                 MimeType.valueOf("application/text"),
+                                 new AIPEntity(aip, aipSession),
+                                 "file2.test",
+                                 null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(nearlineDataStorageConf);
+        df.setState(DataFileState.STORED);
         datafiles.add(df);
         url = new URL(Paths.get(baseStorageLocation.toString(), "file3.test").toString());
         urlNearline = new URL("file://PLOP/Node/file3.test");
-        df = new StorageDataFile(Sets.newHashSet(url, urlNearline), "3", "MD5", DataType.RAWDATA, fileSize,
-                MimeType.valueOf("application/text"), new AIPEntity(aip, aipSession), aipSession, "file3.test", null);
+        df = new StorageDataFile(Sets.newHashSet(url, urlNearline),
+                                 "3",
+                                 "MD5",
+                                 DataType.RAWDATA,
+                                 fileSize,
+                                 MimeType.valueOf("application/text"),
+                                 new AIPEntity(aip, aipSession),
+                                 "file3.test",
+                                 null);
         df.addDataStorageUsed(onlineDataStorageConf);
         df.addDataStorageUsed(nearlineDataStorageConf);
+        df.setState(DataFileState.STORED);
         datafiles.add(df);
         dataFileDao.save(datafiles);
     }
@@ -981,7 +1138,7 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
      * @throws MalformedURLException
      */
     private AIP fillNearlineDataFileDb(Long fileSize, int nbFilesToFill, String checksumPrefix)
-            throws MalformedURLException {
+            throws MalformedURLException, EntityNotFoundException {
         AIP aip = getAIP();
         AIPSession aipSession = aipService.getSession(aip.getSession(), true);
         aipDao.save(aip, aipSession);
@@ -989,11 +1146,18 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
         for (int i = 0; i < nbFilesToFill; i++) {
             String fileName = String.format("file%d.txt", i + 1);
             URL url = Paths.get("src/test/resources/income/" + fileName).toUri().toURL();
-            StorageDataFile df = new StorageDataFile(Sets.newHashSet(url), String.format("%s%d", checksumPrefix, i + 1),
-                    "MD5", DataType.RAWDATA, fileSize, MimeType.valueOf("application/text"),
-                    new AIPEntity(aip, aipSession), aipSession, fileName, null);
+            StorageDataFile df = new StorageDataFile(Sets.newHashSet(url),
+                                                     String.format("%s%d", checksumPrefix, i + 1),
+                                                     "MD5",
+                                                     DataType.RAWDATA,
+                                                     fileSize,
+                                                     MimeType.valueOf("application/text"),
+                                                     new AIPEntity(aip, aipSession),
+                                                     fileName,
+                                                     null);
             df.addDataStorageUsed(nearlineDataStorageConf);
             df.addDataStorageUsed(nearlineNoRetrieveDataStorageConf);
+            df.setState(DataFileState.STORED);
             datafiles.add(df);
         }
         nearlineFiles.addAll(dataFileDao.save(datafiles));
@@ -1006,22 +1170,28 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
      */
     private AIP getAIP() throws MalformedURLException {
 
-        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP, EntityType.DATA, getDefaultTenant(),
-                UUID.randomUUID(), 1);
-        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, getDefaultTenant(),
-                sipId.getEntityId(), 1);
+        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP,
+                                                            EntityType.DATA,
+                                                            getDefaultTenant(),
+                                                            UUID.randomUUID(),
+                                                            1);
+        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP,
+                                                            EntityType.DATA,
+                                                            getDefaultTenant(),
+                                                            sipId.getEntityId(),
+                                                            1);
         AIPBuilder aipBuilder = new AIPBuilder(aipId, Optional.of(sipId), "providerId", EntityType.DATA, SESSION);
 
         Path path = Paths.get("src", "test", "resources", "data.txt");
-        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, path, "MD5",
-                                                                "de89a907d33a9716d11765582102b2e0");
+        aipBuilder.getContentInformationBuilder()
+                .setDataObject(DataType.RAWDATA, path, "MD5", "de89a907d33a9716d11765582102b2e0");
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", MediaType.valueOf("text/plain"));
         aipBuilder.addContentInformation();
 
         aipBuilder.getPDIBuilder().setAccessRightInformation("public");
         aipBuilder.getPDIBuilder().setFacility("CS");
-        aipBuilder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event",
-                                                                 OffsetDateTime.now());
+        aipBuilder.getPDIBuilder()
+                .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event", OffsetDateTime.now());
         AIP aip = aipBuilder.build();
         aip.addEvent(EventType.SUBMISSION.name(), "submission");
         return aip;
@@ -1053,21 +1223,6 @@ public class AIPServiceRestoreIT extends AbstractRegardsTransactionalIT {
             Files.walk(Paths.get(baseStorageLocation.toURI())).sorted(Comparator.reverseOrder()).map(Path::toFile)
                     .forEach(File::delete);
         }
-    }
-
-    @Configuration
-    static class Config {
-
-        @Bean
-        public INotificationClient notificationClient() {
-            return Mockito.mock(INotificationClient.class);
-        }
-
-        @Bean
-        public IResourceService resourceService() {
-            return Mockito.mock(IResourceService.class);
-        }
-
     }
 
 }

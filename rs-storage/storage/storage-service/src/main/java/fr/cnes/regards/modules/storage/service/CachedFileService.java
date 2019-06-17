@@ -69,10 +69,11 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
-import fr.cnes.regards.modules.notification.domain.NotificationType;
 import fr.cnes.regards.modules.storage.dao.ICachedFileRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.CoupleAvailableError;
@@ -204,9 +205,6 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     @Lazy
     private ICachedFileService self;
 
-    @Value("${spring.application.name}")
-    private String springApplicationName;
-
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
@@ -223,7 +221,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     private void checkDiskDBCoherence(String tenant) throws IOException {
         runtimeTenantResolver.forceTenant(tenant);
         Page<CachedFile> shouldBeAvailableSet;
-        Pageable page = new PageRequest(0, filesIterationLimit, Direction.ASC, "id");
+        Pageable page = PageRequest.of(0, filesIterationLimit, Direction.ASC, "id");
         do {
             shouldBeAvailableSet = cachedFileRepository.findAllByState(CachedFileState.AVAILABLE, page);
             for (CachedFile shouldBeAvailable : shouldBeAvailableSet) {
@@ -234,7 +232,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
             page = page.next();
         } while (shouldBeAvailableSet.hasNext());
 
-        page = new PageRequest(0, filesIterationLimit, Direction.ASC, "id");
+        page = PageRequest.of(0, filesIterationLimit, Direction.ASC, "id");
         Page<CachedFile> availableFiles;
         do {
             availableFiles = cachedFileRepository.findAllByState(CachedFileState.AVAILABLE, page);
@@ -242,10 +240,10 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
                     .map(availableFile -> availableFile.getLocation().getPath().toString()).collect(Collectors.toSet());
             Files.walk(getTenantCachePath())
                     .filter(path -> availableFilePaths.contains(path.toAbsolutePath().toString()))
-                    .forEach(path -> notificationClient.notifyRoles(String
+                    .forEach(path -> notificationClient.notify(String
                             .format("File %s is present in cache directory while it shouldn't be. Please remove this file from the cache directory",
-                                    path.toString()), "Dirty cache", springApplicationName, NotificationType.WARNING,
-                                                                    DefaultRole.PROJECT_ADMIN));
+                                    path.toString()), "Dirty cache", NotificationLevel.WARNING,
+                                                               DefaultRole.PROJECT_ADMIN));
             page = availableFiles.nextPageable();
         } while (availableFiles.hasNext());
         runtimeTenantResolver.clearTenant();
@@ -468,7 +466,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     private int purgeExpiredCachedFiles() {
         int nbPurged = 0;
         LOGGER.debug("Deleting expired files from cache. Current date : {}", OffsetDateTime.now().toString());
-        Pageable page = new PageRequest(0, filesIterationLimit, Direction.ASC, "id");
+        Pageable page = PageRequest.of(0, filesIterationLimit, Direction.ASC, "id");
         Page<CachedFile> files;
         do {
             files = cachedFileRepository.findByExpirationBefore(OffsetDateTime.now(), page);
@@ -491,15 +489,15 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         Long cacheSizePurgeUpperThresholdInOctets = cacheSizePurgeUpperThreshold * 1024;
         Long cacheSizePurgeLowerThresholdInOctets = cacheSizePurgeLowerThreshold * 1024;
         // If cache is over upper threshold size then delete older files to reached the lower threshold.
-        if ((cacheCurrentSize > cacheSizePurgeUpperThresholdInOctets)
-                && (cacheSizePurgeUpperThreshold > cacheSizePurgeLowerThreshold)) {
+        if (cacheCurrentSize > cacheSizePurgeUpperThresholdInOctets
+                && cacheSizePurgeUpperThreshold > cacheSizePurgeLowerThreshold) {
             // If files are in queued mode, so delete older files if there minimum time to live (minTtl) is reached.
             // This limit is configurable is sprinf properties of the current microservice.
             if (cachedFileRepository.countByState(CachedFileState.QUEUED) > 0) {
                 LOGGER.warn("Cache is overloaded.({}Mo) Deleting older files from cache to reached lower threshold ({}Mo). ",
                             cacheCurrentSize / (1024 * 1024), cacheSizePurgeLowerThresholdInOctets / (1024 * 1024));
                 Long filesTotalSizeToDelete = cacheCurrentSize - cacheSizePurgeLowerThresholdInOctets;
-                Pageable page = new PageRequest(0, filesIterationLimit, Direction.ASC, "id");
+                Pageable page = PageRequest.of(0, filesIterationLimit, Direction.ASC, "id");
                 Page<CachedFile> allOlderDeletableCachedFiles;
                 do {
                     allOlderDeletableCachedFiles = cachedFileRepository
@@ -510,7 +508,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
                     Long fileSizesSum = 0L;
                     Set<CachedFile> filesToDelete = Sets.newHashSet();
                     Iterator<CachedFile> it = allOlderDeletableCachedFiles.iterator();
-                    while ((fileSizesSum < filesTotalSizeToDelete) && it.hasNext()) {
+                    while (fileSizesSum < filesTotalSizeToDelete && it.hasNext()) {
                         CachedFile fileToDelete = it.next();
                         filesToDelete.add(fileToDelete);
                         fileSizesSum += fileToDelete.getFileSize();
@@ -527,7 +525,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
     @Override
     public int restoreQueued() {
         int nbScheduled = 0;
-        Pageable page = new PageRequest(0, filesIterationLimit, Direction.ASC, "id");
+        Pageable page = PageRequest.of(0, filesIterationLimit, Direction.ASC, "id");
         Page<CachedFile> queuedFilesToCache;
         do {
             queuedFilesToCache = cachedFileRepository.findAllByState(CachedFileState.QUEUED, page);
@@ -615,7 +613,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
             for (StorageDataFile fileToRestore : dataFilesToRestore) {
                 Long fileSize = fileToRestore.getFileSize();
                 boolean fileAlreadyHandled = checksums.contains(fileToRestore.getChecksum());
-                if (fileAlreadyHandled || ((totalFileSizesToHandle + fileSize) < availableCacheSize)) {
+                if (fileAlreadyHandled || totalFileSizesToHandle + fileSize < availableCacheSize) {
                     restorableFiles.add(fileToRestore);
                     if (!fileAlreadyHandled) {
                         checksums.add(fileToRestore.getChecksum());
@@ -666,7 +664,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
                 nonRestoredFiles = checkPrepareResult(restorabledataFiles, workingSubsets);
                 // Scheduled restoration job
                 scheduleRestorationJob(workingSubsets.getWorkingSubSets(), pluginConfId);
-            } catch (ModuleException e) {
+            } catch (ModuleException | PluginUtilsRuntimeException e) {
                 LOGGER.error(e.getMessage(), e);
                 nonRestoredFiles.addAll(restorabledataFiles);
             }

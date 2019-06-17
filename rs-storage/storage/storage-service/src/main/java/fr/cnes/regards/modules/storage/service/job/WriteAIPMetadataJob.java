@@ -30,7 +30,6 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.MimeType;
-import org.springframework.util.MimeTypeUtils;
 
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
@@ -41,9 +40,12 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
+import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.oais.urn.DataType;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
-import fr.cnes.regards.modules.notification.domain.NotificationType;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.FileCorruptedException;
@@ -52,7 +54,6 @@ import fr.cnes.regards.modules.storage.domain.database.AIPSession;
 import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.service.IAIPService;
-import fr.cnes.regards.modules.storage.service.IDataStorageService;
 
 /**
  * Job to handle AIP metadata files write in temporary directory.
@@ -82,7 +83,7 @@ public class WriteAIPMetadataJob extends AbstractJob<Void> {
     private IAIPService aipService;
 
     @Autowired
-    private IDataStorageService dataStorageService;
+    private INotificationClient notificationClient;
 
     private Set<String> aipIds;
 
@@ -99,9 +100,8 @@ public class WriteAIPMetadataJob extends AbstractJob<Void> {
 
             // Write metadata files into workspace
             for (String aipId : aipIds) {
-                AIP aip;
                 try {
-                    aip = aipService.retrieveAip(aipId);
+                    AIP aip = aipService.retrieveAip(aipId);
                     try {
                         logger.debug("[METADATA STORE] Writting meta-data for aip fully stored {}", aipId);
                         metadataToStore.add(writeMetaToWorkspace(aip));
@@ -109,18 +109,23 @@ public class WriteAIPMetadataJob extends AbstractJob<Void> {
                         logger.error(e.getMessage(), e);
                         aip.setState(AIPState.STORAGE_ERROR);
                         aipService.save(aip, true);
+
+                        String message = String.format("Error writing meta datafile for AIP %s. Cause : %s",
+                                                       aip.getProviderId(), e.getMessage());
+                        notificationClient.notify(message, "Storage error", NotificationLevel.ERROR, DefaultRole.ADMIN);
                     }
                 } catch (EntityNotFoundException e1) {
                     String message = String
                             .format("Unable to write metadata file for AIP fully stored %s. The AIP does not exists anymore.",
                                     aipId);
-                    dataStorageService.notifyAdmins("Storage error", message, NotificationType.ERROR,
-                                                    MimeTypeUtils.TEXT_PLAIN);
+                    notificationClient.notify(message, "Storage error", NotificationLevel.ERROR, DefaultRole.ADMIN);
                 }
             }
 
-            // Now, schdule storage metadata job for each file
-            aipService.scheduleStorageMetadata(metadataToStore);
+            if (!metadataToStore.isEmpty()) {
+                // Now, schedule storage metadata job for each file
+                aipService.scheduleStorageMetadata(metadataToStore);
+            }
         }
     }
 
@@ -153,7 +158,7 @@ public class WriteAIPMetadataJob extends AbstractJob<Void> {
                 AIPSession aipSession = aipService.getSession(aip.getSession(), false);
                 metadataAipFile = new StorageDataFile(Sets.newHashSet(urlToMetadata), checksum, checksumAlgorithm,
                         DataType.AIP, urlToMetadata.openConnection().getContentLengthLong(),
-                        new MimeType("application", "json"), new AIPEntity(aip, aipSession), aipSession,
+                        new MimeType("application", "json"), new AIPEntity(aip, aipSession),
                         aip.getId().toString() + JSON_FILE_EXT, null);
                 metadataAipFile.setState(DataFileState.PENDING);
             } else {
@@ -172,6 +177,12 @@ public class WriteAIPMetadataJob extends AbstractJob<Void> {
             workspaceService.removeFromWorkspace(metadataName);
             // this exception should never be thrown as it comes from the same algorithm then at the beginning
             throw new IOException(e);
+        } catch (EntityNotFoundException e) {
+            // Delete written file
+            logger.error(e.getMessage(), e);
+            workspaceService.removeFromWorkspace(metadataName);
+            // this exception should never be thrown because is already created and so is the session
+            throw new RsRuntimeException(e);
         }
         return metadataAipFile;
     }

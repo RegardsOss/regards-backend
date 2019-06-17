@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.storage.service;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -36,14 +37,14 @@ public class UpdateAIPsTagJobIT extends AbstractJobIT {
         JobInfo jobInfo = waitForJobFinished();
 
         // Check the job is finished and has a result
-        JobInfo jobInfoRefreshed = jobInfoRepo.findById(jobInfo.getId());
-        Assert.assertEquals(jobInfoRefreshed.getStatus().getStatus(), JobStatus.SUCCEEDED);
-        UpdatedAipsInfos result = jobInfoRefreshed.getResult();
+        Optional<JobInfo> jobInfoRefreshed = jobInfoRepo.findById(jobInfo.getId());
+        Assert.assertEquals(jobInfoRefreshed.get().getStatus().getStatus(), JobStatus.SUCCEEDED);
+        UpdatedAipsInfos result = jobInfoRefreshed.get().getResult();
         Assert.assertEquals("should not produce error", 0, result.getNbErrors());
         int nbUpdated = 20;
         Assert.assertEquals("should produce updated AIP", nbUpdated, result.getNbUpdated());
         Assert.assertEquals("AIP shall be tagged", nbUpdated,
-                            aipDao.findAllByTag("new tag", new PageRequest(0, 100)).getTotalElements());
+                            aipDao.findAllByTag("new tag", PageRequest.of(0, 100)).getTotalElements());
     }
 
     @Test
@@ -60,15 +61,15 @@ public class UpdateAIPsTagJobIT extends AbstractJobIT {
         JobInfo jobInfo = waitForJobFinished();
 
         // Check the job is finished and has a result
-        JobInfo jobInfoRefreshed = jobInfoRepo.findById(jobInfo.getId());
-        Assert.assertEquals(jobInfoRefreshed.getStatus().getStatus(), JobStatus.SUCCEEDED);
-        UpdatedAipsInfos result = jobInfoRefreshed.getResult();
+        Optional<JobInfo> jobInfoRefreshed = jobInfoRepo.findById(jobInfo.getId());
+        Assert.assertEquals(jobInfoRefreshed.get().getStatus().getStatus(), JobStatus.SUCCEEDED);
+        UpdatedAipsInfos result = jobInfoRefreshed.get().getResult();
         Assert.assertEquals("should not produce error", 0, result.getNbErrors());
         int nbUpdated = 20;
         Assert.assertEquals("should produce updated AIP", nbUpdated, result.getNbUpdated());
         Assert.assertEquals("no more AIP shall be tagged with the tag", 0,
-                            aipDao.findAllByTag("first tag", new PageRequest(0, 100)).getTotalElements());
+                            aipDao.findAllByTag("first tag", PageRequest.of(0, 100)).getTotalElements());
         Assert.assertEquals("AIP still have this tag", nbUpdated,
-                            aipDao.findAllByTag("second tag", new PageRequest(0, 100)).getTotalElements());
+                            aipDao.findAllByTag("second tag", PageRequest.of(0, 100)).getTotalElements());
     }
 }

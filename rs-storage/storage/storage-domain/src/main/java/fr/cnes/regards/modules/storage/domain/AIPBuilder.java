@@ -53,5 +53,9 @@ public class AIPBuilder extends IPBuilder<AIP> {
      */
     public AIPBuilder(AIP toBeUpdated) {
         super(toBeUpdated);
+        ip.setId(toBeUpdated.getId());
+        ip.setSipId(toBeUpdated.getSipId().orElse(null));
+        ip.setProviderId(toBeUpdated.getProviderId());
+        getPDIBuilder().setSession(toBeUpdated.getSession());
     }
 }

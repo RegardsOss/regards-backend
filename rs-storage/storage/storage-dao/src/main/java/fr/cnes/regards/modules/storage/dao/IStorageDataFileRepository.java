@@ -49,6 +49,10 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
     @Query("select sdf.id from StorageDataFile sdf where sdf.state = :state")
     Page<Long> findIdPageByState(@Param("state") DataFileState state, Pageable pageable);
 
+    @Query("select sdf.id from StorageDataFile sdf where sdf.state = :state and sdf.forceDelete = :forceDelete")
+    Page<Long> findIdPageByStateAndForceDelete(@Param("state") DataFileState state,
+            @Param("forceDelete") Boolean forceDelete, Pageable pageable);
+
     /**
      * Find all {@link StorageDataFile}s associated to the given aip entity
      * @param aipEntity
@@ -84,7 +88,7 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
      * @param dataFileId
      * @return the data file wrapped into an optional to avoid nulls
      */
-    @Lock(LockModeType.PESSIMISTIC_READ)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<StorageDataFile> findLockedOneById(Long dataFileId);
 
     /**
@@ -105,6 +109,10 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
 
     @Query("select sdf.id from StorageDataFile sdf where sdf.checksum IN :checksums")
     Page<Long> findIdPageByChecksumIn(@Param("checksums") Set<String> checksums, Pageable pageable);
+
+    @Query("select sdf.id from StorageDataFile sdf where sdf.checksum IN :checksums and sdf.state = :dataFileState")
+    Page<Long> findIdPageByStateAndChecksumIn(@Param("dataFileState") DataFileState dataFileState,
+            @Param("checksums") Set<String> checksums, Pageable pageable);
 
     /**
      * Find all data files which state is the provided one and that are associated to at least one of the provided aip entities
@@ -150,4 +158,19 @@ public interface IStorageDataFileRepository extends JpaRepository<StorageDataFil
     long countByStateAndAipEntitySessionId(DataFileState stored, String session);
 
     long countByAipEntitySessionId(String id);
+
+    long countByAipEntityAndState(AIPEntity aipEntity, DataFileState dataFileState);
+
+    long countByAipEntityAndDataTypeAndState(AIPEntity aipEntity, DataType type, DataFileState state);
+
+    @EntityGraph(value = "graph.datafile.full")
+    Set<StorageDataFile> findAllByAipEntityAipIdIn(Collection<String> ipIds);
+
+    @Query(value = "select * from {h-schema}t_data_file sdf where sdf.aip_ip_id IN (:aipQuery) order by sdf.aip_ip_id",
+            nativeQuery = true)
+    List<StorageDataFile> findAllByAipInQuery(@Param("aipQuery") String aipQuery);
+
+    @Override
+    @EntityGraph(value = "graph.datafile.full")
+    List<StorageDataFile> findAllById(Iterable<Long> longs);
 }

@@ -19,11 +19,12 @@
 package fr.cnes.regards.modules.storage.rest;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -39,7 +40,6 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.util.Pair;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -82,16 +82,21 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPCollection;
+import fr.cnes.regards.modules.storage.domain.AIPPageWithDataStorages;
 import fr.cnes.regards.modules.storage.domain.AIPState;
+import fr.cnes.regards.modules.storage.domain.AIPWithDataStorageIds;
 import fr.cnes.regards.modules.storage.domain.AipDataFiles;
 import fr.cnes.regards.modules.storage.domain.AvailabilityRequest;
 import fr.cnes.regards.modules.storage.domain.AvailabilityResponse;
 import fr.cnes.regards.modules.storage.domain.DataFileDto;
+import fr.cnes.regards.modules.storage.domain.DownloadableFile;
 import fr.cnes.regards.modules.storage.domain.RejectedAip;
 import fr.cnes.regards.modules.storage.domain.RejectedSip;
+import fr.cnes.regards.modules.storage.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.job.AIPQueryFilters;
 import fr.cnes.regards.modules.storage.domain.job.AddAIPTagsFilters;
+import fr.cnes.regards.modules.storage.domain.job.DataStorageRemovalAIPFilters;
 import fr.cnes.regards.modules.storage.domain.job.RemoveAIPTagsFilters;
 import fr.cnes.regards.modules.storage.service.IAIPService;
 
@@ -103,95 +108,101 @@ import fr.cnes.regards.modules.storage.service.IAIPService;
 @RequestMapping(AIPController.AIP_PATH)
 public class AIPController implements IResourceController<AIP> {
 
+    public static final String FILES_DELETE_PATH = "/files/delete";
+
     /**
      * Controller path for retries
      */
-    static final String RETRY_STORE_PATH = "/retry";
+    public static final String RETRY_STORE_PATH = "/retry";
 
     /**
      * Controller base path
      */
-    static final String AIP_PATH = "/aips";
+    public static final String AIP_PATH = "/aips";
 
     /**
      * Controller path for indexing
      */
-    static final String INDEXING_PATH = "/indexing";
+    public static final String INDEXING_PATH = "/indexing";
 
     /**
      * Controller path for bulk aip requests
      */
-    static final String AIP_BULK = "/bulk";
+    public static final String AIP_BULK = "/bulk";
 
     /**
      * Controller path for bulk aip requests deletion
      */
-    static final String AIP_BULK_DELETE = "/bulkdelete";
+    public static final String AIP_BULK_DELETE = "/bulkdelete";
 
     /**
      * Controller path to ask for dataFiles
      */
-    static final String PREPARE_DATA_FILES = "/dataFiles";
+    public static final String PREPARE_DATA_FILES = "/dataFiles";
 
     /**
      * AIP ID path parameter
      */
-    static final String AIP_ID_PATH_PARAM = "aip_id";
+    public static final String AIP_ID_PATH_PARAM = "aip_id";
 
     /**
      * Controller path using an aip ip id as path variable
      */
-    static final String AIP_ID_PATH = "/{" + AIP_ID_PATH_PARAM + "}";
+    public static final String AIP_ID_PATH = "/{" + AIP_ID_PATH_PARAM + "}";
 
     /**
      * Controller path using an aip ip id as path variable
      */
-    static final String AIP_ID_RETRY_STORE_PATH = AIP_ID_PATH + RETRY_STORE_PATH;
+    public static final String AIP_ID_RETRY_STORE_PATH = AIP_ID_PATH + RETRY_STORE_PATH;
 
     /**
      * Controller path using an aip ip id as path variable
      */
-    static final String OBJECT_LINK_PATH = AIP_ID_PATH + "/objectlinks";
+    public static final String OBJECT_LINK_PATH = AIP_ID_PATH + "/objectlinks";
 
     /**
      * Controller path using an aip ip id as path variable
      */
-    static final String VERSION_PATH = AIP_ID_PATH + "/versions";
+    public static final String VERSION_PATH = AIP_ID_PATH + "/versions";
 
     /**
      * Controller path using an aip ip id as path variable
      */
-    static final String HISTORY_PATH = AIP_ID_PATH + "/history";
+    public static final String HISTORY_PATH = AIP_ID_PATH + "/history";
 
     /**
      * Controller path using an aip ip id as path variable
      */
-    static final String TAG_PATH = AIP_ID_PATH + "/tags";
+    public static final String TAG_PATH = AIP_ID_PATH + "/tags";
 
     /**
      * Controller path using an aip ip id and a tag as path variable
      */
-    static final String TAG = TAG_PATH + "/{tag}";
+    public static final String TAG = TAG_PATH + "/{tag}";
 
     /**
      * Controller path using an aip ip id and a file checksum as path variable
      */
-    static final String DOWNLOAD_AIP_FILE = "/{aip_id}/files/{checksum}";
+    public static final String DOWNLOAD_AIP_FILE = "/{aip_id}/files/{checksum}";
 
     /**
      * Controller path to manage tags of multiple AIPs
      */
-    static final String TAG_MANAGEMENT_PATH = "/tags";
+    public static final String TAG_MANAGEMENT_PATH = "/tags";
 
     /**
      * Endpoint path to delete tags of multiple AIPs
      */
-    static final String TAG_DELETION_PATH = TAG_MANAGEMENT_PATH + "/delete";
+    public static final String TAG_DELETION_PATH = TAG_MANAGEMENT_PATH + "/delete";
 
     /**
      * Controller path to search used tags by multiple AIPs
      */
-    static final String TAG_SEARCH_PATH = TAG_MANAGEMENT_PATH + "/search";
+    public static final String TAG_SEARCH_PATH = TAG_MANAGEMENT_PATH + "/search";
+
+    public static final String SEARCH_PATH = "/search";
+
+    public static final String DELETE_SEARCH_PATH = SEARCH_PATH + "/delete";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AIPController.class);
 
@@ -254,9 +265,10 @@ public class AIPController implements IResourceController<AIP> {
             @RequestParam(name = "tags", required = false) List<String> tags,
             @RequestParam(name = "providerId", required = false) String providerId,
             @RequestParam(name = "session", required = false) String session,
+            @RequestParam(name = "storedOn", required = false) Set<Long> storedOn,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
             PagedResourcesAssembler<AIP> assembler) throws ModuleException {
-        Page<AIP> aips = aipService.retrieveAIPs(state, from, to, tags, session, providerId, pageable);
+        Page<AIP> aips = aipService.retrieveAIPs(state, from, to, tags, session, providerId, storedOn, pageable);
         return new ResponseEntity<>(toPagedResources(aips, assembler), HttpStatus.OK);
     }
 
@@ -283,7 +295,7 @@ public class AIPController implements IResourceController<AIP> {
             fromLastUpdate = OffsetDateTimeAdapter.parse(fromLastUpdateDate);
         }
         Set<String> tags = inTags == null ? Collections.emptySet() : inTags;
-        Page<AipDataFiles> page = aipService.retrieveAipDataFiles(state, tags, fromLastUpdate, pageable);
+        Page<AipDataFiles> page = aipService.retrieveAIPDataFiles(state, tags, fromLastUpdate, pageable);
         List<AipDataFiles> content = page.getContent();
         // Now that we have our data files, lets compute their public URL
         // First lets get the public hostname from rs-admin-instance
@@ -356,6 +368,7 @@ public class AIPController implements IResourceController<AIP> {
      */
     @RequestMapping(method = RequestMethod.POST, consumes = GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE)
     @ResourceAccess(description = "validate and store the specified AIPs")
+    // Do not user @Valid on this endpoint as aip validation is done by hand
     public ResponseEntity<List<RejectedAip>> store(@RequestBody AIPCollection aips) throws ModuleException {
         int originalAipNb = aips.getFeatures().size();
 
@@ -421,9 +434,9 @@ public class AIPController implements IResourceController<AIP> {
     @ResponseBody
     @ResourceAccess(description = "allow to request download availability for given files and return already "
             + "available files", role = DefaultRole.REGISTERED_USER)
-    public ResponseEntity<AvailabilityResponse> makeFilesAvailable(@RequestBody AvailabilityRequest availabilityRequest)
-            throws ModuleException {
-        return ResponseEntity.ok(aipService.loadFiles(availabilityRequest));
+    public ResponseEntity<AvailabilityResponse> makeFilesAvailable(
+            @Valid @RequestBody AvailabilityRequest availabilityRequest) throws ModuleException {
+        return ResponseEntity.ok(aipService.makeFilesAvailable(availabilityRequest));
     }
 
     /**
@@ -486,7 +499,7 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(value = TAG_MANAGEMENT_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "allow to add multiple tags to several aips")
     @ResponseBody
-    public ResponseEntity<Void> addTagsByQuery(@RequestBody AddAIPTagsFilters request) {
+    public ResponseEntity<Void> addTagsByQuery(@Valid @RequestBody AddAIPTagsFilters request) {
         boolean succeed = aipService.addTagsByQuery(request);
         if (succeed) {
             return new ResponseEntity<>(HttpStatus.OK);
@@ -498,7 +511,7 @@ public class AIPController implements IResourceController<AIP> {
      * Remove tags from a given aip, represented by its ip id
      * @param ipId
      * @param toRemoveTags
-     * @return  Void
+     * @return Void
      * @throws EntityException
      */
     @RequestMapping(value = TAG_PATH, method = RequestMethod.DELETE)
@@ -518,7 +531,7 @@ public class AIPController implements IResourceController<AIP> {
     @RequestMapping(value = TAG_DELETION_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "allow to remove multiple tags to several aips")
     @ResponseBody
-    public ResponseEntity<Void> removeTagsByQuery(@RequestBody RemoveAIPTagsFilters request) {
+    public ResponseEntity<Void> removeTagsByQuery(@Valid @RequestBody RemoveAIPTagsFilters request) {
         boolean succeed = aipService.removeTagsByQuery(request);
         if (succeed) {
             return new ResponseEntity<>(HttpStatus.OK);
@@ -533,9 +546,42 @@ public class AIPController implements IResourceController<AIP> {
      */
     @RequestMapping(value = TAG_SEARCH_PATH, method = RequestMethod.POST)
     @ResourceAccess(description = "allow to search tags used by aips")
-    public ResponseEntity<List<String>> retrieveAIPTags(@RequestBody AIPQueryFilters request) {
+    public ResponseEntity<List<String>> retrieveAIPTags(@Valid @RequestBody AIPQueryFilters request) {
         List<String> aipTags = aipService.retrieveAIPTagsByQuery(request);
         return new ResponseEntity<>(aipTags, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = DELETE_SEARCH_PATH, method = RequestMethod.POST)
+    @ResourceAccess(description = "allow to remove aips files from given data storages")
+    public ResponseEntity<Void> deleteAIPByQuery(@Valid @RequestBody AIPQueryFilters request) {
+        aipService.deleteAIPsByQuery(request);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @RequestMapping(value = FILES_DELETE_PATH, method = RequestMethod.POST)
+    @ResourceAccess(description = "allow to remove aips from given data storages")
+    public ResponseEntity<Void> deleteAIPByQueryOnDataStorages(
+            @Valid @RequestBody DataStorageRemovalAIPFilters request) {
+        for (Long dataStorageId : request.getDataStorageIds()) {
+            aipService.deleteFilesFromDataStorageByQuery(request, dataStorageId);
+        }
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @RequestMapping(method = RequestMethod.POST, path = SEARCH_PATH)
+    @ResponseBody
+    @ResourceAccess(description = "send a page of aips with data storages information", role = DefaultRole.ADMIN)
+    public ResponseEntity<ResourcedAIPPageWithDataStorages> retrieveAIPWithDataStorages(
+            @Valid @RequestBody AIPQueryFilters filters,
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable) throws ModuleException {
+        AIPPageWithDataStorages aipPage = aipService.retrieveAIPWithDataStorageIds(filters, pageable);
+        List<Resource<AIPWithDataStorageIds>> resourcedContent = new ArrayList<>();
+        for (AIPWithDataStorageIds aipWithDataStorageIds : aipPage) {
+            resourcedContent.add(toResourceWithIds(aipWithDataStorageIds));
+        }
+        ResourcedAIPPageWithDataStorages pageWithLink = new ResourcedAIPPageWithDataStorages(aipPage, resourcedContent);
+        addPageLinks(pageWithLink, filters);
+        return new ResponseEntity<>(pageWithLink, HttpStatus.OK);
     }
 
     /**
@@ -626,15 +672,13 @@ public class AIPController implements IResourceController<AIP> {
         // Retrieve file locale path, 404 if aip not found or bad checksum or no storage plugin
         // 403 if user has not right
         try {
-            Pair<StorageDataFile, InputStream> dataFileISPair = aipService.getAIPDataFile(aipId, checksum);
-            if (dataFileISPair != null) {
-                StorageDataFile dataFile = dataFileISPair.getFirst();
-                InputStreamResource isr = new InputStreamResource(dataFileISPair.getSecond());
-                Long fileSize = dataFile.getFileSize();
+            DownloadableFile downloadFile = aipService.getAIPDataFile(aipId, checksum);
+            if (downloadFile != null) {
+                InputStreamResource isr = new InputStreamResource(downloadFile.getFileInputStream());
                 HttpHeaders headers = new HttpHeaders();
-                headers.setContentLength(fileSize);
-                headers.setContentType(asMediaType(dataFile.getMimeType()));
-                headers.setContentDispositionFormData("attachement;filename=", dataFile.getName());
+                headers.setContentLength(downloadFile.getRealFileSize());
+                headers.setContentType(asMediaType(downloadFile.getMimeType()));
+                headers.setContentDispositionFormData("attachement;filename=", downloadFile.getFileName());
                 return new ResponseEntity<>(isr, headers, HttpStatus.OK);
             } else { // NEARLINE file not in cache
                 return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
@@ -647,21 +691,49 @@ public class AIPController implements IResourceController<AIP> {
     @Override
     public Resource<AIP> toResource(AIP element, Object... extras) {
         Resource<AIP> resource = resourceService.toResource(element);
+        addAipLinks(resource, element.getId().toString(), element.getState());
+        return resource;
+    }
+
+    protected void addAipLinks(Resource resource, String resourceId, AIPState resourceState) {
         resourceService.addLink(resource, this.getClass(), "retrieveAIPs", LinkRels.LIST,
                                 MethodParamFactory.build(AIPState.class),
                                 MethodParamFactory.build(OffsetDateTime.class),
                                 MethodParamFactory.build(OffsetDateTime.class), MethodParamFactory.build(List.class),
                                 MethodParamFactory.build(String.class), MethodParamFactory.build(String.class),
-                                MethodParamFactory.build(Pageable.class),
+                                MethodParamFactory.build(Set.class), MethodParamFactory.build(Pageable.class),
                                 MethodParamFactory.build(PagedResourcesAssembler.class));
+        resourceService.addLink(resource, this.getClass(), "retrieveAIPWithDataStorages",
+                                LinkRels.LIST + "-with-datastorages", MethodParamFactory.build(AIPQueryFilters.class),
+                                MethodParamFactory.build(Pageable.class));
         resourceService.addLink(resource, this.getClass(), "retrieveAip", LinkRels.SELF,
-                                MethodParamFactory.build(String.class, element.getId().toString()));
-        if (AIPState.STORAGE_ERROR.equals(element.getState())) {
+                                MethodParamFactory.build(String.class, resourceId));
+        if (AIPState.STORAGE_ERROR.equals(resourceState)) {
             resourceService.addLink(resource, this.getClass(), "storeRetryUnit", "retry",
-                                    MethodParamFactory.build(String.class, element.getId().toString()));
+                                    MethodParamFactory.build(String.class, resourceId));
         }
         resourceService.addLink(resource, this.getClass(), "deleteAip", "delete",
-                                    MethodParamFactory.build(String.class, element.getId().toString()));
+                                MethodParamFactory.build(String.class, resourceId));
+        resourceService.addLink(resource, this.getClass(), "deleteAIPByQuery", "deleteByQuery",
+                                MethodParamFactory.build(AIPQueryFilters.class));
+        resourceService.addLink(resource, this.getClass(), "deleteAIPByQueryOnDataStorages",
+                                "deleteByQueryOnSpecificDataStorages",
+                                MethodParamFactory.build(DataStorageRemovalAIPFilters.class));
+    }
+
+    private void addPageLinks(ResourcedAIPPageWithDataStorages pageWithLink, AIPQueryFilters aipQuery) {
+        // add delete by query links
+        resourceService.addLink(pageWithLink, this.getClass(), "deleteAIPByQuery", "deleteByQuery",
+                                MethodParamFactory.build(AIPQueryFilters.class, aipQuery));
+        resourceService.addLink(pageWithLink, this.getClass(), "deleteAIPByQueryOnDataStorages",
+                                "deleteByQueryOnSpecificDataStorages",
+                                MethodParamFactory.build(DataStorageRemovalAIPFilters.class));
+    }
+
+    private Resource<AIPWithDataStorageIds> toResourceWithIds(AIPWithDataStorageIds aipWithDataStorageIds) {
+        Resource<AIPWithDataStorageIds> resource = new Resource(aipWithDataStorageIds);
+        addAipLinks(resource, aipWithDataStorageIds.getAip().getId().toString(),
+                    aipWithDataStorageIds.getAip().getState());
         return resource;
     }
 
@@ -681,4 +753,15 @@ public class AIPController implements IResourceController<AIP> {
         dataFile.setUrl(downloadUrl);
     }
 
+    private static class ResourcedAIPPageWithDataStorages extends PagedResources<Resource<AIPWithDataStorageIds>> {
+
+        private Set<PrioritizedDataStorage> dataStorages = new HashSet<>();
+
+        public ResourcedAIPPageWithDataStorages(AIPPageWithDataStorages aipPage,
+                List<Resource<AIPWithDataStorageIds>> resourcedContent) {
+            super(resourcedContent, aipPage.getMetadata());
+            this.dataStorages.addAll(aipPage.getDataStorages());
+        }
+
+    }
 }

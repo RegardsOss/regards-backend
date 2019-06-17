@@ -15,6 +15,9 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
+import javax.persistence.NamedEntityGraphs;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -45,6 +48,8 @@ import fr.cnes.regards.modules.storage.domain.AIPState;
                 @Index(name = "idx_aip_last_event_date", columnList = "date") },
         uniqueConstraints = { @UniqueConstraint(name = "uk_aip_ipId", columnNames = "aip_id") })
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
+@NamedEntityGraphs({ @NamedEntityGraph(name = "graph.aip.with.session",
+        attributeNodes = { @NamedAttributeNode(value = "session") }) })
 public class AIPEntity {
 
     /**
@@ -89,6 +94,7 @@ public class AIPEntity {
     /**
      * Whether to retry storage after a storage error
      */
+    @Column
     private boolean retry;
 
     /**
@@ -139,6 +145,7 @@ public class AIPEntity {
         this.submissionDate = aip.getSubmissionEvent().getDate();
         this.aip = aip;
         this.session = aipSession;
+        this.retry = aip.isRetry();
     }
 
     /**
@@ -282,7 +289,7 @@ public class AIPEntity {
         if (this == o) {
             return true;
         }
-        if ((o == null) || (getClass() != o.getClass())) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
 

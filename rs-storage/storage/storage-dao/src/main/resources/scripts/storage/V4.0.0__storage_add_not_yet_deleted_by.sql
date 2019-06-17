@@ -1,0 +1,1 @@
+alter table t_data_file add column not_yet_deleted_by int8;

@@ -59,7 +59,7 @@ import fr.cnes.regards.modules.storage.service.plugins.SimpleOnlineDataStorage;
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-@ContextConfiguration(classes = { TestConfig.class, PrioritizedDataStorageServiceIT.Config.class })
+@ContextConfiguration(classes = { TestConfig.class })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_test" },
         locations = "classpath:storage.properties")
 @ActiveProfiles({ "disableStorageTasks", "noschdule" })
@@ -69,6 +69,8 @@ public class PrioritizedDataStorageServiceIT extends AbstractRegardsTransactiona
 
     private static final String PDS_LABEL = "PrioritizedDataStorageServiceIT";
 
+    private final String targetPath = "target/PrioritizedDataStorageServiceIT";
+
     @Autowired
     private IPrioritizedDataStorageService prioritizedDataStorageService;
 
@@ -77,8 +79,6 @@ public class PrioritizedDataStorageServiceIT extends AbstractRegardsTransactiona
 
     @Autowired
     private IRuntimeTenantResolver tenantResolver;
-
-    private final String targetPath = "target/PrioritizedDataStorageServiceIT";
 
     @Before
     public void init() {
@@ -110,8 +110,9 @@ public class PrioritizedDataStorageServiceIT extends AbstractRegardsTransactiona
     public void testUpdateForbidden() throws ModuleException, IOException, URISyntaxException {
         String label = "updateConf label";
 
-        URL newbaseStorageLocation = new URL("file", "",
-                Paths.get(targetPath, "/update/conf").toFile().getAbsolutePath());
+        URL newbaseStorageLocation = new URL("file",
+                                             "",
+                                             Paths.get(targetPath, "/update/conf").toFile().getAbsolutePath());
 
         PrioritizedDataStorage pds = createPrioritizedDataStorage(label);
         PluginConfiguration updatedConf = getPluginConf(label);
@@ -129,10 +130,9 @@ public class PrioritizedDataStorageServiceIT extends AbstractRegardsTransactiona
         PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineDataStorage.class);
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
         Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(SimpleOnlineDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000000L)
-                .addParameter(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                              baseStorageLocation.toString())
-                .getParameters();
+                .addParameter(SimpleOnlineDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000000L).addParameter(
+                        SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
+                        baseStorageLocation.toString()).getParameters();
         return new PluginConfiguration(dataStoMeta, label, parameters, 0);
     }
 
@@ -141,15 +141,5 @@ public class PrioritizedDataStorageServiceIT extends AbstractRegardsTransactiona
 
         PluginConfiguration dataStorageConf = getPluginConf(label);
         return prioritizedDataStorageService.create(dataStorageConf);
-    }
-
-    @Configuration
-    static class Config {
-
-        @Bean
-        public INotificationClient notificationClient() {
-            return Mockito.mock(INotificationClient.class);
-        }
-
     }
 }

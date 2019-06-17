@@ -1,6 +1,5 @@
 package fr.cnes.regards.modules.storage.domain;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
@@ -34,17 +33,6 @@ public class AipDataFiles {
     /**
      * Constructor providing the aip and data files to extract the public information
      */
-    public AipDataFiles(AIP aip, StorageDataFile... dataFiles) {
-        this.aip = aip;
-        // only set files public information if there is information to set
-        if ((dataFiles != null) && (dataFiles.length != 0)) {
-            this.dataFiles.addAll(Arrays.stream(dataFiles).map(DataFileDto::fromDataFile).collect(Collectors.toSet()));
-        }
-    }
-
-    /**
-     * Constructor providing the aip and data files to extract the public information
-     */
     public AipDataFiles(AIP aip, Collection<StorageDataFile> dataFiles) {
         this.aip = aip;
         // only set files public information if there is information to set
@@ -52,7 +40,6 @@ public class AipDataFiles {
             this.dataFiles.addAll(dataFiles.stream().map(DataFileDto::fromDataFile).collect(Collectors.toSet()));
         }
     }
-
 
     /**
      * @return the aip
@@ -87,7 +74,7 @@ public class AipDataFiles {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
         }
         AipDataFiles that = (AipDataFiles) o;

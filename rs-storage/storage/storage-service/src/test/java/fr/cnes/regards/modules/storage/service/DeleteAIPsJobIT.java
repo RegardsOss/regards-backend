@@ -1,6 +1,7 @@
 package fr.cnes.regards.modules.storage.service;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -34,14 +35,14 @@ public class DeleteAIPsJobIT extends AbstractJobIT {
         JobInfo jobInfo = waitForJobFinished();
 
         // Check the job is finished and has a result
-        JobInfo jobInfoRefreshed = jobInfoRepo.findById(jobInfo.getId());
-        Assert.assertEquals(jobInfoRefreshed.getStatus().getStatus(), JobStatus.SUCCEEDED);
-        RemovedAipsInfos result = jobInfoRefreshed.getResult();
+        Optional<JobInfo> jobInfoRefreshed = jobInfoRepo.findById(jobInfo.getId());
+        Assert.assertEquals(JobStatus.SUCCEEDED, jobInfoRefreshed.get().getStatus().getStatus());
+        RemovedAipsInfos result = jobInfoRefreshed.get().getResult();
         Assert.assertEquals("should not produce error", 0, result.getNbErrors());
         int nbUpdated = 20;
         Assert.assertEquals("should remove AIP", nbUpdated, result.getNbRemoved());
         Assert.assertEquals("AIP shall be mark as removed", nbUpdated,
-                            aipDao.findAllByState(AIPState.DELETED, new PageRequest(0, 10000)).getContent().size());
+                            aipDao.findAllByState(AIPState.DELETED, PageRequest.of(0, 10000)).getContent().size());
     }
 
 }

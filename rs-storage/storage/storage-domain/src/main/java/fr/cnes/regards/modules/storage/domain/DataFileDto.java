@@ -5,7 +5,6 @@ import java.net.URL;
 import org.springframework.util.MimeType;
 
 import fr.cnes.regards.framework.oais.urn.DataType;
-import fr.cnes.regards.modules.storage.domain.database.DataFileState;
 import fr.cnes.regards.modules.storage.domain.database.DataStorageType;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 
@@ -66,9 +65,6 @@ public class DataFileDto {
      * @return dto
      */
     public static DataFileDto fromDataFile(StorageDataFile dataFile) {
-        if (dataFile.getState() != DataFileState.STORED) {
-            throw new IllegalArgumentException("DataFileDto cannot be created unless the data file is already stored");
-        }
         // URL is to be set by the controller, because it is the public url of this file!
         DataFileDto dto = new DataFileDto();
         dto.name = dataFile.getName();
