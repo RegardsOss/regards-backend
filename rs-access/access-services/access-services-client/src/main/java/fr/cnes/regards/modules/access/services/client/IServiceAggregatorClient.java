@@ -39,7 +39,7 @@ import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
  * Feign client for calling ServicesAggregatorController methods
  * @author Xavier-Alexandre Brochard
  */
-@RestClient(name = "rs-access-project")
+@RestClient(name = "rs-access-project", contextId = "rs-access-project.service-agg-client")
 @RequestMapping(value = "/services/aggregated", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IServiceAggregatorClient {
@@ -53,15 +53,16 @@ public interface IServiceAggregatorClient {
 
     /**
      * Returns all services applied to all datasets plus those of the given dataset
-     * @param pDatasetIpId the id of the Dataset
+     * @param datasetIpId the id of the Dataset
+     * @param applicationMode
      * @param pApplicationModes the set of {@link ServiceScope}
      * @return the list of services configured for the given dataset and the given scope
      */
     @Cacheable(value = IServiceAggregatorClient.CACHE_NAME, sync = true)
     @RequestMapping(method = RequestMethod.GET)
     ResponseEntity<List<Resource<PluginServiceDto>>> retrieveServices(
-            @RequestParam(value = "datasetIpIds", required = false) final List<String> pDatasetIpId,
-            @RequestParam(value = "applicationModes", required = false) final List<ServiceScope> pApplicationMode);
+            @RequestParam(value = "datasetIpIds", required = false) final List<String> datasetIpId,
+            @RequestParam(value = "applicationModes", required = false) final List<ServiceScope> applicationMode);
 
     /**
      * Empty the whole "servicesAggregated" cache. Maybe we can perform a finer eviction?

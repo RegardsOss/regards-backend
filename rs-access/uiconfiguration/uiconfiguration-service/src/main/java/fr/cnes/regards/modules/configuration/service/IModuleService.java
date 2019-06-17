@@ -18,9 +18,10 @@
  */
 package fr.cnes.regards.modules.configuration.service;
 
-import com.google.gson.JsonObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import com.google.gson.JsonObject;
 
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -44,11 +45,12 @@ public interface IModuleService {
      *
      * Retreive a module by is id.
      *
-     * @param pModuleId
+     * @param moduleId
      * @return {@link Module}
+     * @throws EntityNotFoundException
      * @since 1.0-SNAPSHOT
      */
-    Module retrieveModule(Long pModuleId) throws EntityNotFoundException;
+    Module retrieveModule(Long moduleId) throws EntityNotFoundException;
 
     /**
      *
@@ -67,51 +69,60 @@ public interface IModuleService {
      *
      * Retrieve all active modules for the given application Id
      *
-     * @param pApplicationId
-     * @param pPageable
+     * @param applicationId
+     * @param pageable
      * @return Paged list of {@link Module}
      * @since 1.0-SNAPSHOT
      */
-    Page<Module> retrieveActiveModules(String pApplicationId, Pageable pPageable);
+    Page<Module> retrieveActiveModules(String applicationId, Pageable pageable);
 
     /**
      *
      * Save a new module
      *
-     * @param pModule
+     * @param module
      *            {@link Module} to save
      * @return saved {@link Module}
+     * @throws EntityInvalidException
      * @since 1.0-SNAPSHOT
      */
-    Module saveModule(Module pModule) throws EntityInvalidException;
+    Module saveModule(Module module) throws EntityInvalidException;
 
     /**
      *
      * Update a module
      *
-     * @param pModule
+     * @param module
      *            {@link Module} to update
      * @return updated {@link Module}
+     * @throws EntityException
      * @since 1.0-SNAPSHOT
      */
-    Module updateModule(Module pModule) throws EntityException;
+    Module updateModule(Module module) throws EntityException;
 
     /**
      *
      * Delete a module
      *
-     * @param pModuleId
+     * @param moduleId
      *            Module id to delete
+     * @throws EntityNotFoundException
      *
      * @since 1.0-SNAPSHOT
      */
-    void deleteModule(Long pModuleId) throws EntityNotFoundException;
+    void deleteModule(Long moduleId) throws EntityNotFoundException;
 
     /**
      *
      * Add inside the passed module configuration a layer for each dataset
+     * @param module
+     * @param dataset
+     * @param openSearchLink
+     * @return {@link JsonObject}
+     * @throws EntityInvalidException
      *
      * @since 3.0-SNAPSHOT
      */
-    JsonObject addDatasetLayersInsideModuleConf(Module module, JsonObject dataset, String openSearchLink) throws EntityInvalidException;
+    JsonObject addDatasetLayersInsideModuleConf(Module module, JsonObject dataset, String openSearchLink)
+            throws EntityInvalidException;
 }

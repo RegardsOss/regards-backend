@@ -28,6 +28,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.hateoas.HateoasUtils;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
@@ -43,6 +44,8 @@ import fr.cnes.regards.modules.catalog.services.domain.plugins.IService;
 @Configuration
 public class ServiceAggregatorClientITConfiguration {
 
+    private static Long ID = 0L;
+
     @Bean
     public ICatalogServicesClient catalogServicesClient() {
         ICatalogServicesClient client = Mockito.mock(ICatalogServicesClient.class);
@@ -50,14 +53,9 @@ public class ServiceAggregatorClientITConfiguration {
         ResponseEntity<List<Resource<PluginConfigurationDto>>> result = new ResponseEntity<List<Resource<PluginConfigurationDto>>>(
                 HateoasUtils.wrapList(Lists.newArrayList(dummyPluginConfigurationDto())), HttpStatus.OK);
 
-        Mockito.when(client.retrieveServices(Mockito.anyListOf(String.class), Mockito.any())).thenReturn(result);
+        Mockito.when(client.retrieveServices(Mockito.anyList(), Mockito.any())).thenReturn(result);
 
         return client;
-    }
-
-    @Bean
-    public ServiceAggregatorClientEventHandler serviceAggregatorClientEventHandler() {
-        return Mockito.mock(ServiceAggregatorClientEventHandler.class);
     }
 
     public PluginConfigurationDto dummyPluginConfigurationDto() {
@@ -65,6 +63,8 @@ public class ServiceAggregatorClientITConfiguration {
         metaData.getInterfaceNames().add(IService.class.getName());
         metaData.setPluginClassName(SampleServicePlugin.class.getName());
         PluginConfiguration pluginConfiguration = new PluginConfiguration(metaData, "testConf");
+        pluginConfiguration.setId(ID);
+        ID = ID + 1;
         return new PluginConfigurationDto(pluginConfiguration);
     }
 

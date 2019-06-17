@@ -20,18 +20,12 @@ package fr.cnes.regards.modules.access.services.rest.ui;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.ResultMatcher;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -39,7 +33,6 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.framework.test.integration.RequestParamBuilder;
 import fr.cnes.regards.modules.access.services.dao.ui.ILinkUIPluginsDatasetsRepository;
 import fr.cnes.regards.modules.access.services.dao.ui.IUIPluginConfigurationRepository;
 import fr.cnes.regards.modules.access.services.dao.ui.IUIPluginDefinitionRepository;
@@ -60,8 +53,8 @@ import fr.cnes.regards.modules.dam.domain.models.Model;
  * @author Sébastien Binda
  * @since 1.0-SNAPSHOT
  */
-@TestPropertySource(locations = { "classpath:test.properties" })
 @MultitenantTransactional
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=access" })
 public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactionalIT {
 
     /**
@@ -136,47 +129,34 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
      */
     @Test
     public void retrieveConfigurations() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT, Matchers.hasSize(4)));
         performDefaultGet(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
-                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS, expectations,
+                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS,
+                          customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 4),
                           "Error getting all plugins");
 
-        expectations.clear();
-        expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT, Matchers.hasSize(2)));
         performDefaultGet(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
-                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS, expectations,
-                          "Error getting all active plugins", RequestParamBuilder.build().param("isActive", "true"));
+                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS,
+                          customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 2)
+                                  .addParameter("isActive", "true"),
+                          "Error getting all active plugins");
 
-        expectations.clear();
-        expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT, Matchers.hasSize(2)));
         performDefaultGet(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
-                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS, expectations,
-                          "Error getting all linked plugins",
-                          RequestParamBuilder.build().param("isLinkedToAllEntities", "true"));
+                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS,
+                          customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 2)
+                                  .addParameter("isLinkedToAllEntities", "true"),
+                          "Error getting all linked plugins");
 
-        expectations.clear();
-        expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT, Matchers.hasSize(1)));
-
-        final RequestParamBuilder builder = RequestParamBuilder.build().param("isActive", "true");
-        builder.param("isLinkedToAllEntities", "true");
         performDefaultGet(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
-                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS, expectations,
-                          "Error getting all active and linked plugins", builder);
+                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS,
+                          customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 1)
+                                  .addParameter("isActive", "true").addParameter("isLinkedToAllEntities", "true"),
+                          "Error getting all active and linked plugins");
 
-        expectations.clear();
-        expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT, Matchers.hasSize(1)));
-
-        final RequestParamBuilder builder2 = RequestParamBuilder.build().param("type",
-                                                                               UIPluginTypesEnum.SERVICE.toString());
         performDefaultGet(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
-                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS, expectations,
-                          "Error getting all active and linked plugins", builder2);
+                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS,
+                          customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 1)
+                                  .addParameter("type", UIPluginTypesEnum.SERVICE.toString()),
+                          "Error getting all active and linked plugins");
 
     }
 
@@ -188,12 +168,10 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
      */
     @Test
     public void retrieveConfigurationByPluginDefinition() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT, Matchers.hasSize(3)));
         performDefaultGet(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
-                + UIPluginConfigurationController.REQUEST_PLUGIN_DEFINITION, expectations, "Error getting all plugins",
-                          plugin.getId());
+                + UIPluginConfigurationController.REQUEST_PLUGIN_DEFINITION,
+                          customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 3),
+                          "Error getting all plugins", plugin.getId());
     }
 
     /**
@@ -208,16 +186,12 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
         final UIPluginConfiguration conf = createPluginConf(plugin, true, true);
         conf.setId(pluginConf.getId());
 
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".id")
-                .value(Matchers.equalTo(conf.getId().intValue())));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".active")
-                .value(Matchers.equalTo(conf.getActive().booleanValue())));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".linkedToAllEntities")
-                .value(Matchers.equalTo(conf.getLinkedToAllEntities().booleanValue())));
         performDefaultPut(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
-                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATION, conf, expectations,
+                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATION, conf,
+                          customizer().expectStatusOk().expectValue(JSON_PATH_CONTENT + ".id", conf.getId().intValue())
+                                  .expectValue(JSON_PATH_CONTENT + ".active", conf.getActive().booleanValue())
+                                  .expectValue(JSON_PATH_CONTENT + ".linkedToAllEntities",
+                                               conf.getLinkedToAllEntities().booleanValue()),
                           "Error getting all plugins", conf.getId());
 
     }
@@ -234,16 +208,12 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
         final UIPluginConfiguration conf = createPluginConf(plugin, true, true);
         conf.setConf("{\"param\":\"value\"}");
 
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".active")
-                .value(Matchers.equalTo(conf.getActive().booleanValue())));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".linkedToAllEntities")
-                .value(Matchers.equalTo(conf.getLinkedToAllEntities().booleanValue())));
-        expectations.add(MockMvcResultMatchers.jsonPath(JSON_PATH_CONTENT + ".conf")
-                .value(Matchers.equalTo(conf.getConf())));
         performDefaultPost(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
-                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS, conf, expectations,
+                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS, conf,
+                           customizer().expectStatusOk().expectValue(JSON_PATH_CONTENT + ".active", conf.getActive().booleanValue())
+                                   .expectValue(JSON_PATH_CONTENT + ".conf", conf.getConf())
+                                   .expectValue(JSON_PATH_CONTENT + ".linkedToAllEntities",
+                                                conf.getLinkedToAllEntities().booleanValue()),
                            "Error getting all plugins");
 
     }
@@ -256,10 +226,8 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
      */
     @Test
     public void deletePluginConfiguration() {
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
         performDefaultDelete(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
-                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATION, expectations,
+                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATION, customizer().expectStatusOk(),
                              "Error getting all plugins", pluginConf.getId());
     }
 
@@ -276,10 +244,8 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
                 Lists.newArrayList(pluginConf, pluginConf1, pluginConf2));
         linkRepository.save(link);
 
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().isOk());
         performDefaultDelete(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
-                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATION, expectations,
+                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATION, customizer().expectStatusOk(),
                              "Error getting all plugins", pluginConf.getId());
     }
 
@@ -294,11 +260,9 @@ public class UIPluginConfigurationControllerIT extends AbstractRegardsTransactio
 
         final UIPluginConfiguration conf = createPluginConf(plugin, true, true);
         conf.setConf("{invalidJson");
-        final List<ResultMatcher> expectations = new ArrayList<>(1);
-        expectations.add(status().is(422));
         performDefaultPost(UIPluginConfigurationController.REQUEST_MAPPING_ROOT
-                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS, conf, expectations,
-                           "Error getting all plugins");
+                + UIPluginConfigurationController.REQUEST_PLUGIN_CONFIGURATIONS, conf,
+                           customizer().expect(status().is(422)), "Error getting all plugins");
 
     }
 

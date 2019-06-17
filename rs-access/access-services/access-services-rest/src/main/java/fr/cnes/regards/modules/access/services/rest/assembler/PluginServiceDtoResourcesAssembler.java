@@ -26,7 +26,7 @@ import fr.cnes.regards.framework.hateoas.SimpleResourceAssemblerSupport;
 import fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto;
 
 /**
- * Custom {@link ResourcesAssembler} for {@link PluginServiceDto}s.
+ * Custom {@link SimpleResourceAssemblerSupport} for {@link PluginServiceDto}s.
  *
  * @author Xavier-Alexandre Brochard
  */
@@ -39,16 +39,16 @@ public class PluginServiceDtoResourcesAssembler extends SimpleResourceAssemblerS
     private final IResourceService resourceService;
 
     /**
-     * @param pResourceService
+     * @param resourceService
      */
-    public PluginServiceDtoResourcesAssembler(IResourceService pResourceService) {
+    public PluginServiceDtoResourcesAssembler(IResourceService resourceService) {
         super();
-        resourceService = pResourceService;
+        this.resourceService = resourceService;
     }
 
     @Override
-    public Resource<PluginServiceDto> toResource(PluginServiceDto pElement) {
-        return resourceService.toResource(pElement);
+    public Resource<PluginServiceDto> toResource(PluginServiceDto element) {
+        return resourceService.toResource(element);
         // Add links here
     }
 

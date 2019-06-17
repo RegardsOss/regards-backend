@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -60,7 +61,7 @@ public class PluginServiceDtoTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto#fromPluginConfiguration(fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration)}.
+     * Test method for {@link fr.cnes.regards.modules.access.services.domain.aggregator.PluginServiceDto#fromPluginConfigurationDto(PluginConfigurationDto)}.
      */
     @Test
     public final void testFromPluginConfiguration() {
@@ -90,7 +91,7 @@ public class PluginServiceDtoTest {
         pluginConfiguration.setLabel(LABEL);
         pluginConfiguration.setPluginDefinition(pluginDefinition);
 
-        pluginDefinition.setIconUrl(ICON_URL);
+        pluginDefinition.setIconUrl(ICON_URL.toString());
         pluginDefinition.setApplicationModes(APPLICATION_MODES);
         pluginDefinition.setEntityTypes(ENTITY_TYPES);
 
@@ -107,7 +108,7 @@ public class PluginServiceDtoTest {
     private void checkDto(PluginServiceDto pPluginServiceDto) {
         Assert.assertEquals(ID, pPluginServiceDto.getConfigId());
         Assert.assertEquals(LABEL, pPluginServiceDto.getLabel());
-        Assert.assertEquals(ICON_URL, pPluginServiceDto.getIconUrl());
+        Assert.assertEquals(ICON_URL.toString(), pPluginServiceDto.getIconUrl());
         Assert.assertEquals(APPLICATION_MODES, pPluginServiceDto.getApplicationModes());
         Assert.assertEquals(ENTITY_TYPES, pPluginServiceDto.getEntityTypes());
     }

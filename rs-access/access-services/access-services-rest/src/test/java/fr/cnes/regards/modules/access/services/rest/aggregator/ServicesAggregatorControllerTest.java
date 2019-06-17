@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.access.services.rest.aggregator;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.assertj.core.util.Lists;
@@ -67,33 +66,31 @@ public class ServicesAggregatorControllerTest {
      * @throws java.lang.Exception
      */
     @Before
-    @SuppressWarnings("unchecked")
     public void setUp() throws Exception {
         // Mock Catalog Services
         catalogServicesClient = Mockito.mock(ICatalogServicesClient.class);
         PluginConfigurationDto dto = new AccessServicesITConfiguration().dummyPluginConfigurationDto();
-        Mockito.when(catalogServicesClient.retrieveServices(Mockito.anyListOf(String.class), Mockito.any()))
+        Mockito.when(catalogServicesClient.retrieveServices(Mockito.anyList(), Mockito.any()))
                 .thenReturn(new ResponseEntity<List<Resource<PluginConfigurationDto>>>(
                         HateoasUtils.wrapList(Lists.newArrayList(dto)), HttpStatus.OK));
 
         // Mock Ui Services
         uiPluginConfigurationService = Mockito.mock(IUIPluginConfigurationService.class);
         UIPluginConfiguration uiPluginConfiguration = new AccessServicesITConfiguration().dummyUiPluginConfiguration();
-        Mockito.when(uiPluginConfigurationService.retrieveActivePluginServices(Mockito.anyListOf(String.class),
-                                                                               Mockito.any()))
+        Mockito.when(uiPluginConfigurationService.retrieveActivePluginServices(Mockito.anyList(), Mockito.any()))
                 .thenReturn(Lists.newArrayList(uiPluginConfiguration));
 
         // Mock the resource assembler
         PluginServiceDtoResourcesAssembler assembler = Mockito.mock(PluginServiceDtoResourcesAssembler.class);
         Mockito.when(assembler.toResources(Mockito.anyCollection()))
-                .thenAnswer(pInvocation -> HateoasUtils.wrapCollection(pInvocation.getArgumentAt(0, Collection.class)));
+                .thenAnswer(pInvocation -> HateoasUtils.wrapCollection(pInvocation.getArgument(0)));
 
         // Construct controller with mocked deps
         controller = new ServicesAggregatorController(catalogServicesClient, uiPluginConfigurationService, assembler);
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.access.services.rest.aggregator.ServicesAggregatorController#retrieveServices(java.lang.String, fr.cnes.regards.modules.catalog.services.domain.ServiceScope)}.
+     * Test method for {@link fr.cnes.regards.modules.access.services.rest.aggregator.ServicesAggregatorController#retrieveServices}.
      */
     @Test
     public final void testRetrieveServices() {

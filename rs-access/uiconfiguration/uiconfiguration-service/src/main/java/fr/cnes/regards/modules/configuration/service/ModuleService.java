@@ -18,10 +18,24 @@
  */
 package fr.cnes.regards.modules.configuration.service;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
@@ -32,16 +46,6 @@ import fr.cnes.regards.modules.configuration.domain.LayoutDefaultApplicationIds;
 import fr.cnes.regards.modules.configuration.domain.Module;
 import fr.cnes.regards.modules.configuration.domain.UIPage;
 import fr.cnes.regards.modules.configuration.service.exception.InitUIException;
-import java.io.IOException;
-import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
 
 /**
  * Class ModuleService
@@ -87,12 +91,12 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
     private IModuleRepository repository;
 
     @Override
-    public Module retrieveModule(final Long pModuleId) throws EntityNotFoundException {
-        final Module module = repository.findOne(pModuleId);
-        if (module == null) {
-            throw new EntityNotFoundException(pModuleId, Module.class);
+    public Module retrieveModule(final Long moduleId) throws EntityNotFoundException {
+        final Optional<Module> module = repository.findById(moduleId);
+        if (!module.isPresent()) {
+            throw new EntityNotFoundException(moduleId, Module.class);
         }
-        return module;
+        return module.get();
     }
 
     @Override
@@ -102,58 +106,59 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
     }
 
     @Override
-    public Page<Module> retrieveActiveModules(final String pApplicationId, final Pageable pPageable) {
-        return repository.findByApplicationIdAndActiveTrue(pApplicationId, pPageable);
+    public Page<Module> retrieveActiveModules(final String applicationId, final Pageable pageable) {
+        return repository.findByApplicationIdAndActiveTrue(applicationId, pageable);
     }
 
     @Override
-    public Module saveModule(final Module pModule) throws EntityInvalidException {
+    public Module saveModule(final Module module) throws EntityInvalidException {
         // Check module configuration json format
         final Gson gson = new Gson();
         try {
-            gson.fromJson(pModule.getConf(), Object.class);
+            gson.fromJson(module.getConf(), Object.class);
         } catch (RuntimeException e) {
             LOG.error(e.getMessage(), e);
             throw new EntityInvalidException("Module is not a valid json format.", e);
         }
-        UIPage page = pModule.getPage();
+        UIPage page = module.getPage();
         if ((page != null) && page.isHome()) {
-            disableHomeForAllApplicationModules(pModule.getApplicationId());
+            disableHomeForAllApplicationModules(module.getApplicationId());
         }
-        return repository.save(pModule);
+        return repository.save(module);
     }
 
     @Override
-    public Module updateModule(final Module pModule) throws EntityException {
+    public Module updateModule(final Module module) throws EntityException {
         // Check layut json format
         final Gson gson = new Gson();
         try {
-            gson.fromJson(pModule.getConf(), Object.class);
+            gson.fromJson(module.getConf(), Object.class);
         } catch (RuntimeException e) {
             LOG.error(e.getMessage(), e);
             throw new EntityInvalidException("Module is not a valid json format.", e);
         }
-        if (!repository.exists(pModule.getId())) {
-            throw new EntityNotFoundException(pModule.getId(), Module.class);
+        if (!repository.existsById(module.getId())) {
+            throw new EntityNotFoundException(module.getId(), Module.class);
         }
-        UIPage page = pModule.getPage();
+        UIPage page = module.getPage();
         if ((page != null) && page.isHome()) {
-            disableHomeForAllApplicationModules(pModule.getApplicationId());
+            disableHomeForAllApplicationModules(module.getApplicationId());
         }
-        return repository.save(pModule);
+        return repository.save(module);
     }
 
     @Override
-    public void deleteModule(final Long pModuleId) throws EntityNotFoundException {
-        if (!repository.exists(pModuleId)) {
-            throw new EntityNotFoundException(pModuleId, Module.class);
+    public void deleteModule(final Long moduleId) throws EntityNotFoundException {
+        if (!repository.existsById(moduleId)) {
+            throw new EntityNotFoundException(moduleId, Module.class);
         }
-        repository.delete(pModuleId);
+        repository.deleteById(moduleId);
 
     }
 
     @Override
-    public JsonObject addDatasetLayersInsideModuleConf(Module module, JsonObject dataset, String openSearchLink) throws EntityInvalidException {
+    public JsonObject addDatasetLayersInsideModuleConf(Module module, JsonObject dataset, String openSearchLink)
+            throws EntityInvalidException {
         final Gson gson = new Gson();
         JsonObject moduleConfJson;
 
@@ -200,11 +205,11 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
 
     /**
      * Set to false the defaultDynamicModule attribute of all modules for the given application id
-     * @param pApplicationId
+     * @param applicationId
      * @since 1.0-SNAPSHOT
      */
-    private void disableHomeForAllApplicationModules(final String pApplicationId) {
-        final List<Module> modules = repository.findByApplicationIdAndPageHomeTrue(pApplicationId);
+    private void disableHomeForAllApplicationModules(final String applicationId) {
+        final List<Module> modules = repository.findByApplicationIdAndPageHomeTrue(applicationId);
         for (final Module module : modules) {
             if ((module.getPage() != null) && module.getPage().isHome()) {
                 module.getPage().setHome(false);
@@ -214,14 +219,14 @@ public class ModuleService extends AbstractUiConfigurationService implements IMo
     }
 
     @Override
-    protected void initProjectUI(final String pTenant) {
+    protected void initProjectUI(final String tenant) {
 
         if (repository.findByApplicationId(LayoutDefaultApplicationIds.USER.toString()).isEmpty()) {
             final Module menu = new Module();
             menu.setActive(true);
             menu.setApplicationId(LayoutDefaultApplicationIds.USER.toString());
             menu.setContainer("page-top-header");
-            menu.setDescription(String.format("%s menu", pTenant));
+            menu.setDescription(String.format("%s menu", tenant));
             menu.setType("menu");
             try {
                 menu.setConf(readDefaultFileResource(defaultUserMenuResource));

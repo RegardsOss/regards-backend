@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.access.services.domain.ui.UIPluginConfiguration;
@@ -46,8 +45,6 @@ import fr.cnes.regards.modules.dam.domain.entities.Dataset;
  * @since 1.0-SNAPSHOT
  */
 @RestController
-@ModuleInfo(name = "PluginServices", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping(UIPluginServiceController.REQUEST_MAPPING_ROOT)
 public class UIPluginServiceController implements IResourceController<UIPluginConfiguration> {
 

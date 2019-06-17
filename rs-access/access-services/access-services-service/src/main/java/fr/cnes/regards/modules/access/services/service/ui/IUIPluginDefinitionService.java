@@ -35,60 +35,66 @@ public interface IUIPluginDefinitionService {
      *
      * Retreive a Plugin by is id.
      *
-     * @param pPluginId
+     * @param pluginId
      * @return {@link UIPluginDefinition}
+     * @throws EntityNotFoundException
      * @since 1.0-SNAPSHOT
      */
-    UIPluginDefinition retrievePlugin(Long pPluginId) throws EntityNotFoundException;
+    UIPluginDefinition retrievePlugin(Long pluginId) throws EntityNotFoundException;
 
     /**
      *
      * Retrieve all plugins
+     * @param pageable
      *
      * @return Paged list of {@link UIPluginDefinition}
      * @since 1.0-SNAPSHOT
      */
-    Page<UIPluginDefinition> retrievePlugins(Pageable pPageable);
+    Page<UIPluginDefinition> retrievePlugins(Pageable pageable);
 
     /**
      *
      * Retrieve all plugins for the given type
+     * @param type
+     * @param pageable
      *
      * @return Paged list of {@link UIPluginDefinition}
      * @since 1.0-SNAPSHOT
      */
-    Page<UIPluginDefinition> retrievePlugins(UIPluginTypesEnum pType, Pageable pPageable);
+    Page<UIPluginDefinition> retrievePlugins(UIPluginTypesEnum type, Pageable pageable);
 
     /**
      *
      * Save a new plugin
+     * @param plugin
      *
-     * @param pTheme
-     *            {@link UIPluginDefinition} to save
      * @return saved {@link UIPluginDefinition}
+     * @throws EntityInvalidException
      * @since 1.0-SNAPSHOT
      */
-    UIPluginDefinition savePlugin(UIPluginDefinition pPlugin) throws EntityInvalidException;
+    UIPluginDefinition savePlugin(UIPluginDefinition plugin) throws EntityInvalidException;
 
     /**
      *
      * Update a plugin
+     * @param plugin
      *
-     * @param pTheme
-     *            {@link UIPluginDefinition} to update
      * @return updated {@link UIPluginDefinition}
+     * @throws EntityNotFoundException
+     * @throws EntityInvalidException
      * @since 1.0-SNAPSHOT
      */
-    UIPluginDefinition updatePlugin(UIPluginDefinition pPlugin) throws EntityNotFoundException, EntityInvalidException;
+    UIPluginDefinition updatePlugin(UIPluginDefinition plugin) throws EntityNotFoundException, EntityInvalidException;
 
     /**
      *
      * Delete a plugin
      *
-     * @param pPluginId
+     * @param pluginId
      *            {@link UIPluginDefinition} id to delete
+     * @throws ModuleException
      *
      * @since 1.0-SNAPSHOT
      */
-    void deletePlugin(Long pPluginId) throws ModuleException;
+    void deletePlugin(Long pluginId) throws ModuleException;
 }

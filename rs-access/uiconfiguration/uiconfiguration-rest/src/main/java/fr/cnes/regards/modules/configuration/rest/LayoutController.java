@@ -37,7 +37,6 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
@@ -63,6 +62,7 @@ public class LayoutController implements IResourceController<Layout> {
 
     /**
      * Entry point to retrieve a {@link Layout}
+     * @param applicationId
      *
      * @return {@link Layout}
      * @throws EntityNotFoundException
@@ -71,37 +71,40 @@ public class LayoutController implements IResourceController<Layout> {
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve IHM layout configuration for the given applicationId",
             role = DefaultRole.PUBLIC)
-    public HttpEntity<Resource<Layout>> retrieveLayout(@PathVariable("applicationId") final String pApplicationId)
+    public HttpEntity<Resource<Layout>> retrieveLayout(@PathVariable("applicationId") final String applicationId)
             throws EntityNotFoundException {
-        final Layout layout = layoutService.retrieveLayout(pApplicationId);
+        final Layout layout = layoutService.retrieveLayout(applicationId);
         final Resource<Layout> resource = toResource(layout);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     /**
      * Entry point to update {@link Layout}
+     * @param applicationId
+     * @param layout
      *
      * @return updated {@link Layout}
+     * @throws EntityException
      * @throws EntityNotFoundException
      */
     @RequestMapping(value = "/{applicationId}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     @ResourceAccess(description = "Endpoint to retrieve IHM layout configuration for the given applicationId",
             role = DefaultRole.PROJECT_ADMIN)
-    public HttpEntity<Resource<Layout>> updateLayout(@PathVariable("applicationId") final String pApplicationId,
-            @Valid @RequestBody final Layout pLayout) throws EntityException {
-        final Layout layout = layoutService.updateLayout(pLayout);
-        final Resource<Layout> resource = toResource(layout);
+    public HttpEntity<Resource<Layout>> updateLayout(@PathVariable("applicationId") final String applicationId,
+            @Valid @RequestBody final Layout layout) throws EntityException {
+        final Layout updated = layoutService.updateLayout(layout);
+        final Resource<Layout> resource = toResource(updated);
         return new ResponseEntity<>(resource, HttpStatus.OK);
     }
 
     @Override
-    public Resource<Layout> toResource(final Layout pElement, final Object... pExtras) {
-        final Resource<Layout> resource = resourceService.toResource(pElement);
+    public Resource<Layout> toResource(final Layout element, final Object... extras) {
+        final Resource<Layout> resource = resourceService.toResource(element);
         resourceService.addLink(resource, this.getClass(), "retrieveLayout", LinkRels.SELF,
-                                MethodParamFactory.build(String.class, pElement.getApplicationId()));
+                                MethodParamFactory.build(String.class, element.getApplicationId()));
         resourceService.addLink(resource, this.getClass(), "updateLayout", LinkRels.UPDATE,
-                                MethodParamFactory.build(String.class, pElement.getApplicationId()),
+                                MethodParamFactory.build(String.class, element.getApplicationId()),
                                 MethodParamFactory.build(Layout.class));
         return resource;
     }

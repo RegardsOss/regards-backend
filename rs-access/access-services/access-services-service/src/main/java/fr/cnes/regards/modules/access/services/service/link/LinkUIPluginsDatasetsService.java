@@ -76,7 +76,7 @@ public class LinkUIPluginsDatasetsService implements ILinkUIPluginsDatasetsServi
 
     /**
      * @param pDatasetId
-     * @return
+     * @return {@link LinkUIPluginsDatasets}
      * @throws EntityNotFoundException
      */
     @Override
@@ -90,7 +90,7 @@ public class LinkUIPluginsDatasetsService implements ILinkUIPluginsDatasetsServi
     /**
      * @param pDatasetId
      * @param pUpdatedLink
-     * @return
+     * @return {@link LinkUIPluginsDatasets}
      * @throws EntityNotFoundException
      * @throws EntityInvalidException
      */

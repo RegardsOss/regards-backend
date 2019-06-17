@@ -33,7 +33,6 @@ import org.springframework.stereotype.Service;
 
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.configuration.dao.IThemeRepository;
 import fr.cnes.regards.modules.configuration.domain.Theme;
@@ -82,50 +81,50 @@ public class ThemeService extends AbstractUiConfigurationService implements IThe
     private IThemeRepository repository;
 
     @Override
-    public Theme retrieveTheme(final Long pThemeId) throws EntityNotFoundException {
-        final Theme theme = repository.findOne(pThemeId);
-        if (theme == null) {
-            throw new EntityNotFoundException(pThemeId, Theme.class);
+    public Theme retrieveTheme(final Long themeId) throws EntityNotFoundException {
+        final Optional<Theme> theme = repository.findById(themeId);
+        if (!theme.isPresent()) {
+            throw new EntityNotFoundException(themeId, Theme.class);
         }
-        return theme;
+        return theme.get();
     }
 
     @Override
-    public Page<Theme> retrieveThemes(final Pageable pPageable) {
-        return repository.findAll(pPageable);
+    public Page<Theme> retrieveThemes(final Pageable pageable) {
+        return repository.findAll(pageable);
     }
 
     @Override
-    public Theme saveTheme(final Theme pTheme) {
+    public Theme saveTheme(final Theme theme) {
         // If new theme is the only one active theme, so first disable all other themes
-        if (pTheme.isActive()) {
+        if (theme.isActive()) {
             disableAllActiveThemes();
         }
-        return repository.save(pTheme);
+        return repository.save(theme);
     }
 
     @Override
-    public Theme updateTheme(final Theme pTheme) throws EntityException {
+    public Theme updateTheme(final Theme theme) throws EntityException {
         // Check theme existence
-        if (!repository.exists(pTheme.getId())) {
-            throw new EntityNotFoundException(pTheme.getId(), Theme.class);
+        if (!repository.existsById(theme.getId())) {
+            throw new EntityNotFoundException(theme.getId(), Theme.class);
         }
 
         // If theme is the only one active theme, so first disable all other themes
-        if (pTheme.isActive()) {
+        if (theme.isActive()) {
             disableAllActiveThemes();
         }
-        return repository.save(pTheme);
+        return repository.save(theme);
     }
 
     @Override
-    public void deleteTheme(final Long pThemeId) throws EntityNotFoundException {
+    public void deleteTheme(final Long themeId) throws EntityNotFoundException {
         // Check theme existence
-        if (!repository.exists(pThemeId)) {
-            throw new EntityNotFoundException(pThemeId, Theme.class);
+        if (!repository.existsById(themeId)) {
+            throw new EntityNotFoundException(themeId, Theme.class);
         }
 
-        repository.delete(pThemeId);
+        repository.deleteById(themeId);
     }
 
     @Override
@@ -153,7 +152,7 @@ public class ThemeService extends AbstractUiConfigurationService implements IThe
     }
 
     @Override
-    protected void initProjectUI(final String pTenant) {
+    protected void initProjectUI(final String tenant) {
         if (!repository.findByName("Dark").isPresent()) {
             Theme defaultTheme = new Theme();
             defaultTheme.setName("Dark");

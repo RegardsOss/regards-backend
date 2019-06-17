@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.access.services.domain.ui.LinkUIPluginsDatasets;
 
 /**
- * Published when a {@link LinkUiPluginsDatasets} is created
+ * Published when a {@link LinkUIPluginsDatasets} is created
  *
  * @author Xavier-Alexandre Brochard
  */
@@ -41,11 +41,11 @@ public class LinkUiPluginsDatasetsEvent implements ISubscribable {
     }
 
     /**
-     * @param pLinkUIPluginsDatasets Source object of the event
+     * @param linkUIPluginsDatasets Source object of the event
      */
-    public LinkUiPluginsDatasetsEvent(LinkUIPluginsDatasets pLinkUIPluginsDatasets) {
+    public LinkUiPluginsDatasetsEvent(LinkUIPluginsDatasets linkUIPluginsDatasets) {
         super();
-        linkUIPluginsDatasets = pLinkUIPluginsDatasets;
+        this.linkUIPluginsDatasets = linkUIPluginsDatasets;
     }
 
     /**

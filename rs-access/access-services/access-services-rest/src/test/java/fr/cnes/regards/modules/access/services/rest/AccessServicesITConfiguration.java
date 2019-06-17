@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.access.services.rest;
 
-import java.net.URL;
 import java.util.List;
 import java.util.Set;
 
@@ -50,15 +49,13 @@ import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDt
 @Configuration
 public class AccessServicesITConfiguration {
 
-    private static final Long ID = 0L;
+    private static Long ID = 0L;
 
     private static final String LABEL = "the label";
 
     private static final Set<ServiceScope> APPLICATION_MODES = Sets.newHashSet(ServiceScope.MANY);
 
     private static final Set<EntityType> ENTITY_TYPES = Sets.newHashSet(EntityType.COLLECTION);
-
-    private static URL ICON_URL;
 
     @Bean
     public ICatalogServicesClient catalogServicesClient() {
@@ -77,6 +74,8 @@ public class AccessServicesITConfiguration {
         final PluginMetaData metaData = new PluginMetaData();
         metaData.setPluginClassName(SampleServicePlugin.class.getName());
         PluginConfiguration pluginConfiguration = new PluginConfiguration(metaData, "testConf");
+        pluginConfiguration.setId(ID);
+        ID = ID + 1;
         return new PluginConfigurationDto(pluginConfiguration);
     }
 
@@ -88,9 +87,11 @@ public class AccessServicesITConfiguration {
         pluginConfiguration.setLabel(LABEL);
         pluginConfiguration.setPluginDefinition(pluginDefinition);
 
-        pluginDefinition.setIconUrl(ICON_URL);
+        pluginDefinition.setIconUrl("/plop.png");
         pluginDefinition.setApplicationModes(APPLICATION_MODES);
         pluginDefinition.setEntityTypes(ENTITY_TYPES);
+
+        ID = ID + 1;
 
         return pluginConfiguration;
     }

@@ -18,12 +18,16 @@
  */
 package fr.cnes.regards.modules.access.services.domain.ui;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -32,9 +36,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
-import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
 
 import fr.cnes.regards.framework.oais.urn.EntityType;
 import fr.cnes.regards.modules.access.services.domain.validation.NotEmptyFieldsIfService;
@@ -88,14 +89,16 @@ public class UIPluginDefinition {
      * Icon of the plugin. It must be an URL to a svg file.
      */
     @Column(name = "icon_url")
-    private URL iconUrl;
+    private String iconUrl;
 
     /**
      * Application modes
+     *
+     * FetchType.EAGER : It is only an enumeration of values. No need to define a entity graph for this.
      */
     @NotNull
     @Column(name = "application_mode", nullable = false)
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "t_ui_plugin_application_mode", joinColumns = @JoinColumn(name = "ui_plugin_id"),
             foreignKey = @ForeignKey(name = "fk_ui_plugin_application_mode_ui_plugin_id"))
     @Enumerated(EnumType.STRING)
@@ -103,10 +106,12 @@ public class UIPluginDefinition {
 
     /**
      * Entity Types to which this plugin is applicable
+     *
+     * FetchType.EAGER : It is only an enumeration of values. No need to define a entity graph for this.
      */
     @NotNull
     @Column(name = "entity_type", nullable = false)
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "t_ui_plugin_entity_type", joinColumns = @JoinColumn(name = "ui_plugin_id"),
             foreignKey = @ForeignKey(name = "fk_ui_plugin_entity_type_ui_plugin_id"))
     @Enumerated(EnumType.STRING)
@@ -116,46 +121,46 @@ public class UIPluginDefinition {
         return id;
     }
 
-    public void setId(final Long pId) {
-        id = pId;
+    public void setId(final Long id) {
+        this.id = id;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(final String pName) {
-        name = pName;
+    public void setName(final String name) {
+        this.name = name;
     }
 
     public UIPluginTypesEnum getType() {
         return type;
     }
 
-    public void setType(final UIPluginTypesEnum pType) {
-        type = pType;
+    public void setType(final UIPluginTypesEnum type) {
+        this.type = type;
     }
 
     public String getSourcePath() {
         return sourcePath;
     }
 
-    public void setSourcePath(final String pSourcePath) {
-        sourcePath = pSourcePath;
+    public void setSourcePath(final String sourcePath) {
+        this.sourcePath = sourcePath;
     }
 
     /**
      * @return the iconUrl
      */
-    public URL getIconUrl() {
+    public String getIconUrl() {
         return iconUrl;
     }
 
     /**
-     * @param pIconUrl the iconUrl to set
+     * @param iconUrl the iconUrl to set
      */
-    public void setIconUrl(URL pIconUrl) {
-        iconUrl = pIconUrl;
+    public void setIconUrl(String iconUrl) {
+        this.iconUrl = iconUrl;
     }
 
     /**
@@ -166,10 +171,10 @@ public class UIPluginDefinition {
     }
 
     /**
-     * @param pApplicationModes the applicationModes to set
+     * @param applicationModes the applicationModes to set
      */
-    public void setApplicationModes(Set<ServiceScope> pApplicationModes) {
-        applicationModes = pApplicationModes;
+    public void setApplicationModes(Set<ServiceScope> applicationModes) {
+        this.applicationModes = applicationModes;
     }
 
     /**
@@ -180,10 +185,10 @@ public class UIPluginDefinition {
     }
 
     /**
-     * @param pEntityTypes the entityTypes to set
+     * @param entityTypes the entityTypes to set
      */
-    public void setEntityTypes(Set<EntityType> pEntityTypes) {
-        entityTypes = pEntityTypes;
+    public void setEntityTypes(Set<EntityType> entityTypes) {
+        this.entityTypes = entityTypes;
     }
 
     @Override

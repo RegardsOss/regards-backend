@@ -44,7 +44,6 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -62,8 +61,6 @@ import fr.cnes.regards.modules.access.services.service.ui.IUIPluginDefinitionSer
  *
  */
 @RestController
-@ModuleInfo(name = "Plugin", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping(UIPluginDefinitionController.REQUEST_MAPPING_ROOT)
 public class UIPluginDefinitionController implements IResourceController<UIPluginDefinition> {
 
@@ -82,6 +79,7 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
 
     /**
      * Entry point to retrieve a plugins {@link UIPluginDefinition}.
+     * @param pluginId
      *
      * @return {@link UIPluginDefinition}
      * @throws EntityNotFoundException
@@ -98,10 +96,12 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
 
     /**
      * Entry point to retrieve all plugins
+     * @param pageable
+     * @param type
+     * @param assembler
      *
      * @return {@link UIPluginDefinition}
      * @throws EntityInvalidException
-     * @throws EntityNotFoundException
      */
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
@@ -123,10 +123,10 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
 
     /**
      * Entry point to save a new plugin
+     * @param inPlugin
      *
      * @return {@link UIPluginDefinition}
      * @throws EntityInvalidException
-     * @throws EntityNotFoundException
      */
     @RequestMapping(method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
@@ -140,8 +140,11 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
 
     /**
      * Entry point to save a new ihm plugin.
+     * @param pluginId
+     * @param inPlugin
      *
      * @return {@link UIPluginDefinition}
+     * @throws EntityException
      * @throws EntityInvalidException
      * @throws EntityNotFoundException
      */
@@ -162,8 +165,10 @@ public class UIPluginDefinitionController implements IResourceController<UIPlugi
 
     /**
      * Entry point to delete an ihm plugin.
+     * @param pluginId
      *
      * @return {@link UIPluginDefinition}
+     * @throws ModuleException
      * @throws EntityInvalidException
      * @throws EntityNotFoundException
      */
