@@ -39,7 +39,7 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
  * @author Marc Sordi
  *
  */
-@RestClient(name = "rs-catalog")
+@RestClient(name = "rs-catalog", contextId = "rs-catalog.access-rights.client")
 @RequestMapping(value = IAccessRights.TYPE_MAPPING, produces = MediaType.APPLICATION_JSON_UTF8_VALUE,
         consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IAccessRights {

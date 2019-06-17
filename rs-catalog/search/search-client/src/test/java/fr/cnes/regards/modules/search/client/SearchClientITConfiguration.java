@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +36,7 @@ import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
 import fr.cnes.regards.modules.dam.client.models.IAttributeModelClient;
 import fr.cnes.regards.modules.dam.client.models.IModelAttrAssocClient;
 import fr.cnes.regards.modules.dam.domain.dataaccess.accessgroup.AccessGroup;
+import fr.cnes.regards.modules.indexer.dao.spatial.ProjectGeoSettings;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
@@ -108,5 +110,11 @@ public class SearchClientITConfiguration {
     @Bean
     public IModelAttrAssocClient modelAttrAssocClient() {
         return Mockito.mock(IModelAttrAssocClient.class);
+    }
+
+    @Primary
+    @Bean
+    public ProjectGeoSettings mockProjectGeoSettings() {
+        return Mockito.mock(ProjectGeoSettings.class);
     }
 }

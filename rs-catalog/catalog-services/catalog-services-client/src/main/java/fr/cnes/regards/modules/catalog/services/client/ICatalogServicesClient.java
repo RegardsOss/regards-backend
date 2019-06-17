@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.catalog.services.domain.dto.PluginConfigurationDt
  * Feign client for calling rs-catalog's CatalogServicesController
  * @author Xavier-Alexandre Brochard
  */
-@RestClient(name = "rs-catalog")
+@RestClient(name = "rs-catalog", contextId = "rs-catalog.services-client")
 @RequestMapping(value = "/services", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface ICatalogServicesClient {

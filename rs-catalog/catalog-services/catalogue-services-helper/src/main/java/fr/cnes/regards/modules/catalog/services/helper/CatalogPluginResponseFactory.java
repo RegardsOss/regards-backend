@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.catalog.services.helper;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,6 +39,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.google.common.io.ByteStreams;
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 /**
@@ -54,7 +56,7 @@ public class CatalogPluginResponseFactory {
     /**
      * CONTENT_DISPOSITION for streaming response body.
      */
-    private static final String INLINE_FILE_CONTENT_DISPOSITION_FORMAT = "inline; filename=%s";
+    private static final String INLINE_FILE_CONTENT_DISPOSITION_FORMAT = "attachment; filename=%s";
 
     /**
      * Catalog plugin service response body type allowed
@@ -105,7 +107,7 @@ public class CatalogPluginResponseFactory {
             case XML:
                 return createXmlSuccessResponse(response, responseContent);
             case JSON:
-                return createJsonSuccessResponse(response, responseContent);
+                return createJsonSuccessResponse(response, responseContent, true);
             case FILE_IMG_PNG:
             case FILE_IMG_JPG:
             case FILE_DOWNLOAD:
@@ -152,7 +154,8 @@ public class CatalogPluginResponseFactory {
      * Create a success response by streaming the given file
      * @param response {@link HttpServletResponse} spring http response
      * @param type {@link CatalogPluginResponseType} type of response body
-     * @param file {@link File} file to stream into the response body
+     * @param is file input stream
+     * @param fileName filename
      * @return {@link ResponseEntity}
      */
     public static ResponseEntity<StreamingResponseBody> createSuccessResponseFromInputStream(
@@ -183,7 +186,8 @@ public class CatalogPluginResponseFactory {
     }
 
     /**
-     * Create a  {@link ResponseEntity<StreamingResponseBody>} by serializing into XML format the given object.
+     * Create a  streaming response by serializing into XML format the given object.
+     *
      * @param response {@link HttpServletResponse} spring http response
      * @param responseContent {@link Object} to serialize.
      * @return {@link ResponseEntity}
@@ -208,13 +212,14 @@ public class CatalogPluginResponseFactory {
     }
 
     /**
-     * Create a  {@link ResponseEntity<StreamingResponseBody>} by serializing into JSON format the given object.
+     * Create a  streaming response by serializing into JSON format the given object.
      * @param response {@link HttpServletResponse} spring http response
      * @param responseContent {@link Object} to serialize.
+     * @param prettyPrint
      * @return {@link ResponseEntity}
      */
     public static ResponseEntity<StreamingResponseBody> createJsonSuccessResponse(HttpServletResponse response,
-            Object responseContent) {
+            Object responseContent, boolean prettyPrint) {
         GsonBuilder builder = new GsonBuilder();
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.CONTENT_DISPOSITION, getContentDisposition("result.json"));
@@ -223,8 +228,13 @@ public class CatalogPluginResponseFactory {
         List<String> exposedHeaders = new ArrayList<>();
         exposedHeaders.add(HttpHeaders.CONTENT_DISPOSITION);
         headers.setAccessControlExposeHeaders(exposedHeaders);
-        return new ResponseEntity<>(toStreamingResponseBody(builder.create().toJson(responseContent)), headers,
-                HttpStatus.OK);
+        Gson gson;
+        if (prettyPrint) {
+            gson = builder.setPrettyPrinting().create();
+        } else {
+            gson = builder.create();
+        }
+        return new ResponseEntity<>(toStreamingResponseBody(gson.toJson(responseContent)), headers, HttpStatus.OK);
     }
 
     /**
@@ -233,19 +243,30 @@ public class CatalogPluginResponseFactory {
      * @return {@link StreamingResponseBody}
      */
     public static StreamingResponseBody toStreamingResponseBody(String value) {
-        return outputStream -> outputStream.write(value.getBytes());
+        return outputStream -> {
+            try {
+                outputStream.write(value.getBytes());
+                outputStream.flush();
+            } catch (IOException e) {
+                LOGGER.error(e.getMessage(), e);
+            }
+        };
     }
 
     /**
      * Create a {@link StreamingResponseBody} containing the given file
-     * @param value {@link File} to stream as response body
+     * @param file {@link File} to stream as response body
      * @return {@link StreamingResponseBody}
      */
     public static StreamingResponseBody toStreamingResponseBody(File file) {
         return outputStream -> {
-            Path path = file.toPath();
-            Files.copy(path, outputStream);
-            outputStream.flush();
+            try {
+                Path path = file.toPath();
+                Files.copy(path, outputStream);
+                outputStream.flush();
+            } catch (IOException e) {
+                LOGGER.error(e.getMessage(), e);
+            }
         };
     }
 
@@ -256,8 +277,12 @@ public class CatalogPluginResponseFactory {
      */
     public static StreamingResponseBody toStreamingResponseBody(InputStream is) {
         return outputStream -> {
-            ByteStreams.copy(is, outputStream);
-            outputStream.flush();
+            try {
+                ByteStreams.copy(is, outputStream);
+                outputStream.flush();
+            } catch (Exception e) {
+                LOGGER.error(e.getMessage(), e);
+            }
         };
     }
 

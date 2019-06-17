@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
 
 /**
- * Published when a {@link LinkUiPluginsDatasets} is created
+ * Published when a {@link LinkPluginsDatasets} is created
  *
  * @author Xavier-Alexandre Brochard
  */

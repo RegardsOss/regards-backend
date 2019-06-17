@@ -78,7 +78,7 @@ public class ICatalogServicesIT extends AbstractRegardsWebIT {
 
     @Before
     public void init() {
-        jwtService.injectMockToken(DEFAULT_TENANT, DEFAULT_ROLE);
+        jwtService.injectMockToken(getDefaultTenant(), getDefaultRole());
         client = FeignClientBuilder.build(new TokenClientProvider<>(ICatalogServicesClient.class,
                 "http://" + serverAddress + ":" + getPort(), feignSecurityManager));
         FeignSecurityManager.asSystem();

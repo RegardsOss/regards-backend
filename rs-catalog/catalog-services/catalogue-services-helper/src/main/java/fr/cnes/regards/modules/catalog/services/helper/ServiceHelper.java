@@ -64,11 +64,6 @@ public class ServiceHelper implements IServiceHelper {
     private final IOpenSearchService openSearchService;
 
     /**
-     * Get current tenant at runtime and allows tenant forcing. Autowired.
-     */
-    private final IRuntimeTenantResolver tenantResolver;
-
-    /**
      * Constructor
      * @param searchService
      * @param openSearchService
@@ -79,7 +74,6 @@ public class ServiceHelper implements IServiceHelper {
         super();
         this.searchService = searchService;
         this.openSearchService = openSearchService;
-        this.tenantResolver = tenantResolver;
     }
 
     @Override
@@ -91,7 +85,7 @@ public class ServiceHelper implements IServiceHelper {
             idCrits[count] = ICriterion.eq("ipId", id);
             count++;
         }
-        PageRequest pageReq = new PageRequest(pageIndex, nbEntitiesByPage);
+        PageRequest pageReq = PageRequest.of(pageIndex, nbEntitiesByPage);
         return searchService.search(searchKey, pageReq, ICriterion.or(idCrits));
     }
 
@@ -106,7 +100,7 @@ public class ServiceHelper implements IServiceHelper {
             LOGGER.error(e.getMessage(), e);
         }
         ICriterion crit = openSearchService.parse(String.format("q=%s", queryParameters));
-        PageRequest pageReq = new PageRequest(pageIndex, nbEntitiesByPage);
+        PageRequest pageReq = PageRequest.of(pageIndex, nbEntitiesByPage);
         return searchService.search(searchKey, pageReq, crit);
     }
 

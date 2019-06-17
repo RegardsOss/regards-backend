@@ -191,9 +191,9 @@ public class GeoTimeExtension extends AbstractExtension {
     private ICriterion buildTimeCriterion(List<SearchParameter> timeParameters) {
         List<ICriterion> criterion = Lists.newArrayList();
         Optional<SearchParameter> startParam = timeParameters.stream()
-                .filter(p -> p.getName().equals(TIME_START_PARAMETER)).findFirst();
-        Optional<SearchParameter> endParam = timeParameters.stream().filter(p -> p.getName().equals(TIME_END_PARAMETER))
-                .findFirst();
+                .filter(p -> p.getConfiguration().getName().equals(TIME_START_PARAMETER)).findFirst();
+        Optional<SearchParameter> endParam = timeParameters.stream()
+                .filter(p -> p.getConfiguration().getName().equals(TIME_END_PARAMETER)).findFirst();
         if (startParam.isPresent()) {
             try {
                 criterion

@@ -42,7 +42,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>search</artifactId>
-		<version>3.0.0-RELEASE</version>
+		<version>0.4.0</version>
 	</parent>
 
 	<dependencies>
@@ -79,10 +79,6 @@
 			<artifactId>search-service</artifactId>
 		</dependency>
 		<!-- Module dependencies -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>plugins-regards-starter</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.indexer</groupId>
 			<artifactId>indexer-domain</artifactId>

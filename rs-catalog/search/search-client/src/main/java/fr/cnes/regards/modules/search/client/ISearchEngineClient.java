@@ -40,7 +40,7 @@ import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
  * @author Marc Sordi
  *
  */
-@RestClient(name = "rs-catalog")
+@RestClient(name = "rs-catalog", contextId = "rs-catalog.search-engine.client")
 @RequestMapping(value = SearchEngineMappings.TYPE_MAPPING, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface ISearchEngineClient {
 
@@ -216,7 +216,7 @@ public interface ISearchEngineClient {
      * Search dataobjects on a single dataset<br/>
      *
      * This method uses a {@link String} to handle dataset URN because HATEOAS link builder cannot manage complex type
-     * conversion at the moment. It does not consider custom {@link Converter}.
+     * conversion at the moment. It does not consider custom converter.
      */
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING)
     ResponseEntity<?> searchSingleDataset(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,
@@ -228,7 +228,7 @@ public interface ISearchEngineClient {
      * Extra mapping related to search on a single dataset request<br/>
      *
      * This method uses a {@link String} to handle dataset URN because HATEOAS link builder cannot manage complex type
-     * conversion at the moment. It does not consider custom {@link Converter}.
+     * conversion at the moment. It does not consider custom converter.
      */
     @RequestMapping(method = RequestMethod.GET, value = SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING_EXTRA)
     ResponseEntity<?> searchSingleDatasetExtra(@PathVariable(SearchEngineMappings.ENGINE_TYPE) String engineType,

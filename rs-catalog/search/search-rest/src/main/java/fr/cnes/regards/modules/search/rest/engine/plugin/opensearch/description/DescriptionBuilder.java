@@ -297,7 +297,11 @@ public class DescriptionBuilder {
     private OpenSearchParameter buildParameter(DescriptionParameter descParameter,
             List<IOpenSearchExtension> extensions) {
         OpenSearchParameter parameter = new OpenSearchParameter();
-        parameter.setName(descParameter.getName());
+        if ((descParameter.getConfiguration() != null) && (descParameter.getConfiguration().getAllias() != null)) {
+            parameter.setName(descParameter.getConfiguration().getAllias());
+        } else {
+            parameter.setName(descParameter.getName());
+        }
         parameter.setMinimum("0");
         parameter.setMaximum("1");
         parameter.setValue(String.format("{%s}", descParameter.getAttributeModel().getName()));

@@ -23,9 +23,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -231,7 +231,7 @@ public class SearchContext {
         context.setHeaders(headers);
         if (queryParams != null) {
             List<String> parser = queryParams.get(SearchEngineMappings.SEARCH_REQUEST_PARSER);
-            if ((parser != null) && !parser.isEmpty()) {
+            if (parser != null && !parser.isEmpty()) {
                 context.setEngineRequestParserType(parser.get(0));
             }
             // Filter spring pagination parameters if any
@@ -279,7 +279,7 @@ public class SearchContext {
     }
 
     public SearchContext withPropertyNames(Collection<String> propertyNames) {
-        if ((propertyNames != null) && !propertyNames.isEmpty()) {
+        if (propertyNames != null && !propertyNames.isEmpty()) {
             this.propertyNames.addAll(propertyNames);
         }
         return this;

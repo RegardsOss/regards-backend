@@ -36,7 +36,6 @@ public interface ISearchEngineConfigurationService {
 
     /**
      * Initialize searchengines for the given project.
-     * @param tenant
      */
     void initDefaultSearchEngine(Class<?> legacySearchEnginePluginClass);
 

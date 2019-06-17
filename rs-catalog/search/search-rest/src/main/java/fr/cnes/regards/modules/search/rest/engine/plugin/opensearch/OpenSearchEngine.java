@@ -84,7 +84,7 @@ import fr.cnes.regards.modules.search.service.ICatalogSearchService;
  * @author Sébastien Binda
  */
 @Plugin(id = OpenSearchEngine.ENGINE_ID, author = "REGARDS Team", contact = "regards@c-s.fr",
-        description = "Native search engine", licence = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss",
+        description = "Native search engine", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss",
         version = "1.0.0", markdown = "OpensearchEngine.md")
 public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescription, Object, List<String>> {
 
@@ -98,7 +98,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     public static final String MEDIA_EXTENSION_PARAMETER = "mediaExtension";
 
-    public static final String EXTRA_DESCRIPTION = "opensearchDescription.xml";
+    public static final String EXTRA_DESCRIPTION = "opensearchdescription.xml";
 
     public static final String PARAMETERS_CONFIGURATION = "parametersConfiguration";
 
@@ -185,7 +185,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
 
     @Override
     public ResponseEntity<OpenSearchDescription> extra(SearchContext context) throws ModuleException {
-        if (context.getExtra().isPresent() && context.getExtra().get().equals(EXTRA_DESCRIPTION)) {
+        if (context.getExtra().isPresent() && context.getExtra().get().equalsIgnoreCase(EXTRA_DESCRIPTION)) {
 
             // If the descriptor is asked for a specific dataset, first get the dataset.
             // The dataset will be used to set specific metadatas into the descriptor like title, tags, ...
@@ -286,11 +286,24 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
                 if (!queryParam.getKey().equals(configuration.getQueryParameterName())
                         && ((queryParam.getValue().size() != 1)
                                 || !Strings.isNullOrEmpty(queryParam.getValue().get(0)))) {
-                    AttributeModel attributeModel = finder.findByName(queryParam.getKey());
-                    // Search configuration if any
-                    ParameterConfiguration conf = paramConfigurations.stream()
-                            .filter(p -> p.getAttributeModelJsonPath().equals(attributeModel.getJsonPath())).findFirst()
-                            .orElse(null);
+                    String attributePath;
+                    // Check if parameter key is an alias from configuration
+                    Optional<ParameterConfiguration> aliasConf = paramConfigurations.stream()
+                            .filter(p -> queryParam.getKey().equals(p.getAllias())).findFirst();
+                    ParameterConfiguration conf;
+                    if (aliasConf.isPresent()) {
+                        // If it is an alias retrieve regards parameter path from the configuration
+                        conf = aliasConf.get();
+                        attributePath = conf.getAttributeModelJsonPath();
+                    } else {
+                        // If not retrieve regards parameter path
+                        attributePath = queryParam.getKey();
+                        // Search configuration if any
+                        conf = paramConfigurations.stream()
+                                .filter(p -> p.getAttributeModelJsonPath().equals(attributePath)).findFirst()
+                                .orElse(null);
+                    }
+                    AttributeModel attributeModel = finder.findByName(attributePath);
                     searchParameters
                             .add(new SearchParameter(queryParam.getKey(), attributeModel, conf, queryParam.getValue()));
                 }
@@ -311,10 +324,12 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
      */
     private IResponseBuilder<?> getBuilder(SearchContext context) throws UnsupportedMediaTypesException {
         IResponseBuilder<?> responseBuilder;
-        if (context.getHeaders().getAccept().contains(MediaType.APPLICATION_ATOM_XML)) {
-            responseBuilder = new AtomResponseBuilder(gson, authResolver.getToken());
-        } else if (context.getHeaders().getAccept().contains(MediaType.APPLICATION_JSON)) {
+
+        if (context.getHeaders().getAccept().stream().anyMatch(MediaType.APPLICATION_JSON::isCompatibleWith)) {
             responseBuilder = new GeojsonResponseBuilder(authResolver.getToken());
+        } else if (context.getHeaders().getAccept().stream()
+                .anyMatch(MediaType.APPLICATION_ATOM_XML::isCompatibleWith)) {
+            responseBuilder = new AtomResponseBuilder(gson, authResolver.getToken());
         } else {
             throw new UnsupportedMediaTypesException(context.getHeaders().getAccept());
         }
@@ -385,7 +400,7 @@ public class OpenSearchEngine implements ISearchEngine<Object, OpenSearchDescrip
             }
         }
 
-        return new PageRequest(start, size);
+        return PageRequest.of(start, size);
     }
 
     @Override

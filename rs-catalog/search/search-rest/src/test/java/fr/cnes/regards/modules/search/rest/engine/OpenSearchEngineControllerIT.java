@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.search.rest.engine;
 
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 
 import javax.xml.xpath.XPathExpressionException;
@@ -62,82 +63,75 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
 
     @Test
     public void searchDataAtom() throws XPathExpressionException {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_ATOM_XML));
-        customizer.customizeRequestParam().param("page", "2");
-        customizer.customizeRequestParam().param("maxRecords", "3");
-        customizer.addExpectation(MockMvcResultMatchers.xpath("feed/itemsPerPage").string(Matchers.is("3")));
-        customizer.addExpectation(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("9")));
-        customizer.addExpectation(MockMvcResultMatchers.xpath("feed/startIndex").string(Matchers.is("4")));
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_ATOM_XML));
+        customizer.addParameter("page", "2");
+        customizer.addParameter("maxRecords", "3");
+        customizer.expect(MockMvcResultMatchers.xpath("feed/itemsPerPage").string(Matchers.is("3")));
+        customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("9")));
+        customizer.expect(MockMvcResultMatchers.xpath("feed/startIndex").string(Matchers.is("4")));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
 
     @Test
     public void searchDataAtomWithParams() {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_ATOM_XML));
-        customizer.customizeRequestParam().param("page", "1");
-        customizer.customizeRequestParam().param("maxRecords", "10");
-        customizer.customizeRequestParam().param("properties.planet", "Mercury");
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_ATOM_XML));
+        customizer.addParameter("page", "1");
+        customizer.addParameter("maxRecords", "10");
+        customizer.addParameter("properties.planet", "Mercury");
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
 
     @Test
     public void searchAllDataJson() {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         // Test specific opensearch pagination parameters
-        customizer.customizeRequestParam().param(DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE_NAME, "1");
-        customizer.customizeRequestParam().param(DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT_NAME, "100");
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(9)));
+        customizer.addParameter(DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE_NAME, "1");
+        customizer.addParameter(DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT_NAME, "100");
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(9)));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
 
     @Test
     public void searchDataJsonWithParams() {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        customizer.customizeRequestParam().param("page", "1");
-        customizer.customizeRequestParam().param("maxRecords", "100");
-        customizer.customizeRequestParam().param("planet", "Mercury");
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(1)));
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.features.length()", Matchers.equalTo(1)));
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.features[0].properties.planet",
-                                                                 Matchers.equalTo("Mercury")));
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        customizer.addParameter("page", "1");
+        customizer.addParameter("maxRecords", "100");
+        customizer.addParameter("planet", "Mercury");
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(1)));
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.features.length()", Matchers.equalTo(1)));
+        customizer
+                .expect(MockMvcResultMatchers.jsonPath("$.features[0].properties.planet", Matchers.equalTo("Mercury")));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
 
     @Test
     public void searchDataAtomWithGeoBboxParams() throws XPathExpressionException {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_ATOM_XML));
-        customizer.customizeRequestParam().param("page", "1");
-        customizer.customizeRequestParam().param("maxRecords", "100");
-        customizer.customizeRequestParam().param("box", "15.0,15.0,20.0,20.0");
-        customizer.addExpectation(MockMvcResultMatchers.xpath("feed/itemsPerPage").string(Matchers.is("100")));
-        customizer.addExpectation(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("1")));
-        customizer.addExpectation(MockMvcResultMatchers.xpath("feed/startIndex").string(Matchers.is("1")));
-        customizer.addExpectation(MockMvcResultMatchers.xpath("feed/entry[1]/title").string(Matchers.is("Mercury")));
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_ATOM_XML));
+        customizer.addParameter("page", "1");
+        customizer.addParameter("maxRecords", "100");
+        customizer.addParameter("box", "15.0,15.0,20.0,20.0");
+        customizer.expect(MockMvcResultMatchers.xpath("feed/itemsPerPage").string(Matchers.is("100")));
+        customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("1")));
+        customizer.expect(MockMvcResultMatchers.xpath("feed/startIndex").string(Matchers.is("1")));
+        customizer.expect(MockMvcResultMatchers.xpath("feed/entry[1]/title").string(Matchers.is("Mercury")));
         // Validate time extension
-        customizer.addExpectation(MockMvcResultMatchers.xpath("feed/entry[1]/ValidTime/TimePeriod/beginPosition")
-                .exists());
-        customizer
-                .addExpectation(MockMvcResultMatchers.xpath("feed/entry[1]/ValidTime/TimePeriod/endPosition").exists());
+        customizer.expect(MockMvcResultMatchers.xpath("feed/entry[1]/ValidTime/TimePeriod/beginPosition").exists());
+        customizer.expect(MockMvcResultMatchers.xpath("feed/entry[1]/ValidTime/TimePeriod/endPosition").exists());
         // Validate geo extension
-        customizer.addExpectation(MockMvcResultMatchers.xpath("feed/entry[1]/where/Polygon").exists());
+        customizer.expect(MockMvcResultMatchers.xpath("feed/entry[1]/where/Polygon").exists());
         // Validate media extension
-        customizer.addExpectation(MockMvcResultMatchers.xpath("feed/entry[1]/group/content[1]/category")
+        customizer.expect(MockMvcResultMatchers.xpath("feed/entry[1]/group/content[1]/category")
                 .string(Matchers.is("QUICKLOOK")));
-        customizer.addExpectation(MockMvcResultMatchers.xpath("feed/entry[1]/group/content[2]/category")
+        customizer.expect(MockMvcResultMatchers.xpath("feed/entry[1]/group/content[2]/category")
                 .string(Matchers.is("THUMBNAIL")));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
@@ -145,28 +139,83 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
 
     @Test
     public void searchDataJsonWithGeoBboxParams() {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        customizer.customizeRequestParam().param("page", "1");
-        customizer.customizeRequestParam().param("maxRecords", "100");
-        customizer.customizeRequestParam().param("box", "15.0,15.0,20.0,20.0");
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(1)));
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        customizer.addParameter("page", "1");
+        customizer.addParameter("maxRecords", "100");
+        customizer.addParameter("box", "15.0,15.0,20.0,20.0");
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(1)));
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
+    }
+
+    @Test
+    public void searchDataJsonWithTimeParams() {
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        customizer.addParameter("page", "1");
+        customizer.addParameter("maxRecords", "100");
+        customizer.addParameter("TimePeriod.startDate",
+                                startDateValue.plusHours(1).format(DateTimeFormatter.ISO_DATE_TIME));
+        customizer.addParameter("TimePeriod.stopDate", stopDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(0)));
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
+
+        customizer = customizer().expectStatusOk();
+        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        customizer.addParameter("page", "1");
+        customizer.addParameter("maxRecords", "100");
+        customizer.addParameter("TimePeriod.startDate", startDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
+        customizer.addParameter("TimePeriod.stopDate", stopDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(1)));
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
+
+        // Now lets try with alias parameter names
+        customizer = customizer().expectStatusOk();
+        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        customizer.addParameter("page", "1");
+        customizer.addParameter("maxRecords", "100");
+        customizer.addParameter("début", startDateValue.plusHours(1).format(DateTimeFormatter.ISO_DATE_TIME));
+        customizer.addParameter("fin", stopDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(0)));
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
+
+        customizer = customizer().expectStatusOk();
+        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        customizer.addParameter("page", "1");
+        customizer.addParameter("maxRecords", "100");
+        customizer.addParameter("début", startDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
+        customizer.addParameter("fin", stopDateValue.format(DateTimeFormatter.ISO_DATE_TIME));
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(1)));
+        performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
+                          customizer, "Search all error", ENGINE_TYPE);
+
+        customizer = customizer().expectStatusOk();
+        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        customizer.addParameter("page", "1");
+        customizer.addParameter("maxRecords", "100");
+        customizer.addParameter("q",
+                                String.format("(TimePeriod.startDate:[%s TO %s])",
+                                              startDateValue.format(DateTimeFormatter.ISO_DATE_TIME),
+                                              stopDateValue.format(DateTimeFormatter.ISO_DATE_TIME)));
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(1)));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
 
     @Test
     public void searchDataJsonWithGeoCircleParams() {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        customizer.customizeRequestParam().param("page", "1");
-        customizer.customizeRequestParam().param("maxRecords", "100");
-        customizer.customizeRequestParam().param("lon", "20.0");
-        customizer.customizeRequestParam().param("lat", "20.0");
-        customizer.customizeRequestParam().param("radius", "5.0");
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(1)));
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        customizer.addParameter("page", "1");
+        customizer.addParameter("maxRecords", "100");
+        customizer.addParameter("lon", "20.0");
+        customizer.addParameter("lat", "20.0");
+        customizer.addParameter("radius", "5.0");
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(1)));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
@@ -179,70 +228,67 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         String atomUrl = "OpenSearchDescription/Url[@type='" + MediaType.APPLICATION_ATOM_XML_VALUE + "']";
         String geoJsonUrl = "OpenSearchDescription/Url[@type='" + GeoJsonMediaType.APPLICATION_GEOJSON_VALUE + "']";
 
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_XML));
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_XML));
 
         // Check metadatas
-        customizer.addExpectation(MockMvcResultMatchers.xpath("OpenSearchDescription").exists());
-        customizer.addExpectation(MockMvcResultMatchers.xpath("OpenSearchDescription/Description").exists());
-        customizer.addExpectation(MockMvcResultMatchers.xpath("OpenSearchDescription/Contact").exists());
-        customizer.addExpectation(MockMvcResultMatchers.xpath("OpenSearchDescription/Image").exists());
-        customizer.addExpectation(MockMvcResultMatchers.xpath("OpenSearchDescription/Developer").exists());
-        customizer.addExpectation(MockMvcResultMatchers.xpath("OpenSearchDescription/Attribution").exists());
-        customizer.addExpectation(MockMvcResultMatchers.xpath("OpenSearchDescription/AdultContent").exists());
-        customizer.addExpectation(MockMvcResultMatchers.xpath("OpenSearchDescription/Language").exists());
-        customizer.addExpectation(MockMvcResultMatchers.xpath("OpenSearchDescription/InputEncoding").exists());
-        customizer.addExpectation(MockMvcResultMatchers.xpath("OpenSearchDescription/OutputEncoding").exists());
+        customizer.expect(MockMvcResultMatchers.xpath("OpenSearchDescription").exists());
+        customizer.expect(MockMvcResultMatchers.xpath("OpenSearchDescription/Description").exists());
+        customizer.expect(MockMvcResultMatchers.xpath("OpenSearchDescription/Contact").exists());
+        customizer.expect(MockMvcResultMatchers.xpath("OpenSearchDescription/Image").exists());
+        customizer.expect(MockMvcResultMatchers.xpath("OpenSearchDescription/Developer").exists());
+        customizer.expect(MockMvcResultMatchers.xpath("OpenSearchDescription/Attribution").exists());
+        customizer.expect(MockMvcResultMatchers.xpath("OpenSearchDescription/AdultContent").exists());
+        customizer.expect(MockMvcResultMatchers.xpath("OpenSearchDescription/Language").exists());
+        customizer.expect(MockMvcResultMatchers.xpath("OpenSearchDescription/InputEncoding").exists());
+        customizer.expect(MockMvcResultMatchers.xpath("OpenSearchDescription/OutputEncoding").exists());
 
         // Check urls
-        customizer.addExpectation(MockMvcResultMatchers.xpath(atomUrl).exists());
-        customizer.addExpectation(MockMvcResultMatchers.xpath(geoJsonUrl).exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl).exists());
+        customizer.expect(MockMvcResultMatchers.xpath(geoJsonUrl).exists());
 
         // Check url parameters
-        customizer.addExpectation(MockMvcResultMatchers.xpath(atomUrl + "[count(Parameter)=14]").exists());
-        customizer.addExpectation(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='q']").exists());
-        customizer.addExpectation(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='planet']").exists());
-        customizer.addExpectation(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='planet_type']").exists());
-        customizer.addExpectation(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='diameter']").exists());
-        customizer.addExpectation(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='sun_distance']").exists());
-        customizer.addExpectation(MockMvcResultMatchers
-                .xpath(atomUrl + "/Parameter[@name='startDate' and @value='{time:start}']").exists());
-        customizer.addExpectation(MockMvcResultMatchers
-                .xpath(atomUrl + "/Parameter[@name='stopDate' and @value='{time:end}']").exists());
-        customizer.addExpectation(MockMvcResultMatchers
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "[count(Parameter)=15]").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='q']").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='planet']").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='planet_type']").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='diameter']").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='sun_distance']").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='début' and @value='{time:start}']")
+                .exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='fin' and @value='{time:end}']")
+                .exists());
+        customizer.expect(MockMvcResultMatchers
                 .xpath(atomUrl + "/Parameter[@name='geometry' and @value='{geo:geometry}']").exists());
-        customizer.addExpectation(MockMvcResultMatchers
-                .xpath(atomUrl + "/Parameter[@name='box' and @value='{geo:box}']").exists());
-        customizer.addExpectation(MockMvcResultMatchers
-                .xpath(atomUrl + "/Parameter[@name='lon' and @value='{geo:lon}']").exists());
-        customizer.addExpectation(MockMvcResultMatchers
-                .xpath(atomUrl + "/Parameter[@name='lat' and @value='{geo:lat}']").exists());
-        customizer.addExpectation(MockMvcResultMatchers
-                .xpath(atomUrl + "/Parameter[@name='radius' and @value='{geo:radius}']").exists());
-        customizer.addExpectation(
-                                  MockMvcResultMatchers
-                                          .xpath(atomUrl
-                                                  + String.format("/Parameter[@name='%s' and @value='{%s}']",
-                                                                  DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE_NAME,
-                                                                  DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE))
-                                          .exists());
-        customizer.addExpectation(
-                                  MockMvcResultMatchers
-                                          .xpath(atomUrl
-                                                  + String.format("/Parameter[@name='%s' and @value='{%s}']",
-                                                                  DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT_NAME,
-                                                                  DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT))
-                                          .exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='box' and @value='{geo:box}']")
+                .exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='lon' and @value='{geo:lon}']")
+                .exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='lat' and @value='{geo:lat}']")
+                .exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='radius' and @value='{geo:radius}']")
+                .exists());
+        customizer.expect(
+                          MockMvcResultMatchers
+                                  .xpath(atomUrl + String.format("/Parameter[@name='%s' and @value='{%s}']",
+                                                                 DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE_NAME,
+                                                                 DescriptionBuilder.OPENSEARCH_PAGINATION_PAGE))
+                                  .exists());
+        customizer.expect(
+                          MockMvcResultMatchers
+                                  .xpath(atomUrl + String.format("/Parameter[@name='%s' and @value='{%s}']",
+                                                                 DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT_NAME,
+                                                                 DescriptionBuilder.OPENSEARCH_PAGINATION_COUNT))
+                                  .exists());
 
         // Check options
-        customizer.addExpectation(MockMvcResultMatchers
-                .xpath(atomUrl + "/Parameter[@name='planet' and count(Option)=9]").exists());
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl + "/Parameter[@name='planet' and count(Option)=9]")
+                .exists());
 
         // Check double boundaries
-        customizer.addExpectation(MockMvcResultMatchers
+        customizer.expect(MockMvcResultMatchers
                 .xpath(atomUrl + "/Parameter[@name='sun_distance' and @minInclusive='5.0E7']").exists());
-        customizer.addExpectation(MockMvcResultMatchers
+        customizer.expect(MockMvcResultMatchers
                 .xpath(atomUrl + "/Parameter[@name='sun_distance' and @maxInclusive='4.48943598E9']").exists());
 
         // Check date boundaries
@@ -251,14 +297,14 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         Assert.assertNotNull(startDate);
         Assert.assertNotNull(stopDate);
 
-        customizer.addExpectation(MockMvcResultMatchers.xpath(atomUrl + String
-                .format("/Parameter[@name='startDate' and @minInclusive='%s']", startDate.getValue().toString()))
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl
+                + String.format("/Parameter[@name='début' and @minInclusive='%s']", startDate.getValue().toString()))
                 .exists());
-        customizer.addExpectation(MockMvcResultMatchers.xpath(atomUrl
-                + String.format("/Parameter[@name='stopDate' and @maxInclusive='%s']", stopDate.getValue().toString()))
+        customizer.expect(MockMvcResultMatchers.xpath(atomUrl
+                + String.format("/Parameter[@name='fin' and @maxInclusive='%s']", stopDate.getValue().toString()))
                 .exists());
 
-        customizer.customizeRequestParam().param("token", "public_token");
+        customizer.addParameter("token", "public_token");
 
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING_EXTRA,
                           customizer, "open search description error", ENGINE_TYPE, OpenSearchEngine.EXTRA_DESCRIPTION);
@@ -271,9 +317,8 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         Dataset solarSystem = getAstroObject(SOLAR_SYSTEM);
         Assert.assertNotNull(solarSystem);
 
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.customizeHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_XML));
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.headers().setAccept(Arrays.asList(MediaType.APPLICATION_XML));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING
                 + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING_EXTRA, customizer,
                           "open search description error", ENGINE_TYPE, solarSystem.getIpId().toString(),
@@ -282,35 +327,32 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
 
     @Test
     public void searchCollections() throws XPathExpressionException {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.customizeHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.customizeRequestParam().param("q", "properties." + STAR + ":Sun");
-        customizer.addExpectation(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("1")));
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
+        customizer.addParameter("q", "properties." + STAR + ":Sun");
+        customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("1")));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_COLLECTIONS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
 
     @Test
     public void searchAllAtom() throws XPathExpressionException {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.customizeHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.customizeRequestParam().param("page", "1");
-        customizer.customizeRequestParam().param("maxRecords", "100");
-        customizer.addExpectation(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("13")));
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
+        customizer.addParameter("page", "1");
+        customizer.addParameter("maxRecords", "100");
+        customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("13")));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_ALL_MAPPING, customizer,
                           "Search all error", ENGINE_TYPE);
     }
 
     @Test
     public void searchAllDataAtom() throws XPathExpressionException {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.customizeHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.customizeRequestParam().param("page", "1");
-        customizer.customizeRequestParam().param("maxRecords", "100");
-        customizer.addExpectation(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("9")));
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
+        customizer.addParameter("page", "1");
+        customizer.addParameter("maxRecords", "100");
+        customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("9")));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE);
     }
@@ -322,24 +364,22 @@ public class OpenSearchEngineControllerIT extends AbstractEngineIT {
         Dataset solarSystem = getAstroObject(SOLAR_SYSTEM);
         Assert.assertNotNull(solarSystem);
 
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.customizeHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.customizeRequestParam().param("page", "1");
-        customizer.customizeRequestParam().param("maxRecords", "100");
-        customizer.addExpectation(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("8")));
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_ATOM_XML_VALUE);
+        customizer.addParameter("page", "1");
+        customizer.addParameter("maxRecords", "100");
+        customizer.expect(MockMvcResultMatchers.xpath("feed/totalResults").string(Matchers.is("8")));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_DATASET_DATAOBJECTS_MAPPING,
                           customizer, "Search all error", ENGINE_TYPE, solarSystem.getIpId().toString());
     }
 
     @Test
     public void searchAllGeojson() {
-        RequestBuilderCustomizer customizer = getNewRequestBuilderCustomizer();
-        customizer.customizeHeaders().add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-        customizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        customizer.customizeRequestParam().param("page", "1");
-        customizer.customizeRequestParam().param("maxRecords", "100");
-        customizer.addExpectation(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(13)));
+        RequestBuilderCustomizer customizer = customizer().expectStatusOk();
+        customizer.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+        customizer.addParameter("page", "1");
+        customizer.addParameter("maxRecords", "100");
+        customizer.expect(MockMvcResultMatchers.jsonPath("$.properties.totalResults", Matchers.equalTo(13)));
         performDefaultGet(SearchEngineMappings.TYPE_MAPPING + SearchEngineMappings.SEARCH_ALL_MAPPING, customizer,
                           "Search all error", ENGINE_TYPE);
     }

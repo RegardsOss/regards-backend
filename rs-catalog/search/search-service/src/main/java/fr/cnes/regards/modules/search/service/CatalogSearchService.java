@@ -356,9 +356,9 @@ public class CatalogSearchService implements ICatalogSearchService {
             // Retrieve all datasets that permit data objects retrieval (ie datasets with at least one groups with
             // data access right)
             // page size to max value because datasets count isn't too large...
-            ICriterion dataObjectsGrantedCrit = ICriterion
-                    .or(accessGroups.stream().map(group -> ICriterion.eq("metadata.dataObjectsGroups." + group, true))
-                            .collect(Collectors.toSet()));
+            ICriterion dataObjectsGrantedCrit = ICriterion.or(accessGroups.stream()
+                    .map(group -> ICriterion.eq("metadata.dataObjectsGroups." + group + ".dataObjectAccess", true))
+                    .collect(Collectors.toSet()));
             Page<Dataset> page = searchService.search(Searches.onSingleEntity(EntityType.DATASET),
                                                       ISearchService.MAX_PAGE_SIZE, dataObjectsGrantedCrit);
             Set<String> datasetIpids = page.getContent().stream().map(Dataset::getIpId)

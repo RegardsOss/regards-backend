@@ -76,9 +76,9 @@ public class CatalogServicesController {
      * <p>If <code>pDatasetId</code> is <code>null</code>, en empty list will be returned
      * <p>If <code>pServiceScope</code> is <code>null</code>, all services on given dataset will be returned, regardless their scope.
      *
-     * @param pDatasetId
+     * @param pDatasetIds
      *            the id of the {@link Dataset}. Can be <code>null</code>.
-     * @param pServiceScope
+     * @param pServiceScopes
      *            the applicable mode. Can be <code>null</code>.
      * @return the list of services
      */

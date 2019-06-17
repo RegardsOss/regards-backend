@@ -41,7 +41,7 @@ public class AttributeCriterionBuilder {
 
     /**
      * Build a {@link ICriterion} for catalog search from
-     * @param attributeName {@link AttributeModel#getName()}
+     * @param attributeModel {@link AttributeModel}
      * @param operator {@link ParameterOperator} to apply for the current attribute search
      * @param values {@link String}s search values.
      * @return {@link ICriterion}
@@ -82,7 +82,7 @@ public class AttributeCriterionBuilder {
                     // Nothing to do
                     break;
             }
-            if ((criterion == null) && (valueCriterion != null)) {
+            if (criterion == null && valueCriterion != null) {
                 criterion = valueCriterion;
             } else if (valueCriterion != null) {
                 criterion = ICriterion.and(criterion, valueCriterion);
@@ -288,8 +288,6 @@ public class AttributeCriterionBuilder {
      * Build a {@link ICriterion} to search for the lists of geometry given in WKT format.
      * @param wkts geometry to search for
      * @return {@link ICriterion}
-     * @throws InvalidGeometryException
-     * @throws UnsupportedCriterionOperator
      */
     public static ICriterion buildGeometryWKT(List<String> wkts) throws InvalidGeometryException {
         List<ICriterion> criterion = new ArrayList<>();
@@ -325,7 +323,7 @@ public class AttributeCriterionBuilder {
     public static ICriterion buildGeometryCircle(List<String> longitude, List<String> latitude, List<String> radius)
             throws InvalidGeometryException {
         List<ICriterion> criterion = new ArrayList<>();
-        if ((longitude.size() == latitude.size()) && (latitude.size() == radius.size())) {
+        if (longitude.size() == latitude.size() && latitude.size() == radius.size()) {
             for (int i = 0; i < longitude.size(); i++) {
                 criterion.add(GeometryCriterionBuilder.build(longitude.get(i), latitude.get(i), radius.get(i)));
             }

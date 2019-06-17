@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.catalog.services.rest;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import org.junit.Test;
@@ -27,8 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.ResultMatcher;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.google.common.collect.Sets;
 
@@ -55,12 +51,10 @@ public class LinkDatasetsPluginsControllerIT extends AbstractRegardsTransactiona
     @Requirement("REGARDS_DSL_DAM_SET_230")
     @Purpose("The system allows to get the list of plugin's service for a dataset")
     public void retrieveLink() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
-        UniformResourceName urn = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, DEFAULT_TENANT,
+        UniformResourceName urn = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, getDefaultTenant(),
                 UUID.randomUUID(), 1);
-        performDefaultGet(LinkPluginsDatasetsController.PATH_LINK, expectations,
+        performDefaultGet(LinkPluginsDatasetsController.PATH_LINK,
+                          customizer().expectStatusOk().expectContentType(MediaType.APPLICATION_JSON_UTF8_VALUE),
                           "Failed to fetch a specific dataset using its id", urn.toString());
     }
 
@@ -68,13 +62,11 @@ public class LinkDatasetsPluginsControllerIT extends AbstractRegardsTransactiona
     @Requirement("REGARDS_DSL_DAM_SET_210")
     @Purpose("The system allows to link a plugin's service to a dataset")
     public void updateLink() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        expectations.add(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE));
-        UniformResourceName urn = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, DEFAULT_TENANT,
+        UniformResourceName urn = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATASET, getDefaultTenant(),
                 UUID.randomUUID(), 1);
         final LinkPluginsDatasets newLink = new LinkPluginsDatasets(urn.toString(), Sets.newHashSet());
-        performDefaultPut(LinkPluginsDatasetsController.PATH_LINK, newLink, expectations,
+        performDefaultPut(LinkPluginsDatasetsController.PATH_LINK, newLink,
+                          customizer().expectStatusOk().expectContentType(MediaType.APPLICATION_JSON_UTF8_VALUE),
                           "Failed to fetch a specific dataset using its id", urn.toString());
     }
 

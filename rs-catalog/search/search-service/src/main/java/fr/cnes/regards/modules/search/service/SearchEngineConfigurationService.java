@@ -39,20 +39,27 @@ import feign.FeignException;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.locks.domain.Lock;
+import fr.cnes.regards.framework.modules.locks.domain.LockException;
+import fr.cnes.regards.framework.modules.locks.service.ILockService;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.dam.client.entities.IDatasetClient;
 import fr.cnes.regards.modules.dam.domain.entities.Dataset;
 import fr.cnes.regards.modules.dam.domain.entities.event.BroadcastEntityEvent;
 import fr.cnes.regards.modules.dam.domain.entities.event.EventType;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.search.dao.ISearchEngineConfRepository;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineMappings;
@@ -83,6 +90,12 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
     @Autowired
     private IDatasetClient datasetClient;
 
+    @Autowired
+    private ILockService lockService;
+
+    @Autowired
+    private INotificationClient noticationClient;
+
     @PostConstruct
     public void listenForDatasetEvents() {
         // Subscribe to entity events in order to delete links to deleted dataset.
@@ -91,19 +104,39 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
 
     @Override
     public void initDefaultSearchEngine(Class<?> legacySearchEnginePluginClass) {
-        // Initialize the mandatory legacy searchengine if it does not exists yet.
-        SearchEngineConfiguration conf = repository
-                .findByDatasetUrnIsNullAndConfigurationPluginId(SearchEngineMappings.LEGACY_PLUGIN_ID);
-        if (conf == null) {
-            // Create the new one
-            conf = new SearchEngineConfiguration();
-            conf.setLabel("REGARDS search protocol");
-            conf.setConfiguration(PluginUtils.getPluginConfiguration(PluginParametersFactory.build().getParameters(),
-                                                                     legacySearchEnginePluginClass));
+        Lock lock = null;
+        try {
+            lock = lockService.lock(new Lock("initDefaultSearchEngine", this.getClass()), 10L);
+        } catch (LockException e) {
+            // lock could not be acquired, mainly because thread was interrupted while sleeping. Lets log and do nothing
+            LOGGER.error("Default search engine could not be initialized.", e);
+            noticationClient.notify(
+                                    "You can initialize it by going to relevant part of HMI. Plugin type: \"legacy\"."
+                                            + " Select use this search protocol for every search on catalog.",
+                                    "Default search engine could not be initialized", NotificationLevel.INFO,
+                                    DefaultRole.ADMIN);
+        }
+        // if the lock is null it means it could not be acquired
+        if (lock != null) {
             try {
-                createConf(conf);
-            } catch (ModuleException e) {
-                LOGGER.error("Error initializing legacy search engine", e);
+                // Initialize the mandatory legacy searchengine if it does not exists yet.
+                SearchEngineConfiguration conf = repository
+                        .findByDatasetUrnIsNullAndConfigurationPluginId(SearchEngineMappings.LEGACY_PLUGIN_ID);
+                if (conf == null) {
+                    // Create the new one
+                    conf = new SearchEngineConfiguration();
+                    conf.setLabel("REGARDS search protocol");
+                    conf.setConfiguration(PluginUtils
+                            .getPluginConfiguration(PluginParametersFactory.build().getParameters(),
+                                                    legacySearchEnginePluginClass));
+                    try {
+                        createConf(conf);
+                    } catch (ModuleException e) {
+                        LOGGER.error("Error initializing legacy search engine", e);
+                    }
+                }
+            } finally {
+                lockService.release(lock);
             }
         }
     }
@@ -141,10 +174,10 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
     @Override
     public void deleteConf(Long confId) throws ModuleException {
         SearchEngineConfiguration confToDelete = retrieveConf(confId);
-        repository.delete(confId);
+        repository.deleteById(confId);
         // If after deleting conf, no other reference the associated pluginConf so delete it too.
         Page<SearchEngineConfiguration> otherConfs = repository
-                .findByConfigurationId(confToDelete.getConfiguration().getId(), new PageRequest(0, 1));
+                .findByConfigurationId(confToDelete.getConfiguration().getId(), PageRequest.of(0, 1));
         if (otherConfs.getContent().isEmpty()) {
             pluginService.deletePluginConfiguration(confToDelete.getConfiguration().getId());
         }
@@ -153,11 +186,11 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
 
     @Override
     public SearchEngineConfiguration retrieveConf(Long confId) throws ModuleException {
-        SearchEngineConfiguration conf = repository.findOne(confId);
-        if (conf == null) {
+        Optional<SearchEngineConfiguration> conf = repository.findById(confId);
+        if (!conf.isPresent()) {
             throw new EntityNotFoundException(confId, SearchEngineConfiguration.class);
         }
-        return addDatasetLabel(conf, Lists.newArrayList());
+        return addDatasetLabel(conf.get(), Lists.newArrayList());
     }
 
     @Override
@@ -198,7 +231,7 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
                     .findByDatasetUrnIsNullAndConfigurationPluginId(conf.getConfiguration().getPluginId());
         }
 
-        if ((foundConf != null) && (!foundConf.getId().equals(conf.getId()))) {
+        if ((foundConf != null) && !foundConf.getId().equals(conf.getId())) {
             throw new EntityInvalidException(
                     String.format("Search engine already defined for engine <%s> and dataset <%s>",
                                   conf.getConfiguration().getPluginId(), conf.getDatasetUrn()));
@@ -233,6 +266,7 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
             } else {
                 // Retrieve dataset from dam
                 try {
+                    FeignSecurityManager.asSystem();
                     ResponseEntity<Resource<Dataset>> response = datasetClient.retrieveDataset(conf.getDatasetUrn());
                     if ((response != null) && (response.getBody() != null)
                             && (response.getBody().getContent() != null)) {
@@ -242,6 +276,8 @@ public class SearchEngineConfigurationService implements ISearchEngineConfigurat
                     }
                 } catch (FeignException e) {
                     LOGGER.error(String.format("Error retrieving dataset with ipId %s", conf.getDatasetUrn()), e);
+                } finally {
+                    FeignSecurityManager.reset();
                 }
             }
         }
