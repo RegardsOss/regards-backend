@@ -40,7 +40,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @Service
 public class BorrowRoleService implements IBorrowRoleService {
@@ -57,8 +56,6 @@ public class BorrowRoleService implements IBorrowRoleService {
 
     /**
      * Constructor setting the parameters as attributes
-     * @param pRolesClient
-     * @param pJwtService
      */
     public BorrowRoleService(IRolesClient pRolesClient, JWTService pJwtService) {
         super();
@@ -79,12 +76,12 @@ public class BorrowRoleService implements IBorrowRoleService {
 
         return new CoupleJwtRole(jwtService.generateToken(currentToken.getTenant(), currentToken.getName(),
                                                           currentToken.getUser().getEmail(), pTargetRoleName),
-                pTargetRoleName);
+                                 pTargetRoleName);
 
     }
 
     private Set<String> getBorrowableRoleNames() {
-        //DO NOT USE FEIGN SECURITY MANAGER HERE: we need to know the user that send the request
+        //DO NOT USE FEIGN SECURITY MANAGER HERE: we need to know the user who send the request
         ResponseEntity<List<Resource<Role>>> response = rolesClient.getBorrowableRoles();
         final HttpStatus responseStatus = response.getStatusCode();
         if (!HttpUtils.isSuccess(responseStatus)) {
@@ -92,7 +89,7 @@ public class BorrowRoleService implements IBorrowRoleService {
             return Sets.newHashSet();
         }
         List<Role> roleList = HateoasUtils.unwrapList(response.getBody());
-        return roleList.stream().map(r -> r.getName()).collect(Collectors.toSet());
+        return roleList.stream().map(Role::getName).collect(Collectors.toSet());
     }
 
 }

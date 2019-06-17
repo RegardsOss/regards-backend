@@ -44,7 +44,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @TestPropertySource(locations = { "classpath:application-test.properties" })
 public class BorrowRoleServiceTest {

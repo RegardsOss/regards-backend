@@ -22,30 +22,26 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 
+import ch.qos.logback.classic.ClassicConstants;
 import com.google.common.net.HttpHeaders;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 
 /**
- *
  * This class is a Zuul proxy filter. It aims to log the HTTP method and the URL.</br>
  * It adds to the request header the X-Forwarded-For field.
- *
  * @author Sébastien Binda
  * @author Christophe Mertz
- * @since 1.0-SNAPSHOT
  */
 @Component
 public class ZuulLogFilter extends ZuulFilter {
 
-    /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(ZuulLogFilter.class);
-
     public static final String COMMA = ", ";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ZuulLogFilter.class);
 
     @Override
     public String filterType() {
@@ -66,21 +62,32 @@ public class ZuulLogFilter extends ZuulFilter {
     public Object run() {
         RequestContext ctx = RequestContext.getCurrentContext();
         HttpServletRequest request = ctx.getRequest();
-        String remoteAddr = request.getRemoteAddr();
 
-        LOG.info("Request received : {}@{} from {}", request.getRequestURI(), request.getMethod(), remoteAddr);
+        MDC.put(ClassicConstants.REQUEST_REMOTE_HOST_MDC_KEY, request.getRemoteHost());
 
+        String requestURI = request.getRequestURI();
+        String requestMethod = request.getMethod();
         String xForwardedFor = ctx.getZuulRequestHeaders().get(HttpHeaders.X_FORWARDED_FOR);
-        if ((xForwardedFor != null) && !xForwardedFor.isEmpty() && !xForwardedFor.contains(remoteAddr)) {
+
+        MDC.put(ClassicConstants.REQUEST_REQUEST_URI, requestURI);
+        MDC.put(ClassicConstants.REQUEST_REQUEST_URL, request.getRequestURL().toString());
+        MDC.put(ClassicConstants.REQUEST_METHOD, requestMethod);
+        MDC.put(ClassicConstants.REQUEST_QUERY_STRING, request.getQueryString());
+        MDC.put(ClassicConstants.REQUEST_USER_AGENT_MDC_KEY, request.getHeader(HttpHeaders.USER_AGENT));
+        MDC.put(ClassicConstants.REQUEST_X_FORWARDED_FOR, xForwardedFor);
+
+        String remoteAddr = request.getRemoteAddr();
+        LOGGER.info("Request received : {}@{} from {}", requestURI, requestMethod, remoteAddr);
+
+        if (xForwardedFor != null && !xForwardedFor.isEmpty() && !xForwardedFor.contains(remoteAddr)) {
             xForwardedFor = xForwardedFor + COMMA + remoteAddr;
             ctx.getZuulRequestHeaders().put(HttpHeaders.X_FORWARDED_FOR, xForwardedFor);
         } else {
             ctx.getZuulRequestHeaders().put(HttpHeaders.X_FORWARDED_FOR, remoteAddr);
         }
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("{} is set to request header : {}", HttpHeaders.X_FORWARDED_FOR,
-                      ctx.getZuulRequestHeaders().get(HttpHeaders.X_FORWARDED_FOR));
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("{} is set to request header : {}", HttpHeaders.X_FORWARDED_FOR, xForwardedFor);
         }
 
         return null;

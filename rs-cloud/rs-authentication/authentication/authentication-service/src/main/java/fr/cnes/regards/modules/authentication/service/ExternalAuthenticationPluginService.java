@@ -27,7 +27,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
@@ -41,14 +40,11 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.project.domain.Project;
 
 /**
- *
  * Class InternalAuthenticationPluginService
  *
  * Internal authentication plugins manager
- *
  * @author Sébastien Binda
  * @author Christophe Mertz
- * @since 1.0-SNAPSHOT
  */
 @Service
 public class ExternalAuthenticationPluginService implements IExternalAuthenticationPluginsService {
@@ -75,11 +71,6 @@ public class ExternalAuthenticationPluginService implements IExternalAuthenticat
 
     /**
      * Constructor with attributes
-     *
-     * @param pPluginService
-     * @param pJwtService
-     * @param pProjectsClient
-     * @param pProjectUsersClient
      */
     public ExternalAuthenticationPluginService(final IPluginService pPluginService, final JWTService pJwtService,
             final IProjectsClient pProjectsClient, final IProjectUsersClient pProjectUsersClient) {
@@ -120,7 +111,7 @@ public class ExternalAuthenticationPluginService implements IExternalAuthenticat
 
     @Override
     public OAuth2AccessToken authenticate(final Long pPluginConfigurationId,
-            final ExternalAuthenticationInformations pAuthInformations) throws EntityNotFoundException {
+            final ExternalAuthenticationInformations pAuthInformations) {
         try {
             // First check project existence
             final ResponseEntity<Resource<Project>> response = projectsClient
@@ -142,8 +133,7 @@ public class ExternalAuthenticationPluginService implements IExternalAuthenticat
                 final ResponseEntity<Resource<ProjectUser>> userResponse = projectUsersClient
                         .retrieveProjectUserByEmail(userDetails.getEmail());
 
-                if (userResponse.getStatusCode().equals(HttpStatus.OK)
-                        && (userResponse.getBody().getContent() != null)) {
+                if (userResponse.getStatusCode().equals(HttpStatus.OK) && userResponse.getBody().getContent() != null) {
                     jwtService.generateToken(pAuthInformations.getProject(), pAuthInformations.getUserName(),
                                              userResponse.getBody().getContent().getEmail(),
                                              userResponse.getBody().getContent().getRole().getName());

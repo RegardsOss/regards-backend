@@ -45,13 +45,10 @@ import fr.cnes.regards.modules.authentication.plugins.domain.ExternalAuthenticat
 import fr.cnes.regards.modules.authentication.service.IExternalAuthenticationPluginsService;
 
 /**
- *
  * Class InternalAuthenicationController
  *
  * REST Controller to manage internal authentication Service providers
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 @RestController
 @RequestMapping("/authentication/sps")
@@ -80,13 +77,11 @@ public class ExternalAuthenticationController implements IResourceController<Plu
     }
 
     /**
-     *
      * Retrieve all configured Service Provider plugins to handle REGARDS internal authentication
-     *
      * @return List fo PluginConfiguration (Hateoas formated)
-     * @since 1.0-SNAPSHOT
      */
-    @ResourceAccess(description = "Retrieve all configured Service Provider plugins to handle REGARDS internal authentication")
+    @ResourceAccess(
+            description = "Retrieve all configured Service Provider plugins to handle REGARDS internal authentication")
     @RequestMapping(method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<List<Resource<PluginConfiguration>>> retrieveServiceProviderPlugins() {
         final List<PluginConfiguration> plugins = service.retrieveServiceProviderPlugins();
@@ -94,13 +89,9 @@ public class ExternalAuthenticationController implements IResourceController<Plu
     }
 
     /**
-     *
      * Create a new Service Provider plugin
-     *
-     * @param pPluginConfigurationToCreate
-     *            PluginConfiguration to create
+     * @param pPluginConfigurationToCreate PluginConfiguration to create
      * @return Created PluginConfiguration (hateoas formated)
-     * @since 1.0-SNAPSHOT
      */
     @ResourceAccess(description = "Create a new Service Provider plugin")
     @RequestMapping(method = RequestMethod.POST, produces = "application/json")
@@ -118,13 +109,9 @@ public class ExternalAuthenticationController implements IResourceController<Plu
     }
 
     /**
-     *
      * Retrieve a configured Service Provider plugin
-     *
-     * @param pPluginConfigurationId
-     *            PluginConfiguration identifier to retrieve
+     * @param pPluginConfigurationId PluginConfiguration identifier to retrieve
      * @return PluginConfiguration (hateoas formated)
-     * @since 1.0-SNAPSHOT
      */
     @ResourceAccess(description = "Retrieve a configured Service Provider plugin")
     @RequestMapping(path = "/{sp_id}", method = RequestMethod.GET, produces = "application/json")
@@ -147,15 +134,10 @@ public class ExternalAuthenticationController implements IResourceController<Plu
     }
 
     /**
-     *
      * Update an Service Provider plugin
-     *
-     * @param pPluginConfigurationId
-     *            PluginConfiguration identifier to update
-     * @param pPluginConfigurationToUpdate
-     *            PluginConfiguration to update
+     * @param pPluginConfigurationId PluginConfiguration identifier to update
+     * @param pPluginConfigurationToUpdate PluginConfiguration to update
      * @return updated PluginConfiguration (hateoas formated)
-     * @since 1.0-SNAPSHOT
      */
     @ResourceAccess(description = "Update a Service Provider plugin")
     @RequestMapping(path = "/{sp_id}", method = RequestMethod.PUT, produces = "application/json")
@@ -188,13 +170,9 @@ public class ExternalAuthenticationController implements IResourceController<Plu
     }
 
     /**
-     *
      * Delete an Service Provider plugin
-     *
-     * @param pPluginConfigurationId
-     *            PluginConfiguration identifier to delete
+     * @param pPluginConfigurationId PluginConfiguration identifier to delete
      * @return Void
-     * @since 1.0-SNAPSHOT
      */
     @ResourceAccess(description = "Delete a Service Provider plugin")
     @RequestMapping(path = "/{sp_id}", method = RequestMethod.DELETE)
@@ -212,17 +190,13 @@ public class ExternalAuthenticationController implements IResourceController<Plu
     }
 
     /**
-     *
      * Authenticate with the given Service Provider plugin
-     *
-     * @param pPluginConfigurationId
-     *            PluginConfiguration identifier to delete
-     * @param pAuthInformations
-     *            informations use for connect throught external service provider
+     * @param pPluginConfigurationId PluginConfiguration identifier to delete
+     * @param pAuthInformations informations use for connect throught external service provider
      * @return Void
-     * @since 1.0-SNAPSHOT
      */
-    @ResourceAccess(description = "Authenticate with the given Service Provider plugin", plugin = IServiceProviderPlugin.class)
+    @ResourceAccess(description = "Authenticate with the given Service Provider plugin",
+            plugin = IServiceProviderPlugin.class)
     @RequestMapping(path = "/{sp_id}/authenticate", method = RequestMethod.POST)
     public ResponseEntity<OAuth2AccessToken> authenticate(@PathVariable("sp_id") final Long pPluginConfigurationId,
             @RequestBody final ExternalAuthenticationInformations pAuthInformations) {

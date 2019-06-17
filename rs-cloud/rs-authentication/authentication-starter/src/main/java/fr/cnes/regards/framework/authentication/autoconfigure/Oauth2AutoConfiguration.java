@@ -25,6 +25,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerEndpointsConfiguration;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -42,13 +43,10 @@ import fr.cnes.regards.modules.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.modules.authentication.plugins.regards.RegardsInternalAuthenticationPlugin;
 
 /**
- *
  * Class Oauth2AutoConfiguration
  *
  * Auto-configuration to activate Oauth2 authentication.
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 @Configuration
 @EnableAuthorizationServer
@@ -100,11 +98,8 @@ public class Oauth2AutoConfiguration {
     }
 
     /**
-     *
      * Create Authentication manager
-     *
      * @return Oauth2AuthenticationManager
-     * @since 1.0-SNAPSHOT
      */
     @Bean
     public AuthenticationManager authenticationManager() {
@@ -112,11 +107,8 @@ public class Oauth2AutoConfiguration {
     }
 
     /**
-     *
      * Create Authorization server configurer
-     *
      * @return Oauth2AuthorizationServerConfigurer
-     * @since 1.0-SNAPSHOT
      */
     @Bean
     public Oauth2AuthorizationServerConfigurer authorizationServer() {
@@ -125,26 +117,19 @@ public class Oauth2AutoConfiguration {
     }
 
     /**
-     *
      * Mvc specific configuration for Oauth2 endpoints
-     * @param pEndpoints
-     *
      * @return ICustomWebSecurityConfiguration
-     * @since 1.0-SNAPSHOT
      */
     @Bean
-    public ICustomWebSecurityConfiguration securityConf(final AuthorizationServerEndpointsConfiguration pEndpoints) {
-        return new Oauth2EndpointsConfiguration(pEndpoints);
+    public ICustomWebSecurityConfiguration securityConf(AuthorizationServerEndpointsConfiguration endpoints) {
+        return new Oauth2EndpointsConfiguration(endpoints);
     }
 
     /**
-     *
      * Create transactionManager mandatory by DefaultTokenService but we don't need it because JWT token are not
      * stored.<br/>
      * Set {@link PlatformTransactionManager} as primary to prevent conflict with another manager.
-     *
      * @return PlatformTransactionManager
-     * @since 1.0-SNAPSHOT
      */
     @Bean
     @Primary
@@ -152,21 +137,28 @@ public class Oauth2AutoConfiguration {
         return new PlatformTransactionManager() {
 
             @Override
-            public void rollback(final TransactionStatus pStatus) {
+            public void rollback(TransactionStatus status) {
                 // Nothing to do. The JwtTokenStore does not persists tokens
             }
 
             @Override
-            public TransactionStatus getTransaction(final TransactionDefinition pDefinition) {
+            public TransactionStatus getTransaction(TransactionDefinition definition) {
                 // Nothing to do. The JwtTokenStore does not persists tokens
                 return null;
             }
 
             @Override
-            public void commit(final TransactionStatus pStatus) {
+            public void commit(TransactionStatus status) {
                 // Nothing to do. The JwtTokenStore does not persists tokens
             }
         };
     }
 
+    /**
+     * From now, password is given not encrypted
+     */
+    @Bean
+    public static NoOpPasswordEncoder passwordEncoder() {
+        return (NoOpPasswordEncoder) NoOpPasswordEncoder.getInstance();
+    }
 }

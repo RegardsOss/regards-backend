@@ -27,7 +27,6 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
  * @author Marc Sordi
- *
  */
 @Configuration
 public class FeignMockConfiguration {

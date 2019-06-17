@@ -49,16 +49,13 @@ import fr.cnes.regards.modules.authentication.plugins.IServiceProviderPlugin;
 import fr.cnes.regards.modules.authentication.plugins.domain.ExternalAuthenticationInformations;
 
 /**
- *
  * Class KerberosServiceProviderPlugin
  *
  * Kerberos Server Provider Plugin.
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 @Plugin(author = "CS-SI", description = "Kerberos Service Provider", id = "KerberosServiceProviderPlugin",
-        version = "1.0", contact = "regards@c-s.fr", licence = "GPL V3", owner = "CNES", url = "www.cnes.fr")
+        version = "1.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES", url = "www.cnes.fr")
 public class KerberosServiceProviderPlugin implements IServiceProviderPlugin {
 
     /**
@@ -140,10 +137,7 @@ public class KerberosServiceProviderPlugin implements IServiceProviderPlugin {
     private Krb5TicketValidateAction validateAction;
 
     /**
-     *
      * Initialize default values if not parameters not set. Initialize system property for kerberos management.
-     *
-     * @since 1.0-SNAPSHOT
      */
     @PluginInit
     public void pluginInitialization() {
@@ -206,17 +200,11 @@ public class KerberosServiceProviderPlugin implements IServiceProviderPlugin {
     }
 
     /**
-     *
      * Retrieve Jaas configuration to decode ticket
-     *
-     * @param pPrincipal
-     *            Principal for Kerberos server authentication
-     * @param pRealm
-     *            Realm of the kerberos server
-     * @param pKeyTab
-     *            Kerberos keytab file. Supplied by the Kerberos server administrator
+     * @param pPrincipal Principal for Kerberos server authentication
+     * @param pRealm Realm of the kerberos server
+     * @param pKeyTab Kerberos keytab file. Supplied by the Kerberos server administrator
      * @return {@link Configuration}
-     * @since 1.0-SNAPSHOT
      */
     public static Configuration getJaasConf(final String pPrincipal, final String pRealm, final File pKeyTab) {
 
@@ -241,17 +229,11 @@ public class KerberosServiceProviderPlugin implements IServiceProviderPlugin {
     }
 
     /**
-     *
      * Decode a given kerberos ticket.
-     *
-     * @param pPrincipal
-     *            Kerberos principal
-     * @param pTicket
-     *            Kerberos ticket to decode
-     * @param pConfig
-     *            Jaas Configuraion
+     * @param pPrincipal Kerberos principal
+     * @param pTicket Kerberos ticket to decode
+     * @param pConfig Jaas Configuraion
      * @return [true|false]
-     * @since 1.0-SNAPSHOT
      */
     public boolean decode(final String pPrincipal, final byte[] pTicket, final Configuration pConfig) {
 
@@ -263,7 +245,7 @@ public class KerberosServiceProviderPlugin implements IServiceProviderPlugin {
             principals.add(krbPrincipal);
 
             // define the subject to execute our secure action as
-            final Subject subject = new Subject(false, principals, new HashSet<Object>(), new HashSet<Object>());
+            final Subject subject = new Subject(false, principals, new HashSet<>(), new HashSet<>());
 
             // login the subject
             ctx = new LoginContext("", subject, null, pConfig);

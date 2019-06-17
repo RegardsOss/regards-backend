@@ -18,27 +18,20 @@
  */
 package fr.cnes.regards.modules.authentication.plugins;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.directory.api.ldap.model.cursor.ClosureMonitor;
-import org.apache.directory.api.ldap.model.cursor.CursorException;
 import org.apache.directory.api.ldap.model.cursor.EntryCursor;
 import org.apache.directory.api.ldap.model.entry.Entry;
-import org.apache.directory.api.ldap.model.exception.LdapException;
 import org.apache.directory.api.ldap.model.message.SearchResultDone;
 
 /**
- *
  * Class EntryCursorStub
  *
  * Stub class to test LDAP authentication plugin
- *
  * @author Sébastien Binda
  * @author Christophe Mertz
- * 
- * @since 1.0-SNAPSHOT
  */
 public class EntryCursorStub implements EntryCursor {
 
@@ -51,7 +44,7 @@ public class EntryCursorStub implements EntryCursor {
      * stub counter
      */
     private int count = 0;
-    
+
     public void setEntries(final List<Entry> pEntries) {
         entries = pEntries;
     }
@@ -71,17 +64,17 @@ public class EntryCursorStub implements EntryCursor {
     }
 
     @Override
-    public boolean previous() throws LdapException, CursorException, IOException {
+    public boolean previous() {
         return false;
     }
 
     @Override
-    public boolean next() throws LdapException, CursorException, IOException {
+    public boolean next() {
         return count < entries.size();
     }
 
     @Override
-    public boolean last() throws LdapException, CursorException, IOException {
+    public boolean last() {
         return false;
     }
 
@@ -111,14 +104,14 @@ public class EntryCursorStub implements EntryCursor {
     }
 
     @Override
-    public Entry get() throws CursorException, IOException {
+    public Entry get() {
         final Entry result = entries.get(count);
         count++;
         return result;
     }
 
     @Override
-    public boolean first() throws LdapException, CursorException, IOException {
+    public boolean first() {
         return false;
     }
 
@@ -131,11 +124,11 @@ public class EntryCursorStub implements EntryCursor {
     }
 
     @Override
-    public void beforeFirst() throws LdapException, CursorException, IOException {
+    public void beforeFirst() {
     }
 
     @Override
-    public void before(final Entry pElement) throws LdapException, CursorException, IOException {
+    public void before(final Entry pElement) {
     }
 
     @Override
@@ -144,11 +137,11 @@ public class EntryCursorStub implements EntryCursor {
     }
 
     @Override
-    public void afterLast() throws LdapException, CursorException, IOException {
+    public void afterLast() {
     }
 
     @Override
-    public void after(final Entry pElement) throws LdapException, CursorException, IOException {
+    public void after(final Entry pElement) {
     }
 
     @Override

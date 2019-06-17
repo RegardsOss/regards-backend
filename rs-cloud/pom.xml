@@ -18,54 +18,30 @@
  along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.cloud</groupId>
-	<artifactId>rs-cloud</artifactId>
-	<version>3.0.0-RELEASE</version>
-	<packaging>pom</packaging>
+    <groupId>fr.cnes.regards.cloud</groupId>
+    <artifactId>rs-cloud</artifactId>
+    <packaging>pom</packaging>
 
-	<name>REGARDS Cloud</name>
-	<description>Aggregator project for different microservices dedicated to cloud features</description>
-	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
-	<inceptionYear>2016</inceptionYear>
-	<licenses>
-		<license>
-			<name>GNU General Public License (GNU GPL)</name>
-			<url>http://www.gnu.org/licenses/gpl.html</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-	<organization>
-		<name>CNES</name>
-		<url>https://cnes.fr/fr</url>
-	</organization>
-	<developers>
-		<developer>
-			<name>REGARDS Team</name>
-			<organization>CS Systèmes d'Information</organization>
-			<organizationUrl>http://www.c-s.fr</organizationUrl>
-		</developer>
-	</developers>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <sonar.language>java</sonar.language>
+        <sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
+    </properties>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<sonar.language>java</sonar.language>
-		<sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
-	</properties>
+    <parent>
+        <groupId>fr.cnes.regards</groupId>
+        <artifactId>regards-aggregator-parent</artifactId>
+        <version>0.4.0</version>
+        <relativePath></relativePath>
+    </parent>
 
-	<parent>
-		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-aggregator-parent</artifactId>
-		<version>3.0.0-RELEASE</version>
-		<relativePath></relativePath>
-	</parent>
-
-	<modules>
-		<module>rs-config</module>
-		<module>rs-gateway</module>
-		<module>rs-registry</module>
-		<module>rs-authentication</module>
-	</modules>
+    <modules>
+        <module>rs-config</module>
+        <module>rs-gateway</module>
+        <module>rs-registry</module>
+        <module>rs-authentication</module>
+    </modules>
 </project>

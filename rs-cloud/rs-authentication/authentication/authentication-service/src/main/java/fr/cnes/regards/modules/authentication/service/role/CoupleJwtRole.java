@@ -36,8 +36,6 @@ public class CoupleJwtRole {
 
     /**
      * Constructor setting the parameters as attributes
-     * @param pJwt
-     * @param pRoleName
      */
     public CoupleJwtRole(String pJwt, String pRoleName) {
         access_token = pJwt;
@@ -53,7 +51,6 @@ public class CoupleJwtRole {
 
     /**
      * Set the role
-     * @param pRole
      */
     public void setRole(String pRole) {
         role = pRole;
@@ -68,7 +65,6 @@ public class CoupleJwtRole {
 
     /**
      * Set the access token
-     * @param pAccessToken
      */
     public void setAccessToken(String pAccessToken) {
         access_token = pAccessToken;

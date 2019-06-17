@@ -44,7 +44,8 @@ public class ProjectClientStub implements IProjectsClient {
     @Override
     public ResponseEntity<PagedResources<Resource<Project>>> retrieveProjectList(final int pPage, final int pSize) {
         final PagedResources<Resource<Project>> page = new PagedResources<>(HateoasUtils.wrapList(projects),
-                new PageMetadata(pSize, pPage, 1), new ArrayList<>());
+                                                                            new PageMetadata(pSize, pPage, 1),
+                                                                            new ArrayList<>());
         return new ResponseEntity<>(page, HttpStatus.OK);
     }
 
@@ -57,7 +58,7 @@ public class ProjectClientStub implements IProjectsClient {
     public ResponseEntity<Resource<Project>> createProject(final Project pNewProject) {
         pNewProject.setId(idCount++);
         projects.add(pNewProject);
-        return new ResponseEntity<Resource<Project>>(HateoasUtils.wrap(pNewProject), HttpStatus.OK);
+        return new ResponseEntity<>(HateoasUtils.wrap(pNewProject), HttpStatus.OK);
     }
 
     @Override
@@ -69,7 +70,7 @@ public class ProjectClientStub implements IProjectsClient {
                 break;
             }
         }
-        return new ResponseEntity<Resource<Project>>(HateoasUtils.wrap(result), HttpStatus.OK);
+        return new ResponseEntity<>(HateoasUtils.wrap(result), HttpStatus.OK);
     }
 
     @Override
@@ -82,12 +83,12 @@ public class ProjectClientStub implements IProjectsClient {
                 break;
             }
         }
-        return new ResponseEntity<Resource<Project>>(HateoasUtils.wrap(result), HttpStatus.OK);
+        return new ResponseEntity<>(HateoasUtils.wrap(result), HttpStatus.OK);
     }
 
     @Override
     public ResponseEntity<Void> deleteProject(final String pProjectName) {
-        return new ResponseEntity<Void>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 }

@@ -30,13 +30,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
  * Class Krb5TicketValidateAction
  *
  * Handler to validate a kerberos ticket
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 public class Krb5TicketValidateAction implements PrivilegedExceptionAction<String> {
 
@@ -82,8 +79,8 @@ public class Krb5TicketValidateAction implements PrivilegedExceptionAction<Strin
         // get the service's credentials. note that this run() method was called by Subject.doAs(),
         // so the service's credentials (Service Principal Name and password) are already
         // available in the Subject
-        final GSSCredential serviceCredentials = gssmgr.createCredential(serviceName, GSSCredential.INDEFINITE_LIFETIME,
-                                                                         krbOid, GSSCredential.ACCEPT_ONLY);
+        final GSSCredential serviceCredentials = gssmgr
+                .createCredential(serviceName, GSSCredential.INDEFINITE_LIFETIME, krbOid, GSSCredential.ACCEPT_ONLY);
 
         // create a security context for decrypting the service ticket
         gssContext = gssmgr.createContext(serviceCredentials);
@@ -97,21 +94,15 @@ public class Krb5TicketValidateAction implements PrivilegedExceptionAction<Strin
     }
 
     /**
-     *
      * Retrieve authenticated kerberos context
-     *
      * @return {@link GSSContext}
-     * @since 1.0-SNAPSHOT
      */
     public GSSContext getGssContext() {
         return gssContext;
     }
 
     /**
-     *
      * Close Kerberos context
-     *
-     * @since 1.0-SNAPSHOT
      */
     public void closeContext() {
         if (gssContext != null) {

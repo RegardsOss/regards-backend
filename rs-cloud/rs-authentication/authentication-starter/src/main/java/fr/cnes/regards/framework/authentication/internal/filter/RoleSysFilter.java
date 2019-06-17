@@ -37,45 +37,41 @@ import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 
 /**
- *
  * Class RoleSysFilter
  *
  * Specific gateway Filter to deny access to all Systems Roles. Systems roles must be used between microservices only.
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 public class RoleSysFilter extends OncePerRequestFilter {
 
     /**
      * Class logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(IpFilter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IpFilter.class);
 
     @Override
-    protected void doFilterInternal(final HttpServletRequest pRequest, final HttpServletResponse pResponse,
-            final FilterChain pFilterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
         // Get authorized ip associated to given role
-        final JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext()
-                .getAuthentication();
+        JWTAuthentication authentication = (JWTAuthentication) SecurityContextHolder.getContext().getAuthentication();
 
-        @SuppressWarnings("unchecked")
-        final Collection<RoleAuthority> roles = (Collection<RoleAuthority>) authentication.getAuthorities();
+        @SuppressWarnings("unchecked") Collection<RoleAuthority> roles = (Collection<RoleAuthority>) authentication
+                .getAuthorities();
 
         boolean isSysRole = false;
-        for (final RoleAuthority role : roles) {
+        for (RoleAuthority role : roles) {
             if (RoleAuthority.isSysRole(role.getAuthority())) {
                 isSysRole = true;
-                final String message = "[REGARDS FILTER] - Authorization denied for SYS Roles";
-                LOG.error(message);
-                pResponse.sendError(HttpStatus.UNAUTHORIZED.value(), message);
+                String message = "[REGARDS FILTER] - Authorization denied for SYS Roles";
+                LOGGER.error(message);
+                response.sendError(HttpStatus.UNAUTHORIZED.value(), message);
                 break;
             }
         }
 
         if (!isSysRole) {
-            pFilterChain.doFilter(pRequest, pResponse);
+            filterChain.doFilter(request, response);
         }
 
     }

@@ -19,40 +19,28 @@
 -->
 <configuration>
 
-	<include resource="fr/cnes/regards/framework/logbackappender/defaults.xml" />
+    <include resource="fr/cnes/regards/framework/logbackappender/defaults.xml"/>
 
-	<include resource="fr/cnes/regards/framework/logbackappender/syslog.xml" />
+    <include resource="fr/cnes/regards/framework/logbackappender/syslog.xml"/>
 
-	<appender name="regardsAmqpAppender"
-		class="ch.qos.logback.ext.spring.DelegatingLogbackAppender">
-		<filter
-			class="fr.cnes.regards.framework.logbackappender.RegardsAmqpAppenderFilter">
-			<level>INFO</level>
-		</filter>
-	</appender>
+    <!-- Log the user request authentication -->
+    <logger name="fr.cnes.regards.framework.authentication" level="INFO">
+        <appender-ref ref="SYSLOG-SECU"/>
+    </logger>
 
-	<!-- Log the user request authentication -->
-	<logger name="fr.cnes.regards.framework.authentication" level="INFO">
-		<appender-ref ref="SYSLOG-SECU" />
-	</logger>
+    <logger name="fr.cnes.regards.framework.security" level="INFO">
+        <appender-ref ref="SYSLOG-SECU"/>
+    </logger>
 
-	<logger name="fr.cnes.regards.framework.security" level="INFO">
-		<appender-ref ref="SYSLOG-SECU" />
-	</logger>
+    <logger name="fr.cnes.regards.framework.authentication.internal"
+            level="INFO">
+        <appender-ref ref="SYSLOG-SECU"/>
+    </logger>
 
-	<logger name="fr.cnes.regards.framework.authentication.internal"
-		level="INFO">
-		<appender-ref ref="SYSLOG-SECU" />
-	</logger>
+    <root level="info">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="SYSLOG"/>
+        <appender-ref ref="SYSLOG-SECU"/>
+    </root>
 
-	<logger name="fr.cnes.regards" level="INFO" additivity="true">
-		<appender-ref ref="regardsAmqpAppender" />
-	</logger>
-
-	<root level="info">
-		<appender-ref ref="STDOUT" />
-		<appender-ref ref="SYSLOG" />
-		<appender-ref ref="SYSLOG-SECU" />
-	</root>
-	
 </configuration>

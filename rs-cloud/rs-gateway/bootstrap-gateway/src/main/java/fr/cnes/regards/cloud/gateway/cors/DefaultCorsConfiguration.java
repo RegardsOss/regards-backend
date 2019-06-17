@@ -29,9 +29,7 @@ import org.springframework.web.filter.CorsFilter;
 
 /**
  * Configuration class for gateway CORS policy
- *
  * @author Marc Sordi
- *
  */
 @Configuration
 @EnableConfigurationProperties(CorsConfigurationProperties.class)
@@ -39,9 +37,6 @@ public class DefaultCorsConfiguration {
 
     /**
      * Enable cors for Zuul proxy
-     *
-     * @param custom
-     *            CORS properties
      * @return {@link CorsFilter} configuration
      */
     @Bean

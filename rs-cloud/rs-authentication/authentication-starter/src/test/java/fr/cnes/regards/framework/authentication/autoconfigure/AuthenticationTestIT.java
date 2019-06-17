@@ -18,8 +18,11 @@
  */
 package fr.cnes.regards.framework.authentication.autoconfigure;
 
+import java.time.OffsetDateTime;
 import java.util.Base64;
+import java.util.Date;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -32,21 +35,21 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import com.jayway.jsonpath.JsonPath;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
  * Class GatewayApplicationTest Test class for the Gateway application
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 @SpringBootTest(classes = AuthenticationTestConfiguration.class)
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(printOnlyOnFailure = false)
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=auth_it" })
 public class AuthenticationTestIT extends AbstractRegardsIT {
 
@@ -97,6 +100,9 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
     @Value("${regards.authentication.client.secret}")
     private String basicPassword;
 
+    @Value("${jwt.validityDelay:120}")
+    private long validityDelay = 120;
+
     /**
      * Spring Mock Mvc to simulare REST requests.
      */
@@ -105,8 +111,6 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
 
     /**
      * Check that the gateway spring context is valid
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Purpose("Check that the gateway spring context is valid")
     @Test
@@ -116,9 +120,6 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
 
     /**
      * Check access to unexisting endpoints. Response must be Unauthorized.
-     *
-     * @throws Exception
-     * @since 1.0-SNAPSHOT
      */
     @Test
     public void test() throws Exception {
@@ -131,8 +132,6 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
 
     /**
      * Test the Oauth2 authentication process. Test unauthorized for basic authentication fail.
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Purpose("Test the Oauth2 authentication process. Test unauthorized for basic authentication fail.")
@@ -148,10 +147,10 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
                     .andExpect(MockMvcResultMatchers.status().isUnauthorized());
 
             mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)
-                    .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + invalidBasicString)
-                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).param(GRANT_TYPE, PASSWORD)
-                    .param(SCOPE, "scope1").param(USER_NAME, "name1").param(PASSWORD, "mdp"))
-                    .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+                                    .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + invalidBasicString)
+                                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE)
+                                    .param(GRANT_TYPE, PASSWORD).param(SCOPE, "scope1").param(USER_NAME, "name1")
+                                    .param(PASSWORD, "mdp")).andExpect(MockMvcResultMatchers.status().isUnauthorized());
             // CHECKSTYLE:OFF
         } catch (final Exception e) {
             // CHECKSTYLE:ON
@@ -162,8 +161,6 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
 
     /**
      * Test the Oauth2 authentication process. Test unauthorized for user/password invalid.
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Purpose("Test the Oauth2 authentication process. Test unauthorized for user/password invalid.")
@@ -174,14 +171,12 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
             basicString = Base64.getEncoder().encodeToString(basicString.getBytes());
 
             mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)
-                    .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + basicString)
-                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).param(GRANT_TYPE, PASSWORD)
-                    .param(SCOPE, "PROJECT").param(USER_NAME, "name2")
-                    .param(PASSWORD, AuthenticationTestConfiguration.INVALID_PASSWORD))
+                                    .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + basicString)
+                                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE)
+                                    .param(GRANT_TYPE, PASSWORD).param(SCOPE, "PROJECT").param(USER_NAME, "name2")
+                                    .param(PASSWORD, AuthenticationTestConfiguration.INVALID_PASSWORD))
                     .andExpect(MockMvcResultMatchers.status().is4xxClientError());
-            // CHECKSTYLE:OFF
-        } catch (final Exception e) {
-            // CHECKSTYLE:ON
+        } catch (final Exception e) { // NOSONAR
             e.printStackTrace();
             Assert.fail(e.getMessage());
         }
@@ -189,8 +184,6 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
 
     /**
      * Test the Oauth2 authentication process. Get a valid token.
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Purpose("Test the Oauth2 authentication process. Get a valid token.")
@@ -200,12 +193,23 @@ public class AuthenticationTestIT extends AbstractRegardsIT {
             String basicString = String.format("%s:%s", basicUserName, basicPassword);
             basicString = Base64.getEncoder().encodeToString(basicString.getBytes());
 
-            mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)
-                    .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + basicString)
-                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE).param(GRANT_TYPE, PASSWORD)
-                    .param(SCOPE, "PROJECT").param(USER_NAME, "test@regards.fr")
-                    .param(PASSWORD, AuthenticationTestConfiguration.VALID_PASSWORD))
-                    .andExpect(MockMvcResultMatchers.status().isOk());
+            ResultActions result = mockMvc.perform(MockMvcRequestBuilders.post(TOKEN_ENDPOINT)
+                                                           .header(HttpHeaders.AUTHORIZATION, BASIC_AUTH + basicString)
+                                                           .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF8_VALUE)
+                                                           .param(GRANT_TYPE, PASSWORD).param(SCOPE, "PROJECT")
+                                                           .param(USER_NAME, "test@regards.fr").param(PASSWORD,
+                                                                                                      AuthenticationTestConfiguration.VALID_PASSWORD))
+                    .andExpect(MockMvcResultMatchers.status().isOk())
+                    .andExpect(MockMvcResultMatchers.jsonPath("$.access_token").exists())
+                    .andExpect(MockMvcResultMatchers.jsonPath("$.email").exists())
+                    .andExpect(MockMvcResultMatchers.jsonPath("$.scope").exists())
+                    .andExpect(MockMvcResultMatchers.jsonPath("$.tenant").exists())
+                    .andExpect(MockMvcResultMatchers.jsonPath("$.sub").exists())
+                    .andExpect(MockMvcResultMatchers.jsonPath("$.role").exists())
+                    .andExpect(MockMvcResultMatchers.jsonPath("$.token_type").exists())
+                    .andExpect(MockMvcResultMatchers.jsonPath("$.expires_in").exists())
+                    .andExpect(MockMvcResultMatchers.jsonPath("$.jti").exists());
+
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());

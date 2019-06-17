@@ -18,139 +18,115 @@
  along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.cloud</groupId>
-	<artifactId>bootstrap-gateway</artifactId>
-	<version>3.0.0-RELEASE</version>
-	<description>REGARDS Cloud - Gateway server</description>
-	<packaging>jar</packaging>
-	
-	<name>Bootstrap Gateway</name>
-	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
-	<inceptionYear>2016</inceptionYear>
-	<licenses>
-		<license>
-			<name>GNU General Public License (GNU GPL)</name>
-			<url>http://www.gnu.org/licenses/gpl.html</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-	<organization>
-		<name>CNES</name>
-		<url>https://cnes.fr/fr</url>
-	</organization>
-	<developers>
-		<developer>
-			<name>REGARDS Team</name>
-			<organization>CS Systèmes d'Information</organization>
-			<organizationUrl>http://www.c-s.fr</organizationUrl>
-		</developer>
-	</developers>
+    <groupId>fr.cnes.regards.cloud</groupId>
+    <artifactId>bootstrap-gateway</artifactId>
+    <description>REGARDS Cloud - Gateway server</description>
 
-	<parent>
-		<groupId>fr.cnes.regards</groupId>
-		<artifactId>regards-boot-parent</artifactId>
-		<version>3.0.0-RELEASE</version>
-		<relativePath></relativePath>
-	</parent>
+    <parent>
+        <groupId>fr.cnes.regards</groupId>
+        <artifactId>regards-boot-parent</artifactId>
+        <version>0.4.0</version>
+        <relativePath></relativePath>
+    </parent>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<sonar.language>java</sonar.language>
-		<sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
-		<fr.cnes.regards.docker.image.name>rs-gateway</fr.cnes.regards.docker.image.name>
-	</properties>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <sonar.language>java</sonar.language>
+        <sonar.jacoco.reportMissing.force.zero>true</sonar.jacoco.reportMissing.force.zero>
+        <fr.cnes.regards.docker.image.name>rs-gateway</fr.cnes.regards.docker.image.name>
+    </properties>
 
-	<dependencies>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>microservice-logger</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-config</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-zuul</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-eureka</artifactId>
-		</dependency>
-		<!-- Spring boot config -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-autoconfigure</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-starter-tomcat</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-jetty</artifactId>
-		</dependency>
-		<!-- Activate actuator -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-actuator</artifactId>
-		</dependency>
-		<!-- Tests -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>microservice-logger</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-config</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-zuul</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+        <!-- Spring boot config -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-tomcat</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jetty</artifactId>
+        </dependency>
+        <!-- Activate actuator -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <!-- Tests -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework.test</groupId>
+            <artifactId>regards-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
-	<profiles>
-		<profile>
-			<id>default</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<properties>
-				<!-- Default properties -->
-				<filter.name>development</filter.name>
-			</properties>
-			<build>
-				<resources>
-					<resource>
-						<directory>src/main/resources</directory>
-						<filtering>true</filtering>
-					</resource>
-				</resources>
-				<filters>
-					<filter>src/main/filters/${filter.name}.properties</filter>
-				</filters>
-			</build>
-		</profile>
-		<profile>
-			<id>docker</id>
-			<properties>
-				<!-- Default properties -->
-				<filter.name>docker</filter.name>
-			</properties>
-			<build>
-				<resources>
-					<resource>
-						<directory>src/main/resources</directory>
-						<filtering>true</filtering>
-					</resource>
-				</resources>
-				<filters>
-					<filter>src/main/filters/${filter.name}.properties</filter>
-				</filters>
-			</build>
-		</profile>
-		<profile>
-			<id>delivery</id>
-		</profile>
-	</profiles>
+    <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <!-- Default properties -->
+                <filter.name>development</filter.name>
+            </properties>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <filtering>true</filtering>
+                    </resource>
+                </resources>
+                <filters>
+                    <filter>src/main/filters/${filter.name}.properties</filter>
+                </filters>
+            </build>
+        </profile>
+        <profile>
+            <id>docker</id>
+            <properties>
+                <!-- Default properties -->
+                <filter.name>docker</filter.name>
+            </properties>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <filtering>true</filtering>
+                    </resource>
+                </resources>
+                <filters>
+                    <filter>src/main/filters/${filter.name}.properties</filter>
+                </filters>
+            </build>
+        </profile>
+        <profile>
+            <id>delivery</id>
+        </profile>
+    </profiles>
 </project>
 

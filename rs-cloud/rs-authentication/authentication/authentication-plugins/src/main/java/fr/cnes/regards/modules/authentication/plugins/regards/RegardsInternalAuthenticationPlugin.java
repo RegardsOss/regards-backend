@@ -35,16 +35,13 @@ import fr.cnes.regards.modules.authentication.plugins.IAuthenticationPlugin;
 import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPluginResponse;
 
 /**
- *
  * Class SimpleAuthentication
  *
  * Regards internal authentication plugin
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 @Plugin(author = "CSSI", description = "Regards internal authentication plugin",
-        id = "RegardsInternalAuthenticationPlugin", version = "1.0", contact = "regards@c-s.fr", licence = "GPL V3",
+        id = "RegardsInternalAuthenticationPlugin", version = "1.0", contact = "regards@c-s.fr", license = "GPLv3",
         owner = "CNES", url = "www.cnes.fr")
 public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugin {
 
@@ -92,6 +89,9 @@ public class RegardsInternalAuthenticationPlugin implements IAuthenticationPlugi
             if (validateResponse.getBody()) {
                 accessGranted = validateResponse.getBody();
             } else {
+                // This probably means that the password is not correct.
+                // As we are afraid from hackers,
+                // we do not want the end user to know that the account exists so we are lying.
                 errorMessage = String.format("[REMOTE ADMINISTRATION] - validatePassword - Accound %s doesn't exists",
                                              pEmail);
             }
