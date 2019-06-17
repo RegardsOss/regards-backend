@@ -72,6 +72,7 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.dao.ICachedFileRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
@@ -663,7 +664,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
                 nonRestoredFiles = checkPrepareResult(restorabledataFiles, workingSubsets);
                 // Scheduled restoration job
                 scheduleRestorationJob(workingSubsets.getWorkingSubSets(), pluginConfId);
-            } catch (ModuleException e) {
+            } catch (ModuleException | PluginUtilsRuntimeException e) {
                 LOGGER.error(e.getMessage(), e);
                 nonRestoredFiles.addAll(restorabledataFiles);
             }

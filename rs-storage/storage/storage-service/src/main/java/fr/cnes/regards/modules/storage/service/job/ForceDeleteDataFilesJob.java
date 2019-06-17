@@ -7,6 +7,7 @@ import java.util.Optional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
@@ -40,7 +41,7 @@ public class ForceDeleteDataFilesJob extends AbstractStoreFilesJob {
                                       pluginService.getPluginConfiguration(confIdToUse).getLabel()),
                         e);
             }
-        } catch (ModuleException e) {
+        } catch (ModuleException | PluginUtilsRuntimeException e) {
             //throwing new runtime allows us to make the job fail.
             throw new RsRuntimeException(e);
         }

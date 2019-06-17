@@ -46,6 +46,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.file.CommonFileUtils;
 import fr.cnes.regards.framework.utils.file.DownloadUtils;
+import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.modules.storage.domain.StorageException;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.IDataStorage;
@@ -254,7 +255,7 @@ public abstract class AbstractStoreFilesJob extends AbstractJob<Void> {
             @SuppressWarnings("rawtypes")
             IDataStorage storagePlugin = pluginService.getPlugin(confIdToUse);
             storagePlugin.store(workingSubset, replaceMode, progressManager);
-        } catch (ModuleException e) {
+        } catch (ModuleException | PluginUtilsRuntimeException e) {
             // throwing new runtime allows us to make the job fail.
             throw new JobRuntimeException(e);
         }
