@@ -19,16 +19,16 @@
 package fr.cnes.regards.framework.oais.urn;
 
 /**
- *
  * List of available entity types
- *
  * @author msordi
- *
  */
 public enum EntityType {
 
     /**
      * Possible model type
      */
-    COLLECTION, DOCUMENT, DATA, DATASET
+    COLLECTION,
+    DOCUMENT,
+    DATA,
+    DATASET
 }

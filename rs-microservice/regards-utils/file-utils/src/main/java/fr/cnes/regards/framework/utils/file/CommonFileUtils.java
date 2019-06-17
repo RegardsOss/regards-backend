@@ -18,11 +18,7 @@
  */
 package fr.cnes.regards.framework.utils.file;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.FileImageInputStream;
-import javax.imageio.stream.ImageInputStream;
-import java.awt.*;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -31,6 +27,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Set;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.ImageInputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +52,7 @@ public final class CommonFileUtils {
     /**
      * Return the first non existing file name into the pDirectory {@link Path} given and related to the given {@link String} pOrigineFileName.
      * If a file exists in the pDirectory with the pOrigineFileName as name, so this method return a file name as :<br/>
-     *  [pOrigineFileName without extension]_[i].[pOrigineFileName extension] where i is an integer.
+     * [pOrigineFileName without extension]_[i].[pOrigineFileName extension] where i is an integer.
      * @param pDirectory {@link Path} Directory to scan for existings files.
      * @param pOrigineFileName {@link String} Original file name wanted.
      * @return {@link String} First available file name.
@@ -68,9 +69,7 @@ public final class CommonFileUtils {
         while (fileNames.contains(availableFileName)) {
             int index = availableFileName.indexOf('.');
             if (index > 0) {
-                availableFileName = String.format("%s_%d.%s",
-                                                  availableFileName.substring(0, index),
-                                                  cpt,
+                availableFileName = String.format("%s_%d.%s", availableFileName.substring(0, index), cpt,
                                                   availableFileName.substring(index + 1));
             }
             cpt++;
@@ -82,11 +81,6 @@ public final class CommonFileUtils {
 
     /**
      * Write from a given {@link FileInputStream} to the output given {@link File} a maximum of <maxSizeToWrite> bytes.
-     * @param pInputStream {@link FileInputStream} reader
-     * @param outputFile {@link File} to write to
-     * @param maxSizeToWrite maximum number of bytes to write
-     * @return TRUE if there is more bytes to read from pInputStream after writing the maximum number of bytes.
-     * @throws IOException I/O exception.
      */
     public static void writeInFile(FileInputStream pInputStream, OutputStream os) throws IOException {
         byte[] buffer = new byte[1024];
@@ -112,7 +106,7 @@ public final class CommonFileUtils {
         Iterator<ImageReader> iter = ImageIO.getImageReadersBySuffix(suffix);
         while (iter.hasNext()) {
             ImageReader reader = iter.next();
-            try ( ImageInputStream stream = new FileImageInputStream(imgFile) ) {
+            try (ImageInputStream stream = new FileImageInputStream(imgFile)) {
                 reader.setInput(stream);
                 int width = reader.getWidth(reader.getMinIndex());
                 int height = reader.getHeight(reader.getMinIndex());

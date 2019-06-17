@@ -44,7 +44,6 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 
 /**
  * Unit testing of {@link PluginUtils}.
- *
  * @author Christophe Mertz
  */
 public class PluginUtilsTest extends PluginUtilsTestConstants {
@@ -81,7 +80,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
         Assert.assertNotNull(pluginMetaData.getContact());
         Assert.assertNotNull(pluginMetaData.getOwner());
         Assert.assertNotNull(pluginMetaData.getVersion());
-        Assert.assertNotNull(pluginMetaData.getLicence());
+        Assert.assertNotNull(pluginMetaData.getLicense());
 
         LOGGER.debug(ENDING + toString());
     }
@@ -110,7 +109,7 @@ public class PluginUtilsTest extends PluginUtilsTestConstants {
 
         LOGGER.debug(STARTING + toString());
 
-        List<String> values = new ArrayList<String>();
+        List<String> values = new ArrayList<>();
         values.add("test1");
         values.add("test2");
         /*

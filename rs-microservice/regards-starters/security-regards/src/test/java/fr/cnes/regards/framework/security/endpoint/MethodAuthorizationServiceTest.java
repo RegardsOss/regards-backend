@@ -47,13 +47,10 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
- *
  * Class MethodAuthorizationServiceTest
  *
  * Test class for method authorization service.
- *
  * @author sbinda
- * @since 1.0-SNAPSHOT
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestConfiguration.class)
@@ -71,19 +68,13 @@ public class MethodAuthorizationServiceTest {
     private MethodAuthorizationService methodAuthService;
 
     /**
-     *
      * Check that the resource voter accept or denied access to endpoints controller
-     *
-     * @throws NoSuchMethodException
-     *             test internal error
-     * @throws SecurityException
-     *             test internal error
-     * @since 1.0-SNAPSHOT
+     * @throws SecurityException     test internal error
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify access granted/denied to endpoints defined in authorized resources for a specific tenant")
     @Test
-    public void testResourceAccessVoterVote() throws NoSuchMethodException, SecurityException {
+    public void testResourceAccessVoterVote() throws SecurityException {
 
         /**
          *
@@ -92,13 +83,13 @@ public class MethodAuthorizationServiceTest {
          * Test controller
          *
          * @author sbinda
-         * @since 1.0-SNAPSHOT
+         *
          */
         @RequestMapping
         class Controller {
 
             @ResourceAccess(description = "description") // default role here is not important as it is override by a
-                                                         // property file
+            // property file
             @RequestMapping(value = "/endpoint1", method = RequestMethod.GET)
             public Object endpoint() {
                 return null;
@@ -126,19 +117,13 @@ public class MethodAuthorizationServiceTest {
     }
 
     /**
-     *
      * Check that the resource voter denied access to endpoints controller not auhtorized
-     *
-     * @throws NoSuchMethodException
-     *             test internal error
-     * @throws SecurityException
-     *             test internal error
-     * @since 1.0-SNAPSHOT
+     * @throws SecurityException     test internal error
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify access denied to endpoints not defined in authorized resources")
     @Test
-    public void testResourceAccessVoterVoteDenied() throws NoSuchMethodException, SecurityException {
+    public void testResourceAccessVoterVoteDenied() throws SecurityException {
 
         /**
          *
@@ -147,7 +132,7 @@ public class MethodAuthorizationServiceTest {
          * Test controller
          *
          * @author sbinda
-         * @since 1.0-SNAPSHOT
+         *
          */
         @RequestMapping
         class Controller {
@@ -175,20 +160,12 @@ public class MethodAuthorizationServiceTest {
     }
 
     /**
-     *
      * testManagedAuthoritiesByTenantAndResources
-     *
-     * @throws fr.cnes.regards.framework.security.domain.SecurityException
-     *             if error occurs
-     *
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify internal management of resources endponts by tenants and resources")
     @Test
-    public void testManagedAuthoritiesByTenantAndResources()
-            throws fr.cnes.regards.framework.security.domain.SecurityException {
+    public void testManagedAuthoritiesByTenantAndResources() {
 
         final String resourcePath = "new/path";
         final int expectedResult = 6;

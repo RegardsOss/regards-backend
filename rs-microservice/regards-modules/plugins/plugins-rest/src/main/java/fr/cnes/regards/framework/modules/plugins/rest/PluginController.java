@@ -173,7 +173,7 @@ public class PluginController implements IResourceController<PluginConfiguration
     @ResourceAccess(description = "Get all the plugin types (ie interface annotated with @PluginInterface)")
     public ResponseEntity<List<Resource<String>>> getPluginTypes(
             @RequestParam(name = "available", required = false) Boolean available) {
-        if ((available != null) && (available.booleanValue() == true)) {
+        if (available != null && available) {
             Set<String> types = pluginService.getAvailablePluginTypes();
             List<Resource<String>> resources = types.stream().map(Resource::new).collect(Collectors.toList());
             return new ResponseEntity<>(resources, HttpStatus.OK);
@@ -215,7 +215,7 @@ public class PluginController implements IResourceController<PluginConfiguration
      * Get all the {@link PluginConfiguration} for a specific plugin type.</br>
      * If any specific plugin type is defined, get all the {@link PluginConfiguration}.
      * @param pluginType an interface name, that implements {@link PluginInterface}.<br>
-     *            This parameter is optional.
+     * This parameter is optional.
      * @return a {@link List} of {@link PluginConfiguration}
      * @throws EntityNotFoundException the specific plugin type name is unknown
      */
@@ -245,7 +245,7 @@ public class PluginController implements IResourceController<PluginConfiguration
     /**
      * Create a new {@link PluginConfiguration}.
      * @param pluginConf a {@link PluginConfiguration}
-     * @return the {@link PluginConfiguration] created
+     * @return the created {@link PluginConfiguration}
      * @throws ModuleException if problem occurs
      */
     @RequestMapping(value = PLUGINS_PLUGINID_CONFIGS, method = RequestMethod.POST,
@@ -355,7 +355,7 @@ public class PluginController implements IResourceController<PluginConfiguration
     @Override
     public Resource<PluginConfiguration> toResource(PluginConfiguration element, Object... extras) {
         Resource<PluginConfiguration> resource = null;
-        if ((element != null) && (element.getId() != null)) {
+        if (element != null && element.getId() != null) {
             resource = resourceService.toResource(element);
             resourceService.addLink(resource, this.getClass(), "getPluginConfiguration", LinkRels.SELF,
                                     MethodParamFactory.build(String.class, element.getPluginId()),

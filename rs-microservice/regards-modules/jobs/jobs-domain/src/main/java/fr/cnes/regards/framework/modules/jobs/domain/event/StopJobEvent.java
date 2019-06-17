@@ -35,7 +35,6 @@ public class StopJobEvent implements ISubscribable {
 
     /**
      * Set the job id
-     * @param jobId
      */
     public void setJobId(UUID jobId) {
         this.jobId = jobId;

@@ -19,11 +19,8 @@
 package fr.cnes.regards.framework.module.rest.exception;
 
 /**
- *
  * Exception indicating a request has too many results
- *
  * @author Marc Sordi
- *
  */
 @SuppressWarnings("serial")
 public class TooManyResultsException extends ModuleException {

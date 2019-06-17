@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Gary Russell
- *
  */
 public class ServiceImpl1 implements Service {
 

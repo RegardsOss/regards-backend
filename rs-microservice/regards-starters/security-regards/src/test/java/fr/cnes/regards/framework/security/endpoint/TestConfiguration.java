@@ -32,13 +32,10 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.security.utils.jwt.JWTService;
 
 /**
- *
  * Class TestConfiguration
  *
  * Configuration for spring injections
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 @Configuration
 @PropertySource("classpath:auth-provider-test.properties")

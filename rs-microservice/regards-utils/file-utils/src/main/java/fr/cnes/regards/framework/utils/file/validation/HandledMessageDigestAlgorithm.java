@@ -14,7 +14,6 @@ import java.security.MessageDigest;
  * a handled algorithm by the current jvm.
  * <br/>
  * See for more information {@link MessageDigest}
- *
  * @author Sylvain VISSIERE-GUERINET
  */
 @Target({ ElementType.FIELD, ElementType.PARAMETER })

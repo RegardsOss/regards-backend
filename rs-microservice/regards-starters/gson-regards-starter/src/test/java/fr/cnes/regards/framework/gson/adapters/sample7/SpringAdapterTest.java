@@ -36,11 +36,8 @@ import com.google.gson.JsonParseException;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactoryBean;
 
 /**
- *
  * Test {@link GsonTypeAdapterFactoryBean}
- *
  * @author Marc Sordi
- *
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { SpringAdapterConfiguration.class })

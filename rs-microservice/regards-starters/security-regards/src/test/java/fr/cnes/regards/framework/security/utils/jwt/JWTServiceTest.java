@@ -89,16 +89,15 @@ public class JWTServiceTest {
 
     @Test
     public void generateUserSpecificToken() throws InterruptedException, InvalidJwtException {
-        @SuppressWarnings("serial")
-        Map<String, Object> addParams = new HashMap<String, Object>() {
+        @SuppressWarnings("serial") Map<String, Object> addParams = new HashMap<String, Object>() {
 
             {
                 put("toto", "titi");
             }
         };
-        String token = jwtService.generateToken(TENANT, LOGIN, EMAIL, ROLE,
-                                                OffsetDateTime.now().plus(3, ChronoUnit.DAYS), addParams, "pouet",
-                                                true);
+        String token = jwtService
+                .generateToken(TENANT, LOGIN, EMAIL, ROLE, OffsetDateTime.now().plus(3, ChronoUnit.DAYS), addParams,
+                               "pouet", true);
 
         try {
             jwtService.parseToken(token, "teuop");
@@ -108,8 +107,8 @@ public class JWTServiceTest {
         Claims claims = jwtService.parseToken(token, "pouet");
         Assert.assertNotNull(claims.get("toto"));
 
-        String expiredToken = jwtService.generateToken(TENANT, LOGIN, EMAIL, ROLE, OffsetDateTime.now(), addParams,
-                                                       "pouet", false);
+        String expiredToken = jwtService
+                .generateToken(TENANT, LOGIN, EMAIL, ROLE, OffsetDateTime.now(), addParams, "pouet", false);
         Thread.sleep(1_000);
         try {
             claims = jwtService.parseToken(expiredToken, "pouet");

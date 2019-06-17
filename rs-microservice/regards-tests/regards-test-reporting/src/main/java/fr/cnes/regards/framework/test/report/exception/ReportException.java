@@ -20,9 +20,7 @@ package fr.cnes.regards.framework.test.report.exception;
 
 /**
  * XML helper generic exception
- *
  * @author msordi
- *
  */
 public class ReportException extends Exception {
 

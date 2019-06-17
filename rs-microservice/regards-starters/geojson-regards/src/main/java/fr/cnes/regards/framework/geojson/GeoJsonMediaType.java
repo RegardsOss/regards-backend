@@ -22,21 +22,17 @@ import org.springframework.http.MediaType;
 
 /**
  * Utility class for rfc7946 registered media type
- *
  * @author Marc Sordi
- *
  */
 public final class GeoJsonMediaType {
 
     /**
      * Public constant media type for {@code application/geo+json}.
-     * @see #APPLICATION_JSON_UTF8
      */
     public static final MediaType APPLICATION_GEOJSON;
 
     /**
      * A String equivalent of {@link GeoJsonMediaType#APPLICATION_GEOJSON}.
-     * @see #APPLICATION_JSON_UTF8_VALUE
      */
     public static final String APPLICATION_GEOJSON_VALUE = "application/geo+json";
 

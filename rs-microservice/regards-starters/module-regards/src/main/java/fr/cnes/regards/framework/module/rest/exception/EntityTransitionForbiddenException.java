@@ -19,8 +19,7 @@
 package fr.cnes.regards.framework.module.rest.exception;
 
 /**
- * Exception thrown when an illegal transition is called on an entity which state is managed by a workflow, like
- * {@link Account}s and {@link ProjectUser}s.<br>
+ * Exception thrown when an illegal transition is called on an entity which state is managed by a workflow
  *
  * @author Xavier-Alexandre Brochard
  * @since 1.1-SNAPSHOT

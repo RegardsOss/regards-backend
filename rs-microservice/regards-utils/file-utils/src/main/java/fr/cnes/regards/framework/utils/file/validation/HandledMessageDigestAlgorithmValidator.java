@@ -7,10 +7,10 @@ import java.util.Set;
 
 /**
  * Validate {@link HandledMessageDigestAlgorithm}
- *
  * @author Sylvain VISSIERE-GUERINET
  */
-public class HandledMessageDigestAlgorithmValidator implements ConstraintValidator<HandledMessageDigestAlgorithm, String> {
+public class HandledMessageDigestAlgorithmValidator
+        implements ConstraintValidator<HandledMessageDigestAlgorithm, String> {
 
     @Override
     public void initialize(HandledMessageDigestAlgorithm constraintAnnotation) {
@@ -20,10 +20,10 @@ public class HandledMessageDigestAlgorithmValidator implements ConstraintValidat
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         Set<String> digestAlgorithms = Security.getAlgorithms("MessageDigest");
-        if(value == null) {
+        if (value == null) {
             return true;
         }
-        if(digestAlgorithms != null && digestAlgorithms.contains(value)) {
+        if (digestAlgorithms != null && digestAlgorithms.contains(value)) {
             return true;
         } else {
             String messageTemplate = context.getDefaultConstraintMessageTemplate();

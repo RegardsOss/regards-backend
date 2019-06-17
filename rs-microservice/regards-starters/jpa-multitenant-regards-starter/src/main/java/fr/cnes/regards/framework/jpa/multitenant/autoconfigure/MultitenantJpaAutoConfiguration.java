@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.flywaydb.core.Flyway;
 import org.hibernate.MultiTenancyStrategy;
 import org.hibernate.cfg.Environment;
 import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
@@ -34,10 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
@@ -62,19 +58,14 @@ import fr.cnes.regards.framework.jpa.multitenant.exception.JpaMultitenantExcepti
 import fr.cnes.regards.framework.jpa.multitenant.properties.MultitenantDaoProperties;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.CurrentTenantIdentifierResolverImpl;
 import fr.cnes.regards.framework.jpa.multitenant.resolver.DataSourceBasedMultiTenantConnectionProviderImpl;
-import fr.cnes.regards.framework.jpa.multitenant.resolver.DefaultTenantConnectionResolver;
-import fr.cnes.regards.framework.jpa.multitenant.resolver.ITenantConnectionResolver;
 import fr.cnes.regards.framework.jpa.utils.DaoUtils;
 import fr.cnes.regards.framework.jpa.utils.IDatasourceSchemaHelper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
- *
  * Configuration class to define hibernate/jpa multitenancy databases strategy
- *
  * @author Sébastien Binda
  * @author Sylvain Vissiere-Guerinet
- * @since 1.0-SNAPSHOT
  */
 @Configuration
 @EnableJpaRepositories(
@@ -84,7 +75,6 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 @EnableTransactionManagement
 @EnableConfigurationProperties({ JpaProperties.class })
 @AutoConfigureAfter({ GsonAutoConfiguration.class, AmqpAutoConfiguration.class })
-@AutoConfigureBefore({ FlywayAutoConfiguration.class })
 @ConditionalOnProperty(prefix = "regards.jpa", name = "multitenant.enabled", matchIfMissing = true)
 public class MultitenantJpaAutoConfiguration {
 
@@ -129,47 +119,26 @@ public class MultitenantJpaAutoConfiguration {
     private EntityManagerFactoryBuilder builder;
 
     /**
-     *
      * Constructor. Check for classpath errors.
-     *
-     * @throws MultiDataBasesException
-     *
-     * @since 1.0-SNAPSHOT
      */
     public MultitenantJpaAutoConfiguration() throws MultiDataBasesException {
         DaoUtils.checkClassPath(DaoUtils.ROOT_PACKAGE);
     }
 
     /**
-     * This bean is not used at the moment but prevent flyway auto configuration in a single point
-     * @return
-     */
-    @Bean
-    @ConditionalOnMissingBean
-    public Flyway flyway() {
-        return new Flyway();
-    }
-
-    /**
-     *
      * Create the tenant resolver. Select the tenant when a connection is needed.
-     *
      * @return {@link CurrentTenantIdentifierResolverImpl}
-     * @since 1.0-SNAPSHOT
      */
     @Bean
     public CurrentTenantIdentifierResolver currentTenantIdentifierResolver(
-            IRuntimeTenantResolver pThreadTenantResolver) {
-        this.currentTenantIdentifierResolver = new CurrentTenantIdentifierResolverImpl(pThreadTenantResolver);
+            IRuntimeTenantResolver threadTenantResolver) {
+        this.currentTenantIdentifierResolver = new CurrentTenantIdentifierResolverImpl(threadTenantResolver);
         return currentTenantIdentifierResolver;
     }
 
     /**
-     *
      * Create the connection provider. Used to select datasource for a given tenant
-     *
      * @return {@link DataSourceBasedMultiTenantConnectionProviderImpl}
-     * @since 1.0-SNAPSHOT
      */
     @Bean
     public AbstractDataSourceBasedMultiTenantConnectionProviderImpl connectionProvider() {
@@ -178,9 +147,7 @@ public class MultitenantJpaAutoConfiguration {
 
     /**
      * Create Transaction manager for multitenancy projects datasources
-     *
      * @return {@link PlatformTransactionManager}
-     * @throws JpaMultitenantException
      */
     @Bean(name = MultitenantDaoProperties.MULTITENANT_TRANSACTION_MANAGER)
     public PlatformTransactionManager multitenantsJpaTransactionManager() throws JpaMultitenantException {
@@ -191,16 +158,14 @@ public class MultitenantJpaAutoConfiguration {
 
     /**
      * Create EntityManagerFactory for multitenancy datasources
-     *
      * @return {@link LocalContainerEntityManagerFactoryBean}
-     * @throws JpaMultitenantException
      */
     @Bean(name = "multitenantsEntityManagerFactory")
-    public LocalContainerEntityManagerFactoryBean multitenantsEntityManagerFactory() throws JpaMultitenantException {
+    public LocalContainerEntityManagerFactoryBean multitenantsEntityManagerFactory() {
         // Use the first dataSource configuration to init the entityManagerFactory
         if (dataSources.isEmpty()) {
             throw new ApplicationContextException("No datasource defined. JPA is not able to start."
-                    + " You should define a datasource in the application.properties of the current microservice");
+                                                          + " You should define a datasource in the application.properties of the current microservice");
         }
         final DataSource defaultDataSource = dataSources.values().iterator().next();
 
@@ -217,28 +182,14 @@ public class MultitenantJpaAutoConfiguration {
         final List<Class<?>> packages = DaoUtils.scanPackagesForJpa(Entity.class, InstanceEntity.class, packagesToScan);
 
         return builder.dataSource(defaultDataSource).persistenceUnit(PERSITENCE_UNIT_NAME)
-                .packages(packages.toArray(new Class[packages.size()])).properties(hibernateProps).jta(false).build();
+                .packages(packages.toArray(new Class[0])).properties(hibernateProps).jta(false).build();
     }
 
-    /**
-     *
-     * Create a default TenantConnection resolver if none defined.
-     *
-     * @return ITenantConnectionResolver
-     * @since 1.0-SNAPSHOT
-     */
-    @Bean
-    @ConditionalOnMissingBean
-    public ITenantConnectionResolver defaultTenantConnectionResolver() {
-        return new DefaultTenantConnectionResolver();
-    }
+
 
     /**
      * this bean allow us to set <b>our</b> instance of Gson, customized for the serialization of any data as jsonb into
      * the database
-     *
-     * @param pGson
-     * @return
      */
     @Bean
     public Void setGsonIntoGsonUtil(Gson pGson) {

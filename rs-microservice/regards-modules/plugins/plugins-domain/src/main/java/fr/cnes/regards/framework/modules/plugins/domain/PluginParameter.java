@@ -29,6 +29,7 @@ import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -42,6 +43,7 @@ import javax.validation.constraints.NotNull;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
@@ -84,7 +86,7 @@ public class PluginParameter implements IIdentifiable<Long> {
      * configuration. For example, a datasource (used by Dataset) is a plugin configuration and has a paramater
      * "connection" which is also a plugin configuration (the connection to database)
      */
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "next_conf_id", foreignKey = @ForeignKey(name = "fk_param_next_conf_id"), nullable = true)
     private PluginConfiguration pluginConfiguration;
 
@@ -96,7 +98,7 @@ public class PluginParameter implements IIdentifiable<Long> {
     /**
      * The set of possible values for the dynamic parameter
      */
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "t_plugin_param_dyn_value", joinColumns = @JoinColumn(name = "id"),
             foreignKey = @ForeignKey(name = "fk_plugin_param_dyn_value_param_id"))
     @Column(name = "value")
@@ -147,27 +149,27 @@ public class PluginParameter implements IIdentifiable<Long> {
         this.pluginConfiguration = pluginConfiguration;
     }
 
-    public final String getName() {
+    public String getName() {
         return name;
     }
 
-    public final void setName(final String pName) {
+    public void setName(final String pName) {
         name = pName;
     }
 
-    public final Boolean isDynamic() {
+    public Boolean isDynamic() {
         return dynamic;
     }
 
-    public final void setIsDynamic(Boolean pIsDynamic) {
+    public void setIsDynamic(Boolean pIsDynamic) {
         dynamic = pIsDynamic;
     }
 
-    public final PluginConfiguration getPluginConfiguration() {
+    public PluginConfiguration getPluginConfiguration() {
         return pluginConfiguration;
     }
 
-    public final void setPluginConfiguration(PluginConfiguration pPluginConfiguration) {
+    public void setPluginConfiguration(PluginConfiguration pPluginConfiguration) {
         pluginConfiguration = pPluginConfiguration;
     }
 
@@ -181,14 +183,14 @@ public class PluginParameter implements IIdentifiable<Long> {
 
     public List<String> getDynamicsValuesAsString() {
         final List<String> result = new ArrayList<>();
-        if ((dynamicsValues != null) && !dynamicsValues.isEmpty()) {
+        if (dynamicsValues != null && !dynamicsValues.isEmpty()) {
             dynamicsValues.forEach(d -> result.add(d.getValue()));
         }
         return result;
     }
 
     public boolean isValidDynamicValue(String value) {
-        if ((dynamicsValues == null) || dynamicsValues.isEmpty()) {
+        if (dynamicsValues == null || dynamicsValues.isEmpty()) {
             // No restriction
             return true;
         } else {
@@ -233,13 +235,15 @@ public class PluginParameter implements IIdentifiable<Long> {
     public String getStripParameterValue() {
         // Strip quotes using Gson
         Gson gson = new Gson();
-        String value;
-        String tmp = this.value.getValue();
-        if (tmp.startsWith("\"")) {
-            JsonElement el = gson.fromJson(tmp, JsonElement.class);
-            value = (el == null) ? null : el.getAsString();
-        } else {
-            value = tmp;
+        String value = null;
+        if (this.value != null) {
+            String tmp = this.value.getValue();
+            if (tmp.startsWith("\"")) {
+                JsonElement el = gson.fromJson(tmp, JsonElement.class);
+                value = el == null ? null : el.getAsString();
+            } else {
+                value = tmp;
+            }
         }
         return value;
     }
@@ -248,7 +252,7 @@ public class PluginParameter implements IIdentifiable<Long> {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = (prime * result) + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + (name == null ? 0 : name.hashCode());
         return result;
     }
 
@@ -270,24 +274,16 @@ public class PluginParameter implements IIdentifiable<Long> {
         PluginParameter other = (PluginParameter) obj;
 
         if (name == null) {
-            if (other.name != null) {
-                return false;
-            }
-        } else if (!name.equals(other.name)) {
-            return false;
+            return other.name == null;
+        } else {
+            return name.equals(other.name);
         }
-        return true;
     }
 
     @Override
     public String toString() {
-        StringBuilder strBuilder = new StringBuilder();
-        strBuilder.append(name);
-        strBuilder.append(" - ");
-        strBuilder.append(value);
-        strBuilder.append(" - ");
-        strBuilder.append(dynamic.toString());
-        return strBuilder.toString();
+        String strBuilder = name + " - " + value + " - " + dynamic.toString();
+        return strBuilder;
     }
 
     /**

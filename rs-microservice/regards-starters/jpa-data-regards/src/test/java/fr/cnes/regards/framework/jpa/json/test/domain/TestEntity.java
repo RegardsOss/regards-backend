@@ -34,7 +34,6 @@ import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @TypeDefs({ @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class) })
 @Entity

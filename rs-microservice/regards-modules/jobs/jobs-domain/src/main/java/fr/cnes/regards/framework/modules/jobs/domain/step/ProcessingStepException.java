@@ -22,7 +22,6 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 
 /**
  * Checked exception for processing step
- *
  * @author Sébastien Binda
  * @author Marc Sordi
  */

@@ -36,9 +36,7 @@ import com.google.common.collect.Sets;
 
 /**
  * Utils to cut files into multiple files.
- *
  * @author sbinda
- *
  */
 public final class CutFileUtils {
 
@@ -125,7 +123,6 @@ public final class CutFileUtils {
      * @param pFilePathToRebuild {@link Path} to the result file
      * @param pOrderedPartFilePaths {@link SortedSet} of {@link Path}s of part files. <br/>
      * The set have to be ordered from the first part of the result file to the last one.
-     * @throws IOException
      */
     public static void rebuildCutedfile(Path pFilePathToRebuild, SortedSet<Path> pOrderedPartFilePaths)
             throws IOException {
@@ -150,7 +147,6 @@ public final class CutFileUtils {
      * Read and write the given {@link Path} file to the given {@link FileOutputStream}
      * @param pOutputStream {@link FileOutputStream} of the result.
      * @param filePathToWrite {@link Path} of the file to read and write.
-     * @throws IOException
      */
     private static void writeFile(FileOutputStream pOutputStream, Path filePathToWrite) throws IOException {
         byte[] buffer = new byte[BUFFER_SIZE];

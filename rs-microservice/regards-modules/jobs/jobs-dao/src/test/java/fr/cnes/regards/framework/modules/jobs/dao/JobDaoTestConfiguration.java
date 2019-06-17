@@ -9,9 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 /**
- * 
  * @author Léo Mieulet
- *
  */
 @Configuration
 @EnableAutoConfiguration(exclude = { DataSourceAutoConfiguration.class })

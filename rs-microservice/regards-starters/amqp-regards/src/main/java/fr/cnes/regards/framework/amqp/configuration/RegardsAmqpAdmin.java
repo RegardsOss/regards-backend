@@ -21,7 +21,10 @@ package fr.cnes.regards.framework.amqp.configuration;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,10 +32,13 @@ import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Exchange;
+import org.springframework.amqp.core.ExchangeBuilder;
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.IPollable;
@@ -42,10 +48,8 @@ import fr.cnes.regards.framework.amqp.event.WorkerMode;
 
 /**
  * This class manage tenant AMQP administration. Each tenant is hosted in an AMQP virtual host.<br/>
- *
  * @author svissier
  * @author Marc Sordi
- *
  */
 public class RegardsAmqpAdmin implements IAmqpAdmin {
 
@@ -64,7 +68,7 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     /**
      * Default routing key
      */
-    private static final String DEFAULT_ROUTING_KEY = "";
+    public static final String DEFAULT_ROUTING_KEY = "";
 
     /**
      * This constant allows to defined a message to send with a high priority
@@ -77,25 +81,50 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(RegardsAmqpAdmin.class);
 
+    public static final String REGARDS_DLX = "regards.DLX";
+
+    public static final String REGARDS_DLQ = "regards.DLQ";
+
     /**
      * Bean allowing us to declare queue, exchange, binding
      */
     @Autowired
     private RabbitAdmin rabbitAdmin;
 
+    @Value("${spring.application.name}")
+    private String microserviceName;
+
     /**
-     * Microservice type identifier
+     * Microservice type identifier. If not specified, set to spring application name.
      */
     private String microserviceTypeId;
 
     /**
-     * Microservice instance identifier
+     * Microservice instance identifier. If not specified, set to spring application name plus a generated unique suffix.
+     * Moreover, related queues will be created with <b>auto delete</b> capabilities.
      */
     private String microserviceInstanceId;
+
+    /**
+     * Whether above instance identifier is generated or not. If so, queues using instance identifier will be auto delete queues.
+     */
+    private boolean instanceIdGenerated = false;
 
     public RegardsAmqpAdmin(String microserviceTypeId, String microserviceInstanceId) {
         this.microserviceTypeId = microserviceTypeId;
         this.microserviceInstanceId = microserviceInstanceId;
+    }
+
+    @PostConstruct
+    public void init() {
+        // Fallback if no microservice instance properties was given
+        if (microserviceTypeId == null) {
+            microserviceTypeId = microserviceName;
+        }
+        if (microserviceInstanceId == null) {
+            this.instanceIdGenerated = true;
+            this.microserviceInstanceId = microserviceName + UUID.randomUUID();
+        }
     }
 
     @Override
@@ -104,10 +133,11 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
         Exchange exchange;
         switch (workerMode) {
             case UNICAST:
-                exchange = new DirectExchange(getUnicastExchangeName(), true, false);
+                exchange = ExchangeBuilder.directExchange(getUnicastExchangeName()).durable(true).build();
                 break;
             case BROADCAST:
-                exchange = new FanoutExchange(getBroadcastExchangeName(eventType.getName(), target), true, false);
+                exchange = ExchangeBuilder.fanoutExchange(getBroadcastExchangeName(eventType.getName(), target))
+                        .durable(true).build();
                 break;
             default:
                 throw new EnumConstantNotPresentException(WorkerMode.class, workerMode.name());
@@ -119,19 +149,14 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
 
     /**
      * Unicast exchange name
-     *
      * @return exchange name
      */
     private String getUnicastExchangeName() {
         return UNICAST_NAMESPACE;
     }
 
-    /**
-     * Broadcast exchange name by event
-     *
-     * @return exchange name
-     */
-    private String getBroadcastExchangeName(String eventType, Target target) {
+    @Override
+    public String getBroadcastExchangeName(String eventType, Target target) {
         StringBuilder builder = new StringBuilder();
         builder.append(BROADCAST_NAMESPACE);
         if (Target.MICROSERVICE.equals(target)) {
@@ -145,22 +170,43 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
     }
 
     @Override
+    public void declareDeadLetter() {
+        // Create DLX(Dead Letter Exchange)
+        // DLX is a fanout so it doesn't require any binding and message in error can be recovered by multiple
+        // consumers at same time if needed
+        Exchange dlx = ExchangeBuilder.topicExchange(REGARDS_DLX).durable(true).build();
+        rabbitAdmin.declareExchange(dlx);
+        //create DLQ(Dead Letter Queue)
+        Queue dlq = QueueBuilder.durable(REGARDS_DLQ).withArgument("x-max-priority", MAX_PRIORITY).build();
+        rabbitAdmin.declareQueue(dlq);
+        Binding binding = BindingBuilder.bind(dlq).to(dlx).with(REGARDS_DLQ).noargs();
+        rabbitAdmin.declareBinding(binding);
+    }
+
+    @Override
     public Queue declareQueue(String tenant, Class<?> eventType, WorkerMode workerMode, Target target,
             Optional<Class<? extends IHandler<?>>> handlerType) {
 
         Map<String, Object> args = new ConcurrentHashMap<>();
         args.put("x-max-priority", MAX_PRIORITY);
+        args.put("x-dead-letter-exchange", REGARDS_DLX);
+        args.put("x-dead-letter-routing-key", REGARDS_DLQ);
 
         Queue queue;
         switch (workerMode) {
             case UNICAST:
                 // Useful for publishing unicast event and subscribe to a unicast exchange
-                queue = new Queue(getUnicastQueueName(tenant, eventType, target), true, false, false, args);
+                queue = QueueBuilder.durable(getUnicastQueueName(tenant, eventType, target)).withArguments(args)
+                        .build();
                 break;
             case BROADCAST:
                 // Allows to subscribe to a broadcast exchange
                 if (handlerType.isPresent()) {
-                    queue = new Queue(getSubscriptionQueueName(handlerType.get(), target), true, false, false, args);
+                    QueueBuilder qb = QueueBuilder.durable(getSubscriptionQueueName(handlerType.get(), target))
+                            .withArguments(args);
+                    // FIXME test does not work with auto deletion queues
+                    // queue = isAutoDeleteSubscriptionQueue(target) ? qb.autoDelete().build() : qb.build();
+                    queue = qb.build();
                 } else {
                     throw new IllegalArgumentException("Missing event handler for broadcasted event");
                 }
@@ -178,7 +224,6 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
      * {@link Target} restriction.<br/>
      * Tenant is used for working queues naming to prevent starvation of a project. Otherwise, some projects may
      * monopolize a single multitenant queue!
-     *
      * @param tenant tenant (useful for queue naming in single virtual host and compatible with multiple virtual hosts)
      * @param eventType event type
      * @param target {@link Target}
@@ -223,6 +268,10 @@ public class RegardsAmqpAdmin implements IAmqpAdmin {
         builder.append(DOT);
         builder.append(handlerType.getName());
         return builder.toString();
+    }
+
+    public boolean isAutoDeleteSubscriptionQueue(Target target) {
+        return this.instanceIdGenerated && (Target.ALL.equals(target) || Target.MICROSERVICE.equals(target));
     }
 
     @Override

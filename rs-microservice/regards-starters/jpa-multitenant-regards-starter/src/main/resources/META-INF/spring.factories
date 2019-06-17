@@ -1,4 +1,5 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+fr.cnes.regards.framework.jpa.autoconfigure.NeverUseFlywayAutoConfiguration,\
 fr.cnes.regards.framework.jpa.multitenant.autoconfigure.DataSourcesAutoConfiguration,\
 fr.cnes.regards.framework.jpa.multitenant.autoconfigure.MultitenantJpaAutoConfiguration,\
 fr.cnes.regards.framework.jpa.multitenant.autoconfigure.rest.JpaMultitenantController

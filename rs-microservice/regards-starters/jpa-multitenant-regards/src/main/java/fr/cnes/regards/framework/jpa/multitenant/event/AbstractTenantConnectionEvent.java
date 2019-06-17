@@ -21,12 +21,8 @@ package fr.cnes.regards.framework.jpa.multitenant.event;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 
 /**
- *
- *
  * Common {@link TenantConnection} event structure
- *
  * @author Marc Sordi
- * @since 1.0-SNAPSHOT
  */
 public abstract class AbstractTenantConnectionEvent {
 

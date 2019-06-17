@@ -26,9 +26,7 @@ import com.google.gson.stream.JsonWriter;
 
 /**
  * Gson adapter for {@link Class}
- *
  * @author Marc Sordi
- *
  */
 public class ClassAdapter extends TypeAdapter<Class<?>> {
 

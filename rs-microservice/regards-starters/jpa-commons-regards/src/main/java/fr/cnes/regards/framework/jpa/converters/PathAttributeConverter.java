@@ -27,7 +27,6 @@ import javax.persistence.Converter;
 /**
  * This class allows to convert {@link Path} attribute to {@link String} to persist with JPA
  * @author Marc Sordi
- *
  */
 @Converter(autoApply = true)
 public class PathAttributeConverter implements AttributeConverter<Path, String> {

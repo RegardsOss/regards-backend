@@ -11,7 +11,6 @@ import fr.cnes.regards.framework.modules.workspace.service.WorkspaceService;
 
 /**
  * Workspace module auto configuration
- *
  * @author Sylvain VISSIERE-GUERINET
  */
 @Configuration

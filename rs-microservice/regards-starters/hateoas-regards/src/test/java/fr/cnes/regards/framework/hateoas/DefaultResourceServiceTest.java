@@ -27,8 +27,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.hateoas.Resource;
 import org.springframework.security.access.AccessDecisionManager;
 import org.springframework.security.access.AccessDeniedException;
@@ -45,18 +43,10 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
- *
  * Test HATEOAS link generation
- *
  * @author msordi
- *
  */
 public class DefaultResourceServiceTest {
-
-    /**
-     * Class logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(DefaultResourceServiceTest.class);
 
     /**
      * Tenant
@@ -133,7 +123,7 @@ public class DefaultResourceServiceTest {
 
         // Deny all acess
         Mockito.doThrow(new AccessDeniedException("Mock")).when(accessDecisionManager)
-                .decide(Mockito.eq(jwtAuth), Mockito.anyObject(), Mockito.eq(null));
+                .decide(Mockito.eq(jwtAuth), Mockito.any(), Mockito.eq(null));
 
         final PojoController pojoController = new PojoController(resourceServiceMock);
         final List<Resource<Pojo>> pojos = pojoController.getPojos();
@@ -143,9 +133,7 @@ public class DefaultResourceServiceTest {
 
     /**
      * Sample pojo
-     *
      * @author msordi
-     *
      */
     static class Pojo {
 
@@ -183,9 +171,7 @@ public class DefaultResourceServiceTest {
 
     /**
      * Pojo controller
-     *
      * @author msordi
-     *
      */
     @RestController
     @RequestMapping("/pojos")

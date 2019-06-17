@@ -28,9 +28,7 @@ import fr.cnes.regards.framework.security.utils.endpoint.ISystemAccessVoter;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 
 /**
- *
  * This class authorizes access to all endpoints for system internal call between microservices.
- *
  * @author Sébastien Binda
  * @author Marc Sordi
  */

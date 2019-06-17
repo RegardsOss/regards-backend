@@ -78,7 +78,7 @@ public class RequirementMatrixReportListener extends RunListener {
     }
 
     @Override
-    public void testFinished(Description pDescription) throws Exception {
+    public void testFinished(Description pDescription) {
 
         // Build filename if not
         // ! workaround because testRunStarted cannot be capture

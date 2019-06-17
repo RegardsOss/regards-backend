@@ -23,15 +23,14 @@ import java.sql.Connection;
 import com.mchange.v2.c3p0.AbstractConnectionTester;
 
 /**
- * FIXME
  * @author Marc Sordi
- *
  */
+@SuppressWarnings("serial")
 public class MultitenantConnectionTester extends AbstractConnectionTester {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.mchange.v2.c3p0.AbstractConnectionTester#activeCheckConnection(java.sql.Connection, java.lang.String,
      * java.lang.Throwable[])
      */
@@ -43,7 +42,7 @@ public class MultitenantConnectionTester extends AbstractConnectionTester {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.mchange.v2.c3p0.AbstractConnectionTester#statusOnException(java.sql.Connection, java.lang.Throwable,
      * java.lang.String, java.lang.Throwable[])
      */

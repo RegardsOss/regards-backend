@@ -17,10 +17,7 @@
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- *
  * Multitenant autoconfigure package
- * 
  * @author msordi
- *
  */
 package fr.cnes.regards.framework.multitenant.autoconfigure;

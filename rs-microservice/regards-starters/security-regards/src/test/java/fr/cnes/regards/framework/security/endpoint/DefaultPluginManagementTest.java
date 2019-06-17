@@ -31,13 +31,10 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
- *
  * Class DefaultPluginManagementTest
  *
  * Test class for default IPLuginResourceManagement implemenation
- *
  * @author sbinda
- * @since 1.0-SNAPSHOT
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestConfiguration.class)
@@ -50,18 +47,16 @@ public class DefaultPluginManagementTest {
     private IPluginResourceManager manager;
 
     /**
-     *
      * defaultPluginResourceManagerTest
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Verify access to plugin resources per microservice")
     @Test
     public void defaultPluginResourceManagerTest() {
 
-        Assert.assertTrue(manager
-                .manageMethodResource(new ResourceMapping("resource/path", "Controller", RequestMethod.GET)).isEmpty());
+        Assert.assertTrue(
+                manager.manageMethodResource(new ResourceMapping("resource/path", "Controller", RequestMethod.GET))
+                        .isEmpty());
     }
 
 }

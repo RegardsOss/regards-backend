@@ -20,12 +20,10 @@ package fr.cnes.regards.framework.amqp.configuration;
 
 /**
  * Virtual host mode allows to choose between a single virtual host for all tenants or a virtual host for each tenant.
- *
  * @author Marc Sordi
- *
  */
 public enum VirtualHostMode {
 
     SINGLE,
-    MULTI;
+    MULTI
 }

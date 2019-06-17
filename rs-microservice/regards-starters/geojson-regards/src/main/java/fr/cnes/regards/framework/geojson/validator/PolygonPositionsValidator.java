@@ -27,9 +27,7 @@ import fr.cnes.regards.framework.geojson.geometry.Polygon;
 
 /**
  * Validate {@link Polygon} coordinate structure
- *
  * @author Marc Sordi
- *
  */
 public class PolygonPositionsValidator implements ConstraintValidator<PolygonPositionsConstraints, PolygonPositions> {
 

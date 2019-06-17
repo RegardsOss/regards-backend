@@ -41,11 +41,8 @@ import fr.cnes.regards.framework.test.report.RequirementMatrixReportListener;
 import fr.cnes.regards.framework.test.report.exception.ReportException;
 
 /**
- *
  * Help to read and write XML based on JAXB JAVA annotation.
- *
  * @author msordi
- *
  */
 public final class XmlHelper {
 
@@ -59,19 +56,12 @@ public final class XmlHelper {
 
     /**
      * Write data to a file
-     *
-     * @param <T>
-     *            JAXBElement
-     * @param pDirectory
-     *            file directory (created if don't exist)
-     * @param pFilename
-     *            filename
-     * @param pClass
-     *            type of JAXB element to write
-     * @param pJaxbElement
-     *            JAXB element
-     * @throws ReportException
-     *             if report cannot be write
+     * @param <T> JAXBElement
+     * @param pDirectory file directory (created if don't exist)
+     * @param pFilename filename
+     * @param pClass type of JAXB element to write
+     * @param pJaxbElement JAXB element
+     * @throws ReportException if report cannot be write
      */
     public static <T> void write(Path pDirectory, String pFilename, Class<T> pClass, T pJaxbElement)
             throws ReportException {
@@ -109,21 +99,15 @@ public final class XmlHelper {
 
     /**
      * Read data from file
-     *
-     * @param <T>
-     *            JAXB annotated class
-     * @param pDirectory
-     *            file directory
-     * @param pFilename
-     *            filename
-     * @param pClass
-     *            type of JAXB element to read
+     * @param <T> JAXB annotated class
+     * @param pDirectory file directory
+     * @param pFilename filename
+     * @param pClass type of JAXB element to read
      * @return JAXB element
-     * @throws ReportException
-     *             if report cannot be read
+     * @throws ReportException if report cannot be read
      */
     public static <T> T read(Path pDirectory, String pFilename, Class<T> pClass)
-            throws ReportException, UnsupportedEncodingException {
+            throws ReportException {
         // Validate
         assertNotNull(pDirectory, "Missing directory path");
         assertNotNull(pFilename, "Missing filename");
@@ -152,16 +136,11 @@ public final class XmlHelper {
 
     /**
      * Read data from file
-     *
-     * @param <T>
-     *            JAXB annotated class
-     * @param pFilePath
-     *            full file path
-     * @param pClass
-     *            type of JAXB element to read
+     * @param <T> JAXB annotated class
+     * @param pFilePath full file path
+     * @param pClass type of JAXB element to read
      * @return JAXB element
-     * @throws ReportException
-     *             if report cannot be read
+     * @throws ReportException if report cannot be read
      */
     public static <T> T read(Path pFilePath, Class<T> pClass) throws ReportException, UnsupportedEncodingException {
         // Validate
@@ -172,12 +151,9 @@ public final class XmlHelper {
 
     /**
      * Aggregate all reports found in base path in a single one
-     *
-     * @param pBasePath
-     *            base directory
+     * @param pBasePath base directory
      * @return {@link XmlRequirements}
-     * @throws ReportException
-     *             if method cannot aggregate reports
+     * @throws ReportException if method cannot aggregate reports
      */
     public static XmlRequirements aggregateReports(Path pBasePath) throws ReportException {
 
@@ -200,12 +176,9 @@ public final class XmlHelper {
 
     /**
      * Aggregate all reports in a single one
-     *
-     * @param pReports
-     *            list of reports
+     * @param pReports list of reports
      * @return aggregated report
-     * @throws ReportException
-     *             if method cannot aggregate reports
+     * @throws ReportException if method cannot aggregate reports
      */
     public static XmlRequirements aggregateReports(List<Path> pReports)
             throws ReportException, UnsupportedEncodingException {
@@ -233,11 +206,8 @@ public final class XmlHelper {
 
     /**
      * Aggregate identical requirement tests in a single wrapper
-     *
-     * @param pRqmtMap
-     *            working map
-     * @param pXmlRequirement
-     *            requirement to aggregate
+     * @param pRqmtMap working map
+     * @param pXmlRequirement requirement to aggregate
      */
     private static void aggregateTests(Map<String, XmlRequirement> pRqmtMap, XmlRequirement pXmlRequirement) {
         final XmlRequirement rqmt = pRqmtMap.get(pXmlRequirement.getRequirement());
@@ -250,13 +220,9 @@ public final class XmlHelper {
 
     /**
      * Check if object is not null
-     *
-     * @param pObject
-     *            objet to check
-     * @param pMessage
-     *            error message
-     * @throws ReportException
-     *             if a report parameter is null
+     * @param pObject objet to check
+     * @param pMessage error message
+     * @throws ReportException if a report parameter is null
      */
     private static void assertNotNull(Object pObject, String pMessage) throws ReportException {
         if (pObject == null) {

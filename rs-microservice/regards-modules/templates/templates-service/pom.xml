@@ -9,75 +9,75 @@
 	Public License for more details. You should have received a copy of the GNU 
 	General Public License along with REGARDS. If not, see <http://www.gnu.org/licenses/>. -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>fr.cnes.regards.modules.templates</groupId>
-	<artifactId>templates-service</artifactId>
-	<packaging>jar</packaging>
+    <groupId>fr.cnes.regards.modules.templates</groupId>
+    <artifactId>templates-service</artifactId>
+    <packaging>jar</packaging>
 
-	<parent>
-		<groupId>fr.cnes.regards.modules</groupId>
-		<artifactId>templates</artifactId>
-		<version>3.0.0-RELEASE</version>
-	</parent>
+    <parent>
+        <groupId>fr.cnes.regards.modules</groupId>
+        <artifactId>templates</artifactId>
+        <version>0.4.0</version>
+    </parent>
 
-	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
-	<inceptionYear>2016</inceptionYear>
-	<licenses>
-		<license>
-			<name>GNU General Public License (GNU GPL)</name>
-			<url>http://www.gnu.org/licenses/gpl.html</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-	<organization>
-		<name>CNES</name>
-		<url>https://cnes.fr/fr</url>
-	</organization>
-	<developers>
-		<developer>
-			<name>REGARDS Team</name>
-			<organization>CS Systèmes d'Information</organization>
-			<organizationUrl>http://www.c-s.fr</organizationUrl>
-		</developer>
-	</developers>
+    <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
+    <inceptionYear>2016</inceptionYear>
+    <licenses>
+        <license>
+            <name>GNU General Public License (GNU GPL)</name>
+            <url>http://www.gnu.org/licenses/gpl.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <organization>
+        <name>CNES</name>
+        <url>https://cnes.fr/fr</url>
+    </organization>
+    <developers>
+        <developer>
+            <name>REGARDS Team</name>
+            <organization>CS Systèmes d'Information</organization>
+            <organizationUrl>http://www.c-s.fr</organizationUrl>
+        </developer>
+    </developers>
 
-	<dependencies>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>module-regards</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.templates</groupId>
-			<artifactId>templates-domain</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.modules.templates</groupId>
-			<artifactId>templates-dao</artifactId>
-		</dependency>
-		<!-- Mail -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-mail</artifactId>
-		</dependency>
-		<!-- COTS -->
-		<dependency>
-			<groupId>org.freemarker</groupId>
-			<artifactId>freemarker</artifactId>
-		</dependency>
-		<!-- Test dependencies -->
-		<dependency>
-			<groupId>fr.cnes.regards.framework.test</groupId>
-			<artifactId>regards-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-multitenant-regards-starter</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>module-regards</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.templates</groupId>
+            <artifactId>templates-domain</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.modules.templates</groupId>
+            <artifactId>templates-dao</artifactId>
+        </dependency>
+        <!-- Mail -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+        <!-- COTS -->
+        <dependency>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
+        </dependency>
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>fr.cnes.regards.framework.test</groupId>
+            <artifactId>regards-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.cnes.regards.framework</groupId>
+            <artifactId>jpa-multitenant-regards-starter</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 
 </project>

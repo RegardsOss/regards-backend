@@ -22,9 +22,7 @@ import org.springframework.hateoas.Link;
 
 /**
  * Link relations
- *
  * @author msordi
- *
  */
 public final class LinkRels {
 

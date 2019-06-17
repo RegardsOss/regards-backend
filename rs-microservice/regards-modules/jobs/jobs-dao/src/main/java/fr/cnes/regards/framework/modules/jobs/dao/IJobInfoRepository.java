@@ -18,10 +18,11 @@
  */
 package fr.cnes.regards.framework.modules.jobs.dao;
 
-import javax.persistence.LockModeType;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
+
+import javax.persistence.LockModeType;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,8 +37,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 
 /**
  * Interface for a JPA auto-generated CRUD repository managing Jobs.
- * @author Léo Mieulet
- * @author Christophe Mertz
+ * @author Olivier Rousselot
  */
 public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
 
@@ -48,7 +48,7 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
     List<JobInfo> findAllByStatusStatus(JobStatus status);
 
     // Do not use entity graph it makes max computation into memory
-    @Lock(LockModeType.PESSIMISTIC_READ)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     JobInfo findFirstByStatusStatusOrderByPriorityDesc(JobStatus status);
 
     default JobInfo findHighestPriorityQueued() {
@@ -56,7 +56,7 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
     }
 
     @EntityGraph(attributePaths = { "parameters" })
-    JobInfo findById(UUID id);
+    JobInfo findCompleteById(UUID id);
 
     @Modifying
     @Query("update JobInfo j set j.status.percentCompleted = ?1, j.status.estimatedCompletion = ?2 where j.id = ?3 "
@@ -95,15 +95,15 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
      * Search succeeded jobs since given number of days
      */
     default List<JobInfo> findSucceededJobsSince(int days) {
-        return findByStatusStopDateLessThanAndLockedAndStatusStatusIn(OffsetDateTime.now().minusDays((long) days),
-                                                                      false, JobStatus.SUCCEEDED);
+        return findByStatusStopDateLessThanAndLockedAndStatusStatusIn(OffsetDateTime.now().minusDays(days), false,
+                                                                      JobStatus.SUCCEEDED);
     }
 
     /**
      * Search failed and aborted jobs since given number of days
      */
     default List<JobInfo> findFailedOrAbortedJobsSince(int days) {
-        return findByStatusStopDateLessThanAndLockedAndStatusStatusIn(OffsetDateTime.now().minusDays((long) days), false,
+        return findByStatusStopDateLessThanAndLockedAndStatusStatusIn(OffsetDateTime.now().minusDays(days), false,
                                                                       JobStatus.FAILED, JobStatus.ABORTED);
     }
 
@@ -142,6 +142,6 @@ public interface IJobInfoRepository extends CrudRepository<JobInfo, UUID> {
      * @param count number of results to retrieve
      */
     default List<JobInfo> findTopUserPendingJobs(String user, int count) {
-        return findByOwnerAndStatusStatusOrderByPriorityDesc(user, JobStatus.PENDING, new PageRequest(0, count));
+        return findByOwnerAndStatusStatusOrderByPriorityDesc(user, JobStatus.PENDING, PageRequest.of(0, count));
     }
 }

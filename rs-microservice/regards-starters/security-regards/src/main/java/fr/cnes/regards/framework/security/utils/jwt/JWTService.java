@@ -101,7 +101,6 @@ public class JWTService {
      * @param user User name
      * @param email User email
      * @throws JwtException Error during token generation
-     * @since 1.0-SNAPSHOT
      */
     public void injectToken(final String tenant, final String role, final String user, final String email)
             throws JwtException {
@@ -124,7 +123,6 @@ public class JWTService {
      * Mock to simulate a token in the {@link SecurityContextHolder}.
      * @param pTenant tenant
      * @param pRole Role name
-     * @since 1.0-SNAPSHOT
      */
     public void injectMockToken(final String pTenant, final String pRole) {
         final JWTAuthentication jwt = new JWTAuthentication("mockJWT"); // Unparseable token
@@ -242,7 +240,6 @@ public class JWTService {
      * Decode token and returns claims
      * @param token token to decode
      * @param secret secret used to generate it
-     * @throws InvalidJwtException
      * @return parsed {@link Claims}
      */
     public Claims parseToken(String token, String secret) throws InvalidJwtException {
@@ -272,7 +269,6 @@ public class JWTService {
      * @param login user name
      * @param email user email
      * @return claim map
-     * @since 1.0-SNAPSHOT
      */
     public Map<String, Object> generateClaims(final String tenant, final String role, final String login,
             final String email) {
@@ -319,4 +315,7 @@ public class JWTService {
         validityDelay = pValidityDelay;
     }
 
+    public OffsetDateTime getExpirationDate(OffsetDateTime generationDate) {
+        return generationDate.plusMinutes(validityDelay);
+    }
 }

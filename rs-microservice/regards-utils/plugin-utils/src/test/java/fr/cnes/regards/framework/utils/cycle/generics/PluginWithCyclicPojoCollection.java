@@ -28,10 +28,9 @@ import fr.cnes.regards.framework.utils.plugins.generics.IPluginWithGenerics;
 
 /**
  * @author Marc Sordi
- *
  */
 @Plugin(author = "REGARDS Team", description = "Plugin with POJO collection parameter",
-        id = "PluginWithCyclicPojoCollection", version = "1.0.0", contact = "regards@c-s.fr", licence = "GPLv3",
+        id = "PluginWithCyclicPojoCollection", version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3",
         owner = "CNES", url = "https://regardsoss.github.io/")
 public class PluginWithCyclicPojoCollection implements IPluginWithGenerics {
 
@@ -44,7 +43,7 @@ public class PluginWithCyclicPojoCollection implements IPluginWithGenerics {
     @Override
     public void doIt() {
         Assert.assertNotNull(infos);
-        Assert.assertTrue(infos.size() == 3);
+        Assert.assertEquals(3, infos.size());
         for (CyclicInfo info : infos) {
             Assert.assertTrue(info instanceof CyclicInfo);
         }

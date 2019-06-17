@@ -43,10 +43,14 @@ public class JobParameter {
 
     public <T> T getValue() {
         try {
-            return (className == null) ? null : GsonUtil.fromString(value, Class.forName(className));
+            return getValue(Class.forName(className));
         } catch (ClassNotFoundException e) {
             throw new RsRuntimeException(e);
         }
+    }
+
+    public <T> T getValue(java.lang.reflect.Type type) {
+        return type == null ? null : GsonUtil.fromString(value, type);
     }
 
     /**

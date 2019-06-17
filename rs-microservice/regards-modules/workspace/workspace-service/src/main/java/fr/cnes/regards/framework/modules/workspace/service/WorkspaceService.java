@@ -53,9 +53,7 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**
  * Default {@link IWorkspaceService} implementation which dive the workspace per microservice and per tenant.
- *
  * @author svissier
- *
  */
 @Service
 @ConditionalOnMissingBean(value = IWorkspaceService.class)
@@ -109,12 +107,6 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
     private Integer workspaceCriticalOccupationThreshold;
 
     /**
-     * the spring application name
-     */
-    @Value("${spring.application.name}")
-    private String springApplicationName;
-
-    /**
      * The name of the subdirectory where to store microservice workspace.
      */
     @Value("${microservice.workspace.directory.name:${spring.application.name}}")
@@ -130,8 +122,7 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
                                            workspaceCriticalOccupationThreshold, runtimeTenantResolver.getTenant());
             LOG.warn(message);
             MaintenanceManager.setMaintenance(runtimeTenantResolver.getTenant());
-            notifier.sendErrorNotification(springApplicationName, message, "Workspace occupation is critical",
-                                           DefaultRole.PROJECT_ADMIN);
+            notifier.sendErrorNotification(message, "Workspace occupation is critical", DefaultRole.PROJECT_ADMIN);
         }
         Path workspacePath = getMicroserviceWorkspace();
         if (Files.notExists(workspacePath)) {
@@ -210,31 +201,28 @@ public class WorkspaceService implements IWorkspaceService, ApplicationListener<
     public void monitor(String tenant) {
         try {
             WorkspaceMonitoringInformation workspaceMonitoringInfo = getMonitoringInformation(getTenantWorkspace());
-            if ((workspaceMonitoringInfo.getOccupationRatio() * 100) > workspaceCriticalOccupationThreshold) {
+            if (workspaceMonitoringInfo.getOccupationRatio() * 100 > workspaceCriticalOccupationThreshold) {
                 String message = String.format(CRITICAL_MESSAGE_FORMAT, workspaceMonitoringInfo.getPath(),
                                                workspaceMonitoringInfo.getOccupationRatio() * 100,
                                                workspaceCriticalOccupationThreshold, tenant);
                 LOG.warn(message);
                 MaintenanceManager.setMaintenance(tenant);
-                notifier.sendErrorNotification(springApplicationName, message, "Workspace occupation is critical",
-                                               DefaultRole.PROJECT_ADMIN);
+                notifier.sendErrorNotification(message, "Workspace occupation is critical", DefaultRole.PROJECT_ADMIN);
                 return;
             }
-            if ((workspaceMonitoringInfo.getOccupationRatio() * 100) > workspaceOccupationThreshold) {
+            if (workspaceMonitoringInfo.getOccupationRatio() * 100 > workspaceOccupationThreshold) {
                 String message = String
                         .format("Workspace \"%s\" for project \"%s\" starts to be busy. Occupation is \"%.2f%%\" which is greater than \"%d%%\" (soft threshold).",
                                 workspaceMonitoringInfo.getPath(), tenant,
                                 workspaceMonitoringInfo.getOccupationRatio() * 100, workspaceOccupationThreshold);
                 LOG.warn(message);
-                notifier.sendWarningNotification(springApplicationName, message, "Workspace too busy",
-                                                 DefaultRole.PROJECT_ADMIN);
+                notifier.sendWarningNotification(message, "Workspace too busy", DefaultRole.PROJECT_ADMIN);
                 return;
             }
         } catch (IOException e) {
             String message = String.format("Error occured during workspace monitoring: %s", e.getMessage());
             LOG.error(message, e);
-            notifier.sendErrorNotification(springApplicationName, message, "Error during workspace monitoring",
-                                           DefaultRole.PROJECT_ADMIN);
+            notifier.sendErrorNotification(message, "Error during workspace monitoring", DefaultRole.PROJECT_ADMIN);
         }
     }
 

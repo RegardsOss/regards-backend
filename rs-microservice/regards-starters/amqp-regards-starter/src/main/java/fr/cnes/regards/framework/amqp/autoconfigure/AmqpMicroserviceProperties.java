@@ -18,31 +18,26 @@
  */
 package fr.cnes.regards.framework.amqp.autoconfigure;
 
-import javax.validation.constraints.NotNull;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
 /**
  * class regrouping properties about the microservice
- *
  * @author svissier
- *
  */
 @Validated
 @ConfigurationProperties(prefix = "regards.amqp.microservice")
 public class AmqpMicroserviceProperties {
 
     /**
-     * Microservice identifier unique to identify exchanges/queue related to only one type of microservices
+     * Microservice identifier unique to identify exchanges/queue related to only one type of microservices.<br/>
+     * If not specified, fallback to microservice name (i.e. spring.application.name property)
      */
-    @NotNull
     private String typeIdentifier;
 
     /**
      * Microservice instance identifier
      */
-    @NotNull
     private String instanceIdentifier;
 
     /**
@@ -54,7 +49,6 @@ public class AmqpMicroserviceProperties {
 
     /**
      * Set the microservice type identifier
-     * @param pTypeIdentifier
      */
     public void setTypeIdentifier(String pTypeIdentifier) {
         typeIdentifier = pTypeIdentifier;

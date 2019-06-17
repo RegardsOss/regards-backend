@@ -19,11 +19,8 @@
 package fr.cnes.regards.framework.gson.adapters.sample5;
 
 /**
- *
  * Test on animal objects
- *
  * @author Marc Sordi
- *
  */
 public class Animal {
 

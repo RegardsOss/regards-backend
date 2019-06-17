@@ -7,11 +7,10 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 /**
  * Sample plugin with sensitive parameter. Be aware that {@link SensitivePlugin#echo(String)} method does not care
  * about the method parameter, it only echoes the plugin parameter
- *
  * @author Sylvain VISSIERE-GUERINET
  */
 @Plugin(description = "Test sensitive plugin", id = "SensitivePlugin", version = "0.0.1", author = "REGARDS Dream Team",
-        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
+        contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class SensitivePlugin implements ISamplePlugin {
 
     public static final String MESSAGE_PLUGIN_PARAM = "message";

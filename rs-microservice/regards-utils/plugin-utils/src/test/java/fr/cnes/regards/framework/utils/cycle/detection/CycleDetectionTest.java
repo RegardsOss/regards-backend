@@ -28,8 +28,6 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -40,11 +38,9 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 
 /**
  * Unit testing of {@link PluginUtils}.
- *
  * @author Christophe Mertz
  */
 @RunWith(SpringRunner.class)
-@EnableAutoConfiguration(exclude = JpaRepositoriesAutoConfiguration.class)
 @TestPropertySource(locations = "classpath:application-test.properties")
 public class CycleDetectionTest {
 
@@ -52,7 +48,7 @@ public class CycleDetectionTest {
 
     @Test
     public void cycleDetectionOK() {
-        List<String> values = new ArrayList<String>();
+        List<String> values = new ArrayList<>();
         values.add("test1");
         values.add("test2");
         OffsetDateTime ofdt = OffsetDateTime.now().minusDays(5);
@@ -77,8 +73,8 @@ public class CycleDetectionTest {
 
         // instantiate plugin
         PluginUtils.setup(PLUGIN_PACKAGE);
-        SamplePluginWithPojo samplePlugin = PluginUtils.getPlugin(parameters, SamplePluginWithPojo.class,
-                                                                  new HashMap<>());
+        SamplePluginWithPojo samplePlugin = PluginUtils
+                .getPlugin(parameters, SamplePluginWithPojo.class, new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
@@ -87,14 +83,13 @@ public class CycleDetectionTest {
          */
         Assert.assertEquals(samplePlugin.getPojo().getValue(), pojoParam.getValue());
         Assert.assertEquals(samplePlugin.getPojo().getValues().size(), values.size());
-        Assert.assertEquals(OffsetDateTime.parse(samplePlugin.getPojo().getDate(),
-                                                 DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-                            ofdt);
+        Assert.assertEquals(
+                OffsetDateTime.parse(samplePlugin.getPojo().getDate(), DateTimeFormatter.ISO_OFFSET_DATE_TIME), ofdt);
     }
 
     @Test(expected = PluginUtilsRuntimeException.class)
     public void cycleDetectedWithTwoLevel() {
-        List<String> values = new ArrayList<String>();
+        List<String> values = new ArrayList<>();
         values.add("test1");
         values.add("test2");
         values.add("test3");
@@ -166,8 +161,8 @@ public class CycleDetectionTest {
 
         // instantiate plugin
         PluginUtils.setup(PLUGIN_PACKAGE);
-        SamplePluginWithPojoWithSet samplePlugin = PluginUtils.getPlugin(parameters, SamplePluginWithPojoWithSet.class,
-                                                                         new HashMap<>());
+        SamplePluginWithPojoWithSet samplePlugin = PluginUtils
+                .getPlugin(parameters, SamplePluginWithPojoWithSet.class, new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
@@ -179,7 +174,7 @@ public class CycleDetectionTest {
 
     @Test(expected = PluginUtilsRuntimeException.class)
     public void cycleDetectedWithThreeLevel() {
-        List<String> values = new ArrayList<String>();
+        List<String> values = new ArrayList<>();
         values.add("test1");
         values.add("test2");
         values.add("test3");

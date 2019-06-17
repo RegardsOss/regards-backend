@@ -37,7 +37,6 @@ import fr.cnes.regards.framework.oais.Syntax;
 import fr.cnes.regards.framework.oais.urn.DataType;
 
 /**
- *
  * Content Information Builder.<br/>
  *
  * A {@link ContentInformation} is composed of two objects :
@@ -51,16 +50,11 @@ import fr.cnes.regards.framework.oais.urn.DataType;
  * <br/>
  * To define the data object, use one of the following methods :
  * <ul>
- * <li>{@link #setDataObject(DataType, URL, String, String)}</li>
  * <li>{@link #setDataObject(DataType, Path, String, String)}</li>
  * <li>{@link #setDataObject(DataType, String, String, String, Long, URL...)}</li>
  * <li>{@link #setDataObject(DataType, Path, String, String, String, Long)}</li>
  * <li>{@link #setDataObject(DataType, Path, String)}</li>
- * <li>{@link #setDataObject(DataType, URL, String)}</li>
  * <li>{@link #setDataObject(DataType, Path, String, String)}</li>
- * <li>{@link #setDataObject(DataType, URL, String, String)}</li>
- * <li>{@link #setDataObject(DataType, Path, String, String, Long)}</li>
- * <li>{@link #setDataObject(DataType, URL, String, String, Long)}</li>
  * </ul>
  * <br/>
  * To set the representation information, use :
@@ -71,9 +65,7 @@ import fr.cnes.regards.framework.oais.urn.DataType;
  * <li>{@link #addSoftwareEnvironmentProperty(String, Object)}</li>
  * </ul>
  * <br/>
- *
  * @author Marc Sordi
- *
  */
 public class ContentInformationBuilder implements IOAISBuilder<ContentInformation> {
 
@@ -237,8 +229,6 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
 
     /**
      * Add sofware Environment property with the given parameters
-     * @param key
-     * @param value
      */
     public void addSoftwareEnvironmentProperty(String key, Object value) {
         Assert.hasLength(key, "Software environment information key is required");
@@ -248,8 +238,6 @@ public class ContentInformationBuilder implements IOAISBuilder<ContentInformatio
 
     /**
      * Add hardware environment property with the given parameters
-     * @param key
-     * @param value
      */
     public void addHardwareEnvironmentProperty(String key, Object value) {
         Assert.hasLength(key, "Hardware environment information key is required");

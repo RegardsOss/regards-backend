@@ -20,7 +20,6 @@ package fr.cnes.regards.framework.test.aggregate;
 
 /**
  * @author Marc Sordi
- *
  */
 @SuppressWarnings("serial")
 public class AggregationException extends Exception {

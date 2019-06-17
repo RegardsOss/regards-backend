@@ -26,9 +26,7 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 
 /**
  * This class is used to subscribe to the {@link LogEvent} send by the REGARDS microservice
- * 
  * @author Christophe Mertz
- *
  */
 public class MonitoringLogEvent implements IMonitoringLogEvent {
 

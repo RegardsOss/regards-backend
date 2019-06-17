@@ -26,7 +26,6 @@ import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionRe
 
 /**
  * This class manages JPA event workflow on local microservice using Spring events
- *
  * @author Marc Sordi
  */
 public class MultitenantJpaEventPublisher implements ApplicationEventPublisherAware {

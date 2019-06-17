@@ -32,17 +32,13 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.google.common.net.HttpHeaders;
 
 /**
- *
  * This class aims to log the HTTP request received by a microservice.</br>
  * The informations logged are :</br>
  * <li>the request URI,
  * <li>the HTTP method,
- * <li>the IP of the caller or the X-Forwarded-For field extracts from the request header.  
- *
+ * <li>the IP of the caller or the X-Forwarded-For field extracts from the request header.
  * @author Sébastien Binda
  * @author Christophe Mertz
- * 
- * @since 1.0-SNAPSHOT
  */
 public class RequestLogFilter extends OncePerRequestFilter {
 

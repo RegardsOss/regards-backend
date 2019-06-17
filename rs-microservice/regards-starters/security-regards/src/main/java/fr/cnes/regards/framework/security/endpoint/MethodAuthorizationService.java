@@ -55,10 +55,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 /**
  * This service allows to set/get the REST resource method access authorizations.<br/>
  * An authorization is defined by a endpoint, a HTTP Verb and a list of authorized user ROLES
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
- *
  */
 public class MethodAuthorizationService implements ApplicationContextAware, ApplicationListener<ApplicationReadyEvent> {
 
@@ -132,11 +129,8 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
     }
 
     /**
-     *
      * Retrieve the resources of the current microservice
-     *
      * @return List<ResourceMapping>
-     * @since 1.0-SNAPSHOT
      */
     public List<ResourceMapping> getResources() {
 
@@ -164,13 +158,9 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
     }
 
     /**
-     *
      * Create the resources associated to a Rest controller endpoint
-     *
-     * @param pMethod
-     *            method of the endpoint
+     * @param pMethod method of the endpoint
      * @return List<ResourceMapping>
-     * @since 1.0-SNAPSHOT
      */
     private List<ResourceMapping> manageMethodResource(final Method pMethod) {
 
@@ -194,22 +184,16 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
         } catch (final ResourceMappingException e) {
             // Skip inconsistent resource management
             LOGGER.warn(e.getMessage(), e);
-            LOGGER.warn("Skipping resource management for method \"{}\" on class \"{}\".",
-                        pMethod.getName(),
+            LOGGER.warn("Skipping resource management for method \"{}\" on class \"{}\".", pMethod.getName(),
                         pMethod.getDeclaringClass().getCanonicalName());
         }
         return mappings;
     }
 
     /**
-     *
      * Retrieve all Role authorities of the given tenant from the administration service
-     *
-     * @param tenant
-     *            tenant
-     * @throws SecurityException
-     *             if error occurs
-     * @since 1.0-SNAPSHOT
+     * @param tenant tenant
+     * @throws SecurityException if error occurs
      */
     public void collectRolesAndAuthorities(String tenant) throws SecurityException {
 
@@ -241,14 +225,9 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
     }
 
     /**
-     *
      * Add resources authorization
-     *
-     * @param tenant
-     *            tenant name
-     * @param resourceMapping
-     *            resource to add
-     * @since 1.0-SNAPSHOT
+     * @param tenant tenant name
+     * @param resourceMapping resource to add
      */
     private void setAuthorities(String tenant, ResourceMapping resourceMapping) {
 
@@ -264,36 +243,25 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
             ArrayList<GrantedAuthority> newAuthorities;
             if (grantedAuthoritiesByResource.containsKey(resourceId)) {
                 // we already have some authorities(roles) in the system, so lets get them and add the new ones
-                final Set<GrantedAuthority> grantedAuthorities = new LinkedHashSet<>(grantedAuthoritiesByResource
-                                                                                             .get(resourceId));
-                for (final GrantedAuthority granted : resourceMapping.getAutorizedRoles()) {
-                    grantedAuthorities.add(granted);
-                }
+                final Set<GrantedAuthority> grantedAuthorities = new LinkedHashSet<>(
+                        grantedAuthoritiesByResource.get(resourceId));
+                grantedAuthorities.addAll(resourceMapping.getAutorizedRoles());
                 newAuthorities = new ArrayList<>(grantedAuthorities);
             } else {
                 // we do not have any authorities(roles) for this resource, so lets just take the new ones
-                newAuthorities = new ArrayList<>();
-                newAuthorities.addAll(resourceMapping.getAutorizedRoles());
+                newAuthorities = new ArrayList<>(resourceMapping.getAutorizedRoles());
             }
             grantedAuthoritiesByResource.put(resourceId, newAuthorities);
         }
     }
 
     /**
-     *
      * Add resources authorization
-     *
-     * @param pTenant
-     *            tenant name
-     * @param pUrlPath
-     *            resource path
-     * @param pControllerSimpleName
-     *            controller simple name
-     * @param pMethod
-     *            resource Method
-     * @param pRoleNames
-     *            resource role names
-     * @since 1.0-SNAPSHOT
+     * @param pTenant tenant name
+     * @param pUrlPath resource path
+     * @param pControllerSimpleName controller simple name
+     * @param pMethod resource Method
+     * @param pRoleNames resource role names
      */
     public void setAuthorities(final String pTenant, final String pUrlPath, final String pControllerSimpleName,
             final RequestMethod pMethod, final String... pRoleNames) {
@@ -334,15 +302,10 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
     }
 
     /**
-     *
      * Get authorities for the given resource and the current tenant.
-     *
-     * @param pTenant
-     *            tenant name
-     * @param pResourceMapping
-     *            resource to retrieve
+     * @param pTenant tenant name
+     * @param pResourceMapping resource to retrieve
      * @return List<GrantedAuthority>>
-     * @since 1.0-SNAPSHOT
      */
     public Optional<List<GrantedAuthority>> getAuthorities(final String pTenant,
             final ResourceMapping pResourceMapping) {
@@ -357,11 +320,8 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
 
     /**
      * Check if a user can access an annotated method
-     *
-     * @param pJWTAuthentication
-     *            the user authentication object
-     * @param pMethod
-     *            the method to access
+     * @param pJWTAuthentication the user authentication object
+     * @param pMethod the method to access
      * @return {@link Boolean#TRUE} if user can access the method
      */
     public Boolean hasAccess(final JWTAuthentication pJWTAuthentication, final Method pMethod) {
@@ -383,10 +343,9 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
                 // CHECKSTYLE:OFF
                 final String decision = access ? "granted" : "denied";
                 // CHECKSTYLE:ON
-                final String logMessage = String.format("Access %s to resource %s for user %s.",
-                                                        decision,
-                                                        mapping.getResourceMappingId(),
-                                                        pJWTAuthentication.getName());
+                final String logMessage = String
+                        .format("Access %s to resource %s for user %s.", decision, mapping.getResourceMappingId(),
+                                pJWTAuthentication.getName());
                 LOGGER.debug(logMessage);
 
             } catch (final ResourceMappingException e) {
@@ -398,28 +357,19 @@ public class MethodAuthorizationService implements ApplicationContextAware, Appl
     }
 
     /**
-     *
      * Retrieve all authority resources for the given tenant
-     *
-     * @param pTenant
-     *            tenant name
-     * @return Map<String, ArrayList<GrantedAuthority>>
-     * @since 1.0-SNAPSHOT
+     * @param pTenant tenant name
+     * @return Map<String   ,       ArrayList   <   GrantedAuthority>>
      */
     public Map<String, ArrayList<GrantedAuthority>> getTenantAuthorities(final String pTenant) {
         return grantedAuthoritiesByTenant.get(pTenant);
     }
 
     /**
-     *
      * Return the role authority configuration for the given tenant
-     *
-     * @param pRoleAuthorityName
-     *            Role name
-     * @param pTenant
-     *            tenant
+     * @param pRoleAuthorityName Role name
+     * @param pTenant tenant
      * @return authorized addresses
-     * @since 1.0-SNAPSHOT
      */
     public Optional<RoleAuthority> getRoleAuthority(final String pRoleAuthorityName, final String pTenant) {
         final List<RoleAuthority> roles = rolesByTenant.get(pTenant);

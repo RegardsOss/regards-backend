@@ -35,13 +35,10 @@ import fr.cnes.regards.framework.jpa.instance.properties.InstanceDaoProperties;
 import fr.cnes.regards.framework.jpa.utils.DaoUtils;
 
 /**
- *
  * Class InstanceJpaAutoConfiguration
  *
  * Configuration class to define hibernate/jpa instance database strategy
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 @Configuration
 @Conditional(value = DisableInstanceCondition.class)

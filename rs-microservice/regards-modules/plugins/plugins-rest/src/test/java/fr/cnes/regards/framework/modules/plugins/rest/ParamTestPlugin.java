@@ -27,10 +27,9 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 /**
  * Fake SIP validation for testing purpose. Do not use in production!
  * @author Marc Sordi
- *
  */
 @Plugin(author = "REGARDS Team", description = "Plugin for plugin parameter type testing", id = "ParamTestPlugin",
-        version = "1.0.0", contact = "regards@c-s.fr", licence = "GPLv3", owner = "CNES",
+        version = "1.0.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
 public class ParamTestPlugin implements IParamTestPlugin {
 

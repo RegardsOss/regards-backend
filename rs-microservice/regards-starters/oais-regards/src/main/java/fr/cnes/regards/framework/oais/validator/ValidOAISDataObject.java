@@ -32,9 +32,7 @@ import fr.cnes.regards.framework.oais.OAISDataObject;
 
 /**
  * Enable {@link OAISDataObject} validation
- *
  * @author Marc Sordi
- *
  */
 @Target({ ElementType.TYPE })
 @Retention(RUNTIME)

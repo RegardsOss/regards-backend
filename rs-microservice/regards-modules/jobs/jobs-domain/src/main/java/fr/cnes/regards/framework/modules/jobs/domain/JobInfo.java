@@ -18,6 +18,13 @@
  */
 package fr.cnes.regards.framework.modules.jobs.domain;
 
+import java.time.OffsetDateTime;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -30,21 +37,15 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import java.time.OffsetDateTime;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
-
 
 /**
  * Store Job Information
@@ -134,6 +135,7 @@ public class JobInfo {
     /**
      * Default constructor only used by Hb9
      */
+    @SuppressWarnings("unused")
     private JobInfo() {
         super();
     }
@@ -191,7 +193,7 @@ public class JobInfo {
     }
 
     public void setPriority(int priority) {
-        this.priority = Integer.valueOf(priority);
+        this.priority = priority;
     }
 
     public void setParameters(Set<JobParameter> parameters) {
@@ -208,7 +210,7 @@ public class JobInfo {
 
     public <T> T getResult() {
         try {
-            return (this.resultClassName == null) ? null : GsonUtil.fromString(result, Class.forName(resultClassName));
+            return this.resultClassName == null ? null : GsonUtil.fromString(result, Class.forName(resultClassName));
         } catch (ClassNotFoundException e) {
             throw new RsRuntimeException(e);
         }
@@ -316,7 +318,7 @@ public class JobInfo {
         if (this == o) {
             return true;
         }
-        if ((o == null) || (getClass() != o.getClass())) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
 

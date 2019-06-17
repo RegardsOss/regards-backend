@@ -13,7 +13,6 @@ import fr.cnes.regards.framework.security.domain.SecurityException;
 
 /**
  * Specification of {@link MethodAuthorizationService} for instance microservices. It allows to configure resources saying to the system that the actual tenant is instance.
- *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class InstanceMethodAuthorizationService extends MethodAuthorizationService {
@@ -33,10 +32,8 @@ public class InstanceMethodAuthorizationService extends MethodAuthorizationServi
 
     /**
      * Override {@link MethodAuthorizationService#getAuthorities(String, ResourceMapping)} to specify instance tenant
-     *
      * @param pTenant forced to instance
      * @param pResourceMapping resource to retrieve
-     * @return
      */
     @Override
     public Optional<List<GrantedAuthority>> getAuthorities(String pTenant, ResourceMapping pResourceMapping) {

@@ -17,7 +17,6 @@ package fr.cnes.regards.framework.amqp.test.ref;
 
 /**
  * @author Gary Russell
- *
  */
 public interface Service {
 

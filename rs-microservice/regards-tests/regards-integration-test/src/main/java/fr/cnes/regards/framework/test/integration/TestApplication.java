@@ -23,9 +23,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * Mock to test API endpoints at module level
- *
  * @author msordi
- *
  */
 // CHECKSTYLE:OFF
 @SpringBootApplication(scanBasePackages = { "fr.cnes.regards.modules", "fr.cnes.regards.microservices" })

@@ -18,28 +18,28 @@
  */
 package fr.cnes.regards.framework.utils.file.compression;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
- * <code>CompressionTypeEnum</code> definit une liste d'enumere des modes de compression possibles.
+ * Enumeration for compression modes
+ * @author Sébastien Binda
  */
 public enum CompressionTypeEnum {
 
-    /**
-     * Constante definissant le mode ZIP
-     */
     ZIP("zip"),
-
-    /**
-     * Constante definissant le mode ZIP
-     */
     GZIP("gz"),
+    TAR("tar"),
+    UNKNOWN(""),
+    Z("z");
 
     /**
-     * Constante définissant le mode TAR
+     * Attribut permettant la journalisation.
      */
-    TAR("tar");
+    private static final Logger LOGGER = LoggerFactory.getLogger(CompressionTypeEnum.class);
 
     /**
-     * Contient la chaine de caractère correspondant à l'extension des fichiers de ce type
+     * Main extension for the compression type
      */
     private final String fileExtension;
 
@@ -51,15 +51,13 @@ public enum CompressionTypeEnum {
         return fileExtension;
     }
 
-    /**
-     * permet de recuperer l'instance de CompressionTypeEnum qui correspond a name. si name ne correspond a aucun
-     * type, renvoie null
-     */
     public static CompressionTypeEnum parse(String name) {
         try {
             return CompressionTypeEnum.valueOf(name);
         } catch (IllegalArgumentException e) {
-            return null;
+            LOGGER.error("unknown compression tools type : \"{}\"", name);
+            LOGGER.error(e.getMessage(), e);
+            return CompressionTypeEnum.UNKNOWN;
         }
     }
 }

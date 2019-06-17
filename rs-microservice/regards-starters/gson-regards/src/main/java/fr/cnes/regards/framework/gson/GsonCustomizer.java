@@ -25,6 +25,9 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.actuate.beans.BeansEndpoint.BeanDescriptor;
+import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.web.mappings.MappingsEndpoint.ApplicationMappings;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.MimeType;
 import org.springframework.util.MultiValueMap;
@@ -39,6 +42,9 @@ import fr.cnes.regards.framework.gson.adapters.MultiValueMapAdapter;
 import fr.cnes.regards.framework.gson.adapters.MultimapAdapter;
 import fr.cnes.regards.framework.gson.adapters.OffsetDateTimeAdapter;
 import fr.cnes.regards.framework.gson.adapters.PathAdapter;
+import fr.cnes.regards.framework.gson.adapters.actuator.ApplicationMappingsAdapter;
+import fr.cnes.regards.framework.gson.adapters.actuator.BeanDescriptorAdapter;
+import fr.cnes.regards.framework.gson.adapters.actuator.HealthAdapter;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapter;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterBean;
 import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactory;
@@ -47,9 +53,7 @@ import fr.cnes.regards.framework.gson.strategy.GsonIgnoreExclusionStrategy;
 
 /**
  * Static Gson customizer
- *
  * @author Marc Sordi
- *
  */
 public final class GsonCustomizer {
 
@@ -76,12 +80,15 @@ public final class GsonCustomizer {
         builder.registerTypeHierarchyAdapter(Multimap.class, new MultimapAdapter());
         builder.registerTypeHierarchyAdapter(MultiValueMap.class, new MultiValueMapAdapter());
         builder.addSerializationExclusionStrategy(new GsonIgnoreExclusionStrategy());
+        // Custom actuator deserialization
+        builder.registerTypeAdapter(Health.class, new HealthAdapter());
+        builder.registerTypeAdapter(BeanDescriptor.class, new BeanDescriptorAdapter());
+        builder.registerTypeAdapter(ApplicationMappings.class, new ApplicationMappingsAdapter());
     }
 
     /**
      * Add {@link TypeAdapterFactory} annotated with {@link GsonTypeAdapterFactory} and {@link TypeAdapter} annotated
      * with {@link GsonTypeAdapter}
-     *
      * @param builder GSON builder to customize
      * @param properties optional Gson properties
      */
@@ -93,7 +100,6 @@ public final class GsonCustomizer {
 
     /**
      * Add {@link TypeAdapterFactory} annotated with {@link GsonTypeAdapterFactoryBean} with Spring support.
-     *
      * @param builder GSON builder to customize
      * @param applicationContext optional application context
      */
@@ -112,7 +118,6 @@ public final class GsonCustomizer {
 
     /**
      * Add {@link TypeAdapter} annotated with {@link GsonTypeAdapterBean} to GSON
-     *
      * @param builder GSON builder to customize
      * @param applicationContext optional application context
      */

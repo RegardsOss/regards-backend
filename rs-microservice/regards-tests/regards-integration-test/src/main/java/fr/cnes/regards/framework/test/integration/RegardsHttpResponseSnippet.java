@@ -25,9 +25,7 @@ import org.springframework.restdocs.operation.Operation;
 
 /**
  * REGARDS customization of {@link HttpResponseSnippet}.
- *
  * @author Marc Sordi
- *
  */
 public class RegardsHttpResponseSnippet extends HttpResponseSnippet {
 

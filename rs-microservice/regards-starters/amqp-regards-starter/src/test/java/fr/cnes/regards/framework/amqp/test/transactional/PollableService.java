@@ -27,9 +27,7 @@ import fr.cnes.regards.framework.amqp.event.IPollable;
 
 /**
  * A service that poll an event in a transaction enabling acknowledgement feature.
- *
  * @author Marc Sordi
- *
  */
 @Service
 public class PollableService {

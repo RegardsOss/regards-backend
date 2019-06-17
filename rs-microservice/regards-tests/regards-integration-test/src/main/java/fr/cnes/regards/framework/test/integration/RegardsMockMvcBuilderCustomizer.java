@@ -1,36 +1,32 @@
 package fr.cnes.regards.framework.test.integration;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcBuilderCustomizer;
-import org.springframework.restdocs.RestDocumentationContextProvider;
-import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
+import org.springframework.boot.test.autoconfigure.restdocs.RestDocsMockMvcConfigurationCustomizer;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
 import org.springframework.restdocs.templates.TemplateFormats;
-import org.springframework.stereotype.Component;
-import org.springframework.test.web.servlet.setup.ConfigurableMockMvcBuilder;
 
 /**
  * Allows to customize MockMvc bean. <br/>
  * Customization: <br/>
- * <ul>
- * <li>usage of markdown to generate API documentation instead of Asciidoctor</li>
- * </ul>
+ * - usage of markdown to generate API documentation instead of Asciidoctor<br>
+ * Best see following doc than spring-restdocs in case of API change
  * @author Sylvain VISSIERE-GUERINET
  */
-@Component
-@ConditionalOnBean(value = { RestDocumentationContextProvider.class })
-public class RegardsMockMvcBuilderCustomizer implements MockMvcBuilderCustomizer {
+@TestConfiguration
+public class RegardsMockMvcBuilderCustomizer implements RestDocsMockMvcConfigurationCustomizer {
 
     /**
-     * {@link RestDocumentationContextProvider} instance
+     * Customize MockMvcBean to provide :<br>
+     * - our HttpRequest snippet,<br>
+     * - our HttpResponse snippet,<br>
+     * - our Request body snippet.<br>
+     * And to force using Markdown instead of asciidoctor
      */
-    @Autowired
-    private RestDocumentationContextProvider restDocumentation;
-
     @Override
-    public void customize(ConfigurableMockMvcBuilder<?> builder) {
-        builder.apply(MockMvcRestDocumentation.documentationConfiguration(this.restDocumentation).snippets()
-                .withDefaults(new RegardsHttpRequestSnippet(), new RegardsHttpResponseSnippet(),
-                              new RegardsRequestBodySnippet()).withTemplateFormat(TemplateFormats.markdown()));
+    public void customize(MockMvcRestDocumentationConfigurer configurer) {
+        configurer
+                .snippets().withDefaults(new RegardsHttpRequestSnippet(), new RegardsHttpResponseSnippet(),
+                                         new RegardsRequestBodySnippet())
+                .withTemplateFormat(TemplateFormats.markdown());
     }
 }

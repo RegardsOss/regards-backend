@@ -30,7 +30,6 @@ import fr.cnes.regards.framework.jpa.json.GsonUtil;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @Configuration
 @EnableAutoConfiguration

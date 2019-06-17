@@ -30,9 +30,7 @@ import fr.cnes.regards.framework.geojson.coordinates.PolygonPositions;
  * The first LineString MUST be the exterior ring.<br/>
  * Any others LineString MUST be interior rings.<br/>
  * Exterior rings are counterclockwise, and holes are clockwise.
- *
  * @author Marc Sordi
- *
  */
 public class Polygon extends AbstractGeometry<PolygonPositions> {
 

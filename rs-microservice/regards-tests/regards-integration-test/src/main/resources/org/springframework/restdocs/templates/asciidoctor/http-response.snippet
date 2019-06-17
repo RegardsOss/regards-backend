@@ -1,21 +1,21 @@
-==== Example response
+    ====Example response
 
-* *Code:* HTTP/1.1 {{statusCode}} {{statusReason}}
+        **Code:*HTTP/1.1{{statusCode}}{{statusReason}}
 
-* *Headers*
+        **Headers*
 
- {{#headers}}
- {{name}}: {{value}}
- {{/headers}}
+    {{#headers}}
+    {{name}}:{{value}}
+    {{/headers}}
 
-* *Content*
+        **Content*
 
-{{#responseBody}}
-[source,JSON]
-----
- {{responseBody}}
-----
-{{/responseBody}}
-{{^responseBody}}
- None
-{{/responseBody}}
+    {{#responseBody}}
+        [source,JSON]
+        ----
+    {{responseBody}}
+        ----
+    {{/responseBody}}
+    {{^responseBody}}
+        None
+    {{/responseBody}}

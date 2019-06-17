@@ -26,38 +26,26 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
 
 /**
- *
  * Class IMultitenantConnectionsReader
  *
  * Interface to create a custom datasources configuration reader. All datasources returned by the method getDataSources
  * are managed by regards multitenancy jpa.
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 public interface ITenantConnectionResolver {
 
     /**
-     *
      * Retrieve all <b>enabled connection configuration</b> for each tenant of the specified microservice
-     *
-     * @param microservice
-     *            related microservice
+     * @param microservice related microservice
      * @return List of existing {@link TenantConnection}
-     * @since 1.0-SNAPSHOT
      */
     List<TenantConnection> getTenantConnections(String microservice) throws JpaMultitenantException;
 
     /**
-     *
      * Add a new tenant connection
-     *
-     * @param microservice
-     *            related microservice
-     * @param tenantConnection
-     *            tenant connection for specified microservice
-     * @throws JpaMultitenantException
-     *             implementation exception
+     * @param microservice related microservice
+     * @param tenantConnection tenant connection for specified microservice
+     * @throws JpaMultitenantException implementation exception
      */
     void addTenantConnection(String microservice, TenantConnection tenantConnection) throws JpaMultitenantException;
 
@@ -67,7 +55,6 @@ public interface ITenantConnectionResolver {
      * @param tenant target tenant
      * @param state new connection state
      * @param errorCause optional error cause (useful when {@link TenantConnectionState#ERROR}!)
-     * @return updated connection
      */
     void updateState(String microservice, String tenant, TenantConnectionState state, Optional<String> errorCause)
             throws JpaMultitenantException;

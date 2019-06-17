@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.modules.templates.rest;
 
-import javax.validation.Valid;
 import java.util.List;
+
+import javax.validation.Valid;
 
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -35,7 +36,6 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInconsistentIdentifierException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -48,8 +48,6 @@ import fr.cnes.regards.modules.templates.service.ITemplateService;
  * @author Xavier-Alexandre Brochard
  */
 @RestController
-@ModuleInfo(name = "templates", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping("/templates")
 public class TemplateController implements IResourceController<Template> {
 
@@ -86,19 +84,6 @@ public class TemplateController implements IResourceController<Template> {
     }
 
     /**
-     * Creates a template
-     * @param pTemplate the template
-     * @return the created template
-     */
-    @ResponseBody
-    @RequestMapping(method = RequestMethod.POST)
-    @ResourceAccess(description = "Saves the new given email template")
-    public ResponseEntity<Resource<Template>> create(@Valid @RequestBody final Template pTemplate) {
-        final Template template = templateService.create(pTemplate);
-        return new ResponseEntity<>(toResource(template), HttpStatus.CREATED);
-    }
-
-    /**
      * @param pId the retrieved template id
      * @return the template of passed id
      * @throws EntityNotFoundException if no template with passed id could be found
@@ -114,8 +99,8 @@ public class TemplateController implements IResourceController<Template> {
 
     /**
      * Updates the template of passed id
-     * @param pId the updated template id
-     * @param pTemplate the updated template
+     * @param id the updated template id
+     * @param template the updated template
      * @return void
      * @throws EntityException <br>
      *                         {@link EntityNotFoundException} if no template with passed id could be found<br>
@@ -124,23 +109,9 @@ public class TemplateController implements IResourceController<Template> {
     @ResponseBody
     @RequestMapping(value = "/{template_id}", method = RequestMethod.PUT)
     @ResourceAccess(description = "Update the email template with given id with given values")
-    public ResponseEntity<Void> update(@PathVariable("template_id") final Long pId,
-            @Valid @RequestBody final Template pTemplate) throws EntityException {
-        templateService.update(pId, pTemplate);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    /**
-     * Deletes the template of passed id
-     * @param pId the updated template id
-     * @return void
-     * @throws EntityNotFoundException if no template with passed id could be found
-     */
-    @ResponseBody
-    @RequestMapping(value = "/{template_id}", method = RequestMethod.DELETE)
-    @ResourceAccess(description = "Delete the email template with given id")
-    public ResponseEntity<Void> delete(@PathVariable("template_id") final Long pId) throws EntityNotFoundException {
-        templateService.delete(pId);
+    public ResponseEntity<Void> update(@PathVariable("template_id") final Long id,
+            @Valid @RequestBody final Template template) throws EntityException {
+        templateService.update(id, template);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -154,12 +125,8 @@ public class TemplateController implements IResourceController<Template> {
         final Resource<Template> resource = resourceService.toResource(element);
         resourceService.addLink(resource, getClass(), "findById", LinkRels.SELF,
                                 MethodParamFactory.build(Long.class, element.getId()));
-        resourceService.addLink(resource, getClass(), "delete", LinkRels.DELETE,
-                                MethodParamFactory.build(Long.class, element.getId()));
         resourceService.addLink(resource, getClass(), "update", LinkRels.UPDATE,
                                 MethodParamFactory.build(Long.class, element.getId()),
-                                MethodParamFactory.build(Template.class, element));
-        resourceService.addLink(resource, getClass(), "create", LinkRels.CREATE,
                                 MethodParamFactory.build(Template.class, element));
         return resource;
     }

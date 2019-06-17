@@ -38,11 +38,8 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
 
 /**
- *
  * Common publisher methods
- *
  * @author Marc Sordi
- *
  */
 public abstract class AbstractPublisher implements IPublisherContract {
 
@@ -66,9 +63,9 @@ public abstract class AbstractPublisher implements IPublisherContract {
      */
     private final IRabbitVirtualHostAdmin rabbitVirtualHostAdmin;
 
-    public AbstractPublisher(RabbitTemplate pRabbitTemplate, IAmqpAdmin amqpAdmin,
+    public AbstractPublisher(RabbitTemplate rabbitTemplate, IAmqpAdmin amqpAdmin,
             IRabbitVirtualHostAdmin pRabbitVirtualHostAdmin) {
-        this.rabbitTemplate = pRabbitTemplate;
+        this.rabbitTemplate = rabbitTemplate;
         this.amqpAdmin = amqpAdmin;
         this.rabbitVirtualHostAdmin = pRabbitVirtualHostAdmin;
     }
@@ -122,16 +119,11 @@ public abstract class AbstractPublisher implements IPublisherContract {
     }
 
     /**
-     * @param <T>
-     *            event to be published
-     * @param event
-     *            the event you want to publish
-     * @param priority
-     *            priority given to the event
-     * @param workerMode
-     *            publishing mode
-     * @param target
-     *            publishing scope
+     * @param <T> event to be published
+     * @param event the event you want to publish
+     * @param priority priority given to the event
+     * @param workerMode publishing mode
+     * @param target publishing scope
      * @param purgeQueue true to purge queue if already exists. Useful in tests.
      */
     protected <T> void publish(final T event, final WorkerMode workerMode, final Target target, final int priority,
@@ -161,19 +153,13 @@ public abstract class AbstractPublisher implements IPublisherContract {
     protected abstract String resolveVirtualHost(String tenant);
 
     /**
-     * @param <T>
-     *            event to be published
-     * @param tenant
-     *            the tenant name
+     * @param <T> event to be published
+     * @param tenant the tenant name
      * @param virtualHost virtual host for current tenant
-     * @param event
-     *            the event you want to publish
-     * @param priority
-     *            priority given to the event
-     * @param workerMode
-     *            publishing mode
-     * @param target
-     *            publishing scope
+     * @param event the event you want to publish
+     * @param priority priority given to the event
+     * @param workerMode publishing mode
+     * @param target publishing scope
      * @param purgeQueue true to purge queue if already exists. Useful in tests.
      */
     protected final <T> void publish(String tenant, String virtualHost, T event, WorkerMode workerMode, Target target,
@@ -184,6 +170,7 @@ public abstract class AbstractPublisher implements IPublisherContract {
         try {
             // Bind the connection to the right vHost (i.e. tenant to publish the message)
             rabbitVirtualHostAdmin.bind(virtualHost);
+            amqpAdmin.declareDeadLetter();
 
             // Declare exchange
             Exchange exchange = amqpAdmin.declareExchange(eventType, workerMode, target);
@@ -200,8 +187,8 @@ public abstract class AbstractPublisher implements IPublisherContract {
                                        amqpAdmin.getRoutingKey(Optional.of(queue), workerMode), event, priority);
             } else if (WorkerMode.BROADCAST.equals(workerMode)) {
                 // Routing key useless ... always skipped with a fanout exchange
-                publishMessageByTenant(tenant, exchange.getName(), amqpAdmin.getRoutingKey(null, workerMode), event,
-                                       priority);
+                publishMessageByTenant(tenant, exchange.getName(),
+                                       amqpAdmin.getRoutingKey(Optional.empty(), workerMode), event, priority);
             } else {
                 String errorMessage = String.format("Unexpected worker mode : %s.", workerMode);
                 LOGGER.error(errorMessage);
@@ -214,31 +201,23 @@ public abstract class AbstractPublisher implements IPublisherContract {
 
     /**
      * Publish event in tenant virtual host
-     *
-     * @param <T>
-     *            event type
-     * @param tenant
-     *            tenant
-     * @param exchangeName
-     *            {@link Exchange} name
-     * @param routingKey
-     *            routing key (really useful for direct exchange). Use {@link Publisher#DEFAULT_ROUTING_KEY} for fanout.
-     * @param event
-     *            the event to publish
-     * @param priority
-     *            the event priority
+     * @param <T> event type
+     * @param tenant tenant
+     * @param exchangeName {@link Exchange} name
+     * @param routingKey routing key (really useful for direct exchange).
+     * @param event the event to publish
+     * @param priority the event priority
      */
     private final <T> void publishMessageByTenant(String tenant, String exchangeName, String routingKey, T event,
             int priority) {
 
         // Message to publish
         final TenantWrapper<T> messageSended = new TenantWrapper<>(event, tenant);
-
         // routing key is unnecessary for fanout exchanges but is for direct exchanges
         rabbitTemplate.convertAndSend(exchangeName, routingKey, messageSended, pMessage -> {
-            final MessageProperties propertiesWithPriority = pMessage.getMessageProperties();
-            propertiesWithPriority.setPriority(priority);
-            return new Message(pMessage.getBody(), propertiesWithPriority);
+            MessageProperties messageProperties = pMessage.getMessageProperties();
+            messageProperties.setPriority(priority);
+            return new Message(pMessage.getBody(), messageProperties);
         });
     }
 }

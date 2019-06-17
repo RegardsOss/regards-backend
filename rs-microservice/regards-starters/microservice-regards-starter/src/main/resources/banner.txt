@@ -1,12 +1,11 @@
-  _____  ______ _____          _____  _____   _____ 
- |  __ \|  ____/ ____|   /\   |  __ \|  __ \ / ____|
- | |__) | |__ | |  __   /  \  | |__) | |  | | (___  
- |  _  /|  __|| | |_ | / /\ \ |  _  /| |  | |\___ \ 
- | | \ \| |___| |__| |/ ____ \| | \ \| |__| |____) |
- |_|  \_\______\_____/_/    \_\_|  \_\_____/|_____/ 
+ ${AnsiColor.BRIGHT_BLUE} _____ ${AnsiColor.BRIGHT_YELLOW} ______ _____          _____  _____ ${AnsiColor.BRIGHT_BLUE}  _____ 
+ ${AnsiColor.BRIGHT_BLUE}|  __ \${AnsiColor.BRIGHT_YELLOW}|  ____/ ____|   /\   |  __ \|  __ \${AnsiColor.BRIGHT_BLUE} / ____|
+ ${AnsiColor.BRIGHT_BLUE}| |__) ${AnsiColor.BRIGHT_YELLOW}| |__ | |  __   /  \  | |__) | |  | |${AnsiColor.BRIGHT_BLUE} (___  
+ ${AnsiColor.BRIGHT_BLUE}|  _  /${AnsiColor.BRIGHT_YELLOW}|  __|| | |_ | / /\ \ |  _  /| |  | |${AnsiColor.BRIGHT_BLUE}\___ \ 
+ ${AnsiColor.BRIGHT_BLUE}| | \ \${AnsiColor.BRIGHT_YELLOW}| |___| |__| |/ ____ \| | \ \| |__| |${AnsiColor.BRIGHT_BLUE}____) |
+ ${AnsiColor.BRIGHT_BLUE}|_|  \_\${AnsiColor.BRIGHT_YELLOW}______\_____/_/    \_\_|  \_\_____/${AnsiColor.BRIGHT_BLUE}|_____/ 
  
- :: ${spring.application.name}
+ ${AnsiColor.BRIGHT_YELLOW}:: ${spring.application.name}${AnsiColor.DEFAULT}
  :: ${application.formatted-version}
- :: Spring Boot ::   ${spring-boot.formatted-version}
- 
+ :: Spring Boot :: ${spring-boot.formatted-version}${AnsiColor.DEFAULT}
  

@@ -43,7 +43,7 @@ public class MultiPolygon extends AbstractGeometry<List<PolygonPositions>> {
     }
 
     public double[][][][] toArray() {
-        return coordinates.stream().map(PolygonPositions::toArray).toArray(n -> new double[n][][][]);
+        return coordinates.stream().map(PolygonPositions::toArray).toArray(double[][][][]::new);
     }
 
     /**
@@ -54,7 +54,7 @@ public class MultiPolygon extends AbstractGeometry<List<PolygonPositions>> {
     public static MultiPolygon fromArray(double[][][][] lonLatsArrays) {
         MultiPolygon multiPolygon = new MultiPolygon();
         multiPolygon.coordinates.addAll(Arrays.asList(
-                Arrays.stream(lonLatsArrays).map(PolygonPositions::fromArray).toArray(n -> new PolygonPositions[n])));
+                Arrays.stream(lonLatsArrays).map(PolygonPositions::fromArray).toArray(PolygonPositions[]::new)));
         return multiPolygon;
     }
 }

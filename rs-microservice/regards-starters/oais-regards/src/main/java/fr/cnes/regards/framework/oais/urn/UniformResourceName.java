@@ -196,13 +196,14 @@ public class UniformResourceName {
                 final String revisionString = stringFragment[6];
                 // so we have all fields
                 return new UniformResourceName(oaisIdentifier, entityType, tenant, entityId,
-                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
-                        Long.parseLong(versionWithOrder[1]), revisionString.substring(REVISION_PREFIX.length()));
+                                               Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
+                                               Long.parseLong(versionWithOrder[1]),
+                                               revisionString.substring(REVISION_PREFIX.length()));
             } else {
                 // Revision is missing so we have all except Revision
                 return new UniformResourceName(oaisIdentifier, entityType, tenant, entityId,
-                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
-                        Long.parseLong(versionWithOrder[1]));
+                                               Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
+                                               Long.parseLong(versionWithOrder[1]));
             }
         } else {
             // we don't have an order specified
@@ -211,28 +212,29 @@ public class UniformResourceName {
                 final String revisionString = stringFragment[6];
                 // so we have all fields exception Order
                 return new UniformResourceName(oaisIdentifier, entityType, tenant, entityId,
-                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
-                        revisionString.substring(REVISION_PREFIX.length()));
+                                               Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())),
+                                               revisionString.substring(REVISION_PREFIX.length()));
             } else {
                 // Revision is missing so we have all except Revision and Order
-                return new UniformResourceName(oaisIdentifier, entityType, tenant, entityId,
-                        Integer.parseInt(versionWithOrder[0].substring(VERSION_PREFIX.length())));
+                return new UniformResourceName(oaisIdentifier, entityType, tenant, entityId, Integer.parseInt(
+                        versionWithOrder[0].substring(VERSION_PREFIX.length())));
             }
         }
     }
 
     /**
      * Build a pseudo random UUID starting with 00000000-0000-0000-0000
-     * @param oaisIdentifier
-     * @param entityType
-     * @param tenant
-     * @param version
-     * @return
      */
     public static UniformResourceName pseudoRandomUrn(OAISIdentifier oaisIdentifier, EntityType entityType,
             String tenant, int version) {
         return new UniformResourceName(oaisIdentifier, entityType, tenant,
-                UUID.fromString("0-0-0-0-" + (int) (Math.random() * Integer.MAX_VALUE)), version);
+                                       UUID.fromString("0-0-0-0-" + (int) (Math.random() * Integer.MAX_VALUE)),
+                                       version);
+    }
+
+    public static UniformResourceName clone(UniformResourceName template, Long order) {
+        return new UniformResourceName(template.getOaisIdentifier(), template.getEntityType(), template.getTenant(),
+                template.getEntityId(), template.getVersion(), order);
     }
 
     /**
@@ -368,12 +370,46 @@ public class UniformResourceName {
     }
 
     @Override
-    public boolean equals(Object other) {
-        return (other instanceof UniformResourceName) && other.toString().equals(toString());
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        UniformResourceName that = (UniformResourceName) o;
+
+        if (version != that.version) {
+            return false;
+        }
+        if (oaisIdentifier != that.oaisIdentifier) {
+            return false;
+        }
+        if (entityType != that.entityType) {
+            return false;
+        }
+        if (!tenant.equals(that.tenant)) {
+            return false;
+        }
+        if (!entityId.equals(that.entityId)) {
+            return false;
+        }
+        if (order != null ? !order.equals(that.order) : that.order != null) {
+            return false;
+        }
+        return revision != null ? revision.equals(that.revision) : that.revision == null;
     }
 
     @Override
     public int hashCode() {
-        return toString().hashCode();
+        int result = oaisIdentifier.hashCode();
+        result = 31 * result + entityType.hashCode();
+        result = 31 * result + tenant.hashCode();
+        result = 31 * result + entityId.hashCode();
+        result = 31 * result + version;
+        result = 31 * result + (order != null ? order.hashCode() : 0);
+        result = 31 * result + (revision != null ? revision.hashCode() : 0);
+        return result;
     }
 }

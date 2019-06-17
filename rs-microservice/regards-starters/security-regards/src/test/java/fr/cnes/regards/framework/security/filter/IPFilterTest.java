@@ -38,7 +38,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import fr.cnes.regards.framework.security.domain.SecurityException;
 import fr.cnes.regards.framework.security.endpoint.MethodAuthorizationService;
 import fr.cnes.regards.framework.security.utils.endpoint.RoleAuthority;
 import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
@@ -47,13 +46,10 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
- *
  * Class IPFilterTest
  *
  * IP Filter tests
- *
  * @author sbinda
- * @since 1.0-SNAPSHOT
  */
 public class IPFilterTest {
 
@@ -83,18 +79,12 @@ public class IPFilterTest {
     private static final String TENANT_NAME = "tenant";
 
     /**
-     *
      * Check security filter with ip adress for endpoints accesses
-     *
-     * @throws SecurityException
-     *             test error
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Check security filter with ip adress for endpoints accesses")
     @Test
-    public void ipFilterTest() throws SecurityException {
+    public void ipFilterTest() {
 
         final HttpServletRequest mockedRequest = Mockito.mock(HttpServletRequest.class);
         final HttpServletResponse mockedResponse = new MockHttpServletResponse();
@@ -144,18 +134,12 @@ public class IPFilterTest {
     }
 
     /**
-     *
      * Check security filter with ip adress for endpoints accesses
-     *
-     * @throws SecurityException
-     *             test error
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_SEC_200")
     @Purpose("Check security filter with subdomain ip adress for endpoints accesses")
     @Test
-    public void subdomainIpFilterTest() throws SecurityException {
+    public void subdomainIpFilterTest() {
 
         final HttpServletRequest mockedRequest = Mockito.mock(HttpServletRequest.class);
         final HttpServletResponse mockedResponse = new MockHttpServletResponse();

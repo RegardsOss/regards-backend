@@ -29,9 +29,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  * Single virtual host publisher implementation
- *
  * @author Marc Sordi
- *
  */
 public class SingleVhostPoller extends AbstractPoller implements IPoller {
 

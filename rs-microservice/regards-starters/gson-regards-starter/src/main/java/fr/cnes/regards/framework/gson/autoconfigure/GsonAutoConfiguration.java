@@ -25,7 +25,7 @@ import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
-import org.springframework.boot.autoconfigure.web.HttpMessageConvertersAutoConfiguration;
+import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -42,7 +42,6 @@ import fr.cnes.regards.framework.gson.GsonProperties;
 
 /**
  * GSON support auto configuration
- *
  * @author Marc Sordi
  */
 @Configuration
@@ -50,9 +49,6 @@ import fr.cnes.regards.framework.gson.GsonProperties;
 @AutoConfigureBefore({ HttpMessageConvertersAutoConfiguration.class })
 public class GsonAutoConfiguration implements ApplicationContextAware {
 
-    /**
-     * Class logger
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(GsonAutoConfiguration.class);
 
     /**
@@ -70,7 +66,6 @@ public class GsonAutoConfiguration implements ApplicationContextAware {
 
     /**
      * Configure a builder with GSON adapter for Sprinfox swagger Json object
-     *
      * @return {@link GsonBuilder}
      */
     @Bean

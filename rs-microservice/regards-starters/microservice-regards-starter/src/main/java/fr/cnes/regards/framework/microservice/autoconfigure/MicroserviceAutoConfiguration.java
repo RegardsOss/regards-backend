@@ -18,20 +18,24 @@
  */
 package fr.cnes.regards.framework.microservice.autoconfigure;
 
+import javax.servlet.Filter;
+
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.web.filter.ForwardedHeaderFilter;
 
 import fr.cnes.regards.framework.microservice.configurer.MaintenanceWebSecurityConfiguration;
 import fr.cnes.regards.framework.microservice.maintenance.MaintenanceHealthIndicator;
 import fr.cnes.regards.framework.microservice.manager.DefaultApplicationManager;
 import fr.cnes.regards.framework.microservice.manager.IApplicationManager;
+import fr.cnes.regards.framework.microservice.web.ControllerHandlingConfiguration;
 import fr.cnes.regards.framework.microservice.web.MicroserviceWebConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfiguration;
@@ -42,12 +46,9 @@ import fr.cnes.regards.framework.security.configurer.ICustomWebSecurityConfigura
  * Class MicroserviceAutoConfigure
  *
  * Auto configuration for microservices web mvc
- *
  * @author Marc Sordi
  * @author Sylvain Vissiere-Guerinet
  * @author Christophe Mertz
- *
- * @since 1.0-SNAPSHOT
  */
 @Configuration
 @ConditionalOnWebApplication
@@ -67,6 +68,11 @@ public class MicroserviceAutoConfiguration {
     }
 
     @Bean
+    public ControllerHandlingConfiguration ControllerHandlingConfiguration() {
+        return new ControllerHandlingConfiguration();
+    }
+
+    @Bean
     @ConditionalOnProperty(prefix = "regards.microservices", name = "maintenance.enabled", havingValue = "true",
             matchIfMissing = true)
     public MaintenanceHealthIndicator maintenanceHealthIndicator(IRuntimeTenantResolver runtimeTenantResolver) {
@@ -78,5 +84,13 @@ public class MicroserviceAutoConfiguration {
             matchIfMissing = true)
     public ICustomWebSecurityConfiguration maintenanceWebSecurity(IRuntimeTenantResolver runtimeTenantResolver) {
         return new MaintenanceWebSecurityConfiguration(runtimeTenantResolver);
+    }
+
+    /**
+     * Propagate forward headers (useful for HATEOAS link builder)
+     */
+    @Bean
+    public Filter forwardedHeaderFilter() {
+        return new ForwardedHeaderFilter();
     }
 }

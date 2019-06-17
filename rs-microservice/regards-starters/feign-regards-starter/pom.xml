@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES This file is 
-	part of REGARDS. REGARDS is free software: you can redistribute it and/or 
+<!-- Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES This file 
+	is part of REGARDS. REGARDS is free software: you can redistribute it and/or 
 	modify it under the terms of the GNU General Public License as published 
 	by the Free Software Foundation, either version 3 of the License, or (at 
 	your option) any later version. REGARDS is distributed in the hope that it 
@@ -8,18 +8,18 @@
 	of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General 
 	Public License for more details. You should have received a copy of the GNU 
 	General Public License along with REGARDS. If not, see <http://www.gnu.org/licenses/>. -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>feign-regards-starter</artifactId>
-	<version>3.0.0-RELEASE</version>
 	<description>REGARDS Feign starter</description>
 
 	<parent>
 		<groupId>fr.cnes.regards.framework</groupId>
 		<artifactId>regards-starters</artifactId>
-		<version>3.0.0-RELEASE</version>
+		<version>0.4.0</version>
 	</parent>
 
 	<url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -56,17 +56,29 @@
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>security-regards</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework.security</groupId>
-					<artifactId>spring-security-web</artifactId>
-				</exclusion>
-			</exclusions>
+			<!--<exclusions> -->
+			<!--<exclusion> -->
+			<!--<groupId>org.springframework.security</groupId> -->
+			<!--<artifactId>spring-security-web</artifactId> -->
+			<!--</exclusion> -->
+			<!--</exclusions> -->
 		</dependency>
 		<!-- Starter feign -->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-feign</artifactId>
+			<artifactId>spring-cloud-starter-openfeign</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.github.openfeign</groupId>
+			<artifactId>feign-okhttp</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.github.openfeign</groupId>
+			<artifactId>feign-httpclient</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-netflix-ribbon</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.hateoas</groupId>
@@ -81,18 +93,14 @@
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
 		</dependency>
-		<!-- Netflix Feign REST Client -->
+		<!-- Feign client -->
 		<dependency>
-			<groupId>com.netflix.feign</groupId>
-			<artifactId>feign-hystrix</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.netflix.feign</groupId>
+			<groupId>io.github.openfeign</groupId>
 			<artifactId>feign-gson</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.netflix.feign</groupId>
-			<artifactId>feign-slf4j</artifactId>
+			<groupId>io.github.openfeign</groupId>
+			<artifactId>feign-jaxb</artifactId>
 		</dependency>
 		<!-- Tests -->
 		<dependency>

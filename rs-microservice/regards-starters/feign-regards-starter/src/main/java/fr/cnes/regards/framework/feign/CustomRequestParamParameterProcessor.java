@@ -22,15 +22,15 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collection;
 
-import org.springframework.cloud.netflix.feign.AnnotatedParameterProcessor;
-import org.springframework.cloud.netflix.feign.annotation.RequestParamParameterProcessor;
+import org.springframework.cloud.openfeign.AnnotatedParameterProcessor;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.google.common.base.Strings;
 import feign.MethodMetadata;
 
 /**
- * Improve the default {@link RequestParamParameterProcessor} in order to teach it how to handle Map<String, String> parameters in REST controllers,
+ * Improve the default {@link org.springframework.cloud.openfeign.annotation.RequestParamParameterProcessor} in order
+ * to teach it how to handle Map<String, String> parameters in REST controllers,
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
  */

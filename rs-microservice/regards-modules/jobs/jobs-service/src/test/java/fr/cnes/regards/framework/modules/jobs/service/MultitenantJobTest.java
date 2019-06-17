@@ -19,9 +19,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.amqp.ISubscriber;
-import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
-import fr.cnes.regards.framework.amqp.configuration.RegardsAmqpAdmin;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.jpa.json.GsonUtil;
@@ -61,12 +60,6 @@ public class MultitenantJobTest {
     private IRuntimeTenantResolver tenantResolver;
 
     @Autowired
-    private IRabbitVirtualHostAdmin rabbitVhostAdmin;
-
-    @Autowired
-    private RegardsAmqpAdmin amqpAdmin;
-
-    @Autowired
     private ISubscriber subscriber;
 
     private static Set<UUID> runnings = Collections.synchronizedSet(new HashSet<>());
@@ -88,7 +81,7 @@ public class MultitenantJobTest {
     private Gson gson;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         GsonUtil.setGson(gson);
         // tenantResolver.forceTenant(TENANT1);
         //
@@ -169,7 +162,7 @@ public class MultitenantJobTest {
         JobInfo waitJobInfo1 = new JobInfo(false);
         waitJobInfo1.setPriority(10);
         waitJobInfo1.setClassName(WaiterJob.class.getName());
-        waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500l),
+        waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500L),
                                    new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 1));
         waitJobInfo1 = jobInfoService.createAsQueued(waitJobInfo1);
 
@@ -177,7 +170,7 @@ public class MultitenantJobTest {
         JobInfo waitJobInfo2 = new JobInfo(false);
         waitJobInfo2.setPriority(10);
         waitJobInfo2.setClassName(WaiterJob.class.getName());
-        waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500l),
+        waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 500L),
                                    new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 1));
         waitJobInfo2 = jobInfoService.createAsQueued(waitJobInfo2);
 
@@ -209,14 +202,14 @@ public class MultitenantJobTest {
         JobInfo waitJobInfo1 = new JobInfo(false);
         waitJobInfo1.setPriority(10);
         waitJobInfo1.setClassName(WaiterJob.class.getName());
-        waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
+        waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000L),
                                    new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
 
         tenantResolver.forceTenant(TENANT2);
         JobInfo waitJobInfo2 = new JobInfo(false);
         waitJobInfo2.setPriority(10);
         waitJobInfo2.setClassName(WaiterJob.class.getName());
-        waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
+        waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000L),
                                    new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
 
         tenantResolver.forceTenant(TENANT1);
@@ -242,14 +235,14 @@ public class MultitenantJobTest {
         JobInfo waitJobInfo1 = new JobInfo(false);
         waitJobInfo1.setPriority(10);
         waitJobInfo1.setClassName(WaiterJob.class.getName());
-        waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
+        waitJobInfo1.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000L),
                                    new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
 
         tenantResolver.forceTenant(TENANT2);
         JobInfo waitJobInfo2 = new JobInfo(false);
         waitJobInfo2.setPriority(10);
         waitJobInfo2.setClassName(WaiterJob.class.getName());
-        waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
+        waitJobInfo2.setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000L),
                                    new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 3));
 
         waitJobInfo2 = jobInfoService.createAsQueued(waitJobInfo2);
@@ -317,11 +310,11 @@ public class MultitenantJobTest {
             jobInfos[i] = new JobInfo(false);
             jobInfos[i].setPriority(20 - i); // Makes it easier to know which ones are launched first
             jobInfos[i].setClassName(WaiterJob.class.getName());
-            jobInfos[i].setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000l),
+            jobInfos[i].setParameters(new JobParameter(WaiterJob.WAIT_PERIOD, 1000L),
                                       new JobParameter(WaiterJob.WAIT_PERIOD_COUNT, 2));
         }
         tenantResolver.forceTenant(TENANT1);
-        for (int i = 0; i < (jobInfos.length / 2); i++) {
+        for (int i = 0; i < jobInfos.length / 2; i++) {
             jobInfos[i] = jobInfoService.createAsQueued(jobInfos[i]);
         }
         tenantResolver.forceTenant(TENANT2);
@@ -339,11 +332,11 @@ public class MultitenantJobTest {
         } finally {
             // Wait for all jobs to terminate
             tenantResolver.forceTenant(TENANT1);
-            while (jobInfoRepos.findAllByStatusStatus(JobStatus.SUCCEEDED).size() < (jobInfos.length / 2)) {
+            while (jobInfoRepos.findAllByStatusStatus(JobStatus.SUCCEEDED).size() < jobInfos.length / 2) {
                 Thread.sleep(1_000);
             }
             tenantResolver.forceTenant(TENANT2);
-            while (jobInfoRepos.findAllByStatusStatus(JobStatus.SUCCEEDED).size() < (jobInfos.length / 2)) {
+            while (jobInfoRepos.findAllByStatusStatus(JobStatus.SUCCEEDED).size() < jobInfos.length / 2) {
                 Thread.sleep(1_000);
             }
         }

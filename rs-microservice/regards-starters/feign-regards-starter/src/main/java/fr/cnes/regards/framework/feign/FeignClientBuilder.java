@@ -18,35 +18,31 @@
  */
 package fr.cnes.regards.framework.feign;
 
-import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
-import org.springframework.cloud.netflix.feign.support.ResponseEntityDecoder;
+import org.springframework.cloud.openfeign.support.ResponseEntityDecoder;
 
 import com.google.gson.Gson;
+
+import feign.Client;
 import feign.Feign;
 import feign.Target;
 import feign.gson.GsonDecoder;
 import feign.gson.GsonEncoder;
+import feign.jaxb.JAXBContextFactory;
+import feign.jaxb.JAXBDecoder;
+import feign.jaxb.JAXBEncoder;
 
 /**
  * Helper class for building Feign client programmatically
- *
  * @author Marc Sordi
- *
  */
 public final class FeignClientBuilder {
-
-    private static ObjectFactory<HttpMessageConverters> messageConverters;
 
     private FeignClientBuilder() {
     }
 
     /**
-     *
      * Generate client
-     *
-     * @param pTarget
-     *            Target to add informations in header like Autorization.
+     * @param pTarget Target to add informations in header like Autorization.
      * @return IResourcesClient a client instance
      */
     public static <T> T build(final Target<T> pTarget) {
@@ -57,13 +53,10 @@ public final class FeignClientBuilder {
     }
 
     /**
-    *
-    * Generate client
-    *
-    * @param pTarget
-    *            Target to add informations in header like Autorization.
-    * @return IResourcesClient a client instance
-    */
+     * Generate client
+     * @param pTarget Target to add informations in header like Autorization.
+     * @return IResourcesClient a client instance
+     */
     public static <T> T build(final Target<T> pTarget, Gson gson) {
         return Feign.builder() // Feign customization
                 .encoder(new GsonEncoder(gson)).decoder(new ResponseEntityDecoder(new GsonDecoder(gson)))
@@ -71,7 +64,28 @@ public final class FeignClientBuilder {
                 .target(pTarget);
     }
 
-    public static void setMessageConverters(ObjectFactory<HttpMessageConverters> messageConverters) {
-        FeignClientBuilder.messageConverters = messageConverters;
+    /**
+     * Generate client
+     * @param pTarget Target to add informations in header like Autorization.
+     * @return IResourcesClient a client instance
+     */
+    public static <T> T build(final Target<T> pTarget, Client client, Gson gson) {
+        return Feign.builder().client(client) // Feign customization
+                .encoder(new GsonEncoder(gson)).decoder(new ResponseEntityDecoder(new GsonDecoder(gson)))
+                .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
+                .target(pTarget);
+    }
+
+    /**
+     * Generate client
+     * @param pTarget Target to add informations in header like Autorization.
+     * @return IResourcesClient a client instance
+     */
+    public static <T> T buildXml(final Target<T> pTarget, Client client) {
+        JAXBContextFactory jaxbFactory = new JAXBContextFactory.Builder().withMarshallerJAXBEncoding("UTF-8").build();
+        return Feign.builder().client(client) // Feign customization
+                .encoder(new JAXBEncoder(jaxbFactory)).decoder(new ResponseEntityDecoder(new JAXBDecoder(jaxbFactory)))
+                .errorDecoder(new ClientErrorDecoder()).decode404().contract(new FeignContractSupplier().get())
+                .target(pTarget);
     }
 }

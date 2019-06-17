@@ -33,10 +33,7 @@ import fr.cnes.regards.framework.security.utils.jwt.JWTAuthentication;
 /**
  * REGARDS endpoint security voter to manage resource access dynamically at method level.
  *
- * {@link MethodSecurityAutoConfiguration}
- *
  * @author msordi
- *
  */
 public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
 
@@ -52,44 +49,38 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
 
     /**
      * Constructor
-     *
-     * @param pMethodAuthService
-     *            the method authoization service
+     * @param methodAuthService the method authoization service
      */
-    public ResourceAccessVoter(final MethodAuthorizationService pMethodAuthService) {
-        this.methodAuthService = pMethodAuthService;
+    public ResourceAccessVoter(MethodAuthorizationService methodAuthService) {
+        this.methodAuthService = methodAuthService;
     }
 
     @Override
-    public boolean supports(final ConfigAttribute pAttribute) {
+    public boolean supports(ConfigAttribute pAttribute) {
         return true;
     }
 
     /**
      * This implementation supports any type of class, because it does not query the presented secure object.
-     *
-     * @param pClazz
-     *            the secure object
-     *
+     * @param clazz the secure object
      * @return always <code>true</code>
      */
     @Override
-    public boolean supports(final Class<?> pClazz) {
+    public boolean supports(Class<?> clazz) {
         return true;
     }
 
     @Override
-    public int vote(final Authentication pAuthentication, final Object pObject,
-            final Collection<ConfigAttribute> pAttributes) {
+    public int vote(Authentication authentication, Object object, Collection<ConfigAttribute> attributes) {
 
         // Default behavior : deny access
         int access = ACCESS_DENIED;
 
-        final JWTAuthentication jwtAuth = (JWTAuthentication) pAuthentication;
+        JWTAuthentication jwtAuth = (JWTAuthentication) authentication;
 
-        if (pObject instanceof MethodInvocation) {
+        if (object instanceof MethodInvocation) {
 
-            final MethodInvocation mi = (MethodInvocation) pObject;
+            MethodInvocation mi = (MethodInvocation) object;
             if (methodAuthService.hasAccess(jwtAuth, mi.getMethod())) {
                 access = ACCESS_GRANTED;
             } else {
@@ -98,7 +89,7 @@ public class ResourceAccessVoter implements AccessDecisionVoter<Object> {
         }
 
         // CHECKSTYLE:OFF
-        final String decision = access == ACCESS_GRANTED ? "granted" : "denied";
+        String decision = access == ACCESS_GRANTED ? "granted" : "denied";
         // CHECKSTYLE:ON
         LOG.debug("Access {} for user {}.", decision, jwtAuth.getName());
 

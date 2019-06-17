@@ -23,7 +23,6 @@ import fr.cnes.regards.framework.multitenant.test.SingleRuntimeTenantResolver;
 
 /**
  * @author Marc Sordi
- *
  */
 public class MultitenantAnimalAdapterFactory2 extends MultitenantPolymorphicTypeAdapterFactory<Animal> {
 

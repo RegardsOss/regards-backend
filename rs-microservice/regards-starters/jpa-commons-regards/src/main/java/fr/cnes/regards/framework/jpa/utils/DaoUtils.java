@@ -18,11 +18,6 @@
  */
 package fr.cnes.regards.framework.jpa.utils;
 
-import javax.persistence.Entity;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -33,6 +28,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.persistence.Entity;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -51,7 +52,6 @@ import fr.cnes.regards.framework.jpa.exception.MultiDataBasesException;
  * Class DaoUtils
  *
  * Tools class for DAO
- *
  * @author Sébastien Binda
  * @author oroussel
  */
@@ -89,7 +89,6 @@ public final class DaoUtils {
      * This method check that the classPatch is valid. That the scan packages for instance database and the projects
      * database are not in conflict.
      * @param pPackageToScan package name to scan for JPA entities and repositories
-     * @throws MultiDataBasesException
      */
     public static void checkClassPath(final String pPackageToScan) throws MultiDataBasesException {
         LOGGER.info("Checking classpath for conflicts between instance and projects databases ...");
@@ -169,7 +168,9 @@ public final class DaoUtils {
             String packageEnd = pPackageName.substring(DaoUtils.TEST_PACKAGE.length() + 1);
             return DaoUtils.TEST_PACKAGE + "." + packageEnd.substring(0, packageEnd.indexOf('.'));
         } else {
-            throw new Error("Bullshits everywhere !!!!"); // NOSONAR
+            throw new Error(String
+                    .format("Package %s is not valid. REGARDS only handle classes on package with prefixes : %s, %s and %s",
+                            pPackageName, DaoUtils.FRAMEWORK_PACKAGE, DaoUtils.MODULES_PACKAGE, DaoUtils.TEST_PACKAGE)); // NOSONAR
         }
     }
 

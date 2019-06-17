@@ -26,9 +26,7 @@ import java.util.List;
 
 /**
  * Requirement information
- *
  * @author msordi
- *
  */
 @XmlRootElement(name = "requirement")
 public class XmlRequirement {
@@ -51,8 +49,7 @@ public class XmlRequirement {
     }
 
     /**
-     * @param pRequirement
-     *            the requirement to set
+     * @param pRequirement the requirement to set
      */
     @XmlAttribute(name = "ref")
     public void setRequirement(String pRequirement) {
@@ -67,8 +64,7 @@ public class XmlRequirement {
     }
 
     /**
-     * @param pTests
-     *            the tests to set
+     * @param pTests the tests to set
      */
     @XmlElement(name = "test")
     public void setTests(List<XmlTest> pTests) {
@@ -77,9 +73,7 @@ public class XmlRequirement {
 
     /**
      * Add a test
-     *
-     * @param pTest
-     *            test to add
+     * @param pTest test to add
      */
     public void addTest(XmlTest pTest) {
         if (tests == null) {
@@ -90,9 +84,7 @@ public class XmlRequirement {
 
     /**
      * Add all tests
-     *
-     * @param pTests
-     *            tests to add
+     * @param pTests tests to add
      */
     public void addAllTests(List<XmlTest> pTests) {
         if (tests == null) {

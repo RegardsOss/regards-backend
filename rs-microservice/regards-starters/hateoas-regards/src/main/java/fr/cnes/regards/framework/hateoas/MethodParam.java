@@ -18,16 +18,12 @@
  */
 package fr.cnes.regards.framework.hateoas;
 
-import org.springframework.util.Assert;
+import com.google.common.base.Preconditions;
 
 /**
- *
  * Method parameter definition
- *
- * @param <T>
- *            parameter type
+ * @param <T> parameter type
  * @author msordi
- *
  */
 public class MethodParam<T> {
 
@@ -41,10 +37,10 @@ public class MethodParam<T> {
      */
     private final T value;
 
-    public MethodParam(final Class<T> pParameterType, final T pValue) {
-        Assert.notNull(pParameterType);
-        this.parameterType = pParameterType;
-        this.value = pValue;
+    public MethodParam(final Class<T> parameterType, final T value) {
+        Preconditions.checkNotNull(parameterType);
+        this.parameterType = parameterType;
+        this.value = value;
     }
 
     public T getValue() {

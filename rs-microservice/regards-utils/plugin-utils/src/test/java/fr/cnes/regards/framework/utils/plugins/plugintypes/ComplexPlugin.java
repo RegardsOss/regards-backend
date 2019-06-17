@@ -28,11 +28,10 @@ import fr.cnes.regards.framework.utils.plugins.basic.ISamplePlugin;
 
 /**
  * ISamplePlugin
- *
  * @author Christophe Mertz
  */
 @Plugin(description = "Complex plugin test", id = "aComplexPlugin", version = "0.0.1", author = "REGARDS Team",
-        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
+        contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class ComplexPlugin implements ISamplePlugin {
 
     // Field names
@@ -67,12 +66,12 @@ public class ComplexPlugin implements ISamplePlugin {
 
     @Override
     public String echo(final String pMessage) {
-        final StringBuffer str = new StringBuffer();
+        final StringBuilder str = new StringBuilder();
         if (isActive) {
-            str.append(this.getClass().getName() + "-" + pMessage);
+            str.append(this.getClass().getName()).append("-").append(pMessage);
         } else {
 
-            str.append(this.getClass().getName() + ":is not active");
+            str.append(this.getClass().getName()).append(":is not active");
         }
         return str.toString();
     }

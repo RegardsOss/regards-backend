@@ -18,15 +18,13 @@
  */
 package fr.cnes.regards.framework.module.manager;
 
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 
 /**
  * Module information are loaded from <b>module.properties</b> that must exist in same package as
  * {@link IModuleManager}
  * bean implementation.
- *
  * @author Marc Sordi
- *
  */
 public class ModuleInformation {
 
@@ -37,40 +35,35 @@ public class ModuleInformation {
     private String id;
 
     /**
-     * @return name of the module
+     * name of the module
      */
     @NotBlank(message = "Module name is required")
     private String name;
 
     /**
-     *
-     * @return description of the module
+     * description of the module
      */
     private String description;
 
     /**
-     *
-     * @return version of the module
+     * version of the module
      */
     @NotBlank(message = "Module version is required")
     private String version;
 
     /**
-     *
-     * @return author of the module
+     * author of the module
      */
     @NotBlank(message = "Module author is required")
     private String author;
 
     /**
-     *
-     * @return legal owner of the module
+     * legal owner of the module
      */
     private String legalOwner;
 
     /**
-     *
-     * @return link to the documentation of the module
+     * link to the documentation of the module
      */
     private String documentation;
 

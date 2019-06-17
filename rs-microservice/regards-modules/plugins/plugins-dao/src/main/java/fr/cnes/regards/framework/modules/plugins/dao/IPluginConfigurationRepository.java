@@ -31,7 +31,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 
 /**
  * {@link PluginConfiguration} repository
- *
  * @author Christophe Mertz
  */
 @Repository
@@ -39,37 +38,34 @@ public interface IPluginConfigurationRepository extends JpaRepository<PluginConf
 
     /**
      * Find a {@link List} of {@link PluginConfiguration} for a plugin
-     *
-     * @param pPluginId the plugin identifier
+     * @param pluginId the plugin identifier
      * @return a {@link List} of {@link PluginConfiguration}
      */
-    List<PluginConfiguration> findByPluginIdOrderByPriorityOrderDesc(String pPluginId);
+    @EntityGraph(attributePaths = { "parameters", "parameters.dynamicsValues" })
+    List<PluginConfiguration> findByPluginIdOrderByPriorityOrderDesc(String pluginId);
 
     /**
      * Find a {@link List} of active {@link PluginConfiguration} for a plugin
-     *
-     * @param pPluginId the plugin identifier
+     * @param pluginId the plugin identifier
      * @return a {@link List} of active {@link PluginConfiguration}
      */
-    List<PluginConfiguration> findByPluginIdAndActiveTrueOrderByPriorityOrderDesc(String pPluginId);
+    List<PluginConfiguration> findByPluginIdAndActiveTrueOrderByPriorityOrderDesc(String pluginId);
 
-    @Query("from PluginConfiguration pc join fetch pc.parameters where parent_conf_id=:id")
-    PluginConfiguration findOneWithPluginParameter(@Param("id") Long pId);
+    @Query("from PluginConfiguration conf join fetch conf.parameters where conf.id=:id")
+    PluginConfiguration findOneWithPluginParameter(@Param("id") Long id);
 
     /**
-     * @param pConfigurationLabel
      * @return the plugin configuration which label is the given label in parameter
      */
-    PluginConfiguration findOneByLabel(String pConfigurationLabel);
+    PluginConfiguration findOneByLabel(String label);
 
     /**
      * Find a plugin configuration loading its parameters and dynamic values
-     *
      * @param id pluginConfiguration id
      * @return a PluginConfiguration without lazy relations
      */
     @EntityGraph(attributePaths = { "parameters", "parameters.dynamicsValues" })
-    PluginConfiguration findById(Long id);
+    PluginConfiguration findCompleteById(Long id);
 
     List<PluginConfiguration> findByParametersPluginConfiguration(PluginConfiguration plgConf);
 
@@ -77,4 +73,7 @@ public interface IPluginConfigurationRepository extends JpaRepository<PluginConf
     @Modifying
     @Query(value = "TRUNCATE {h-schema}t_plugin_configuration CASCADE", nativeQuery = true)
     void deleteAll();
+
+    @EntityGraph(attributePaths = { "parameters", "parameters.dynamicsValues" })
+    List<PluginConfiguration> findAll();
 }

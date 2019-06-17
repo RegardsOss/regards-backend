@@ -26,9 +26,7 @@ import fr.cnes.regards.framework.amqp.event.IPollable;
 
 /**
  * A service that publish an event in a transaction to test tenant binding.
- *
  * @author Marc Sordi
- *
  */
 @Service
 public class PublishService {

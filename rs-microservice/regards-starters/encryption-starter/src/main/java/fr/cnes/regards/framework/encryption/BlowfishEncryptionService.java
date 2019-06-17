@@ -22,7 +22,6 @@ import fr.cnes.regards.framework.utils.RsRuntimeException;
 
 /**
  * Implementation of {@link IEncryptionService} which uses Blowfish as algorithm
- *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class BlowfishEncryptionService implements IEncryptionService {
@@ -53,7 +52,8 @@ public class BlowfishEncryptionService implements IEncryptionService {
             LOG.error("There was an issue with encryption using Blowfish", e);
             throw new RsRuntimeException(e);
         } catch (BadPaddingException | IllegalBlockSizeException e) {
-            throw new EncryptionException(String.format("\"%s\" could not be encrypted using %s", toEncrypt, BLOWFISH_INSTANCE), e);
+            throw new EncryptionException(
+                    String.format("\"%s\" could not be encrypted using %s", toEncrypt, BLOWFISH_INSTANCE), e);
         }
     }
 
@@ -72,17 +72,16 @@ public class BlowfishEncryptionService implements IEncryptionService {
             LOG.error("There was an issue with encryption using Blowfish", e);
             throw new RsRuntimeException(e);
         } catch (BadPaddingException | IllegalBlockSizeException e) {
-            throw new EncryptionException(String.format("\"%s\" could not be decrypted using %s", toDecrypt, BLOWFISH_INSTANCE), e);
+            throw new EncryptionException(
+                    String.format("\"%s\" could not be decrypted using %s", toDecrypt, BLOWFISH_INSTANCE), e);
         }
     }
 
     /**
      * Initialize BlowfishEncryptionService by setting its secret key and initialization vector.
-     *
-     * @param properties
      * @throws InvalidAlgorithmParameterException in case the initialization vector is not valid
-     * @throws InvalidKeyException in case the key is not valid
-     * @throws IOException because of Files.readAllLines
+     * @throws InvalidKeyException                in case the key is not valid
+     * @throws IOException                        because of Files.readAllLines
      */
     public void init(CipherProperties properties)
             throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {

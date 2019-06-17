@@ -24,11 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- *
  * Class containing the knowledge about projects which are in maintenance
- *
  * @author Sylvain Vissiere-Guerinet
- *
  */
 public final class MaintenanceManager {
 
@@ -49,7 +46,6 @@ public final class MaintenanceManager {
     }
 
     /**
-     * @param pTenant
      * @return whether the given tenant is in maintenance or not
      */
     public static Boolean getMaintenance(String pTenant) {
@@ -63,7 +59,6 @@ public final class MaintenanceManager {
 
     /**
      * Add a tenant to the maintenance manager
-     * @param pTenant
      */
     public static void addTenant(String pTenant) {
         maintenanceMap.put(pTenant, new MaintenanceInfo(Boolean.FALSE, OffsetDateTime.now()));
@@ -71,20 +66,18 @@ public final class MaintenanceManager {
 
     /**
      * Set the tenant in maintenance mode
-     * @param pTenant
      */
     public static void setMaintenance(String pTenant) {
-        maintenanceMap.put(pTenant, new MaintenanceInfo(Boolean.TRUE, OffsetDateTime.now().withOffsetSameInstant(
-                ZoneOffset.UTC)));
+        maintenanceMap.put(pTenant, new MaintenanceInfo(Boolean.TRUE,
+                                                        OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)));
     }
 
     /**
      * Set the tenant not in maintenance mode
-     * @param pTenant
      */
     public static void unSetMaintenance(String pTenant) {
-        maintenanceMap.put(pTenant, new MaintenanceInfo(Boolean.FALSE, OffsetDateTime.now().withOffsetSameInstant(
-                ZoneOffset.UTC)));
+        maintenanceMap.put(pTenant, new MaintenanceInfo(Boolean.FALSE,
+                                                        OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC)));
     }
 
 }

@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 
 /**
- *
  * @author Sylvain VISSIERE-GUERINET
  */
 public class RegardsOaisUrnAsStringValidator implements ConstraintValidator<RegardsOaisUrnAsString, String> {

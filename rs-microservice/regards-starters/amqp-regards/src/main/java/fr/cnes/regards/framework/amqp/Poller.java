@@ -28,10 +28,8 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 /**
  * {@link Poller} uses {@link IRuntimeTenantResolver} to resolve current thread tenant to poll an event in the
  * multitenant context.
- *
  * @author svissier
  * @author Marc Sordi
- *
  */
 public class Poller extends AbstractPoller implements IPoller {
 
@@ -40,9 +38,9 @@ public class Poller extends AbstractPoller implements IPoller {
      */
     private final IRuntimeTenantResolver threadTenantResolver;
 
-    public Poller(IRabbitVirtualHostAdmin pVirtualHostAdmin, RabbitTemplate pRabbitTemplate, IAmqpAdmin amqpAdmin,
+    public Poller(IRabbitVirtualHostAdmin pVirtualHostAdmin, RabbitTemplate rabbitTemplate, IAmqpAdmin amqpAdmin,
             IRuntimeTenantResolver pThreadTenantResolver) {
-        super(pVirtualHostAdmin, pRabbitTemplate, amqpAdmin);
+        super(pVirtualHostAdmin, rabbitTemplate, amqpAdmin);
         this.threadTenantResolver = pThreadTenantResolver;
     }
 

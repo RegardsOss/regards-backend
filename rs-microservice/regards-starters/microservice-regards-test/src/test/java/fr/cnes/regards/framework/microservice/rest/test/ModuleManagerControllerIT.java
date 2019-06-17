@@ -14,7 +14,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.microservice.rest.ModuleManagerController;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -29,11 +28,8 @@ public class ModuleManagerControllerIT extends AbstractRegardsIT {
     @Test
     public void testExport() {
         // lets request export from REST endpoint
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-
         performDefaultGet(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
-                          requestBuilderCustomizer, "Should export configuration");
+                          customizer().expectStatusOk(), "Should export configuration");
     }
 
     @Test
@@ -44,12 +40,8 @@ public class ModuleManagerControllerIT extends AbstractRegardsIT {
 
         Path filePath = Paths.get("src", "test", "resources", "test-configuration.json");
 
-        // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
-
         performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
-                                 filePath, requestBuilderCustomizer, "Should be able to import configuration");
+                                 filePath, customizer().expectStatusCreated(), "Should be able to import configuration");
     }
 
     @Test
@@ -59,12 +51,10 @@ public class ModuleManagerControllerIT extends AbstractRegardsIT {
         //lets request some import
 
         Path filePath = Paths.get("src", "test", "resources", "test-configuration.json");
-        // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isPartialContent());
 
         performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
-                                 filePath, requestBuilderCustomizer, "Should be able to import configuration");
+                                 filePath, customizer().expect(MockMvcResultMatchers.status().isPartialContent()),
+                                 "Should be able to import configuration");
     }
 
     @Test
@@ -75,28 +65,21 @@ public class ModuleManagerControllerIT extends AbstractRegardsIT {
 
         Path filePath = Paths.get("src", "test", "resources", "test-configuration.json");
 
-        // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isConflict());
-
         performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
-                                 filePath, requestBuilderCustomizer, "Should be able to import configuration");
+                                 filePath, customizer().expect(MockMvcResultMatchers.status().isConflict()),
+                                 "Should be able to import configuration");
     }
 
     @Test
     public void testReady() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         performDefaultGet(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.READY_MAPPING,
-                          requestBuilderCustomizer, "Ready endpoint should be reached!");
+                          customizer().expectStatusOk(), "Ready endpoint should be reached!");
     }
 
     @Test
     public void testRestart() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
         performDefaultGet(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.RESTART_MAPPING,
-                          requestBuilderCustomizer, "Restart endpoint should be reached!");
+                          customizer().expectStatusOk(), "Restart endpoint should be reached!");
     }
 
     @Configuration

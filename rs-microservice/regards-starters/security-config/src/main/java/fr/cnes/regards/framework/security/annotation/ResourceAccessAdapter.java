@@ -30,13 +30,10 @@ import com.google.gson.stream.JsonWriter;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**
- *
  * Class ResourceAccessAdapter
  *
  * GSON adapter for annotation {@link ResourceAccess}
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 public class ResourceAccessAdapter extends TypeAdapter<ResourceAccess> {
 
@@ -82,15 +79,10 @@ public class ResourceAccessAdapter extends TypeAdapter<ResourceAccess> {
     }
 
     /**
-     *
      * Instanciate a new ResourceAccess annotation
-     *
-     * @param pDescription
-     *            description
-     * @param pDefaultRole
-     *            default role
+     * @param pDescription description
+     * @param pDefaultRole default role
      * @return {@link ResourceAccess}
-     * @since 1.0-SNAPSHOT
      */
     public static ResourceAccess createResourceAccess(final String pDescription, final DefaultRole pDefaultRole) {
         final Map<String, Object> attributs = new HashMap<>();

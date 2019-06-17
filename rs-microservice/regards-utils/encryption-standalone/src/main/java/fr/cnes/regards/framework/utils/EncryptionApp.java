@@ -14,7 +14,6 @@ import fr.cnes.regards.framework.encryption.exception.EncryptionException;
 
 /**
  * Main class
- *
  * @author svissier
  */
 public class EncryptionApp {

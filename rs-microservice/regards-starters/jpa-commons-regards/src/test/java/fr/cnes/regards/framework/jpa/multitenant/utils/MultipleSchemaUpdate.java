@@ -18,15 +18,17 @@
  */
 package fr.cnes.regards.framework.jpa.multitenant.utils;
 
-import javax.persistence.Entity;
-import javax.sql.DataSource;
 import java.beans.PropertyVetoException;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.persistence.Entity;
+import javax.sql.DataSource;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -39,7 +41,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import fr.cnes.regards.framework.jpa.exception.JpaException;
 import fr.cnes.regards.framework.jpa.utils.DataSourceHelper;
 import fr.cnes.regards.framework.jpa.utils.DatabaseModule;
 import fr.cnes.regards.framework.jpa.utils.DatabaseModuleComparator;
@@ -48,11 +49,8 @@ import fr.cnes.regards.framework.jpa.utils.Hbm2ddlDatasourceSchemaHelper;
 import fr.cnes.regards.framework.modules.person.Person;
 
 /**
- *
  * Test updating multiple schema. Just run migration tools
- *
  * @author Marc Sordi
- *
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource("/multipleSchema.properties")
@@ -86,8 +84,8 @@ public class MultipleSchemaUpdate {
     private Map<String, Object> hibernateProperties;
 
     @Before
-    public void setup() throws PropertyVetoException {
-        dataSource = DataSourceHelper.createPooledDataSource("testperson", url, driver, userName, password, 5, 20,
+    public void setup() throws PropertyVetoException, IOException {
+        dataSource = DataSourceHelper.createHikariDataSource("testperson", url, driver, userName, password, 5, 20,
                                                              "SELECT 1");
 
         // Set hibernate properties
@@ -110,10 +108,9 @@ public class MultipleSchemaUpdate {
     /**
      * hbm2ddl sequence generation doesn't work with multiple schemas in PostgreSQL. Only a single sequence is created for all catalog.<br/>
      * hbm2ddl should not be used in production.
-     * @throws JpaException if error occurs!
      */
     @Test
-    public void testWithHbm2ddl() throws JpaException {
+    public void testWithHbm2ddl() {
 
         Hbm2ddlDatasourceSchemaHelper schemaHelper = new Hbm2ddlDatasourceSchemaHelper(hibernateProperties,
                 Entity.class, null);
@@ -152,7 +149,6 @@ public class MultipleSchemaUpdate {
         DatabaseModule entities = new DatabaseModule("entities", plugins, models);
         DatabaseModule dataAccess = new DatabaseModule("dataAccess", plugins, entities);
 
-
         List<DatabaseModule> modules = new ArrayList<>();
         modules.add(models);
         modules.add(entities);
@@ -163,10 +159,10 @@ public class MultipleSchemaUpdate {
             module.computeWeight();
         }
 
-        Assert.assertTrue(plugins.getWeight() == 0);
-        Assert.assertTrue(models.getWeight() == 1);
-        Assert.assertTrue(entities.getWeight() == 2);
-        Assert.assertTrue(dataAccess.getWeight() == 3);
+        Assert.assertEquals(0, plugins.getWeight());
+        Assert.assertEquals(1, models.getWeight());
+        Assert.assertEquals(2, entities.getWeight());
+        Assert.assertEquals(3, dataAccess.getWeight());
 
         Collections.sort(modules, new DatabaseModuleComparator());
 

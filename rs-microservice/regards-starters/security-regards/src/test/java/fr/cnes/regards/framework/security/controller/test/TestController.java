@@ -25,13 +25,10 @@ import org.springframework.web.bind.annotation.RestController;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 
 /**
- *
  * Class TestController
  *
  * RestController test implementation.
- *
  * @author CS
- * @since 1.0-SNAPSHOT
  */
 @RestController
 public class TestController implements ITestController {

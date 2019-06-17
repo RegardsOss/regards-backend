@@ -25,9 +25,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- *
  * Annotate a plugin type.
- *
  * @author Christophe Mertz
  */
 @Target({ ElementType.TYPE })
@@ -36,19 +34,16 @@ import java.lang.annotation.Target;
 public @interface PluginInterface {
 
     /**
-     *
      * Parameter description to explain the expected value if the name is not explicit enough.
-     *
      * @return plugin type's description
      */
     String description() default "";
 
     /**
-     *
      * Parameter to define if the plugin can be instanciate multiple times with different configuration.
      * If false, there should be at any time only one configuration active.
      * default true
      */
-    boolean allowMultipleConfigurationActive() default true;
+    boolean allowMultipleActiveConfigurations() default true;
 
 }

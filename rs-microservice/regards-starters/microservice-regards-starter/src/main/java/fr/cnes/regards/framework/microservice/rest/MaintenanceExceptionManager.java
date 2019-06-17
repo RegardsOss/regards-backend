@@ -36,7 +36,6 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 @RestControllerAdvice(annotations = RestController.class)
 @Order(Ordered.LOWEST_PRECEDENCE)
@@ -55,9 +54,7 @@ public class MaintenanceExceptionManager {
 
     /**
      * Exception handler catching {@link MaintenanceException} that are not already handled
-     *
-     * @param pException
-     *            exception thrown
+     * @param pException exception thrown
      * @return response
      */
     @ExceptionHandler(MaintenanceException.class)
@@ -65,21 +62,19 @@ public class MaintenanceExceptionManager {
         MaintenanceManager.setMaintenance(resolver.getTenant());
         LOGGER.error("Maintenance mode activated for tenant {}", resolver.getTenant());
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                .body(new ServerErrorResponse(pException.getMessage()));
+                .body(new ServerErrorResponse(pException.getMessage(), pException));
     }
 
     /**
      * Exception handler catching any exception that are not already handled
-     *
-     * @param throwable
-     *            exception thrown
+     * @param throwable exception thrown
      * @return response
      */
     @ExceptionHandler(Throwable.class)
     public ResponseEntity<ServerErrorResponse> handleThrowable(Throwable throwable) {
         LOGGER.error("Unexpected server error", throwable);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ServerErrorResponse(throwable.getMessage()));
+                .body(new ServerErrorResponse(throwable.getMessage(), throwable));
     }
 
 }

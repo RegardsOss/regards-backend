@@ -38,8 +38,6 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.basic.PluginUtilsTestConstants;
 
 /**
- * Unit testing of {@link PluginInterfaceUtils}.
- *
  * @author Christophe Mertz
  */
 public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
@@ -83,7 +81,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
         PluginUtils.setup(PLUGIN_PACKAGES);
         Set<String> pluginInterfaces = PluginUtils.getPluginInterfaces();
         Assert.assertNotNull(pluginInterfaces);
-        pluginInterfaces.stream().forEach(s -> LOGGER.info(s));
+        pluginInterfaces.forEach(LOGGER::info);
         Assert.assertTrue(pluginInterfaces.size() > 0);
         LOGGER.debug(ENDING + toString());
     }
@@ -112,7 +110,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
         PluginUtils.setup(PLUGIN_CURRENT_PACKAGE);
         Set<String> pluginInterfaces = PluginUtils.getPluginInterfaces();
         Assert.assertNotNull(pluginInterfaces);
-        pluginInterfaces.stream().forEach(s -> LOGGER.info(s));
+        pluginInterfaces.forEach(LOGGER::info);
         Assert.assertTrue(pluginInterfaces.size() > 0);
         LOGGER.debug(ENDING + toString());
     }
@@ -177,9 +175,6 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
         LOGGER.debug(ENDING + toString());
     }
 
-    /**
-     * @ throw if an error occurs
-     */
     @Test(expected = PluginUtilsRuntimeException.class)
     @Requirement("REGARDS_DSL_SYS_PLG_020")
     @Purpose("Error to load a plugin from with an incompatible interface parameter.")
@@ -198,9 +193,6 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
         PluginUtils.getPlugin(complexParameters, ComplexErrorPlugin.class, new HashMap<>());
     }
 
-    /**
-     * @ throw if an error occurs
-     */
     @Test(expected = PluginUtilsRuntimeException.class)
     @Requirement("REGARDS_DSL_SYS_PLG_020")
     @Purpose("Error to load a plugin from with an incompatible interface parameter.")

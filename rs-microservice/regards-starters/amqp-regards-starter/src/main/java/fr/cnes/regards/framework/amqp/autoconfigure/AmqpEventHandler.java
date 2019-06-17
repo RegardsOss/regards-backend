@@ -24,6 +24,7 @@ import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.configuration.IRabbitVirtualHostAdmin;
 import fr.cnes.regards.framework.amqp.configuration.RabbitVirtualHostAdmin;
+import fr.cnes.regards.framework.amqp.configuration.VirtualHostMode;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.amqp.event.tenant.TenantCreatedEvent;
@@ -32,9 +33,7 @@ import fr.cnes.regards.framework.amqp.event.tenant.TenantDeletedEvent;
 /**
  * This class helps to configure virtual hosts at runtime listening to tenant events. The system uses the AMQP manager
  * virtual host no to be tenant dependent.
- *
  * @author Marc Sordi
- *
  */
 public class AmqpEventHandler {
 
@@ -72,25 +71,23 @@ public class AmqpEventHandler {
 
     /**
      * Handle tenant creation
-     *
      * @author Marc Sordi
-     *
      */
     private class TenantCreationHandler implements IHandler<TenantCreatedEvent> {
 
         @Override
         public void handle(TenantWrapper<TenantCreatedEvent> pWrapper) {
             TenantCreatedEvent tce = pWrapper.getContent();
-            virtualHostAdmin.addVhost(RabbitVirtualHostAdmin.getVhostName(tce.getTenant()));
+            if (VirtualHostMode.MULTI.equals(virtualHostAdmin.getMode())) {
+                virtualHostAdmin.addVhost(RabbitVirtualHostAdmin.getVhostName(tce.getTenant()));
+            }
             subscriber.addTenant(tce.getTenant());
         }
     }
 
     /**
      * Handle tenant deletion
-     *
      * @author Marc Sordi
-     *
      */
     private class TenantDeletionHandler implements IHandler<TenantDeletedEvent> {
 
@@ -98,7 +95,9 @@ public class AmqpEventHandler {
         public void handle(TenantWrapper<TenantDeletedEvent> pWrapper) {
             TenantDeletedEvent tde = pWrapper.getContent();
             subscriber.removeTenant(tde.getTenant());
-            virtualHostAdmin.removeVhost(tde.getTenant());
+            if (VirtualHostMode.MULTI.equals(virtualHostAdmin.getMode())) {
+                virtualHostAdmin.removeVhost(tde.getTenant());
+            }
         }
     }
 }

@@ -22,7 +22,6 @@ import java.time.LocalDateTime;
 
 /**
  * @author Marc Sordi
- *
  */
 public class DateProperty extends AbstractProperty<LocalDateTime> {
 

@@ -18,6 +18,5 @@
  */
 /**
  * @author msordi
- *
  */
 package fr.cnes.regards.framework.jpa.utils;

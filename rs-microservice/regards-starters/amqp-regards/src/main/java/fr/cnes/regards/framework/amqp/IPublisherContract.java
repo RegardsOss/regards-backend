@@ -24,7 +24,6 @@ import fr.cnes.regards.framework.amqp.event.ISubscribable;
 /**
  * {@link IPublisherContract} allows to publish {@link ISubscribable} or {@link IPollable} events. This interface
  * represents the common publisher contract whether we are in a multitenant or an instance context.
- *
  * @author Sylvain Vissière-Guérinet
  * @author Marc Sordi
  */
@@ -32,33 +31,25 @@ public interface IPublisherContract {
 
     /**
      * Publish an {@link ISubscribable} event
-     *
-     * @param event
-     *            {@link ISubscribable} event to publish
+     * @param event {@link ISubscribable} event to publish
      */
     void publish(ISubscribable event);
 
     /**
      * Publish an {@link ISubscribable} event
-     *
-     * @param event
-     *            {@link ISubscribable} event to publish
-     * @param priority
-     *            event priority
+     * @param event {@link ISubscribable} event to publish
+     * @param priority event priority
      */
     void publish(ISubscribable event, int priority);
 
     /**
      * Publish an {@link IPollable} event
-     *
-     * @param event
-     *            {@link IPollable} event to publish
+     * @param event {@link IPollable} event to publish
      */
     void publish(IPollable event);
 
     /**
      * Publish an {@link IPollable} event
-     *
      * @param event {@link IPollable} event to publish
      * @param purgeQueue true to purge queue before publishing event. Useful in tests.
      */
@@ -66,7 +57,6 @@ public interface IPublisherContract {
 
     /**
      * Publish an {@link IPollable} event
-     *
      * @param event {@link IPollable} event to publish
      * @param priority event priority
      */
@@ -74,7 +64,6 @@ public interface IPublisherContract {
 
     /**
      * Publish an {@link IPollable} event
-     *
      * @param event {@link IPollable} event to publish
      * @param priority event priority
      * @param purgeQueue true to purge queue before publishing event. Useful in tests.

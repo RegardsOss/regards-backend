@@ -25,9 +25,7 @@ import java.util.Optional;
 /**
  * RFC 7946 -August 2016<br/>
  * GeoJsonObject common model
- *
  * @author Marc Sordi
- *
  */
 public abstract class AbstractGeoJsonObject {
 

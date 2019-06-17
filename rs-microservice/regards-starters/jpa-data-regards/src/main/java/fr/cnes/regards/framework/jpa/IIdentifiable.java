@@ -21,10 +21,8 @@ package fr.cnes.regards.framework.jpa;
 import java.io.Serializable;
 
 /**
- * @param <I>
- *            identifier type
+ * @param <I> identifier type
  * @author msordi
- *
  */
 @FunctionalInterface
 public interface IIdentifiable<I extends Serializable> {

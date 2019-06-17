@@ -26,7 +26,6 @@ import fr.cnes.regards.framework.gson.annotation.GsonTypeAdapterFactoryBean;
 
 /**
  * @author Marc Sordi
- *
  */
 @GsonTypeAdapterFactoryBean
 @SuppressWarnings("rawtypes")

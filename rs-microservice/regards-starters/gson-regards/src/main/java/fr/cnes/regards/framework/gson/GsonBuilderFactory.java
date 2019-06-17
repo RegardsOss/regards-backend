@@ -26,9 +26,7 @@ import com.google.gson.GsonBuilder;
 
 /**
  * This class allows to build a new fresh {@link GsonBuilder} with specific properties independently of the main one.
- *
  * @author Marc Sordi
- *
  */
 public class GsonBuilderFactory {
 

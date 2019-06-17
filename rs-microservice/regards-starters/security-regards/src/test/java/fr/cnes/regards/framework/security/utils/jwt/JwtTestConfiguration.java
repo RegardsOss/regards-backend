@@ -23,11 +23,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 /**
- *
  * JWT test configuration
- *
  * @author msordi
- *
  */
 @Configuration
 @ComponentScan

@@ -28,10 +28,7 @@ import com.google.gson.FieldAttributes;
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 
 /**
- *
  * Class GsonIgnoreExclusionStrategy
- * {@see <a>https://github.com/google/gson/blob/master/UserGuide.md#TOC-User-Defined-Exclusion-Strategies</a>}
- *
  * @author Christophe Mertz
  * @author Marc Sordi
  */

@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
  * Class CompressionRunImpl
  *
  * Classe représentant le traintement asynchrone d'une compression dans un thread.

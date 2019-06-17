@@ -22,20 +22,16 @@ import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 
 /**
- *
  * {@link ISubscriberContract} allows to subscribe to {@link ISubscribable} events. This interface represents the common
  * subscriber contract whether we are in a multitenant or an instance context.
- *
  * @author Sylvain Vissière-Guérinet
  * @author Sébastien Binda
  * @author Marc Sordi
- * @since 1.0-SNAPSHOT
  */
 public interface ISubscriberContract {
 
     /**
      * Subscribe to this {@link ISubscribable} event
-     *
      * @param <E> {@link ISubscribable} event
      * @param eventType {@link ISubscribable} event
      * @param receiver event {@link IHandler}
@@ -44,7 +40,6 @@ public interface ISubscriberContract {
 
     /**
      * Subscribe to this {@link ISubscribable} event
-     *
      * @param <E> @link ISubscribable} event
      * @param eventType {@link ISubscribable} event
      * @param receiver event {@link IHandler}
@@ -54,7 +49,6 @@ public interface ISubscriberContract {
 
     /**
      * Unsubscribe from this {@link ISubscribable} event.
-     *
      * @param <T> {@link ISubscribable} event
      * @param eventType {@link ISubscribable} event
      */

@@ -27,11 +27,10 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 
 /**
  * SamplePlugin
- *
  * @author Christophe Mertz
  */
 @Plugin(description = "Sample plugin test", id = "aSamplePlugin", version = "0.0.1", author = "REGARDS Team",
-        contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI", url = "https://github.com/RegardsOss")
+        contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI", url = "https://github.com/RegardsOss")
 public class SamplePlugin implements ISamplePlugin {
 
     public static final String FIELD_NAME_SUFFIX = "suffix";
@@ -62,12 +61,12 @@ public class SamplePlugin implements ISamplePlugin {
 
     @Override
     public String echo(final String pMessage) {
-        final StringBuffer str = new StringBuffer();
+        final StringBuilder str = new StringBuilder();
         if (isActive) {
-            str.append(this.getClass().getName() + " -> " + pMessage + " - " + suffix);
+            str.append(this.getClass().getName()).append(" -> ").append(pMessage).append(" - ").append(suffix);
         } else {
 
-            str.append(this.getClass().getName() + ":is not active");
+            str.append(this.getClass().getName()).append(":is not active");
         }
         return str.toString();
     }

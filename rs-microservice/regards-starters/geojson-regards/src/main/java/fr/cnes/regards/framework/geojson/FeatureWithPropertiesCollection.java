@@ -23,13 +23,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
  * This class represents a default GeoJson feature collection containing default {@link Feature}
  * identifier.<br/>
  * You can define your own extending {@link AbstractFeatureCollection}.
- *
  * @author Sébastien Binda
- *
  */
 public class FeatureWithPropertiesCollection extends FeatureCollection {
 
@@ -53,6 +50,10 @@ public class FeatureWithPropertiesCollection extends FeatureCollection {
 
     public FeatureWithPropertiesCollection() {
         properties = new HashMap<>();
+    }
+
+    public Map<String, Object> getProperties() {
+        return properties;
     }
 
     public void addProperty(String key, Object value) {

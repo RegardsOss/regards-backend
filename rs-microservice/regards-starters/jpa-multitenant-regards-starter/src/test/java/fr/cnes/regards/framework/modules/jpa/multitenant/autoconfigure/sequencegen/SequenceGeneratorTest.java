@@ -20,8 +20,6 @@ package fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.sequence
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -34,15 +32,12 @@ import fr.cnes.regards.framework.modules.jpa.multitenant.autoconfigure.sequenceg
 
 /**
  * @author Marc Sordi
- *
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { SequenceGeneratorTestConfiguration.class })
 @ActiveProfiles("dev")
 @TestPropertySource("/seqgen.properties")
 public class SequenceGeneratorTest {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SequenceGeneratorTest.class);
 
     @Test
     public void contextLoad() {

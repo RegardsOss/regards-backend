@@ -18,9 +18,7 @@
  */
 package fr.cnes.regards.modules.templates.rest;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -28,7 +26,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
@@ -42,7 +42,6 @@ import fr.cnes.regards.modules.templates.test.TemplateTestConstants;
 
 /**
  * Templates integration test
- *
  * @author Xavier-Alexandre Brochard
  */
 @RegardsTransactional
@@ -59,20 +58,14 @@ public class TemplateControllerIT extends AbstractRegardsTransactionalIT {
     @Autowired
     private ITemplateRepository templateRepository;
 
-    /**
-     * Tenant resolver to access all configured tenant
-     */
-    private ITenantResolver tenantResolver;
-
     @Before
     public void setUp() {
         final Set<String> tenants = new HashSet<>();
         tenants.add("PROJECT");
-        tenantResolver = Mockito.mock(ITenantResolver.class);
+        ITenantResolver tenantResolver = Mockito.mock(ITenantResolver.class);
         Mockito.when(tenantResolver.getAllTenants()).thenReturn(tenants);
 
-        template = new Template(TemplateTestConstants.CODE, TemplateTestConstants.CONTENT, TemplateTestConstants.DATA,
-                TemplateTestConstants.SUBJECT);
+        template = new Template(TemplateTestConstants.CODE, TemplateTestConstants.CONTENT);
     }
 
     /**
@@ -84,25 +77,9 @@ public class TemplateControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_440")
     @Requirement("REGARDS_DSL_ADM_ADM_460")
     public final void testFindAll() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(TemplateTestConstants.API_TEMPLATES, expectations, "Unable to retrieve the template.");
-    }
-
-    /**
-     * Test method for
-     * {@link fr.cnes.regards.modules.templates.rest.TemplateController#create(fr.cnes.regards.modules.templates.domain.Template)}.
-     */
-    @Test
-    @Purpose("Check that the system allows to create templates.")
-    @Requirement("REGARDS_DSL_SYS_ERG_310")
-    @Requirement("REGARDS_DSL_ADM_ADM_440")
-    @Requirement("REGARDS_DSL_ADM_ADM_460")
-    public final void testCreate() {
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isCreated());
-        performDefaultPost(TemplateTestConstants.API_TEMPLATES, template, expectations,
-                           "Unable to create a new template.");
+        performDefaultGet(TemplateTestConstants.API_TEMPLATES,
+                          customizer().expect(MockMvcResultMatchers.status().isOk()),
+                          "Unable to retrieve the template.");
     }
 
     /**
@@ -117,9 +94,8 @@ public class TemplateControllerIT extends AbstractRegardsTransactionalIT {
         // Prepare
         templateRepository.save(template);
 
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID, expectations,
+        performDefaultGet(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID,
+                          customizer().expect(MockMvcResultMatchers.status().isOk()),
                           "Unable to retrieve the template.", template.getId());
     }
 
@@ -132,11 +108,10 @@ public class TemplateControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_440")
     @Requirement("REGARDS_DSL_ADM_ADM_460")
     public final void testFindByIdNotFound() {
-        Assert.assertFalse(templateRepository.exists(TemplateTestConstants.WRONG_ID));
+        Assert.assertFalse(templateRepository.existsById(TemplateTestConstants.WRONG_ID));
 
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isNotFound());
-        performDefaultGet(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID, expectations,
+        performDefaultGet(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID,
+                          customizer().expect(MockMvcResultMatchers.status().isNotFound()),
                           "Unable to retrieve the template.", TemplateTestConstants.WRONG_ID);
     }
 
@@ -152,14 +127,11 @@ public class TemplateControllerIT extends AbstractRegardsTransactionalIT {
     public final void testUpdate() {
         // Prepare
         templateRepository.save(template);
+        template.setContent("Raph a enfin appris à coder sur le back");
 
-        // Change stuff
-        template.setDescription(TemplateTestConstants.DESCRIPTON);
-
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultPut(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID, template, expectations,
-                          "Unable to update the template.", template.getId());
+        performDefaultPut(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID, template,
+                          customizer().expect(MockMvcResultMatchers.status().isOk()), "Unable to update the template.",
+                          template.getId());
     }
 
     /**
@@ -175,9 +147,8 @@ public class TemplateControllerIT extends AbstractRegardsTransactionalIT {
         // Set inexistent id
         template.setId(TemplateTestConstants.WRONG_ID);
 
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isNotFound());
-        performDefaultPut(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID, template, expectations,
+        performDefaultPut(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID, template,
+                          customizer().expect(MockMvcResultMatchers.status().isNotFound()),
                           "Unable to update the template.", template.getId());
     }
 
@@ -194,45 +165,8 @@ public class TemplateControllerIT extends AbstractRegardsTransactionalIT {
         // Set inexistent id
         template.setId(TemplateTestConstants.ID);
 
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isBadRequest());
-        performDefaultPut(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID, template, expectations,
+        performDefaultPut(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID, template,
+                          customizer().expect(MockMvcResultMatchers.status().isBadRequest()),
                           "Unable to update the template.", TemplateTestConstants.WRONG_ID);
-    }
-
-    /**
-     * Test method for {@link fr.cnes.regards.modules.templates.rest.TemplateController#delete(java.lang.Long)}.
-     */
-    @Test
-    @Purpose("Check that the system allows to delete a single template.")
-    @Requirement("REGARDS_DSL_SYS_ERG_310")
-    @Requirement("REGARDS_DSL_ADM_ADM_440")
-    @Requirement("REGARDS_DSL_ADM_ADM_460")
-    public final void testDelete() {
-        // Prepare
-        templateRepository.save(template);
-
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isOk());
-        performDefaultDelete(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID, expectations,
-                             "Unable to delete the template", template.getId());
-    }
-
-    /**
-     * Test method for {@link fr.cnes.regards.modules.templates.rest.TemplateController#delete(java.lang.Long)}.
-     */
-    @Test
-    @Purpose("Check that the system handles the case of deleting an inexistent template.")
-    @Requirement("REGARDS_DSL_SYS_ERG_310")
-    @Requirement("REGARDS_DSL_ADM_ADM_440")
-    @Requirement("REGARDS_DSL_ADM_ADM_460")
-    public final void testDeleteNotFound() {
-        // Set inexistent id
-        template.setId(TemplateTestConstants.WRONG_ID);
-
-        final List<ResultMatcher> expectations = new ArrayList<>();
-        expectations.add(MockMvcResultMatchers.status().isNotFound());
-        performDefaultDelete(TemplateTestConstants.API_TEMPLATES_TEMPLATE_ID, expectations,
-                             "Unable to update the template.", template.getId());
     }
 }

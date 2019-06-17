@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,13 +49,10 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
- *
  * Class IPFilterTest
  *
  * IP Filter tests
- *
  * @author sbinda
- * @since 1.0-SNAPSHOT
  */
 public class JWTAuthenticationFilterTest {
 
@@ -72,10 +69,7 @@ public class JWTAuthenticationFilterTest {
     }
 
     /**
-     *
      * Check security filter with no Jwt access token
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Purpose("Check security filter with no Jwt access token")
@@ -105,11 +99,7 @@ public class JWTAuthenticationFilterTest {
     }
 
     /**
-     *
      * Check security filter with no Jwt access token
-     * @throws JwtException
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Purpose("Check security filter with no Jwt access token for public access (scope as query parameter)")
@@ -149,11 +139,7 @@ public class JWTAuthenticationFilterTest {
     }
 
     /**
-     *
      * Check security filter with no Jwt access token
-     * @throws JwtException
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Purpose("Check security filter with no Jwt access token for public access (scope in header)")
@@ -173,7 +159,7 @@ public class JWTAuthenticationFilterTest {
         PublicAuthenticationFilter publicFilter = new PublicAuthenticationFilter(jwtService);
         final AuthenticationManager mockedManager = Mockito.mock(AuthenticationManager.class);
         // As generateToken seems to have some random added into computation, we cannot specify what is expected
-        Mockito.when(mockedManager.authenticate(Matchers.any())).thenReturn(token);
+        Mockito.when(mockedManager.authenticate(ArgumentMatchers.any())).thenReturn(token);
         final JWTAuthenticationFilter filter = new JWTAuthenticationFilter(mockedManager,
                 Mockito.mock(IRuntimeTenantResolver.class));
 
@@ -196,10 +182,7 @@ public class JWTAuthenticationFilterTest {
     }
 
     /**
-     *
      * "Check security filter with Jwt access token
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Purpose("Check security filter with invalid request authorization header")
@@ -235,11 +218,7 @@ public class JWTAuthenticationFilterTest {
     }
 
     /**
-     *
      * Check security filter with valid Jwt access token
-     * @throws JwtException
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_SEC_100")
     @Purpose("Check security filter with valid Jwt access token")

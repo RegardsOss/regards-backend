@@ -20,10 +20,8 @@ package fr.cnes.regards.framework.module.rest.exception;
 
 /**
  * Exception indicating a forbidden operation on an entity
- *
  * @author Xavier-Alexandre Brochard
  * @author Sylvain Vissiere-Guerinet
- * @since 1.0-SNAPSHOT
  */
 @SuppressWarnings("serial")
 public class EntityOperationForbiddenException extends EntityException {

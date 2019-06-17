@@ -31,9 +31,7 @@ import fr.cnes.regards.framework.module.rest.representation.ServerErrorResponse;
 
 /**
  * Controller advice
- *
  * @author Marc Sordi
- *
  */
 @RestControllerAdvice(annotations = RestController.class)
 @Order(Ordered.LOWEST_PRECEDENCE - 200)
@@ -41,12 +39,11 @@ public class SecurityControllerAdvice {
 
     /**
      * Spring framework Access denied exception. Throw by security methodAccessVoter
-     *
      * @param pException {@link AccessDeniedException}
      * @return {@link ResponseEntity}
      */
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ServerErrorResponse> accessDeniedException(final AccessDeniedException pException) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ServerErrorResponse(pException.getMessage()));
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ServerErrorResponse(pException.getMessage(), pException));
     }
 }

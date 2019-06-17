@@ -21,11 +21,8 @@ package fr.cnes.regards.framework.module.manager;
 import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
 
 /**
- *
  * Informs GSON how to (de)serialize {@link ModuleConfigurationItem}.
- *
  * @author Marc Sordi
- *
  */
 @Deprecated
 @SuppressWarnings("rawtypes")

@@ -86,6 +86,19 @@ public class PluginParametersFactory {
     }
 
     /**
+     * Add a parameter
+     * @param name the name parameter
+     * @param value Decrypted value
+     * @return the factory
+     */
+    public PluginParametersFactory addSensitiveParameter(String name, String value) {
+        PluginParameter param = new PluginParameter(name, normalize(value));
+        param.setDecryptedValue(value);
+        parameters.add(param);
+        return this;
+    }
+
+    /**
      * Update a parameter value
      * @param parameter parameter to update
      * @param value value to normalize
@@ -206,6 +219,6 @@ public class PluginParametersFactory {
         if (parameters == null) {
             return null;
         }
-        return parameters.toArray(new PluginParameter[parameters.size()]);
+        return parameters.toArray(new PluginParameter[0]);
     }
 }

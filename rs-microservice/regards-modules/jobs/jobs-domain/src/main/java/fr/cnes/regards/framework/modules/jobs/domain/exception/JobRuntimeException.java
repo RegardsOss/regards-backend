@@ -20,9 +20,7 @@ package fr.cnes.regards.framework.modules.jobs.domain.exception;
 
 /**
  * Utility exception to throw if job fails during its execution. Any {@link RuntimeException} leads to a failed job.
- *
  * @author Marc Sordi
- *
  */
 @SuppressWarnings("serial")
 public class JobRuntimeException extends RuntimeException {

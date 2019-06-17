@@ -14,14 +14,14 @@
 
     <groupId>fr.cnes.regards.framework</groupId>
     <artifactId>regards-modules</artifactId>
-    <version>3.0.0-RELEASE</version>
+    <version>0.4.0</version>
     <description>REGARDS framework modules</description>
     <packaging>pom</packaging>
 
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-aggregator-parent</artifactId>
-        <version>3.0.0-RELEASE</version>
+        <version>0.4.0</version>
         <relativePath/>
     </parent>
 
@@ -51,6 +51,7 @@
         <module>jobs</module>
         <module>templates</module>
         <module>workspace</module>
+        <module>locks</module>
     </modules>
 
 </project>

@@ -70,7 +70,7 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
         blowfishEncryptionService
                 .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "12345678"));
         pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, Mockito.mock(IPublisher.class),
-                runtimeTenantResolver, blowfishEncryptionService);
+                                                runtimeTenantResolver, blowfishEncryptionService);
         PluginUtils.setup();
     }
 
@@ -84,14 +84,14 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParametersToUpdate();
         aPluginConfiguration.setId(AN_ID);
         try {
-            Mockito.when(pluginConfRepositoryMocked.findById(aPluginConfiguration.getId()))
+            Mockito.when(pluginConfRepositoryMocked.findCompleteById(aPluginConfiguration.getId()))
                     .thenReturn(aPluginConfiguration);
             Mockito.when(pluginConfRepositoryMocked.save(aPluginConfiguration)).thenReturn(aPluginConfiguration);
 
             PluginConfiguration updatedConf = pluginServiceMocked.updatePluginConfiguration(aPluginConfiguration);
 
-            Assert.assertEquals(aPluginConfiguration.getParameters().stream().filter(p -> p.isDynamic()).count(),
-                                updatedConf.getParameters().stream().filter(p -> p.isDynamic()).count());
+            Assert.assertEquals(aPluginConfiguration.getParameters().stream().filter(PluginParameter::isDynamic).count(),
+                                updatedConf.getParameters().stream().filter(PluginParameter::isDynamic).count());
             Assert.assertEquals(aPluginConfiguration.getParameters().stream().filter(p -> !p.isDynamic()).count(),
                                 updatedConf.getParameters().stream().filter(p -> !p.isDynamic()).count());
 
@@ -111,8 +111,8 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
 
             updatedConf = pluginServiceMocked.updatePluginConfiguration(aPluginConfiguration);
 
-            Assert.assertEquals(aPluginConfiguration.getParameters().stream().filter(p -> p.isDynamic()).count(),
-                                updatedConf.getParameters().stream().filter(p -> p.isDynamic()).count());
+            Assert.assertEquals(aPluginConfiguration.getParameters().stream().filter(PluginParameter::isDynamic).count(),
+                                updatedConf.getParameters().stream().filter(PluginParameter::isDynamic).count());
             Assert.assertEquals(aPluginConfiguration.getParameters().stream().filter(p -> !p.isDynamic()).count(),
                                 updatedConf.getParameters().stream().filter(p -> !p.isDynamic()).count());
             aPluginConfiguration.logParams();
@@ -132,14 +132,14 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParametersToUpdate();
         aPluginConfiguration.setId(AN_ID);
         try {
-            Mockito.when(pluginConfRepositoryMocked.findById(aPluginConfiguration.getId()))
+            Mockito.when(pluginConfRepositoryMocked.findCompleteById(aPluginConfiguration.getId()))
                     .thenReturn(aPluginConfiguration);
             Mockito.when(pluginConfRepositoryMocked.save(aPluginConfiguration)).thenReturn(aPluginConfiguration);
 
             PluginConfiguration updatedConf = pluginServiceMocked.updatePluginConfiguration(aPluginConfiguration);
 
-            Assert.assertEquals(aPluginConfiguration.getParameters().stream().filter(p -> p.isDynamic()).count(),
-                                updatedConf.getParameters().stream().filter(p -> p.isDynamic()).count());
+            Assert.assertEquals(aPluginConfiguration.getParameters().stream().filter(PluginParameter::isDynamic).count(),
+                                updatedConf.getParameters().stream().filter(PluginParameter::isDynamic).count());
             Assert.assertEquals(aPluginConfiguration.getParameters().stream().filter(p -> !p.isDynamic()).count(),
                                 updatedConf.getParameters().stream().filter(p -> !p.isDynamic()).count());
 
@@ -149,9 +149,9 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
                 if (!p.isDynamic()) {
                     parameters.remove(p);
                     // Update
-                    PluginParametersFactory
-                            .updateParameter(p, "one", true,
-                                             Arrays.asList("one", "two", "three", "four", "five", "six"));
+                    PluginParametersFactory.updateParameter(p, "one", true,
+                                                            Arrays.asList("one", "two", "three", "four", "five",
+                                                                          "six"));
                     parameters.add(p);
                     break;
                 }
@@ -159,8 +159,8 @@ public class PluginServiceUpdateDynamicParameterTest extends PluginServiceUtilit
 
             updatedConf = pluginServiceMocked.updatePluginConfiguration(aPluginConfiguration);
 
-            Assert.assertEquals(aPluginConfiguration.getParameters().stream().filter(p -> p.isDynamic()).count(),
-                                updatedConf.getParameters().stream().filter(p -> p.isDynamic()).count());
+            Assert.assertEquals(aPluginConfiguration.getParameters().stream().filter(PluginParameter::isDynamic).count(),
+                                updatedConf.getParameters().stream().filter(PluginParameter::isDynamic).count());
             Assert.assertEquals(aPluginConfiguration.getParameters().stream().filter(p -> !p.isDynamic()).count(),
                                 updatedConf.getParameters().stream().filter(p -> !p.isDynamic()).count());
             aPluginConfiguration.logParams();

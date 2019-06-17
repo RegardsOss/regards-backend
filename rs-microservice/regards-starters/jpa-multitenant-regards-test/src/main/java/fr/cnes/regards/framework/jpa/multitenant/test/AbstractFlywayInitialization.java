@@ -23,9 +23,7 @@ import org.springframework.test.context.TestPropertySource;
 
 /**
  * Initialize database with Flyway scripts on public schema.
- *
  * @author Marc Sordi
- *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=public" })
 public abstract class AbstractFlywayInitialization extends AbstractDaoTest {

@@ -19,7 +19,6 @@
 package fr.cnes.regards.framework.oais.urn;
 
 import java.util.UUID;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.Assert;
@@ -30,7 +29,6 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
  * @author Sylvain Vissiere-Guerinet
- *
  */
 public class UniformResourceNameTest {
 
@@ -41,7 +39,6 @@ public class UniformResourceNameTest {
         final UniformResourceName sipUrn = new UniformResourceName(OAISIdentifier.SIP, EntityType.COLLECTION, "CDPP",
                 UUID.randomUUID(), 1);
         final Pattern pattern = Pattern.compile(UniformResourceName.URN_PATTERN);
-        final Matcher matcher = pattern.matcher(sipUrn.toString());
         Assert.assertTrue(pattern.matcher(sipUrn.toString()).matches());
     }
 

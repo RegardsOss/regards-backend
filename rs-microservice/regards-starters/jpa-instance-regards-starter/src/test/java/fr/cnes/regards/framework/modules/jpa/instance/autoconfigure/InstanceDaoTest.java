@@ -35,13 +35,10 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
- *
  * Class MultiTenancyDaoTest
  *
  * Unit tests for multitenancy DAO
- *
  * @author CS
- * @since 1.0-SNAPSHOT
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { InstanceDaoTestConfiguration.class })
@@ -55,10 +52,9 @@ public class InstanceDaoTest {
     private IProjectTestRepository projectRepository;
 
     /**
-     *
      * Unit test to check that the spring JPA multitenancy context is loaded successfully
      *
-     * @since 1.0-SNAPSHOTS
+     * S
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Unit test to check that the spring JPA multitenancy context is loaded successfully")
@@ -68,10 +64,7 @@ public class InstanceDaoTest {
     }
 
     /**
-     *
      * Unit test to check JPA uses the good tenant through the tenant resolver
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Unit test to check JPA uses the good tenant through the tenant resolver")
@@ -90,10 +83,9 @@ public class InstanceDaoTest {
 
         // Check results
         final Iterable<TestProject> listP = projectRepository.findAll();
-        listP.forEach(project -> resultsP.add(project));
-        Assert.assertTrue(String.format("Error, there must be 1 elements in database associated to instance (%d)",
-                                        resultsP.size()),
-                          resultsP.size() == 1);
+        listP.forEach(resultsP::add);
+        Assert.assertEquals(String.format("Error, there must be 1 elements in database associated to instance (%d)",
+                                          resultsP.size()), 1, resultsP.size());
 
     }
 

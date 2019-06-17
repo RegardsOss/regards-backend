@@ -18,11 +18,12 @@
  */
 package fr.cnes.regards.framework.amqp.configuration;
 
-import javax.annotation.PostConstruct;
 import java.util.Base64;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,10 +48,8 @@ import fr.cnes.regards.framework.multitenant.ITenantResolver;
 
 /**
  * implementation compliant with RabbitMQ v3.6.5
- *
  * @author svissier
  * @author Marc Sordi
- *
  */
 public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
 
@@ -132,9 +131,7 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
     private final VirtualHostMode mode;
 
     /**
-     *
      * Constructor used to initialize properties from AmqpProperties
-     *
      * @param mode {@link VirtualHostMode}
      * @param tenantResolver retrieve all tenants
      * @param rabbitmqUserName user name
@@ -206,7 +203,7 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
         final HttpEntity<Void> request = new HttpEntity<>(headers);
         final ResponseEntity<List<RabbitVhost>> response = restOperations.exchange(host, HttpMethod.GET, request,
                                                                                    typeRef);
-        vhostList = response.getBody().stream().map(rVh -> rVh.getName()).collect(Collectors.toList());
+        vhostList = response.getBody().stream().map(RabbitVhost::getName).collect(Collectors.toList());
         return vhostList;
     }
 
@@ -234,11 +231,8 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
 
     /**
      * Register {@link ConnectionFactory}
-     *
-     * @param virtualHost
-     *            virtual host
-     * @param pConnectionFactory
-     *            related vhost {@link ConnectionFactory}
+     * @param virtualHost virtual host
+     * @param pConnectionFactory related vhost {@link ConnectionFactory}
      */
     private void registerConnectionFactory(String virtualHost, CachingConnectionFactory pConnectionFactory) {
         // if there is no registered connection factory for this vhost then register this one
@@ -249,9 +243,7 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
 
     /**
      * Unregister {@link ConnectionFactory}
-     *
-     * @param pTenant
-     *            tenant
+     * @param virtualHost tenant
      */
     private void unregisterConnectionFactory(String virtualHost) {
         // if there is a connection factory for this vhost then unregister it
@@ -317,7 +309,7 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
                                                                       HttpMethod.DELETE, request, String.class);
             int statusValue = response.getStatusCodeValue();
             // if successful or 404 then the broker is clean
-            if (!(isSuccess(statusValue) || (statusValue == HttpStatus.NOT_FOUND.value()))) {
+            if (!(isSuccess(statusValue) || statusValue == HttpStatus.NOT_FOUND.value())) {
                 String errorMessage = String.format("Cannot remove vhost %s (status %s) : %s", virtualHost, statusValue,
                                                     response.getBody());
                 LOGGER.error(errorMessage);
@@ -330,8 +322,7 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
     }
 
     /**
-     * @param rabbitAddresses
-     *            addresses from configuration file
+     * @param rabbitAddresses addresses from configuration file
      * @return {host, port}
      */
     protected String[] parseRabbitAddresses(String rabbitAddresses) {
@@ -358,12 +349,12 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
     @Override
     public boolean isSuccess(int statusValue) {
         final int hundred = 100;
-        return (statusValue / hundred) == 2;
+        return statusValue / hundred == 2;
     }
 
     @Override
     public boolean existVhost(String virtualHost) {
-        return vhostList.stream().filter(rVhName -> rVhName.equals(virtualHost)).findAny().isPresent();
+        return vhostList.stream().anyMatch(rVhName -> rVhName.equals(virtualHost));
     }
 
     @Override
@@ -378,8 +369,7 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
     }
 
     /**
-     * @param tenant
-     *            Tenant wanted
+     * @param tenant Tenant wanted
      * @return fully qualified name of vhost accord to namespace
      */
     // FIXME
@@ -405,6 +395,10 @@ public class RabbitVirtualHostAdmin implements IRabbitVirtualHostAdmin {
     @Override
     public boolean isBound(String virtualHost) {
         String boundVhost = (String) SimpleResourceHolder.get(simpleRoutingConnectionFactory);
-        return (virtualHost != null) && virtualHost.equals(boundVhost);
+        return virtualHost != null && virtualHost.equals(boundVhost);
+    }
+
+    public VirtualHostMode getMode() {
+        return mode;
     }
 }

@@ -47,6 +47,7 @@ import org.hibernate.type.descriptor.sql.SqlTypeDescriptor;
 /**
  * @author Vlad Mihalcea
  */
+@SuppressWarnings("serial")
 public abstract class AbstractJsonSqlTypeDescriptor implements SqlTypeDescriptor {
 
     @Override

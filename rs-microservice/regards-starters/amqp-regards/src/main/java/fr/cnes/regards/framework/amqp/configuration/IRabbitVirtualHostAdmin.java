@@ -24,13 +24,11 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 
 /**
  * @author svissier
- *
  */
 public interface IRabbitVirtualHostAdmin {
 
     /**
      * GET Request to host/api/vhosts to know which Vhosts are already defined
-     *
      * @return list of all virtual hosts
      */
     List<String> retrieveVhostList();
@@ -46,44 +44,33 @@ public interface IRabbitVirtualHostAdmin {
     String getRabbitApiVhostEndpoint();
 
     /**
-     *
      * PUT Request to /api/vhost/{vhostName} to add this Vhost only if it is not already defined
-     *
-     * @param virtualHost
-     *            name virtual host you want to add
+     * @param virtualHost name virtual host you want to add
      */
     void addVhost(String virtualHost);
 
     /**
      * DELETE Request to /api/vhost/{vhostName}
-     *
-     * @param virtualHost
-     *            name of virtual host you want to remove
+     * @param virtualHost name of virtual host you want to remove
      */
     void removeVhost(String virtualHost);
 
     /**
      * Retrieve {@link ConnectionFactory} for virtual host
-     *
-     * @param virtualHost
-     *            virtual host
+     * @param virtualHost virtual host
      * @return vhost {@link ConnectionFactory}
      */
     ConnectionFactory getVhostConnectionFactory(String virtualHost);
 
     /**
-     *
      * Determine if the request done is to be considered successful
-     *
-     * @param pStatusValue
-     *            status to examine
+     * @param pStatusValue status to examine
      * @return true if the request was successfull, false otherwise
      */
     boolean isSuccess(int pStatusValue);
 
     /**
-     * @param virtualHost
-     *            name of the virtual host you want to check
+     * @param virtualHost name of the virtual host you want to check
      * @return true if the vhost is already known
      */
     boolean existVhost(String virtualHost);
@@ -99,36 +86,36 @@ public interface IRabbitVirtualHostAdmin {
     String getRabbitApiEndpoint();
 
     /**
-     * @param pRabbitmqUserName
-     *            username
-     * @param pRabbitmqPassword
-     *            password
+     * @param pRabbitmqUserName username
+     * @param pRabbitmqPassword password
      * @return the encoded credential to give to the broker
      */
     String encode(String pRabbitmqUserName, String pRabbitmqPassword);
 
     /**
      * Bind {@link ConnectionFactory} to virtual host before declaring an AMQP element
-     *
      * @param virtualHost virtual host to bind
      */
-    public void bind(String virtualHost);
+    void bind(String virtualHost);
 
     /**
      * Unbind {@link ConnectionFactory} from virtual host
-     *
      */
-    public void unbind();
+    void unbind();
 
     /**
-     *
      * @return true if a {@link ConnectionFactory} is bound
      */
-    public boolean isBound();
+    boolean isBound();
 
     /**
      * @param virtualHost virtual host to bind
      * @return true if the virtual host {@link ConnectionFactory} is already bound
      */
-    public boolean isBound(String virtualHost);
+    boolean isBound(String virtualHost);
+
+    /**
+     * Retrieve Virtual host mode
+     */
+    public VirtualHostMode getMode();
 }

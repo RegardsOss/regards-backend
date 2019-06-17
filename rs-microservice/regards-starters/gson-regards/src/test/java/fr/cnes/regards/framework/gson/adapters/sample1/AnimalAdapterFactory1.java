@@ -22,7 +22,6 @@ import fr.cnes.regards.framework.gson.adapters.PolymorphicTypeAdapterFactory;
 
 /**
  * @author Marc Sordi
- *
  */
 public class AnimalAdapterFactory1 extends PolymorphicTypeAdapterFactory<Animal> {
 
