@@ -73,4 +73,9 @@ public interface IAcquisitionFileRepository
      */
     long countByFileInfo(AcquisitionFileInfo fileInfo);
 
+    /**
+     * Count number of {@link AcquisitionFile} associated to the given {@link AcquisitionFileInfo} and checksum
+     */
+    long countByFileInfoAndChecksum(AcquisitionFileInfo fileInfo, String checksum);
+
 }

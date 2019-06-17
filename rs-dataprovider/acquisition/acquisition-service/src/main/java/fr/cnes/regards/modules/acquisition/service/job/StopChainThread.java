@@ -24,7 +24,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.security.role.DefaultRole;
+import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
 
 /**
  * Cleaning thread
@@ -36,11 +40,16 @@ public class StopChainThread extends Thread {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StopChainThread.class);
 
+    private static final String NOTIFICATION_TITLE = "Acquisition processing chain stopped";
+
     @Autowired
     private IAcquisitionProcessingService processingService;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    private INotificationClient notificationClient;
 
     private final Long processingChainId;
 
@@ -58,31 +67,54 @@ public class StopChainThread extends Thread {
 
     @Override
     public void run() {
+
         int totalWaiting = 0;
+        AcquisitionProcessingChain processingChain = null;
 
         try {
             runtimeTenantResolver.forceTenant(tenant);
+
+            processingChain = processingService.getChain(processingChainId);
 
             LOGGER.info("Asking for processing chain jobs to stop");
             processingService.stopChainJobs(processingChainId);
 
             LOGGER.info("Waiting timeout set to {} milliseconds", TIMEOUT);
-            while (totalWaiting < TIMEOUT && !processingService.isChainJobStoppedAndCleaned(processingChainId)) {
+
+            boolean isStoppedAndCleaned = processingService.isChainJobStoppedAndCleaned(processingChainId);
+            while (totalWaiting < TIMEOUT && !isStoppedAndCleaned) {
                 totalWaiting += SLEEP_TIME;
                 Thread.sleep(SLEEP_TIME);
                 LOGGER.info("Waiting for the chain to stop since {} milliseconds", totalWaiting);
+                isStoppedAndCleaned = processingService.isChainJobStoppedAndCleaned(processingChainId);
             }
 
-            if (totalWaiting < TIMEOUT) {
+            if (isStoppedAndCleaned) {
+                notificationClient
+                        .notify(String.format("Acquisition processing chain \"%s\" was properly stopped and cleaned.",
+                                              processingChain.getLabel()),
+                                NOTIFICATION_TITLE, NotificationLevel.INFO, DefaultRole.ADMIN);
                 // Unlock chain
                 processingService.unlockChain(processingChainId);
+            } else {
+                notificationClient.notify(String
+                        .format("Acquisition processing chain \"%s\" is not yet stopped and cleaned. You have to retry stopping the chain before restarting properly!",
+                                processingChain.getLabel()), NOTIFICATION_TITLE, NotificationLevel.ERROR,
+                                          DefaultRole.ADMIN);
             }
-            // FIXME manage timeout or not!
-            // FIXME add notification
 
         } catch (ModuleException | InterruptedException ex) {
             LOGGER.error("Processing chain clean thread failure", ex);
-            // FIXME add notification
+            String processingNameOrId;
+            if (processingChain != null) {
+                processingNameOrId = processingChain.getLabel();
+            } else {
+                processingNameOrId = String.valueOf(processingChainId);
+            }
+            String message = String
+                    .format("Acquisition processing chain \"%s\" is not yet stopped and cleaned. An exception was thrown during stop process (%s).You have to retry stopping the chain before restarting properly!",
+                            processingNameOrId, ex.getMessage());
+            notificationClient.notify(message, NOTIFICATION_TITLE, NotificationLevel.ERROR, DefaultRole.ADMIN);
         }
     }
 }

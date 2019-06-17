@@ -19,7 +19,9 @@
 package fr.cnes.regards.modules.acquisition.service;
 
 import java.nio.file.Path;
+import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -61,6 +63,12 @@ public interface IAcquisitionProcessingService {
      * @return all chains fully loaded
      */
     List<AcquisitionProcessingChain> getFullChains() throws ModuleException;
+
+    /**
+     * Retrieve all processing chains by page
+     * @return all chains fully loaded
+     */
+    Page<AcquisitionProcessingChain> getFullChains(Pageable pageable) throws ModuleException;
 
     /**
      * Create a new acquisition processing chain
@@ -144,16 +152,21 @@ public interface IAcquisitionProcessingService {
      * Register multiple files in one transaction
      * @param filePaths paths of the files to register
      * @param info related file info
+     * @param scanningDate reference date used to launch scan plugin
      * @return number of registered files
      */
-    int registerFiles(List<Path> filePaths, AcquisitionFileInfo info) throws ModuleException;
+    int registerFiles(List<Path> filePaths, AcquisitionFileInfo info, Optional<OffsetDateTime> scanningDate)
+            throws ModuleException;
 
     /**
      * Register a new file in one transaction
      * @param filePath path of the file to register
      * @param info related file info
+     * @param scanningDate reference date used to launch scan plugin
+     * @return true if really registered
      */
-    void registerFile(Path filePath, AcquisitionFileInfo info) throws ModuleException;
+    boolean registerFile(Path filePath, AcquisitionFileInfo info, Optional<OffsetDateTime> scanningDate)
+            throws ModuleException;
 
     /**
      * Manage new registered file : prepare or fulfill products and schedule SIP generation as soon as possible<br/>
@@ -175,11 +188,6 @@ public interface IAcquisitionProcessingService {
      * Retry SIP generation for products in {@link ProductSIPState#GENERATION_ERROR}
      */
     void retrySIPGeneration(AcquisitionProcessingChain processingChain);
-
-    /**
-     * Retry SIP submission for products in {@link ProductSIPState#SUBMISSION_ERROR}
-     */
-    void retrySIPSubmission(AcquisitionProcessingChain processingChain);
 
     /**
      * Build summaries list of {@link AcquisitionProcessingChain}s.

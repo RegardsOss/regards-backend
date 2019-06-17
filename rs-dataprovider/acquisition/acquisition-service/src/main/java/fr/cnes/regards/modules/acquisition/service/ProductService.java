@@ -19,9 +19,7 @@
 package fr.cnes.regards.modules.acquisition.service;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,8 +40,8 @@ import org.springframework.util.Assert;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -67,10 +65,10 @@ import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
 import fr.cnes.regards.modules.acquisition.service.job.AcquisitionJobPriority;
 import fr.cnes.regards.modules.acquisition.service.job.PostAcquisitionJob;
 import fr.cnes.regards.modules.acquisition.service.job.SIPGenerationJob;
-import fr.cnes.regards.modules.acquisition.service.job.SIPSubmissionJob;
 import fr.cnes.regards.modules.ingest.domain.entity.ISipState;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
+import fr.cnes.regards.modules.ingest.domain.flow.SipFlowItem;
 
 /**
  * Manage acquisition {@link Product}
@@ -82,6 +80,8 @@ import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 public class ProductService implements IProductService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductService.class);
+
+    private static final String DEFAULT_SESSION = "Default";
 
     @Autowired
     private IPluginService pluginService;
@@ -98,23 +98,38 @@ public class ProductService implements IProductService {
     @Autowired
     private IAcquisitionFileRepository acqFileRepository;
 
+    @Autowired
+    private IPublisher publisher;
+
     @Value("${regards.acquisition.sip.bulk.request.limit:100}")
     private Integer bulkRequestLimit;
 
-    @Value("${regards.acquisition.pagination.default.page.size:100}")
-    private Integer defaultPageSize;
+    @Value("${spring.application.name}")
+    private String appName;
 
     @Override
     public Product save(Product product) {
-        LOGGER.debug("Saving product \"{}\" with IP ID \"{}\" and SIP state \"{}\"", product.getProductName(),
+        LOGGER.trace("Saving product \"{}\" with IP ID \"{}\" and SIP state \"{}\"", product.getProductName(),
                      product.getIpId(), product.getSipState());
         product.setLastUpdate(OffsetDateTime.now());
         return productRepository.save(product);
     }
 
     @Override
+    public Product saveAndSubmitSIP(Product product) {
+        LOGGER.trace("Saving and submitting product \"{}\" with IP ID \"{}\" and SIP state \"{}\"",
+                     product.getProductName(), product.getIpId(), product.getSipState());
+        // Build flow item
+        String session = product.getSession() == null ? DEFAULT_SESSION : product.getSession();
+        SipFlowItem item = SipFlowItem.build(product.getProcessingChain().getIngestChain(), session, product.getSip(),
+                                             appName);
+        publisher.publish(item);
+        return save(product);
+    }
+
+    @Override
     public Product loadProduct(Long id) throws ModuleException {
-        Product product = productRepository.findCompleteById(id);
+        Product product = productRepository.findOneById(id);
         if (product == null) {
             throw new EntityNotFoundException(id, Product.class);
         }
@@ -123,7 +138,7 @@ public class ProductService implements IProductService {
 
     @Override
     public Product retrieve(String productName) throws ModuleException {
-        Product product = productRepository.findCompleteByProductName(productName);
+        Product product = productRepository.findByProductName(productName);
         if (product == null) {
             String message = String.format("Product with name \"%s\" not found", productName);
             LOGGER.error(message);
@@ -134,12 +149,12 @@ public class ProductService implements IProductService {
 
     @Override
     public Set<Product> retrieve(Collection<String> productNames) throws ModuleException {
-        return productRepository.findCompleteByProductNameIn(productNames);
+        return productRepository.findByProductNameIn(productNames);
     }
 
     @Override
     public Optional<Product> searchProduct(String productName) throws ModuleException {
-        return Optional.ofNullable(productRepository.findCompleteByProductName(productName));
+        return Optional.ofNullable(productRepository.findByProductName(productName));
     }
 
     @Override
@@ -149,7 +164,7 @@ public class ProductService implements IProductService {
 
     @Override
     public void delete(Long id) {
-        productRepository.delete(id);
+        productRepository.deleteById(id);
     }
 
     @Override
@@ -198,24 +213,23 @@ public class ProductService implements IProductService {
         // At least one mandatory file is VALID
         product.setState(ProductState.ACQUIRING);
 
-        int nbTotalMandatory = 0;
-        int nbTotalOptional = 0;
+        int nbExpectedMandatory = 0;
+        int nbExpectedOptional = 0;
         int nbActualMandatory = 0;
         int nbActualOptional = 0;
 
         // Compute product requirements
         for (AcquisitionFileInfo fileInfo : product.getProcessingChain().getFileInfos()) {
             if (fileInfo.isMandatory()) {
-                nbTotalMandatory++;
+                nbExpectedMandatory++;
             } else {
-                nbTotalOptional++;
+                nbExpectedOptional++;
             }
         }
 
         // Compute product state
         for (AcquisitionFile file : product.getAcquisitionFiles()) {
-            if (AcquisitionFileState.VALID.equals(file.getState())
-                    || AcquisitionFileState.ACQUIRED.equals(file.getState())) {
+            if (AcquisitionFileState.ACQUIRED.equals(file.getState())) {
                 if (file.getFileInfo().isMandatory()) {
                     nbActualMandatory++;
                 } else {
@@ -224,13 +238,29 @@ public class ProductService implements IProductService {
             }
         }
 
-        if (nbTotalMandatory == nbActualMandatory) {
+        if (nbExpectedMandatory == nbActualMandatory) {
             // ProductStatus is COMPLETED if mandatory files is acquired
             product.setState(ProductState.COMPLETED);
-            if (nbTotalOptional == nbActualOptional) {
+            if (nbExpectedOptional == nbActualOptional) {
                 // ProductStatus is FINISHED if mandatory and optional files is acquired
                 product.setState(ProductState.FINISHED);
+            } else if (nbActualOptional >= nbExpectedOptional) {
+                product.setState(ProductState.INVALID);
+                // Propagate to SIP state
+                product.setSipState(ProductSIPState.NOT_SCHEDULED_INVALID);
+                product.setError(String
+                        .format("This product should only have %s optional files according to configuration. "
+                                + "We found %s files matching. Please check your configuration and reacquire.",
+                                nbExpectedMandatory, nbActualMandatory));
             }
+        } else if (nbActualMandatory >= nbExpectedMandatory) {
+            product.setState(ProductState.INVALID);
+            // Propagate to SIP state
+            product.setSipState(ProductSIPState.NOT_SCHEDULED_INVALID);
+            product.setError(String
+                    .format("This product should only have %s mandatory files according to configuration. "
+                            + "We found %s files matching. Please check your configuration and reacquire.",
+                            nbExpectedMandatory, nbActualMandatory));
         }
     }
 
@@ -274,7 +304,7 @@ public class ProductService implements IProductService {
         }
 
         // Find all existing product by using one database request
-        Set<Product> products = productRepository.findCompleteByProductNameIn(productNames);
+        Set<Product> products = productRepository.findByProductNameIn(productNames);
         Map<String, Product> productMap = products.stream()
                 .collect(Collectors.toMap(Product::getProductName, Function.identity()));
         Set<Product> productsToSchedule = new HashSet<>();
@@ -337,193 +367,13 @@ public class ProductService implements IProductService {
             validFile.setState(AcquisitionFileState.ACQUIRED);
             acqFileRepository.save(validFile);
         }
-
+        // valid product
         currentProduct.setSipState(ProductSIPState.NOT_SCHEDULED); // Required to be re-integrated in SIP workflow
         currentProduct.setSession(processingChain.getSession().orElse(null));
         currentProduct.addAcquisitionFiles(validFiles);
         computeProductState(currentProduct);
 
         return save(currentProduct);
-    }
-
-    @Override
-    public Page<Product> findProductsToSubmit(String ingestChain, Optional<String> session) {
-
-        if (session.isPresent()) {
-            return productRepository
-                    .findByProcessingChainIngestChainAndSessionAndSipStateIn(ingestChain, session.get(), Sets
-                            .newHashSet(ProductSIPState.SUBMISSION_SCHEDULED), new PageRequest(0, bulkRequestLimit));
-        } else {
-            return productRepository.findByProcessingChainIngestChainAndSipStateInOrderByIdAsc(ingestChain, Sets
-                    .newHashSet(ProductSIPState.SUBMISSION_SCHEDULED), new PageRequest(0, bulkRequestLimit));
-        }
-    }
-
-    /**
-     * This method is called by a time scheduler. We only schedule a new job for a specified chain and session if and
-     * only if an existing job not already exists. To detect that a job is already scheduled, we check the SIP state of
-     * the products. Product not already scheduled will be scheduled on next scheduler call.
-     */
-    @Override
-    public void scheduleProductSIPSubmission() {
-
-        // Register all chains and sessions already scheduled
-        Multimap<String, String> scheduledSessionsByChain = ArrayListMultimap.create();
-
-        // Find all products already scheduled for submission
-        Page<Product> products;
-        Pageable pageable = new PageRequest(0, defaultPageSize);
-        do {
-            products = productRepository.findBySipStateOrderByIdAsc(ProductSIPState.SUBMISSION_SCHEDULED, pageable);
-            if (products.hasNext()) {
-                // Prepare for new search
-                pageable = products.nextPageable();
-            }
-            if (products.hasContent()) {
-                for (Product product : products) {
-                    if (!scheduledSessionsByChain.containsEntry(product.getProcessingChain().getIngestChain(),
-                                                                product.getSession())) {
-                        scheduledSessionsByChain.put(product.getProcessingChain().getIngestChain(),
-                                                     product.getSession());
-                    }
-                }
-            }
-        } while (products.hasNext());
-
-        // Find all products with available SIPs ready for submission
-        // Reset pagination
-        pageable = new PageRequest(0, bulkRequestLimit);
-        Multimap<String, String> sessionsByChain = ArrayListMultimap.create();
-        // Register products per ingest chain and session for reporting
-        Map<String, Map<String, List<Product>>> productsPerIngestChain = new HashMap<>();
-
-        // Just managed one page at a time
-        products = productRepository.findWithLockBySipStateOrderByIdAsc(ProductSIPState.GENERATED, pageable);
-
-        if (products.hasContent()) {
-
-            for (Product product : products) {
-                // Check if chain and session not already scheduled
-                if (!scheduledSessionsByChain.containsEntry(product.getProcessingChain().getIngestChain(),
-                                                            product.getSession())) {
-                    // Register chains and sessions for scheduling
-                    if (!sessionsByChain.containsEntry(product.getProcessingChain().getIngestChain(),
-                                                       product.getSession())) {
-                        sessionsByChain.put(product.getProcessingChain().getIngestChain(), product.getSession());
-                    }
-
-                    // Register product
-                    registerProduct(productsPerIngestChain, product);
-                }
-            }
-        }
-
-        // Schedule submission jobs
-        for (String ingestChain : sessionsByChain.keySet()) {
-            for (String session : sessionsByChain.get(ingestChain)) {
-                // Schedule job
-                Set<JobParameter> jobParameters = Sets.newHashSet();
-                jobParameters.add(new JobParameter(SIPSubmissionJob.INGEST_CHAIN_PARAMETER, ingestChain));
-                jobParameters.add(new JobParameter(SIPSubmissionJob.SESSION_PARAMETER, session));
-
-                JobInfo jobInfo = new JobInfo(true);
-                jobInfo.setPriority(AcquisitionJobPriority.SIP_SUBMISSION_JOB_PRIORITY.getPriority());
-                jobInfo.setParameters(jobParameters);
-                jobInfo.setClassName(SIPSubmissionJob.class.getName());
-                jobInfo.setOwner(authResolver.getUser());
-                jobInfoService.createAsPending(jobInfo);
-
-                // Link report to all related products
-                linkSubmissionJobInfo(productsPerIngestChain, jobInfo, ingestChain, session);
-                jobInfo.updateStatus(JobStatus.QUEUED);
-                jobInfoService.save(jobInfo);
-            }
-        }
-    }
-
-    /**
-     * Register product
-     * @param productsPerIngestChain list of product per session per ingest chain
-     * @param product {@link Product} to register
-     */
-    private void registerProduct(Map<String, Map<String, List<Product>>> productsPerIngestChain, Product product) {
-        String ingestChain = product.getProcessingChain().getIngestChain();
-        String session = product.getSession();
-
-        Map<String, List<Product>> productsPerSession = productsPerIngestChain.get(ingestChain);
-        if (productsPerSession == null) {
-            productsPerSession = new HashMap<>();
-            productsPerIngestChain.put(ingestChain, productsPerSession);
-        }
-
-        List<Product> products = productsPerSession.get(session);
-        if (products == null) {
-            products = new ArrayList<>();
-            productsPerSession.put(session, products);
-        }
-
-        products.add(product);
-    }
-
-    /**
-     * Link submission report to related products
-     * @param productsPerIngestChain list of registered products
-     * @param jobInfo {@link JobInfo} to link
-     * @param ingestChain INGEST chain
-     * @param session INGEST session
-     */
-    private void linkSubmissionJobInfo(Map<String, Map<String, List<Product>>> productsPerIngestChain, JobInfo jobInfo,
-            String ingestChain, String session) {
-
-        Map<String, List<Product>> productsPerSession = productsPerIngestChain.get(ingestChain);
-        if (productsPerSession != null) {
-            List<Product> products = productsPerSession.get(session);
-            if (products != null) {
-                for (Product product : products) {
-                    // Release lock
-                    if (product.getLastSIPSubmissionJobInfo() != null) {
-                        jobInfoService.unlock(product.getLastSIPSubmissionJobInfo());
-                    }
-                    product.setLastSIPSubmissionJobInfo(jobInfo);
-                    product.setSipState(ProductSIPState.SUBMISSION_SCHEDULED);
-                    save(product);
-                }
-            }
-        }
-
-    }
-
-    /**
-     * If {@link SIPSubmissionJob} fails, no job can be run as long as there are products in
-     * {@link ProductSIPState#SUBMISSION_SCHEDULED}. This handler updates product states to
-     * {@link ProductSIPState#SUBMISSION_ERROR}.<br>
-     */
-    @Override
-    public void handleSIPSubmissiontError(JobInfo jobInfo) {
-        Map<String, JobParameter> params = jobInfo.getParametersAsMap();
-        String ingestChain = params.get(SIPSubmissionJob.INGEST_CHAIN_PARAMETER).getValue();
-        String session = params.get(SIPSubmissionJob.SESSION_PARAMETER).getValue();
-        // Update product status
-        Page<Product> products;
-        do {
-            if (session == null) {
-                products = productRepository
-                        .findByProcessingChainIngestChainAndSipStateInOrderByIdAsc(ingestChain, Sets
-                                .newHashSet(ProductSIPState.SUBMITTED, ProductSIPState.SUBMISSION_SCHEDULED),
-                                                                                   new PageRequest(0, defaultPageSize));
-            } else {
-                products = productRepository
-                        .findByProcessingChainIngestChainAndSessionAndSipStateIn(ingestChain, session, Sets
-                                .newHashSet(ProductSIPState.SUBMITTED, ProductSIPState.SUBMISSION_SCHEDULED),
-                                                                                 new PageRequest(0, defaultPageSize));
-            }
-            if (products.hasContent()) {
-                for (Product product : products) {
-                    product.setSipState(ProductSIPState.SUBMISSION_ERROR);
-                    save(product);
-                }
-            }
-        } while (products.hasNext());
     }
 
     @Override
@@ -546,7 +396,7 @@ public class ProductService implements IProductService {
 
     @Override
     public void handleSIPEvent(SIPEvent event) {
-        Product product = productRepository.findCompleteByProductName(event.getProviderId());
+        Product product = productRepository.findByProductName(event.getProviderId());
         if (product != null) {
             // Do post processing if SIP properly stored
             if (SIPState.STORED.equals(event.getState())
@@ -600,7 +450,7 @@ public class ProductService implements IProductService {
     @Override
     public Page<Product> search(List<ProductState> state, List<ISipState> sipState, String productName, String session,
             Long processingChainId, OffsetDateTime from, Boolean noSession, Pageable pageable) {
-        return productRepository.findAll(ProductSpecifications.search(state, sipState, productName, session,
+        return productRepository.loadAll(ProductSpecifications.search(state, sipState, productName, session,
                                                                       processingChainId, from, noSession),
                                          pageable);
     }
@@ -613,26 +463,17 @@ public class ProductService implements IProductService {
                 .findDistinctLastSIPGenerationJobInfoByProcessingChainAndSipStateIn(processingChain,
                                                                                     ProductSIPState.SCHEDULED);
         jobInfos.forEach(j -> jobInfoService.stopJob(j.getId()));
-
-        // Stop submission jobs
-        jobInfos = productRepository
-                .findDistinctLastSIPSubmissionJobInfoByProcessingChainAndSipStateIn(processingChain,
-                                                                                    ProductSIPState.SUBMISSION_SCHEDULED);
-        jobInfos.forEach(j -> jobInfoService.stopJob(j.getId()));
     }
 
     @Override
     public boolean isProductJobStoppedAndCleaned(AcquisitionProcessingChain processingChain) throws ModuleException {
         // Handle SIP generation jobs
         Page<Product> products;
-        Pageable pageable = new PageRequest(0, defaultPageSize);
+        Pageable pageable = PageRequest.of(0, AcquisitionProperties.WORKING_UNIT);
         do {
             products = productRepository.findWithLockByProcessingChainAndSipStateOrderByIdAsc(processingChain,
                                                                                               ProductSIPState.SCHEDULED,
                                                                                               pageable);
-            if (products.hasNext()) {
-                pageable = products.nextPageable();
-            }
             for (Product product : products) {
                 if (!product.getLastSIPGenerationJobInfo().getStatus().getStatus().isFinished()) {
                     return false;
@@ -644,31 +485,6 @@ public class ProductService implements IProductService {
             }
         } while (products.hasNext());
 
-        // Submission cannot be stop as schedule is going on ...
-        // Handle SIP submission jobs
-        //        pageable = new PageRequest(0, defaultPageSize);
-        //        do {
-        //            products = productRepository
-        //                    .findWithLockByProcessingChainAndSipStateOrderByIdAsc(processingChain,
-        //                                                                          ProductSIPState.SUBMISSION_SCHEDULED,
-        //                                                                          pageable);
-        //            if (products.hasNext()) {
-        //                pageable = products.nextPageable();
-        //            }
-        //            for (Product product : products) {
-        //                if (!product.getLastSIPSubmissionJobInfo().getStatus().getStatus().isFinished()) {
-        //                    return false;
-        //                } else {
-        //                    // Clean product state
-        //                    product.setSipState(ProductSIPState.GENERATED);
-        //                    LOGGER.debug("Saving product \"{}\" \"{}\" with IP ID \"{}\" and SIP state \"{}\"",
-        //                                 product.getProductName(), product.getSip().getId(), product.getIpId(),
-        //                                 product.getSipState());
-        //                    save(product);
-        //                }
-        //            }
-        //        } while (products.hasNext());
-
         return true;
     }
 
@@ -677,7 +493,7 @@ public class ProductService implements IProductService {
 
         Page<Product> products = productRepository
                 .findByProcessingChainAndSipStateOrderByIdAsc(processingChain, ProductSIPState.SCHEDULED_INTERRUPTED,
-                                                              new PageRequest(0, defaultPageSize));
+                                                              PageRequest.of(0, AcquisitionProperties.WORKING_UNIT));
         // Schedule SIP generation
         if (products.hasContent()) {
             LOGGER.debug("Restarting interrupted SIP generation for {} product(s)", products.getContent().size());
@@ -691,7 +507,7 @@ public class ProductService implements IProductService {
 
         Page<Product> products = productRepository
                 .findByProcessingChainAndSipStateOrderByIdAsc(processingChain, ProductSIPState.GENERATION_ERROR,
-                                                              new PageRequest(0, defaultPageSize));
+                                                              PageRequest.of(0, AcquisitionProperties.WORKING_UNIT));
         // Schedule SIP generation
         if (products.hasContent()) {
             LOGGER.debug("Retrying SIP generation for {} product(s)", products.getContent().size());

@@ -23,6 +23,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Set;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -37,7 +38,6 @@ import org.springframework.test.context.TestPropertySource;
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
-import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
@@ -65,7 +65,6 @@ import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
  *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acq_product" })
-@MultitenantTransactional
 public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTest {
 
     @SuppressWarnings("unused")
@@ -86,6 +85,10 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
 
     @Autowired
     private IAcquisitionFileService fileService;
+
+    @After
+    public void cleanAfter() {
+    }
 
     public AcquisitionProcessingChain createProcessingChain(Path searchDir) throws ModuleException {
 
@@ -141,6 +144,18 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         return processingService.createChain(processingChain);
     }
 
+    //    @Test
+    //    public void scanTest() throws ModuleException {
+    //
+    //        AcquisitionProcessingChain processingChain = createProcessingChain(Paths.get("src", "test", "resources", "data",
+    //                                                                                     "plugins", "scan"));
+    //        processingService.scanAndRegisterFiles(processingChain);
+    //
+    //        processingService.scanAndRegisterFiles(processingChain);
+    //
+    //        processingService.scanAndRegisterFiles(processingChain);
+    //    }
+
     @Test
     public void acquisitionWorkflowTest() throws ModuleException {
 
@@ -152,7 +167,7 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
 
         // Check registered files
         Page<AcquisitionFile> inProgressFiles = acqFileRepository
-                .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.IN_PROGRESS, fileInfo, new PageRequest(0, 1));
+                .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.IN_PROGRESS, fileInfo, PageRequest.of(0, 1));
         Assert.assertTrue(inProgressFiles.getTotalElements() == 4);
 
         processingService.manageRegisteredFiles(processingChain);
@@ -160,15 +175,15 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
         // Check registered files
         inProgressFiles = acqFileRepository.findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.IN_PROGRESS,
                                                                                processingChain.getFileInfos().get(0),
-                                                                               new PageRequest(0, 1));
+                                                                               PageRequest.of(0, 1));
         Assert.assertTrue(inProgressFiles.getTotalElements() == 0);
 
         Page<AcquisitionFile> validFiles = acqFileRepository
-                .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.VALID, fileInfo, new PageRequest(0, 1));
+                .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.VALID, fileInfo, PageRequest.of(0, 1));
         Assert.assertTrue(validFiles.getTotalElements() == 0);
 
         Page<AcquisitionFile> acquiredFiles = acqFileRepository
-                .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.ACQUIRED, fileInfo, new PageRequest(0, 1));
+                .findByStateAndFileInfoOrderByIdAsc(AcquisitionFileState.ACQUIRED, fileInfo, PageRequest.of(0, 1));
         Assert.assertTrue(acquiredFiles.getTotalElements() == 4);
 
         // Find product to schedule
@@ -198,7 +213,7 @@ public class ProductAcquisitionServiceTest extends AbstractMultitenantServiceTes
                                                              Arrays.asList(AcquisitionFileState.ERROR)) == 0);
 
         Page<AcquisitionProcessingChainMonitor> monitor = processingService
-                .buildAcquisitionProcessingChainSummaries(null, null, null, new PageRequest(0, 10));
+                .buildAcquisitionProcessingChainSummaries(null, null, null, PageRequest.of(0, 10));
         Assert.assertTrue(!monitor.getContent().isEmpty());
         Assert.assertTrue(monitor.getContent().get(0).getNbFileErrors() == 0);
         Assert.assertTrue(monitor.getContent().get(0).getNbFiles() == 4);

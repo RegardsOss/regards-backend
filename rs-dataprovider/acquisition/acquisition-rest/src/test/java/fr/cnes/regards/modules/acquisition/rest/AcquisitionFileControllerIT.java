@@ -22,8 +22,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.StringJoiner;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,13 +35,15 @@ import org.springframework.restdocs.request.ParameterDescriptor;
 import org.springframework.restdocs.request.RequestDocumentation;
 import org.springframework.restdocs.snippet.Attributes;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileInfoRepository;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
+import fr.cnes.regards.modules.acquisition.dao.IAcquisitionProcessingChainRepository;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFileState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
@@ -52,45 +56,62 @@ import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService
  *
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=acquisition_it" })
-@RegardsTransactional
 public class AcquisitionFileControllerIT extends AbstractRegardsTransactionalIT {
+
+    @Autowired
+    private IAcquisitionFileInfoRepository fileInfoRepository;
+
+    @Autowired
+    private IAcquisitionFileRepository acquisitionFileRepository;
+
+    @Autowired
+    private IAcquisitionProcessingChainRepository acquisitionProcessingChainRepository;
 
     @Autowired
     private IAcquisitionProcessingService processingService;
 
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
     @Before
     public void init() throws ModuleException {
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
         AcquisitionProcessingChain processingChain = AcquisitionTestUtils.getNewChain("Test");
-        processingService.createChain(processingChain);
-
+        processingChain = processingService.createChain(processingChain);
+        processingChain.getId();
         Path basePath = Paths.get("src", "test", "resources", "input");
         for (int i = 1; i < 3; i++) {
             Path file1 = basePath.resolve("data_" + i + ".txt");
-            processingService.registerFile(file1, processingChain.getFileInfos().get(0));
+            processingService.registerFile(file1, processingChain.getFileInfos().get(0), Optional.empty());
         }
+    }
+
+    @After
+    public void cleanUp() throws ModuleException {
+        runtimeTenantResolver.forceTenant(getDefaultTenant());
+        acquisitionFileRepository.deleteAll();
+        fileInfoRepository.deleteAll();
+        acquisitionProcessingChainRepository.deleteAll();
     }
 
     @Test
     public void searchAllFiles() throws ModuleException {
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         documentRequestParameters(requestBuilderCustomizer);
 
-        requestBuilderCustomizer
-                .addDocumentationSnippet(PayloadDocumentation.relaxedResponseFields(Attributes
-                        .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE).value("Acquisition file")),
-                                                                                    documentAcquisitionFile()));
+        requestBuilderCustomizer.document(PayloadDocumentation.relaxedResponseFields(Attributes
+                .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE).value("Acquisition file")),
+                                                                                     documentAcquisitionFile()));
 
         performDefaultGet(AcquisitionFileController.TYPE_PATH, requestBuilderCustomizer, "Should retrieve files");
     }
 
     @Test
     public void searchFilesByState() throws ModuleException {
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk()
+                .addParameter(AcquisitionFileController.REQUEST_PARAM_STATE,
+                              AcquisitionFileState.IN_PROGRESS.toString());
         documentRequestParameters(requestBuilderCustomizer);
-        requestBuilderCustomizer.customizeRequestParam().param(AcquisitionFileController.REQUEST_PARAM_STATE,
-                                                               AcquisitionFileState.IN_PROGRESS.toString());
         performDefaultGet(AcquisitionFileController.TYPE_PATH, requestBuilderCustomizer, "Should retrieve files");
     }
 
@@ -133,7 +154,7 @@ public class AcquisitionFileControllerIT extends AbstractRegardsTransactionalIT 
                         .value("Optional. Required format : yyyy-MM-dd'T'HH:mm:ss.SSSZ"));
 
         // Add request parameters documentation
-        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation
+        requestBuilderCustomizer.document(RequestDocumentation
                 .requestParameters(paramFilepath, paramState, paramProductId, paramChainId, paramFrom));
     }
 

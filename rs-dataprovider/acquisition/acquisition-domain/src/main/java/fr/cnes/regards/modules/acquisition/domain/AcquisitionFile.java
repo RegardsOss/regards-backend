@@ -37,10 +37,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Type;
-import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
@@ -188,5 +188,59 @@ public class AcquisitionFile {
 
     public void setFilePath(Path filePath) {
         this.filePath = filePath;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (acqDate == null ? 0 : acqDate.hashCode());
+        result = prime * result + (checksum == null ? 0 : checksum.hashCode());
+        result = prime * result + (checksumAlgorithm == null ? 0 : checksumAlgorithm.hashCode());
+        result = prime * result + (fileInfo == null ? 0 : fileInfo.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        AcquisitionFile other = (AcquisitionFile) obj;
+        if (acqDate == null) {
+            if (other.acqDate != null) {
+                return false;
+            }
+        } else if (!acqDate.equals(other.acqDate)) {
+            return false;
+        }
+        if (checksum == null) {
+            if (other.checksum != null) {
+                return false;
+            }
+        } else if (!checksum.equals(other.checksum)) {
+            return false;
+        }
+        if (checksumAlgorithm == null) {
+            if (other.checksumAlgorithm != null) {
+                return false;
+            }
+        } else if (!checksumAlgorithm.equals(other.checksumAlgorithm)) {
+            return false;
+        }
+        if (fileInfo == null) {
+            if (other.fileInfo != null) {
+                return false;
+            }
+        } else if (!fileInfo.equals(other.fileInfo)) {
+            return false;
+        }
+        return true;
     }
 }

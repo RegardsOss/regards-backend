@@ -36,9 +36,9 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
  */
 @Plugin(id = "FixedStorageSIPGeneration", version = "1.0.0",
         description = "Generate SIP by adding storage information configured in the miscInformation.storage section",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
         url = "https://github.com/RegardsOss")
-public class FixedStorageSIPGeneration extends AbstractMiscStorageInformation implements ISipGenerationPlugin {
+public class FixedStorageSIPGeneration extends AbstractStorageInformation implements ISipGenerationPlugin {
 
     @SuppressWarnings("unused")
     private static final Logger LOGGER = LoggerFactory.getLogger(FixedStorageSIPGeneration.class);
@@ -59,7 +59,7 @@ public class FixedStorageSIPGeneration extends AbstractMiscStorageInformation im
         }
 
         // Add optional storage information into misc section
-        addMiscStorageInfomation(sipBuilder);
+        addStorageInfomation(sipBuilder);
 
         // Add creation event
         sipBuilder.addEvent("Product SIP generation with fixed storage in misc section");

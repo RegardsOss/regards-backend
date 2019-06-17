@@ -46,7 +46,7 @@ import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
  */
 @Plugin(id = "CleanAndAcknowledgePlugin", version = "1.0.0-SNAPSHOT",
         description = "Optionally clean and/or create an acknowledgement for each product file",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin {
 
@@ -93,9 +93,8 @@ public class CleanAndAcknowledgePlugin implements ISipPostProcessingPlugin {
                     Files.delete(acqFile.getFilePath());
                 } catch (IOException e) {
                     // Skipping silently
-                    String msg = String
-                            .format("Deletion failure for product \"%s\" and  file \"%s\"", product.getProductName(),
-                                    acqFile.getFilePath().toString());
+                    String msg = String.format("Deletion failure for product \"%s\" and  file \"%s\"",
+                                               product.getProductName(), acqFile.getFilePath().toString());
                     LOGGER.warn(msg, e);
                 }
             });

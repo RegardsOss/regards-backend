@@ -18,7 +18,7 @@
  */
 package fr.cnes.regards.modules.acquisition.service.plugins;
 
-import java.util.List;
+import java.util.Set;
 import java.util.SortedMap;
 
 import org.slf4j.Logger;
@@ -42,18 +42,18 @@ import fr.cnes.regards.modules.ingest.domain.builder.SIPBuilder;
  * @author Christophe Mertz
  *
  */
-public abstract class AbstractGenerateSIPPlugin extends AbstractMiscStorageInformation
+public abstract class AbstractGenerateSIPPlugin extends AbstractStorageInformation
         implements ISIPGenerationPluginWithMetadataToolbox {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractGenerateSIPPlugin.class);
 
     private static final String PRODUCT_NAME = "product_name";
 
-    public static final String DATASET_SIP_ID = "datasetSipId";
+    public static final String CONFIGURATION_FILE = "configurationFile";
 
-    @PluginParameter(name = DATASET_SIP_ID, label = "Dataset provider identifier (i.e. SIP ID)",
-            description = "Also used for plugin configuration retrieval")
-    protected String datasetName;
+    @PluginParameter(name = CONFIGURATION_FILE, label = "Name of the XML configuration file",
+            description = "SSALTO plugins configuration file names are <DATASET>_PluginConfiguration.xml like <DA_TC_JASON2_PluginConfiguration.xml>")
+    protected String configurationFile;
 
     @Override
     public SIP generate(Product product) throws ModuleException {
@@ -74,12 +74,10 @@ public abstract class AbstractGenerateSIPPlugin extends AbstractMiscStorageInfor
         addAttributesTopSip(sipBuilder, mm);
 
         // Add misc information
-        addMiscStorageInfomation(sipBuilder);
+        addStorageInfomation(sipBuilder);
 
         // Add the SIP to the SIPCollection
         SIP aSip = sipBuilder.build();
-
-        addDatasetTag(aSip, datasetName);
 
         if (LOGGER.isDebugEnabled()) {
             Gson gson = new Gson();
@@ -98,9 +96,9 @@ public abstract class AbstractGenerateSIPPlugin extends AbstractMiscStorageInfor
         aSip.getProperties().setPdi(pdiBuilder.build());
     }
 
-    protected abstract void addAttributesTopSip(SIPBuilder sipBuilder, SortedMap<Integer, Attribute> mapAttrs)
+    public abstract void addAttributesTopSip(SIPBuilder sipBuilder, SortedMap<Integer, Attribute> mapAttrs)
             throws ModuleException;
 
-    protected abstract void addDataObjectsToSip(SIPBuilder sipBuilder, List<AcquisitionFile> acqFiles)
+    protected abstract void addDataObjectsToSip(SIPBuilder sipBuilder, Set<AcquisitionFile> acqFiles)
             throws ModuleException;
 }

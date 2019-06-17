@@ -24,7 +24,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import fr.cnes.regards.framework.microservice.annotation.MicroserviceInfo;
 
 /**
- * 
+ *
  * Start microservice dataprovider
  * @author Christophe Mertz
  *

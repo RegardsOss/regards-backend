@@ -22,7 +22,6 @@ import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import fr.cnes.regards.modules.ingest.client.IIngestClient;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 
 /**
@@ -31,11 +30,6 @@ import fr.cnes.regards.modules.notification.client.INotificationClient;
  */
 @Configuration
 public class IngestClientMockConfiguration {
-
-    @Bean
-    public IIngestClient ingestClient() {
-        return new IngestClientMock();
-    }
 
     @Bean
     public INotificationClient notificationClient() {

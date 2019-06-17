@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.acquisition.plugins.IProductPlugin;
  */
 @Plugin(id = "DefaultProductPlugin", version = "1.0.0-SNAPSHOT",
         description = "Compute the product name from filename optionnaly removing extension or/and truncating product name",
-        author = "REGARDS Team", contact = "regards@c-s.fr", licence = "LGPLv3.0", owner = "CSSI",
+        author = "REGARDS Team", contact = "regards@c-s.fr", license = "GPLv3", owner = "CSSI",
         url = "https://github.com/RegardsOss")
 public class DefaultProductPlugin implements IProductPlugin {
 
