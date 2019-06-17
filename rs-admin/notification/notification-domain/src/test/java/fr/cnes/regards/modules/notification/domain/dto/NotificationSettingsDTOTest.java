@@ -71,9 +71,9 @@ public class NotificationSettingsDTOTest {
     @Requirement("?")
     @Purpose("Check the POJO getters/setters.")
     public void testGettersSetters() {
-        Assert.assertTrue(dto.getDays().equals(DAYS));
-        Assert.assertTrue(dto.getHours().equals(HOURS));
-        Assert.assertTrue(dto.getFrequency().equals(FREQUENCY));
+        Assert.assertEquals(dto.getDays(), DAYS);
+        Assert.assertEquals(dto.getHours(), HOURS);
+        Assert.assertEquals(dto.getFrequency(), FREQUENCY);
     }
 
 }

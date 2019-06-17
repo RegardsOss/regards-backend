@@ -25,22 +25,23 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractDaoTransactionalTest;
+import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
-import fr.cnes.regards.modules.notification.domain.NotificationType;
 
 /**
  * @author Christophe Mertz
  *
  */
-@Ignore("Fix multitenant and instance conflicts")
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema:notif_dao" })
 @ContextConfiguration(classes = { NotificationDaoTestConfig.class })
 public class NotificationDaoIT extends AbstractDaoTransactionalTest {
@@ -50,7 +51,7 @@ public class NotificationDaoIT extends AbstractDaoTransactionalTest {
 
     @Test
     public void createNotification() {
-        Assert.assertTrue(notificationRepository.count() == 0);
+        Assert.assertEquals(0, notificationRepository.count());
 
         // create a new Notification
         final Notification notif = getNotification("Hello world!", "Bob", NotificationStatus.UNREAD);
@@ -66,12 +67,12 @@ public class NotificationDaoIT extends AbstractDaoTransactionalTest {
 
         // Save the notification
         final Notification notifSaved = notificationRepository.save(notif);
-        Assert.assertTrue(notificationRepository.count() == 1);
+        Assert.assertEquals(1, notificationRepository.count());
 
         Assert.assertNotNull(notifSaved);
         Assert.assertNotNull(notifSaved.getId());
 
-        Assert.assertNotNull(notificationRepository.findOne(notifSaved.getId()));
+        Assert.assertTrue(notificationRepository.findById(notifSaved.getId()).isPresent());
 
         // create a second notification
         final Notification secondNotif = getNotification("Hello Paris!", "jack", NotificationStatus.UNREAD);
@@ -84,7 +85,7 @@ public class NotificationDaoIT extends AbstractDaoTransactionalTest {
 
         // Save the notification
         notificationRepository.save(secondNotif);
-        Assert.assertTrue(notificationRepository.count() == 2);
+        Assert.assertEquals(2, notificationRepository.count());
 
     }
 
@@ -93,7 +94,7 @@ public class NotificationDaoIT extends AbstractDaoTransactionalTest {
         notif.setMessage(pMessage);
         notif.setSender(pSender);
         notif.setStatus(pStatus);
-        notif.setType(NotificationType.INFO);
+        notif.setLevel(NotificationLevel.INFO);
         return notif;
     }
 
@@ -101,5 +102,21 @@ public class NotificationDaoIT extends AbstractDaoTransactionalTest {
     public void testUpdateAll() {
         notificationRepository.updateAllNotificationStatusByRole(NotificationStatus.READ.toString(), "ADMIN");
         notificationRepository.updateAllNotificationStatusByUser(NotificationStatus.READ.toString(), "regards@c-s.fr");
+    }
+
+    @Test
+    public void testRetrievePage() {
+        //create 2 UNREAD notification
+        createNotification();
+        // create read notification
+        final Notification readNotif = getNotification("Hello READ!", "Rid", NotificationStatus.READ);
+        readNotif.setProjectUserRecipients(Sets.newHashSet("read-regards@c-s.fr"));
+        readNotif.setRoleRecipients(Sets.newHashSet(DefaultRole.PROJECT_ADMIN.name()));
+        notificationRepository.save(readNotif);
+
+        // now lets retrieve them by status
+        Page<Notification> notifPage = notificationRepository.findByStatusAndRecipientsContaining(NotificationStatus.UNREAD, "jo-regards@c-s.fr", DefaultRole.PUBLIC.toString(),
+                                                                                      PageRequest.of(0,20));
+        Assert.assertTrue("There should be 2 notification: 2 notifications UNREAD for role PUBLIC", notifPage.getTotalElements() == 2);
     }
 }

@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.accessrights.service.projectuser.workflow.listeners;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,50 +27,34 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriUtils;
 
 import feign.FeignException;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.modules.accessrights.domain.emailverification.EmailVerificationToken;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.service.projectuser.emailverification.IEmailVerificationTokenService;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnGrantAccessEvent;
-import fr.cnes.regards.modules.emails.client.IEmailClient;
+import fr.cnes.regards.modules.emails.service.IEmailService;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
-import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
+import freemarker.template.TemplateException;
 
 /**
  * Listen to {@link OnGrantAccessEvent} in order to warn the user its account request was refused.
- *
  * @author Xavier-Alexandre Brochard
  */
 @Component
 public class SendVerificationEmailListener implements ApplicationListener<OnGrantAccessEvent> {
 
-    /**
-     * Class logger
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(SendVerificationEmailListener.class);
 
-    /**
-     * Service handling CRUD operations on email templates
-     */
     private final ITemplateService templateService;
 
-    /**
-     * Client for sending emails
-     */
-    private final IEmailClient emailClient;
+    private final IEmailService emailService;
 
-    /**
-     * Account service
-     */
     private final IAccountsClient accountsClient;
 
     /**
@@ -79,34 +62,22 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
      */
     private final IEmailVerificationTokenService emailVerificationTokenService;
 
-    /**
-     * @param pTemplateService
-     * @param pEmailClient
-     * @param accountsClient
-     * @param pEmailVerificationTokenService
-     */
-    public SendVerificationEmailListener(ITemplateService pTemplateService, IEmailClient pEmailClient,
-            IAccountsClient accountsClient, IEmailVerificationTokenService pEmailVerificationTokenService) {
+    public SendVerificationEmailListener(ITemplateService templateService, IEmailService emailService,
+            IAccountsClient accountsClient, IEmailVerificationTokenService emailVerificationTokenService) {
         super();
-        templateService = pTemplateService;
-        emailClient = pEmailClient;
+        this.templateService = templateService;
+        this.emailService = emailService;
         this.accountsClient = accountsClient;
-        emailVerificationTokenService = pEmailVerificationTokenService;
+        this.emailVerificationTokenService = emailVerificationTokenService;
     }
 
-    /**
-     * Send a password reset email based on information stored in the passed event
-     *
-     * @param pEvent
-     *            the init event
-     */
     @Override
-    public void onApplicationEvent(final OnGrantAccessEvent pEvent) {
+    public void onApplicationEvent(final OnGrantAccessEvent event) {
         // Retrieve the project user
-        ProjectUser projectUser = pEvent.getProjectUser();
+        ProjectUser projectUser = event.getProjectUser();
 
         // Retrieve the address
-        String address = projectUser.getEmail();
+        String userEmail = projectUser.getEmail();
 
         // Retrieve the token
         EmailVerificationToken token;
@@ -116,9 +87,6 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
             LOGGER.error("Could not retrieve the verification token. Aborting the email sending.", e);
             return;
         }
-
-        // Build the list of recipients
-        String[] recipients = { address };
 
         // Create a hash map in order to store the data to inject in the mail
         Map<String, String> data = new HashMap<>();
@@ -143,46 +111,21 @@ public class SendVerificationEmailListener implements ApplicationListener<OnGran
         } else {
             linkUrlTemplate = "%s?origin_url=%s&token=%s&account_email=%s";
         }
-        String confirmationUrl;
-        try {
-            confirmationUrl = String.format(linkUrlTemplate, token.getRequestLink(),
-                                            UriUtils.encode(token.getOriginUrl(), StandardCharsets.UTF_8.name()),
-                                            token.getToken(), address);
-            data.put("confirmationUrl", confirmationUrl);
-        } catch (UnsupportedEncodingException e) {
-            LOGGER.error("This system does not support UTF-8", e);
-            throw new RsRuntimeException(e);
-        }
+        String confirmationUrl = String.format(linkUrlTemplate,
+                                               token.getRequestLink(),
+                                               UriUtils.encode(token.getOriginUrl(), StandardCharsets.UTF_8.name()),
+                                               token.getToken(),
+                                               userEmail);
+        data.put("confirmationUrl", confirmationUrl);
 
-        SimpleMailMessage email;
+        String message;
         try {
-            email = templateService.writeToEmail(TemplateServiceConfiguration.EMAIL_ACCOUNT_VALIDATION_TEMPLATE_CODE,
-                                                 data, recipients);
-        } catch (final EntityNotFoundException e) {
+            message = templateService.render(AccessRightTemplateConf.EMAIL_ACCOUNT_VALIDATION_TEMPLATE_NAME, data);
+        } catch (TemplateException e) {
             LOGGER.warn("Could not find the template for registration confirmation. Falling back to default template.",
                         e);
-            email = writeToEmailDefault(data, recipients);
+            message = "Please click on the following link to confirm your registration: " + data.get("confirmationUrl");
         }
-
-        // Send it
-        FeignSecurityManager.asSystem();
-        emailClient.sendEmail(email);
-        FeignSecurityManager.reset();
+        emailService.sendEmail(message, "[REGARDS] Account Confirmation", null, userEmail);
     }
-
-    /**
-     * Send super simple mail in case the template service fails
-     * @param data the data
-     * @param recipients the recipients
-     * @return the result email
-     */
-    private SimpleMailMessage writeToEmailDefault(Map<String, String> data, String[] recipients) {
-        SimpleMailMessage email = new SimpleMailMessage();
-        email.setTo(recipients);
-        email.setSubject("REGARDS - Registration Confirmation");
-        email.setText("Please click on the following link to confirm your registration: "
-                + data.get("confirmationUrl"));
-        return email;
-    }
-
 }

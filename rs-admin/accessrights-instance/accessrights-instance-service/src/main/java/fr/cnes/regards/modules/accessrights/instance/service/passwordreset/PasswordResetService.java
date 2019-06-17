@@ -36,7 +36,6 @@ import fr.cnes.regards.modules.accessrights.instance.service.encryption.Encrypti
 
 /**
  * {@link IPasswordResetService} implementation.
- *
  * @author Xavier-Alexandre Brochard
  */
 @Service
@@ -57,62 +56,52 @@ public class PasswordResetService implements IPasswordResetService {
 
     /**
      * Creates a new instance with passed deps
-     *
-     * @param pTokenRepository
-     *            The verif token repository
-     * @param pAccountService
-     *            The account service
+     * @param pTokenRepository The verif token repository
+     * @param pAccountService The account service
      */
-    public PasswordResetService(final IPasswordResetTokenRepository pTokenRepository,
-            final IAccountService pAccountService) {
-        super();
+    public PasswordResetService(IPasswordResetTokenRepository pTokenRepository, IAccountService pAccountService) {
         tokenRepository = pTokenRepository;
         accountService = pAccountService;
     }
 
     @Override
-    public PasswordResetToken getPasswordResetToken(final String pToken) throws EntityNotFoundException {
+    public PasswordResetToken getPasswordResetToken(String pToken) throws EntityNotFoundException {
         return tokenRepository.findByToken(pToken)
                 .orElseThrow(() -> new EntityNotFoundException(pToken, PasswordResetToken.class));
     }
 
     @Override
-    public void createPasswordResetToken(final Account pAccount, final String pToken) {
-        final Optional<PasswordResetToken> currentToken = tokenRepository.findByAccount(pAccount);
+    public void createPasswordResetToken(Account pAccount, String pToken) {
+        Optional<PasswordResetToken> currentToken = tokenRepository.findByAccount(pAccount);
         if (currentToken.isPresent()) {
-            final PasswordResetToken token = currentToken.get();
+            PasswordResetToken token = currentToken.get();
             token.updateToken(pToken);
             tokenRepository.save(token);
         } else {
-            final PasswordResetToken token = new PasswordResetToken(pToken, pAccount);
+            PasswordResetToken token = new PasswordResetToken(pToken, pAccount);
             tokenRepository.save(token);
         }
     }
 
     @Override
-    public void performPasswordReset(final String pAccountEmail, final String pResetCode, final String pNewPassword)
+    public void performPasswordReset(String pAccountEmail, String pResetCode, String pNewPassword)
             throws EntityException {
-        final Account account = accountService.retrieveAccountByEmail(pAccountEmail);
+        Account account = accountService.retrieveAccountByEmail(pAccountEmail);
         validatePasswordResetToken(pAccountEmail, pResetCode);
         accountService.changePassword(account.getId(), EncryptionUtils.encryptPassword(pNewPassword));
     }
 
     /**
      * Validate the password reset token
-     *
-     * @param pAccountEmail
-     *            the account email
-     * @param pToken
-     *            the token to validate
-     * @throws EntityOperationForbiddenException
-     *             Thrown if: - token does not exists - is not linked to the passed account - is expired
+     * @param pAccountEmail the account email
+     * @param pToken the token to validate
+     * @throws EntityOperationForbiddenException Thrown if: - token does not exists - is not linked to the passed account - is expired
      */
-    private void validatePasswordResetToken(final String pAccountEmail, final String pToken)
+    private void validatePasswordResetToken(String pAccountEmail, String pToken)
             throws EntityOperationForbiddenException {
         // Retrieve the token object
-        final PasswordResetToken passToken = tokenRepository.findByToken(pToken)
-                .orElseThrow(() -> new EntityOperationForbiddenException(pToken, PasswordResetToken.class,
-                        "Token does not exist"));
+        PasswordResetToken passToken = tokenRepository.findByToken(pToken).orElseThrow(
+                () -> new EntityOperationForbiddenException(pToken, PasswordResetToken.class, "Token does not exist"));
 
         // Check same account
         if (!passToken.getAccount().getEmail().equals(pAccountEmail)) {
@@ -126,11 +115,9 @@ public class PasswordResetService implements IPasswordResetService {
     }
 
     @Override
-    public void deletePasswordResetTokenForAccount(final Account pAccount) {
-        final Optional<PasswordResetToken> token = tokenRepository.findByAccount(pAccount);
-        if (token.isPresent()) {
-            tokenRepository.delete(token.get());
-        }
+    public void deletePasswordResetTokenForAccount(Account pAccount) {
+        Optional<PasswordResetToken> token = tokenRepository.findByAccount(pAccount);
+        token.ifPresent(tokenRepository::delete);
     }
 
 }

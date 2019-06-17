@@ -57,7 +57,7 @@ public class AccessSettingsTest {
     @Test
     public void testHashCode() {
         final AccessSettings testAccess = new AccessSettings();
-        Assert.assertFalse(testAccess.hashCode() == accessSettings.hashCode());
+        Assert.assertNotEquals(testAccess.hashCode(), accessSettings.hashCode());
     }
 
     /**
@@ -66,7 +66,7 @@ public class AccessSettingsTest {
     @Test
     public void testAccessSettings() {
         final AccessSettings accessTest = new AccessSettings();
-        Assert.assertEquals(null, accessTest.getId());
+        Assert.assertNull(accessTest.getId());
         Assert.assertEquals(AccessSettings.AUTO_ACCEPT_MODE, accessTest.getMode());
     }
 
@@ -115,8 +115,7 @@ public class AccessSettingsTest {
     @Test
     public void testEqualsObject() {
         final AccessSettings testAccess = new AccessSettings();
-        Assert.assertFalse(accessSettings.equals(testAccess));
-        Assert.assertTrue(testAccess.equals(testAccess));
+        Assert.assertNotEquals(accessSettings, testAccess);
     }
 
 }

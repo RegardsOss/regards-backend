@@ -39,9 +39,6 @@ public class RecipientTest {
      */
     private final String address = "adress";
 
-    /**
-     * @throws java.lang.Exception
-     */
     @Before
     public void setUp() {
         recipient.setAddress(address);

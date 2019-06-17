@@ -26,11 +26,13 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -67,6 +69,9 @@ public class EmailService extends AbstractEmailService {
      * Spring Framework interface for sending email
      */
     private final JavaMailSender mailSender;
+
+    @Value("${spring.mail.sender.no.reply:regards@noreply.fr}")
+    private String defaultSender;
 
     /**
      * Creates an {@link EmailService} wired to the given {@link IEmailRepository}.
@@ -108,11 +113,11 @@ public class EmailService extends AbstractEmailService {
 
     @Override
     public Email retrieveEmail(final Long id) throws ModuleException {
-        final Email email = emailRepository.findOne(id);
-        if (email == null) {
+        Optional<Email> emailOpt = emailRepository.findById(id);
+        if (!emailOpt.isPresent()) {
             throw new EntityNotFoundException(id, Email.class);
         }
-        return email;
+        return emailOpt.get();
     }
 
     @Override
@@ -124,12 +129,12 @@ public class EmailService extends AbstractEmailService {
 
     @Override
     public void deleteEmail(final Long id) {
-        emailRepository.delete(id);
+        emailRepository.deleteById(id);
     }
 
     @Override
     public boolean exists(final Long id) {
-        return emailRepository.exists(id);
+        return emailRepository.existsById(id);
     }
 
     /**
@@ -165,22 +170,22 @@ public class EmailService extends AbstractEmailService {
     /**
      * Create a domain {@link Email} with same content as the passed {@link SimpleMailMessage} in order to save it in
      * db.
-     * @param pMessage The message
+     * @param message The message
      * @return The savable email
      */
-    private Email createEmailFromSimpleMailMessage(final SimpleMailMessage pMessage, String attName,
+    private Email createEmailFromSimpleMailMessage(final SimpleMailMessage message, String attName,
             InputStreamSource source) {
         final Email email = new Email();
-        email.setBcc(pMessage.getBcc());
-        email.setCc(pMessage.getCc());
-        email.setFrom(pMessage.getFrom());
-        email.setReplyTo(pMessage.getReplyTo());
-        if (pMessage.getSentDate() != null) {
-            email.setSentDate(LocalDateTime.ofInstant(pMessage.getSentDate().toInstant(), ZoneId.systemDefault()));
+        email.setBcc(message.getBcc());
+        email.setCc(message.getCc());
+        email.setFrom(message.getFrom() == null? defaultSender: message.getFrom());
+        email.setReplyTo(message.getReplyTo());
+        if (message.getSentDate() != null) {
+            email.setSentDate(LocalDateTime.ofInstant(message.getSentDate().toInstant(), ZoneId.systemDefault()));
         }
-        email.setSubject(pMessage.getSubject());
-        email.setText(pMessage.getText());
-        email.setTo(pMessage.getTo());
+        email.setSubject(message.getSubject());
+        email.setText(message.getText());
+        email.setTo(message.getTo());
 
         if ((attName != null) && (source != null)) {
             try {

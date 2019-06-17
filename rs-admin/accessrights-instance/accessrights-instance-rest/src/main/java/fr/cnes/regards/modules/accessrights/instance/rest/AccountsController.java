@@ -71,7 +71,7 @@ import fr.cnes.regards.modules.accessrights.instance.service.workflow.state.IAcc
  * database
  * @author Sébastien Binda
  * @author Christophe Mertz
- * @since 1.0-SNAPSHOT
+
  */
 @RestController
 @RequestMapping(AccountsController.TYPE_MAPPING)
@@ -325,7 +325,7 @@ public class AccountsController implements IResourceController<Account> {
     /**
      * Change the password of an {@link Account}.
      * @param accountEmail The {@link Account}'s <code>email</code>
-     * @param pDto The DTO containing : 1) the token 2) the new password
+     * @param changePasswordDto The DTO containing : 1) the token 2) the new password
      * @return void
      * @throws EntityException <br>
      *                         {@link EntityOperationForbiddenException} when the token is invalid<br>
@@ -339,7 +339,7 @@ public class AccountsController implements IResourceController<Account> {
         final Account toReset = accountService.retrieveAccountByEmail(accountEmail);
         if (!authResolver.getUser().equals(accountEmail)
                 && !accountService.validatePassword(accountEmail, changePasswordDto.getOldPassword(), false)) {
-            return new ResponseEntity<Void>(HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         accountService.validPassword(changePasswordDto.getNewPassword());
         accountService.changePassword(toReset.getId(),
@@ -478,7 +478,7 @@ public class AccountsController implements IResourceController<Account> {
      * @return <code>void</code> wrapped in a {@link ResponseEntity}
      */
     @RequestMapping(value = REFUSE_ACCOUNT_RELATIVE_PATH, method = RequestMethod.PUT)
-    @ResourceAccess(description = "Accepts the access request", role = DefaultRole.INSTANCE_ADMIN)
+    @ResourceAccess(description = "Refuses the access request", role = DefaultRole.INSTANCE_ADMIN)
     public ResponseEntity<Void> refuseAccount(@PathVariable("account_email") String accountEmail)
             throws EntityException {
         // Retrieve the account
@@ -492,7 +492,7 @@ public class AccountsController implements IResourceController<Account> {
     @Override
     public Resource<Account> toResource(Account element, final Object... extras) {
         Resource<Account> resource = null;
-        if ((element != null) && (element.getId() != null)) {
+        if (element != null && element.getId() != null) {
             resource = resourceService.toResource(element);
             // Self retrieve link
             resourceService.addLink(resource, this.getClass(), "retrieveAccount", LinkRels.SELF,
@@ -588,6 +588,7 @@ public class AccountsController implements IResourceController<Account> {
         /**
          * @return the rules
          */
+        @SuppressWarnings("unused")
         public String getRules() {
             return rules;
         }
@@ -595,6 +596,7 @@ public class AccountsController implements IResourceController<Account> {
         /**
          * Set the rules
          */
+        @SuppressWarnings("unused")
         public void setRules(String rules) {
             this.rules = rules;
         }

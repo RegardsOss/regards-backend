@@ -31,9 +31,9 @@ import fr.cnes.regards.framework.utils.RsRuntimeException;
  * Tools to encrypt passwords.
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
-public class EncryptionUtils {
+public final class EncryptionUtils {
 
     /**
      * Encryption algorithm
@@ -52,7 +52,7 @@ public class EncryptionUtils {
      * @param pPassword
      *            to encrypt
      * @return Encrypted password
-     * @since 1.0-SNAPSHOT
+
      */
     public static String encryptPassword(final String pPassword) {
         try {

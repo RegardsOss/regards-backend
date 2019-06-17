@@ -32,7 +32,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
  *
  * Standard function of mail service to handle sending mails.
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 public abstract class AbstractEmailService implements IEmailService {
 
@@ -46,7 +46,7 @@ public abstract class AbstractEmailService implements IEmailService {
     /**
      * Class logger
      * @return {@link Logger}
-     * @since 1.0-SNAPSHOT
+
      */
     protected abstract Logger getLogger();
 
@@ -54,7 +54,7 @@ public abstract class AbstractEmailService implements IEmailService {
      * Send the given mail thanks to the java mail sender get by the static getMailSender method
      * @param message {@link SimpleMailMessage} mail to send
      * @return {@link SimpleMailMessage} sent
-     * @since 1.0-SNAPSHOT
+
      */
     public SimpleMailMessage sendMailWithSender(final SimpleMailMessage message) {
         return sendMailWithSender(message, null, null);
@@ -64,7 +64,7 @@ public abstract class AbstractEmailService implements IEmailService {
      * Send the given mail thanks to the java mail sender get by the static getMailSender method
      * @param message {@link SimpleMailMessage} mail to send
      * @return {@link SimpleMailMessage} sent
-     * @since 1.0-SNAPSHOT
+
      */
     public SimpleMailMessage sendMailWithSender(final SimpleMailMessage message, String attachmentName,
             InputStreamSource attSource) {

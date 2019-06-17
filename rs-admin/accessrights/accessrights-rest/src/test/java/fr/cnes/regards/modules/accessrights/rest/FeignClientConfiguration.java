@@ -18,13 +18,15 @@
  */
 package fr.cnes.regards.modules.accessrights.rest;
 
+import javax.mail.internet.MimeMessage;
+
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.mail.javamail.JavaMailSender;
 
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
-import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
@@ -35,8 +37,10 @@ import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 public class FeignClientConfiguration {
 
     @Bean
-    public IEmailClient emailClient() {
-        return Mockito.mock(IEmailClient.class);
+    public JavaMailSender mockSender() {
+        final JavaMailSender mailSender = Mockito.mock(JavaMailSender.class);
+        Mockito.when(mailSender.createMimeMessage()).thenReturn(Mockito.mock(MimeMessage.class));
+        return mailSender;
     }
 
     @Bean

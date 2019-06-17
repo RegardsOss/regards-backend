@@ -51,7 +51,7 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>notification</artifactId>
-		<version>3.0.0-RELEASE</version>
+		<version>0.4.0</version>
 	</parent>
 
 	<dependencies>
@@ -75,12 +75,12 @@
 		<!-- Module email -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.emails</groupId>
-			<artifactId>emails-client</artifactId>
+			<artifactId>emails-service</artifactId>
 		</dependency>
 		<!-- Module accessrights -->
 		<dependency>
 			<groupId>fr.cnes.regards.modules.accessrights</groupId>
-			<artifactId>accessrights-client</artifactId>
+			<artifactId>accessrights-service</artifactId>
 		</dependency>
 		<!-- Tests -->
 		<dependency>

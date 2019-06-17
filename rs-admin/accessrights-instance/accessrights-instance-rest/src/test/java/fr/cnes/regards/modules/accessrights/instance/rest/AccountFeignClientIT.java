@@ -83,7 +83,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve all accounts.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Ignore
     @Test
@@ -91,7 +91,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
         try {
             final ResponseEntity<PagedResources<Resource<Account>>> accounts = accountsClient.retrieveAccountList(0,
                                                                                                                   10);
-            Assert.assertTrue(accounts.getStatusCode().equals(HttpStatus.OK));
+            Assert.assertEquals(accounts.getStatusCode(), HttpStatus.OK);
         } catch (final Exception e) {
             LOG.error(e.getMessage(), e);
             Assert.fail(e.getMessage());
@@ -102,7 +102,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can create an account.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Ignore
     @Test
@@ -111,7 +111,7 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
             final Account account = new Account(MAIL_TEST, "feign", "feign", "password");
             AccountNPassword accountNPassword = new AccountNPassword(account, account.getPassword());
             final ResponseEntity<Resource<Account>> response = accountsClient.createAccount(accountNPassword);
-            Assert.assertTrue(response.getStatusCode().equals(HttpStatus.CREATED));
+            Assert.assertEquals(response.getStatusCode(), HttpStatus.CREATED);
         } catch (final Exception e) {
             LOG.error(e.getMessage(), e);
             Assert.fail(e.getMessage());
@@ -122,16 +122,16 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can update an account.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     @Ignore
     public void updateAccountFromFeignClient() {
         try {
             final Account account = new Account("feign@user.com", "feign", "feign", "password");
-            account.setId(new Long(150));
-            final ResponseEntity<Resource<Account>> response = accountsClient.updateAccount(new Long(150), account);
-            Assert.assertTrue(response.getStatusCode().equals(HttpStatus.NOT_FOUND));
+            account.setId(150L);
+            final ResponseEntity<Resource<Account>> response = accountsClient.updateAccount(150L, account);
+            Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
         } catch (final Exception e) {
             LOG.error(e.getMessage(), e);
             Assert.fail(e.getMessage());
@@ -142,14 +142,14 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can update an account.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     @Ignore
     public void removeAccountFromFeignClient() {
         try {
-            final ResponseEntity<Void> response = accountsClient.removeAccount(new Long(150));
-            Assert.assertTrue(response.getStatusCode().equals(HttpStatus.NOT_FOUND));
+            final ResponseEntity<Void> response = accountsClient.removeAccount(150L);
+            Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
         } catch (final Exception e) {
             LOG.error(e.getMessage(), e);
             Assert.fail(e.getMessage());
@@ -160,14 +160,14 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve an account.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     @Ignore
     public void retrieveAccountFromFeignClient() {
         try {
-            final ResponseEntity<Resource<Account>> response = accountsClient.retrieveAccount(new Long(150));
-            Assert.assertTrue(response.getStatusCode().equals(HttpStatus.NOT_FOUND));
+            final ResponseEntity<Resource<Account>> response = accountsClient.retrieveAccount(150L);
+            Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
         } catch (final Exception e) {
             LOG.error(e.getMessage(), e);
             Assert.fail(e.getMessage());
@@ -178,14 +178,14 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve an account.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     @Ignore
     public void retrieveAccountByEmailFromFeignClient() {
         try {
             final ResponseEntity<Resource<Account>> response = accountsClient.retrieveAccounByEmail("email@unkown.fr");
-            Assert.assertTrue(response.getStatusCode().equals(HttpStatus.NOT_FOUND));
+            Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
         } catch (final Exception e) {
             LOG.error(e.getMessage(), e);
             Assert.fail(e.getMessage());
@@ -196,14 +196,14 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve an account.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     @Ignore
     public void unlockAccountFromFeignClient() {
         try {
-            final ResponseEntity<Void> response = accountsClient.unlockAccount(new Long(150), "unlock_code");
-            Assert.assertTrue(response.getStatusCode().equals(HttpStatus.NOT_FOUND));
+            final ResponseEntity<Void> response = accountsClient.unlockAccount(150L, "unlock_code");
+            Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
         } catch (final Exception e) {
             LOG.error(e.getMessage(), e);
             Assert.fail(e.getMessage());
@@ -214,15 +214,15 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve an account.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     @Ignore
     public void sendAccountCodeFromFeignClient() {
         try {
-            jwtService.injectToken(DEFAULT_TENANT, DefaultRole.REGISTERED_USER.toString(), "", "");
+            jwtService.injectToken(getDefaultTenant(), DefaultRole.REGISTERED_USER.toString(), "", "");
             final ResponseEntity<Void> response = accountsClient.sendAccountCode("email@unkown.fr", CodeType.UNLOCK);
-            Assert.assertTrue(response.getStatusCode().equals(HttpStatus.NOT_FOUND));
+            Assert.assertEquals(response.getStatusCode(), HttpStatus.NOT_FOUND);
         } catch (final Exception e) {
             LOG.error(e.getMessage(), e);
             Assert.fail(e.getMessage());
@@ -233,13 +233,13 @@ public class AccountFeignClientIT extends AbstractRegardsWebIT {
      *
      * Check that the accounts Feign Client can retrieve an account.
      *
-     * @since 1.0-SNAPSHOT
+
      */
     @Test
     public void validatePasswordFromFeignClient() {
         try {
             final ResponseEntity<Boolean> response = accountsClient.validatePassword("email@unkown.fr", "password");
-            Assert.assertTrue(response.getStatusCode().equals(HttpStatus.OK));
+            Assert.assertEquals(response.getStatusCode(), HttpStatus.OK);
             Assert.assertFalse(response.getBody());
         } catch (final Exception e) {
             LOG.error(e.getMessage(), e);

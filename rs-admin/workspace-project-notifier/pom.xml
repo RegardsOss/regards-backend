@@ -3,14 +3,14 @@
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-parent</artifactId>
-        <version>3.0.0-RELEASE</version>
+        <version>0.4.0</version>
         <relativePath/>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fr.cnes.regards.modules.workspace</groupId>
     <artifactId>workspace-project-notifier</artifactId>
-    <version>3.0.0-RELEASE</version>
+    <version>0.4.0</version>
     <packaging>jar</packaging>
 
     <name>workspace-project-notifier</name>

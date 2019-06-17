@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.modules.accessrights.client;
 
-import javax.validation.Valid;
 import java.util.List;
+
+import javax.validation.Valid;
 
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -41,7 +42,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
  * @author Marc Sordi
  *
  */
-@RestClient(name = "rs-admin")
+@RestClient(name = "rs-admin", contextId = "rs-admin.ms-resources-client")
 @RequestMapping(value = IMicroserviceResourceClient.TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IMicroserviceResourceClient {
@@ -49,17 +50,17 @@ public interface IMicroserviceResourceClient {
     /**
      * Controller base mapping
      */
-    public static final String TYPE_MAPPING = "/resources/microservices/{microservicename}";
+    String TYPE_MAPPING = "/resources/microservices/{microservicename}";
 
     /**
      * Root to retreive resources by microservice and controller name
      */
-    public static final String CONTROLLERS_MAPPING = "/controllers";
+    String CONTROLLERS_MAPPING = "/controllers";
 
     /**
      * Root to retreive resources by microservice and controller name
      */
-    public static final String CONTROLLER_MAPPING = CONTROLLERS_MAPPING + "/{controllername}";
+    String CONTROLLER_MAPPING = CONTROLLERS_MAPPING + "/{controllername}";
 
     /**
      * Retrieve the resource accesses available to the user of the given microservice
@@ -73,7 +74,7 @@ public interface IMicroserviceResourceClient {
      * @return list of user resource accesses for given microservice
      */
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<PagedResources<Resource<ResourcesAccess>>> getAllResourceAccessesByMicroservice(
+    ResponseEntity<PagedResources<Resource<ResourcesAccess>>> getAllResourceAccessesByMicroservice(
             @PathVariable("microservicename") final String pMicroserviceName, @RequestParam("page") int pPage,
             @RequestParam("size") int pSize);
 
@@ -86,8 +87,7 @@ public interface IMicroserviceResourceClient {
      * @return {@link Void}
      */
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<Void> registerMicroserviceEndpoints(
-            @PathVariable("microservicename") final String pMicroserviceName,
+    ResponseEntity<Void> registerMicroserviceEndpoints(@PathVariable("microservicename") final String pMicroserviceName,
             @RequestBody @Valid final List<ResourceMapping> pResourcesToRegister);
 
     /**
@@ -98,7 +98,7 @@ public interface IMicroserviceResourceClient {
      * @return list of all controllers associated to the specified microservice
      */
     @RequestMapping(method = RequestMethod.GET, value = CONTROLLERS_MAPPING)
-    public ResponseEntity<List<String>> retrieveMicroserviceControllers(
+    ResponseEntity<List<String>> retrieveMicroserviceControllers(
             @PathVariable("microservicename") final String pMicroserviceName);
 
     /**
@@ -111,7 +111,7 @@ public interface IMicroserviceResourceClient {
      * @return List of accessible resources for the specified microservice and controller
      */
     @RequestMapping(method = RequestMethod.GET, value = CONTROLLER_MAPPING)
-    public ResponseEntity<List<Resource<ResourcesAccess>>> retrieveMicroserviceControllerEndpoints(
+    ResponseEntity<List<Resource<ResourcesAccess>>> retrieveMicroserviceControllerEndpoints(
             @PathVariable("microservicename") final String pMicroserviceName,
             @PathVariable("controllername") final String pControllerName);
 

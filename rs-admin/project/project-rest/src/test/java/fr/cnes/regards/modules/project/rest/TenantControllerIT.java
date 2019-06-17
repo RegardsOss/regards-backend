@@ -31,7 +31,6 @@ import fr.cnes.regards.framework.jpa.instance.transactional.InstanceTransactiona
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
@@ -40,13 +39,10 @@ import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
 /**
- *
  * Class TenantControllerIT
  *
  * Tests for REST endpoints to access tenant entities.
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 @InstanceTransactional
 @ContextConfiguration(classes = { LicenseConfiguration.class })
@@ -100,24 +96,18 @@ public class TenantControllerIT extends AbstractRegardsIT {
     }
 
     /**
-     *
      * Check REST Access to project resources and Hateoas returned links
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_ADM_INST_130")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access to project resources and returned Hateoas links")
     @Test
     public void retrievePublicProjectsTest() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT, Matchers.hasSize(1)));
-        requestBuilderCustomizer
-                .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT, Matchers.contains(ACTIVE_PROJECT_NAME)));
         performGet(TenantController.BASE_PATH + TenantController.MICROSERVICE_PATH, instanceAdmintoken,
-                   requestBuilderCustomizer, "error", TEST_MS);
+                   customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT).expectToHaveSize(JSON_PATH_ROOT, 1)
+                           .expect(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT,
+                                                                  Matchers.contains(ACTIVE_PROJECT_NAME))),
+                   "error", TEST_MS);
     }
 
 }

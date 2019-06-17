@@ -34,7 +34,6 @@ import fr.cnes.regards.framework.hateoas.IResourceController;
 import fr.cnes.regards.framework.hateoas.IResourceService;
 import fr.cnes.regards.framework.hateoas.LinkRels;
 import fr.cnes.regards.framework.hateoas.MethodParamFactory;
-import fr.cnes.regards.framework.module.annotation.ModuleInfo;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.annotation.ResourceAccess;
 import fr.cnes.regards.framework.security.role.DefaultRole;
@@ -46,11 +45,9 @@ import fr.cnes.regards.modules.accessrights.instance.service.IAccountSettingsSer
  *
  * REST Controller to manage accounts global settings
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @RestController
-@ModuleInfo(name = "users", version = "1.0-SNAPSHOT", author = "REGARDS", legalOwner = "CS",
-        documentation = "http://test")
 @RequestMapping(path = AccountSettingsController.REQUEST_MAPPING_ROOT)
 public class AccountSettingsController implements IResourceController<AccountSettings> {
 

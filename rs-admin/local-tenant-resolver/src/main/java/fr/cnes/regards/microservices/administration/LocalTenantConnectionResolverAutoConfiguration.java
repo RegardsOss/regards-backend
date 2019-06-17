@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.project.service.IProjectService;
  * Autoconfiguration class for Administration Local multitenant resolver
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @Configuration
 public class LocalTenantConnectionResolverAutoConfiguration {
@@ -46,7 +46,7 @@ public class LocalTenantConnectionResolverAutoConfiguration {
      * @param pProjectService
      *            internal Project service.
      * @return ITenantConnectionResolver
-     * @since 1.0-SNAPSHOT
+
      */
     @Bean
     @Primary
@@ -60,9 +60,9 @@ public class LocalTenantConnectionResolverAutoConfiguration {
      * {@link ITenantResolver} implementation for local tenant resolver for administration service
      *
      * @return ITenantResolver
-     * @since 1.0-SNAPSHOT
+
      */
-    @Bean
+    @Bean("local-tenant-resolver")
     @Primary
     ITenantResolver tenantResolver() {
         return new LocalTenantResolver();

@@ -5,9 +5,10 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceNotifier;
+import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
-import fr.cnes.regards.modules.notification.domain.NotificationType;
+
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -19,16 +20,16 @@ public class NotificationWorkspaceNotifier implements IWorkspaceNotifier {
     private INotificationClient notificationClient;
 
     @Override
-    public void sendErrorNotification(String sender, String message, String title, DefaultRole role) {
+    public void sendErrorNotification(String message, String title, DefaultRole role) {
         FeignSecurityManager.asSystem();
-        notificationClient.notifyRoles(message, title, sender, NotificationType.ERROR, role);
+        notificationClient.notify(message, title, NotificationLevel.ERROR, role);
         FeignSecurityManager.reset();
     }
 
     @Override
-    public void sendWarningNotification(String sender, String message, String title, DefaultRole role) {
+    public void sendWarningNotification(String message, String title, DefaultRole role) {
         FeignSecurityManager.asSystem();
-        notificationClient.notifyRoles(message, title, sender, NotificationType.WARNING, role);
+        notificationClient.notify(message, title, NotificationLevel.WARNING, role);
         FeignSecurityManager.reset();
     }
 }

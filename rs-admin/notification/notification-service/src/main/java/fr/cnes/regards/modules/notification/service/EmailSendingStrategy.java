@@ -23,11 +23,11 @@ import java.util.Date;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Component;
 
-import fr.cnes.regards.modules.emails.client.IEmailClient;
+import fr.cnes.regards.modules.emails.service.IEmailService;
 import fr.cnes.regards.modules.notification.domain.Notification;
 
 /**
- * Implementation of the {@link INotificationSendingStrategy}.<br>
+ * Implementation of the {@link ISendingStrategy}.<br>
  * Sends the notifications as emails.
  *
  * @author Xavier-Alexandre Brochard
@@ -38,16 +38,16 @@ public class EmailSendingStrategy implements ISendingStrategy {
     /**
      * Feign client from module Email
      */
-    private final IEmailClient emailClient;
+    private final IEmailService emailService;
 
     /**
      * Creates new strategy with passed email client
      *
-     * @param pEmailClient
+     * @param emailService
      *            The email feign client
      */
-    public EmailSendingStrategy(final IEmailClient pEmailClient) {
-        emailClient = pEmailClient;
+    public EmailSendingStrategy(final IEmailService emailService) {
+        this.emailService = emailService;
     }
 
     /*
@@ -57,17 +57,16 @@ public class EmailSendingStrategy implements ISendingStrategy {
      * notification.domain.Notification)
      */
     @Override
-    public void send(final Notification pNotification, final String[] pRecipients) {
+    public void send(final Notification notification, final String[] recipients) {
         // Build the email from the notification and add recipients
         final SimpleMailMessage email = new SimpleMailMessage();
-        email.setFrom("regards@noreply.com");
         email.setSentDate(new Date());
-        email.setSubject("[" + pNotification.getSender() + "]" + pNotification.getTitle());
-        email.setText(pNotification.getMessage());
-        email.setTo(pRecipients);
+        email.setSubject("[" + notification.getSender() + "]" + notification.getTitle());
+        email.setText(notification.getMessage());
+        email.setTo(recipients);
 
         // Send the email
-        emailClient.sendEmail(email);
+        emailService.sendEmail(email);
     }
 
 }

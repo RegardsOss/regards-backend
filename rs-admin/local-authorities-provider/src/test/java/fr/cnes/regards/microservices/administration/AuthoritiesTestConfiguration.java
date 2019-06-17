@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.microservices.administration;
 
+import javax.mail.internet.MimeMessage;
+
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -25,26 +27,28 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.mail.javamail.JavaMailSender;
 
 import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.amqp.IInstanceSubscriber;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.modules.accessrights.instance.client.IAccountSettingsClient;
+import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
+import fr.cnes.regards.modules.emails.service.IEmailService;
+import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 
 /**
- *
  * Class JpaTenantConnectionConfiguration
  *
  * Test configuration class
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 @Configuration
 @ComponentScan("fr.cnes.regards.modules")
 @PropertySource("classpath:application-test.properties")
-@EnableAutoConfiguration(exclude = LocalAuthoritiesProviderAutoConfiguration.class)
+@EnableAutoConfiguration
 public class AuthoritiesTestConfiguration {
 
     /**
@@ -64,16 +68,20 @@ public class AuthoritiesTestConfiguration {
     private String microserviceName;
 
     @Bean
+    public JavaMailSender mockSender() {
+        final JavaMailSender mailSender = Mockito.mock(JavaMailSender.class);
+        Mockito.when(mailSender.createMimeMessage()).thenReturn(Mockito.mock(MimeMessage.class));
+        return mailSender;
+    }
+
+    @Bean
     public IAuthenticationResolver mockAuthenticationResolver() {
         return Mockito.mock(IAuthenticationResolver.class);
     }
 
     /**
-     *
      * Initialize a Mock for AMQP Publisher
-     *
      * @return IPublisher
-     * @since 1.0-SNAPSHOT
      */
     @Bean
     public IPublisher mockPublisher() {
@@ -85,12 +93,19 @@ public class AuthoritiesTestConfiguration {
         return Mockito.mock(IInstancePublisher.class);
     }
 
+    @Bean
+    public IAccountsClient mockAccountsClient() {
+        return Mockito.mock(IAccountsClient.class);
+    }
+
+    @Bean
+    public IProjectsClient mockProjectsClient() {
+        return Mockito.mock(IProjectsClient.class);
+    }
+
     /**
-     *
      * Initialize a Mock for AMQP Subsriber
-     *
      * @return ISubscriber
-     * @since 1.0-SNAPSHOT
      */
     @Bean
     public ISubscriber mockSubscriber() {
@@ -100,5 +115,15 @@ public class AuthoritiesTestConfiguration {
     @Bean
     public IInstanceSubscriber mockInstanceSubscriber() {
         return Mockito.mock(IInstanceSubscriber.class);
+    }
+
+    @Bean
+    public IEmailService emailClient() {
+        return Mockito.mock(IEmailService.class);
+    }
+
+    @Bean
+    public IAccountSettingsClient accountSettingsClient() {
+        return Mockito.mock(IAccountSettingsClient.class);
     }
 }

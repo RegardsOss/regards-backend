@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.modules.accessrights.client;
 
-import javax.validation.Valid;
 import java.util.List;
+
+import javax.validation.Valid;
 
 import org.springframework.hateoas.Resource;
 import org.springframework.http.MediaType;
@@ -38,7 +39,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
  * @author Marc Sordi
  *
  */
-@RestClient(name = "rs-admin")
+@RestClient(name = "rs-admin", contextId = "rs-admin.role-resource-client")
 @RequestMapping(value = IRoleResourceClient.TYPE_MAPPING, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IRoleResourceClient {
@@ -46,18 +47,17 @@ public interface IRoleResourceClient {
     /**
      * Controller base mapping
      */
-    public static final String TYPE_MAPPING = "/roles/{role_name}/resources";
+    String TYPE_MAPPING = "/roles/{role_name}/resources";
 
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<Resource<ResourcesAccess>>> getRoleResources(
-            @PathVariable("role_name") final String pRoleName);
+    ResponseEntity<List<Resource<ResourcesAccess>>> getRoleResources(@PathVariable("role_name") final String pRoleName);
 
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<Resource<ResourcesAccess>> addRoleResource(@PathVariable("role_name") final String pRoleName,
+    ResponseEntity<Resource<ResourcesAccess>> addRoleResource(@PathVariable("role_name") final String pRoleName,
             @RequestBody @Valid final ResourcesAccess pNewResourcesAccess);
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/{resources_access_id}")
-    public ResponseEntity<Void> deleteRoleResource(@PathVariable("role_name") final String pRoleName,
+    ResponseEntity<Void> deleteRoleResource(@PathVariable("role_name") final String pRoleName,
             @PathVariable("resources_access_id") final Long pResourcesAccessId);
 
 }

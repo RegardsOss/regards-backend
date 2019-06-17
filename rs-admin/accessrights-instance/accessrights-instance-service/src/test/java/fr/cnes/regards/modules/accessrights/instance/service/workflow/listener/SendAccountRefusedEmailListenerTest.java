@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.accessrights.instance.service.workflow.listener;
 
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.springframework.mail.SimpleMailMessage;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
@@ -28,6 +27,7 @@ import fr.cnes.regards.modules.accessrights.instance.service.workflow.events.OnR
 import fr.cnes.regards.modules.accessrights.instance.service.workflow.listeners.SendAccountRefusedEmailListener;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
+import freemarker.template.TemplateException;
 
 /**
  *
@@ -35,46 +35,23 @@ import fr.cnes.regards.modules.templates.service.ITemplateService;
  */
 public class SendAccountRefusedEmailListenerTest {
 
+
     /**
      * Test method for {@link SendAccountRefusedEmailListener#onApplicationEvent(OnRefuseAccountEvent)}.
-     * @throws EntityNotFoundException
      */
-    @SuppressWarnings("unchecked")
     @Test
-    public final void testOnApplicationEvent_templateNotFound() throws EntityNotFoundException {
+    public final void testOnApplicationEvent() throws TemplateException {
         Account account = new Account("email@test.com", "firstname", "lastname", "password");
         OnRefuseAccountEvent event = new OnRefuseAccountEvent(account);
 
         ITemplateService templateService = Mockito.mock(ITemplateService.class);
         IEmailClient emailClient = Mockito.mock(IEmailClient.class);
-        Mockito.when(templateService.writeToEmail(Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
-                .thenThrow(EntityNotFoundException.class);
+        Mockito.when(templateService.render(Mockito.anyString(), Mockito.anyMap())).thenReturn("");
 
         SendAccountRefusedEmailListener listener = new SendAccountRefusedEmailListener(templateService, emailClient);
         listener.onApplicationEvent(event);
 
-        Mockito.verify(emailClient).sendEmail(Mockito.any());
-    }
-
-    /**
-     * Test method for {@link SendAccountRefusedEmailListener#onApplicationEvent(OnRefuseAccountEvent)}.
-     * @throws EntityNotFoundException
-     */
-    @SuppressWarnings("unchecked")
-    @Test
-    public final void testOnApplicationEvent() throws EntityNotFoundException {
-        Account account = new Account("email@test.com", "firstname", "lastname", "password");
-        OnRefuseAccountEvent event = new OnRefuseAccountEvent(account);
-
-        ITemplateService templateService = Mockito.mock(ITemplateService.class);
-        IEmailClient emailClient = Mockito.mock(IEmailClient.class);
-        Mockito.when(templateService.writeToEmail(Mockito.anyString(), Mockito.anyMap(), Mockito.any()))
-                .thenReturn(new SimpleMailMessage());
-
-        SendAccountRefusedEmailListener listener = new SendAccountRefusedEmailListener(templateService, emailClient);
-        listener.onApplicationEvent(event);
-
-        Mockito.verify(emailClient).sendEmail(Mockito.any());
+        Mockito.verify(emailClient).sendEmail(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
     }
 
 }

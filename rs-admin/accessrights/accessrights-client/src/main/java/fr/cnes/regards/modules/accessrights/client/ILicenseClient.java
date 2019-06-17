@@ -31,7 +31,7 @@ import fr.cnes.regards.framework.feign.annotation.RestClient;
  * @author Marc Sordi
  *
  */
-@RestClient(name = "rs-admin")
+@RestClient(name = "rs-admin", contextId = "rs-admin.license-client")
 @RequestMapping(value = ILicenseClient.PATH_LICENSE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE,
         consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface ILicenseClient {
@@ -39,13 +39,13 @@ public interface ILicenseClient {
     /**
      * Controller base path
      */
-    public static final String PATH_LICENSE = "/license";
+    String PATH_LICENSE = "/license";
 
     /**
      * Controller path to reset the license
      */
-    public static final String PATH_RESET = "/reset";
+    String PATH_RESET = "/reset";
 
     @RequestMapping(method = RequestMethod.PUT, path = PATH_RESET)
-    public ResponseEntity<Void> resetLicense();
+    ResponseEntity<Void> resetLicense();
 }

@@ -44,9 +44,9 @@ import fr.cnes.regards.modules.accessrights.domain.registration.AccessRequestDto
  * Feign client for rs-admin Accesses Rest controller. Thanks to Feign facilities, no exception handling is required.
  *
  * @author CS
- * @since 1.0-SNAPSHOT
+
  */
-@RestClient(name = "rs-admin")
+@RestClient(name = "rs-admin", contextId = "rs-admin.registration-client")
 @RequestMapping(value = "/accesses", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IRegistrationClient {

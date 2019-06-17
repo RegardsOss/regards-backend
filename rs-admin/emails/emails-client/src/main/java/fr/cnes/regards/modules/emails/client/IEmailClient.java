@@ -35,7 +35,7 @@ import fr.cnes.regards.modules.emails.domain.Email;
  * @author Xavier-Alexandre Brochard
  */
 
-@RestClient(name = "rs-admin")
+@RestClient(name = "rs-admin", contextId = "rs-admin.emails-client")
 @RequestMapping(value = "/emails", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IEmailClient {
@@ -48,11 +48,27 @@ public interface IEmailClient {
     ResponseEntity<List<Email>> retrieveEmails();
 
     /**
-     * Define the endpoint for sending an email to recipients
+     * Define the endpoint for sending an email to recipients.<br>Prefer using {@link #sendEmail(String, String, String, String...)}
      * @param pMessage The email in a simple representation.
      */
     @RequestMapping(method = RequestMethod.POST)
     ResponseEntity<Void> sendEmail(SimpleMailMessage pMessage);
+
+    /**
+     * Helper method to send mail without creating SimpleMailMessage before call
+     * @param message email message
+     * @param subject email subject
+     * @param from email sender, if you don't care about who is sending, set null to use default.
+     * @param to recipients
+     */
+    default ResponseEntity<Void> sendEmail(String message, String subject, String from, String... to) {
+        SimpleMailMessage mail = new SimpleMailMessage();
+        mail.setSubject(subject);
+        mail.setFrom(from);
+        mail.setText(message);
+        mail.setTo(to);
+        return sendEmail(mail);
+    }
 
     /**
      * Define the endpoint for retrieving an email
@@ -64,8 +80,6 @@ public interface IEmailClient {
 
     /**
      * Define the endpoint for re-sending an email
-     * @param pId The email id
-     * @return void
      */
     @RequestMapping(value = "/{mail_id}", method = RequestMethod.PUT)
     void resendEmail(Long pId);

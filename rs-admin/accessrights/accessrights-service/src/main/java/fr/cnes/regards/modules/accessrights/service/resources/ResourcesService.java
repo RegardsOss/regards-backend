@@ -23,6 +23,7 @@ import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -47,11 +48,9 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 
 /**
- *
  * Class ResourceService
  *
  * Business service for Resources entities
- *
  * @author Sébastien Binda
  * @author Christophe Mertz
  * @author Sylvain Vissiere-Guerinet
@@ -83,74 +82,68 @@ public class ResourcesService implements IResourcesService {
 
     /**
      * Constructor
-     *
-     * @param pResourceAccessRepo
-     * @param pRoleService
-     * @param authResolver
      */
-    public ResourcesService(final IResourcesAccessRepository pResourceAccessRepo, final IRoleService pRoleService,
+    public ResourcesService(IResourcesAccessRepository resourceAccessRepo, IRoleService roleService,
             IAuthenticationResolver authResolver) {
-        super();
-        resourceAccessRepo = pResourceAccessRepo;
-        roleService = pRoleService;
+        this.resourceAccessRepo = resourceAccessRepo;
+        this.roleService = roleService;
         this.authResolver = authResolver;
     }
 
     @Override
-    public Page<ResourcesAccess> retrieveRessources(final String pMicroserviceName, final Pageable pPageable)
+    public Page<ResourcesAccess> retrieveRessources(String microserviceName, Pageable pageable)
             throws ModuleException {
         Page<ResourcesAccess> results;
-        final String roleName = authResolver.getRole();
+        String roleName = authResolver.getRole();
         // If role is System role or InstanceAdminRole retrieve all resources
         if ((roleName == null) || RoleAuthority.isInstanceAdminRole(roleName) || RoleAuthority.isSysRole(roleName)) {
-            if (pMicroserviceName == null) {
-                results = resourceAccessRepo.findAll(pPageable);
+            if (microserviceName == null) {
+                results = resourceAccessRepo.findAll(pageable);
             } else {
-                results = resourceAccessRepo.findByMicroservice(pMicroserviceName, pPageable);
+                results = resourceAccessRepo.findByMicroservice(microserviceName, pageable);
             }
         } else if (RoleAuthority.isProjectAdminRole(roleName)) {
-            if (pMicroserviceName == null) {
-                results = resourceAccessRepo.findByDefaultRoleNot(DefaultRole.INSTANCE_ADMIN, pPageable);
+            if (microserviceName == null) {
+                results = resourceAccessRepo.findByDefaultRoleNot(DefaultRole.INSTANCE_ADMIN, pageable);
             } else {
-                results = resourceAccessRepo.findByMicroserviceAndDefaultRoleNot(pMicroserviceName,
-                                                                                 DefaultRole.INSTANCE_ADMIN, pPageable);
+                results = resourceAccessRepo
+                        .findByMicroserviceAndDefaultRoleNot(microserviceName, DefaultRole.INSTANCE_ADMIN, pageable);
             }
         } else {
-            // FIXME retrieve resource by page from repository
             // Else retrieve only accessible resources
-            final Role currentRole = roleService.retrieveRole(roleName);
-            final List<ResourcesAccess> accessibleResourcesAccesses = Lists.newArrayList(currentRole.getPermissions());
-            results = new PageImpl<>(accessibleResourcesAccesses, pPageable, accessibleResourcesAccesses.size());
+            Role currentRole = roleService.retrieveRole(roleName);
+            List<ResourcesAccess> accessibleResourcesAccesses = Lists.newArrayList(currentRole.getPermissions());
+            results = new PageImpl<>(accessibleResourcesAccesses, pageable, accessibleResourcesAccesses.size());
         }
         return results;
     }
 
     @Override
-    public ResourcesAccess retrieveRessource(final Long pResourceId) throws ModuleException {
-        final ResourcesAccess result = resourceAccessRepo.findOne(pResourceId);
-        if (result == null) {
-            throw new EntityNotFoundException(pResourceId, ResourcesAccess.class);
+    public ResourcesAccess retrieveRessource(Long resourceId) throws ModuleException {
+        Optional<ResourcesAccess> resultOpt = resourceAccessRepo.findById(resourceId);
+        if (!resultOpt.isPresent()) {
+            throw new EntityNotFoundException(resourceId, ResourcesAccess.class);
         }
-        return result;
+        return resultOpt.get();
     }
 
     @Override
-    public ResourcesAccess updateResource(final ResourcesAccess pResourceToUpdate) throws ModuleException {
-        if (resourceAccessRepo.exists(pResourceToUpdate.getId())) {
-            throw new EntityNotFoundException(pResourceToUpdate.getId(), ResourcesAccess.class);
+    public ResourcesAccess updateResource(ResourcesAccess resourceToUpdate) throws ModuleException {
+        if (resourceAccessRepo.existsById(resourceToUpdate.getId())) {
+            throw new EntityNotFoundException(resourceToUpdate.getId(), ResourcesAccess.class);
         }
-        return resourceAccessRepo.save(pResourceToUpdate);
+        return resourceAccessRepo.save(resourceToUpdate);
     }
 
     @Override
-    public void registerResources(final List<ResourceMapping> pResourcesToRegister, final String pMicroserviceName)
+    public void registerResources(List<ResourceMapping> resourcesToRegister, String microserviceName)
             throws ModuleException {
 
         // Compute resource to register as ResourcesAccess
-        final List<ResourcesAccess> resources = new ArrayList<>();
-        for (final ResourceMapping rm : pResourcesToRegister) {
+        List<ResourcesAccess> resources = new ArrayList<>();
+        for (ResourceMapping rm : resourcesToRegister) {
             if (rm != null) {
-                final ResourcesAccess access = new ResourcesAccess();
+                ResourcesAccess access = new ResourcesAccess();
                 access.setControllerSimpleName(rm.getControllerSimpleName());
                 if (rm.getResourceAccess() != null) {
                     access.setDefaultRole(rm.getResourceAccess().role());
@@ -160,7 +153,7 @@ public class ResourcesService implements IResourcesService {
                     access.setDefaultRole(DefaultRole.PROJECT_ADMIN);
                     access.setDescription("Missing description");
                 }
-                access.setMicroservice(pMicroserviceName);
+                access.setMicroservice(microserviceName);
                 access.setResource(rm.getFullPath());
                 access.setVerb(rm.getMethod());
                 resources.add(access);
@@ -170,69 +163,63 @@ public class ResourcesService implements IResourcesService {
         }
 
         // Retrieve already configured resources for the given microservice
-        final List<ResourcesAccess> existingResources = resourceAccessRepo.findByMicroservice(pMicroserviceName);
+        List<ResourcesAccess> existingResources = resourceAccessRepo.findByMicroservice(microserviceName);
 
         // Extract and save new resources
-        final List<ResourcesAccess> newResources = new ArrayList<>();
-        for (final ResourcesAccess ra : resources) {
+        List<ResourcesAccess> newResources = new ArrayList<>();
+        for (ResourcesAccess ra : resources) {
             if (!existingResources.contains(ra)) {
                 newResources.add(ra);
             }
         }
         if (!newResources.isEmpty()) {
-            resourceAccessRepo.save(newResources);
+            resourceAccessRepo.saveAll(newResources);
         }
 
-        // TODO clean missing resources
-
         // Compute map by native roles
-        final Map<DefaultRole, Set<ResourcesAccess>> accessesByDefaultRole = new EnumMap<>(DefaultRole.class);
-        for (final ResourcesAccess nra : newResources) {
-            Set<ResourcesAccess> set = accessesByDefaultRole.get(nra.getDefaultRole());
-            if (set == null) {
-                set = new HashSet<>();
-                accessesByDefaultRole.put(nra.getDefaultRole(), set);
-            }
+        Map<DefaultRole, Set<ResourcesAccess>> accessesByDefaultRole = new EnumMap<>(DefaultRole.class);
+        for (ResourcesAccess nra : newResources) {
+            Set<ResourcesAccess> set = accessesByDefaultRole.computeIfAbsent(nra.getDefaultRole(), k -> new HashSet<>());
             set.add(nra);
         }
 
         // Link new resources with existing roles
-        for (final Map.Entry<DefaultRole, Set<ResourcesAccess>> entry : accessesByDefaultRole.entrySet()) {
-            final Role role = roleService.retrieveRole(entry.getKey().toString());
+        for (Map.Entry<DefaultRole, Set<ResourcesAccess>> entry : accessesByDefaultRole.entrySet()) {
+            Role role = roleService.retrieveRole(entry.getKey().toString());
             roleService.addResourceAccesses(role.getId(),
-                                            entry.getValue().toArray(new ResourcesAccess[entry.getValue().size()]));
+                                            entry.getValue().toArray(new ResourcesAccess[0]));
         }
     }
 
     @Override
-    public List<ResourcesAccess> retrieveMicroserviceControllerEndpoints(final String pMicroserviceName,
-            final String pControllerName, String roleName) {
-        if (RoleAuthority.isInstanceAdminRole(roleName) || RoleAuthority.isProjectAdminRole(roleName)
-                || RoleAuthority.isSysRole(roleName)) {
+    public List<ResourcesAccess> retrieveMicroserviceControllerEndpoints(String microserviceName,
+            String controllerName, String roleName) {
+        if (RoleAuthority.isInstanceAdminRole(roleName) || RoleAuthority.isProjectAdminRole(roleName) || RoleAuthority
+                .isSysRole(roleName)) {
             // No restriction for virtual role
             return resourceAccessRepo
-                    .findByMicroserviceAndControllerSimpleNameAndDefaultRoleNotOrderByResource(pMicroserviceName,
-                                                                                               pControllerName,
+                    .findByMicroserviceAndControllerSimpleNameAndDefaultRoleNotOrderByResource(microserviceName,
+                                                                                               controllerName,
                                                                                                DefaultRole.INSTANCE_ADMIN);
         }
-        return resourceAccessRepo.findManageableResources(pMicroserviceName, pControllerName, roleName);
+        return resourceAccessRepo.findManageableResources(microserviceName, controllerName, roleName);
     }
 
     @Override
-    public List<String> retrieveMicroserviceControllers(final String pMicroserviceName, String roleName) {
-        if (RoleAuthority.isInstanceAdminRole(roleName) || RoleAuthority.isProjectAdminRole(roleName)
-                || RoleAuthority.isSysRole(roleName)) {
+    public List<String> retrieveMicroserviceControllers(String microserviceName, String roleName) {
+        if (RoleAuthority.isInstanceAdminRole(roleName) || RoleAuthority.isProjectAdminRole(roleName) || RoleAuthority
+                .isSysRole(roleName)) {
             // No restriction for virtual role
-            return resourceAccessRepo.findAllControllersByMicroservice(pMicroserviceName);
+            return resourceAccessRepo.findAllControllersByMicroservice(microserviceName);
         }
-        return resourceAccessRepo.findManageableControllers(pMicroserviceName, roleName);
+        return resourceAccessRepo.findManageableControllers(microserviceName, roleName);
     }
 
     @Override
-    public void removeRoleResourcesAccess(final String pRoleName, final Long pResourcesAccessId)
+    public void removeRoleResourcesAccess(String roleName, Long resourcesAccessId)
             throws ModuleException {
-        final ResourcesAccess resourcesAccess = retrieveRessource(pResourcesAccessId);
-        roleService.removeResourcesAccesses(pRoleName, resourcesAccess);
+        ResourcesAccess resourcesAccess = retrieveRessource(resourcesAccessId);
+        roleService.removeResourcesAccesses(roleName, resourcesAccess);
     }
 
 }

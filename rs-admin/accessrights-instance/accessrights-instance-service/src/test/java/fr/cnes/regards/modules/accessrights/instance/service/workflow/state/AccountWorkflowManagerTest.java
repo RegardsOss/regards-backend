@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.accessrights.instance.service.workflow.state;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -160,7 +161,7 @@ public class AccountWorkflowManagerTest {
         account.setStatus(AccountStatus.ACTIVE);
 
         // Mock
-        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
+        Mockito.when(accountRepository.findById(ID)).thenReturn(Optional.of(account));
         Mockito.when(tenantService.getAllActiveTenants(IProjectUsersClient.TARGET_NAME)).thenReturn(TENANTS);
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(EMAIL))
                 .thenReturn(new ResponseEntity<>(new Resource<>(new ProjectUser()), HttpStatus.OK));
@@ -186,7 +187,7 @@ public class AccountWorkflowManagerTest {
         account.setStatus(AccountStatus.ACTIVE);
 
         // Mock
-        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
+        Mockito.when(accountRepository.findById(ID)).thenReturn(Optional.of(account));
         Mockito.when(tenantService.getAllActiveTenants(IProjectUsersClient.TARGET_NAME)).thenReturn(TENANTS);
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(EMAIL))
                 .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
@@ -198,7 +199,7 @@ public class AccountWorkflowManagerTest {
         accountWorkflowManager.deleteAccount(account);
 
         // Verify the repository was correctly called
-        Mockito.verify(accountRepository).delete(ID);
+        Mockito.verify(accountRepository).deleteById(ID);
         Mockito.verify(passwordResetService).deletePasswordResetTokenForAccount(account);
         Mockito.verify(accountUnlockTokenService).deleteAllByAccount(account);
     }
@@ -214,7 +215,7 @@ public class AccountWorkflowManagerTest {
         account.setStatus(AccountStatus.ACTIVE);
 
         // Mock
-        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
+        Mockito.when(accountRepository.findById(ID)).thenReturn(Optional.of(account));
         Mockito.when(tenantService.getAllActiveTenants(IProjectUsersClient.TARGET_NAME)).thenReturn(TENANTS);
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(EMAIL))
                 .thenReturn(new ResponseEntity<>(new Resource<>(new ProjectUser()), HttpStatus.OK));
@@ -240,7 +241,7 @@ public class AccountWorkflowManagerTest {
         account.setStatus(AccountStatus.ACTIVE);
 
         // Mock
-        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
+        Mockito.when(accountRepository.findById(ID)).thenReturn(Optional.of(account));
         Mockito.when(tenantService.getAllActiveTenants(IProjectUsersClient.TARGET_NAME)).thenReturn(TENANTS);
         Mockito.when(projectUsersClient.retrieveProjectUserByEmail(EMAIL))
                 .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));

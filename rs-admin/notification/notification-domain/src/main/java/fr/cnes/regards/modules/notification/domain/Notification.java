@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.notification.domain;
 
+import java.time.OffsetDateTime;
+import java.util.Set;
+
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -31,18 +34,16 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.time.OffsetDateTime;
-import java.util.Set;
 
-import org.hibernate.validator.constraints.NotBlank;
-import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
 import fr.cnes.regards.framework.jpa.converter.MimeTypeConverter;
 import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter;
+import fr.cnes.regards.framework.notification.NotificationLevel;
 
 /**
  * Models a notification.<br>
@@ -77,16 +78,6 @@ public class Notification implements IIdentifiable<Long> {
     private String message;
 
     /**
-     * The project user recipients represented by their email
-     */
-    @NotNull
-    @ElementCollection
-    @CollectionTable(name = "ta_notification_projectuser_email", joinColumns = @JoinColumn(name = "notification_id"),
-            foreignKey = @javax.persistence.ForeignKey(name = "fk_notification_projectuser_email_notification_id"))
-    @Column(name = "projectuser_email", length = 200)
-    private Set<String> projectUserRecipients;
-
-    /**
      * The role recipients represented by their name
      */
     @NotNull
@@ -95,6 +86,16 @@ public class Notification implements IIdentifiable<Long> {
             foreignKey = @javax.persistence.ForeignKey(name = "fk_notification_role_name_notification_id"))
     @Column(name = "role_name", length = 200)
     private Set<String> roleRecipients;
+
+    /**
+     * The project user recipients represented by their email
+     */
+    @NotNull
+    @ElementCollection
+    @CollectionTable(name = "ta_notification_projectuser_email", joinColumns = @JoinColumn(name = "notification_id"),
+            foreignKey = @javax.persistence.ForeignKey(name = "fk_notification_projectuser_email_notification_id"))
+    @Column(name = "projectuser_email", length = 200)
+    private Set<String> projectUserRecipients;
 
     /**
      * The notification sender<br>
@@ -118,7 +119,7 @@ public class Notification implements IIdentifiable<Long> {
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "type")
-    private NotificationType type;
+    private NotificationLevel level;
 
     /**
      * The title
@@ -243,15 +244,15 @@ public class Notification implements IIdentifiable<Long> {
     /**
      * @return the notification type
      */
-    public NotificationType getType() {
-        return type;
+    public NotificationLevel getLevel() {
+        return level;
     }
 
     /**
      * Set the notification type
      */
-    public void setType(NotificationType type) {
-        this.type = type;
+    public void setLevel(NotificationLevel level) {
+        this.level = level;
     }
 
     public MimeType getMimeType() {

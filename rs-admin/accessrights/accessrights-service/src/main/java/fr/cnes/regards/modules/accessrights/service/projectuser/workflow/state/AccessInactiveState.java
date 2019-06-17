@@ -22,7 +22,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -63,7 +62,7 @@ public class AccessInactiveState extends AbstractDeletableState {
      * modules.accessrights.domain.projects.ProjectUser)
      */
     @Override
-    public void activeAccess(final ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
+    public void activeAccess(final ProjectUser pProjectUser) {
         pProjectUser.setStatus(UserStatus.ACCESS_GRANTED);
         getProjectUserRepository().save(pProjectUser);
         eventPublisher.publishEvent(new OnActiveEvent(pProjectUser));

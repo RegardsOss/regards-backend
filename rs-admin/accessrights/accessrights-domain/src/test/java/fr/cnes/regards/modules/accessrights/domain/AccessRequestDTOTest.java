@@ -162,7 +162,7 @@ public class AccessRequestDTOTest {
      */
     @Test
     public void testSetMetaData() {
-        final List<MetaData> newMetaData = new ArrayList<MetaData>();
+        final List<MetaData> newMetaData = new ArrayList<>();
         newMetaData.add(new MetaData());
         access.setMetadata(newMetaData);
         Assert.assertEquals(newMetaData, access.getMetadata());

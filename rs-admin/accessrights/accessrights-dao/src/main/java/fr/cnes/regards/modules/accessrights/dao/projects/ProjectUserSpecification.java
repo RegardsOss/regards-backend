@@ -1,12 +1,14 @@
 package fr.cnes.regards.modules.accessrights.dao.projects;
 
-import javax.persistence.criteria.Predicate;
 import java.util.Set;
+
+import javax.persistence.criteria.Predicate;
 
 import org.springframework.data.jpa.domain.Specification;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
+
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 
@@ -21,9 +23,6 @@ public final class ProjectUserSpecification {
 
     /**
      * Filter on the given attributes and return result ordered by ascending login
-     * @param status
-     * @param emailStart
-     * @return
      */
     public static Specification<ProjectUser> search(String status, String emailStart) {
         return (root, query, cb) -> {
@@ -35,7 +34,7 @@ public final class ProjectUserSpecification {
                 predicates.add(cb.like(root.get("email"), emailStart + "%"));
             }
             query.orderBy(cb.asc(root.get("email")));
-            return cb.and(predicates.toArray(new Predicate[predicates.size()]));
+            return cb.and(predicates.toArray(new Predicate[0]));
         };
     }
 }

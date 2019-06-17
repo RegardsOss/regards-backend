@@ -25,11 +25,11 @@ import org.springframework.mail.SimpleMailMessage;
 
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.emails.client.IEmailClient;
+import fr.cnes.regards.modules.emails.service.IEmailService;
 import fr.cnes.regards.modules.notification.domain.Notification;
 
 /**
- * Test class for {@link EmailService}.
+ * Test class for {@link IEmailService}.
  *
  * @author Xavier-Alexandre Brochard
  */
@@ -53,7 +53,7 @@ public class EmailSendingStrategyTest {
     /**
      * Feign client from module Email
      */
-    private IEmailClient emailClient;
+    private IEmailService emailService;
 
     /**
      * Tested class
@@ -71,10 +71,10 @@ public class EmailSendingStrategyTest {
     @Before
     public void setUp() {
         // Mock
-        emailClient = Mockito.mock(IEmailClient.class);
+        emailService = Mockito.mock(IEmailService.class);
 
         // Instanciate the tested class
-        strategy = new EmailSendingStrategy(emailClient);
+        strategy = new EmailSendingStrategy(emailService);
 
         // Define the sent notification
         notification = new Notification();
@@ -92,8 +92,7 @@ public class EmailSendingStrategyTest {
     public void send() {
         // Define expected mail
         final SimpleMailMessage expected = new SimpleMailMessage();
-        expected.setFrom("regards@noreply.com");
-        expected.setSubject("["+SENDER+"]"+notification.getTitle());
+        expected.setSubject("[" + SENDER + "]" + notification.getTitle());
         expected.setText(MESSAGE);
         expected.setTo(RECIPIENTS);
 
@@ -101,7 +100,7 @@ public class EmailSendingStrategyTest {
         strategy.send(notification, RECIPIENTS);
 
         // // Verify method call.
-        Mockito.verify(emailClient, Mockito.times(1)).sendEmail(Mockito.refEq(expected, "sentDate"));
+        Mockito.verify(emailService, Mockito.times(1)).sendEmail(Mockito.refEq(expected, "sentDate"));
     }
 
 }

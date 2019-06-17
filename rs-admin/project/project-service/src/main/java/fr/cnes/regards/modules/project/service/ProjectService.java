@@ -52,7 +52,6 @@ import fr.cnes.regards.modules.project.domain.Project;
  * @author Christophe Mertz
  * @author Sébastien Binda
  *
- * @since 1.0-SNAPSHOT
  */
 @Service
 @InstanceTransactional
@@ -68,12 +67,12 @@ public class ProjectService implements IProjectService {
      */
     private final IProjectRepository projectRepository;
 
-    private final ITenantResolver tenantResolver;
-
     /**
      * AMQP message publisher
      */
     private final IInstancePublisher instancePublisher;
+
+    private final IProjectConnectionService projectConnectionService;
 
     /**
      * Default tenants which are to be initialized at system installation
@@ -85,21 +84,14 @@ public class ProjectService implements IProjectService {
      */
     private final String defaultTenantHost;
 
-    /**
-     * The constructor.
-     *
-     * @param pProjectRepository
-     *            The JPA repository.
-     */
-    public ProjectService(final IProjectRepository pProjectRepository, final ITenantResolver tenantResolver,
+    public ProjectService(IProjectConnectionService projectConnectionService,
+            final IProjectRepository projectRepository, final ITenantResolver tenantResolver,
             IInstancePublisher instancePublisher, @Value("${regards.default.tenants}") String defaultTenants,
             @Value("${regards.config.first.project.public.access}") String defaultTenantHost) {
-        super();
-        projectRepository = pProjectRepository;
-        this.tenantResolver = tenantResolver;
+        this.projectRepository = projectRepository;
+        this.projectConnectionService = projectConnectionService;
         this.instancePublisher = instancePublisher;
-        this.defaultTenants = Arrays.stream(defaultTenants.split(",")).map(tenant -> tenant.trim())
-                .collect(Collectors.toSet());
+        this.defaultTenants = Arrays.stream(defaultTenants.split(",")).map(String::trim).collect(Collectors.toSet());
         this.defaultTenantHost = defaultTenantHost;
     }
 
@@ -133,9 +125,14 @@ public class ProjectService implements IProjectService {
 
     @Override
     public void deleteProject(final String pProjectName) throws ModuleException {
-        final Project deleted = retrieveProject(pProjectName);
+
+        Project deleted = retrieveProject(pProjectName);
         deleted.setDeleted(true);
         projectRepository.save(deleted);
+
+        // Remove all related connections
+        projectConnectionService.deleteProjectConnections(deleted);
+
         // Publish tenant deletion
         TenantDeletedEvent tde = new TenantDeletedEvent();
         tde.setTenant(pProjectName);

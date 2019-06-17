@@ -39,7 +39,6 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
  *
- * @see <a>http://www.baeldung.com/spring-security-registration-i-forgot-my-password</a>
  */
 @InstanceEntity
 @Entity
@@ -168,9 +167,9 @@ public class PasswordResetToken {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = (prime * result) + ((expiryDate == null) ? 0 : expiryDate.hashCode());
-        result = (prime * result) + ((token == null) ? 0 : token.hashCode());
-        result = (prime * result) + ((account == null) ? 0 : account.hashCode());
+        result = prime * result + (expiryDate == null ? 0 : expiryDate.hashCode());
+        result = prime * result + (token == null ? 0 : token.hashCode());
+        result = prime * result + (account == null ? 0 : account.hashCode());
         return result;
     }
 
@@ -201,20 +200,15 @@ public class PasswordResetToken {
             return false;
         }
         if (account == null) {
-            if (other.account != null) {
-                return false;
-            }
-        } else if (!account.equals(other.account)) {
-            return false;
+            return other.account == null;
+        } else {
+            return account.equals(other.account);
         }
-        return true;
     }
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("Token [String=").append(token).append("]").append("[Expires").append(expiryDate).append("]");
-        return builder.toString();
+        return "Token [String=" + token + "]" + "[Expires" + expiryDate + "]";
     }
 
 }

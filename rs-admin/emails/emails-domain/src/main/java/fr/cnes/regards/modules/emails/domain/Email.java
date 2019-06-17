@@ -7,10 +7,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
+import javax.validation.constraints.NotEmpty;
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.Type;
-import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.util.ObjectUtils;
 
 import fr.cnes.regards.framework.jpa.IIdentifiable;
@@ -59,8 +59,8 @@ public class Email implements IIdentifiable<Long> {
      * Sender's email address<br>
      * "_" prefix is required because "from" is a reserved keyword in SQL
      */
-    @org.hibernate.validator.constraints.Email
     @Column(name = "from_addr", length = MAX_EMAIL_ADDRESS_SIZE)
+    @javax.validation.constraints.Email
     private String from;
 
     /**

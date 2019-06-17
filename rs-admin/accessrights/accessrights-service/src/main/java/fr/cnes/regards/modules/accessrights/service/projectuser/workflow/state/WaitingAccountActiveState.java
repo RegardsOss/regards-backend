@@ -21,7 +21,6 @@ package fr.cnes.regards.modules.accessrights.service.projectuser.workflow.state;
 import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -51,7 +50,7 @@ public class WaitingAccountActiveState extends AbstractDeletableState {
      * @see fr.cnes.regards.modules.accessrights.workflow.projectuser.AbstractProjectUserState#makeProjectUserWaitForQualification(fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser)
      */
     @Override
-    public void makeWaitForQualification(ProjectUser pProjectUser) throws EntityTransitionForbiddenException {
+    public void makeWaitForQualification(ProjectUser pProjectUser) {
         pProjectUser.setStatus(UserStatus.WAITING_ACCESS);
         getProjectUserRepository().save(pProjectUser);
     }

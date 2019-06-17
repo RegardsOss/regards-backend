@@ -71,10 +71,10 @@ public class MetaDataTest {
     @Test
     public void testMetaData() {
         final MetaData meta = new MetaData();
-        Assert.assertEquals(null, meta.getId());
-        Assert.assertEquals(null, meta.getKey());
-        Assert.assertEquals(null, meta.getValue());
-        Assert.assertEquals(null, meta.getVisibility());
+        Assert.assertNull(meta.getId());
+        Assert.assertNull(meta.getKey());
+        Assert.assertNull(meta.getValue());
+        Assert.assertNull(meta.getVisibility());
     }
 
     /**

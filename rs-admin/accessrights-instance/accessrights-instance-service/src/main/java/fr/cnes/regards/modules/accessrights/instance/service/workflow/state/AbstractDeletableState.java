@@ -31,7 +31,6 @@ import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.EntityTransitionForbiddenException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.instance.dao.IAccountRepository;
@@ -178,7 +177,7 @@ abstract class AbstractDeletableState implements IAccountTransitions {
         LOGGER.info("Deleting unlock tokens associated to account {} from instance.", pAccount.getEmail());
         accountUnlockTokenService.deleteAllByAccount(pAccount);
         LOGGER.info("Deleting account {} from instance.", pAccount.getEmail());
-        accountRepository.delete(pAccount.getId());
+        accountRepository.deleteById(pAccount.getId());
     }
 
     /**
@@ -191,6 +190,7 @@ abstract class AbstractDeletableState implements IAccountTransitions {
         try {
             for (String tenant : tenantService.getAllActiveTenants(IProjectUsersClient.TARGET_NAME)) {
                 runtimeTenantResolver.forceTenant(tenant);
+                FeignSecurityManager.asSystem();
                 //lets get the project user
                 ResponseEntity<Resource<ProjectUser>> projectUserResponse = projectUsersClient
                         .retrieveProjectUserByEmail(email);
@@ -200,6 +200,8 @@ abstract class AbstractDeletableState implements IAccountTransitions {
                 }
             }
         } finally {
+            // tenant being forced on each iteration, we only need to clear it once the loop has ended
+            FeignSecurityManager.reset();
             runtimeTenantResolver.clearTenant();
         }
     }

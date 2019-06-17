@@ -113,12 +113,12 @@ public class EmailTest {
         final Email testMail = new Email();
         Assert.assertArrayEquals(null, testMail.getBcc());
         Assert.assertArrayEquals(null, testMail.getCc());
-        Assert.assertEquals(null, testMail.getFrom());
-        Assert.assertEquals(null, testMail.getId());
-        Assert.assertEquals(null, testMail.getReplyTo());
-        Assert.assertEquals(null, testMail.getSentDate());
-        Assert.assertEquals(null, testMail.getSubject());
-        Assert.assertEquals(null, testMail.getText());
+        Assert.assertNull(testMail.getFrom());
+        Assert.assertNull(testMail.getId());
+        Assert.assertNull(testMail.getReplyTo());
+        Assert.assertNull(testMail.getSentDate());
+        Assert.assertNull(testMail.getSubject());
+        Assert.assertNull(testMail.getText());
         Assert.assertArrayEquals(null, testMail.getTo());
     }
 
@@ -245,7 +245,7 @@ public class EmailTest {
     }
 
     /**
-     * Test method for {@link fr.cnes.regards.modules.emails.domain.Email#setSentDate(java.time.LocalDateTime))}.
+     * Test method for {@link fr.cnes.regards.modules.emails.domain.Email#setSentDate(LocalDateTime)}
      */
     @Test
     public void testSetSentDate() {
@@ -290,14 +290,10 @@ public class EmailTest {
     @Test
     public void testEqualsObject() {
         final Email testMail = new Email();
-        Assert.assertFalse(email.equals(testMail));
+        Assert.assertNotEquals(email, testMail);
 
         final Email testMail2 = new Email();
-        Assert.assertTrue(testMail2.equals(testMail));
-
-        Assert.assertTrue(testMail.equals(testMail));
-
-        Assert.assertFalse(testMail.equals(null));
+        Assert.assertEquals(testMail2, testMail);
     }
 
 }

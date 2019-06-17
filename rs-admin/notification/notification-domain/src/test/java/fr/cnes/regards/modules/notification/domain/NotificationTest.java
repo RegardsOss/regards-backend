@@ -31,6 +31,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 
@@ -66,7 +67,7 @@ public class NotificationTest {
      */
     private static final NotificationStatus STATUS = NotificationStatus.UNREAD;
 
-    private static final NotificationType TYPE = NotificationType.INFO;
+    private static final NotificationLevel TYPE = NotificationLevel.INFO;
 
     /**
      * Role recipients
@@ -114,7 +115,7 @@ public class NotificationTest {
         notification.setMessage(MESSAGE);
         notification.setSender(SENDER);
         notification.setStatus(STATUS);
-        notification.setType(TYPE);
+        notification.setLevel(TYPE);
 
         roleRecipients = new HashSet<>();
         roleRecipients.add(DefaultRole.PUBLIC.toString());
@@ -137,14 +138,14 @@ public class NotificationTest {
     @Test
     @Purpose("Check the POJO getters/setters.")
     public void testGettersSetters() {
-        Assert.assertTrue(notification.getId().equals(ID));
-        Assert.assertTrue(notification.getMessage().equals(MESSAGE));
-        Assert.assertTrue(notification.getSender().equals(SENDER));
-        Assert.assertTrue(notification.getTitle().equals(TITLE));
-        Assert.assertTrue(notification.getDate().equals(DATE));
-        Assert.assertTrue(notification.getProjectUserRecipients().equals(projectUserRecipients));
-        Assert.assertTrue(notification.getRoleRecipients().equals(roleRecipients));
-        Assert.assertTrue(notification.getStatus().equals(STATUS));
+        Assert.assertEquals(notification.getId(), ID);
+        Assert.assertEquals(notification.getMessage(), MESSAGE);
+        Assert.assertEquals(notification.getSender(), SENDER);
+        Assert.assertEquals(notification.getTitle(), TITLE);
+        Assert.assertEquals(notification.getDate(), DATE);
+        Assert.assertEquals(notification.getProjectUserRecipients(), projectUserRecipients);
+        Assert.assertEquals(notification.getRoleRecipients(), roleRecipients);
+        Assert.assertEquals(notification.getStatus(), STATUS);
     }
 
     /**

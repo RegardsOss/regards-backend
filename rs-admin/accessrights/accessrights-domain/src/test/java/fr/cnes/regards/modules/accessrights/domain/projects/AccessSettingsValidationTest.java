@@ -18,11 +18,12 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.projects;
 
+import java.util.Set;
+
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
-import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -32,7 +33,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 
 /**
- * Validate hibernate constraints on {@link AccountSettings}.
+ * Validate hibernate constraints on {@link AccessSettings}.
  *
  * @author CS SI
  */
@@ -53,7 +54,7 @@ public class AccessSettingsValidationTest {
     }
 
     /**
-     * Check that the system fails when a wrong <code>mode</code> is set on an {@link AccountSettings}.
+     * Check that the system fails when a wrong <code>mode</code> is set on an {@link AccessSettings}.
      */
     @Test
     @Requirement("?")

@@ -23,7 +23,7 @@
 
 	<groupId>fr.cnes.regards.microservices</groupId>
 	<artifactId>administration</artifactId>
-	<version>3.0.0-RELEASE</version>
+	<version>0.4.0</version>
 	<packaging>pom</packaging>
 	<name>Administration</name>
 	<description>Aggregator project for system's administration features</description>
@@ -51,7 +51,7 @@
 	<parent>
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-aggregator-parent</artifactId>
-		<version>3.0.0-RELEASE</version>
+		<version>0.4.0</version>
 		<relativePath/>
 	</parent>
 
@@ -60,10 +60,10 @@
 		<module>bootstrap-administration</module>
 		<module>bootstrap-administration-instance</module>
 		<module>accessrights</module>
-		<module>accessrights-instance</module>
+		<module>accessrights-instance</module>	
 		<module>emails</module>
 		<module>notification</module>
-		<module>metrics</module>
+		<module>notification-instance</module>
 		<module>local-tenant-resolver</module>
 		<module>local-authorities-provider</module>
 		<module>remote-tenant-resolver</module>

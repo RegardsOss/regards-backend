@@ -198,7 +198,7 @@ public class RegistrationServiceTest {
         Mockito.when(projectUserRepository.findOneByEmail(EMAIL)).thenReturn(Optional.ofNullable(new ProjectUser()));
 
         // Make sur they have the same email, in order to throw the expected exception
-        Assert.assertTrue(projectUser.getEmail().equals(dto.getEmail()));
+        Assert.assertEquals(projectUser.getEmail(), dto.getEmail());
 
         // Trigger the exception
         registrationService.requestAccess(dto, false);
@@ -285,7 +285,7 @@ public class RegistrationServiceTest {
             private int nbCalls = 0;
 
             @Override
-            public ResponseEntity<Resource<Account>> answer(InvocationOnMock invocation) throws Throwable {
+            public ResponseEntity<Resource<Account>> answer(InvocationOnMock invocation) {
                 nbCalls++;
                 if (nbCalls == 1) {
                     return new ResponseEntity<>(HttpStatus.NOT_FOUND);

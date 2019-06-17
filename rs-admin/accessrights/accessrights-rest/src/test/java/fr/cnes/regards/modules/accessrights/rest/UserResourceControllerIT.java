@@ -21,11 +21,8 @@ package fr.cnes.regards.modules.accessrights.rest;
 import java.util.ArrayList;
 
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.collect.Lists;
@@ -45,13 +42,10 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 
 /**
  * @author Marc Sordi
- *
  */
 @MultitenantTransactional
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
 public class UserResourceControllerIT extends AbstractRegardsTransactionalIT {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserResourceControllerIT.class);
 
     @Autowired
     private IRoleRepository roleRepository;
@@ -80,19 +74,11 @@ public class UserResourceControllerIT extends AbstractRegardsTransactionalIT {
         // Add access to user
         user.setPermissions(Lists.newArrayList(resource));
 
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        performDefaultGet(UserResourceController.TYPE_MAPPING, requestBuilderCustomizer,
+        performDefaultGet(UserResourceController.TYPE_MAPPING, customizer().expectStatusOk(),
                           "Error retrieving resourcesAccess for user.", user.getEmail());
 
-        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isNotFound());
-        performDefaultGet(UserResourceController.TYPE_MAPPING, requestBuilderCustomizer,
+        performDefaultGet(UserResourceController.TYPE_MAPPING, customizer().expectStatusNotFound(),
                           "The user does not exists. There should be an error 404", "wrongEmail");
     }
 
-    @Override
-    protected Logger getLogger() {
-        return LOGGER;
-    }
 }

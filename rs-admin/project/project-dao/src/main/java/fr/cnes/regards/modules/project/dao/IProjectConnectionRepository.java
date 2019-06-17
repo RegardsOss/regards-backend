@@ -37,7 +37,7 @@ import fr.cnes.regards.modules.project.domain.ProjectConnection;
  * @author CS
  * @author Xavier-Alexandre Brochard
  * @author Marc Sordi
- * @since 1.0-SNAPSHOT
+
  */
 @InstanceEntity
 public interface IProjectConnectionRepository extends JpaRepository<ProjectConnection, Long> {
@@ -80,10 +80,15 @@ public interface IProjectConnectionRepository extends JpaRepository<ProjectConne
      * Custom query auto-implemented by JPA thanks to the method naming convention.
      *
      * @param projectName
-     *            The {@link ProjectConnection}'s {@link Projects}'s <code>name</code>
+     *            the project name
      * @return A {@link Page} of found {@link ProjectConnection}s
      */
     Page<ProjectConnection> findByProjectName(String projectName, Pageable pageable);
+
+    /**
+     * Delete all project connections
+     */
+    List<ProjectConnection> deleteByProjectId(Long projectId);
 
     /**
      * List all active connections for specified microservice. Connections from deleted projects are rejected.

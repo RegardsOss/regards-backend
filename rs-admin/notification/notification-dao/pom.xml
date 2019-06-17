@@ -51,20 +51,20 @@
 	<parent>
 		<groupId>fr.cnes.regards.modules</groupId>
 		<artifactId>notification</artifactId>
-		<version>3.0.0-RELEASE</version>
+		<version>0.4.0</version>
 	</parent>
 
 	<dependencies>
-		<dependency>
-			<groupId>fr.cnes.regards.framework</groupId>
-			<artifactId>jpa-multitenant-regards-starter</artifactId>
-			<scope>test</scope>
-		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.modules.notification</groupId>
 			<artifactId>notification-domain</artifactId>
 		</dependency>
 		<!-- Tests dependencies -->
+		<dependency>
+			<groupId>fr.cnes.regards.framework</groupId>
+			<artifactId>jpa-multitenant-regards-starter</artifactId>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>fr.cnes.regards.framework</groupId>
 			<artifactId>jpa-multitenant-regards-test</artifactId>

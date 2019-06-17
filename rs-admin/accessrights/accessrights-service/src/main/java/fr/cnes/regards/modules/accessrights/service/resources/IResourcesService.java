@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
  * Business service to handle Resources
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 public interface IResourcesService {
 
@@ -104,7 +104,7 @@ public interface IResourcesService {
      *            controller name
      * @param roleName the role name
      * @return List of {@link ResourcesAccess}
-     * @since 1.0-SNAPSHOT
+
      */
     List<ResourcesAccess> retrieveMicroserviceControllerEndpoints(String pMicroserviceName, String pControllerName,
             String roleName);
@@ -116,7 +116,7 @@ public interface IResourcesService {
      * @param pMicroserviceName microservice name
      * @param roleName the role name
      * @return Array of String (controllers names)
-     * @since 1.0-SNAPSHOT
+
      */
     List<String> retrieveMicroserviceControllers(String pMicroserviceName, String roleName);
 

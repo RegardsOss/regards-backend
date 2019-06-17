@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.accessrights.instance.service.workflow.state;
 
+import java.util.Optional;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -177,8 +179,8 @@ public class LockedStateTest {
         account.setStatus(AccountStatus.ACTIVE);
 
         // Mock
-        Mockito.when(accountRepository.exists(ID)).thenReturn(true);
-        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
+        Mockito.when(accountRepository.existsById(ID)).thenReturn(true);
+        Mockito.when(accountRepository.findById(ID)).thenReturn(Optional.of(account));
         Mockito.when(accountStateProvider.getState(account))
                 .thenReturn(new ActiveState(projectUsersClient, accountRepository, tenantService, runtimeTenantResolver,
                         passwordResetService, accountUnlockTokenService));
@@ -202,8 +204,8 @@ public class LockedStateTest {
         final String wrongToken = "wrongToken";
 
         // Mock
-        Mockito.when(accountRepository.exists(ID)).thenReturn(true);
-        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
+        Mockito.when(accountRepository.existsById(ID)).thenReturn(true);
+        Mockito.when(accountRepository.findById(ID)).thenReturn(Optional.of(account));
         Mockito.when(accountStateProvider.getState(account))
                 .thenReturn(new LockedState(projectUsersClient, accountRepository, tenantService, runtimeTenantResolver,
                         passwordResetService, accountUnlockTokenService, accountService, templateService, emailClient));
@@ -224,8 +226,8 @@ public class LockedStateTest {
     @Purpose("Check that the system allows a user to unlock its account with a code.")
     public void performUnlockAccount() throws EntityException {
         // Mock
-        Mockito.when(accountRepository.exists(ID)).thenReturn(true);
-        Mockito.when(accountRepository.findOne(ID)).thenReturn(account);
+        Mockito.when(accountRepository.existsById(ID)).thenReturn(true);
+        Mockito.when(accountRepository.findById(ID)).thenReturn(Optional.of(account));
         Mockito.when(accountStateProvider.getState(account))
                 .thenReturn(new LockedState(projectUsersClient, accountRepository, tenantService, runtimeTenantResolver,
                         passwordResetService, accountUnlockTokenService, accountService, templateService, emailClient));

@@ -23,46 +23,39 @@ import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.persistence.EntityManager;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import fr.cnes.regards.framework.amqp.IInstancePublisher;
 import fr.cnes.regards.framework.encryption.AESEncryptionService;
 import fr.cnes.regards.framework.encryption.configuration.CipherProperties;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.project.dao.IProjectConnectionRepository;
 import fr.cnes.regards.modules.project.dao.IProjectRepository;
-import fr.cnes.regards.modules.project.dao.stub.ProjectConnectionRepositoryStub;
-import fr.cnes.regards.modules.project.dao.stub.ProjectRepositoryStub;
 import fr.cnes.regards.modules.project.domain.Project;
 import fr.cnes.regards.modules.project.domain.ProjectConnection;
 
 /**
- *
  * Class ProjectServiceTest
  *
  * Project business service tests
- *
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
- * @since 1.0-SNAPSHOT
+ * @author Olivier Rousselot
  */
-public class ProjectConnectionServiceTest {
+@PropertySource("classpath:application-test.properties")
+public class ProjectConnectionServiceTest extends AbstractRegardsServiceIT {
 
     /**
      * Common string value for project creation.
@@ -118,63 +111,59 @@ public class ProjectConnectionServiceTest {
 
     private static final String PROJECT2_URL = "url2";
 
-    /**
-     * Project service to test.
-     */
-    private ProjectService projectService;
+    @Autowired
+    private IProjectService projectService;
 
-    /**
-     * Project service to test.
-     */
-    private ProjectConnectionService projectConnectionService;
+    @Autowired
+    private IProjectConnectionService projectConnectionService;
 
-    /**
-     * Stubbed repository
-     */
-    private IProjectConnectionRepository projectConnectionRepoStub;
+    @Autowired
+    private IProjectConnectionRepository projectConnectionRepo;
 
-    /**
-     *
-     * Initializa DAO Stub and inline entities for tests
-     *
-     * @since 1.0-SNAPSHOT
-     */
+    @Autowired
+    private IProjectRepository projectRepo;
+
+    private Project project1;
+
+    private Project project2;
+
+    private ProjectConnection projectCtx;
+
     @Before
     public void init() throws InvalidAlgorithmParameterException, InvalidKeyException, IOException {
-        // use a stub repository, to be able to only test the service
-        IProjectRepository projectRepoStub = new ProjectRepositoryStub();
-        projectService = new ProjectService(projectRepoStub, Mockito.mock(ITenantResolver.class),
-                Mockito.mock(IInstancePublisher.class), "default-project-test",
-                "http://localhost/default-project-test");
+        projectConnectionRepo.deleteAll();
+        projectRepo.deleteAll();
+
         AESEncryptionService aesEncryptionService = new AESEncryptionService();
         aesEncryptionService
                 .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "1234567812345678"));
-        projectConnectionRepoStub = new ProjectConnectionRepositoryStub();
-        projectConnectionService = new ProjectConnectionService(projectRepoStub, projectConnectionRepoStub,
-                Mockito.mock(IInstancePublisher.class), Mockito.mock(EntityManager.class), aesEncryptionService);
 
-        Project project1 = projectRepoStub
-                .save(new Project(0L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_1));
-        Project project2 = projectRepoStub
-                .save(new Project(1L, COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_2));
+        project1 = new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_1);
+        project1.setLabel("Project1");
+        project1 = projectRepo.save(project1);
 
-        projectConnectionRepoStub.save(new ProjectConnection(0L, project1, MS_TEST_1, COMMON_PROJECT_USER_NAME,
-                COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT1_URL));
-        projectConnectionRepoStub.save(new ProjectConnection(1L, project2, MS_TEST_2, COMMON_PROJECT_USER_NAME,
+        project2 = new Project(COMMON_PROJECT_DESCRIPTION, COMMON_PROJECT_ICON, true, PROJECT_TEST_2);
+        project2.setLabel("Project2");
+        project2 = projectRepo.save(project2);
+
+        projectCtx = new ProjectConnection(project1, MS_TEST_1, COMMON_PROJECT_USER_NAME, COMMON_PROJECT_USER_PWD,
+                COMMON_PROJECT_DRIVER, PROJECT1_URL);
+        projectCtx = projectConnectionRepo.save(projectCtx);
+        projectConnectionRepo.save(new ProjectConnection(project2, MS_TEST_2, COMMON_PROJECT_USER_NAME,
                 COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT2_URL));
+        projectConnectionRepo.save(new ProjectConnection(project2, "ms-test-3", COMMON_PROJECT_USER_NAME,
+                COMMON_PROJECT_USER_PWD, COMMON_PROJECT_DRIVER, PROJECT2_URL));
+
     }
 
     /**
-     *
      * Test creation of a new database connection for a given project and a given microservice
      * @throws ModuleException if error occurs!
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Test creation of a new database connection for a given project and a given microservice.")
     @Test
-    public void createProjectConnection() throws ModuleException, BadPaddingException, IllegalBlockSizeException {
+    public void createProjectConnection() throws ModuleException {
 
         Project project1 = projectService.retrieveProject(PROJECT_TEST_1);
 
@@ -202,10 +191,7 @@ public class ProjectConnectionServiceTest {
     }
 
     /**
-     *
      * Test deletion of a database connection for a given project and a given microservice.
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Test deletion of a database connection for a given project and a given microservice.")
@@ -237,19 +223,27 @@ public class ProjectConnectionServiceTest {
         } catch (final EntityNotFoundException e) {
             // Nothing to do
         }
+    }
 
+    @Test
+    public void testProjectDeletion() throws ModuleException {
+
+        Page<ProjectConnection> page = projectConnectionRepo.findByProjectName(PROJECT_TEST_2, Pageable.unpaged());
+        Assert.assertTrue(page.getTotalElements() == 2);
+
+        projectService.deleteProject(PROJECT_TEST_2);
+
+        page = projectConnectionRepo.findByProjectName(PROJECT_TEST_2, Pageable.unpaged());
+        Assert.assertTrue(page.isEmpty());
     }
 
     /**
-     *
      * Test updating of a database connection for a given project and a given microservice.
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Test updating of a database connection for a given project and a given microservice.")
     @Test
-    public void updateProjectConnection() throws BadPaddingException, IllegalBlockSizeException {
+    public void updateProjectConnection() {
 
         final String updateUserName = "newUser";
         final String errorUpdate = "Error the update should be in error. The entity doest not exists.";
@@ -262,7 +256,7 @@ public class ProjectConnectionServiceTest {
         connection.setUserName(updateUserName);
         try {
             connection = projectConnectionService.updateProjectConnection(connection.getId(), connection);
-            Assert.assertTrue("Error updating project connection.", connection.getUserName().equals(updateUserName));
+            Assert.assertEquals("Error updating project connection.", connection.getUserName(), updateUserName);
         } catch (ModuleException e1) {
             Assert.fail(e1.getMessage());
         }
@@ -293,14 +287,12 @@ public class ProjectConnectionServiceTest {
 
     /**
      * Test to retrieve projects connections of given project's name in instance database.
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose(" Test to retrieve projects connections of given project's name in instance database.")
     @Test
     public void testRetrieveProjectsConnectionsByProject() {
-        final Pageable pageable = new PageRequest(0, 100);
+        final Pageable pageable = PageRequest.of(0, 100);
 
         // Call tested method
         final Page<ProjectConnection> actual = projectConnectionService
@@ -312,10 +304,7 @@ public class ProjectConnectionServiceTest {
 
     /**
      * Test to retrieve projects connections of passed id in instance database.
-     *
-     * @throws EntityNotFoundException
-     *             No project connection with passed id
-     * @since 1.0-SNAPSHOT
+     * @throws EntityNotFoundException No project connection with passed id
      */
     @Requirement("REGARDS_DSL_SYS_ARC_050")
     @Purpose("Test to retrieve projects connections of passed id in instance database.")
@@ -323,7 +312,7 @@ public class ProjectConnectionServiceTest {
     public void testRetrieveProjectConnectionById() throws EntityNotFoundException {
 
         // Call tested method
-        final ProjectConnection actual = projectConnectionService.retrieveProjectConnectionById(0L);
+        ProjectConnection actual = projectConnectionService.retrieveProjectConnectionById(projectCtx.getId());
 
         // Check
         Assert.assertNotNull(actual);

@@ -19,7 +19,7 @@
 package fr.cnes.regards.modules.accessrights.instance.domain.passwordreset;
 
 /**
- * Dto class wrapping data required for the {@link AccountsController#requestResetPassword} endpoint.
+ * Dto class
  *
  * @author Xavier-Alexandre Brochard
  */
@@ -35,10 +35,6 @@ public class RequestResetPasswordDto {
      */
     private String requestLink;
 
-    /**
-     * @param pOriginUrl
-     * @param pResetUrl
-     */
     public RequestResetPasswordDto(final String pOriginUrl, final String pRequestLink) {
         super();
         originUrl = pOriginUrl;

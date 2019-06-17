@@ -27,6 +27,7 @@ import fr.cnes.regards.modules.accessrights.instance.domain.Account;
  *
  * @author Xavier-Alexandre Brochard
  */
+@SuppressWarnings("serial")
 public class OnRefuseAccountEvent extends ApplicationEvent {
 
     /**

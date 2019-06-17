@@ -38,13 +38,10 @@ import fr.cnes.regards.modules.project.dao.IProjectRepository;
 import fr.cnes.regards.modules.project.domain.Project;
 
 /**
- *
  * Class ProjectsControllerIT
  *
  * Tests for REST endpoints to access Project entities.
- *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
  */
 @InstanceTransactional
 @ContextConfiguration(classes = { LicenseConfiguration.class })
@@ -73,150 +70,108 @@ public class ProjectsControllerIT extends AbstractRegardsIT {
 
     @Before
     public void initialize() {
-        instanceAdmintoken = jwtService.generateToken("test1", getDefaultUserEmail(),
-                                                      DefaultRole.INSTANCE_ADMIN.name());
+        instanceAdmintoken = jwtService
+                .generateToken("test1", getDefaultUserEmail(), DefaultRole.INSTANCE_ADMIN.name());
     }
 
     /**
-     *
      * Check REST Access to project resources and Hateoas returned links
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_ADM_INST_130")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access to project resources and returned Hateoas links")
     @Test
     public void retrievePublicProjectsTest() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        performGet("/projects/public", instanceAdmintoken, requestBuilderCustomizer, "error");
+        performGet("/projects/public", instanceAdmintoken,
+                   customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT), "error");
     }
 
     /**
-     *
      * Check REST Access to project resources and Hateoas returned links
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_ADM_INST_130")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access to project resources and returned Hateoas links")
     @Test
     public void retrieveAllProjectsByPage() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        requestBuilderCustomizer
-                .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.size", Matchers.is(1)));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                .jsonPath(JSON_PATH_ROOT + ".metadata.totalElements", Matchers.is(3)));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalPages",
-                                                                               Matchers.is(3)));
-        performGet("/projects?page={page}&size={size}", instanceAdmintoken, requestBuilderCustomizer,
+        performGet("/projects?page={page}&size={size}", instanceAdmintoken,
+                   customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT)
+                           .expectValue(JSON_PATH_ROOT + ".metadata.size", 1)
+                           .expectValue(JSON_PATH_ROOT + ".metadata.totalElements", 3)
+                           .expectValue(JSON_PATH_ROOT + ".metadata.totalPages", 3),
                    "Error there must be project results", "0", "1");
     }
 
     /**
-     *
      * Check REST Access to project resources and Hateoas returned links
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_ADM_INST_130")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access to project resources and returned Hateoas links")
     @Test
     public void retrieveAllProjects() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        requestBuilderCustomizer
-                .addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.size", Matchers.is(20)));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers
-                .jsonPath(JSON_PATH_ROOT + ".metadata.totalElements", Matchers.is(3)));
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT + ".metadata.totalPages",
-                                                                               Matchers.is(1)));
-        requestBuilderCustomizer.customizeRequestParam().param("size", "20");
-        performGet("/projects", instanceAdmintoken, requestBuilderCustomizer, "Error there must be project results");
+        performGet("/projects", instanceAdmintoken, customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT)
+                           .expectValue(JSON_PATH_ROOT + ".metadata.size", 20)
+                           .expectValue(JSON_PATH_ROOT + ".metadata.totalElements", 3)
+                           .expectValue(JSON_PATH_ROOT + ".metadata.totalPages", 1).addParameter("size", "20"),
+
+                   "Error there must be project results");
     }
 
     /**
-     *
      * Check REST Access to project resource and Hateoas returned links
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_ADM_INST_100")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access to project resource and Hateoas returned links")
     @Test
     public void retrieveProjectTest() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        performGet("/projects/test1", instanceAdmintoken, requestBuilderCustomizer,
+        performGet("/projects/test1", instanceAdmintoken,
+                   customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT),
                    "Error there must be project results");
     }
 
     /**
-     *
      * Check REST Access for project creation and Hateoas returned links
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_ADM_INST_100")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access for project creation and Hateoas returned links")
     @Test
     public void createProjectTest() {
-
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         Project project = new Project("description", "icon", true, "create-project");
         project.setLabel("create-project");
-        performPost("/projects", instanceAdmintoken, project, requestBuilderCustomizer,
+        performPost("/projects", instanceAdmintoken, project,
+                    customizer().expectStatusCreated().expectIsNotEmpty(JSON_PATH_ROOT),
                     "Error there must be project results");
     }
 
     @Test
     public void createTwoProjectWithDifferentCase() {
-
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
         Project project = new Project("description", "icon", true, "create-project");
         project.setLabel("create-project");
-        performPost("/projects", instanceAdmintoken, project, requestBuilderCustomizer,
+        performPost("/projects", instanceAdmintoken, project,
+                    customizer().expectStatusCreated().expectIsNotEmpty(JSON_PATH_ROOT),
                     "Error there must be project results");
 
-        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isConflict());
         project = new Project("description", "icon", true, "creAte-project");
         project.setLabel("create-project");
-        performPost("/projects", instanceAdmintoken, project, requestBuilderCustomizer,
+        performPost("/projects", instanceAdmintoken, project, customizer().expectStatusConflict(),
                     "Error there must be project results");
 
     }
 
     /**
-     *
      * Check REST Access for project update and Hateoas returned links
-     *
-     * @since 1.0-SNAPSHOT
      */
     @Requirement("REGARDS_DSL_ADM_INST_100")
     @Requirement("REGARDS_DSL_SYS_ARC_020")
     @Purpose("Check REST Access for project update and Hateoas returned links")
     @Test
     public void updateProjectTest() {
-        final Project project = projectRepo.findOneByNameIgnoreCase("test1");
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.jsonPath(JSON_PATH_ROOT).isNotEmpty());
-        performPut("/projects/" + project.getName(), instanceAdmintoken, project, requestBuilderCustomizer,
+        Project project = projectRepo.findOneByNameIgnoreCase("test1");
+        performPut("/projects/" + project.getName(), instanceAdmintoken, project,
+                   customizer().expectStatusOk().expectIsNotEmpty(JSON_PATH_ROOT),
                    "Error there must be project results");
     }
 

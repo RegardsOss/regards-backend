@@ -40,20 +40,17 @@ import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnection;
 import fr.cnes.regards.framework.jpa.multitenant.properties.TenantConnectionState;
 
 /**
- *
  * Class ProjectConnection
  *
  * ProjectConnection Entity. Describe a database connection for a couple project/microservice
- *
  * @author CS
- * @since 1.0-SNAPSHOT
  */
 @ValidateOnExecution
 @InstanceEntity
 @Entity
 @SequenceGenerator(name = "projectConnectionSequence", initialValue = 1, sequenceName = "seq_project_connection")
-@Table(name = "t_project_connection",
-        uniqueConstraints = { @UniqueConstraint(name = "uk_project_connection_project_microservice",
+@Table(name = "t_project_connection", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_project_connection_project_microservice",
                 columnNames = { "project_id", "microservice" }) })
 public class ProjectConnection implements IIdentifiable<Long> {
 
@@ -122,76 +119,54 @@ public class ProjectConnection implements IIdentifiable<Long> {
     private String errorCause;
 
     /**
-     *
      * Constructor
-     *
-     * @since 1.0-SNAPSHOT
      */
     public ProjectConnection() {
-        super();
         microservice = "undefined";
         project = new Project();
     }
 
     /**
-     *
      * Constructor
-     *
-     * @param pId
-     *            Identifier
-     * @param pProject
-     *            Associated project
-     * @param pMicroservice
-     *            Microservice name
-     * @param pUserName
-     *            Database username
-     * @param pPassword
-     *            Database password
-     * @param pDriverClassName
-     *            Database driver class name
-     * @param pUrl
-     *            Database url
-     * @since 1.0-SNAPSHOT
+     * @param id Identifier
+     * @param project Associated project
+     * @param microservice Microservice name
+     * @param username Database username
+     * @param password Database password
+     * @param driverClassName Database driver class name
+     * @param url Database url
+     * @deprecated giving id is totally nonsense (and is not taken into account)
      */
-    public ProjectConnection(final Long pId, final Project pProject, final String pMicroservice, final String pUserName,
-            final String pPassword, final String pDriverClassName, final String pUrl) {
-        super();
-        id = pId;
-        project = pProject;
-        microservice = pMicroservice;
-        userName = pUserName;
-        password = pPassword;
-        driverClassName = pDriverClassName;
-        url = pUrl;
+    @Deprecated
+    public ProjectConnection(Long id, Project project, String microservice, String username, String password,
+            String driverClassName, String url) {
+        this.id = id;
+        this.project = project;
+        this.microservice = microservice;
+        userName = username;
+        this.password = password;
+        this.driverClassName = driverClassName;
+        this.url = url;
     }
 
     /**
-     *
      * Constructor
-     *
-     * @param pProject
-     *            Associated project
-     * @param pMicroservice
-     *            Microservice name
-     * @param pUserName
-     *            Database username
-     * @param pPassword
-     *            Database password
-     * @param pDriverClassName
-     *            Database driver class name
-     * @param pUrl
-     *            Database url
-     * @since 1.0-SNAPSHOT
+     * @param project Associated project
+     * @param microservice Microservice name
+     * @param username Database username
+     * @param password Database password
+     * @param driverClassName Database driver class name
+     * @param url Database url
      */
-    public ProjectConnection(final Project pProject, final String pMicroservice, final String pUserName,
-            final String pPassword, final String pDriverClassName, final String pUrl) {
+    public ProjectConnection(Project project, String microservice, String username, String password,
+            String driverClassName, String url) {
         super();
-        project = pProject;
-        microservice = pMicroservice;
-        userName = pUserName;
-        password = pPassword;
-        driverClassName = pDriverClassName;
-        url = pUrl;
+        this.project = project;
+        this.microservice = microservice;
+        userName = username;
+        this.password = password;
+        this.driverClassName = driverClassName;
+        this.url = url;
     }
 
     @Override
@@ -199,55 +174,55 @@ public class ProjectConnection implements IIdentifiable<Long> {
         return id;
     }
 
-    public void setId(final Long pId) {
-        id = pId;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Project getProject() {
         return project;
     }
 
-    public void setProject(final Project pProject) {
-        project = pProject;
+    public void setProject(Project project) {
+        this.project = project;
     }
 
     public String getMicroservice() {
         return microservice;
     }
 
-    public void setMicroservice(final String pMicroservice) {
-        microservice = pMicroservice;
+    public void setMicroservice(String microservice) {
+        this.microservice = microservice;
     }
 
     public String getUserName() {
         return userName;
     }
 
-    public void setUserName(final String pUserName) {
-        userName = pUserName;
+    public void setUserName(String username) {
+        userName = username;
     }
 
     public String getPassword() {
         return password;
     }
 
-    public void setPassword(final String pPassword) {
-        password = pPassword;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getDriverClassName() {
         return driverClassName;
     }
 
-    public void setDriverClassName(final String pDriverClassName) {
-        driverClassName = pDriverClassName;
+    public void setDriverClassName(String driverClassName) {
+        this.driverClassName = driverClassName;
     }
 
     public String getUrl() {
         return url;
     }
 
-    public void setUrl(final String pUrl) {
+    public void setUrl(String pUrl) {
         url = pUrl;
     }
 
@@ -268,11 +243,8 @@ public class ProjectConnection implements IIdentifiable<Long> {
     }
 
     /**
-     * Transform a {@link ProjectConnection} in {@link TenantConnection}
-     *
-     * @param projectConnection
-     *            {@link ProjectConnection}
-     * @return {@link TenantConnection}
+     * Transform a ProjectConnection in TenantConnection
+     * @return TenantConnection
      */
     public TenantConnection toTenantConnection() {
         TenantConnection tenantConnection = new TenantConnection();

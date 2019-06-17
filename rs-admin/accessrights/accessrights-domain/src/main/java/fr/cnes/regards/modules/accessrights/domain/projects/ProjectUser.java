@@ -45,7 +45,7 @@ import java.util.List;
 
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
-import org.hibernate.validator.constraints.Email;
+import javax.validation.constraints.Email;
 
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
@@ -353,13 +353,9 @@ public class ProjectUser implements IIdentifiable<Long> {
         }
         final ProjectUser other = (ProjectUser) obj;
         if (email == null) {
-            if (other.email != null) {
-                return false;
-            }
-        } else if (!email.equals(other.email)) {
-            return false;
-        }
-        return true;
+            return other.email == null;
+        } else
+            return email.equals(other.email);
     }
 
     @Override

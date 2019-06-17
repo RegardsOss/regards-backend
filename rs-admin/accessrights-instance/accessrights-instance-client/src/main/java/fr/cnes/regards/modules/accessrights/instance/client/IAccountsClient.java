@@ -23,7 +23,6 @@ import javax.validation.Valid;
 
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,9 +32,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import fr.cnes.regards.framework.feign.annotation.RestClient;
-import fr.cnes.regards.framework.module.rest.exception.EntityException;
-import fr.cnes.regards.framework.security.annotation.ResourceAccess;
-import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.instance.domain.AccountNPassword;
 import fr.cnes.regards.modules.accessrights.instance.domain.CodeType;
@@ -47,10 +43,11 @@ import fr.cnes.regards.modules.accessrights.instance.domain.passwordreset.Reques
  *
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
- * @since 1.0-SNAPSHOT
+
  */
-@RestClient(name = "rs-admin-instance")
-@RequestMapping(path = "/accounts", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RestClient(name = "rs-admin-instance", contextId = "rs-admin-instance.accounts-client")
+@RequestMapping(path = "/accounts", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
+        produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IAccountsClient {
 
     /**
@@ -151,7 +148,7 @@ public interface IAccountsClient {
      * @throws EntityNotFoundException
      */
     @RequestMapping(value = "/{account_email}/resetPassword", method = RequestMethod.POST)
-    public ResponseEntity<Void> requestResetPassword(@PathVariable("account_email") final String pAccountEmail,
+    ResponseEntity<Void> requestResetPassword(@PathVariable("account_email") final String pAccountEmail,
             @Valid @RequestBody final RequestResetPasswordDto pDto);
 
     /**

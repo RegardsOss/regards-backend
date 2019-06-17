@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.microservices.administration;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -46,7 +44,7 @@ import fr.cnes.regards.modules.project.service.ProjectService;
  * connections are read from the instance database through the ProjectService.
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 public class LocalTenantConnectionResolver implements ITenantConnectionResolver {
 
@@ -73,7 +71,7 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
      *            the {@link ProjectService}
      * @param pProjectConnectionService
      *            the  {@link ProjectConnectionService}
-     * @since 1.0-SNAPSHOT
+
      */
     public LocalTenantConnectionResolver(final IProjectService pProjectService,
             final IProjectConnectionService pProjectConnectionService) {
@@ -115,7 +113,6 @@ public class LocalTenantConnectionResolver implements ITenantConnectionResolver 
             LOG.error("Error adding new tenant. Cause : {}", e.getMessage());
             LOG.debug(e.getMessage(), e);
         }
-
 
     }
 

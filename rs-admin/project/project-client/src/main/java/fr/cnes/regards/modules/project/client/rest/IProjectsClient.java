@@ -39,9 +39,9 @@ import fr.cnes.regards.modules.project.domain.Project;
  *
  * @author Sébastien Binda
  * @author Xavier-Alexandre Brochard
- * @since 1.0-SNAPSHOT
+
  */
-@RestClient(name = "rs-admin-instance")
+@RestClient(name = "rs-admin-instance", contextId = "rs-admin-instance.projects-client")
 @RequestMapping(value = "/projects", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IProjectsClient {
@@ -59,7 +59,7 @@ public interface IProjectsClient {
      *            number of elements per page
      *
      * @return List of projects
-     * @since 1.0-SNAPSHOT
+
      */
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
@@ -68,9 +68,6 @@ public interface IProjectsClient {
 
     /**
      * Same than {@link IProjectsClient#retrieveProjectList(int, int)} but only for public projects
-     * @param page
-     * @param size
-     * @return
      */
     @RequestMapping(value = "/public", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
@@ -84,7 +81,7 @@ public interface IProjectsClient {
      * @param pNewProject
      *            new Project to create
      * @return Created project
-     * @since 1.0-SNAPSHOT
+
      */
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
@@ -97,7 +94,7 @@ public interface IProjectsClient {
      * @param pProjectName
      *            Project name
      * @return Project
-     * @since 1.0-SNAPSHOT
+
      */
     @RequestMapping(method = RequestMethod.GET, value = "/{project_name}")
     @ResponseBody
@@ -112,7 +109,7 @@ public interface IProjectsClient {
      * @param pProjectToUpdate
      *            project to update
      * @return Updated Project
-     * @since 1.0-SNAPSHOT
+
      */
     @RequestMapping(method = RequestMethod.PUT, value = "/{project_name}")
     @ResponseBody
@@ -126,7 +123,7 @@ public interface IProjectsClient {
      * @param pProjectName
      *            Project name to delete
      * @return Void
-     * @since 1.0-SNAPSHOT
+
      */
     @RequestMapping(method = RequestMethod.DELETE, value = "/{project_name}")
     @ResponseBody

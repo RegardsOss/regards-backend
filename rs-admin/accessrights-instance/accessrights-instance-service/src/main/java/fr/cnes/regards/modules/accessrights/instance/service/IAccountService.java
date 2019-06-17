@@ -133,7 +133,6 @@ public interface IAccountService {
      * @throws EntityNotFoundException
      *             Thrown when no {@link Account} could be found with id <code>pAccountId</code>
      * @return <code>true</code> if the password is valid, else <code>false</code>
-     * @throws EntityException
      */
     boolean validatePassword(String email, String password, boolean checkAccountValidity)
             throws EntityNotFoundException;

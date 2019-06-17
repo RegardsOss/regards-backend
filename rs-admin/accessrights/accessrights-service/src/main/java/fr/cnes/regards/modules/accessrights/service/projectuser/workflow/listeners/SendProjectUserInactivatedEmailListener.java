@@ -26,19 +26,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Component;
 
 import feign.FeignException;
-import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
-import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.accessrights.service.projectuser.workflow.events.OnInactiveEvent;
-import fr.cnes.regards.modules.emails.client.IEmailClient;
+import fr.cnes.regards.modules.emails.service.IEmailService;
 import fr.cnes.regards.modules.templates.service.ITemplateService;
-import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
+import freemarker.template.TemplateException;
 
 /**
  * Listen to {@link OnInactiveEvent} in order to warn the user its account request was refused.
@@ -48,57 +45,25 @@ import fr.cnes.regards.modules.templates.service.TemplateServiceConfiguration;
 @Component
 public class SendProjectUserInactivatedEmailListener implements ApplicationListener<OnInactiveEvent> {
 
-    /**
-     * Class logger
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(SendProjectUserInactivatedEmailListener.class);
 
-    /**
-     * The email template
-     */
-    private static final String TEMPLATE = TemplateServiceConfiguration.PROJECT_USER_INACTIVATED_TEMPLATE_CODE;
-
-    /**
-     * Service handling CRUD operations on email templates
-     */
     private final ITemplateService templateService;
 
-    /**
-     * Client for sending emails
-     */
-    private final IEmailClient emailClient;
+    private final IEmailService emailService;
 
-    /**
-     * Account service
-     */
     private final IAccountsClient accountsClient;
 
-    /**
-     * @param pTemplateService
-     * @param pEmailClient
-     * @param accountsClient
-     */
-    public SendProjectUserInactivatedEmailListener(ITemplateService pTemplateService, IEmailClient pEmailClient,
+    public SendProjectUserInactivatedEmailListener(ITemplateService pTemplateService, IEmailService emailService,
             IAccountsClient accountsClient) {
-        super();
         templateService = pTemplateService;
-        emailClient = pEmailClient;
+        this.emailService = emailService;
         this.accountsClient = accountsClient;
     }
 
-    /**
-     * Send a password reset email based on information stored in the passed event
-     *
-     * @param pEvent
-     *            the init event
-     */
     @Override
-    public void onApplicationEvent(final OnInactiveEvent pEvent) {
+    public void onApplicationEvent(final OnInactiveEvent event) {
         // Retrieve the user
-        ProjectUser projectUser = pEvent.getProjectUser();
-
-        // Build the list of recipients
-        String[] recipients = { projectUser.getEmail() };
+        ProjectUser projectUser = event.getProjectUser();
 
         // Create a hash map in order to store the data to inject in the mail
         Map<String, String> data = new HashMap<>();
@@ -117,34 +82,16 @@ public class SendProjectUserInactivatedEmailListener implements ApplicationListe
             data.put("name", "");
         }
 
-        SimpleMailMessage email;
+        String message;
         try {
-            email = templateService.writeToEmail(TEMPLATE, data, recipients);
-        } catch (final EntityNotFoundException e) {
-            LOGGER.error("Could not find the template to generate the email notifying the account refusal. Falling back to default.",
-                         e);
-            email = writeToEmailDefault(data, recipients);
+            message = templateService.render(AccessRightTemplateConf.USER_DISABLED_TEMPLATE_NAME, data);
+        } catch (final TemplateException e) {
+            LOGGER.error(
+                    "Could not find the template to generate the email notifying the account refusal. Falling back to default.",
+                    e);
+            message = "Your access has been deactivated.";
         }
+        emailService.sendEmail(message, "[REGARDS] User disabled", null, projectUser.getEmail());
 
-        // Send it
-        FeignSecurityManager.asSystem();
-        emailClient.sendEmail(email);
-        FeignSecurityManager.reset();
     }
-
-    /**
-     * Send super simple mail in case the template service fails
-     *
-     * @param data the data
-     * @param recipients the recipients
-     * @return the result email
-     */
-    private SimpleMailMessage writeToEmailDefault(Map<String, String> data, String[] recipients) {
-        SimpleMailMessage email = new SimpleMailMessage();
-        email.setTo(recipients);
-        email.setSubject("REGARDS - Access deactivated");
-        email.setText("Your access has been deactivated.");
-        return email;
-    }
-
 }

@@ -28,7 +28,6 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.modules.emails.dao.IEmailRepository;
 import fr.cnes.regards.modules.emails.domain.Email;
 
@@ -39,7 +38,7 @@ import fr.cnes.regards.modules.emails.domain.Email;
  * Simple mail service doesn't persist mail entities in database. To persist entities use EmailService.
  *
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @Service
 public class SimpleEmailService extends AbstractEmailService {
@@ -57,8 +56,6 @@ public class SimpleEmailService extends AbstractEmailService {
     /**
      * Creates an {@link EmailService} wired to the given {@link IEmailRepository}.
      *
-     * @param pEmailRepository
-     *            Autowired by Spring. Must not be {@literal null}.
      * @param pMailSender
      *            Autowired by Spring. Must not be {@literal null}.
      */
@@ -88,13 +85,13 @@ public class SimpleEmailService extends AbstractEmailService {
     }
 
     @Override
-    public Email retrieveEmail(final Long id) throws ModuleException {
+    public Email retrieveEmail(final Long id) {
         // Mail are not saved
         return null;
     }
 
     @Override
-    public void resendEmail(final Long id) throws ModuleException {
+    public void resendEmail(final Long id) {
         // Mail are not saved
     }
 

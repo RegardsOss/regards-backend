@@ -18,6 +18,9 @@
  */
 package fr.cnes.regards.modules.accessrights.domain.emailverification;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ForeignKey;
@@ -29,10 +32,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import java.time.LocalDateTime;
-import java.util.UUID;
-
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 
@@ -42,7 +42,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
  *
- * @see <a>http://www.baeldung.com/registration-verify-user-by-email</a>
  */
 @Entity
 @Table(name = "t_email_verification_token",

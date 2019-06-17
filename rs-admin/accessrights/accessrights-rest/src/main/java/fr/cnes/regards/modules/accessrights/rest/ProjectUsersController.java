@@ -65,7 +65,7 @@ import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
  * @author svissier
  * @author Xavier-Alexandre Brochard
  * @author Sébastien Binda
- * @since 1.0-SNAPSHOT
+
  */
 @RestController
 @RequestMapping(ProjectUsersController.TYPE_MAPPING)
@@ -388,7 +388,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      * project admins.
      * @param projectUser {@link ProjectUser} to transform to HATEOAS resources.
      * @return HATEOAS resources for {@link ProjectUser}
-     * @since 1.0-SNAPSHOT
+
      */
     public Resource<ProjectUser> toResourceRegisteredUser(ProjectUser projectUser) {
         Resource<ProjectUser> resource = resourceService.toResource(projectUser);

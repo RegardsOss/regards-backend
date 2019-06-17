@@ -31,10 +31,9 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.Email;
-import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.gson.annotation.GsonIgnore;
 import fr.cnes.regards.framework.jpa.IIdentifiable;
@@ -139,10 +138,6 @@ public class Account implements IIdentifiable<Long> {
         return id;
     }
 
-    /**
-     * @param pId
-     *            the id to set
-     */
     public void setId(final Long id) {
         this.id = id;
     }
@@ -154,10 +149,6 @@ public class Account implements IIdentifiable<Long> {
         return email;
     }
 
-    /**
-     * @param pEmail
-     *            the email to set
-     */
     public void setEmail(final String email) {
         this.email = email;
     }
