@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.cloud.gateway.filters;
 
+import fr.cnes.regards.cloud.gateway.ExtendedProxyRequestHelper;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,9 +49,9 @@ public class SimpleHostRoutingWithProxyFilter extends SimpleHostRoutingFilter {
      * @param connectionManagerFactory
      * @param httpClientFactory
      */
-    public SimpleHostRoutingWithProxyFilter(ProxyRequestHelper helper, ZuulProperties properties,
-            ApacheHttpClientConnectionManagerFactory connectionManagerFactory,
-            ApacheHttpClientFactory httpClientFactory) {
+    public SimpleHostRoutingWithProxyFilter(ExtendedProxyRequestHelper helper, ZuulProperties properties,
+                                            ApacheHttpClientConnectionManagerFactory connectionManagerFactory,
+                                            ApacheHttpClientFactory httpClientFactory) {
         super(helper, properties, connectionManagerFactory, httpClientFactory);
         // TODO : Les paramètres ne sont pas reportés dans la requête proxyfiée !!!!!!!
     }
