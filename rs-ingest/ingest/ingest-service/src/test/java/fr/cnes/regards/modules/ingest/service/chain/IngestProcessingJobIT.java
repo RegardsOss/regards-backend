@@ -38,7 +38,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -86,12 +85,24 @@ import fr.cnes.regards.modules.ingest.service.plugin.ValidationTestPlugin;
 @TestPropertySource(locations = "classpath:test.properties")
 @ContextConfiguration(classes = { TestConfiguration.class })
 @RegardsTransactional
-public class IngestProcessingJobTest extends AbstractRegardsServiceTransactionalIT {
+public class IngestProcessingJobIT extends AbstractRegardsServiceTransactionalIT {
+
+    public static final String SIP_ID_TEST = "SIP_001";
+
+    public static final String SIP_DEFAULT_CHAIN_ID_TEST = "SIP_002";
+
+    public static final String SIP_REF_ID_TEST = "SIP_003";
+
+    public static final String DEFAULT_PROCESSING_CHAIN_TEST = "defaultProcessingChain";
+
+    public static final String PROCESSING_CHAIN_TEST = "fullProcessingChain";
+
+    public static final String SESSION_ID = "sessionId";
 
     /**
      * Class logger.
      */
-    private static final Logger LOG = LoggerFactory.getLogger(IngestProcessingJobTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IngestProcessingJobIT.class);
 
     @Autowired
     private IIngestProcessingChainRepository processingChainRepository;
@@ -125,18 +136,6 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
     private Long sipRefIdTest;
 
     private Long entityDefaultChainTest;
-
-    public static final String SIP_ID_TEST = "SIP_001";
-
-    public static final String SIP_DEFAULT_CHAIN_ID_TEST = "SIP_002";
-
-    public static final String SIP_REF_ID_TEST = "SIP_003";
-
-    public static final String DEFAULT_PROCESSING_CHAIN_TEST = "defaultProcessingChain";
-
-    public static final String PROCESSING_CHAIN_TEST = "fullProcessingChain";
-
-    public static final String SESSION_ID = "sessionId";
 
     @Before
     public void init() throws ModuleException {
@@ -204,7 +203,7 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
     private void initFullPRocessingChain() throws ModuleException {
         PluginMetaData preProcessingPluginMeta = PluginUtils.createPluginMetaData(PreprocessingTestPlugin.class);
         PluginConfiguration preProcessingPlugin = new PluginConfiguration(preProcessingPluginMeta,
-                "preProcessingPlugin");
+                                                                          "preProcessingPlugin");
         pluginService.savePluginConfiguration(preProcessingPlugin);
 
         PluginMetaData validationPluginMeta = PluginUtils.createPluginMetaData(ValidationTestPlugin.class);
@@ -220,7 +219,9 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
         pluginService.savePluginConfiguration(taggingPlugin);
 
         IngestProcessingChain fullChain = new IngestProcessingChain(PROCESSING_CHAIN_TEST,
-                "Full test Ingestion processing chain", validationPlugin, generationPlugin);
+                                                                    "Full test Ingestion processing chain",
+                                                                    validationPlugin,
+                                                                    generationPlugin);
         fullChain.setPreProcessingPlugin(preProcessingPlugin);
         fullChain.setGenerationPlugin(generationPlugin);
         fullChain.setTagPlugin(taggingPlugin);
@@ -230,16 +231,18 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
     private void initDefaultProcessingChain() throws ModuleException {
         PluginMetaData defaultValidationPluginMeta = PluginUtils.createPluginMetaData(DefaultSipValidation.class);
         PluginConfiguration defaultValidationPlugin = new PluginConfiguration(defaultValidationPluginMeta,
-                "DefaultValidationPlugin");
+                                                                              "DefaultValidationPlugin");
         pluginService.savePluginConfiguration(defaultValidationPlugin);
 
         PluginMetaData defaultGenerationPluginMeta = PluginUtils.createPluginMetaData(DefaultSingleAIPGeneration.class);
         PluginConfiguration defaultGenerationPlugin = new PluginConfiguration(defaultGenerationPluginMeta,
-                "DefaultGenerationPlugin");
+                                                                              "DefaultGenerationPlugin");
         pluginService.savePluginConfiguration(defaultGenerationPlugin);
 
         IngestProcessingChain defaultChain = new IngestProcessingChain(DEFAULT_PROCESSING_CHAIN_TEST,
-                "Default Ingestion processing chain", defaultValidationPlugin, defaultGenerationPlugin);
+                                                                       "Default Ingestion processing chain",
+                                                                       defaultValidationPlugin,
+                                                                       defaultGenerationPlugin);
         processingChainRepository.save(defaultChain);
     }
 
@@ -249,17 +252,18 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
     public void testDefaultProcessingChain() {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(IngestProcessingJob.CHAIN_NAME_PARAMETER, DEFAULT_PROCESSING_CHAIN_TEST));
-        parameters.add(new JobParameter(IngestProcessingJob.SIP_PARAMETER, entityDefaultChainTest));
+        parameters.add(new JobParameter(IngestProcessingJob.IDS_PARAMETER, Sets.newHashSet(entityDefaultChainTest)));
 
         // Simulate a full process without error
         JobInfo toTest = new JobInfo(false, 0, parameters, "owner", IngestProcessingJob.class.getName());
         runJob(toTest);
         // Assert that SIP is in AIP_CREATED state
-        SIPEntity resultSip = sipRepository.findOne(entityDefaultChainTest);
+        SIPEntity resultSip = sipRepository.findById(entityDefaultChainTest).get();
         Assert.assertTrue("SIP should be the one generated in the test initialization.",
                           SIP_DEFAULT_CHAIN_ID_TEST.equals(resultSip.getSip().getId()));
-        Assert.assertTrue("State of SIP should be AIP_CREATED After a successfull process not "
-                + resultSip.getState().toString(), SIPState.AIP_CREATED.equals(resultSip.getState()));
+        Assert.assertEquals("Wrong SIP state after a successful process",
+                            SIPState.AIP_SUBMITTED,
+                            resultSip.getState());
     }
 
     @Requirement("REGARDS_DSL_ING_PRO_160")
@@ -272,19 +276,15 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
     public void testProcessingChain() throws JobParameterMissingException, JobParameterInvalidException {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(IngestProcessingJob.CHAIN_NAME_PARAMETER, PROCESSING_CHAIN_TEST));
-        parameters.add(new JobParameter(IngestProcessingJob.SIP_PARAMETER, entityIdTest));
+        parameters.add(new JobParameter(IngestProcessingJob.IDS_PARAMETER, Sets.newHashSet(entityIdTest)));
 
         // Simulate an error during PreprocessingStep
         stepErrorSimulator.setSimulateErrorForStep(PreprocessingTestPlugin.class);
         JobInfo toTest = new JobInfo(false, 1, parameters, "owner", IngestProcessingJob.class.getName());
-        try {
-            runJob(toTest);
-            Assert.fail("A runtime exception should thrown here");
-        } catch (RuntimeException e) {
-            LOG.info(e.getMessage());
-        }
+        runJob(toTest);
+
         // Assert that SIP is in INVALID state
-        SIPEntity resultSip = sipRepository.findOne(entityIdTest);
+        SIPEntity resultSip = sipRepository.findById(entityIdTest).get();
         Assert.assertTrue("State of SIP should be INVALID after a error during PreprocessingTestPlugin",
                           SIPState.INVALID.equals(resultSip.getState()));
         // Assert that no AIP is generated
@@ -294,14 +294,10 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
         // Simulate an error during ValidationStep
         stepErrorSimulator.setSimulateErrorForStep(ValidationTestPlugin.class);
         toTest = new JobInfo(false, 1, parameters, "owner", IngestProcessingJob.class.getName());
-        try {
-            runJob(toTest);
-            Assert.fail("A runtime exception should thrown here");
-        } catch (RuntimeException e) {
-            LOG.info(e.getMessage());
-        }
+        runJob(toTest);
+
         // Assert that SIP is in INVALID state
-        resultSip = sipRepository.findOne(entityIdTest);
+        resultSip = sipRepository.findById(entityIdTest).get();
         Assert.assertTrue("State of SIP should be INVALID after a error during ValidationStep",
                           SIPState.INVALID.equals(resultSip.getState()));
         // Assert that no AIP is generated
@@ -311,14 +307,10 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
         // Simulate an error during GenerationStep
         stepErrorSimulator.setSimulateErrorForStep(AIPGenerationTestPlugin.class);
         toTest = new JobInfo(false, 1, parameters, "owner", IngestProcessingJob.class.getName());
-        try {
-            runJob(toTest);
-            Assert.fail("A runtime exception should thrown here");
-        } catch (RuntimeException e) {
-            LOG.info(e.getMessage());
-        }
+        runJob(toTest);
+
         // Assert that SIP is in AIP_GEN_ERROR state
-        resultSip = sipRepository.findOne(entityIdTest);
+        resultSip = sipRepository.findById(entityIdTest).get();
         Assert.assertTrue("State of SIP should be AIP_GEN_ERROR after a error during GenerationStep",
                           SIPState.AIP_GEN_ERROR.equals(resultSip.getState()));
         // Assert that no AIP is generated
@@ -328,14 +320,10 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
         // Simulate an error during TaggingStep
         stepErrorSimulator.setSimulateErrorForStep(AIPTaggingTestPlugin.class);
         toTest = new JobInfo(false, 1, parameters, "owner", IngestProcessingJob.class.getName());
-        try {
-            runJob(toTest);
-            Assert.fail("A runtime exception should thrown here");
-        } catch (RuntimeException e) {
-            LOG.info(e.getMessage());
-        }
+        runJob(toTest);
+
         // Assert that SIP is in AIP_GEN_ERROR state
-        resultSip = sipRepository.findOne(entityIdTest);
+        resultSip = sipRepository.findById(entityIdTest).get();
         Assert.assertTrue("State of SIP should be AIP_GEN_ERROR after a error during GenerationStep",
                           SIPState.AIP_GEN_ERROR.equals(resultSip.getState()));
         // Assert that no AIP is generated
@@ -347,18 +335,21 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
         toTest = new JobInfo(false, 1, parameters, "owner", IngestProcessingJob.class.getName());
         runJob(toTest);
         // Assert that SIP is in AIP_CREATED state
-        resultSip = sipRepository.findOne(entityIdTest);
+        resultSip = sipRepository.findById(entityIdTest).get();
         Assert.assertTrue("SIP should be the one generated in the test initialization.",
                           SIP_ID_TEST.equals(resultSip.getSip().getId()));
-        Assert.assertTrue("State of SIP should be AIP_CREATED After a successfull process",
-                          SIPState.AIP_CREATED.equals(resultSip.getState()));
+        Assert.assertEquals("Wrong SIP state after a successful process",
+                            SIPState.AIP_SUBMITTED,
+                            resultSip.getState());
         // Assert that te AIP generated is in db and in state CREATED
         aips = aipRepository.findBySip(resultSip);
         Assert.assertTrue("There should be one AIP generated associated to the entry sip", aips.size() == 1);
         Assert.assertTrue("The AIP generated should be in CREATED state",
                           SipAIPState.CREATED.equals(aips.stream().findFirst().get().getState()));
-        Assert.assertEquals("AIP should contain the session ID", aips.stream().findFirst().get().getAip()
-                .getProperties().getPdi().getProvenanceInformation().getSession(), SESSION_ID);
+        Assert.assertEquals("AIP should contain the session ID",
+                            aips.stream().findFirst().get().getAip().getProperties().getPdi().getProvenanceInformation()
+                                    .getSession(),
+                            SESSION_ID);
 
     }
 
@@ -367,24 +358,27 @@ public class IngestProcessingJobTest extends AbstractRegardsServiceTransactional
     public void testProcessingChainByRef() throws JobParameterMissingException, JobParameterInvalidException {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(IngestProcessingJob.CHAIN_NAME_PARAMETER, PROCESSING_CHAIN_TEST));
-        parameters.add(new JobParameter(IngestProcessingJob.SIP_PARAMETER, sipRefIdTest));
+        parameters.add(new JobParameter(IngestProcessingJob.IDS_PARAMETER, Sets.newHashSet(sipRefIdTest)));
 
         // Simulate a full process without error
         JobInfo toTest = new JobInfo(false, 0, parameters, "owner", IngestProcessingJob.class.getName());
         runJob(toTest);
         // Assert that SIP is in AIP_CREATED state
-        SIPEntity resultSip = sipRepository.findOne(sipRefIdTest);
+        SIPEntity resultSip = sipRepository.findById(sipRefIdTest).get();
         Assert.assertTrue("SIP should be the one generated in the test initialization.",
                           SIP_REF_ID_TEST.equals(resultSip.getSip().getId()));
-        Assert.assertTrue("State of SIP should be AIP_CREATED After a successfull process",
-                          SIPState.AIP_CREATED.equals(resultSip.getState()));
+        Assert.assertEquals("Wrong SIP state after a successful process",
+                            SIPState.AIP_SUBMITTED,
+                            resultSip.getState());
         // Assert that te AIP generated is in db and in state CREATED
         Set<AIPEntity> aips = aipRepository.findBySip(resultSip);
         Assert.assertTrue("There should be one AIP generated associated to the entry sip", aips.size() == 1);
         Assert.assertTrue("The AIP generated should be in CREATED state",
                           SipAIPState.CREATED.equals(aips.stream().findFirst().get().getState()));
-        Assert.assertEquals("AIP should contain the session ID", aips.stream().findFirst().get().getAip()
-                .getProperties().getPdi().getProvenanceInformation().getSession(), SESSION_ID);
+        Assert.assertEquals("AIP should contain the session ID",
+                            aips.stream().findFirst().get().getAip().getProperties().getPdi().getProvenanceInformation()
+                                    .getSession(),
+                            SESSION_ID);
 
     }
 

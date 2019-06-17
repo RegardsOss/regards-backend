@@ -19,9 +19,7 @@
 package fr.cnes.regards.modules.ingest.service.store;
 
 import java.util.Optional;
-import java.util.Set;
 
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.event.JobEvent;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.entity.AIPEntity;
@@ -79,28 +77,13 @@ public interface IAIPService {
     Optional<AIPEntity> searchAip(UniformResourceName aipId);
 
     /**
-     * Schedule storage bulk request job according to available AIPs
-     */
-    void scheduleAIPStorageBulkRequest();
-
-    /**
      * Save AIP
      */
     AIPEntity save(AIPEntity entity);
-
-    /**
-     * Get AIP to submit in {@link SipAIPState#SUBMISSION_SCHEDULED} state for specific ingest processing chain
-     */
-    Set<AIPEntity> findAIPToSubmit(String ingestProcessingChain);
 
     /**
      * Look for sips in state {@link fr.cnes.regards.modules.ingest.domain.entity.SIPState#TO_BE_DELETED} and
      * ask to rs-storage to delete them per page of 100.
      */
     void askForAipsDeletion();
-
-    /**
-     * Reactivate AIP submission for AIP and its SIP in submission error
-     */
-    void retryAipSubmission(String sessionId) throws ModuleException;
 }

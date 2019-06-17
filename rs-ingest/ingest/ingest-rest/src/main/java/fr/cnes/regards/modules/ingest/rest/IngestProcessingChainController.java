@@ -89,7 +89,7 @@ public class IngestProcessingChainController implements IResourceController<Inge
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<PagedResources<Resource<IngestProcessingChain>>> search(
             @RequestParam(name = "name", required = false) String name,
-            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+            @PageableDefault(sort = "name", direction = Sort.Direction.DESC) Pageable pageable,
             PagedResourcesAssembler<IngestProcessingChain> pAssembler) {
         Page<IngestProcessingChain> chains = ingestProcessingService.searchChains(name, pageable);
         PagedResources<Resource<IngestProcessingChain>> resources = toPagedResources(chains, pAssembler);

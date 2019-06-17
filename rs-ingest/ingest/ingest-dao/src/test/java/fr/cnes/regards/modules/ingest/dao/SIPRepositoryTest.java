@@ -24,8 +24,11 @@ import java.util.List;
 import org.assertj.core.util.Lists;
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
+import fr.cnes.regards.modules.ingest.domain.entity.SIPIdNProcessing;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
 
 /**
@@ -89,6 +92,12 @@ public class SIPRepositoryTest extends AbstractSIPRepositoryTest {
         res = sipRepository.findAll(SIPEntitySpecifications.search("SIP_003", null, null, null, null, null));
         Assert.assertTrue(res.size() == 2);
 
+    }
+
+    @Test
+    public void testFindIdAndProcessingByState() {
+        List<SIPIdNProcessing> res = sipRepository.findIdAndProcessingByState(SIPState.CREATED);
+        Assert.assertEquals("There should be 2 sipIdNProcessing", 2, res.size());
     }
 
 }

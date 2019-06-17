@@ -86,9 +86,8 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
 
     @Test
     public void exportProcessingChain() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
+        requestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName(IngestProcessingChainController.REQUEST_PARAM_NAME)
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                 .description("Ingestion processing name")));
@@ -107,9 +106,7 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
         Path filePath = Paths.get("src", "test", "resources", "TestProcessingChain.json");
 
         // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
-
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
         documentFileRequestParameters(requestBuilderCustomizer);
 
         performDefaultFileUpload(IngestProcessingChainController.TYPE_MAPPING
@@ -123,15 +120,13 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
                 .description("A file containing an ingestion processing chain in GeoJson format")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String"));
         // Add request parameters documentation
-        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.requestParameters(paramFile));
+        requestBuilderCustomizer.document(RequestDocumentation.requestParameters(paramFile));
     }
 
     @Test
     public void createIngestProcessingChain() {
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
-        requestBuilderCustomizer.customizeHeaders().add(HttpHeaders.CONTENT_TYPE,
-                                                        GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
         performDefaultPost(IngestProcessingChainController.TYPE_MAPPING, this.create(), requestBuilderCustomizer,
                            "Ingest processing creation error");
     }
@@ -139,10 +134,8 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
     @Test
     public void updateIngestProcessingChain() {
         // create an IngestProcessingChain
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
-        requestBuilderCustomizer.customizeHeaders().add(HttpHeaders.CONTENT_TYPE,
-                                                        GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
         IngestProcessingChain ingestProcessingChain = this.create();
         ResultActions resultActions = performDefaultPost(IngestProcessingChainController.TYPE_MAPPING,
                                                          ingestProcessingChain, requestBuilderCustomizer,
@@ -157,11 +150,10 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
         Integer genPluginId = JsonPath.read(resultAsString, "$.generationPlugin.id");
         ingestProcessingChain.getGenerationPlugin().setId(new Long(genPluginId));
 
-        RequestBuilderCustomizer putRequestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        putRequestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        putRequestBuilderCustomizer.customizeHeaders().add(HttpHeaders.CONTENT_TYPE,
-                                                           GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
-        putRequestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+        RequestBuilderCustomizer putRequestBuilderCustomizer = customizer().expectStatusOk();
+        putRequestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE,
+                                              GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        putRequestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName(IngestProcessingChainController.REQUEST_PARAM_NAME)
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                 .description(INGEST_PROCESSING_DESCRIPTION)));
@@ -174,19 +166,15 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
     @Test
     public void deleteIngestProcessingChain() {
         // create an IngestProcessingChain
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
-        requestBuilderCustomizer.customizeHeaders().add(HttpHeaders.CONTENT_TYPE,
-                                                        GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
         IngestProcessingChain ingestProcessingChain = this.create();
         performDefaultPost(IngestProcessingChainController.TYPE_MAPPING, ingestProcessingChain,
                            requestBuilderCustomizer, "Ingest processing creation error");
 
-        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.customizeHeaders().add(HttpHeaders.CONTENT_TYPE,
-                                                        GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
-        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+        requestBuilderCustomizer = customizer().expectStatusOk();
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        requestBuilderCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName(IngestProcessingChainController.REQUEST_PARAM_NAME)
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                 .description(INGEST_PROCESSING_DESCRIPTION)));
@@ -198,8 +186,7 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
     @Test
     public void exportConfiguration() {
         // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
 
         performDefaultGet(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
                           requestBuilderCustomizer, "Should export configuration");
@@ -210,10 +197,10 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
         Path filePath = Paths.get("src", "test", "resources", "configuration.json");
 
         // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isPartialContent()); // Default ingest
-                                                                                                    // chain already
-                                                                                                    // exists
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer()
+                .expect(MockMvcResultMatchers.status().isPartialContent()); // Default ingest
+        // chain already
+        // exists
 
         performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
                                  filePath, requestBuilderCustomizer, "Should be able to import configuration");
@@ -224,16 +211,13 @@ public class IngestProcessingChainControllerIT extends AbstractRegardsTransactio
         Path filePath = Paths.get("src", "test", "resources", "TestProcessingChain.json");
 
         // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
-
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
         performDefaultFileUpload(IngestProcessingChainController.TYPE_MAPPING
                 + IngestProcessingChainController.IMPORT_PATH, filePath, requestBuilderCustomizer,
                                  "Should be able to import valid test processing chain");
 
-        RequestBuilderCustomizer getCustomizer = getNewRequestBuilderCustomizer();
-        getCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        getCustomizer.addDocumentationSnippet(RequestDocumentation.pathParameters(RequestDocumentation
+        RequestBuilderCustomizer getCustomizer = customizer().expectStatusOk();
+        getCustomizer.document(RequestDocumentation.pathParameters(RequestDocumentation
                 .parameterWithName(IngestProcessingChainController.REQUEST_PARAM_NAME)
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                 .description(INGEST_PROCESSING_DESCRIPTION)));

@@ -18,8 +18,9 @@
  */
 package fr.cnes.regards.modules.ingest.client;
 
-import javax.validation.Valid;
 import java.util.Collection;
+
+import javax.validation.Valid;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +39,7 @@ import fr.cnes.regards.modules.ingest.domain.dto.SIPDto;
  * @author Marc Sordi
  *
  */
-@RestClient(name = "rs-ingest")
+@RestClient(name = "rs-ingest", contextId = "rs-ingest.ingest.client")
 @RequestMapping(value = "/sips", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
         produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public interface IIngestClient {

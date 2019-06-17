@@ -44,12 +44,12 @@ import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
-import org.hibernate.validator.constraints.NotBlank;
 
 import fr.cnes.regards.framework.jpa.json.JsonBinaryType;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
@@ -97,8 +97,7 @@ public class SIPEntity {
 
     /**
      * The SIP internal identifier (generated URN). If two SIP are ingested with same id, this idIp will distinguish
-     * them as 2 different
-     * versions
+     * them as 2 different versions
      */
     @NotBlank(message = "SIP ID is required")
     @Column(name = "sipId", length = MAX_URN_SIZE)
@@ -150,7 +149,7 @@ public class SIPEntity {
     private OffsetDateTime lastUpdateDate;
 
     /**
-     * Processing chain name from {@link IngestMetadata}
+     * {@link IngestProcessingChain} name from {@link IngestMetadata}
      */
     @NotBlank(message = "Processing chain name is required")
     @Column(length = 100)
@@ -291,5 +290,35 @@ public class SIPEntity {
 
     public void setProcessingErrors(List<String> errors) {
         this.processingErrors = errors;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (sipId == null ? 0 : sipId.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        SIPEntity other = (SIPEntity) obj;
+        if (sipId == null) {
+            if (other.sipId != null) {
+                return false;
+            }
+        } else if (!sipId.equals(other.sipId)) {
+            return false;
+        }
+        return true;
     }
 }

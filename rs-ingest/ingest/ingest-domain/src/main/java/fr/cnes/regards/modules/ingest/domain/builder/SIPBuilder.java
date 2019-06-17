@@ -101,7 +101,7 @@ public class SIPBuilder extends IPBuilder<SIP> {
     }
 
     /**
-     * Alias for method {@link #buildReference(Path, String, String) with MD5 default checksum algorithm
+     * Alias for method {@link #buildReference(Path, String, String)} with MD5 default checksum algorithm
      * @param filePath path to the SIP file
      * @param checksum checksum for current SIP file
      */

@@ -50,9 +50,9 @@ import fr.cnes.regards.modules.ingest.service.chain.IIngestProcessingService;
  * @author Marc Sordi
  * @author Sébastien Binda
  */
-public class IngestServiceTest extends AbstractSIPTest {
+public class IngestServiceIT extends AbstractSipIT {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(IngestServiceTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IngestServiceIT.class);
 
     @Autowired
     private ISIPSessionRepository sipSessionRepository;
@@ -112,7 +112,7 @@ public class IngestServiceTest extends AbstractSIPTest {
         Assert.assertTrue(two.getVersion() == 2);
         Assert.assertTrue(SIPState.REJECTED.equals(two.getState()));
 
-        Page<SIPEntity> page = sipService.search(null, SESSION_ID, null, null, null, null, new PageRequest(0, 10));
+        Page<SIPEntity> page = sipService.search(null, SESSION_ID, null, null, null, null, PageRequest.of(0, 10));
         Assert.assertTrue(page.getNumberOfElements() == 1);
     }
 
@@ -139,7 +139,7 @@ public class IngestServiceTest extends AbstractSIPTest {
         Assert.assertTrue(SIPState.CREATED.equals(one.getState()));
 
         Page<SIPEntity> page = sipService.search(null, SIPSessionService.DEFAULT_SESSION_ID, null, null, null, null,
-                                                 new PageRequest(0, 10));
+                                                 PageRequest.of(0, 10));
         Assert.assertTrue(page.getNumberOfElements() == 1);
 
     }
@@ -168,7 +168,7 @@ public class IngestServiceTest extends AbstractSIPTest {
         Assert.assertNotNull(sips);
         Assert.assertTrue(sips.size() == sipNb);
 
-        Page<SIPEntity> page = sipService.search(null, null, null, null, null, null, new PageRequest(0, 10));
+        Page<SIPEntity> page = sipService.search(null, null, null, null, null, null, PageRequest.of(0, 10));
         Assert.assertTrue(page.getNumberOfElements() == sipNb);
     }
 
@@ -259,14 +259,14 @@ public class IngestServiceTest extends AbstractSIPTest {
         sip.setState(SIPState.AIP_GEN_ERROR);
         sip = sipRepository.save(sip);
         ingestService.retryIngest(sip.getSipIdUrn());
-        sip = sipRepository.findOne(sip.getId());
+        sip = sipRepository.findById(sip.getId()).get();
         Assert.assertEquals(SIPState.CREATED, sip.getState());
 
         // Simulate a SIP in AIP_GEN_ERROR error
         sip.setState(SIPState.INVALID);
         sip = sipRepository.save(sip);
         ingestService.retryIngest(sip.getSipIdUrn());
-        sip = sipRepository.findOne(sip.getId());
+        sip = sipRepository.findById(sip.getId()).get();
         Assert.assertEquals(SIPState.CREATED, sip.getState());
 
     }

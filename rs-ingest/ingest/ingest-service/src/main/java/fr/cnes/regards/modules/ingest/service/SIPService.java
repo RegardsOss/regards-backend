@@ -76,7 +76,7 @@ public class SIPService implements ISIPService {
     public Page<SIPEntity> search(String providerId, String sessionId, String owner, OffsetDateTime from,
             List<SIPState> state, String processing, Pageable page) {
         return sipRepository
-                .findAll(SIPEntitySpecifications.search(providerId, sessionId, owner, from, state, processing), page);
+                .loadAll(SIPEntitySpecifications.search(providerId, sessionId, owner, from, state, processing), page);
     }
 
     @Override
@@ -119,7 +119,7 @@ public class SIPService implements ISIPService {
                 if (isDeletableWithoutAips(sip)) {
                     Set<AIPEntity> aips = aipRepository.findBySip(sip);
                     if (!aips.isEmpty()) {
-                        aipRepository.delete(aips);
+                        aipRepository.deleteAll(aips);
                     }
                     sipRepository.updateSIPEntityState(SIPState.DELETED, sip.getId());
                 } else {
@@ -140,6 +140,13 @@ public class SIPService implements ISIPService {
     @Override
     public Collection<SIPEntity> getAllVersions(String providerId) {
         return sipRepository.getAllVersions(providerId);
+    }
+
+    @Override
+    public boolean validatedVersionExists(String providerId) {
+        return sipRepository.countByProviderIdAndStateIn(providerId, SIPState.VALID, SIPState.AIP_CREATED,
+                                                         SIPState.AIP_SUBMITTED, SIPState.STORE_ERROR, SIPState.STORED,
+                                                         SIPState.INDEXED, SIPState.INCOMPLETE) > 0;
     }
 
     @Override
@@ -171,7 +178,6 @@ public class SIPService implements ISIPService {
      * {@link SIPEntity} state
      * to deleted.
      * @param sip {@link SIPEntity} to check for deletion
-     * @return
      */
     private boolean isDeletableWithAIPs(SIPEntity sip) {
         switch (sip.getState()) {
@@ -181,7 +187,7 @@ public class SIPService implements ISIPService {
             case AIP_GEN_ERROR:
             case REJECTED:
             case STORED:
-            case SUBMISSION_ERROR:
+            case AIP_SUBMITTED:
             case STORE_ERROR:
             case INCOMPLETE:
             case INDEXED:
@@ -197,7 +203,6 @@ public class SIPService implements ISIPService {
      * confirmation
      * of other microservices.
      * @param sip {@link SIPEntity} to check for deletion.
-     * @return
      */
     private boolean isDeletableWithoutAips(SIPEntity sip) {
         switch (sip.getState()) {

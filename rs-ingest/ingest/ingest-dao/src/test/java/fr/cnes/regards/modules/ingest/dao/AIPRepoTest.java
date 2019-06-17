@@ -42,12 +42,6 @@ public class AIPRepoTest extends AbstractDaoTransactionalTest {
     private IAIPRepository aipRepo;
 
     @Test
-    public void test() {
-        boolean nb = aipRepo.isAlreadyWorking("DefaultProcessingChain");
-        Assert.assertTrue(nb);
-    }
-
-    @Test
     public void test2() {
         Set<AIPEntity> aips = aipRepo.findBySipProcessingAndState("DefaultProcessingChain", SipAIPState.CREATED);
         Assert.assertNotNull(aips);

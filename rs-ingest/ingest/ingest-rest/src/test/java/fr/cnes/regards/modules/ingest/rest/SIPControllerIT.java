@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.PayloadDocumentation;
@@ -112,10 +113,8 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         collectionBuilder.add(firstSIPwithGeometry);
 
         // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
-        requestBuilderCustomizer.customizeHeaders().add(HttpHeaders.CONTENT_TYPE,
-                                                        GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
         documentSipRequestBody(requestBuilderCustomizer);
 
         performDefaultPost(SIPController.TYPE_MAPPING, collectionBuilder.build(), requestBuilderCustomizer,
@@ -136,7 +135,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         OaisFieldDescriptors oaisFiledDescriptors = new OaisFieldDescriptors("features[].");
         lfd.addAll(oaisFiledDescriptors.build());
 
-        requestBuilderCustomizer.addDocumentationSnippet(PayloadDocumentation
+        requestBuilderCustomizer.document(PayloadDocumentation
                 .relaxedRequestFields(Attributes.attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TITLE)
                         .value("Submission information package (SIP)")), lfd.toArray(new FieldDescriptor[lfd.size()])));
     }
@@ -153,19 +152,15 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         collectionBuilder.add(buildSipOne("SIP_002", "data2.fits").build());
 
         // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
-        requestBuilderCustomizer.customizeHeaders().add(HttpHeaders.CONTENT_TYPE,
-                                                        GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
 
         performDefaultPost(SIPController.TYPE_MAPPING, collectionBuilder.build(), requestBuilderCustomizer,
                            "SIP collection should be submitted.");
 
         // Retrieve SIPs
-        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer
-                .addExpectation(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.is(2)));
+        requestBuilderCustomizer = customizer().expectStatusOk()
+                .expect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.is(2)));
 
         documentSearchSipParameters(requestBuilderCustomizer);
 
@@ -202,7 +197,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")));
 
         // Add request parameters documentation
-        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.requestParameters(paramDescrList));
+        requestBuilderCustomizer.document(RequestDocumentation.requestParameters(paramDescrList));
     }
 
     @Test
@@ -217,18 +212,14 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         collectionBuilder.add(buildSipTwo("SIP_002", "data2.fits").build());
 
         // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
-        requestBuilderCustomizer.customizeHeaders().add(HttpHeaders.CONTENT_TYPE,
-                                                        GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
         performDefaultPost(SIPController.TYPE_MAPPING, collectionBuilder.build(), requestBuilderCustomizer,
                            "SIP collection should be submitted.");
 
         // Retrieve sessions
-        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer
-                .addExpectation(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.is(1)));
+        requestBuilderCustomizer = customizer().expectStatusOk()
+                .expect(MockMvcResultMatchers.jsonPath("$.metadata.totalElements", Matchers.is(1)));
 
         documentSearchSessionParameters(requestBuilderCustomizer);
 
@@ -248,17 +239,14 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         collectionBuilder.add(buildSipTwo("SIP_002", "data2.fits").build());
 
         // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
-        requestBuilderCustomizer.customizeHeaders().add(HttpHeaders.CONTENT_TYPE,
-                                                        GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
+        requestBuilderCustomizer.addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
         performDefaultPost(SIPController.TYPE_MAPPING, collectionBuilder.build(), requestBuilderCustomizer,
                            "SIP collection should be submitted.");
 
         // Retrieve sessions
-        requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
-        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation
+        requestBuilderCustomizer = customizer().expectStatusOk();
+        requestBuilderCustomizer.document(RequestDocumentation
                 .pathParameters(RequestDocumentation.parameterWithName(SIPSessionController.REQUEST_PARAM_ID)
                         .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value(JSON_STRING_TYPE))
                         .description("The session identifier")));
@@ -284,7 +272,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String")));
 
         // Add request parameters documentation
-        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.requestParameters(paramDescrList));
+        requestBuilderCustomizer.document(RequestDocumentation.requestParameters(paramDescrList));
     }
 
     @Test
@@ -316,10 +304,8 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         collectionBuilder.add(sipBuilder.build());
 
         // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isPartialContent());
-        requestBuilderCustomizer.customizeHeaders().add(HttpHeaders.CONTENT_TYPE,
-                                                        GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatus(HttpStatus.PARTIAL_CONTENT)
+                .addHeader(HttpHeaders.CONTENT_TYPE, GeoJsonMediaType.APPLICATION_GEOJSON_UTF8_VALUE);
         performDefaultPost(SIPController.TYPE_MAPPING, collectionBuilder.build(), requestBuilderCustomizer,
                            "Partial valid collection should be submitted.");
     }
@@ -331,8 +317,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         final Path filePath = Paths.get("src", "test", "resources", "sipCollection.json");
 
         // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isCreated());
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
 
         documentFileRequestParameters(requestBuilderCustomizer);
 
@@ -345,7 +330,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
                 .optional().description("A file containing a SIP collection in GeoJson format")
                 .attributes(Attributes.key(RequestBuilderCustomizer.PARAM_TYPE).value("String"));
         // Add request parameters documentation
-        requestBuilderCustomizer.addDocumentationSnippet(RequestDocumentation.requestParameters(paramFile));
+        requestBuilderCustomizer.document(RequestDocumentation.requestParameters(paramFile));
     }
 
     @Test
@@ -355,8 +340,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         final Path filePath = Paths.get("src", "test", "resources", "invalidSipCollection.json");
 
         // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isPartialContent());
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatus(HttpStatus.PARTIAL_CONTENT);
         documentFileRequestParameters(requestBuilderCustomizer);
 
         performDefaultFileUpload(SIPController.TYPE_MAPPING + SIPController.IMPORT_PATH, filePath,
@@ -370,8 +354,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         final Path filePath = Paths.get("src", "test", "resources", "allInvalidSipCollection.json");
 
         // Define expectations
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isUnprocessableEntity());
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY);
 
         performDefaultFileUpload(SIPController.TYPE_MAPPING + SIPController.IMPORT_PATH, filePath,
                                  requestBuilderCustomizer, "Should be able to import a partial valid SIP collection");
@@ -403,8 +386,7 @@ public class SIPControllerIT extends AbstractRegardsTransactionalIT {
         sipService.saveSIPEntity(sipEntity);
 
         // Get SIPS with search API
-        RequestBuilderCustomizer requestBuilderCustomizer = getNewRequestBuilderCustomizer();
-        requestBuilderCustomizer.addExpectation(MockMvcResultMatchers.status().isOk());
+        RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
         performDefaultGet(SIPController.TYPE_MAPPING, requestBuilderCustomizer, "Should found valid SIP");
     }
 

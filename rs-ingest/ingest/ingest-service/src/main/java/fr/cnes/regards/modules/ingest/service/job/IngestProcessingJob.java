@@ -18,21 +18,25 @@
  */
 package fr.cnes.regards.modules.ingest.service.job;
 
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.StringJoiner;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
+import com.google.gson.reflect.TypeToken;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
-import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.framework.modules.jobs.domain.step.IProcessingStep;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.domain.SIP;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
@@ -44,6 +48,7 @@ import fr.cnes.regards.modules.ingest.service.chain.step.PreprocessingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.StoreStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.TaggingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.ValidationStep;
+import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.domain.AIP;
 
 /**
@@ -55,7 +60,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
 
     public static final String CHAIN_NAME_PARAMETER = "chain";
 
-    public static final String SIP_PARAMETER = "sip";
+    public static final String IDS_PARAMETER = "ids";
 
     @Autowired
     private IIngestProcessingChainRepository processingChainRepository;
@@ -63,15 +68,20 @@ public class IngestProcessingJob extends AbstractJob<Void> {
     @Autowired
     private IPluginService pluginService;
 
-    private IngestProcessingChain processingChain;
-
     @Autowired
     private IIngestProcessingService ingestProcessingService;
 
     @Autowired
-    private IPublisher publisher;
+    private INotificationClient notificationClient;
 
-    private SIPEntity entity;
+    private IngestProcessingChain processingChain;
+
+    private Set<SIPEntity> entities;
+
+    /**
+     * Entity at work
+     */
+    private SIPEntity currentEntity;
 
     @Override
     public void setParameters(Map<String, JobParameter> parameters)
@@ -89,48 +99,69 @@ public class IngestProcessingJob extends AbstractJob<Void> {
             processingChain = chain.get();
         }
 
-        // Load SIPEntity
-        Long id = getValue(parameters, SIP_PARAMETER);
-        entity = ingestProcessingService.getSIPEntity(id);
-        if (entity == null) {
-            String message = String.format("No sip found for id \"%s\"", id);
-            handleInvalidParameter(SIP_PARAMETER, message);
-        }
+        // Load entities
+        Type type = new TypeToken<Set<Long>>() {
 
-        super.logger.info("Parameters set for SIP \"{}\" (\"{}\") and processing chain \"{}\"", entity.getSipId(),
-                          entity.getProviderId(), processingChainName);
+        }.getType();
+        Set<Long> ids = getValue(parameters, IDS_PARAMETER, type);
+        entities = ingestProcessingService.getAllSipEntities(ids);
     }
 
     @Override
     public void run() {
+        // Lets prepare a fex things in case there is errors
+        StringJoiner notifMsg = new StringJoiner("\n");
+        notifMsg.add("Errors occurred during SIPs processing using " + processingChain.getName() + ":");
+        boolean errorOccured = false;
 
-        super.logger.debug("Launching processing chain \"{}\" for SIP \"{}\"", processingChain.getName(),
-                           entity.getSipId());
+        // Initializing steps
+        // Step 1 : optional preprocessing
+        IProcessingStep<SIP, SIP> preStep = new PreprocessingStep(this);
+        // Step 2 : required validation
+        IProcessingStep<SIP, Void> validationStep = new ValidationStep(this);
+        // Step 3 : required AIP generation
+        IProcessingStep<SIP, List<AIP>> generationStep = new GenerationStep(this);
+        // Step 5 : optional AIP tagging
+        IProcessingStep<List<AIP>, Void> taggingStep = new TaggingStep(this);
+        // Step 6
+        IProcessingStep<List<AIP>, Void> storeStep = new StoreStep(this);
+        // Step 7 : optional postprocessing
+        IProcessingStep<SIP, Void> postprocessingStep = new PostprocessingStep(this);
 
-        try {
-            // Step 1 : optional preprocessing
-            IProcessingStep<SIP, SIP> step = new PreprocessingStep(this);
-            SIP sip = step.execute(entity.getSip());
-            // Step 2 : required validation
-            IProcessingStep<SIP, Void> validationStep = new ValidationStep(this);
-            validationStep.execute(sip);
-            // Step 3 : required AIP generation
-            IProcessingStep<SIP, List<AIP>> generationStep = new GenerationStep(this);
-            List<AIP> aips = generationStep.execute(sip);
-            // Step 4 : Save the session inside the AIP - no plugin involved
-            aips = setSessionOnAips(aips);
-            // Step 5 : optional AIP tagging
-            IProcessingStep<List<AIP>, Void> taggingStep = new TaggingStep(this);
-            taggingStep.execute(aips);
-            // Step 6
-            IProcessingStep<List<AIP>, Void> storeStep = new StoreStep(this);
-            storeStep.execute(aips);
-            // Step 7 : optional postprocessing
-            IProcessingStep<SIP, Void> postprocessingStep = new PostprocessingStep(this);
-            postprocessingStep.execute(sip);
-        } catch (ProcessingStepException e) {
-            super.logger.error("Business error", e);
-            throw new JobRuntimeException(e);
+        for (SIPEntity entity : entities) {
+            currentEntity = entity;
+            try {
+                // Step 1 : optional preprocessing
+                SIP sip = preStep.execute(entity.getSip());
+                // Step 2 : required validation
+                validationStep.execute(sip);
+                // Step 3 : required AIP generation
+                List<AIP> aips = generationStep.execute(sip);
+                // Step 4 : Save the session inside the AIP - no plugin involved
+                aips = setSessionOnAips(entity, aips);
+                // Step 5 : optional AIP tagging
+                taggingStep.execute(aips);
+                // Step 6
+                storeStep.execute(aips);
+                // Step 7 : optional postprocessing
+                postprocessingStep.execute(sip);
+            } catch (ProcessingStepException e) {
+                errorOccured = true;
+                String msg = String.format("Error while ingesting SIP \"%s\" with provider id \"%s\"",
+                                           currentEntity.getSipId(),
+                                           currentEntity.getProviderId());
+                notifMsg.add(msg);
+                super.logger.error(msg);
+                super.logger.error("Ingestion step error", e);
+                // Continuing with following SIPs
+            }
+        }
+        // notify if errors occured
+        if (errorOccured) {
+            notificationClient.notify(notifMsg.toString(),
+                                      "Error occurred during SIPs Ingestion.",
+                                      NotificationLevel.INFO,
+                                      DefaultRole.ADMIN);
         }
     }
 
@@ -139,7 +170,7 @@ public class IngestProcessingJob extends AbstractJob<Void> {
      * @param aips list of aips
      * @return the updated list
      */
-    private List<AIP> setSessionOnAips(List<AIP> aips) {
+    private List<AIP> setSessionOnAips(SIPEntity entity, List<AIP> aips) {
         for (AIP aip : aips) {
             aip.getProperties().getPdi().getProvenanceInformation().setSession(entity.getSession().getId());
         }
@@ -159,16 +190,11 @@ public class IngestProcessingJob extends AbstractJob<Void> {
         return processingChain;
     }
 
-    public SIPEntity getEntity() {
-        return entity;
-    }
-
     public IIngestProcessingService getIngestProcessingService() {
         return ingestProcessingService;
     }
 
-    public IPublisher getPublisher() {
-        return publisher;
+    public SIPEntity getCurrentEntity() {
+        return currentEntity;
     }
-
 }

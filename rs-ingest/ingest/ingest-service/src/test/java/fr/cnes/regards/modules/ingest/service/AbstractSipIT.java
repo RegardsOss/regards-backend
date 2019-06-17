@@ -57,7 +57,7 @@ import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 @ActiveProfiles({ "testAmqp", "disable-scheduled-ingest", "noschdule" })
 @TestPropertySource(locations = "classpath:test.properties")
 @ContextConfiguration(classes = { TestConfiguration.class })
-public abstract class AbstractSIPTest extends AbstractRegardsServiceTransactionalIT {
+public abstract class AbstractSipIT extends AbstractRegardsServiceTransactionalIT {
 
     @Autowired
     private Gson gson;

@@ -33,7 +33,7 @@ import fr.cnes.regards.modules.ingest.domain.SIPCollection;
  * you can give a <b>sessionId</b> to group a set of {@link SIP} through one or more submission requests.<br/>
  *
  * After builder creation, you have to fill in the {@link SIP} collection using {@link SIPCollectionBuilder#add(SIP)} or
- * {@link SIPCollectionBuilder#addAddAll(Collection)}.<br/>
+ * {@link SIPCollectionBuilder#addAll(Collection)}.<br/>
  *
  * To build {@link SIP}, use {@link SIPBuilder}.
  *

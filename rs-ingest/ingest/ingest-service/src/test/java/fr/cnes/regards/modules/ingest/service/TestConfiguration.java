@@ -34,7 +34,7 @@ import fr.cnes.regards.modules.storage.client.IAipEntityClient;
 public class TestConfiguration {
 
     @Bean
-    public IAipClient mockAIPClient() {
+    public IAipClient aipClient() {
         return Mockito.mock(IAipClient.class);
     }
 

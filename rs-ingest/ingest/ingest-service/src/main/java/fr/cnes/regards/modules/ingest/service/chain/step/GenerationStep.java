@@ -28,15 +28,13 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.oais.urn.OAISIdentifier;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.modules.ingest.domain.SIP;
-import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
-import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipGeneration;
 import fr.cnes.regards.modules.ingest.service.job.IngestProcessingJob;
 import fr.cnes.regards.modules.storage.domain.AIP;
 
 /**
- * Generation step is used to generate AIP(s) from specified SIP calling {@link IAipGeneration#generate(SIP)}.
+ * Generation step is used to generate AIP(s) from specified SIP calling {@link IAipGeneration#generate(SIP, UniformResourceName, UniformResourceName, String)}.
  *
  * @author Marc Sordi
  * @author Sébastien Binda
@@ -56,7 +54,7 @@ public class GenerationStep extends AbstractIngestStep<SIP, List<AIP>> {
         IAipGeneration generation = this.getStepPlugin(conf.getId());
 
         // Retrieve SIP URN from internal identifier
-        UniformResourceName sipId = job.getEntity().getSipIdUrn();
+        UniformResourceName sipId = job.getCurrentEntity().getSipIdUrn();
         // Compute AIP URN from SIP one
         UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, sipId.getEntityType(),
                 sipId.getTenant(), sipId.getEntityId(), sipId.getVersion());
@@ -66,10 +64,7 @@ public class GenerationStep extends AbstractIngestStep<SIP, List<AIP>> {
 
     @Override
     protected void doAfterError(SIP sip) {
-        SIPEntity sipEntity = this.job.getEntity();
-        sipEntity.setState(SIPState.AIP_GEN_ERROR);
         LOGGER.error("Error generating AIP(s) for SIP \"{}\"", sip.getId());
         updateSIPEntityState(SIPState.AIP_GEN_ERROR);
-        this.job.getPublisher().publish(new SIPEvent(sipEntity));
     }
 }
