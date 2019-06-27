@@ -18,7 +18,8 @@
  */
 package fr.cnes.regards.cloud.gateway.filters;
 
-import fr.cnes.regards.cloud.gateway.ExtendedProxyRequestHelper;
+import com.google.common.collect.Lists;
+import com.netflix.zuul.context.RequestContext;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,8 @@ import org.springframework.stereotype.Component;
 
 import fr.cnes.regards.framework.proxy.ProxyfiedHttpClient;
 
+import java.util.*;
+
 /**
  * @author sbinda
  *
@@ -42,6 +45,7 @@ public class SimpleHostRoutingWithProxyFilter extends SimpleHostRoutingFilter {
 
     @Autowired
     private HttpClient httpClient;
+    public static final String HEADER_HOST = "Host";
 
     /**
      * @param helper
@@ -49,7 +53,7 @@ public class SimpleHostRoutingWithProxyFilter extends SimpleHostRoutingFilter {
      * @param connectionManagerFactory
      * @param httpClientFactory
      */
-    public SimpleHostRoutingWithProxyFilter(ExtendedProxyRequestHelper helper, ZuulProperties properties,
+    public SimpleHostRoutingWithProxyFilter(ProxyRequestHelper helper, ZuulProperties properties,
                                             ApacheHttpClientConnectionManagerFactory connectionManagerFactory,
                                             ApacheHttpClientFactory httpClientFactory) {
         super(helper, properties, connectionManagerFactory, httpClientFactory);
@@ -62,10 +66,36 @@ public class SimpleHostRoutingWithProxyFilter extends SimpleHostRoutingFilter {
     @Override
     protected CloseableHttpClient newClient() {
         if (httpClient == null) {
+
             return super.newClient();
         } else {
             return new ProxyfiedHttpClient((fr.cnes.httpclient.HttpClient) httpClient);
         }
     }
 
+    @Override
+    public Object run() {
+        RequestContext ctx = RequestContext.getCurrentContext();
+        ctx.getZuulRequestHeaders().put(HEADER_HOST, ctx.getRouteHost().getHost());
+        RequestContext context = RequestContext.getCurrentContext();
+        Map<String, List<String>> newParameterMap = new HashMap<>();
+
+        String[] parameters = ctx.getRouteHost().getQuery().split("&");
+        for (int i = 0; i < parameters.length; i++) {
+            String[] keyValues = parameters[i].split("=");
+            if (keyValues.length == 2) {
+                String authenticatedKey = keyValues[0];
+                String authenticatedValue = "";
+                if (keyValues[1] != null) {
+                    authenticatedValue = keyValues[1];
+                }
+                if (newParameterMap.containsKey(keyValues[0])) {
+                    newParameterMap.get(keyValues[0]).add(keyValues[1]);
+                }
+                newParameterMap.put(authenticatedKey, Lists.newArrayList(authenticatedValue));
+            }
+        }
+        context.setRequestQueryParams(newParameterMap);
+        return super.run();
+    }
 }
