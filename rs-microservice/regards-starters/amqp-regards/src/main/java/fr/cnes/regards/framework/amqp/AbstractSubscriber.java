@@ -48,6 +48,7 @@ import fr.cnes.regards.framework.amqp.event.EventUtils;
 import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.framework.amqp.event.WorkerMode;
+import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
 
 /**
  * Common subscriber methods
@@ -197,7 +198,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
 
         // Init listeners
         for (Map.Entry<String, Collection<Queue>> entry : vhostQueues.asMap().entrySet()) {
-            declareListener(entry.getKey(), jsonMessageConverters, handler, entry.getValue());
+            declareListener(entry.getKey(), jsonMessageConverters, handler, entry.getValue(), eventType);
         }
     }
 
@@ -252,7 +253,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
      * @param queues queues to listen to
      */
     protected void declareListener(String virtualHost, MessageConverter messageConverter,
-            IHandler<? extends ISubscribable> handler, Collection<Queue> queues) {
+            IHandler<? extends ISubscribable> handler, Collection<Queue> queues, final Class<?> eventType) {
 
         // Prevent redundant listener
         Map<String, SimpleMessageListenerContainer> vhostsContainers = listeners.get(handler.getClass());
@@ -291,7 +292,10 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
         container.setDefaultRequeueRejected(false);
         // container.setAdviceChain(interceptor);
         container.setChannelTransacted(true);
-        container.setErrorHandler(errorHandler);
+        if (!eventType.equals(NotificationEvent.class)) {
+            // Do not send notification event on notification event error. (prevent infinite loop)
+            container.setErrorHandler(errorHandler);
+        }
 
         MessageListenerAdapter messageListener = new MessageListenerAdapter(handler, DEFAULT_HANDLING_METHOD);
         messageListener.setMessageConverter(messageConverter);
@@ -327,7 +331,7 @@ public abstract class AbstractSubscriber implements ISubscriberContract {
             // Manage listeners
             List<Queue> queues = new ArrayList<>();
             queues.add(queue);
-            declareListener(virtualHost, jsonMessageConverters, handler, queues);
+            declareListener(virtualHost, jsonMessageConverters, handler, queues, eventType);
         }
     }
 

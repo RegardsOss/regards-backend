@@ -503,10 +503,9 @@ public final class PluginUtils {
                 }
             } catch (ClassNotFoundException e) {
                 LOGGER.error(e.getMessage(), e);
-                validationErrors.add(String.format(
-                        "Plugin parameter %s is of type %s. We could not find the class descriptor associated to.",
-                        plgParamMeta.getName(),
-                        plgParamType));
+                validationErrors.add(String
+                        .format("Plugin parameter %s is of type %s. We could not find the class descriptor associated to.",
+                                plgParamMeta.getName(), plgParamType));
             } catch (NumberFormatException e) {
                 LOGGER.error(e.getMessage(), e);
                 validationErrors.add(String.format(
