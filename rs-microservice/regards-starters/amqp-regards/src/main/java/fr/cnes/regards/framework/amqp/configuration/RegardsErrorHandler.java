@@ -91,8 +91,7 @@ public class RegardsErrorHandler implements ErrorHandler {
 
                 // Build event
                 // Message#toString is already handling encoding and content type if possible
-                String message = String.format("%s.\nMessage content : %s", t.getMessage(),
-                                               lefe.getFailedMessage().toString());
+                String message = "AMQP message has been routed to DLQ (dead letter queue).";
                 Set<String> roles = new HashSet<>(Arrays.asList(DefaultRole.PROJECT_ADMIN.toString()));
                 NotificationEvent event = NotificationEvent.build(new NotificationDtoBuilder(message,
                         AMQP_DLQ_FAILURE_MESSAGE, NotificationLevel.ERROR, microserviceName).toRoles(roles));
