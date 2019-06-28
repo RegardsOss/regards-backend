@@ -18,9 +18,18 @@
  */
 package fr.cnes.regards.framework.modules.workspace.service;
 
+import java.util.Set;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.Sets;
+import fr.cnes.regards.framework.amqp.IPublisher;
+import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
+import fr.cnes.regards.framework.notification.NotificationDtoBuilder;
+import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**
@@ -29,17 +38,34 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
  * @author Sylvain VISSIERE-GUERINET
  */
 @Component
-@ConditionalOnMissingBean(IWorkspaceNotifier.class)
 public class DefaultWorkspaceNotifier implements IWorkspaceNotifier {
+
+    @Autowired
+    private IPublisher publisher;
+
+    @Value("${spring.application.name}")
+    private String microserviceName;
 
     @Override
     public void sendErrorNotification(String message, String title, DefaultRole role) {
-        throw new UnsupportedOperationException("This bean has to overriden for real notification");
+        Set<String> roles = Sets.newHashSet(role.toString());
+        NotificationEvent event = NotificationEvent
+                .build(new NotificationDtoBuilder(message, title, NotificationLevel.ERROR, microserviceName)
+                               .toRoles(roles));
+
+        // Publish
+        publisher.publish(event);
     }
 
     @Override
     public void sendWarningNotification(String message, String title, DefaultRole role) {
-        throw new UnsupportedOperationException("This bean has to overriden for real notification");
+        Set<String> roles = Sets.newHashSet(role.toString());
+        NotificationEvent event = NotificationEvent
+                .build(new NotificationDtoBuilder(message, title, NotificationLevel.WARNING, microserviceName)
+                               .toRoles(roles));
+
+        // Publish
+        publisher.publish(event);
     }
 
 }
