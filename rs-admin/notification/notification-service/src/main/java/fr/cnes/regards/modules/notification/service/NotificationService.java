@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import fr.cnes.regards.modules.notification.domain.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,10 +47,6 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
-import fr.cnes.regards.modules.notification.domain.Notification;
-import fr.cnes.regards.modules.notification.domain.NotificationMode;
-import fr.cnes.regards.modules.notification.domain.NotificationStatus;
-import fr.cnes.regards.modules.notification.domain.NotificationToSendEvent;
 
 /**
  * {@link INotificationService} implementation
@@ -130,12 +127,12 @@ public class NotificationService implements INotificationService {
     }
 
     @Override
-    public Page<Notification> retrieveNotifications(Pageable page) {
+    public Page<INotificationWithoutMessage> retrieveNotifications(Pageable page) {
         if (notificationMode == NotificationMode.MULTITENANT) {
             return notificationRepository.findByRecipientsContaining(authenticationResolver.getUser(),
                                                                      authenticationResolver.getRole(), page);
         } else {
-            return notificationRepository.findAll(page);
+            return notificationRepository.findAllNotificationsWithoutMessage(page);
         }
     }
 
@@ -224,15 +221,14 @@ public class NotificationService implements INotificationService {
     }
 
     @Override
-    public Page<Notification> retrieveNotifications(Pageable page, NotificationStatus state)
-            throws EntityNotFoundException {
+    public Page<INotificationWithoutMessage> retrieveNotifications(Pageable page, NotificationStatus state) {
         if (state != null) {
             if (notificationMode == NotificationMode.MULTITENANT) {
                 return notificationRepository
                         .findByStatusAndRecipientsContaining(state, authenticationResolver.getUser(),
                                                              authenticationResolver.getRole(), page);
             } else {
-                return notificationRepository.findByStatus(state, page);
+                return notificationRepository.findWithoutMsgByStatus(state, page);
             }
         } else {
             return retrieveNotifications(page);

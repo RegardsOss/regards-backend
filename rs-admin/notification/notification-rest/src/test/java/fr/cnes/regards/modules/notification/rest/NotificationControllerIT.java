@@ -144,12 +144,12 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
         //                   "Could not retrieve notifications");
 
         performGet(NotificationController.NOTIFICATION_PATH, token,
-                   customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 4)
+                   customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 4).expect(MockMvcResultMatchers.jsonPath("$.content[0].content.message").doesNotExist())
                            .addParameter("state", NotificationStatus.UNREAD.toString()),
                    "Could not retrieve notifications");
 
         performGet(NotificationController.NOTIFICATION_PATH, token,
-                   customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 2)
+                   customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 2).expect(MockMvcResultMatchers.jsonPath("$.content[0].content.message").doesNotExist())
                            .addParameter("state", NotificationStatus.UNREAD.toString()).addParameter("page", "0")
                            .addParameter("size", "2"),
                    "Could not retrieve notifications");
