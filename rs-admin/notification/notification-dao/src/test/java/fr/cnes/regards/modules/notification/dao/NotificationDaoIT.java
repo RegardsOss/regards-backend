@@ -21,8 +21,8 @@ package fr.cnes.regards.modules.notification.dao;
 import java.util.HashSet;
 import java.util.Set;
 
+import fr.cnes.regards.modules.notification.domain.INotificationWithoutMessage;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -48,6 +48,11 @@ public class NotificationDaoIT extends AbstractDaoTransactionalTest {
 
     @Autowired
     private INotificationRepository notificationRepository;
+
+    @Test
+    public void getAllNotifications() {
+        notificationRepository.findByStatusAndRecipientsContaining(NotificationStatus.UNREAD, null, DefaultRole.PROJECT_ADMIN.toString(), PageRequest.of(0, 10));
+    }
 
     @Test
     public void createNotification() {
@@ -115,7 +120,7 @@ public class NotificationDaoIT extends AbstractDaoTransactionalTest {
         notificationRepository.save(readNotif);
 
         // now lets retrieve them by status
-        Page<Notification> notifPage = notificationRepository.findByStatusAndRecipientsContaining(NotificationStatus.UNREAD, "jo-regards@c-s.fr", DefaultRole.PUBLIC.toString(),
+        Page<INotificationWithoutMessage> notifPage = notificationRepository.findByStatusAndRecipientsContaining(NotificationStatus.UNREAD, "jo-regards@c-s.fr", DefaultRole.PUBLIC.toString(),
                                                                                       PageRequest.of(0,20));
         Assert.assertTrue("There should be 2 notification: 2 notifications UNREAD for role PUBLIC", notifPage.getTotalElements() == 2);
     }
