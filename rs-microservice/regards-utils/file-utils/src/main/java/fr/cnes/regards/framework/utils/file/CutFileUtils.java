@@ -72,9 +72,9 @@ public final class CutFileUtils {
             boolean continueCutFile = true;
             do {
                 // New cut file to write
-                String strFileCount = StringUtils.leftPad(String.valueOf(fileCount), 2, "0");
-                LOG.debug("creating new cut File {}_{}", pCutFileNamesPrefix, strFileCount);
-                File cutFile = new File(pTargetDirectory, pCutFileNamesPrefix + "_" + strFileCount);
+                String cutPartFileName = calculateCutPartFileName(pCutFileNamesPrefix, fileCount);
+                LOG.debug("creating new cut File {}", cutPartFileName);
+                File cutFile = new File(pTargetDirectory, cutPartFileName);
                 continueCutFile = writeInFile(inputStream, cutFile, pCutfilesMaxSize);
                 cutFiles.add(cutFile);
                 fileCount++;
@@ -87,6 +87,14 @@ public final class CutFileUtils {
             throw new IOException(msg, e);
         }
         return cutFiles;
+    }
+
+    public static String calculateCutPartFileName(String pFullFileName, int pPartIndex) {
+        if (pPartIndex > 0) {
+            return String.format("%s_%s", pFullFileName, StringUtils.leftPad(String.valueOf(pPartIndex), 2, "0"));
+        } else {
+            return pFullFileName;
+        }
     }
 
     /**
