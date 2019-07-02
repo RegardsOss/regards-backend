@@ -52,7 +52,7 @@ public class AIPSessionSpecifications {
                 predicates.add(cb.lessThanOrEqualTo(root.get(SIP_SESSION_LAST_ACTIVATION_DATE), to));
             }
             if (id != null) {
-                predicates.add(cb.equal(root.get("id"), id));
+                predicates.add(cb.like(root.get("id"), "%" + id + "%"));
             }
 
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
