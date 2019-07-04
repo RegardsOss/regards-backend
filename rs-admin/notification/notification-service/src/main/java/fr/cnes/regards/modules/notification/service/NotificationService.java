@@ -228,7 +228,7 @@ public class NotificationService implements INotificationService {
                         .findByStatusAndRecipientsContaining(state, authenticationResolver.getUser(),
                                                              authenticationResolver.getRole(), page);
             } else {
-                return notificationRepository.findWithoutMsgByStatus(state, page);
+                return notificationRepository.findAllNotificationsWithoutMessageByStatus(state, page);
             }
         } else {
             return retrieveNotifications(page);
