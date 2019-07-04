@@ -374,8 +374,8 @@ public class SIPServiceIT extends AbstractSipIT {
         Collection<RejectedSip> rejectedSips = sipService.deleteSIPEntitiesForSessionId(COMPLEX_SESSION_ID);
         aipService.askForAipsDeletion();
         // 2 SIP per state in COMPLEX_SESSION_ID.
-        // Undeletable are QUEUED, VALID, TO_BE_DELETED, DELETED
-        Assert.assertEquals(8, rejectedSips.size());
+        // Undeletable are QUEUED, VALID. TO_BE_DELETED and DELETED are now considered deletable but do nothing
+        Assert.assertEquals(4, rejectedSips.size());
         // Check call to storage client for deletion
         @SuppressWarnings("rawtypes")
         ArgumentCaptor<Set> argument = ArgumentCaptor.forClass(Set.class);
