@@ -38,6 +38,7 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.ingest.domain.exception.TagAIPException;
 import fr.cnes.regards.modules.ingest.domain.plugin.IAipTagging;
 import fr.cnes.regards.modules.ingest.service.plugin.DefaultAIPTagging;
@@ -66,7 +67,7 @@ public class DefaultAipTaggingTest {
     }
 
     @Test
-    public void addOnlyTags() throws TagAIPException {
+    public void addOnlyTags() throws TagAIPException, NotAvailablePluginConfigurationException {
 
         Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(DefaultAIPTagging.FIELD_NAME_TAGS, TAGS).getParameters();
@@ -77,7 +78,7 @@ public class DefaultAipTaggingTest {
     }
 
     @Test
-    public void addOnlyLinks() throws TagAIPException {
+    public void addOnlyLinks() throws TagAIPException, NotAvailablePluginConfigurationException {
 
         Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(DefaultAIPTagging.FIELD_NAME_LINKS, LINKS).getParameters();
@@ -88,7 +89,7 @@ public class DefaultAipTaggingTest {
     }
 
     @Test
-    public void addTagsAndLinks() throws TagAIPException {
+    public void addTagsAndLinks() throws TagAIPException, NotAvailablePluginConfigurationException {
         Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(DefaultAIPTagging.FIELD_NAME_TAGS, TAGS)
                 .addParameter(DefaultAIPTagging.FIELD_NAME_LINKS, LINKS).getParameters();
@@ -99,7 +100,7 @@ public class DefaultAipTaggingTest {
     }
 
     @Test(expected = PluginUtilsRuntimeException.class)
-    public void addNothing() throws TagAIPException {
+    public void addNothing() throws TagAIPException, NotAvailablePluginConfigurationException {
         Set<PluginParameter> parameters = PluginParametersFactory.build().getParameters();
 
         PluginUtils.setup(MODULE_PACKAGE);
