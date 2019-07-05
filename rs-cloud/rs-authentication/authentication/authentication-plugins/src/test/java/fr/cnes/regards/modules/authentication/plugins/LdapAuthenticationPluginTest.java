@@ -41,6 +41,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPluginResponse;
 import fr.cnes.regards.modules.authentication.plugins.impl.ldap.LdapAuthenticationPlugin;
 
@@ -82,7 +83,7 @@ public class LdapAuthenticationPluginTest {
             // instantiate plugin
             plugin = PluginUtils.getPlugin(parameters, LdapAuthenticationPlugin.class, new HashMap<>());
             Assert.assertNotNull(plugin);
-        } catch (final PluginUtilsRuntimeException e) {
+        } catch (final PluginUtilsRuntimeException | NotAvailablePluginConfigurationException e) {
             Assert.fail();
         }
     }
