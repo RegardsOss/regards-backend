@@ -514,11 +514,6 @@
                 <artifactId>workspace-rest</artifactId>
                 <version>${fr.cnes.regards.framework.modules.workspace.version}</version>
             </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.workspace</groupId>
-                <artifactId>workspace-project-notifier</artifactId>
-                <version>${fr.cnes.regards.framework.modules.workspace.version}</version>
-            </dependency>
             <!-- Regards Locks -->
             <dependency>
                 <groupId>fr.cnes.regards.framework.modules.locks</groupId>
@@ -931,11 +926,6 @@
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.notification</groupId>
-                <artifactId>notification-client</artifactId>
-                <version>${fr.cnes.regards.modules.notification.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>fr.cnes.regards.modules.notification</groupId>
                 <artifactId>notification-domain</artifactId>
                 <version>${fr.cnes.regards.modules.notification.version}</version>
             </dependency>
@@ -947,6 +937,11 @@
             <dependency>
                 <groupId>fr.cnes.regards.framework</groupId>
                 <artifactId>notification-regards</artifactId>
+                <version>${fr.cnes.regards.framework.notification.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>fr.cnes.regards.framework</groupId>
+                <artifactId>notification-regards-starter</artifactId>
                 <version>${fr.cnes.regards.framework.notification.version}</version>
             </dependency>
             <!-- Notification Instance -->
