@@ -36,6 +36,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.step.IProcessingStep;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.ingest.dao.IIngestProcessingChainRepository;
 import fr.cnes.regards.modules.ingest.domain.SIP;
@@ -48,7 +49,6 @@ import fr.cnes.regards.modules.ingest.service.chain.step.PreprocessingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.StoreStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.TaggingStep;
 import fr.cnes.regards.modules.ingest.service.chain.step.ValidationStep;
-import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.domain.AIP;
 
 /**
