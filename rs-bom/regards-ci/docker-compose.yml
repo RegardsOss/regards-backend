@@ -12,9 +12,6 @@ services:
       - /usr/bin/docker:/bin/docker # link docker - only useful for deploy MODE
       - /var/run/docker.sock:/var/run/docker.sock
       - ../.:/app_to_build
-    links:
-      - rs-rabbitmq
-      - rs-postgres
     networks:
       - regards_IT_network
 
