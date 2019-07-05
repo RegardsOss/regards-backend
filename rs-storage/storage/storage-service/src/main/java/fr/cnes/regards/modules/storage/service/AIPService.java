@@ -90,6 +90,7 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.dao.AIPQueryGenerator;
 import fr.cnes.regards.modules.storage.dao.AIPSessionSpecifications;
@@ -663,7 +664,12 @@ public class AIPService implements IAIPService {
         // Apply multimapCollector in parallel
         Multimap<UniformResourceName, StorageDataFile> aipIdsMap = dataFiles.parallelStream()
                 .collect(multimapCollector);
-        ISecurityDelegation securityDelegationPlugin = getSecurityDelegationPlugin();
+        ISecurityDelegation securityDelegationPlugin;
+        try {
+            securityDelegationPlugin = getSecurityDelegationPlugin();
+        } catch (NotAvailablePluginConfigurationException e) {
+            throw new ModuleException(e.getMessage(), e);
+        }
         // Check security...
         Set<UniformResourceName> urnsWithAccess = securityDelegationPlugin.hasAccess(aipIdsMap.keySet());
         if (urnsWithAccess.size() != aipIdsMap.keySet().size()) {
@@ -675,8 +681,13 @@ public class AIPService implements IAIPService {
     @Override
     public Page<AIP> retrieveAIPs(AIPState state, OffsetDateTime from, OffsetDateTime to, List<String> tags,
             String session, String providerId, Set<Long> storedOn, Pageable pageable) throws ModuleException {
-        if (!getSecurityDelegationPlugin().hasAccessToListFeature()) {
-            throw new EntityOperationForbiddenException("Only Admins can access this feature.");
+        try {
+            if (!getSecurityDelegationPlugin().hasAccessToListFeature()) {
+                throw new EntityOperationForbiddenException("Only Admins can access this feature.");
+            }
+        } catch (NotAvailablePluginConfigurationException e) {
+            LOGGER.error(e.getMessage(), e);
+            throw new EntityOperationForbiddenException(e.getMessage());
         }
         return aipDao.findAll(AIPQueryGenerator.searchAIPContainingAllTags(state,
                                                                            from,
@@ -694,8 +705,13 @@ public class AIPService implements IAIPService {
             throws ModuleException {
         // In all this method usage of list is mandatory to keep order
 
-        if (!getSecurityDelegationPlugin().hasAccessToListFeature()) {
-            throw new EntityOperationForbiddenException("Only Admins can access this feature.");
+        try {
+            if (!getSecurityDelegationPlugin().hasAccessToListFeature()) {
+                throw new EntityOperationForbiddenException("Only Admins can access this feature.");
+            }
+        } catch (NotAvailablePluginConfigurationException e) {
+            LOGGER.error(e.getMessage(), e);
+            throw new EntityOperationForbiddenException(e.getMessage());
         }
         String aipQueryWithoutPage = AIPQueryGenerator.searchAIPIdContainingAllTags(filters.getState(),
                                                                                     filters.getFrom(),
@@ -811,8 +827,13 @@ public class AIPService implements IAIPService {
     public Set<StorageDataFile> retrieveAIPDataFiles(UniformResourceName pIpId) throws ModuleException {
         Optional<AIP> aip = aipDao.findOneByAipId(pIpId.toString());
         if (aip.isPresent()) {
-            if (!getSecurityDelegationPlugin().hasAccess(pIpId.toString())) {
-                throw new EntityOperationForbiddenException(pIpId.toString(), AIP.class, AIP_ACCESS_FORBIDDEN);
+            try {
+                if (!getSecurityDelegationPlugin().hasAccess(pIpId.toString())) {
+                    throw new EntityOperationForbiddenException(pIpId.toString(), AIP.class, AIP_ACCESS_FORBIDDEN);
+                }
+            } catch (NotAvailablePluginConfigurationException e) {
+                LOGGER.error(e.getMessage(), e);
+                throw new EntityOperationForbiddenException(pIpId.toString(), AIP.class, e.getMessage());
             }
             return dataFileDao.findAllByAip(aip.get());
         } else {
@@ -974,7 +995,7 @@ public class AIPService implements IAIPService {
             } else {
                 throw new InvalidDatastoragePluginConfException(dataStorageConfId);
             }
-        } catch (ModuleException e) {
+        } catch (ModuleException | NotAvailablePluginConfigurationException e) {
             throw new InvalidDatastoragePluginConfException(dataStorageConfId, e);
         }
 
@@ -1077,13 +1098,13 @@ public class AIPService implements IAIPService {
         PluginConfiguration activeAllocationStrategy = getAllocationStrategyConfiguration();
         try {
             return pluginService.getPlugin(activeAllocationStrategy.getId());
-        } catch (PluginUtilsRuntimeException e) {
+        } catch (PluginUtilsRuntimeException | NotAvailablePluginConfigurationException e) {
             LOGGER.error(e.getMessage(), e);
             notifyAdmins("Allocation Strategy miss configured",
                          e.getMessage(),
                          NotificationLevel.ERROR,
                          MimeTypeUtils.TEXT_PLAIN);
-            throw e;
+            throw new ModuleException(e);
         }
     }
 
@@ -1108,7 +1129,8 @@ public class AIPService implements IAIPService {
         return activeAllocationStrategies.get(0);
     }
 
-    private ISecurityDelegation getSecurityDelegationPlugin() throws ModuleException {
+    private ISecurityDelegation getSecurityDelegationPlugin()
+            throws ModuleException, NotAvailablePluginConfigurationException {
         // Lets retrieve active configurations of IAllocationStrategy
         List<PluginConfiguration> securityDelegations = pluginService
                 .getPluginConfigurationsByType(ISecurityDelegation.class);
@@ -1184,8 +1206,12 @@ public class AIPService implements IAIPService {
     public List<Event> retrieveAIPHistory(UniformResourceName ipId) throws ModuleException {
         Optional<AIP> aip = aipDao.findOneByAipId(ipId.toString());
         if (aip.isPresent()) {
-            if (!getSecurityDelegationPlugin().hasAccess(ipId.toString())) {
-                throw new EntityOperationForbiddenException(ipId.toString(), AIP.class, AIP_ACCESS_FORBIDDEN);
+            try {
+                if (!getSecurityDelegationPlugin().hasAccess(ipId.toString())) {
+                    throw new EntityOperationForbiddenException(ipId.toString(), AIP.class, AIP_ACCESS_FORBIDDEN);
+                }
+            } catch (NotAvailablePluginConfigurationException e) {
+                throw new EntityOperationForbiddenException(ipId.toString(), AIP.class, e.getMessage());
             }
             return aip.get().getHistory();
         } else {
@@ -1701,8 +1727,12 @@ public class AIPService implements IAIPService {
         Optional<AIP> oaip = aipDao.findOneByAipId(pAipId);
         if (oaip.isPresent()) {
             AIP aip = oaip.get();
-            if (!getSecurityDelegationPlugin().hasAccess(pAipId)) {
-                throw new EntityOperationForbiddenException(pAipId, AIP.class, AIP_ACCESS_FORBIDDEN);
+            try {
+                if (!getSecurityDelegationPlugin().hasAccess(pAipId)) {
+                    throw new EntityOperationForbiddenException(pAipId, AIP.class, AIP_ACCESS_FORBIDDEN);
+                }
+            } catch (NotAvailablePluginConfigurationException e) {
+                throw new EntityOperationForbiddenException(pAipId, AIP.class, e.getMessage());
             }
             // Now, that we can download files from this AIP, lets first check the cache: it allows us to patch issues with checksum rectification and
             // it allow users to download data that were cached and then deleted from system.
@@ -1711,16 +1741,11 @@ public class AIPService implements IAIPService {
                 Long realFileSizeInCache = Paths.get(ocf.get().getLocation().getPath()).toFile().length();
                 CachedFile cf = ocf.get();
                 if (!cf.getFileSize().equals(realFileSizeInCache)) {
-                    LOGGER.warn(
-                            "File {} size in database ({}octets) is different from real file size in cache ({}octets).",
-                            cf.getFileName(),
-                            cf.getFileSize(),
-                            realFileSizeInCache);
+                    LOGGER.warn("File {} size in database ({}octets) is different from real file size in cache ({}octets).",
+                                cf.getFileName(), cf.getFileSize(), realFileSizeInCache);
                 }
-                return new DownloadableFile(new FileInputStream(cf.getLocation().getPath()),
-                                            realFileSizeInCache,
-                                            cf.getFileName(),
-                                            cf.getMimeType());
+                return new DownloadableFile(new FileInputStream(cf.getLocation().getPath()), realFileSizeInCache,
+                        cf.getFileName(), cf.getMimeType());
             } else {
                 // if it is not in cache, lets see if it is ONLINE
                 Set<StorageDataFile> aipDataFiles = dataFileDao.findAllByAip(aip);
@@ -1732,15 +1757,21 @@ public class AIPService implements IAIPService {
                         // first let see if this file is stored on an online data storage and lets get the most prioritized
                         Optional<PrioritizedDataStorage> onlinePrioritizedDataStorageOpt = dataFile
                                 .getPrioritizedDataStorages().stream()
-                                .filter(pds -> pds.getDataStorageType().equals(DataStorageType.ONLINE) && pds
-                                        .getDataStorageConfiguration().isActive()).sorted().findFirst();
+                                .filter(pds -> pds.getDataStorageType().equals(DataStorageType.ONLINE)
+                                        && pds.getDataStorageConfiguration().isActive())
+                                .sorted().findFirst();
                         if (onlinePrioritizedDataStorageOpt.isPresent()) {
-                            @SuppressWarnings("rawtypes") InputStream dataFileIS = ((IOnlineDataStorage) pluginService
-                                    .getPlugin(onlinePrioritizedDataStorageOpt.get().getId())).retrieve(dataFile);
-                            return new DownloadableFile(dataFileIS,
-                                                        dataFile.getFileSize(),
-                                                        dataFile.getName(),
-                                                        dataFile.getMimeType());
+                            @SuppressWarnings("rawtypes")
+                            InputStream dataFileIS;
+                            try {
+                                dataFileIS = ((IOnlineDataStorage) pluginService
+                                        .getPlugin(onlinePrioritizedDataStorageOpt.get().getId())).retrieve(dataFile);
+                            } catch (NotAvailablePluginConfigurationException e) {
+                                LOGGER.error(e.getMessage(), e);
+                                throw new EntityNotFoundException(e.getMessage());
+                            }
+                            return new DownloadableFile(dataFileIS, dataFile.getFileSize(), dataFile.getName(),
+                                    dataFile.getMimeType());
                         } else {
                             // the file is neither in cache nor ONLINE but it exists, lets return null
                             return null;

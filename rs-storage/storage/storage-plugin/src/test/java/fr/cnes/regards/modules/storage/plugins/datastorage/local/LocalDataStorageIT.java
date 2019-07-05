@@ -65,6 +65,7 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceIT;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
 import fr.cnes.regards.modules.storage.domain.database.AIPSession;
@@ -172,7 +173,7 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
     }
 
     @Test
-    public void testStore() throws ModuleException, IOException {
+    public void testStore() throws ModuleException, IOException, NotAvailablePluginConfigurationException {
         IProgressManager progressManager = Mockito.mock(IProgressManager.class);
         AIP aip = getAipFromFile();
         AIPSession aipSession = new AIPSession();
@@ -194,8 +195,8 @@ public class LocalDataStorageIT extends AbstractRegardsServiceIT {
         StorageDataFile ghostDF = new StorageDataFile(
                 Sets.newHashSet(new URL("file", "",
                         System.getProperty("user.dir") + "/src/test/resources/data_do_not_exist.txt")),
-                "unknown", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"),
-                new AIPEntity(aip, aipSession), "data_do_not_exist.txt", null);
+                "unknown", "MD5", DataType.RAWDATA, 123L, new MimeType("text", "plain"), new AIPEntity(aip, aipSession),
+                "data_do_not_exist.txt", null);
         // invalid checksum to check call to progressManager.storageFailed
         StorageDataFile invalidDF = new StorageDataFile(
                 Sets.newHashSet(new URL("file", "", System.getProperty("user.dir") + "/src/test/resources/data.txt")),
