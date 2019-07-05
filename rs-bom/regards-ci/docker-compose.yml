@@ -6,7 +6,7 @@ services:
       - BRANCH_NAME
       - WORKSPACE
       - CI_DIR
-      - MODE
+      - MODE=BOM
     volumes:
       - /DATA/maven-multibranch-repository:/localRepository
       - /usr/bin/docker:/bin/docker # link docker - only useful for deploy MODE
