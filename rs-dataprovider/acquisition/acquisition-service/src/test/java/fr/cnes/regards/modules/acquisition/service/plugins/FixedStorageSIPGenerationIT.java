@@ -38,6 +38,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.acquisition.domain.AcquisitionFile;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionFileInfo;
@@ -51,7 +52,7 @@ public class FixedStorageSIPGenerationIT extends AbstractMultitenantServiceTest 
     private IPluginService pluginService;
 
     @Test
-    public void testPlugin() throws ModuleException {
+    public void testPlugin() throws ModuleException, NotAvailablePluginConfigurationException {
 
         // Init plugin conf
         PluginMetaData plugin = PluginUtils.createPluginMetaData(FixedStorageSIPGeneration.class);
