@@ -40,6 +40,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 
 /**
  * Tests for plugin instanciation with complex parameter types
@@ -70,12 +71,12 @@ public class ComplexPluginTest {
         blowfishEncryptionService
                 .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "12345678"));
         pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, publisherMocked, runtimeTenantResolver,
-                                                blowfishEncryptionService);
+                blowfishEncryptionService);
         PluginUtils.setup();
     }
 
     @Test
-    public void test() throws ModuleException {
+    public void test() throws ModuleException, NotAvailablePluginConfigurationException {
         PluginMetaData result = pluginServiceMocked.getPluginMetaDataById("complexPlugin");
 
         Long pPluginConfigurationId = 10L;
@@ -92,8 +93,7 @@ public class ComplexPluginTest {
 
         List<PluginConfiguration> pluginConfs = new ArrayList<>();
         PluginConfiguration aPluginConfiguration = new PluginConfiguration(result,
-                                                                           "a configuration from PluginServiceUtility",
-                                                                           ppf.getParameters(), 0);
+                "a configuration from PluginServiceUtility", ppf.getParameters(), 0);
         aPluginConfiguration.setId(pPluginConfigurationId);
 
         pluginConfs.add(aPluginConfiguration);

@@ -36,6 +36,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.basic.PluginUtilsTestConstants;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 
 /**
  * @author Christophe Mertz
@@ -131,11 +132,12 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
 
     /**
      * Get a {@link ComplexPlugin} with a specific parameters
+     * @throws NotAvailablePluginConfigurationException
      */
     @Test
     @Requirement("REGARDS_DSL_SYS_PLG_020")
     @Purpose("Load a plugin with a plugin type interface parameter.")
-    public void getComplexPlugin() {
+    public void getComplexPlugin() throws NotAvailablePluginConfigurationException {
         final ComplexPlugin complexPlugin;
         LOGGER.debug(STARTING + toString());
         PluginUtils.setup(PLUGIN_CURRENT_PACKAGE);
@@ -178,7 +180,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     @Test(expected = PluginUtilsRuntimeException.class)
     @Requirement("REGARDS_DSL_SYS_PLG_020")
     @Purpose("Error to load a plugin from with an incompatible interface parameter.")
-    public void incompatibleInterfaceError() {
+    public void incompatibleInterfaceError() throws NotAvailablePluginConfigurationException {
         LOGGER.debug(STARTING + toString());
         /*
          * Set all parameters
@@ -196,7 +198,7 @@ public final class PluginInterfaceUtilsTest extends PluginUtilsTestConstants {
     @Test(expected = PluginUtilsRuntimeException.class)
     @Requirement("REGARDS_DSL_SYS_PLG_020")
     @Purpose("Error to load a plugin from with an incompatible interface parameter.")
-    public void incompatibleParameterError() {
+    public void incompatibleParameterError() throws NotAvailablePluginConfigurationException {
         LOGGER.debug(STARTING + toString());
         /*
          * Set all parameters
