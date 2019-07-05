@@ -28,17 +28,8 @@
  * @author Sylvain VISSIERE-GUERINET
  * @see https://jenkins.io/doc/book/pipeline/jenkinsfile/
  */
-pipeline {
-    agent { label 'unix-integration' }
+@Library('regards/standardPipeline') _
 
-    stages {
-        stage('Deploy artifacts') {
-            when {
-                expression { BRANCH_NAME ==~ /(master|develop.*|release.*)/ }
-            }
-            steps {
-                sh 'mvn -U clean org.jacoco:jacoco-maven-plugin:0.7.7.201606060606:prepare-agent deploy sonar:sonar -Dsonar.branch=${BRANCH_NAME}'
-            }
-        }
-    }
+standardPipeline {
+    upstreamProjects = 'rs-regards-multi-branch'
 }
