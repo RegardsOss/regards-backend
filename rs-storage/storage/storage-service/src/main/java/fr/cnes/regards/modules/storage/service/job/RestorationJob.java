@@ -31,6 +31,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storage.domain.database.StorageDataFile;
 import fr.cnes.regards.modules.storage.domain.plugin.INearlineDataStorage;
 import fr.cnes.regards.modules.storage.domain.plugin.IWorkingSubset;
@@ -84,7 +85,8 @@ public class RestorationJob extends AbstractStoreFilesJob {
             logger.debug("Plugin {} - Running restoration for {}files", storagePlugin.getClass().getName(),
                          workingSubset.getDataFiles().size());
             storagePlugin.retrieve(workingSubset, destination, progressManager);
-        } catch (ModuleException | PluginUtilsRuntimeException | IOException e) {
+        } catch (ModuleException | PluginUtilsRuntimeException | IOException
+                | NotAvailablePluginConfigurationException e) {
             // throwing new runtime allows us to make the job fail.
             throw new RsRuntimeException(e);
         }

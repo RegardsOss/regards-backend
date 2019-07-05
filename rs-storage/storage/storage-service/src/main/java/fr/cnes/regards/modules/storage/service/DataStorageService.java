@@ -40,6 +40,7 @@ import fr.cnes.regards.framework.oais.EventType;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
@@ -177,23 +178,29 @@ public class DataStorageService implements IDataStorageService {
                     .getPluginMetaDataById(activeDataStorageConf.getPluginId());
             PluginStorageInfo monitoringInfo = new PluginStorageInfo(activeDataStorageConfId,
                     activeDataStorageMeta.getDescription(), activeDataStorageConf.getLabel());
-            // now lets get the data storage monitoring information from the plugin
-            @SuppressWarnings("rawtypes")
-            Long dataStorageTotalSpace = ((IDataStorage) pluginService.getPlugin(activeDataStorageConfId))
-                    .getTotalSpace();
-            DataStorageInfo dataStorageInfo;
-            if (monitoringAggregationMap.containsKey(activeDataStorageConfId)) {
-                dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(), dataStorageTotalSpace,
-                        monitoringAggregationMap.get(activeDataStorageConfId));
-            } else {
-                dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(), dataStorageTotalSpace, 0);
+            try {
+                // now lets get the data storage monitoring information from the plugin
+                @SuppressWarnings("rawtypes")
+                Long dataStorageTotalSpace = ((IDataStorage) pluginService.getPlugin(activeDataStorageConfId))
+                        .getTotalSpace();
+                DataStorageInfo dataStorageInfo;
+                if (monitoringAggregationMap.containsKey(activeDataStorageConfId)) {
+                    dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(), dataStorageTotalSpace,
+                            monitoringAggregationMap.get(activeDataStorageConfId));
+                } else {
+                    dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(), dataStorageTotalSpace, 0);
 
+                }
+                monitoringInfo.setTotalSize(dataStorageInfo.getTotalSize());
+                monitoringInfo.setUsedSize(dataStorageInfo.getUsedSize());
+                monitoringInfo.setRatio(dataStorageInfo.getRatio());
+
+                monitoringInfos.add(monitoringInfo);
+            } catch (NotAvailablePluginConfigurationException e) {
+                // Should not happen as retrieved plugins are active.
+                LOGGER.warn(e.getMessage(), e);
             }
-            monitoringInfo.setTotalSize(dataStorageInfo.getTotalSize());
-            monitoringInfo.setUsedSize(dataStorageInfo.getUsedSize());
-            monitoringInfo.setRatio(dataStorageInfo.getRatio());
 
-            monitoringInfos.add(monitoringInfo);
         }
         return monitoringInfos;
     }
@@ -249,7 +256,7 @@ public class DataStorageService implements IDataStorageService {
                         }
                     }
 
-                } catch (ModuleException e) {
+                } catch (ModuleException | NotAvailablePluginConfigurationException e) {
                     // should never happens, currently it is an exception that cannot be thrown in this code(issues with
                     // dynamic parameters)
                     LOGGER.error(e.getMessage(), e);
@@ -667,7 +674,7 @@ public class DataStorageService implements IDataStorageService {
                 Map<String, Object> diagInfo = activeDataStorage.getDiagnosticInfo();
                 diagInfo.put("Plugin Conf", dataStorageConf);
                 diagnostic.add(diagInfo);
-            } catch (ModuleException e) {
+            } catch (ModuleException | NotAvailablePluginConfigurationException e) {
                 // We do not really care about issues here, we are getting diagnostic information so we probably
                 // have access to logs to see issues
                 LOGGER.error(e.getMessage(), e);
