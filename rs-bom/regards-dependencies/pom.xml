@@ -15,7 +15,7 @@
 
     <groupId>fr.cnes.regards</groupId>
     <artifactId>regards-dependencies</artifactId>
-    <version>4.0.0-SNAPSHOT</version>
+    <version>0.5.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Regards Dependencies</name>
@@ -598,39 +598,39 @@
             <dependency>
                 <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
                 <artifactId>db-datasource-common</artifactId>
-                <version>4.0.0-SNAPSHOT</version>
+                <version>0.5.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
                 <artifactId>datasource-oracle-plugins</artifactId>
-                <version>4.0.0-SNAPSHOT</version>
+                <version>0.5.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
                 <artifactId>datasource-oracle-plugins</artifactId>
-                <version>4.0.0-SNAPSHOT</version>
+                <version>0.5.0-SNAPSHOT</version>
                 <classifier>shaded</classifier>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
                 <artifactId>postgresql-datasource</artifactId>
-                <version>4.0.0-SNAPSHOT</version>
+                <version>0.5.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
                 <artifactId>postgresql-datasource</artifactId>
-                <version>4.0.0-SNAPSHOT</version>
+                <version>0.5.0-SNAPSHOT</version>
                 <classifier>shaded</classifier>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
                 <artifactId>aip-datasource</artifactId>
-                <version>4.0.0-SNAPSHOT</version>
+                <version>0.5.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.dam.plugins.datasources</groupId>
                 <artifactId>aip-datasource</artifactId>
-                <version>4.0.0-SNAPSHOT</version>
+                <version>0.5.0-SNAPSHOT</version>
                 <classifier>shaded</classifier>
             </dependency>
             <!-- DAM -->
@@ -840,12 +840,12 @@
             <dependency>
                 <groupId>fr.cnes.regards.modules.storage.plugins</groupId>
                 <artifactId>catalog-security-delegation</artifactId>
-                <version>4.0.0-SNAPSHOT</version>
+                <version>0.5.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>fr.cnes.regards.modules.storage.plugins</groupId>
                 <artifactId>catalog-security-delegation</artifactId>
-                <version>4.0.0-SNAPSHOT</version>
+                <version>0.5.0-SNAPSHOT</version>
                 <classifier>shaded</classifier>
             </dependency>
             <!-- Data provider -->
