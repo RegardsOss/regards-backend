@@ -72,7 +72,6 @@ import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.dao.IPrioritizedDataStorageRepository;

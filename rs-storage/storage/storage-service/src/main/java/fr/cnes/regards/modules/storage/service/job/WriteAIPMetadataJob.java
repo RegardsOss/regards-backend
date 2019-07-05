@@ -41,11 +41,11 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.file.ChecksumUtils;
-import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPState;
 import fr.cnes.regards.modules.storage.domain.FileCorruptedException;

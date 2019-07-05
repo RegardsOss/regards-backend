@@ -23,7 +23,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.modules.notification.client.INotificationClient;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
 
 @Configuration
 public class TestConfig {
