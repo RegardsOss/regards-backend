@@ -25,10 +25,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
-import fr.cnes.regards.modules.notification.client.INotificationClient;
 
 /**
  * Cleaning thread
