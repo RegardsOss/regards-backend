@@ -35,6 +35,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 
 /**
  * Unit testing of {@link PluginUtils}.
@@ -47,7 +48,7 @@ public class CycleDetectionTest {
     private static final String PLUGIN_PACKAGE = "fr.cnes.regards.framework.utils.plugins";
 
     @Test
-    public void cycleDetectionOK() {
+    public void cycleDetectionOK() throws NotAvailablePluginConfigurationException {
         List<String> values = new ArrayList<>();
         values.add("test1");
         values.add("test2");
@@ -73,8 +74,8 @@ public class CycleDetectionTest {
 
         // instantiate plugin
         PluginUtils.setup(PLUGIN_PACKAGE);
-        SamplePluginWithPojo samplePlugin = PluginUtils
-                .getPlugin(parameters, SamplePluginWithPojo.class, new HashMap<>());
+        SamplePluginWithPojo samplePlugin = PluginUtils.getPlugin(parameters, SamplePluginWithPojo.class,
+                                                                  new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
@@ -83,12 +84,13 @@ public class CycleDetectionTest {
          */
         Assert.assertEquals(samplePlugin.getPojo().getValue(), pojoParam.getValue());
         Assert.assertEquals(samplePlugin.getPojo().getValues().size(), values.size());
-        Assert.assertEquals(
-                OffsetDateTime.parse(samplePlugin.getPojo().getDate(), DateTimeFormatter.ISO_OFFSET_DATE_TIME), ofdt);
+        Assert.assertEquals(OffsetDateTime.parse(samplePlugin.getPojo().getDate(),
+                                                 DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+                            ofdt);
     }
 
     @Test(expected = PluginUtilsRuntimeException.class)
-    public void cycleDetectedWithTwoLevel() {
+    public void cycleDetectedWithTwoLevel() throws NotAvailablePluginConfigurationException {
         List<String> values = new ArrayList<>();
         values.add("test1");
         values.add("test2");
@@ -138,7 +140,7 @@ public class CycleDetectionTest {
     }
 
     @Test
-    public void cycleDetectedWithSet() {
+    public void cycleDetectedWithSet() throws NotAvailablePluginConfigurationException {
         TestPojoWithSet pojoParent = new TestPojoWithSet();
 
         TestPojoChildWithSet pojoChild = new TestPojoChildWithSet();
@@ -161,8 +163,8 @@ public class CycleDetectionTest {
 
         // instantiate plugin
         PluginUtils.setup(PLUGIN_PACKAGE);
-        SamplePluginWithPojoWithSet samplePlugin = PluginUtils
-                .getPlugin(parameters, SamplePluginWithPojoWithSet.class, new HashMap<>());
+        SamplePluginWithPojoWithSet samplePlugin = PluginUtils.getPlugin(parameters, SamplePluginWithPojoWithSet.class,
+                                                                         new HashMap<>());
 
         Assert.assertNotNull(samplePlugin);
 
@@ -173,7 +175,7 @@ public class CycleDetectionTest {
     }
 
     @Test(expected = PluginUtilsRuntimeException.class)
-    public void cycleDetectedWithThreeLevel() {
+    public void cycleDetectedWithThreeLevel() throws NotAvailablePluginConfigurationException {
         List<String> values = new ArrayList<>();
         values.add("test1");
         values.add("test2");

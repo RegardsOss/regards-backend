@@ -26,6 +26,7 @@ import org.junit.Test;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 
 /**
  * Test plugin with inheritance
@@ -34,7 +35,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 public class InheritanceTests {
 
     @Test
-    public void test() {
+    public void test() throws NotAvailablePluginConfigurationException {
 
         Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(BasicPlugin.FIELD_NAME_STRING, "hello!")
