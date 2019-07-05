@@ -29,6 +29,7 @@ public class WorkspaceAutoConf {
      * @return workspace default notifier implementation
      */
     @Bean
+    @ConditionalOnMissingBean(IWorkspaceNotifier.class)
     public IWorkspaceNotifier workspaceNotifier() {
         return new DefaultWorkspaceNotifier();
     }

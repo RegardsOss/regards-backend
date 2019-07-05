@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+fr.cnes.regards.framework.notification.client.NotificationPublisher,\
+fr.cnes.regards.framework.notification.client.InstanceNotificationPublisher

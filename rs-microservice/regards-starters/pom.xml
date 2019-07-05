@@ -93,6 +93,7 @@
         <module>microservice-logger</module>
 	    <module>proxy-starter</module>
         <module>notification-regards</module>
+        <module>notification-regards-starter</module>
     </modules>
 
     <dependencies>

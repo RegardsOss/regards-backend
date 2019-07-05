@@ -18,54 +18,32 @@
  */
 package fr.cnes.regards.framework.modules.workspace.service;
 
-import java.util.Set;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
 
-import com.google.common.collect.Sets;
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.amqp.event.notification.NotificationEvent;
-import fr.cnes.regards.framework.notification.NotificationDtoBuilder;
 import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 
 /**
- * Default implementation, doing nothing. This implementation is only used if no other implementation is detected by
- * spring.
+ * Default implementation. notify using notification client.
+ *
  * @author Sylvain VISSIERE-GUERINET
  */
 @Component
 public class DefaultWorkspaceNotifier implements IWorkspaceNotifier {
 
     @Autowired
-    private IPublisher publisher;
-
-    @Value("${spring.application.name}")
-    private String microserviceName;
+    private INotificationClient notifClient;
 
     @Override
     public void sendErrorNotification(String message, String title, DefaultRole role) {
-        Set<String> roles = Sets.newHashSet(role.toString());
-        NotificationEvent event = NotificationEvent
-                .build(new NotificationDtoBuilder(message, title, NotificationLevel.ERROR, microserviceName)
-                               .toRoles(roles));
-
-        // Publish
-        publisher.publish(event);
+        notifClient.notify(message, title, NotificationLevel.ERROR, role);
     }
 
     @Override
     public void sendWarningNotification(String message, String title, DefaultRole role) {
-        Set<String> roles = Sets.newHashSet(role.toString());
-        NotificationEvent event = NotificationEvent
-                .build(new NotificationDtoBuilder(message, title, NotificationLevel.WARNING, microserviceName)
-                               .toRoles(roles));
-
-        // Publish
-        publisher.publish(event);
+        notifClient.notify(message, title, NotificationLevel.WARNING, role);
     }
 
 }
