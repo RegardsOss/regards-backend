@@ -43,6 +43,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.catalog.services.domain.LinkPluginsDatasets;
 import fr.cnes.regards.modules.catalog.services.domain.ServicePluginParameters;
 import fr.cnes.regards.modules.catalog.services.domain.ServiceScope;
@@ -83,7 +84,7 @@ public class ServiceManager implements IServiceManager {
      * Builds a pedicate telling if the passed {@link PluginConfiguration} is applicable on passed {@link ServiceScope}.
      * Returns <code>true</code> if passed <code>pServiceScope</code> is <code>null</code>.
      */
-    private static final Function<List<ServiceScope>, Predicate<PluginConfiguration>> IS_APPLICABLE_ON = pServiceScope -> configuration -> pServiceScope == null
+    private static final Function<List<ServiceScope>, Predicate<PluginConfiguration>> IS_APPLICABLE_ON = pServiceScope -> configuration -> (pServiceScope == null)
             || Arrays.asList(GET_CATALOG_SERVICE_PLUGIN_ANNOTATION.apply(configuration).applicationModes())
                     .containsAll(pServiceScope);
 
@@ -105,7 +106,7 @@ public class ServiceManager implements IServiceManager {
     public List<PluginConfigurationDto> retrieveServices(List<String> pDatasetIds, List<ServiceScope> pServiceScopes) {
         Set<PluginConfiguration> allServices = getServicesAssociatedToAllDatasets();
 
-        if (pDatasetIds != null && !pDatasetIds.isEmpty()) {
+        if ((pDatasetIds != null) && !pDatasetIds.isEmpty()) {
             Set<PluginConfiguration> datasetsCommonServices = Sets.newHashSet();
             boolean first = true;
             // Get all services associated to each dataset given
@@ -153,9 +154,14 @@ public class ServiceManager implements IServiceManager {
             pServicePluginParameters.getDynamicParameters().forEach(factory::addDynamicParameter);
         }
 
-        IService toExecute = (IService) pluginService
-                .getPlugin(pPluginConfigurationId,
-                           factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
+        IService toExecute;
+        try {
+            toExecute = (IService) pluginService
+                    .getPlugin(pPluginConfigurationId,
+                               factory.getParameters().toArray(new PluginParameter[factory.getParameters().size()]));
+        } catch (NotAvailablePluginConfigurationException e) {
+            throw new ModuleException("Unable to apply disabled service.", e);
+        }
         LOGGER.info("Applying plugin service {}", toExecute.getClass().getName());
         return toExecute.apply(pServicePluginParameters, response);
 
@@ -169,7 +175,7 @@ public class ServiceManager implements IServiceManager {
         // 2. Get all plugin conf with the applyToAllDataset parameter set to true.
         for (PluginConfiguration conf : confs) {
             PluginParameter param = conf.getParameter(AbstractCatalogServicePlugin.APPLY_TO_ALL_DATASETS_PARAM);
-            if (param != null && Boolean.parseBoolean(param.getValue())) {
+            if ((param != null) && Boolean.parseBoolean(param.getValue())) {
                 allServices.add(conf);
             }
         }
