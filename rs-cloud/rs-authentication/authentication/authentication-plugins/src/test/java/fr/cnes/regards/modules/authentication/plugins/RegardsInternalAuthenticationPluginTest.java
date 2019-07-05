@@ -37,6 +37,7 @@ import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
 import fr.cnes.regards.modules.authentication.plugins.domain.AuthenticationPluginResponse;
@@ -67,7 +68,8 @@ public class RegardsInternalAuthenticationPluginTest {
             // instantiate plugin
             plugin = PluginUtils.getPlugin(parameters, RegardsInternalAuthenticationPlugin.class, new HashMap<>());
             Assert.assertNotNull(plugin);
-        } catch (final PluginUtilsRuntimeException | IllegalArgumentException | SecurityException e) {
+        } catch (final PluginUtilsRuntimeException | IllegalArgumentException | SecurityException
+                | NotAvailablePluginConfigurationException e) {
             Assert.fail();
         }
 
