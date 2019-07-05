@@ -39,6 +39,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.acquisition.plugins.IScanPlugin;
 import fr.cnes.regards.modules.acquisition.service.plugins.GlobDiskScanning;
 import fr.cnes.regards.modules.acquisition.service.plugins.RegexDiskScanning;
@@ -59,7 +60,8 @@ public class DiskScanningTest {
     }
 
     @Test
-    public void testDirectoryScanningWithoutGlobber() throws ModuleException, IOException {
+    public void testDirectoryScanningWithoutGlobber()
+            throws ModuleException, IOException, NotAvailablePluginConfigurationException {
 
         // Plugin parameters
         Set<PluginParameter> parameters = PluginParametersFactory.build()
@@ -91,7 +93,7 @@ public class DiskScanningTest {
     }
 
     @Test
-    public void testDirectoryScanningWithGlobber() throws ModuleException {
+    public void testDirectoryScanningWithGlobber() throws ModuleException, NotAvailablePluginConfigurationException {
 
         // Plugin parameters
         Set<PluginParameter> parameters = PluginParametersFactory.build()
@@ -109,7 +111,7 @@ public class DiskScanningTest {
     }
 
     @Test
-    public void testDirectoryScanningWithoutRegex() throws ModuleException {
+    public void testDirectoryScanningWithoutRegex() throws ModuleException, NotAvailablePluginConfigurationException {
 
         // Plugin parameters
         Set<PluginParameter> parameters = PluginParametersFactory.build()
@@ -126,7 +128,7 @@ public class DiskScanningTest {
     }
 
     @Test
-    public void testDirectoryScanningWithRegex() throws ModuleException {
+    public void testDirectoryScanningWithRegex() throws ModuleException, NotAvailablePluginConfigurationException {
 
         // Plugin parameters
         Set<PluginParameter> parameters = PluginParametersFactory.build()
