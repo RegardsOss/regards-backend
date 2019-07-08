@@ -49,7 +49,6 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 
 /**
@@ -245,7 +244,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
      * @throws ModuleException throw if an error occurs
      * @throws NotAvailablePluginConfigurationException
      */
-    @Test(expected = PluginUtilsRuntimeException.class)
+    @Test(expected = NotAvailablePluginConfigurationException.class)
     @Requirement("REGARDS_DSL_CMP_PLG_100")
     @Purpose("Unable to load a plugin with a no active configuration")
     public void getPluginNotActiveConfiguration() throws ModuleException, NotAvailablePluginConfigurationException {
