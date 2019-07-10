@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.dao;
+package fr.cnes.regards.modules.storagelight.dao;
 
 import java.util.Optional;
 import java.util.Set;
@@ -23,11 +23,11 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest
 public interface IFileReferenceRequestRepository
         extends JpaRepository<FileReferenceRequest, Long>, JpaSpecificationExecutor<FileReference> {
 
-    Optional<FileReferenceRequest> findByChecksumAndStorage(String checksum, String storage);
+    Optional<FileReferenceRequest> findByMetaInfoChecksumAndDestinationStorage(String checksum, String storage);
 
-    Set<String> findStoragesByStatus(FileReferenceRequestStatus status);
+    Set<String> findDestinationStoragesByStatus(FileReferenceRequestStatus status);
 
-    Page<FileReferenceRequest> findAllByStorage(String storage, Pageable page);
+    Page<FileReferenceRequest> findAllByDestinationStorage(String storage, Pageable page);
 
     @Modifying
     @Query("update FileReferenceRequest frr set frr.status = :status where frr.id = :id")

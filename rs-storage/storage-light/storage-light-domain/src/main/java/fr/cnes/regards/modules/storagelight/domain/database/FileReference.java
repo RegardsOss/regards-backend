@@ -56,7 +56,7 @@ public class FileReference {
      * Internal database unique identifier
      */
     @Id
-    @SequenceGenerator(name = "fileReferenceSequence", initialValue = 0, sequenceName = "seq_file_reference")
+    @SequenceGenerator(name = "fileReferenceSequence", initialValue = 1, sequenceName = "seq_file_reference")
     @GeneratedValue(generator = "fileReferenceSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 
@@ -72,7 +72,7 @@ public class FileReference {
      */
     @Column(name = "owner")
     @ElementCollection
-    @CollectionTable(name = "file_ref_owners", joinColumns = @JoinColumn(name = "file_ref_id"))
+    @CollectionTable(name = "ta_file_ref_owners", joinColumns = @JoinColumn(name = "file_ref_id"))
     private List<String> owners = Lists.newArrayList();
 
     /**

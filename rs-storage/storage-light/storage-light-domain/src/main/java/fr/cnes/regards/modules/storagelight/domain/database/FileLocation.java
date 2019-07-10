@@ -32,14 +32,18 @@ public class FileLocation {
     /**
      * Storage where current file reference is stored.
      */
-    @Column(length = 128)
+    @Column(length = 128, name = "storage")
     private String storage;
 
     /**
      * URL to access file reference through defined storage
      */
-    @Column(length = 1024)
+    @Column(length = 2048)
     private String url;
+
+    public FileLocation() {
+        super();
+    }
 
     public FileLocation(String storage, String url) {
         super();

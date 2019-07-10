@@ -59,7 +59,7 @@ public class FileReferenceRequest {
      * Internal database unique identifier
      */
     @Id
-    @SequenceGenerator(name = "fileReferenceRequestSequence", initialValue = 0,
+    @SequenceGenerator(name = "fileReferenceRequestSequence", initialValue = 1,
             sequenceName = "seq_file_reference_request")
     @GeneratedValue(generator = "fileReferenceRequestSequence", strategy = GenerationType.SEQUENCE)
     private Long id;

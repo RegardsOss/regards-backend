@@ -46,7 +46,7 @@ public class StorageLocation {
      * Internal database unique identifier
      */
     @Id
-    @SequenceGenerator(name = "storageLocationSequence", initialValue = 0, sequenceName = "seq_storage_location")
+    @SequenceGenerator(name = "storageLocationSequence", initialValue = 1, sequenceName = "seq_storage_location")
     @GeneratedValue(generator = "storageLocationSequence", strategy = GenerationType.SEQUENCE)
     private Long id;
 

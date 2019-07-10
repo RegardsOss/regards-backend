@@ -44,8 +44,8 @@ import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
-import fr.cnes.regards.modules.dao.IFileReferenceRepository;
-import fr.cnes.regards.modules.dao.IFileReferenceRequestRepository;
+import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
+import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRequestRepository;
 import fr.cnes.regards.modules.storagelight.domain.FileReferenceRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.StorageMonitoringAggregation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
@@ -91,6 +91,14 @@ public class FileReferenceService {
         // TODO : Listen for plugins modifications
     }
 
+    public Optional<FileReference> searchFileReference(String storage, String checksum) {
+        return fileRefRepo.findByMetaInfoChecksumAndLocationStorage(checksum, storage);
+    }
+
+    public Optional<FileReferenceRequest> searchFileReferenceRequest(String destinationStorage, String checksum) {
+        return fileRefRequestRepo.findByMetaInfoChecksumAndDestinationStorage(checksum, destinationStorage);
+    }
+
     /**
      * <b>Method to reference a given file</b> <br/><br />
      * If the file is <b>already referenced</b> in the destination storage,
@@ -107,12 +115,16 @@ public class FileReferenceService {
         Assert.notNull(owners, "File must have a owner to be referenced");
         Assert.isTrue(!owners.isEmpty(), "File must have a owner to be referenced");
         Assert.notNull(fileMetaInfo, "File must have an origin location to be referenced");
+        Assert.notNull(fileMetaInfo.getChecksum(), "File checksum is mandatory");
+        Assert.notNull(fileMetaInfo.getAlgorithm(), "File checksum algorithm is mandatory");
+        Assert.notNull(fileMetaInfo.getFileName(), "File name is mandatory");
+        Assert.notNull(fileMetaInfo.getMimeType(), "File mime type is mandatory");
         Assert.notNull(origin, "File must have an origin location to be referenced");
         Assert.notNull(destination, "File must have an origin location to be referenced");
 
         // Does file is already referenced for the destination location ?
-        Optional<FileReference> oFileRef = fileRefRepo.findByChecksumAndStorage(fileMetaInfo.getChecksum(),
-                                                                                destination.getStorage());
+        Optional<FileReference> oFileRef = fileRefRepo
+                .findByMetaInfoChecksumAndLocationStorage(fileMetaInfo.getChecksum(), destination.getStorage());
         if (oFileRef.isPresent()) {
             this.handleFileReferenceAlreadyExists(oFileRef.get(), owners);
         } else {
@@ -123,7 +135,8 @@ public class FileReferenceService {
             } else {
                 // Check if file reference request already exists
                 Optional<FileReferenceRequest> oFileRefRequest = fileRefRequestRepo
-                        .findByChecksumAndStorage(fileMetaInfo.getChecksum(), destination.getStorage());
+                        .findByMetaInfoChecksumAndDestinationStorage(fileMetaInfo.getChecksum(),
+                                                                     destination.getStorage());
                 if (oFileRefRequest.isPresent()) {
                     this.handleFileReferenceRequestAlreadyExists(oFileRefRequest.get(), owners);
                 } else {
@@ -151,12 +164,12 @@ public class FileReferenceService {
     }
 
     public void scheduleStoreJobs() {
-        Set<String> storages = fileRefRequestRepo.findStoragesByStatus(FileReferenceRequestStatus.TO_STORE);
+        Set<String> storages = fileRefRequestRepo.findDestinationStoragesByStatus(FileReferenceRequestStatus.TO_STORE);
         for (String storage : storages) {
             Page<FileReferenceRequest> filesPage;
             Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE);
             do {
-                filesPage = fileRefRequestRepo.findAllByStorage(storage, page);
+                filesPage = fileRefRequestRepo.findAllByDestinationStorage(storage, page);
                 if (existingStorages.contains(storage)) {
                     this.scheduleStoreJobsByStorage(storage, filesPage.getContent());
                 } else {
@@ -224,8 +237,8 @@ public class FileReferenceService {
             // The storage destination is unknown, we can already set the request in error status
             fileRefReq.setStatus(FileReferenceRequestStatus.STORE_ERROR);
             fileRefReq.setErrorCause(String
-                    .format("File <%> cannot be handle for storage as destination storage <%> is unknown",
-                            fileMetaInfo.getFileName()));
+                    .format("File <%s> cannot be handle for storage as destination storage <%s> is unknown",
+                            fileMetaInfo.getFileName(), destination.getStorage()));
         }
         fileRefRequestRepo.save(fileRefReq);
     }

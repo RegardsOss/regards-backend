@@ -20,17 +20,13 @@ package fr.cnes.regards.modules.storagelight.service;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -47,41 +43,27 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.event.spring.TenantConnectionReady;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.framework.utils.RsRuntimeException;
-import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
-import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
-import fr.cnes.regards.modules.dao.ICachedFileRepository;
+import fr.cnes.regards.modules.storagelight.dao.ICachedFileRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.CachedFile;
 import fr.cnes.regards.modules.storagelight.domain.database.CachedFileState;
-import fr.cnes.regards.modules.storagelight.domain.plugin.IWorkingSubset;
+import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
+import fr.cnes.regards.modules.storagelight.domain.exception.StorageException;
 
 /**
- * Service to manage temporary accessibility of {@link StorageDataFile} stored with a {@link INearlineDataStorage}
+ * Service to manage temporary accessibility of {@link FileReference} stored with a {@link INearlineDataStorage}
  * plugin.<br/>
  * When a file is requested by {@link #restore} method this service retrieve the file from the
  * nearline datastorage plugin and copy it into his internal cache (Local disk)<br/>
@@ -103,11 +85,18 @@ public class CachedFileService implements ApplicationListener<ApplicationReadyEv
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CachedFileService.class);
 
-    /**
-     * {@link IPluginService} instance
-     */
     @Autowired
-    private IPluginService pluginService;
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Autowired
+    private ITenantResolver tenantResolver;
+
+    @Autowired
+    private INotificationClient notificationClient;
+
+    @Autowired
+    @Lazy
+    private CachedFileService self;
 
     /**
      * {@link ICachedFileRepository} instance
@@ -150,43 +139,6 @@ public class CachedFileService implements ApplicationListener<ApplicationReadyEv
      */
     @Value("${regards.storage.cache.files.iteration.limit:100}")
     private Integer filesIterationLimit;
-
-    /**
-     * {@link IRuntimeTenantResolver} instance
-     */
-    @Autowired
-    private IRuntimeTenantResolver runtimeTenantResolver;
-
-    /**
-     * Resolver to know all existing tenants of the current REGARDS instance.
-     */
-    @Autowired
-    private ITenantResolver tenantResolver;
-
-    /**
-     * {@link IAuthenticationResolver} instance
-     */
-    @Autowired
-    private IAuthenticationResolver authResolver;
-
-    /**
-     * {@link IJobInfoService} instance
-     */
-    @Autowired
-    private IJobInfoService jobService;
-
-    /**
-     * {@link IPublisher} instance
-     */
-    @Autowired
-    private IPublisher publisher;
-
-    @Autowired
-    private INotificationClient notificationClient;
-
-    @Autowired
-    @Lazy
-    private CachedFileService self;
 
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -274,150 +226,6 @@ public class CachedFileService implements ApplicationListener<ApplicationReadyEv
         }
     }
 
-    public CoupleAvailableError restore(Set<StorageDataFile> dataFilesToRestore, OffsetDateTime cacheExpirationDate) {
-        if (dataFilesToRestore.isEmpty()) {
-            return new CoupleAvailableError(new HashSet<>(), new HashSet<>());
-        }
-        LOGGER.debug("CachedFileService : run restoration process for {} files.", dataFilesToRestore.size());
-        long startChecksumExtraction = System.currentTimeMillis();
-        // Get files already in cache
-        Set<String> dataFilesToRestoreChecksums = dataFilesToRestore.stream().map(df -> df.getChecksum())
-                .collect(Collectors.toSet());
-        long endChecksumExtraction = System.currentTimeMillis();
-        LOGGER.trace("Checksum extraction from {} dataFiles to restore took {} ms", dataFilesToRestore.size(),
-                     endChecksumExtraction - startChecksumExtraction);
-        LOGGER.trace("Looking for {} checksums to restore from cache.", dataFilesToRestoreChecksums.size());
-        long startFindCachedFileByChecksum = System.currentTimeMillis();
-        List<CachedFile> cachedFiles = cachedFileRepository
-                .findAllByChecksumInOrderByLastRequestDateAsc(dataFilesToRestoreChecksums);
-        long endFindCachedFileByChecksum = System.currentTimeMillis();
-        LOGGER.trace("Finding {} cached file out of {} checksums from the DB took {} ms", cachedFiles.size(),
-                     dataFilesToRestore.size(), endFindCachedFileByChecksum - startFindCachedFileByChecksum);
-        // Update expiration to the new cacheExpirationDate if above the last one.
-        long startExpirationDataUpdate = System.currentTimeMillis();
-        long nbUpdate = 0;
-        for (CachedFile cachedFile : cachedFiles) {
-            if (cachedFile.getExpiration().compareTo(cacheExpirationDate) > 0) {
-                cachedFile.setExpiration(cacheExpirationDate);
-                cachedFileRepository.save(cachedFile);
-                nbUpdate++;
-            }
-        }
-        long endExpirationDataUpdate = System.currentTimeMillis();
-        LOGGER.trace("Update Expiration date of {} cached file out of {} took {} ms", nbUpdate, cachedFiles.size(),
-                     endExpirationDataUpdate - startExpirationDataUpdate);
-
-        long startFindAlreadyAvailable = System.currentTimeMillis();
-        // Get cached files available
-        Set<String> availableCachedFileChecksums = cachedFiles.stream()
-                .filter(cf -> CachedFileState.AVAILABLE.equals(cf.getState())).map(cf -> cf.getChecksum())
-                .collect(Collectors.toSet());
-        Set<StorageDataFile> alreadyAvailableData = dataFilesToRestore.stream()
-                .filter(df -> availableCachedFileChecksums.contains(df.getChecksum())).collect(Collectors.toSet());
-        long endFindAlreadyAvailable = System.currentTimeMillis();
-        LOGGER.trace("{} StorageDataFiles are already available from the cache.", alreadyAvailableData.size());
-        LOGGER.trace("Finding those already available StorageDataFile took {} ms",
-                     endFindAlreadyAvailable - startFindAlreadyAvailable);
-        long startFindAlreadyQueued = System.currentTimeMillis();
-        // Get cached files queued
-        Set<String> queuedCachedFileChecksums = cachedFiles.stream()
-                .filter(cf -> CachedFileState.QUEUED.equals(cf.getState())).map(cf -> cf.getChecksum())
-                .collect(Collectors.toSet());
-        Set<StorageDataFile> queuedData = dataFilesToRestore.stream()
-                .filter(df -> queuedCachedFileChecksums.contains(df.getChecksum())).collect(Collectors.toSet());
-        long endFindAlreadyQueued = System.currentTimeMillis();
-        LOGGER.trace("{} StorageDataFile are already queued.", queuedData.size());
-        LOGGER.trace("Finding those already queued StorageDataFile took {} ms",
-                     endFindAlreadyQueued - startFindAlreadyQueued);
-
-        // Create the list of data files not handle by cache and needed to be restored
-        Set<StorageDataFile> toRetrieve = Sets.newHashSet(dataFilesToRestore);
-        // Remove all files already availables in cache.
-        toRetrieve.removeAll(alreadyAvailableData);
-        // Try to retrieve queued files if possible
-        toRetrieve.addAll(queuedData);
-        LOGGER.trace("Async call...");
-        self.scheduleRestorationAsync(cacheExpirationDate, toRetrieve, runtimeTenantResolver.getTenant());
-        LOGGER.trace("Async called!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-        return new CoupleAvailableError(alreadyAvailableData, new HashSet<>());
-    }
-
-    @Async
-    @MultitenantTransactional(propagation = Propagation.NOT_SUPPORTED)
-
-    public void scheduleRestorationAsync(OffsetDateTime cacheExpirationDate, Set<StorageDataFile> toRetrieve,
-            String tenant) {
-        runtimeTenantResolver.forceTenant(tenant);
-        self.doScheduleRestorationAsync(cacheExpirationDate, toRetrieve);
-        runtimeTenantResolver.clearTenant();
-    }
-
-    public void doScheduleRestorationAsync(OffsetDateTime cacheExpirationDate, Set<StorageDataFile> toRetrieve) {
-        long startDispatching = System.currentTimeMillis();
-        // Dispatch each Datafile by storage plugin.
-        Multimap<Long, StorageDataFile> toRetrieveByStorage = HashMultimap.create();
-        for (StorageDataFile df : toRetrieve) {
-            toRetrieveByStorage.put(computeDataStorageToUseToRetrieve(df.getPrioritizedDataStorages()), df);
-        }
-        long endDispatching = System.currentTimeMillis();
-        LOGGER.trace("Dispatching {} StorageDataFile into {} DataStorages took {} ms", toRetrieve.size(),
-                     toRetrieveByStorage.keySet().size(), endDispatching - startDispatching);
-        long startScheduling = System.currentTimeMillis();
-        Set<StorageDataFile> errors = Sets.newHashSet();
-        for (Long storageConfId : toRetrieveByStorage.keySet()) {
-            errors = scheduleDataFileRestoration(storageConfId, toRetrieveByStorage.get(storageConfId),
-                                                 cacheExpirationDate);
-        }
-        long endScheduling = System.currentTimeMillis();
-        LOGGER.trace("Scheduling jobs took {} ms", endScheduling - startScheduling);
-        for (StorageDataFile error : errors) {
-            handleRestorationFailure(error);
-        }
-    }
-
-    private Long computeDataStorageToUseToRetrieve(Set<PrioritizedDataStorage> dataStorages) {
-        PrioritizedDataStorage dataStorageToUse = dataStorages.stream().sorted().findFirst().get();
-        return dataStorageToUse.getId();
-    }
-
-    public void handleRestorationSuccess(StorageDataFile data, Path restorationPath) {
-        // lets set the restorationPath to the cached file and change its state
-        Optional<CachedFile> ocf = cachedFileRepository.findOneByChecksum(data.getChecksum());
-        try {
-            if (ocf.isPresent()) {
-                CachedFile cf = ocf.get();
-                cf.setLocation(restorationPath.toUri().toURL());
-                cf.setState(CachedFileState.AVAILABLE);
-                cf = cachedFileRepository.save(cf);
-                LOGGER.debug("File {} is now available in cache until {}", cf.getChecksum(),
-                             cf.getExpiration().toString());
-                publisher.publish(new DataFileEvent(DataFileEventState.AVAILABLE, data.getChecksum()));
-            } else {
-                LOGGER.error("Restauration succeed but the file with checksum {} is not associated to any cached file is database.",
-                             data.getChecksum());
-                publisher.publish(new DataFileEvent(DataFileEventState.ERROR, data.getChecksum()));
-            }
-        } catch (MalformedURLException e) {
-            // this should not happens
-            LOGGER.error(e.getMessage(), e);
-            throw new RsRuntimeException(e);
-        }
-    }
-
-    public void handleRestorationFailure(StorageDataFile data) {
-        // Delete cached file as restoraion failed.
-        Optional<CachedFile> ocf = cachedFileRepository.findOneByChecksum(data.getChecksum());
-        if (ocf.isPresent()) {
-            CachedFile cf = ocf.get();
-            cachedFileRepository.delete(cf);
-            LOGGER.error("Error during cache file restoration {}", cf.getChecksum());
-        } else {
-            LOGGER.error("Restoration failed but the file with checksum {} is not associated to any cached file is database.",
-                         data.getChecksum());
-        }
-        publisher.publish(new DataFileEvent(DataFileEventState.ERROR, data.getChecksum()));
-    }
-
     /**
      * Return the current size of the cache in octets.
      * @return {@link Long}
@@ -499,25 +307,6 @@ public class CachedFileService implements ApplicationListener<ApplicationReadyEv
         return nbPurged;
     }
 
-    public int restoreQueued() {
-        int nbScheduled = 0;
-        Pageable page = PageRequest.of(0, filesIterationLimit, Direction.ASC, "id");
-        Page<CachedFile> queuedFilesToCache;
-        do {
-            queuedFilesToCache = cachedFileRepository.findAllByState(CachedFileState.QUEUED, page);
-            LOGGER.debug("{} queued files to restore in cache for tenant {}", queuedFilesToCache.getNumberOfElements(),
-                         runtimeTenantResolver.getTenant());
-            Set<String> checksums = queuedFilesToCache.getContent().stream().map(CachedFile::getChecksum)
-                    .collect(Collectors.toSet());
-            Set<StorageDataFile> dataFiles = dataFileDao.findAllByChecksumIn(checksums);
-            // Set an expiration date minimum of 24hours
-            restore(dataFiles, OffsetDateTime.now().plusDays(1));
-            page = queuedFilesToCache.nextPageable();
-            nbScheduled = nbScheduled + dataFiles.size();
-        } while (queuedFilesToCache.hasNext());
-        return nbScheduled;
-    }
-
     /**
      * Delete all given {@link CachedFile}s.<br/>
      * <ul>
@@ -561,153 +350,6 @@ public class CachedFileService implements ApplicationListener<ApplicationReadyEv
                              cachedFile.getExpiration().toString());
             }
         }
-    }
-
-    /**
-     * Compute the {@link StorageDataFile}s restorable to not over the max cache size limit {@link #maxCacheSizeKo}.
-     * @param dataFilesToRestore {@link StorageDataFile}s to restore
-     * @param expirationDate {@link OffsetDateTime} Expiration date of the {@link CachedFile} to restore in cache.
-     * @return the {@link StorageDataFile}s restorable
-     */
-    private Set<StorageDataFile> getRestorableDataFiles(Collection<StorageDataFile> dataFilesToRestore,
-            OffsetDateTime expirationDate) {
-        // 2.2 Caculate total size of files to restore
-        Long totalFilesSize = dataFilesToRestore.stream().mapToLong(df -> df.getFileSize()).sum();
-        Long currentCacheTotalSize = getCacheSizeUsedOctets();
-        Long cacheMaxSizeInOctets = maxCacheSizeKo * 1024;
-        Long availableCacheSize = cacheMaxSizeInOctets - currentCacheTotalSize;
-
-        final Set<StorageDataFile> restorableFiles = Sets.newHashSet();
-        // Check if there is enought space left in cache to restore all files into.
-        if (totalFilesSize < availableCacheSize) {
-            restorableFiles.addAll(dataFilesToRestore);
-        } else {
-            // There is no enought space left in cache to restore all files.
-            // Return maximum number of files to restore.
-            Set<String> checksums = Sets.newHashSet();
-            Long totalFileSizesToHandle = 0L;
-            for (StorageDataFile fileToRestore : dataFilesToRestore) {
-                Long fileSize = fileToRestore.getFileSize();
-                boolean fileAlreadyHandled = checksums.contains(fileToRestore.getChecksum());
-                if (fileAlreadyHandled || ((totalFileSizesToHandle + fileSize) < availableCacheSize)) {
-                    restorableFiles.add(fileToRestore);
-                    if (!fileAlreadyHandled) {
-                        checksums.add(fileToRestore.getChecksum());
-                        totalFileSizesToHandle = totalFileSizesToHandle + fileSize;
-                    }
-                }
-            }
-        }
-
-        // Initialize all files in cache
-        for (StorageDataFile dataFileToRestore : dataFilesToRestore) {
-            Optional<CachedFile> ocf = cachedFileRepository.findOneByChecksum(dataFileToRestore.getChecksum());
-            // If cached file already exists do not store a new one.
-            if (!ocf.isPresent()) {
-                CachedFileState fileState = CachedFileState.QUEUED;
-                if (restorableFiles.contains(dataFileToRestore)) {
-                    fileState = CachedFileState.RESTORING;
-                }
-                CachedFile cf = cachedFileRepository.save(new CachedFile(dataFileToRestore, expirationDate, fileState));
-                LOGGER.debug("New file queued for cache {} exp={}", cf.getChecksum(), cf.getExpiration().toString());
-            }
-        }
-
-        return restorableFiles;
-    }
-
-    /**
-     * Do schedule {@link StorageDataFile}s restoration {@link PluginConfiguration} to restore files.
-     * @param pluginConfId {@link PluginConfiguration} Plugin to use to restore files.
-     * @param dataFilesToRestore {@link StorageDataFile}s to restore.
-     * @param expirationDate {@link OffsetDateTime} Expiration date of the {@link CachedFile} to restore in cache.
-     * @return {@link StorageDataFile}s that can not be restored.
-     */
-    private Set<StorageDataFile> scheduleDataFileRestoration(Long pluginConfId,
-            Collection<StorageDataFile> dataFilesToRestore, OffsetDateTime expirationDate) {
-        LOGGER.debug("CachedFileService : Init restoration job for {} files.", dataFilesToRestore.size());
-        Set<StorageDataFile> restorabledataFiles = getRestorableDataFiles(dataFilesToRestore, expirationDate);
-        LOGGER.debug("CachedFileService : Schedule restoration job for {} files.", restorabledataFiles.size());
-        Set<StorageDataFile> nonRestoredFiles = Sets.newHashSet();
-        if (!restorabledataFiles.isEmpty()) {
-            try {
-                INearlineDataStorage<IWorkingSubset> storageToUse = pluginService.getPlugin(pluginConfId);
-
-                // Prepare files to restore
-                WorkingSubsetWrapper<IWorkingSubset> workingSubsets = storageToUse
-                        .prepare(restorabledataFiles, DataStorageAccessModeEnum.RETRIEVE_MODE);
-                // Check if the prepare step misses some files
-                nonRestoredFiles = checkPrepareResult(restorabledataFiles, workingSubsets);
-                // Scheduled restoration job
-                scheduleRestorationJob(workingSubsets.getWorkingSubSets(), pluginConfId);
-            } catch (ModuleException | PluginUtilsRuntimeException | NotAvailablePluginConfigurationException e) {
-                LOGGER.error(e.getMessage(), e);
-                nonRestoredFiles.addAll(restorabledataFiles);
-            }
-        }
-        return nonRestoredFiles;
-    }
-
-    /**
-     * Do schedule @{link RestorationJob}s for each {@link IWorkingSubset} (more specialy for
-     * the associated {@link StorageDataFile}s) using the given {@link PluginConfiguration} to restore files.
-     * @param workingSubsets Subsets containing {@link StorageDataFile}s to restore.
-     * @param storageConfId {@link PluginConfiguration} Plugin to use to restore files.
-     * @return {@link JobInfo}s of the scheduled jobs
-     */
-    private Set<JobInfo> scheduleRestorationJob(Set<IWorkingSubset> workingSubsets, Long storageConfId) {
-        // lets instantiate every job for every DataStorage to use
-        Set<JobInfo> jobs = Sets.newHashSet();
-        for (IWorkingSubset workingSubset : workingSubsets) {
-            // for each DataStorage we can have multiple WorkingSubSet to treat in parallel, lets storeAndCreate a job
-            // for each
-            // of them
-            Set<JobParameter> parameters = Sets.newHashSet();
-            parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, storageConfId));
-            parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
-            JobInfo jobInfo = jobService
-                    .createAsPending(new JobInfo(false, 0, parameters, getOwner(), RestorationJob.class.getName()));
-            Path destination = Paths.get(getTenantCachePath().toString(), jobInfo.getId().toString());
-            jobInfo.getParameters().add(new JobParameter(RestorationJob.DESTINATION_PATH_PARAMETER_NAME, destination));
-            jobInfo.updateStatus(JobStatus.QUEUED);
-            jobInfo = jobService.save(jobInfo);
-            LOGGER.debug("New restoration job scheduled uuid={}", jobInfo.getId().toString());
-            jobs.add(jobInfo);
-        }
-        return jobs;
-    }
-
-    /**
-     * @param dataFilesToSubSet
-     * @param workingSubSetWrapper
-     * @return files contained into dataFilesToSubSet and not into workingSubSets
-     */
-    private Set<StorageDataFile> checkPrepareResult(Collection<StorageDataFile> dataFilesToSubSet,
-            WorkingSubsetWrapper<IWorkingSubset> workingSubSetWrapper) {
-        Set<StorageDataFile> result = Sets.newHashSet();
-        Set<StorageDataFile> subSetDataFiles = workingSubSetWrapper.getWorkingSubSets().stream()
-                .flatMap(wss -> wss.getDataFiles().stream()).collect(Collectors.toSet());
-        if (subSetDataFiles.size() != dataFilesToSubSet.size()) {
-            Set<StorageDataFile> notSubSetDataFiles = Sets.newHashSet(dataFilesToSubSet);
-            notSubSetDataFiles.removeAll(subSetDataFiles);
-            // lets check that the plugin did not forget to reject some files
-            for (StorageDataFile notSubSetDataFile : notSubSetDataFiles) {
-                if (!workingSubSetWrapper.getRejectedDataFiles().containsKey(notSubSetDataFile)) {
-                    workingSubSetWrapper.addRejectedDataFile(notSubSetDataFile, null);
-                }
-            }
-            Set<Map.Entry<StorageDataFile, String>> rejectedSet = workingSubSetWrapper.getRejectedDataFiles()
-                    .entrySet();
-            rejectedSet.stream().peek(entry -> LOGGER.error(String
-                    .format("StorageDataFile %s with checksum %s could not be restored because it was not assign to a working subset by its DataStorage used to store it! Reason: %s",
-                            entry.getKey().getId(), entry.getKey().getChecksum(), entry.getValue())))
-                    .forEach(entry -> result.add(entry.getKey()));
-        }
-        return result;
-    }
-
-    private String getOwner() {
-        return authResolver.getUser();
     }
 
     private Path getTenantCachePath() {

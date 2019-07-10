@@ -63,12 +63,6 @@ public class FileReferenceMetaInfo {
     private String fileName;
 
     /**
-     * Stored file reference path
-     */
-    @Column(length = 512)
-    private String filePath;
-
-    /**
      * Stored file reference size in bytes.
      */
     @Column
@@ -95,8 +89,21 @@ public class FileReferenceMetaInfo {
      */
     @Column(name = "type")
     @ElementCollection
-    @CollectionTable(name = "file_ref_types", joinColumns = @JoinColumn(name = "file_ref_id"))
+    @CollectionTable(name = "ta_file_ref_types", joinColumns = @JoinColumn(name = "file_ref_id"))
     private List<String> types;
+
+    public FileReferenceMetaInfo() {
+        super();
+    }
+
+    public FileReferenceMetaInfo(String checksum, String algorithm, String fileName, Long fileSize, MimeType mimeType) {
+        super();
+        this.checksum = checksum;
+        this.algorithm = algorithm;
+        this.fileName = fileName;
+        this.fileSize = fileSize;
+        this.mimeType = mimeType;
+    }
 
     /**
      * @return the checksum
@@ -124,20 +131,6 @@ public class FileReferenceMetaInfo {
      */
     public void setAlgorithm(String algorithm) {
         this.algorithm = algorithm;
-    }
-
-    /**
-     * @return the filePath
-     */
-    public String getFilePath() {
-        return filePath;
-    }
-
-    /**
-     * @param filePath the filePath to set
-     */
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
     }
 
     /**

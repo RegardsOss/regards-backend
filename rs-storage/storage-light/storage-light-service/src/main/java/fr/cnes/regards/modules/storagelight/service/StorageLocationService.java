@@ -35,8 +35,8 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.dao.IStorageLocationRepository;
-import fr.cnes.regards.modules.dao.IStorageMonitoringRepository;
+import fr.cnes.regards.modules.storagelight.dao.IStorageLocationRepository;
+import fr.cnes.regards.modules.storagelight.dao.IStorageMonitoringRepository;
 import fr.cnes.regards.modules.storagelight.domain.StorageMonitoringAggregation;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoring;
@@ -84,7 +84,7 @@ public class StorageLocationService {
         for (StorageMonitoringAggregation agg : fileReferenceService
                 .calculateTotalFileSizeAggregation(storageMonitoring.getLastFileReferenceIdMonitored())) {
             // Retrieve associated storage info if exists
-            Optional<StorageLocation> oStorage = storageLocationRepo.findByName(agg.getDataStorage());
+            Optional<StorageLocation> oStorage = storageLocationRepo.findByName(agg.getStorage());
             StorageLocation storage = oStorage.orElse(new StorageLocation());
             storage.setLastUpdateDate(monitoringDate);
             storage.setTotalSizeOfReferencedFiles(storage.getTotalSizeOfReferencedFiles() + agg.getUsedSize());

@@ -103,22 +103,6 @@ public class Scheduler {
         }
     }
 
-    /**
-     * Periodically tries to restore all {@link CachedFile}s in {@link CachedFileState#QUEUED} status.
-     * Default : scheduled to be run every 2minutes.
-     */
-    @Scheduled(fixedRateString = "${regards.cache.restore.queued.rate.ms:120000}")
-    public void restoreToCache() {
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
-            runtimeTenantResolver.forceTenant(tenant);
-            long startTime = System.currentTimeMillis();
-            int nbScheduled = cachedFileService.restoreQueued();
-            LOGGER.trace("Cache restoration done in {}ms for {} files", System.currentTimeMillis() - startTime,
-                         nbScheduled);
-            runtimeTenantResolver.clearTenant();
-        }
-    }
-
     @Scheduled(fixedRateString = "${regards.storage.check.data.storage.disk.usage.rate:3600000}",
             initialDelay = 60 * 1000)
     public void monitorDataStorages() {

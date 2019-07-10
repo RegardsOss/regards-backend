@@ -7,7 +7,7 @@ package fr.cnes.regards.modules.storagelight.domain;
  */
 public interface StorageMonitoringAggregation {
 
-    String getDataStorage();
+    String getStorage();
 
     Long getUsedSize();
 
