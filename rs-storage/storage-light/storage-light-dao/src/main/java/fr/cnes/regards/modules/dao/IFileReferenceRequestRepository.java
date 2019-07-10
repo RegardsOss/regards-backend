@@ -1,0 +1,36 @@
+package fr.cnes.regards.modules.dao;
+
+import java.util.Optional;
+import java.util.Set;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import fr.cnes.regards.modules.storagelight.domain.FileReferenceRequestStatus;
+import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
+import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
+
+/**
+ * Repository handling JPA representation of metadata of files associated to aips
+ *
+ * @author Sylvain VISSIERE-GUERINET
+ */
+public interface IFileReferenceRequestRepository
+        extends JpaRepository<FileReferenceRequest, Long>, JpaSpecificationExecutor<FileReference> {
+
+    Optional<FileReferenceRequest> findByChecksumAndStorage(String checksum, String storage);
+
+    Set<String> findStoragesByStatus(FileReferenceRequestStatus status);
+
+    Page<FileReferenceRequest> findAllByStorage(String storage, Pageable page);
+
+    @Modifying
+    @Query("update FileReferenceRequest frr set frr.status = :status where frr.id = :id")
+    int updateStatus(@Param("status") FileReferenceRequestStatus status, @Param("id") Long id);
+
+}
