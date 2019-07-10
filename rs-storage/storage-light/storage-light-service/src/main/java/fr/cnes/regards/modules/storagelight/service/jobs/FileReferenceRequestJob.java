@@ -35,6 +35,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IWorkingSubset;
+import fr.cnes.regards.modules.storagelight.service.FileReferenceRequestService;
 import fr.cnes.regards.modules.storagelight.service.FileReferenceService;
 
 /**
@@ -49,6 +50,9 @@ public class FileReferenceRequestJob extends AbstractJob<Void> {
 
     @Autowired
     private FileReferenceService fileReferenceService;
+
+    @Autowired
+    private FileReferenceRequestService fileRefRequestService;
 
     @Autowired
     private IPluginService pluginService;
@@ -74,7 +78,7 @@ public class FileReferenceRequestJob extends AbstractJob<Void> {
     public void run() {
         // Initiate the job progress manager
         FileReferenceJobProgressManager progressManager = new FileReferenceJobProgressManager(fileReferenceService,
-                publisher, this, runtimeTenantResolver);
+                fileRefRequestService, publisher, this, runtimeTenantResolver);
         // lets instantiate the plugin to use
         Long confIdToUse = parameters.get(DATA_STORAGE_CONF_ID).getValue();
         IWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET).getValue();

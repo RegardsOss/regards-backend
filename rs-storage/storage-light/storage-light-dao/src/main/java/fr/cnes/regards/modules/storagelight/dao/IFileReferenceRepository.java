@@ -28,4 +28,6 @@ public interface IFileReferenceRepository
             + " from FileReference fr where fr.id >= :id")
     Collection<StorageMonitoringAggregation> getTotalFileSizeAggregation(@Param("id") Long fromFileReferenceId);
 
+    Long countByLocationStorage(String storage);
+
 }

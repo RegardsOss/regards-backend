@@ -62,7 +62,7 @@ public class Scheduler {
     private IRuntimeTenantResolver runtimeTenantResolver;
 
     @Autowired
-    private FileReferenceService fileReferenceService;
+    private FileReferenceRequestService fileRefRequestService;
 
     @Autowired
     private StorageLocationService storageLocationService;
@@ -81,7 +81,7 @@ public class Scheduler {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                fileReferenceService.scheduleStoreJobs();
+                fileRefRequestService.scheduleStoreJobs();
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

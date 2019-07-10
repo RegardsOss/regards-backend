@@ -35,6 +35,7 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IProgressManager;
+import fr.cnes.regards.modules.storagelight.service.FileReferenceRequestService;
 import fr.cnes.regards.modules.storagelight.service.FileReferenceService;
 
 /**
@@ -55,15 +56,19 @@ public class FileReferenceJobProgressManager implements IProgressManager {
 
     private final FileReferenceService fileReferenceService;
 
+    private final FileReferenceRequestService fileRefRequestService;
+
     private final String tenant;
 
-    public FileReferenceJobProgressManager(FileReferenceService fileReferenceService, IPublisher publisher, IJob<?> job,
+    public FileReferenceJobProgressManager(FileReferenceService fileReferenceService,
+            FileReferenceRequestService fileRefRequestService, IPublisher publisher, IJob<?> job,
             IRuntimeTenantResolver runtimeTenantResolver) {
         this.publisher = publisher;
         this.job = job;
         this.tenant = runtimeTenantResolver.getTenant();
         this.runtimeTenantResolver = runtimeTenantResolver;
         this.fileReferenceService = fileReferenceService;
+        this.fileRefRequestService = fileRefRequestService;
     }
 
     @Override
@@ -78,7 +83,7 @@ public class FileReferenceJobProgressManager implements IProgressManager {
                                      fileRefRequest.getDestination(), fileRefRequest.getDestination());
         if (oFileRef.isPresent()) {
             // Delete the FileRefRequest as it has been handled
-            fileReferenceService.deleteFileReferenceRequest(fileRefRequest);
+            fileRefRequestService.deleteFileReferenceRequest(fileRefRequest);
             FileReference newFileRef = oFileRef.get();
             // Create new event message for new FileReference
             FileReferenceEvent event = new FileReferenceEvent(newFileRef.getMetaInfo().getChecksum(),
@@ -93,7 +98,7 @@ public class FileReferenceJobProgressManager implements IProgressManager {
             fileRefRequest.setStatus(FileReferenceRequestStatus.STORE_ERROR);
             fileRefRequest.setErrorCause(String.format("Unable to save new file reference for file %s",
                                                        fileRefRequest.getDestination().toString()));
-            fileReferenceService.updateFileReferenceRequest(fileRefRequest);
+            fileRefRequestService.updateFileReferenceRequest(fileRefRequest);
         }
     }
 
@@ -106,7 +111,7 @@ public class FileReferenceJobProgressManager implements IProgressManager {
         fileRefRequest.setOrigin(fileRefRequest.getDestination());
         fileRefRequest.setStatus(FileReferenceRequestStatus.STORE_ERROR);
         fileRefRequest.setErrorCause(cause);
-        fileReferenceService.updateFileReferenceRequest(fileRefRequest);
+        fileRefRequestService.updateFileReferenceRequest(fileRefRequest);
         FileReferenceEvent event = new FileReferenceEvent(fileRefRequest.getMetaInfo().getChecksum(),
                 FileReferenceEventState.STORE_ERROR, cause, fileRefRequest.getDestination());
         publishWithTenant(event);

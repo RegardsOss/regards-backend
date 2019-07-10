@@ -19,43 +19,23 @@
 package fr.cnes.regards.modules.storagelight.service;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import com.google.common.collect.Sets;
-
-import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
-import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
-import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
-import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRequestRepository;
-import fr.cnes.regards.modules.storagelight.domain.FileReferenceRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.StorageMonitoringAggregation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
-import fr.cnes.regards.modules.storagelight.domain.plugin.IDataStorage;
-import fr.cnes.regards.modules.storagelight.domain.plugin.IWorkingSubset;
-import fr.cnes.regards.modules.storagelight.domain.plugin.StorageAccessModeEnum;
-import fr.cnes.regards.modules.storagelight.service.jobs.FileReferenceRequestJob;
 
 /**
  * @author Sébastien Binda
@@ -64,39 +44,20 @@ import fr.cnes.regards.modules.storagelight.service.jobs.FileReferenceRequestJob
 @MultitenantTransactional
 public class FileReferenceService {
 
-    private static final int NB_REFERENCE_BY_PAGE = 1000;
-
-    @Autowired
-    private IPluginService pluginService;
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceService.class);
 
     @Autowired
     private IFileReferenceRepository fileRefRepo;
 
     @Autowired
-    private IFileReferenceRequestRepository fileRefRequestRepo;
+    private FileReferenceRequestService fileRefRequestService;
 
-    @Autowired
-    private IJobInfoService jobInfoService;
-
-    @Autowired
-    private IAuthenticationResolver authResolver;
-
-    private Set<String> existingStorages;
-
-    @PostConstruct
-    public void init() {
-        // Initialize existing storages
-        List<PluginConfiguration> confs = pluginService.getPluginConfigurationsByType(IDataStorage.class);
-        existingStorages = confs.stream().map(c -> c.getLabel()).collect(Collectors.toSet());
-        // TODO : Listen for plugins modifications
-    }
-
-    public Optional<FileReference> searchFileReference(String storage, String checksum) {
+    public Optional<FileReference> search(String storage, String checksum) {
         return fileRefRepo.findByMetaInfoChecksumAndLocationStorage(checksum, storage);
     }
 
-    public Optional<FileReferenceRequest> searchFileReferenceRequest(String destinationStorage, String checksum) {
-        return fileRefRequestRepo.findByMetaInfoChecksumAndDestinationStorage(checksum, destinationStorage);
+    public Page<FileReference> search(Pageable pageable) {
+        return fileRefRepo.findAll(pageable);
     }
 
     /**
@@ -130,29 +91,28 @@ public class FileReferenceService {
         } else {
             // If destination equals origin location so file is already stored and can be referenced directly
             if (destination.equals(origin)) {
-                FileReference fileRef = new FileReference(owners, fileMetaInfo, origin);
-                oFileRef = Optional.of(fileRefRepo.save(fileRef));
+                oFileRef = Optional.of(this.createNewFileReference(owners, fileMetaInfo, destination));
             } else {
                 // Check if file reference request already exists
-                Optional<FileReferenceRequest> oFileRefRequest = fileRefRequestRepo
-                        .findByMetaInfoChecksumAndDestinationStorage(fileMetaInfo.getChecksum(),
-                                                                     destination.getStorage());
+                Optional<FileReferenceRequest> oFileRefRequest = fileRefRequestService
+                        .search(fileMetaInfo.getChecksum(), destination.getStorage());
                 if (oFileRefRequest.isPresent()) {
-                    this.handleFileReferenceRequestAlreadyExists(oFileRefRequest.get(), owners);
+                    fileRefRequestService.handleFileReferenceRequestAlreadyExists(oFileRefRequest.get(), owners);
                 } else {
-                    this.createNewFileReferenceRequest(owners, fileMetaInfo, origin, destination);
+                    fileRefRequestService.createNewFileReferenceRequest(owners, fileMetaInfo, origin, destination);
                 }
             }
         }
         return oFileRef;
     }
 
-    public void deleteFileReferenceRequest(FileReferenceRequest fileRefRequest) {
-        fileRefRequestRepo.deleteById(fileRefRequest.getId());
-    }
-
-    public void updateFileReferenceRequest(FileReferenceRequest fileRefRequest) {
-        fileRefRequestRepo.save(fileRefRequest);
+    private FileReference createNewFileReference(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
+            FileLocation location) {
+        FileReference fileRef = new FileReference(owners, fileMetaInfo, location);
+        fileRef = fileRefRepo.save(fileRef);
+        LOGGER.info("New file <{}> referenced at <{}> (checksum: {})", fileRef.getMetaInfo().getFileName(),
+                    fileRef.getLocation().toString(), fileRef.getMetaInfo().getChecksum());
+        return fileRef;
     }
 
     public Collection<StorageMonitoringAggregation> calculateTotalFileSizeAggregation(Long lastReferencedFileId) {
@@ -163,96 +123,23 @@ public class FileReferenceService {
         }
     }
 
-    public void scheduleStoreJobs() {
-        Set<String> storages = fileRefRequestRepo.findDestinationStoragesByStatus(FileReferenceRequestStatus.TO_STORE);
-        for (String storage : storages) {
-            Page<FileReferenceRequest> filesPage;
-            Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE);
-            do {
-                filesPage = fileRefRequestRepo.findAllByDestinationStorage(storage, page);
-                if (existingStorages.contains(storage)) {
-                    this.scheduleStoreJobsByStorage(storage, filesPage.getContent());
-                } else {
-                    this.handleStorageNotAvailable(filesPage.getContent());
-                }
-                page = filesPage.nextPageable();
-            } while (filesPage.hasNext());
-        }
-    }
-
-    private void scheduleStoreJobsByStorage(String storage, Collection<FileReferenceRequest> fileRefRequests) {
-        try {
-            PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage);
-            IDataStorage<IWorkingSubset> storagePlugin = pluginService.getPlugin(conf.getId());
-
-            Collection<IWorkingSubset> workingSubSets = storagePlugin.prepare(fileRefRequests,
-                                                                              StorageAccessModeEnum.STORE_MODE);
-            workingSubSets.forEach(ws -> {
-                Set<JobParameter> parameters = Sets.newHashSet();
-                parameters.add(new JobParameter(FileReferenceRequestJob.DATA_STORAGE_CONF_ID, conf.getId()));
-                parameters.add(new JobParameter(FileReferenceRequestJob.WORKING_SUB_SET, ws));
-                ws.getFileReferenceRequests().forEach(fileRefReq -> fileRefRequestRepo
-                        .updateStatus(FileReferenceRequestStatus.STORE_PENDING, fileRefReq.getId()));
-                jobInfoService.createAsQueued(new JobInfo(false, 0, parameters, authResolver.getUser(),
-                        FileReferenceRequestJob.class.getName()));
-            });
-        } catch (ModuleException | NotAvailablePluginConfigurationException e) {
-            this.handleStorageNotAvailable(fileRefRequests);
-        }
-    }
-
-    private void handleFileReferenceAlreadyExists(FileReference fileReference, Collection<String> owners) {
+    private FileReference handleFileReferenceAlreadyExists(FileReference fileReference, Collection<String> owners) {
         boolean newOwners = false;
         for (String owner : owners) {
             if (!fileReference.getOwners().contains(owner)) {
                 newOwners = true;
                 fileReference.getOwners().add(owner);
+                LOGGER.info("New owner <{}> added to existing referenced file <{}> at <{}> (checksum: {}) ", owner,
+                            fileReference.getMetaInfo().getFileName(), fileReference.getLocation().toString(),
+                            fileReference.getMetaInfo().getChecksum());
                 // TODO : Check if metadata information are the same. If not notify administrator.
             }
         }
         if (newOwners) {
-            fileRefRepo.save(fileReference);
+            return fileRefRepo.save(fileReference);
+        } else {
+            return fileReference;
         }
-    }
-
-    private void handleFileReferenceRequestAlreadyExists(FileReferenceRequest fileReferenceRequest,
-            Collection<String> owners) {
-        boolean newOwners = false;
-        for (String owner : owners) {
-            if (!fileReferenceRequest.getOwners().contains(owner)) {
-                fileReferenceRequest.getOwners().add(owner);
-                // TODO : Check if metadata information are the same. If not notify administrator.
-
-            }
-        }
-        if (newOwners) {
-            fileRefRequestRepo.save(fileReferenceRequest);
-        }
-    }
-
-    private void createNewFileReferenceRequest(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
-            FileLocation origin, FileLocation destination) {
-        FileReferenceRequest fileRefReq = new FileReferenceRequest(owners, fileMetaInfo, origin, destination);
-        if (!existingStorages.contains(destination.getStorage())) {
-            // The storage destination is unknown, we can already set the request in error status
-            fileRefReq.setStatus(FileReferenceRequestStatus.STORE_ERROR);
-            fileRefReq.setErrorCause(String
-                    .format("File <%s> cannot be handle for storage as destination storage <%s> is unknown",
-                            fileMetaInfo.getFileName(), destination.getStorage()));
-        }
-        fileRefRequestRepo.save(fileRefReq);
-    }
-
-    private void handleStorageNotAvailable(Collection<FileReferenceRequest> fileRefRequests) {
-        fileRefRequests.forEach(this::handleStorageNotAvailable);
-    }
-
-    private void handleStorageNotAvailable(FileReferenceRequest fileRefReq) {
-        // The storage destination is unknown, we can already set the request in error status
-        fileRefReq.setStatus(FileReferenceRequestStatus.STORE_ERROR);
-        fileRefReq.setErrorCause(String
-                .format("File <%> cannot be handle for storage as destination storage <%> is unknown or disabled.",
-                        fileRefReq.getMetaInfo().getFileName(), fileRefReq.getDestination().getStorage()));
     }
 
 }

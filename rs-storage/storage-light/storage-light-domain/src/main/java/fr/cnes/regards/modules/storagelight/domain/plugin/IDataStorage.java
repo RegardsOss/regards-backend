@@ -18,12 +18,10 @@
  */
 package fr.cnes.regards.modules.storagelight.domain.plugin;
 
-import java.io.InputStream;
-import java.nio.file.Path;
 import java.util.Collection;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
 
 /**
@@ -37,11 +35,20 @@ public interface IDataStorage<T extends IWorkingSubset> {
     Collection<IWorkingSubset> prepare(Collection<FileReferenceRequest> fileReferenceRequest,
             StorageAccessModeEnum mode);
 
-    void delete(T workingSet);
+    void delete(T workingSet, IProgressManager progressManager);
 
     void store(T workingSet, IProgressManager progressManager);
 
-    InputStream retrieve(FileReference fileReference);
+    /**
+     * Method called before each configuration update of this plugin to know if the modification is allowed or not.
+     * The plugin implementation of this method should ensure that already stored files will always be accessible after
+     * the modification.
+     * @param newConfiguration {@link PluginConfiguration} with the new parameters for update
+     * @param currentConfiguration {@link PluginConfiguration} with the current parameters before update.
+     * @param filesAlreadyStored {@link boolean} Does files has been already stored with the current configuration ?
+     * @return {@link PluginConfUpdatable} true if the plugin allows the modification. If not updatable contains the rejection cause
+     */
+    PluginConfUpdatable allowConfigurationUpdate(PluginConfiguration newConfiguration,
+            PluginConfiguration currentConfiguration, boolean filesAlreadyStored);
 
-    void retrieve(T workingSet, Path destinationPath);
 }

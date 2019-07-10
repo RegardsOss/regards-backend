@@ -66,7 +66,7 @@ public class FileReferenceRequest {
 
     @Column(name = "owner")
     @ElementCollection
-    @CollectionTable(name = "file_ref_owners", joinColumns = @JoinColumn(name = "file_ref_id"))
+    @CollectionTable(name = "ta_file_ref_request_owners", joinColumns = @JoinColumn(name = "file_ref_id"))
     private final List<String> owners = Lists.newArrayList();
 
     @Embedded
