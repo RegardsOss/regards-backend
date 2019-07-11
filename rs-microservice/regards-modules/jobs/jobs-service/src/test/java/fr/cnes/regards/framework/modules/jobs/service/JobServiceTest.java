@@ -11,6 +11,7 @@ import java.util.UUID;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -48,6 +49,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { JobConfiguration.class })
+@Ignore
 public class JobServiceTest {
 
     public static final String TENANT = "JOBS";
