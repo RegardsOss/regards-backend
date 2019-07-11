@@ -90,13 +90,6 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
 
     @Override
     protected void beforeExecute(Thread t, Runnable r) {
-        if (t.isInterrupted()) {
-            LOGGER.error("#############################################################");
-            LOGGER.error("#############################################################");
-            LOGGER.error("Thread is marked interrupted before execution");
-            LOGGER.error("#############################################################");
-            LOGGER.error("#############################################################");
-        }
         JobInfo jobInfo = jobsMap.inverse().get(r);
         // In case jobsMap is not yet available (this means afterExecute has been called very very early)
         // because of jobsMap.put(jobInfo, threadPool.submit(...))
