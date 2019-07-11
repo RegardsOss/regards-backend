@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storage.rest;
 
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -26,8 +27,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Set;
-
-import javax.transaction.Transactional;
 
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -43,7 +42,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
@@ -60,6 +58,16 @@ import fr.cnes.regards.modules.storage.service.IPrioritizedDataStorageService;
 @TestPropertySource(locations = "classpath:test.properties")
 @Transactional
 public class StorageConfigurationManagerIT extends AbstractRegardsTransactionalIT {
+
+    @Configuration
+    static class Config {
+
+        @Bean
+        public IProjectsClient projectsClient() {
+            return Mockito.mock(IProjectsClient.class);
+        }
+
+    }
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -95,7 +103,8 @@ public class StorageConfigurationManagerIT extends AbstractRegardsTransactionalI
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusOk();
 
         performDefaultGet(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
-                          requestBuilderCustomizer, "Should export configuration");
+                          requestBuilderCustomizer,
+                          "Should export configuration");
 
     }
 
@@ -107,14 +116,18 @@ public class StorageConfigurationManagerIT extends AbstractRegardsTransactionalI
         RequestBuilderCustomizer requestBuilderCustomizer = customizer().expectStatusCreated();
 
         performDefaultFileUpload(ModuleManagerController.TYPE_MAPPING + ModuleManagerController.CONFIGURATION_MAPPING,
-                                 filePath, requestBuilderCustomizer, "Should be able to import configuration");
+                                 filePath,
+                                 requestBuilderCustomizer,
+                                 "Should be able to import configuration");
     }
 
     private PrioritizedDataStorage createPrioritizedDataStorage(String label)
             throws IOException, URISyntaxException, ModuleException {
         PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(LocalDataStorage.class);
-        URL baseStorageLocation = new URL("file", "",
-                Paths.get("target/PrioritizedDataStorageServiceIT").toFile().getAbsolutePath());
+        URL baseStorageLocation = new URL("file",
+                                          "",
+                                          Paths.get("target/PrioritizedDataStorageServiceIT").toFile()
+                                                  .getAbsolutePath());
         Files.createDirectories(Paths.get(baseStorageLocation.toURI()));
         Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000000L)
@@ -127,8 +140,10 @@ public class StorageConfigurationManagerIT extends AbstractRegardsTransactionalI
 
     private PluginConfiguration createAllocationStrategy(String label) throws ModuleException {
         PluginMetaData allocationMeta = PluginUtils.createPluginMetaData(DefaultAllocationStrategyPlugin.class);
-        PluginConfiguration allocationConfiguration = new PluginConfiguration(allocationMeta, label, new ArrayList<>(),
-                0);
+        PluginConfiguration allocationConfiguration = new PluginConfiguration(allocationMeta,
+                                                                              label,
+                                                                              new ArrayList<>(),
+                                                                              0);
         allocationConfiguration.setIsActive(true);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         return pluginService.savePluginConfiguration(allocationConfiguration);
@@ -139,20 +154,6 @@ public class StorageConfigurationManagerIT extends AbstractRegardsTransactionalI
         PluginConfiguration catalogSecuDelegConf = new PluginConfiguration(catalogSecuDelegMeta, label);
         runtimeTenantResolver.forceTenant(getDefaultTenant());
         return pluginService.savePluginConfiguration(catalogSecuDelegConf);
-    }
-
-    @Configuration
-    static class Config {
-
-        @Bean
-        public IProjectsClient projectsClient() {
-            return Mockito.mock(IProjectsClient.class);
-        }
-
-        @Bean
-        public INotificationClient notificationClient() {
-            return Mockito.mock(INotificationClient.class);
-        }
     }
 
 }
