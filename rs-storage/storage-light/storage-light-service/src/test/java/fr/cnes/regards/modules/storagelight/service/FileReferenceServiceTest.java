@@ -64,7 +64,7 @@ import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStora
  *
  */
 @ActiveProfiles("disableStorageTasks")
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_file_ref",
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
         "regards.storage.cache.path=target/cache", "regards.storage.cache.minimum.time.to.live.hours=12" })
 public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
 

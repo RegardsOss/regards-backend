@@ -66,6 +66,15 @@ public class StorageLocation {
     @Convert(converter = OffsetDateTimeAttributeConverter.class)
     private OffsetDateTime lastUpdateDate;
 
+    public StorageLocation(String name) {
+        super();
+        this.name = name;
+    }
+
+    public StorageLocation() {
+        super();
+    }
+
     /**
      * @return the id
      */

@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.storagelight.domain;
+package fr.cnes.regards.modules.storagelight.domain.database;
 
 /**
  * Aggregation of the monitoring information of the data file per data storage

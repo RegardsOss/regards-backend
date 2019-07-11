@@ -30,22 +30,20 @@ import org.springframework.stereotype.Component;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.StorageLocation;
 
 /**
  * Enable storage task schedulers.
  * This component run multiple scheduled and periodically executed methods :
  * <ul>
- * <li>Cache purge: {@link #cleanCache()}</li>
- * <li>Handle queued file: {@link #restoreToCache()}</li>
- * <li>AIP data deletion: {@link #deleteData()}</li>
- * <li>AIP metadata file deletion: {@link #deleteMetadata()}</li>
- * <li>Data storage monitoring: {@link #monitorDataStorages()}</li>
- * <li>AIP data storage: {@link #store()}</li>
- * <li>AIP metadata storage: {@link #storeMetadata()}</li>
- * <li>AIP metadata updates: {@link #handleUpdateRequests()}</li>
+ * <li> Handle file reference request {@link FileReferenceRequest} </li>
+ * <li> Monitor storage locations {@link StorageLocation} </li>
+ * <li> Cache purge: {@link #cleanCache()}</li>
  * </ul>
  * @author Marc Sordi
  * @author Sylvain Vissiere-Guerinet
+ * @author Binda Sébastien
  *
  */
 @Component

@@ -46,7 +46,7 @@ public class StorageMonitoring {
     private OffsetDateTime lastMonitoringDate;
 
     @Column(name = "last_file_reference_id")
-    private Long lastFileReferenceIdMonitored;
+    private Long lastFileReferenceIdMonitored = 0L;
 
     @Column(name = "last_monitoring_duration")
     private Long lastMonitoringDuration;

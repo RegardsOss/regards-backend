@@ -31,11 +31,11 @@ import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
-import fr.cnes.regards.modules.storagelight.domain.StorageMonitoringAggregation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoringAggregation;
 
 /**
  * @author Sébastien Binda

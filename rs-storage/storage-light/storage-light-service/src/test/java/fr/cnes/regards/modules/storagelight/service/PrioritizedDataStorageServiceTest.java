@@ -49,7 +49,7 @@ import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStora
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_test",
+@TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
         "regards.storage.cache.path=target/cache", "regards.storage.cache.minimum.time.to.live.hours=12" })
 @ActiveProfiles({ "disableStorageTasks", "noschdule" })
 public class PrioritizedDataStorageServiceTest extends AbstractMultitenantServiceTest {

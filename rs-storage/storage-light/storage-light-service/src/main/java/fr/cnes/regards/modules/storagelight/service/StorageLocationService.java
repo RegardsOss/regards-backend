@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storagelight.service;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -37,9 +38,9 @@ import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.modules.storagelight.dao.IStorageLocationRepository;
 import fr.cnes.regards.modules.storagelight.dao.IStorageMonitoringRepository;
-import fr.cnes.regards.modules.storagelight.domain.StorageMonitoringAggregation;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoring;
+import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoringAggregation;
 
 /**
  * @author Sébastien Binda
@@ -71,6 +72,10 @@ public class StorageLocationService {
     @Value("${regards.storage.data.storage.critical.threshold.percent:90}")
     private Integer criticalThreshold;
 
+    public Optional<StorageLocation> search(String storage) {
+        return storageLocationRepo.findByName(storage);
+    }
+
     public void monitorDataStorages() {
         OffsetDateTime monitoringDate = OffsetDateTime.now();
         // Retrieve last monitoring process
@@ -81,15 +86,17 @@ public class StorageLocationService {
 
         // lets ask the data base to calculate the used space per data storage
         long start = System.currentTimeMillis();
-        for (StorageMonitoringAggregation agg : fileReferenceService
-                .calculateTotalFileSizeAggregation(storageMonitoring.getLastFileReferenceIdMonitored())) {
+        Collection<StorageMonitoringAggregation> aggregations = fileReferenceService
+                .calculateTotalFileSizeAggregation(storageMonitoring.getLastFileReferenceIdMonitored());
+        for (StorageMonitoringAggregation agg : aggregations) {
             // Retrieve associated storage info if exists
             Optional<StorageLocation> oStorage = storageLocationRepo.findByName(agg.getStorage());
-            StorageLocation storage = oStorage.orElse(new StorageLocation());
+            StorageLocation storage = oStorage.orElse(new StorageLocation(agg.getStorage()));
             storage.setLastUpdateDate(monitoringDate);
             storage.setTotalSizeOfReferencedFiles(storage.getTotalSizeOfReferencedFiles() + agg.getUsedSize());
-            storage.setNumberOfReferencedFiles(storage.getNumberOfReferencedFiles() + agg.getUsedSize());
-            if (storageMonitoring.getLastFileReferenceIdMonitored() < agg.getLastFileReferenceId()) {
+            storage.setNumberOfReferencedFiles(storage.getNumberOfReferencedFiles() + agg.getNumberOfFileReference());
+            if ((storageMonitoring.getLastFileReferenceIdMonitored() == null)
+                    || (storageMonitoring.getLastFileReferenceIdMonitored() < agg.getLastFileReferenceId())) {
                 storageMonitoring.setLastFileReferenceIdMonitored(agg.getLastFileReferenceId());
             }
             storageLocationRepo.save(storage);

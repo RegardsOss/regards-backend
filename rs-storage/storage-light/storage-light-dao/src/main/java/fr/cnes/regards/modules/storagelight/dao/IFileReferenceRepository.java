@@ -4,19 +4,17 @@ import java.util.Collection;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import fr.cnes.regards.modules.storagelight.domain.StorageMonitoringAggregation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
+import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoringAggregation;
 
 /**
  *
  * @author Sébastien Binda
  */
-public interface IFileReferenceRepository
-        extends JpaRepository<FileReference, Long>, JpaSpecificationExecutor<FileReference> {
+public interface IFileReferenceRepository extends JpaRepository<FileReference, Long> {
 
     Optional<FileReference> findByMetaInfoChecksumAndLocationStorage(String checksum, String storage);
 
@@ -25,7 +23,7 @@ public interface IFileReferenceRepository
     Collection<StorageMonitoringAggregation> getTotalFileSizeAggregation();
 
     @Query("select fr.location.storage as storage, sum(fr.metaInfo.fileSize) as usedSize, count(*) as numberOfFileReference, max(fr.id) as lastFileReferenceId"
-            + " from FileReference fr where fr.id >= :id")
+            + " from FileReference fr where fr.id >= :id group by fr.location.storage")
     Collection<StorageMonitoringAggregation> getTotalFileSizeAggregation(@Param("id") Long fromFileReferenceId);
 
     Long countByLocationStorage(String storage);
