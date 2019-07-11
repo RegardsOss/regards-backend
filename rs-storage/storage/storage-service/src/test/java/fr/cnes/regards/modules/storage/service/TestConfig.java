@@ -23,7 +23,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import fr.cnes.regards.framework.hateoas.IResourceService;
-import fr.cnes.regards.framework.notification.client.INotificationClient;
 
 @Configuration
 public class TestConfig {
@@ -31,11 +30,6 @@ public class TestConfig {
     @Bean
     public IResourceService resourceService() {
         return Mockito.mock(IResourceService.class);
-    }
-
-    @Bean
-    public INotificationClient notificationClient() {
-        return Mockito.mock(INotificationClient.class);
     }
 
 }

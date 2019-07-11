@@ -49,7 +49,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.MimeType;
 
 import com.google.gson.Gson;
-
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -62,7 +61,6 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.oais.EventType;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.oais.urn.EntityType;
@@ -93,7 +91,14 @@ import fr.cnes.regards.modules.storage.service.IPrioritizedDataStorageService;
 @ActiveProfiles("testAmqp")
 public abstract class AbstractAIPControllerIT extends AbstractRegardsTransactionalIT {
 
-    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
+    @Configuration
+    static class Config {
+
+        @Bean
+        public IProjectsClient projectsClient() {
+            return Mockito.mock(IProjectsClient.class);
+        }
+    }
 
     protected static final String ALLOCATION_CONF_LABEL = "AIPControllerIT_ALLOCATION";
 
@@ -103,8 +108,7 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
 
     protected static final String SESSION = "Session123";
 
-    @Autowired
-    private IPluginService pluginService;
+    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     protected Gson gson;
@@ -146,6 +150,9 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
 
     protected AIP aip;
 
+    @Autowired
+    private IPluginService pluginService;
+
     @Before
     public void init() throws IOException, ModuleException, URISyntaxException, InterruptedException {
         cleanUp(false);
@@ -165,14 +172,16 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
                 .addParameter(LocalDataStorage.LOCAL_STORAGE_TOTAL_SPACE, 9000000000000000L)
                 .addParameter(LocalDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME, baseStorageLocation.toString())
                 .getParameters();
-        PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, DATA_STORAGE_CONF_LABEL, parameters,
-                0);
+        PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta,
+                                                                      DATA_STORAGE_CONF_LABEL,
+                                                                      parameters,
+                                                                      0);
         dataStorageConf.setIsActive(true);
         prioritizedDataStorageService.create(dataStorageConf);
         // forth, lets configure a plugin for security checks
         PluginMetaData catalogSecuDelegMeta = PluginUtils.createPluginMetaData(FakeSecurityDelegation.class);
         PluginConfiguration catalogSecuDelegConf = new PluginConfiguration(catalogSecuDelegMeta,
-                CATALOG_SECURITY_DELEGATION_LABEL);
+                                                                           CATALOG_SECURITY_DELEGATION_LABEL);
         pluginService.savePluginConfiguration(catalogSecuDelegConf);
     }
 
@@ -229,21 +238,27 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
 
     protected AIP getNewAipWithTags(String aipSession, String... tags) throws MalformedURLException {
 
-        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP, EntityType.DATA, getDefaultTenant(),
-                UUID.randomUUID(), 1);
-        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP, EntityType.DATA, getDefaultTenant(),
-                sipId.getEntityId(), 1);
+        UniformResourceName sipId = new UniformResourceName(OAISIdentifier.SIP,
+                                                            EntityType.DATA,
+                                                            getDefaultTenant(),
+                                                            UUID.randomUUID(),
+                                                            1);
+        UniformResourceName aipId = new UniformResourceName(OAISIdentifier.AIP,
+                                                            EntityType.DATA,
+                                                            getDefaultTenant(),
+                                                            sipId.getEntityId(),
+                                                            1);
         AIPBuilder aipBuilder = new AIPBuilder(aipId, Optional.of(sipId), "providerId", EntityType.DATA, aipSession);
 
         Path path = Paths.get("src", "test", "resources", "data.txt");
-        aipBuilder.getContentInformationBuilder().setDataObject(DataType.RAWDATA, path, "MD5",
-                                                                "de89a907d33a9716d11765582102b2e0");
+        aipBuilder.getContentInformationBuilder()
+                .setDataObject(DataType.RAWDATA, path, "MD5", "de89a907d33a9716d11765582102b2e0");
         aipBuilder.getContentInformationBuilder().setSyntax("text", "description", MimeType.valueOf("text/plain"));
         aipBuilder.addContentInformation();
         aipBuilder.getPDIBuilder().setAccessRightInformation("public");
         aipBuilder.getPDIBuilder().setFacility("CS");
-        aipBuilder.getPDIBuilder().addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event",
-                                                                 OffsetDateTime.now());
+        aipBuilder.getPDIBuilder()
+                .addProvenanceInformationEvent(EventType.SUBMISSION.name(), "test event", OffsetDateTime.now());
         aipBuilder.addTags(tags);
         return aipBuilder.build();
     }
@@ -255,14 +270,15 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
         do {
             jobs = jobInfoService.retrieveJobs();
             unfinishedJobs = jobs.stream()
-                    .filter(f -> !f.getStatus().getStatus().equals(JobStatus.SUCCEEDED)
-                            && !f.getStatus().getStatus().equals(JobStatus.FAILED)
-                            && !f.getStatus().getStatus().equals(JobStatus.ABORTED))
+                    .filter(f -> !f.getStatus().getStatus().equals(JobStatus.SUCCEEDED) && !f.getStatus().getStatus()
+                            .equals(JobStatus.FAILED) && !f.getStatus().getStatus().equals(JobStatus.ABORTED))
                     .collect(Collectors.toSet());
             logger.info("[TEST CLEAN] Waiting for {} Unfinished jobs", unfinishedJobs.size());
             if (forceStop) {
                 unfinishedJobs.forEach(j -> {
-                    logger.info("[TEST CLEAN] Trying to stop running job {}-{} [{}]", j.getClassName(), j.getId(),
+                    logger.info("[TEST CLEAN] Trying to stop running job {}-{} [{}]",
+                                j.getClassName(),
+                                j.getId(),
                                 j.getStatus());
                     jobInfoService.stopJob(j.getId());
                 });
@@ -274,19 +290,5 @@ public abstract class AbstractAIPControllerIT extends AbstractRegardsTransaction
 
         } while ((cpt < nbMaxSeconds) && (unfinishedJobs.size() > 0));
 
-    }
-
-    @Configuration
-    static class Config {
-
-        @Bean
-        public IProjectsClient projectsClient() {
-            return Mockito.mock(IProjectsClient.class);
-        }
-
-        @Bean
-        public INotificationClient notificationClient() {
-            return Mockito.mock(INotificationClient.class);
-        }
     }
 }
