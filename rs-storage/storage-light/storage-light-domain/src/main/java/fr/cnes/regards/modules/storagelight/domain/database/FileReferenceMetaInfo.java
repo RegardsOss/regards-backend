@@ -217,4 +217,90 @@ public class FileReferenceMetaInfo {
         this.mimeType = mimeType;
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = (prime * result) + ((algorithm == null) ? 0 : algorithm.hashCode());
+        result = (prime * result) + ((checksum == null) ? 0 : checksum.hashCode());
+        result = (prime * result) + ((fileName == null) ? 0 : fileName.hashCode());
+        result = (prime * result) + ((fileSize == null) ? 0 : fileSize.hashCode());
+        result = (prime * result) + ((height == null) ? 0 : height.hashCode());
+        result = (prime * result) + ((mimeType == null) ? 0 : mimeType.hashCode());
+        result = (prime * result) + ((types == null) ? 0 : types.hashCode());
+        result = (prime * result) + ((width == null) ? 0 : width.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        FileReferenceMetaInfo other = (FileReferenceMetaInfo) obj;
+        if (algorithm == null) {
+            if (other.algorithm != null) {
+                return false;
+            }
+        } else if (!algorithm.equals(other.algorithm)) {
+            return false;
+        }
+        if (checksum == null) {
+            if (other.checksum != null) {
+                return false;
+            }
+        } else if (!checksum.equals(other.checksum)) {
+            return false;
+        }
+        if (fileName == null) {
+            if (other.fileName != null) {
+                return false;
+            }
+        } else if (!fileName.equals(other.fileName)) {
+            return false;
+        }
+        if (fileSize == null) {
+            if (other.fileSize != null) {
+                return false;
+            }
+        } else if (!fileSize.equals(other.fileSize)) {
+            return false;
+        }
+        if (height == null) {
+            if (other.height != null) {
+                return false;
+            }
+        } else if (!height.equals(other.height)) {
+            return false;
+        }
+        if (mimeType == null) {
+            if (other.mimeType != null) {
+                return false;
+            }
+        } else if (!mimeType.equals(other.mimeType)) {
+            return false;
+        }
+        if (types == null) {
+            if (other.types != null) {
+                return false;
+            }
+        } else if (!types.equals(other.types)) {
+            return false;
+        }
+        if (width == null) {
+            if (other.width != null) {
+                return false;
+            }
+        } else if (!width.equals(other.width)) {
+            return false;
+        }
+        return true;
+    }
+
 }

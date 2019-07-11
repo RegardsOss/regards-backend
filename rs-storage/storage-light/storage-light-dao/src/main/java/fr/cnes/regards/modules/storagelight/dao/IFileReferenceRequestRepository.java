@@ -25,7 +25,8 @@ public interface IFileReferenceRequestRepository
 
     Optional<FileReferenceRequest> findByMetaInfoChecksumAndDestinationStorage(String checksum, String storage);
 
-    Set<String> findDestinationStoragesByStatus(FileReferenceRequestStatus status);
+    @Query("select destination.storage from FileReferenceRequest where status = :status")
+    Set<String> findDestinationStoragesByStatus(@Param("status") FileReferenceRequestStatus status);
 
     Page<FileReferenceRequest> findAllByDestinationStorage(String storage, Pageable page);
 

@@ -106,7 +106,11 @@ public class SimpleOnlineDataStorage implements IOnlineDataStorage<DefaultWorkin
     }
 
     private void doStore(IProgressManager progressManager, FileReferenceRequest fileRefRequest) {
-        // Nothing to do
+        fileRefRequest.getDestination()
+                .setUrl(String.format("%s%s", baseStorageLocation.toString(), Paths
+                        .get("/", fileRefRequest.getDestination().getUrl(), fileRefRequest.getMetaInfo().getChecksum())
+                        .toString()));
+        progressManager.storageSucceed(fileRefRequest, fileRefRequest.getMetaInfo().getFileSize());
     }
 
     @Override

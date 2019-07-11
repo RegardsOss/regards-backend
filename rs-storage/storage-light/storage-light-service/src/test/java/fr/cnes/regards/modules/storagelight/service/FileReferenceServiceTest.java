@@ -23,9 +23,11 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.compress.utils.Lists;
 import org.junit.Assert;
@@ -38,6 +40,8 @@ import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
+import fr.cnes.regards.framework.modules.jobs.service.IJobService;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
@@ -74,6 +78,9 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
 
     @Autowired
     private IFileReferenceRequestRepository fileRefRequestRepo;
+
+    @Autowired
+    private IJobService jobService;
 
     @Autowired
     private PrioritizedDataStorageService prioritizedDataStorageService;
@@ -134,7 +141,7 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
     }
 
     @Test
-    public void requestNewFileReferenceWithStore() {
+    public void requestNewFileReferenceWithStore() throws InterruptedException, ExecutionException {
         List<String> owners = Lists.newArrayList();
         owners.add("someone");
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo("invalid_checksum", "MD5", "file.test", 132L,
@@ -142,8 +149,9 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
         FileLocation origin = new FileLocation("anywhere", "anywhere://in/this/directory/file.test");
         FileLocation destination = new FileLocation("target", "/in/this/directory");
 
+        // Run file reference creation.
         fileRefService.createFileReference(owners, fileMetaInfo, origin, destination);
-
+        // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
         Optional<FileReferenceRequest> oFileRefReq = fileRefRequestService.search(destination.getStorage(),
                                                                                   fileMetaInfo.getChecksum());
@@ -151,6 +159,21 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
         Assert.assertTrue("File reference request should exists", oFileRefReq.isPresent());
         Assert.assertTrue("File reference request should be in TO_STORE status",
                           oFileRefReq.get().getStatus().equals(FileReferenceRequestStatus.TO_STORE));
+
+        // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
+        Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs();
+        Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
+        // Run Job and wait for end
+        String tenant = runtimeTenantResolver.getTenant();
+        jobService.runJob(jobs.iterator().next(), tenant).get();
+        runtimeTenantResolver.forceTenant(tenant);
+
+        // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
+        oFileRefReq = fileRefRequestService.search(destination.getStorage(), fileMetaInfo.getChecksum());
+        oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
+        Assert.assertTrue("File reference should have been created.", oFileRef.isPresent());
+        Assert.assertFalse("File reference request should exists", oFileRefReq.isPresent());
+
     }
 
     private PrioritizedDataStorage initDataStoragePluginConfiguration(String label) throws ModuleException {

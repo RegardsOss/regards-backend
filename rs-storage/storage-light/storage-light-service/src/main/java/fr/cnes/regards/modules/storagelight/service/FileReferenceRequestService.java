@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,7 +114,8 @@ public class FileReferenceRequestService implements IHandler<PluginConfEvent> {
         fileRefRequestRepo.save(fileRefRequest);
     }
 
-    public void scheduleStoreJobs() {
+    public Collection<JobInfo> scheduleStoreJobs() {
+        Collection<JobInfo> jobList = Lists.newArrayList();
         Set<String> storages = fileRefRequestRepo.findDestinationStoragesByStatus(FileReferenceRequestStatus.TO_STORE);
         for (String storage : storages) {
             Page<FileReferenceRequest> filesPage;
@@ -121,17 +123,21 @@ public class FileReferenceRequestService implements IHandler<PluginConfEvent> {
             do {
                 filesPage = fileRefRequestRepo.findAllByDestinationStorage(storage, page);
                 if (existingStorages.contains(storage)) {
-                    this.scheduleStoreJobsByStorage(storage, filesPage.getContent());
+                    jobList = this.scheduleStoreJobsByStorage(storage, filesPage.getContent());
                 } else {
                     this.handleStorageNotAvailable(filesPage.getContent());
                 }
                 page = filesPage.nextPageable();
             } while (filesPage.hasNext());
         }
+        return jobList;
     }
 
-    private void scheduleStoreJobsByStorage(String storage, Collection<FileReferenceRequest> fileRefRequests) {
+    private Collection<JobInfo> scheduleStoreJobsByStorage(String storage,
+            Collection<FileReferenceRequest> fileRefRequests) {
+        Collection<JobInfo> jobInfoList = Sets.newHashSet();
         try {
+
             PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage);
             IDataStorage<IWorkingSubset> storagePlugin = pluginService.getPlugin(conf.getId());
 
@@ -143,12 +149,13 @@ public class FileReferenceRequestService implements IHandler<PluginConfEvent> {
                 parameters.add(new JobParameter(FileReferenceRequestJob.WORKING_SUB_SET, ws));
                 ws.getFileReferenceRequests().forEach(fileRefReq -> fileRefRequestRepo
                         .updateStatus(FileReferenceRequestStatus.STORE_PENDING, fileRefReq.getId()));
-                jobInfoService.createAsQueued(new JobInfo(false, 0, parameters, authResolver.getUser(),
-                        FileReferenceRequestJob.class.getName()));
+                jobInfoList.add(jobInfoService.createAsQueued(new JobInfo(false, 0, parameters, authResolver.getUser(),
+                        FileReferenceRequestJob.class.getName())));
             });
         } catch (ModuleException | NotAvailablePluginConfigurationException e) {
             this.handleStorageNotAvailable(fileRefRequests);
         }
+        return jobInfoList;
     }
 
     public void createNewFileReferenceRequest(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,

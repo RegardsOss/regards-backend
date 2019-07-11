@@ -87,7 +87,7 @@ public class FileReferenceService {
         Optional<FileReference> oFileRef = fileRefRepo
                 .findByMetaInfoChecksumAndLocationStorage(fileMetaInfo.getChecksum(), destination.getStorage());
         if (oFileRef.isPresent()) {
-            this.handleFileReferenceAlreadyExists(oFileRef.get(), owners);
+            this.handleFileReferenceAlreadyExists(oFileRef.get(), fileMetaInfo, owners);
         } else {
             // If destination equals origin location so file is already stored and can be referenced directly
             if (destination.equals(origin)) {
@@ -123,7 +123,8 @@ public class FileReferenceService {
         }
     }
 
-    private FileReference handleFileReferenceAlreadyExists(FileReference fileReference, Collection<String> owners) {
+    private FileReference handleFileReferenceAlreadyExists(FileReference fileReference,
+            FileReferenceMetaInfo newMetaInfo, Collection<String> owners) {
         boolean newOwners = false;
         for (String owner : owners) {
             if (!fileReference.getOwners().contains(owner)) {
@@ -132,7 +133,10 @@ public class FileReferenceService {
                 LOGGER.info("New owner <{}> added to existing referenced file <{}> at <{}> (checksum: {}) ", owner,
                             fileReference.getMetaInfo().getFileName(), fileReference.getLocation().toString(),
                             fileReference.getMetaInfo().getChecksum());
-                // TODO : Check if metadata information are the same. If not notify administrator.
+                if (!fileReference.getMetaInfo().equals(newMetaInfo)) {
+                    LOGGER.warn("Existing referenced file meta information differs "
+                            + "from new reference meta information. Previous ones are maintained");
+                }
             }
         }
         if (newOwners) {
