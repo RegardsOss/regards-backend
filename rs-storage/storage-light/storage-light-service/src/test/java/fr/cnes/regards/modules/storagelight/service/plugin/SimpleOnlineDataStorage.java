@@ -25,6 +25,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.regex.Pattern;
 
 import org.apache.commons.compress.utils.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +60,8 @@ public class SimpleOnlineDataStorage implements IOnlineDataStorage<DefaultWorkin
      */
     public static final String BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME = "Storage_URL";
 
+    public static final String HANDLE_STORAGE_ERROR_FILE_PATTERN = "error_file_pattern";
+
     /**
      * {@link IRuntimeTenantResolver} instance
      */
@@ -72,10 +75,10 @@ public class SimpleOnlineDataStorage implements IOnlineDataStorage<DefaultWorkin
             label = "Base storage location url")
     private String baseStorageLocationAsString;
 
-    /**
-     * storage base location as url
-     */
-    @SuppressWarnings("unused")
+    @PluginParameter(name = HANDLE_STORAGE_ERROR_FILE_PATTERN, description = "Error file pattern",
+            label = "Error file pattern")
+    private String errorFilePattern;
+
     private URL baseStorageLocation;
 
     /**
@@ -106,11 +109,17 @@ public class SimpleOnlineDataStorage implements IOnlineDataStorage<DefaultWorkin
     }
 
     private void doStore(IProgressManager progressManager, FileReferenceRequest fileRefRequest) {
-        fileRefRequest.getDestination()
-                .setUrl(String.format("%s%s", baseStorageLocation.toString(), Paths
-                        .get("/", fileRefRequest.getDestination().getUrl(), fileRefRequest.getMetaInfo().getChecksum())
-                        .toString()));
-        progressManager.storageSucceed(fileRefRequest, fileRefRequest.getMetaInfo().getFileSize());
+        String fileName = fileRefRequest.getMetaInfo().getFileName();
+        if (Pattern.matches(errorFilePattern, fileName)) {
+            progressManager.storageFailed(fileRefRequest, "Specific error generated for tests");
+        } else {
+            fileRefRequest
+                    .getDestination().setUrl(String.format("%s%s", baseStorageLocation.toString(),
+                                                           Paths.get("/", fileRefRequest.getDestination().getUrl(),
+                                                                     fileRefRequest.getMetaInfo().getChecksum())
+                                                                   .toString()));
+            progressManager.storageSucceed(fileRefRequest, fileRefRequest.getMetaInfo().getFileSize());
+        }
     }
 
     @Override
@@ -125,6 +134,15 @@ public class SimpleOnlineDataStorage implements IOnlineDataStorage<DefaultWorkin
     @Override
     public PluginConfUpdatable allowConfigurationUpdate(PluginConfiguration newConfiguration,
             PluginConfiguration currentConfiguration, boolean filesAlreadyStored) {
-        return PluginConfUpdatable.allowUpdate();
+        // Only the baseStorageDirectory cannot be changed
+        String currentLocation = currentConfiguration.getParameterValue(BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME);
+        String newLocation = newConfiguration.getParameterValue(BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME);
+        if (!currentLocation.equals(newLocation)) {
+            return PluginConfUpdatable.preventUpdate(String
+                    .format("Files are already stored in the base location %s. You can't modify this parameter. Maybe you want to create a new configuration for the %s location?",
+                            currentLocation, newLocation));
+        } else {
+            return PluginConfUpdatable.allowUpdate();
+        }
     }
 }

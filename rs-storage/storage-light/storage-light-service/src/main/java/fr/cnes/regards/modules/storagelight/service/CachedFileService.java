@@ -61,6 +61,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.CachedFile;
 import fr.cnes.regards.modules.storagelight.domain.database.CachedFileState;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.exception.StorageException;
+import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineDataStorage;
 
 /**
  * Service to manage temporary accessibility of {@link FileReference} stored with a {@link INearlineDataStorage}
@@ -142,7 +143,6 @@ public class CachedFileService implements ApplicationListener<ApplicationReadyEv
 
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-
     public void onApplicationEvent(ApplicationReadyEvent event) {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             initCacheFileSystem(tenant);
@@ -227,10 +227,10 @@ public class CachedFileService implements ApplicationListener<ApplicationReadyEv
     }
 
     /**
-     * Return the current size of the cache in octets.
+     * Return the current size of the cache in bytes.
      * @return {@link Long}
      */
-    private Long getCacheSizeUsedOctets() {
+    private Long getCacheSizeUsedBytes() {
         // @formatter:off
         return cachedFileRepository.findAll()
                 .stream()
@@ -246,7 +246,7 @@ public class CachedFileService implements ApplicationListener<ApplicationReadyEv
     }
 
     /**
-     * Delete all outdated {@link CachedFile}s.<br/>
+     * Delete all out dated {@link CachedFile}s.<br/>
      */
     private int purgeExpiredCachedFiles() {
         int nbPurged = 0;
@@ -270,7 +270,7 @@ public class CachedFileService implements ApplicationListener<ApplicationReadyEv
     private int purgeOlderCachedFiles() {
         int nbPurged = 0;
         // Calculate cache size
-        Long cacheCurrentSize = getCacheSizeUsedOctets();
+        Long cacheCurrentSize = getCacheSizeUsedBytes();
         Long cacheSizePurgeUpperThresholdInOctets = cacheSizePurgeUpperThreshold * 1024;
         Long cacheSizePurgeLowerThresholdInOctets = cacheSizePurgeLowerThreshold * 1024;
         // If cache is over upper threshold size then delete older files to reached the lower threshold.
