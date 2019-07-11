@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.FileSystemUtils;
 
 import com.google.common.collect.BiMap;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
@@ -31,89 +30,6 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
  * @author oroussel
  */
 public class JobThreadPoolExecutor extends ThreadPoolExecutor {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(JobService.class);
-
-    /**
-     * Only for the thread names
-     */
-    private static final ThreadFactory THREAD_FACTORY = new DefaultJobThreadFactory();
-
-    private final IJobInfoService jobInfoService;
-
-    private final IRuntimeTenantResolver runtimeTenantResolver;
-
-    private final BiMap<JobInfo, RunnableFuture<Void>> jobsMap;
-
-    private final IPublisher publisher;
-
-    public JobThreadPoolExecutor(int poolSize, IJobInfoService jobInfoService,
-            BiMap<JobInfo, RunnableFuture<Void>> jobsMap, IRuntimeTenantResolver runtimeTenantResolver,
-            IPublisher publisher) {
-        super(poolSize, poolSize, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), THREAD_FACTORY);
-        this.jobInfoService = jobInfoService;
-        this.jobsMap = jobsMap;
-        this.runtimeTenantResolver = runtimeTenantResolver;
-        this.publisher = publisher;
-    }
-
-    @Override
-    protected void beforeExecute(Thread t, Runnable r) {
-        JobInfo jobInfo = jobsMap.inverse().get(r);
-        // In case jobsMap is not yet available (this means afterExecute has been called very very early)
-        // because of jobsMap.put(jobInfo, threadPool.submit(...))
-        while (jobInfo == null) {
-            jobInfo = jobsMap.inverse().get(r);
-        }
-        runtimeTenantResolver.forceTenant(jobInfo.getTenant());
-        jobInfo.updateStatus(JobStatus.RUNNING);
-        jobInfoService.save(jobInfo);
-        publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.RUNNING));
-        super.beforeExecute(t, r);
-    }
-
-    @Override
-    protected void afterExecute(Runnable r, Throwable t) {
-        super.afterExecute(r, t);
-        JobInfo jobInfo = jobsMap.inverse().get(r);
-        runtimeTenantResolver.forceTenant(jobInfo.getTenant());
-        // FutureTask (which is used by ThreadPoolExecutor) doesn't give a fuck of thrown exception so we must get it
-        // by hands
-        if ((t == null) && (r instanceof Future<?>)) {
-            try {
-                ((Future<?>) r).get();
-            } catch (CancellationException ce) {
-                t = ce;
-                jobInfo.updateStatus(JobStatus.ABORTED);
-                jobInfoService.save(jobInfo);
-                publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED));
-            } catch (ExecutionException ee) {
-                t = ee.getCause();
-                LOGGER.error("Job failed", t);
-                jobInfo.updateStatus(JobStatus.FAILED);
-                StringWriter sw = new StringWriter();
-                t.printStackTrace(new PrintWriter(sw));
-                jobInfo.getStatus().setStackTrace(sw.toString());
-                jobInfoService.save(jobInfo);
-                publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.FAILED));
-            } catch (InterruptedException ie) {
-                Thread.currentThread().interrupt(); // ignore/reset
-            }
-        }
-        // If no error
-        if (t == null) {
-            jobInfo.updateStatus(JobStatus.SUCCEEDED);
-            jobInfo.setResult(jobInfo.getJob().getResult());
-            jobInfoService.save(jobInfo);
-            publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.SUCCEEDED));
-        }
-        // Delete complete workspace dir if job has one
-        if (jobInfo.getJob().needWorkspace()) {
-            FileSystemUtils.deleteRecursively(jobInfo.getJob().getWorkspace().toFile());
-        }
-        // Clean jobsMap
-        jobsMap.remove(jobInfo);
-    }
 
     /**
      * The default thread factory
@@ -145,6 +61,107 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
             }
             return t;
         }
+    }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobService.class);
+
+    /**
+     * Only for the thread names
+     */
+    private static final ThreadFactory THREAD_FACTORY = new DefaultJobThreadFactory();
+
+    private final IJobInfoService jobInfoService;
+
+    private final IRuntimeTenantResolver runtimeTenantResolver;
+
+    private final BiMap<JobInfo, RunnableFuture<Void>> jobsMap;
+
+    private final IPublisher publisher;
+
+    public JobThreadPoolExecutor(int poolSize, IJobInfoService jobInfoService,
+            BiMap<JobInfo, RunnableFuture<Void>> jobsMap, IRuntimeTenantResolver runtimeTenantResolver,
+            IPublisher publisher) {
+        super(poolSize, poolSize, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), THREAD_FACTORY);
+        this.jobInfoService = jobInfoService;
+        this.jobsMap = jobsMap;
+        this.runtimeTenantResolver = runtimeTenantResolver;
+        this.publisher = publisher;
+    }
+
+    @Override
+    protected void beforeExecute(Thread t, Runnable r) {
+        if (t.isInterrupted()) {
+            LOGGER.error("#############################################################");
+            LOGGER.error("#############################################################");
+            LOGGER.error("Thread is marked interrupted before execution");
+            LOGGER.error("#############################################################");
+            LOGGER.error("#############################################################");
+        }
+        JobInfo jobInfo = jobsMap.inverse().get(r);
+        // In case jobsMap is not yet available (this means afterExecute has been called very very early)
+        // because of jobsMap.put(jobInfo, threadPool.submit(...))
+        while (jobInfo == null) {
+            jobInfo = jobsMap.inverse().get(r);
+        }
+        runtimeTenantResolver.forceTenant(jobInfo.getTenant());
+        jobInfo.updateStatus(JobStatus.RUNNING);
+        jobInfoService.save(jobInfo);
+        publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.RUNNING));
+        super.beforeExecute(t, r);
+    }
+
+    @Override
+    protected void afterExecute(Runnable r, Throwable t) {
+        super.afterExecute(r, t);
+        JobInfo jobInfo = jobsMap.inverse().get(r);
+        runtimeTenantResolver.forceTenant(jobInfo.getTenant());
+        // FutureTask (which is used by ThreadPoolExecutor) doesn't give a fuck of thrown exception so we must get it
+        // by hands
+        if ((t == null) && (r instanceof Future<?>)) {
+            try {
+                ((Future<?>) r).get();
+            } catch (CancellationException ce) {
+                // after execute being execute in the thread that is ending,
+                // to avoid issues with interruption at the wrong moment,
+                // we need to create a new thread to update the db
+                t = ce;
+                Thread thread = new Thread(() -> {
+                    runtimeTenantResolver.forceTenant(jobInfo.getTenant());
+                    jobInfo.updateStatus(JobStatus.ABORTED);
+                    jobInfoService.save(jobInfo);
+                    publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED));
+                });
+                thread.start();
+            } catch (ExecutionException ee) {
+                t = ee.getCause();
+                LOGGER.error("Job failed", t);
+                StringWriter sw = new StringWriter();
+                t.printStackTrace(new PrintWriter(sw));
+                Thread thread = new Thread(() -> {
+                    runtimeTenantResolver.forceTenant(jobInfo.getTenant());
+                    jobInfo.updateStatus(JobStatus.FAILED);
+                    jobInfo.getStatus().setStackTrace(sw.toString());
+                    jobInfoService.save(jobInfo);
+                    publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.FAILED));
+                });
+                thread.start();
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt(); // ignore/reset
+            }
+        }
+        // If no error, we don't create a new thread as there should not be any issues
+        if (t == null) {
+            jobInfo.updateStatus(JobStatus.SUCCEEDED);
+            jobInfo.setResult(jobInfo.getJob().getResult());
+            jobInfoService.save(jobInfo);
+            publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.SUCCEEDED));
+        }
+        // Delete complete workspace dir if job has one
+        if (jobInfo.getJob().needWorkspace()) {
+            FileSystemUtils.deleteRecursively(jobInfo.getJob().getWorkspace().toFile());
+        }
+        // Clean jobsMap
+        jobsMap.remove(jobInfo);
     }
 
 }
