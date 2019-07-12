@@ -120,6 +120,7 @@ public interface IProductRepository extends JpaRepository<Product, Long>, JpaSpe
      */
     Page<Product> findBySipStateOrderByIdAsc(ISipState sipState, Pageable pageable);
 
+    @Lock(LockModeType.PESSIMISTIC_READ)
     Page<Product> findByProcessingChainAndStateOrderByIdAsc(AcquisitionProcessingChain processingChain, ProductState state,
             Pageable pageable);
 
