@@ -142,7 +142,6 @@ public class PrioritizedDataStorageServiceTest extends AbstractMultitenantServic
 
     private PrioritizedDataStorage createPrioritizedDataStorage(String label)
             throws IOException, URISyntaxException, ModuleException {
-
         PluginConfiguration dataStorageConf = getPluginConf(label);
         return prioritizedDataStorageService.create(dataStorageConf);
     }

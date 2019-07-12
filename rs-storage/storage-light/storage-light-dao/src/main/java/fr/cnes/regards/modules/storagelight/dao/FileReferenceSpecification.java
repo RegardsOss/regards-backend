@@ -19,8 +19,10 @@
 package fr.cnes.regards.modules.storagelight.dao;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.Set;
 
+import javax.persistence.criteria.Join;
 import javax.persistence.criteria.Predicate;
 
 import org.springframework.data.jpa.domain.Specification;
@@ -30,35 +32,44 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 
 /**
- * Specification class to filter DAO searches on {@link AIPSession} entities
+ * Specification class to filter DAO searches on {@link FileReference} entities
  *
- * @author Léo Mieulet
+ * @author Sébastien Binda
  */
 public class FileReferenceSpecification {
-
-    private static final String SIP_SESSION_LAST_ACTIVATION_DATE = "lastActivationDate";
 
     private FileReferenceSpecification() {
     }
 
-    /**
-     * Filter on given attributes and return result
-     *
-     * @return {@link Specification}<{@link AIPSession}>
-     */
-    public static Specification<FileReference> search(String id, OffsetDateTime from, OffsetDateTime to) {
+    public static Specification<FileReference> search(String fileName, String checksum, Collection<String> types,
+            Collection<String> storages, Collection<String> owners, OffsetDateTime from, OffsetDateTime to) {
         return (root, query, cb) -> {
             Set<Predicate> predicates = Sets.newHashSet();
-            if (from != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get(SIP_SESSION_LAST_ACTIVATION_DATE), from));
+            Join<Object, Object> metaInfoJoin = root.join("metaInfo");
+            if (checksum != null) {
+                predicates.add(cb.equal(root.get("metaInfo").get("checksum"), checksum));
+                predicates.add(cb.equal(metaInfoJoin.get("checksum"), checksum));
             }
-            if (to != null) {
-                predicates.add(cb.lessThanOrEqualTo(root.get(SIP_SESSION_LAST_ACTIVATION_DATE), to));
-            }
-            if (id != null) {
-                predicates.add(cb.like(root.get("id"), "%" + id + "%"));
+            if (fileName != null) {
+                predicates.add(cb.like(metaInfoJoin.get("fileName"), "%" + fileName + "%"));
             }
 
+            if ((types != null) && !types.isEmpty()) {
+                Join<Object, Object> typesJoin = metaInfoJoin.join("types");
+                predicates.add(typesJoin.in(types));
+            }
+            if ((storages != null) && !storages.isEmpty()) {
+                predicates.add(root.get("location").get("storage").in(storages));
+            }
+            if ((owners != null) && !owners.isEmpty()) {
+                predicates.add(root.get("owners").in(owners));
+            }
+            if (from != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("storageDate"), from));
+            }
+            if (to != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("storageDate"), to));
+            }
             return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }

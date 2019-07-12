@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -31,7 +32,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
-import org.apache.commons.compress.utils.Lists;
 import org.assertj.core.util.Sets;
 import org.junit.Assert;
 import org.junit.Before;
@@ -43,6 +43,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
+import com.google.common.collect.Lists;
+
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -53,6 +55,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.storagelight.dao.FileReferenceSpecification;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRequestRepository;
 import fr.cnes.regards.modules.storagelight.domain.FileReferenceRequestStatus;
@@ -112,22 +115,6 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
     }
 
     @Test
-    public void referenceFileWithoutStorage() {
-        List<String> owners = Lists.newArrayList();
-        owners.add("someone");
-        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo("invalid_checksum", "MD5", "file.test", 132L,
-                MediaType.APPLICATION_OCTET_STREAM);
-        FileLocation origin = new FileLocation("anywhere", "anywhere://in/this/directory/file.test");
-        fileRefService.createFileReference(owners, fileMetaInfo, origin, origin);
-        Optional<FileReference> oFileRef = fileRefService.search(origin.getStorage(), fileMetaInfo.getChecksum());
-        Optional<FileReferenceRequest> oFileRefReq = fileRefRequestService.search(origin.getStorage(),
-                                                                                  fileMetaInfo.getChecksum());
-        Assert.assertTrue("File reference should have been created", oFileRef.isPresent());
-        Assert.assertTrue("File reference request should not exists anymore as file is well referenced",
-                          !oFileRefReq.isPresent());
-    }
-
-    @Test
     public void unknownStorageLocation() {
         List<String> owners = Lists.newArrayList();
         owners.add("someone");
@@ -144,6 +131,95 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
         Assert.assertTrue("File reference request should exists", oFileRefReq.isPresent());
         Assert.assertTrue("File reference request should be in STORE_ERROR status",
                           oFileRefReq.get().getStatus().equals(FileReferenceRequestStatus.STORE_ERROR));
+    }
+
+    @Test
+    public void referenceFileWithoutStorage() {
+        List<String> owners = Lists.newArrayList();
+        owners.add("someone");
+        generateFileReference(owners, Lists.newArrayList(), "file.test", "anywhere");
+    }
+
+    @Test
+    public void search() throws InterruptedException {
+        // 1. Add reference for search tests
+        List<String> owners = Lists.newArrayList("someone");
+        List<String> types = Lists.newArrayList();
+        OffsetDateTime beforeDate = OffsetDateTime.now().minusSeconds(1);
+        FileReference fileRef = generateFileReference(owners, types, "file1.test", "anywhere");
+        OffsetDateTime afterFirstDate = OffsetDateTime.now();
+        Thread.sleep(1);
+        owners.add("someone-else");
+        types.add("Type1");
+        generateFileReference(owners, types, "file2.test", "somewhere-else");
+        types.add("Type2");
+        owners.add("someone-else-again");
+        generateFileReference(owners, types, "file3.test", "somewhere-else");
+        types.add("Test");
+        generateFileReference(owners, types, "data_4.nc", "somewhere-else");
+        generateFileReference(owners, types, "data_5.nc", "void");
+        OffsetDateTime afterEndDate = OffsetDateTime.now().plusSeconds(1);
+
+        // Search all
+        Assert.assertEquals("There should be 5 file references.", 5,
+                            fileRefService.search(PageRequest.of(0, 100)).getTotalElements());
+        // Search by fileName
+        Assert.assertEquals("There should be one file references named file1.test.", 1,
+                            fileRefService
+                                    .search(FileReferenceSpecification.search("file1.test", null, null, null, null,
+                                                                              null, null),
+                                            PageRequest.of(0, 100))
+                                    .getTotalElements());
+        Assert.assertEquals("There should be 3 file references with name containing file", 3,
+                            fileRefService
+                                    .search(FileReferenceSpecification.search("file", null, null, null, null, null,
+                                                                              null),
+                                            PageRequest.of(0, 100))
+                                    .getTotalElements());
+        // Search by checksum
+        Assert.assertEquals("There should be one file references with checksum given", 1,
+                            fileRefService.search(FileReferenceSpecification
+                                    .search(null, fileRef.getMetaInfo().getChecksum(), null, null, null, null, null),
+                                                  PageRequest.of(0, 100))
+                                    .getTotalElements());
+        // Search by storage
+        Assert.assertEquals("There should be 5 file references in given storages", 5,
+                            fileRefService.search(
+                                                  FileReferenceSpecification
+                                                          .search(null, null, null,
+                                                                  Sets.newLinkedHashSet("anywhere", "somewhere-else",
+                                                                                        "void"),
+                                                                  null, null, null),
+                                                  PageRequest.of(0, 100))
+                                    .getTotalElements());
+        Assert.assertEquals("There should be 3 file references in given storages", 3, fileRefService
+                .search(FileReferenceSpecification.search(null, null, null, Sets.newLinkedHashSet("somewhere-else"),
+                                                          null, null, null),
+                        PageRequest.of(0, 100))
+                .getTotalElements());
+        // Search by type
+        Assert.assertEquals("There should be 0 file references for given type", 0,
+                            fileRefService.search(FileReferenceSpecification
+                                    .search(null, null, Lists.newArrayList("Type0"), null, null, null, null),
+                                                  PageRequest.of(0, 100))
+                                    .getTotalElements());
+        Assert.assertEquals("There should be 3 file references for given type", 3,
+                            fileRefService.search(FileReferenceSpecification
+                                    .search(null, null, Sets.newLinkedHashSet("Type2"), null, null, null, null),
+                                                  PageRequest.of(0, 100))
+                                    .getTotalElements());
+        // Search by date
+        Assert.assertEquals("There should be 5 file references for given from date", 5,
+                            fileRefService
+                                    .search(FileReferenceSpecification.search(null, null, null, null, null, beforeDate,
+                                                                              null),
+                                            PageRequest.of(0, 100))
+                                    .getTotalElements());
+        Assert.assertEquals("There should be 4 file references for given from and to date", 4, fileRefService
+                .search(FileReferenceSpecification.search(null, null, null, null, null, afterFirstDate, afterEndDate),
+                        PageRequest.of(0, 100))
+                .getTotalElements());
+
     }
 
     @Test
@@ -324,6 +400,22 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
 
     private URL getBaseStorageLocation() throws MalformedURLException {
         return new URL("file", "", Paths.get("target/simpleOnlineStorage").toFile().getAbsolutePath());
+    }
+
+    private FileReference generateFileReference(List<String> owners, List<String> types, String fileName,
+            String storage) {
+        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(UUID.randomUUID().toString(), "MD5", fileName,
+                132L, MediaType.APPLICATION_OCTET_STREAM);
+        fileMetaInfo.setTypes(types);
+        FileLocation origin = new FileLocation(storage, "anywhere://in/this/directory/file.test");
+        fileRefService.createFileReference(owners, fileMetaInfo, origin, origin);
+        Optional<FileReference> oFileRef = fileRefService.search(origin.getStorage(), fileMetaInfo.getChecksum());
+        Optional<FileReferenceRequest> oFileRefReq = fileRefRequestService.search(origin.getStorage(),
+                                                                                  fileMetaInfo.getChecksum());
+        Assert.assertTrue("File reference should have been created", oFileRef.isPresent());
+        Assert.assertTrue("File reference request should not exists anymore as file is well referenced",
+                          !oFileRefReq.isPresent());
+        return oFileRef.get();
     }
 
     private FileReferenceRequest generateStoreFileError(String owner, String storageDestination)

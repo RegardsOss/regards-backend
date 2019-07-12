@@ -100,6 +100,7 @@ public class FileReference {
         this.owners.add(owner);
         this.metaInfo = metaInfo;
         this.location = location;
+        this.setStorageDate(OffsetDateTime.now());
     }
 
     public FileReference(Collection<String> owners, FileReferenceMetaInfo metaInfo, FileLocation location) {
@@ -112,6 +113,7 @@ public class FileReference {
         this.owners.addAll(owners);
         this.metaInfo = metaInfo;
         this.location = location;
+        this.setStorageDate(OffsetDateTime.now());
     }
 
     /**

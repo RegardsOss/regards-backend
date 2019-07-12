@@ -181,11 +181,13 @@ public class FileReferenceRequestService implements IHandler<PluginConfEvent> {
             fileRefReq.setStatus(FileReferenceRequestStatus.STORE_ERROR);
             fileRefReq.setErrorCause(message);
             LOGGER.error(message);
+        } else {
+            LOGGER.debug("New file reference request created for file <{}> to store to {} with status {}",
+                         fileRefReq.getMetaInfo().getFileName(), fileRefReq.getDestination().toString(),
+                         fileRefReq.getStatus());
         }
         fileRefRequestRepo.save(fileRefReq);
-        LOGGER.debug("New file reference request created for file <{}> to store to {} with status {}",
-                     fileRefReq.getMetaInfo().getFileName(), fileRefReq.getDestination().toString(),
-                     fileRefReq.getStatus());
+
     }
 
     public void handleFileReferenceRequestAlreadyExists(FileReferenceRequest fileReferenceRequest,

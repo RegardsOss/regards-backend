@@ -18,9 +18,19 @@
  */
 package fr.cnes.regards.modules.storagelight.service.jobs;
 
+import java.awt.Dimension;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -31,8 +41,10 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.framework.utils.file.CommonFileUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IWorkingSubset;
 import fr.cnes.regards.modules.storagelight.service.FileReferenceRequestService;
@@ -43,6 +55,8 @@ import fr.cnes.regards.modules.storagelight.service.FileReferenceService;
  *
  */
 public class FileReferenceRequestJob extends AbstractJob<Void> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceRequestJob.class);
 
     public static final String DATA_STORAGE_CONF_ID = "dscId";
 
@@ -82,12 +96,34 @@ public class FileReferenceRequestJob extends AbstractJob<Void> {
         // lets instantiate the plugin to use
         Long confIdToUse = parameters.get(DATA_STORAGE_CONF_ID).getValue();
         IWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET).getValue();
+        workingSubset.getFileReferenceRequests().forEach(this::calculateImageDimension);
         try {
             IDataStorage<IWorkingSubset> storagePlugin = pluginService.getPlugin(confIdToUse);
             storagePlugin.store(workingSubset, progressManager);
         } catch (ModuleException | PluginUtilsRuntimeException | NotAvailablePluginConfigurationException e) {
             // throwing new runtime allows us to make the job fail.
             throw new JobRuntimeException(e);
+        }
+    }
+
+    private void calculateImageDimension(FileReferenceRequest fileRefRequest) {
+        try {
+            URL localUrl = new URL(fileRefRequest.getOrigin().getUrl());
+            if (((fileRefRequest.getMetaInfo().getHeight() == null)
+                    || (fileRefRequest.getMetaInfo().getWidth() == null)) && localUrl.getProtocol().equals("file")
+                    && fileRefRequest.getMetaInfo().getMimeType().isCompatibleWith(MediaType.valueOf("image/*"))) {
+                Path filePath = Paths.get(localUrl.toURI());
+                if (Files.isReadable(filePath)) {
+                    Dimension dimension = CommonFileUtils.getImageDimension(filePath.toFile());
+                    fileRefRequest.getMetaInfo().setHeight(((Number) dimension.getHeight()).intValue());
+                    fileRefRequest.getMetaInfo().setWidth(((Number) dimension.getWidth()).intValue());
+                } else {
+                    LOGGER.warn("Error calculating image file height/width. Cause : File %s is not accessible.",
+                                fileRefRequest.getOrigin().toString());
+                }
+            }
+        } catch (IOException | URISyntaxException e) {
+            LOGGER.warn(String.format("Error calculating image file height/width. Cause : %s", e.getMessage()), e);
         }
     }
 
