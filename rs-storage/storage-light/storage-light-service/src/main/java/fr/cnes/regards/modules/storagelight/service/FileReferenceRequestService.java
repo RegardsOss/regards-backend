@@ -106,6 +106,10 @@ public class FileReferenceRequestService implements IHandler<PluginConfEvent> {
         return fileRefRequestRepo.findAll(pageable);
     }
 
+    public Page<FileReferenceRequest> search(String destinationStorage, Pageable pageable) {
+        return fileRefRequestRepo.findByDestinationStorage(destinationStorage, pageable);
+    }
+
     public void deleteFileReferenceRequest(FileReferenceRequest fileRefRequest) {
         fileRefRequestRepo.deleteById(fileRefRequest.getId());
     }
@@ -114,14 +118,22 @@ public class FileReferenceRequestService implements IHandler<PluginConfEvent> {
         fileRefRequestRepo.save(fileRefRequest);
     }
 
-    public Collection<JobInfo> scheduleStoreJobs() {
+    public Collection<JobInfo> scheduleStoreJobs(FileReferenceRequestStatus status, Collection<String> storages,
+            Collection<String> owners) {
         Collection<JobInfo> jobList = Lists.newArrayList();
-        Set<String> storages = fileRefRequestRepo.findDestinationStoragesByStatus(FileReferenceRequestStatus.TO_STORE);
-        for (String storage : storages) {
+        Set<String> allStorages = fileRefRequestRepo.findDestinationStoragesByStatus(status);
+        Set<String> storagesToSchedule = (storages != null) && !storages.isEmpty()
+                ? allStorages.stream().filter(storages::contains).collect(Collectors.toSet())
+                : allStorages;
+        for (String storage : storagesToSchedule) {
             Page<FileReferenceRequest> filesPage;
             Pageable page = PageRequest.of(0, NB_REFERENCE_BY_PAGE);
             do {
-                filesPage = fileRefRequestRepo.findAllByDestinationStorage(storage, page);
+                if ((owners != null) && !owners.isEmpty()) {
+                    filesPage = fileRefRequestRepo.findAllByDestinationStorageAndOwnersIn(storage, owners, page);
+                } else {
+                    filesPage = fileRefRequestRepo.findAllByDestinationStorage(storage, page);
+                }
                 if (existingStorages.contains(storage)) {
                     jobList = this.scheduleStoreJobsByStorage(storage, filesPage.getContent());
                 } else {
@@ -199,7 +211,7 @@ public class FileReferenceRequestService implements IHandler<PluginConfEvent> {
         // The storage destination is unknown, we can already set the request in error status
         fileRefReq.setStatus(FileReferenceRequestStatus.STORE_ERROR);
         fileRefReq.setErrorCause(String
-                .format("File <%> cannot be handle for storage as destination storage <%> is unknown or disabled.",
+                .format("File <%s> cannot be handle for storage as destination storage <%s> is unknown or disabled.",
                         fileRefReq.getMetaInfo().getFileName(), fileRefReq.getDestination().getStorage()));
     }
 

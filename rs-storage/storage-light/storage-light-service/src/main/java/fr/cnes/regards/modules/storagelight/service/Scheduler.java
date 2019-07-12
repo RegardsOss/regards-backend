@@ -27,9 +27,12 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
+import fr.cnes.regards.modules.storagelight.domain.FileReferenceRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageLocation;
 
@@ -79,7 +82,8 @@ public class Scheduler {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                fileRefRequestService.scheduleStoreJobs();
+                fileRefRequestService.scheduleStoreJobs(FileReferenceRequestStatus.TO_STORE, Sets.newHashSet(),
+                                                        Sets.newHashSet());
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

@@ -52,6 +52,10 @@ public class FileReferenceService {
     @Autowired
     private FileReferenceRequestService fileRefRequestService;
 
+    public Page<FileReference> search(String storage, Pageable pageable) {
+        return fileRefRepo.findByLocationStorage(storage, pageable);
+    }
+
     public Optional<FileReference> search(String storage, String checksum) {
         return fileRefRepo.findByMetaInfoChecksumAndLocationStorage(checksum, storage);
     }
