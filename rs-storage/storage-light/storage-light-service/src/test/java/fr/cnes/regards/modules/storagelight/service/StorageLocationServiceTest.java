@@ -95,10 +95,19 @@ public class StorageLocationServiceTest extends AbstractMultitenantServiceTest {
         storageLocationService.monitorDataStorages();
         Assert.assertTrue("There should be file referenced for STAF storage",
                           storageLocationService.search(storage).isPresent());
-        Assert.assertEquals("Total size on STAF storage should be 4bytes", 4L,
-                            storageLocationService.search(storage).get().getNumberOfReferencedFiles().longValue());
-        Assert.assertEquals("Total number of files on STAF storage should be 4", 4L,
+        Assert.assertEquals("Total size on STAF storage is invalid", totalSize.longValue(),
                             storageLocationService.search(storage).get().getTotalSizeOfReferencedFiles().longValue());
+        Assert.assertEquals("Total number of files on STAF storage is invalid", 4L,
+                            storageLocationService.search(storage).get().getNumberOfReferencedFiles().longValue());
+        createFileReference(storage, 3L);
+        totalSize += 3;
+        storageLocationService.monitorDataStorages();
+        Assert.assertTrue("There should be file referenced for STAF storage",
+                          storageLocationService.search(storage).isPresent());
+        Assert.assertEquals("Total size on STAF storage is invalid", totalSize.longValue(),
+                            storageLocationService.search(storage).get().getTotalSizeOfReferencedFiles().longValue());
+        Assert.assertEquals("Total number of files on STAF storage invalid", 5L,
+                            storageLocationService.search(storage).get().getNumberOfReferencedFiles().longValue());
 
     }
 

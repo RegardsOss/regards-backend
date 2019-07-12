@@ -102,24 +102,29 @@ public class StorageLocationService {
             storageLocationRepo.save(storage);
 
             // Check for occupation ratio limit reached
-            Double ratio = (Double.valueOf(storage.getTotalSizeOfReferencedFiles()) / storage.getAllowedSize()) * 100;
-            if (ratio >= criticalThreshold) {
-                String message = String
-                        .format("Storage location %s has reach its disk usage critical threshold. %nActual occupation: %.2f%%, critical threshold: %s%%",
-                                storage.getName(), ratio, criticalThreshold);
-                LOGGER.error(message);
-                notifyAdmins(String.format("Data storage %s is full", storage.getName()), message,
-                             NotificationLevel.ERROR, MimeTypeUtils.TEXT_PLAIN);
-                MaintenanceManager.setMaintenance(runtimeTenantResolver.getTenant());
-            } else if (ratio >= threshold) {
-                String message = String.format("Storage location %s has reach its "
-                        + "disk usage threshold. %nActual occupation: %.2f%%, threshold: %s%%", storage.getName(),
-                                               ratio, criticalThreshold);
-                LOGGER.warn(message);
-                notifyAdmins(String.format("Data storage %s is almost full", storage.getName()), message,
-                             NotificationLevel.WARNING, MimeTypeUtils.TEXT_PLAIN);
+            if (storage.getAllowedSize() > 0) {
+                Double ratio = (Double.valueOf(storage.getTotalSizeOfReferencedFiles()) / storage.getAllowedSize())
+                        * 100;
+                if (ratio >= criticalThreshold) {
+                    String message = String
+                            .format("Storage location %s has reach its disk usage critical threshold. %nActual occupation: %.2f%%, critical threshold: %s%%",
+                                    storage.getName(), ratio, criticalThreshold);
+                    LOGGER.error(message);
+                    notifyAdmins(String.format("Data storage %s is full", storage.getName()), message,
+                                 NotificationLevel.ERROR, MimeTypeUtils.TEXT_PLAIN);
+                    MaintenanceManager.setMaintenance(runtimeTenantResolver.getTenant());
+                } else if (ratio >= threshold) {
+                    String message = String.format("Storage location %s has reach its "
+                            + "disk usage threshold. %nActual occupation: %.2f%%, threshold: %s%%", storage.getName(),
+                                                   ratio, criticalThreshold);
+                    LOGGER.warn(message);
+                    notifyAdmins(String.format("Data storage %s is almost full", storage.getName()), message,
+                                 NotificationLevel.WARNING, MimeTypeUtils.TEXT_PLAIN);
+                }
+            } else {
+                LOGGER.debug("Ratio calculation for {} storage disabled cause storage allowed size is not configured.",
+                             storage.getName());
             }
-
         }
         long finish = System.currentTimeMillis();
         storageMonitoring.setLastMonitoringDuration(finish - start);
