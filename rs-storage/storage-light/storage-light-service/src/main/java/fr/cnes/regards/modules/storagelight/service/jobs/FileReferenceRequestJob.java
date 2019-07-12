@@ -108,18 +108,21 @@ public class FileReferenceRequestJob extends AbstractJob<Void> {
 
     private void calculateImageDimension(FileReferenceRequest fileRefRequest) {
         try {
-            URL localUrl = new URL(fileRefRequest.getOrigin().getUrl());
+
             if (((fileRefRequest.getMetaInfo().getHeight() == null)
-                    || (fileRefRequest.getMetaInfo().getWidth() == null)) && localUrl.getProtocol().equals("file")
+                    || (fileRefRequest.getMetaInfo().getWidth() == null))
                     && fileRefRequest.getMetaInfo().getMimeType().isCompatibleWith(MediaType.valueOf("image/*"))) {
-                Path filePath = Paths.get(localUrl.toURI());
-                if (Files.isReadable(filePath)) {
-                    Dimension dimension = CommonFileUtils.getImageDimension(filePath.toFile());
-                    fileRefRequest.getMetaInfo().setHeight(((Number) dimension.getHeight()).intValue());
-                    fileRefRequest.getMetaInfo().setWidth(((Number) dimension.getWidth()).intValue());
-                } else {
-                    LOGGER.warn("Error calculating image file height/width. Cause : File %s is not accessible.",
-                                fileRefRequest.getOrigin().toString());
+                URL localUrl = new URL(fileRefRequest.getOrigin().getUrl());
+                if (localUrl.getProtocol().equals("file")) {
+                    Path filePath = Paths.get(localUrl.toURI());
+                    if (Files.isReadable(filePath)) {
+                        Dimension dimension = CommonFileUtils.getImageDimension(filePath.toFile());
+                        fileRefRequest.getMetaInfo().setHeight(((Number) dimension.getHeight()).intValue());
+                        fileRefRequest.getMetaInfo().setWidth(((Number) dimension.getWidth()).intValue());
+                    } else {
+                        LOGGER.warn("Error calculating image file height/width. Cause : File %s is not accessible.",
+                                    fileRefRequest.getOrigin().toString());
+                    }
                 }
             }
         } catch (IOException | URISyntaxException e) {

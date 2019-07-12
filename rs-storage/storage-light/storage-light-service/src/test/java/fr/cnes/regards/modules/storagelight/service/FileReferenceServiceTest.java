@@ -100,7 +100,7 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
     private PrioritizedDataStorageService prioritizedDataStorageService;
 
     @Before
-    public void init() throws ModuleException {
+    public void init() throws ModuleException, InterruptedException {
         fileRefRepo.deleteAll();
         fileRefRequestRepo.deleteAll();
         jobInfoRepo.deleteAll();
@@ -112,6 +112,14 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
             }
         });
         initDataStoragePluginConfiguration(ONLINE_CONF_LABEL);
+        int limit = 0;
+        while (!fileRefRequestService.getExistingStorage().contains(ONLINE_CONF_LABEL) && (limit < 20)) {
+            Thread.sleep(100);
+            limit++;
+        }
+        if (limit == 20) {
+            Assert.fail("Plugin is still not referenced in service !");
+        }
     }
 
     @Test

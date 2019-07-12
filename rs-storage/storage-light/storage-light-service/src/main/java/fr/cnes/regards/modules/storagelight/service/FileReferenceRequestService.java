@@ -98,6 +98,10 @@ public class FileReferenceRequestService implements IHandler<PluginConfEvent> {
         subscriber.subscribeTo(PluginConfEvent.class, this);
     }
 
+    public Set<String> getExistingStorage() {
+        return this.existingStorages;
+    }
+
     public Optional<FileReferenceRequest> search(String destinationStorage, String checksum) {
         return fileRefRequestRepo.findByMetaInfoChecksumAndDestinationStorage(checksum, destinationStorage);
     }
@@ -176,8 +180,8 @@ public class FileReferenceRequestService implements IHandler<PluginConfEvent> {
         if (!existingStorages.contains(destination.getStorage())) {
             // The storage destination is unknown, we can already set the request in error status
             String message = String
-                    .format("File <%s> cannot be handle for storage as destination storage <%s> is unknown",
-                            fileMetaInfo.getFileName(), destination.getStorage());
+                    .format("File <%s> cannot be handle for storage as destination storage <%s> is unknown. Known storages are",
+                            owners.toArray(), fileMetaInfo.getFileName(), destination.getStorage());
             fileRefReq.setStatus(FileReferenceRequestStatus.STORE_ERROR);
             fileRefReq.setErrorCause(message);
             LOGGER.error(message);
