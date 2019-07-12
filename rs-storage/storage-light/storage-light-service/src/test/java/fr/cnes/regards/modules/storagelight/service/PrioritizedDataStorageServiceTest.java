@@ -36,12 +36,15 @@ import org.springframework.test.context.TestPropertySource;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
+import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRequestRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storagelight.domain.plugin.DataStorageType;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStorage;
@@ -64,8 +67,20 @@ public class PrioritizedDataStorageServiceTest extends AbstractMultitenantServic
     @Autowired
     private IPluginService pluginService;
 
+    @Autowired
+    private IFileReferenceRepository fileRefRepo;
+
+    @Autowired
+    private IFileReferenceRequestRepository fileRefRequestRepo;
+
+    @Autowired
+    private IJobInfoRepository jobInfoRepo;
+
     @Before
     public void init() {
+        fileRefRepo.deleteAll();
+        fileRefRequestRepo.deleteAll();
+        jobInfoRepo.deleteAll();
         prioritizedDataStorageService.findAllByType(DataStorageType.ONLINE).forEach(c -> {
             try {
                 prioritizedDataStorageService.delete(c.getId());
