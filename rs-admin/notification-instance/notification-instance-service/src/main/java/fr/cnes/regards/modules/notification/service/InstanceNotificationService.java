@@ -147,7 +147,7 @@ public class InstanceNotificationService implements IInstanceNotificationService
     public Page<INotificationWithoutMessage> retrieveNotifications(Pageable page, NotificationStatus state)
             throws EntityNotFoundException {
         if (state != null) {
-            return notificationRepository.findWithoutMsgByStatus(state, page);
+            return notificationRepository.findAllNotificationsWithoutMessageByStatus(state, page);
         } else {
             return retrieveNotifications(page);
         }
