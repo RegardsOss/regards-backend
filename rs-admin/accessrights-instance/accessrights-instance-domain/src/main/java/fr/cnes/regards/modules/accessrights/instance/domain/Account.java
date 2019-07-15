@@ -265,7 +265,7 @@ public class Account implements IIdentifiable<Long> {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
         }
 

@@ -35,6 +35,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
+import org.springframework.data.repository.query.Param;
 
 /**
  * Interface for an JPA auto-generated CRUD repository managing Notifications.<br>
@@ -127,12 +128,22 @@ public interface INotificationRepository
     Page<Notification> findByStatus(NotificationStatus pStatus, Pageable page);
 
     /**
-     * Find all notifications with passed <code>status</code>
-     * @param pStatus The notification status
+     * Find all notifications without message with passed <code>status</code>
+     * @param status The notification status
      * @return The list of notifications
      */
-    @EntityGraph(attributePaths = { "projectUserRecipients", "roleRecipients" })
-    Page<INotificationWithoutMessage> findWithoutMsgByStatus(NotificationStatus pStatus, Pageable page);
+    default Page<INotificationWithoutMessage> findAllNotificationsWithoutMessageByStatus(NotificationStatus status, Pageable pageable) {
+        Page<Long> pageNotifications = findPageIdByStatus(status, pageable);
+
+        List<INotificationWithoutMessage> notifs = findAllByIdInOrderByIdDesc(pageNotifications.getContent());
+
+        return new PageImpl<>(notifs, pageable, pageNotifications.getTotalElements());
+    }
+
+    @Query(value = "select distinct n.id from Notification n"
+            + " where n.status = :status"
+            + " order by id desc")
+    Page<Long> findPageIdByStatus(@Param("status") NotificationStatus status, Pageable pageable);
 
     Long countByStatus(NotificationStatus pStatus);
 

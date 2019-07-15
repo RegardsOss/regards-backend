@@ -43,6 +43,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.module.rest.exception.EntityAlreadyExistsException;
 import fr.cnes.regards.framework.module.rest.exception.EntityException;
@@ -619,8 +620,8 @@ public class ProjectUserServiceTest {
         expected.addAll(projectUser.getPermissions());
 
         // Define actual result
-        final List<ResourcesAccess> actual = projectUserService
-                .retrieveProjectUserAccessRights(EMAIL, borrowedRoleName);
+        final List<ResourcesAccess> actual = projectUserService.retrieveProjectUserAccessRights(EMAIL,
+                                                                                                borrowedRoleName);
 
         // Check
         Assert.assertTrue(actual.containsAll(expected));
