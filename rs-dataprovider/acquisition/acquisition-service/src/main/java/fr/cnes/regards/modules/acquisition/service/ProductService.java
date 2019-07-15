@@ -580,10 +580,12 @@ public class ProductService implements IProductService {
                                                                                          PageRequest.of(0,
                                                                                                         AcquisitionProperties.WORKING_UNIT));
         Set<Product> productsToSchedule = new HashSet<>();
-        for(Product currentProduct : page.getContent()) {
+        for (Product currentProduct : page.getContent()) {
+            computeProductState(currentProduct);
             // Store for scheduling
-            if ((currentProduct.getSipState() == ProductSIPState.NOT_SCHEDULED) && ((currentProduct.getState() == ProductState.COMPLETED) || (currentProduct.getState()
-                    == ProductState.FINISHED))) {
+            if ((currentProduct.getSipState() == ProductSIPState.NOT_SCHEDULED) && (
+                    (currentProduct.getState() == ProductState.COMPLETED) || (currentProduct.getState()
+                            == ProductState.FINISHED))) {
                 LOGGER.trace("Product {} is candidate for SIP generation", currentProduct.getProductName());
                 productsToSchedule.add(currentProduct);
             }
