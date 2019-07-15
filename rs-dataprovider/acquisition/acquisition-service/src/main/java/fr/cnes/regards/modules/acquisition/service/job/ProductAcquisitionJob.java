@@ -32,6 +32,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeExcepti
 import fr.cnes.regards.modules.acquisition.domain.ProductState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.service.IAcquisitionProcessingService;
+import fr.cnes.regards.modules.acquisition.service.IProductService;
 
 /**
  * This class manages data driven product creation using following steps :
@@ -54,6 +55,9 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
 
     @Autowired
     private IAcquisitionProcessingService processingService;
+
+    @Autowired
+    private IProductService productService;
 
     /**
      * The current chain to work with!
@@ -85,8 +89,13 @@ public class ProductAcquisitionJob extends AbstractJob<Void> {
             // Nominal process
             // First step : scan and register files (Not interruptible at the moment)
             processingService.scanAndRegisterFiles(processingChain);
-            // Second step : validate in progress files, build and schedule SIP generation for completed or finished products
+            // Second step : validate in progress files, build and
+            // schedule SIP generation for newly completed or finished products
             processingService.manageRegisteredFiles(processingChain);
+            // Third step : compute new product state for already completed or finished products and schedule SIP generation.
+            // Doing this in a third step and not within the second one allows us to
+            // schedule update products only once for SIP generation
+            productService.manageUpdatedProducts(processingChain);
         } catch (ModuleException e) {
             logger.error("Business error", e);
             throw new JobRuntimeException(e);
