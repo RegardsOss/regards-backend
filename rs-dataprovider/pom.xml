@@ -51,6 +51,7 @@
 		<groupId>fr.cnes.regards</groupId>
 		<artifactId>regards-aggregator-parent</artifactId>
 		<version>0.4.0</version>
+		<relativePath />
 	</parent>
 
 	<modules>
