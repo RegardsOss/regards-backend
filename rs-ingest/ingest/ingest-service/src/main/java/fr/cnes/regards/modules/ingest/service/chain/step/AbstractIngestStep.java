@@ -25,6 +25,7 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.step.AbstractProcessingStep;
 import fr.cnes.regards.framework.modules.jobs.domain.step.ProcessingStepException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.ingest.domain.entity.IngestProcessingChain;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPEntity;
 import fr.cnes.regards.modules.ingest.domain.entity.SIPState;
@@ -57,7 +58,7 @@ public abstract class AbstractIngestStep<I, O> extends AbstractProcessingStep<I,
     protected <T> T getStepPlugin(Long confId) throws ProcessingStepException {
         try {
             return pluginService.getPlugin(confId);
-        } catch (ModuleException e) {
+        } catch (ModuleException | NotAvailablePluginConfigurationException e) {
             throw new ProcessingStepException(e);
         }
     }
