@@ -169,15 +169,14 @@ public interface IAcquisitionProcessingService {
             throws ModuleException;
 
     /**
-     * Manage new registered file : prepare or fulfill products and schedule SIP generation as soon as possible<br/>
-     * This method is not transactional
+     * Manage new registered file : prepare or fulfill products and schedule SIP generation as soon as possible
      */
     void manageRegisteredFiles(AcquisitionProcessingChain processingChain) throws ModuleException;
 
     /**
-     * Same action as {@link #manageRegisteredFiles(AcquisitionProcessingChain)} but in transaction and by page
+     * Same action as {@link #manageRegisteredFiles(AcquisitionProcessingChain)} but in a new transaction and by page
      */
-    boolean manageNewFilesByPage(AcquisitionProcessingChain processingChain) throws ModuleException;
+    boolean manageRegisteredFilesByPage(AcquisitionProcessingChain processingChain) throws ModuleException;
 
     /**
      * Restart jobs in {@link ProductSIPState#SCHEDULED_INTERRUPTED} for processing chain
