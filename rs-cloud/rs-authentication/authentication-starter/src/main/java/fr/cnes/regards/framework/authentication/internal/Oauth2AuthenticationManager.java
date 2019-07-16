@@ -51,6 +51,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.security.utils.jwt.UserDetails;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.accessrights.client.IProjectUsersClient;
 import fr.cnes.regards.modules.accessrights.client.IRegistrationClient;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
@@ -227,6 +228,8 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
                                                             password, scope);
                 } catch (ModuleException e) {
                     LOG.error(e.getMessage(), e);
+                } catch (NotAvailablePluginConfigurationException e) {
+                    LOG.info(e.getMessage(), e);
                 }
             }
         }
@@ -344,8 +347,8 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
 
         // Check for project user status if the tenant to access is not instance and the user logged is not instance
         // root user.
-        if (status.equals(AuthenticationStatus.ACCESS_GRANTED) && tenant != null && !runTimeTenantResolver.isInstance()
-                && !userEmail.equals(staticRootLogin)) {
+        if (status.equals(AuthenticationStatus.ACCESS_GRANTED) && (tenant != null)
+                && !runTimeTenantResolver.isInstance() && !userEmail.equals(staticRootLogin)) {
             // Retrieve user projectUser
             try {
                 FeignSecurityManager.asSystem();
@@ -398,7 +401,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         AuthenticationPluginResponse response = plugin.authenticate(userName, userPassword, scope);
         try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
             Validator validator = factory.getValidator();
-            if (response == null || !validator.validate(response).isEmpty()) {
+            if ((response == null) || !validator.validate(response).isEmpty()) {
                 return new AuthenticationPluginResponse(false, userName);
             }
         }

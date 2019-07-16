@@ -43,6 +43,7 @@ import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.authentication.plugins.domain.ExternalAuthenticationInformations;
 import fr.cnes.regards.modules.authentication.plugins.impl.kerberos.KerberosSPParameters;
 import fr.cnes.regards.modules.authentication.plugins.impl.kerberos.KerberosServiceProviderPlugin;
@@ -114,7 +115,7 @@ public class KerberosServiceProviderPluginTest {
             // instantiate plugin
             plugin = PluginUtils.getPlugin(parameters, KerberosServiceProviderPlugin.class, new HashMap<>());
             Assert.assertNotNull(plugin);
-        } catch (final PluginUtilsRuntimeException e) {
+        } catch (final PluginUtilsRuntimeException | NotAvailablePluginConfigurationException e) {
             Assert.fail();
         }
     }
@@ -155,13 +156,13 @@ public class KerberosServiceProviderPluginTest {
 
             // Authenticate test user
             final GSSName clientName = manager.createName(pUserPrincipal, GSSName.NT_USER_NAME);
-            final GSSCredential clientCred = manager
-                    .createCredential(clientName, 8 * 3600, krb5Oid, GSSCredential.INITIATE_ONLY);
+            final GSSCredential clientCred = manager.createCredential(clientName, 8 * 3600, krb5Oid,
+                                                                      GSSCredential.INITIATE_ONLY);
 
             // Authenticate Regards application
             final GSSName serverName = manager.createName(pApplicationPrincipal, GSSName.NT_USER_NAME);
-            final GSSContext context = manager
-                    .createContext(serverName, krb5Oid, clientCred, GSSContext.DEFAULT_LIFETIME);
+            final GSSContext context = manager.createContext(serverName, krb5Oid, clientCred,
+                                                             GSSContext.DEFAULT_LIFETIME);
             context.requestMutualAuth(false);
             context.requestInteg(false);
             context.requestCredDeleg(true);
