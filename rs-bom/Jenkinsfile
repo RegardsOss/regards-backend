@@ -31,5 +31,4 @@
 @Library('regards/standardPipeline') _
 
 standardPipeline {
-    upstreamProjects = 'rs-regards-multi-branch'
 }
