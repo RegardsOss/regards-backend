@@ -35,6 +35,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityInvalidException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.oais.urn.UniformResourceName;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.search.domain.plugin.ISearchEngine;
 import fr.cnes.regards.modules.search.domain.plugin.SearchContext;
 import fr.cnes.regards.modules.search.domain.plugin.SearchEngineConfiguration;
@@ -144,7 +145,12 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
     private ISearchEngine<?, ?, ?, ?> getSearchEngineParser(SearchContext context,
             ISearchEngine<?, ?, ?, ?> searchEngine) throws ModuleException {
         if (context.getEngineRequestParserType() != null) {
-            return getSearchEngine(context.getDatasetUrn(), context.getEngineRequestParserType());
+            try {
+                return getSearchEngine(context.getDatasetUrn(), context.getEngineRequestParserType());
+            } catch (ModuleException e) {
+                LOGGER.error(e.getMessage());
+                return searchEngine;
+            }
         } else {
             return searchEngine;
         }
@@ -155,6 +161,10 @@ public class SearchEngineDispatcher implements ISearchEngineDispatcher {
     public ISearchEngine<?, ?, ?, ?> getSearchEngine(Optional<UniformResourceName> datasetUrn, String engineType)
             throws ModuleException {
         SearchEngineConfiguration conf = searchEngineService.retrieveConf(datasetUrn, engineType);
-        return pluginService.getPlugin(conf.getConfiguration().getId());
+        try {
+            return pluginService.getPlugin(conf.getConfiguration().getId());
+        } catch (NotAvailablePluginConfigurationException e) {
+            throw new ModuleException(e.getMessage(), e);
+        }
     }
 }

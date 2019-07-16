@@ -175,10 +175,8 @@ public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements
         LOGGER.debug(String.format("Total size of files to download : %d", filesSizeInBytes));
         // If size exceed maximum configured, return a JSON message with the error.
         if (filesSizeInBytes > (maxFilesSizeToDownload * 1024 * 1024)) {
-            return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
-                                                                      String.format(
-                                                                              "Total size of selected files exceeded maximum allowed of %d (Mo)",
-                                                                              maxFilesToDownload));
+            return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON, String
+                    .format("Total size of selected files exceeded maximum allowed of %d (Mo)", maxFilesToDownload));
         }
 
         // If tere is no file downloadable, return a JSON message.

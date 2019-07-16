@@ -280,7 +280,7 @@ public class CatalogPluginResponseFactory {
             try {
                 ByteStreams.copy(is, outputStream);
                 outputStream.flush();
-            } catch (Exception e) {
+            } catch (IOException e) {
                 LOGGER.error(e.getMessage(), e);
             }
         };
