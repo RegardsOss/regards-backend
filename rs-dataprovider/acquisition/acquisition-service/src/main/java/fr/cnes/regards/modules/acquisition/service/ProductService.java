@@ -51,6 +51,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.JobStatus;
 import fr.cnes.regards.framework.modules.jobs.service.IJobInfoService;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.acquisition.dao.IAcquisitionFileRepository;
 import fr.cnes.regards.modules.acquisition.dao.IProductRepository;
 import fr.cnes.regards.modules.acquisition.dao.ProductSpecifications;
@@ -269,7 +270,12 @@ public class ProductService implements IProductService {
             List<AcquisitionFile> validFiles) throws ModuleException {
 
         // Get product plugin
-        IProductPlugin productPlugin = pluginService.getPlugin(processingChain.getProductPluginConf().getId());
+        IProductPlugin productPlugin;
+        try {
+            productPlugin = pluginService.getPlugin(processingChain.getProductPluginConf().getId());
+        } catch (NotAvailablePluginConfigurationException e1) {
+            throw new ModuleException("Unable to run product generation for disabled acquisition chain.", e1);
+        }
 
         // Compute the  list of products to create or update
         Set<String> productNames = new HashSet<>();
