@@ -35,13 +35,13 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.modules.workspace.service.IWorkspaceService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.notification.NotificationLevel;
+import fr.cnes.regards.framework.notification.client.INotificationClient;
 import fr.cnes.regards.framework.oais.ContentInformation;
 import fr.cnes.regards.framework.oais.EventType;
 import fr.cnes.regards.framework.oais.urn.DataType;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
-import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
 import fr.cnes.regards.modules.storage.domain.AIP;
@@ -178,17 +178,16 @@ public class DataStorageService implements IDataStorageService {
                     .getPluginMetaDataById(activeDataStorageConf.getPluginId());
             PluginStorageInfo monitoringInfo = new PluginStorageInfo(activeDataStorageConfId,
                     activeDataStorageMeta.getDescription(), activeDataStorageConf.getLabel());
-            try {
-                // now lets get the data storage monitoring information from the plugin
-                @SuppressWarnings("rawtypes")
-                Long dataStorageTotalSpace = ((IDataStorage) pluginService.getPlugin(activeDataStorageConfId))
-                        .getTotalSpace();
-                DataStorageInfo dataStorageInfo;
-                if (monitoringAggregationMap.containsKey(activeDataStorageConfId)) {
-                    dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(), dataStorageTotalSpace,
-                            monitoringAggregationMap.get(activeDataStorageConfId));
-                } else {
-                    dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(), dataStorageTotalSpace, 0);
+            // now lets get the data storage monitoring information from the plugin
+            @SuppressWarnings("rawtypes")
+            Long dataStorageTotalSpace = ((IDataStorage) pluginService.getPlugin(activeDataStorageConfId))
+                    .getTotalSpace();
+            DataStorageInfo dataStorageInfo;
+            if (monitoringAggregationMap.containsKey(activeDataStorageConfId)) {
+                dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(), dataStorageTotalSpace,
+                        monitoringAggregationMap.get(activeDataStorageConfId));
+            } else {
+                dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(), dataStorageTotalSpace, 0);
 
                 }
                 monitoringInfo.setTotalSize(dataStorageInfo.getTotalSize());

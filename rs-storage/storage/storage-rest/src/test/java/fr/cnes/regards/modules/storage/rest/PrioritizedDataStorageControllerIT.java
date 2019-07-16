@@ -56,7 +56,6 @@ import fr.cnes.regards.framework.test.integration.ConstrainedFields;
 import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.storage.dao.IAIPDao;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
@@ -82,10 +81,6 @@ public class PrioritizedDataStorageControllerIT extends AbstractRegardsTransacti
             return Mockito.mock(IProjectsClient.class);
         }
 
-        @Bean
-        public INotificationClient notificationClient() {
-            return Mockito.mock(INotificationClient.class);
-        }
     }
 
     private static final String DATA_STORAGE_CONF_LABEL_1 = "PrioritizedDataStorageControllerIT_1";
