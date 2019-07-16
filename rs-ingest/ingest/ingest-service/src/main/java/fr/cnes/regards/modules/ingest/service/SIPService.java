@@ -125,7 +125,9 @@ public class SIPService implements ISIPService {
                 } else {
                     sipRepository.updateSIPEntityState(SIPState.TO_BE_DELETED, sip.getId());
                 }
-            } else {
+            } else if (sip.getState() != SIPState.TO_BE_DELETED && sip.getState() != SIPState.DELETED) {
+                // We had this condition on those state here and not into #isDeletableWithAIPs because we just want to be silent.
+                // Indeed, if we ask for deletion of an already deleted or being deleted SIP that just mean there is less work to do this time.
                 String errorMsg = String.format("SIPEntity with state %s is not deletable", sip.getState());
                 undeletableSips.add(new RejectedSip(sip.getSipId().toString(), errorMsg));
                 LOGGER.error(errorMsg);
