@@ -62,6 +62,7 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
@@ -138,12 +139,10 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
         aipSession.setLastActivationDate(OffsetDateTime.now());
 
         dataFile1 = new StorageDataFile(Sets.newHashSet(new URL("file", "", "fichier1.json")), "checksum", "MD5",
-                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, new AIPEntity(aip, aipSession),
-                "fichier1", null);
+                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, new AIPEntity(aip, aipSession), "fichier1", null);
         dataFiles.add(dataFile1);
         dataFile2 = new StorageDataFile(Sets.newHashSet(new URL("file", "", "fichier2.json")), "checksum2", "MD5",
-                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, new AIPEntity(aip, aipSession),
-                "fichier2", null);
+                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, new AIPEntity(aip, aipSession), "fichier2", null);
         dataFiles.add(dataFile2);
     }
 
@@ -181,9 +180,11 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
      * @throws ModuleException
      * @throws IOException
      * @throws URISyntaxException
+     * @throws NotAvailablePluginConfigurationException
      */
     @Test
-    public void testOkWithMultipleConfigurations() throws ModuleException, IOException, URISyntaxException {
+    public void testOkWithMultipleConfigurations()
+            throws ModuleException, IOException, URISyntaxException, NotAvailablePluginConfigurationException {
         // Init two nearline plugin configurations
         PluginConfiguration nearConf1 = initNearLinePluginConf("label1");
         PluginConfiguration nearConf2 = initNearLinePluginConf("label2");
@@ -216,10 +217,11 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
      * @throws ModuleException
      * @throws IOException
      * @throws URISyntaxException
+     * @throws NotAvailablePluginConfigurationException
      */
     @Test
     public void testPartialDispatchWithMultipleConfigurations()
-            throws ModuleException, IOException, URISyntaxException {
+            throws ModuleException, IOException, URISyntaxException, NotAvailablePluginConfigurationException {
         // Init two nearline plugin configurations
         PluginConfiguration nearConf1 = initNearLinePluginConf("label1");
         PluginConfiguration nearConf2 = initNearLinePluginConf("label2");
@@ -250,9 +252,11 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
      * @throws ModuleException
      * @throws IOException
      * @throws URISyntaxException
+     * @throws NotAvailablePluginConfigurationException
      */
     @Test
-    public void testOkWithoutConfiguration() throws ModuleException, IOException, URISyntaxException {
+    public void testOkWithoutConfiguration()
+            throws ModuleException, IOException, URISyntaxException, NotAvailablePluginConfigurationException {
         // Init one nearline plugin configurations
         PluginConfiguration nearConf1 = initNearLinePluginConf("label1");
         // Init one Local plugin configurations
@@ -274,9 +278,11 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
      * @throws ModuleException
      * @throws IOException
      * @throws URISyntaxException
+     * @throws NotAvailablePluginConfigurationException
      */
     @Test
-    public void testPartialDispatchWithoutConfiguration() throws ModuleException, IOException, URISyntaxException {
+    public void testPartialDispatchWithoutConfiguration()
+            throws ModuleException, IOException, URISyntaxException, NotAvailablePluginConfigurationException {
         // Init two nealine plugin configurations
         PluginConfiguration nearConf1 = initNearLinePluginConf("label1");
         PluginConfiguration nearConf2 = initNearLinePluginConf("label2");
@@ -299,9 +305,11 @@ public class AIPMiscAllocationStrategyIT extends AbstractRegardsTransactionalIT 
      * @throws ModuleException
      * @throws IOException
      * @throws URISyntaxException
+     * @throws NotAvailablePluginConfigurationException
      */
     @Test
-    public void testKOWithoutAnyConfiguration() throws ModuleException, IOException, URISyntaxException {
+    public void testKOWithoutAnyConfiguration()
+            throws ModuleException, IOException, URISyntaxException, NotAvailablePluginConfigurationException {
         // Init two nearline plugin configurations
         initNearLinePluginConf("label1");
         initNearLinePluginConf("label2");

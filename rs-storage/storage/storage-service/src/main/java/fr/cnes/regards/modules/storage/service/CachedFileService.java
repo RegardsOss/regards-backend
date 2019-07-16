@@ -73,6 +73,7 @@ import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.utils.RsRuntimeException;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.storage.dao.ICachedFileRepository;
 import fr.cnes.regards.modules.storage.dao.IDataFileDao;
@@ -489,8 +490,8 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
         Long cacheSizePurgeUpperThresholdInOctets = cacheSizePurgeUpperThreshold * 1024;
         Long cacheSizePurgeLowerThresholdInOctets = cacheSizePurgeLowerThreshold * 1024;
         // If cache is over upper threshold size then delete older files to reached the lower threshold.
-        if (cacheCurrentSize > cacheSizePurgeUpperThresholdInOctets
-                && cacheSizePurgeUpperThreshold > cacheSizePurgeLowerThreshold) {
+        if ((cacheCurrentSize > cacheSizePurgeUpperThresholdInOctets)
+                && (cacheSizePurgeUpperThreshold > cacheSizePurgeLowerThreshold)) {
             // If files are in queued mode, so delete older files if there minimum time to live (minTtl) is reached.
             // This limit is configurable is sprinf properties of the current microservice.
             if (cachedFileRepository.countByState(CachedFileState.QUEUED) > 0) {
@@ -508,7 +509,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
                     Long fileSizesSum = 0L;
                     Set<CachedFile> filesToDelete = Sets.newHashSet();
                     Iterator<CachedFile> it = allOlderDeletableCachedFiles.iterator();
-                    while (fileSizesSum < filesTotalSizeToDelete && it.hasNext()) {
+                    while ((fileSizesSum < filesTotalSizeToDelete) && it.hasNext()) {
                         CachedFile fileToDelete = it.next();
                         filesToDelete.add(fileToDelete);
                         fileSizesSum += fileToDelete.getFileSize();
@@ -613,7 +614,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
             for (StorageDataFile fileToRestore : dataFilesToRestore) {
                 Long fileSize = fileToRestore.getFileSize();
                 boolean fileAlreadyHandled = checksums.contains(fileToRestore.getChecksum());
-                if (fileAlreadyHandled || totalFileSizesToHandle + fileSize < availableCacheSize) {
+                if (fileAlreadyHandled || ((totalFileSizesToHandle + fileSize) < availableCacheSize)) {
                     restorableFiles.add(fileToRestore);
                     if (!fileAlreadyHandled) {
                         checksums.add(fileToRestore.getChecksum());
@@ -664,7 +665,7 @@ public class CachedFileService implements ICachedFileService, ApplicationListene
                 nonRestoredFiles = checkPrepareResult(restorabledataFiles, workingSubsets);
                 // Scheduled restoration job
                 scheduleRestorationJob(workingSubsets.getWorkingSubSets(), pluginConfId);
-            } catch (ModuleException | PluginUtilsRuntimeException e) {
+            } catch (ModuleException | PluginUtilsRuntimeException | NotAvailablePluginConfigurationException e) {
                 LOGGER.error(e.getMessage(), e);
                 nonRestoredFiles.addAll(restorabledataFiles);
             }

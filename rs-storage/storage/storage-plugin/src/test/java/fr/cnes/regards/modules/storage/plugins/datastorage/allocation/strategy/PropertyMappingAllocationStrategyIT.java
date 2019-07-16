@@ -57,6 +57,7 @@ import fr.cnes.regards.framework.oais.urn.UniformResourceName;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsServiceTransactionalIT;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storage.domain.AIP;
 import fr.cnes.regards.modules.storage.domain.AIPBuilder;
 import fr.cnes.regards.modules.storage.domain.database.AIPEntity;
@@ -117,13 +118,13 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
         AIPBuilder builder = new AIPBuilder(aipWithProperty);
         builder.getPDIBuilder().addAdditionalProvenanceInformation("property", PROPERTY_VALUE);
         propertyDataFile = new StorageDataFile(Sets.newHashSet(new URL("file", "", "truc.json")), "checksum", "MD5",
-                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, new AIPEntity(aipWithProperty, aipSession),
-                                               "truc", null);
+                DataType.OTHER, 666L, MediaType.APPLICATION_JSON, new AIPEntity(aipWithProperty, aipSession), "truc",
+                null);
         dataFiles.add(propertyDataFile);
         AIP aipWithoutProperty = getAIP();
         otherDataFile = new StorageDataFile(Sets.newHashSet(new URL("file", "", "local.json")), "checksum2", "MD5",
                 DataType.OTHER, 666L, MediaType.APPLICATION_JSON, new AIPEntity(aipWithoutProperty, aipSession),
-                 "local", null);
+                "local", null);
         dataFiles.add(otherDataFile);
         AIP aipWithPropertyWrongVal = getAIP();
         builder = new AIPBuilder(aipWithPropertyWrongVal);
@@ -186,7 +187,7 @@ public class PropertyMappingAllocationStrategyIT extends AbstractRegardsServiceT
     }
 
     @Test
-    public void testOk() throws ModuleException {
+    public void testOk() throws ModuleException, NotAvailablePluginConfigurationException {
         PropertyMappingAllocationStrategy allocStrat = pluginService.getPlugin(propertyMappingAllocStratConf.getId());
         Multimap<Long, StorageDataFile> result = allocStrat.dispatch(dataFiles, new DispatchErrors());
         Assert.assertTrue("dispatch should have mapped propertyDataFile to the data storage conf id",

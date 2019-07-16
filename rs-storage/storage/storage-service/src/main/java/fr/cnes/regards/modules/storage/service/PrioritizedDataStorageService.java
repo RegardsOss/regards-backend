@@ -20,6 +20,7 @@ import fr.cnes.regards.framework.module.rest.exception.EntityOperationForbiddenE
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storage.dao.IPrioritizedDataStorageRepository;
 import fr.cnes.regards.modules.storage.dao.IStorageDataFileRepository;
 import fr.cnes.regards.modules.storage.domain.database.DataStorageType;
@@ -154,9 +155,14 @@ public class PrioritizedDataStorageService implements IPrioritizedDataStorageSer
             Long nbfilesAlreadyStored = storageDataFileRepository.countByPrioritizedDataStoragesId(id);
 
             // Ask plugin if the update is allowed
-            IDataStorage<?> plugin = pluginService.getPlugin(oldOne.getDataStorageConfiguration().getId());
-            updatable = plugin.allowConfigurationUpdate(updated.getDataStorageConfiguration(),
-                                                        oldOne.getDataStorageConfiguration(), nbfilesAlreadyStored > 0);
+            try {
+                IDataStorage<?> plugin = pluginService.getPlugin(oldOne.getDataStorageConfiguration().getId());
+                updatable = plugin.allowConfigurationUpdate(updated.getDataStorageConfiguration(),
+                                                            oldOne.getDataStorageConfiguration(),
+                                                            nbfilesAlreadyStored > 0);
+            } catch (NotAvailablePluginConfigurationException e) {
+                throw new EntityOperationForbiddenException(e.getMessage());
+            }
         }
 
         // if oldConfActive is true, updatable cannot be null
