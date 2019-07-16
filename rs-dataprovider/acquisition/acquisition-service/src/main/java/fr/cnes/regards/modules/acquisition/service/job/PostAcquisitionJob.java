@@ -22,6 +22,8 @@ package fr.cnes.regards.modules.acquisition.service.job;
 import java.util.Map;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -31,6 +33,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.framework.modules.plugins.service.PluginService;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
 import fr.cnes.regards.modules.acquisition.plugins.ISipPostProcessingPlugin;
@@ -48,6 +51,8 @@ import fr.cnes.regards.modules.ingest.domain.event.SIPEvent;
 public class PostAcquisitionJob extends AbstractJob<Void> {
 
     public static final String EVENT_PARAMETER = "event";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PostAcquisitionJob.class);
 
     @Autowired
     private PluginService pluginService;
@@ -79,9 +84,16 @@ public class PostAcquisitionJob extends AbstractJob<Void> {
                 // Launch post processing plugin if present
                 if (acqProcessingChain.getPostProcessSipPluginConf().isPresent()) {
                     // Get an instance of the plugin
-                    ISipPostProcessingPlugin postProcessPlugin = pluginService
-                            .getPlugin(acqProcessingChain.getPostProcessSipPluginConf().get().getId());
-                    postProcessPlugin.postProcess(product);
+                    ISipPostProcessingPlugin postProcessPlugin;
+                    try {
+                        postProcessPlugin = pluginService
+                                .getPlugin(acqProcessingChain.getPostProcessSipPluginConf().get().getId());
+                        postProcessPlugin.postProcess(product);
+                    } catch (NotAvailablePluginConfigurationException e) {
+                        LOGGER.warn("Unable to run postprocess plugin as it is disabled");
+                        LOGGER.warn(e.getMessage(), e);
+                    }
+
                 }
             } else {
                 logger.debug("No product associated to SIP id\"{}\"", sipEvent.getSipId());

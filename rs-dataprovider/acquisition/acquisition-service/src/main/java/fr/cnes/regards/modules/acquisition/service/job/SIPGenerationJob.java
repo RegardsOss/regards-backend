@@ -31,6 +31,7 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInval
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.acquisition.domain.Product;
 import fr.cnes.regards.modules.acquisition.domain.ProductSIPState;
 import fr.cnes.regards.modules.acquisition.domain.chain.AcquisitionProcessingChain;
@@ -102,7 +103,7 @@ public class SIPGenerationJob extends AbstractJob<Void> {
         try {
             // Get an instance of the plugin
             generateSipPlugin = pluginService.getPlugin(processingChain.getGenerateSipPluginConf().getId());
-        } catch (ModuleException e) {
+        } catch (ModuleException | NotAvailablePluginConfigurationException e) {
             // Throw a global job error, do not iterate on products
             logger.error(e.getMessage(), e);
             throw new JobRuntimeException(e.getMessage());
