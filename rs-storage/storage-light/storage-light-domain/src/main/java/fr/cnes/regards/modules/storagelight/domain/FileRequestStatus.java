@@ -25,12 +25,12 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
  *
  * @author Sébastien Binda
  */
-public enum FileReferenceRequestStatus {
+public enum FileRequestStatus {
 
-    TO_STORE,
+    TODO,
 
-    STORE_PENDING,
+    PENDING,
 
-    STORE_ERROR;
+    ERROR;
 
 }

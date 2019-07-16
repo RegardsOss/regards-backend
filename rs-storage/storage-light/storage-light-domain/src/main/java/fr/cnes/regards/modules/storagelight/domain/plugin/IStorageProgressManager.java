@@ -18,9 +18,6 @@
  */
 package fr.cnes.regards.modules.storagelight.domain.plugin;
 
-import java.nio.file.Path;
-
-import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
 
 /**
@@ -35,13 +32,13 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest
  * </ul>
  * @author Sébastien Binda
  */
-public interface IProgressManager {
+public interface IStorageProgressManager {
 
     /**
      * Notify system that the given {@link FileReferenceRequest} is stored.
      * @param fileReferenceRequest {@link FileReferenceRequest} stored.
      */
-    public void storageSucceed(FileReferenceRequest fileReferenceRequest, Long fileSize);
+    public void storageSucceed(FileReferenceRequest fileReferenceRequest, String storedUrl, Long fileSize);
 
     /**
      * Notify the system that the given {@link FileReferenceRequest} couldn't be stored.
@@ -49,32 +46,5 @@ public interface IProgressManager {
      * @param cause {@link String} error message.
      */
     public void storageFailed(FileReferenceRequest fileReferenceRequest, String cause);
-
-    /**
-     * Notify system that the given {@link FileReference} is deleted.
-     * @param fileReference {@link FileReference} deleted.
-     */
-    public void deletionSucceed(FileReference fileReference);
-
-    /**
-     * Notify the system that the given {@link FileReference} couldn't be deleted.
-     * @param fileReference {@link FileReference} not deleted.
-     * @param cause {@link String} error message.
-     */
-    public void deletionFailed(FileReference fileReference, String cause);
-
-    /**
-     * Notify system that the given {@link FileReference} is restored.
-     * @param fileReference {@link FileReference} restored.
-     * @param restoredFilePath {@link Path} of the restored file.
-     */
-    public void restoreSucceed(FileReference fileReference, Path restoredFilePath);
-
-    /**
-     * Notify the system that the given {@link FileReference} couldn't be restored.
-     * @param fileReference {@link FileReference} not restored.
-     * @param cause {@link String} error message.
-     */
-    public void restoreFailed(FileReference fileReference, String cause);
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -16,24 +16,24 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.domain.plugin;
+package fr.cnes.regards.modules.storagelight.service;
 
 import java.io.IOException;
-import java.io.InputStream;
-
-import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
+import java.io.ObjectOutputStream;
 
 /**
- * @author Sylvain VISSIERE-GUERINET
+ * @author sbinda
+ *
  */
-@PluginInterface(description = "Contract to respect by any ONLINE data storage plugin")
-public interface IOnlineDataStorage extends IDataStorage {
+public class TestStream extends ObjectOutputStream {
 
     /**
-     * Do the retreive action for the given {@link StorageDataFile}
-     * @param data StorageDataFile to retrieve
+     * @throws IOException
+     * @throws SecurityException
      */
-    InputStream retrieve(FileReference fileReference) throws IOException;
+    protected TestStream() throws IOException, SecurityException {
+        super();
+        // TODO Auto-generated constructor stub
+    }
 
 }

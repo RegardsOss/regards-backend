@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.storagelight.service.jobs;
 
-import java.nio.file.Path;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -27,24 +26,24 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storagelight.domain.FileReferenceRequestStatus;
+import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IDataStorage;
-import fr.cnes.regards.modules.storagelight.domain.plugin.IProgressManager;
+import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageProgressManager;
 import fr.cnes.regards.modules.storagelight.service.FileReferenceRequestService;
 import fr.cnes.regards.modules.storagelight.service.FileReferenceService;
 
 /**
- * Implementation of {@link IProgressManager} used by {@link IDataStorage} plugins.<br/>
+ * Implementation of {@link IStorageProgressManager} used by {@link IDataStorage} plugins.<br/>
  * This implementation notify the system thanks to the AMQP publisher.
  *
  * @author Sébastien Binda
  */
-public class FileReferenceJobProgressManager implements IProgressManager {
+public class FileReferenceJobProgressManager implements IStorageProgressManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(FileReferenceJobProgressManager.class);
 
@@ -72,33 +71,41 @@ public class FileReferenceJobProgressManager implements IProgressManager {
     }
 
     @Override
-    public void storageSucceed(FileReferenceRequest fileRefRequest, Long fileSize) {
-        LOG.info("[STORAGE SUCCESS] - Store success for file {} (id={})in {} (checksum: {}).",
-                 fileRefRequest.getMetaInfo().getFileName(), fileRefRequest.getId(),
-                 fileRefRequest.getDestination().toString(), fileRefRequest.getMetaInfo().getChecksum());
-        job.advanceCompletion();
-        // Create FileReference resulting of the success of FileReferenceRequest
-        Optional<FileReference> oFileRef = fileReferenceService
-                .createFileReference(fileRefRequest.getOwners(), fileRefRequest.getMetaInfo(),
-                                     fileRefRequest.getDestination(), fileRefRequest.getDestination());
-        if (oFileRef.isPresent()) {
-            // Delete the FileRefRequest as it has been handled
-            fileRefRequestService.deleteFileReferenceRequest(fileRefRequest);
-            FileReference newFileRef = oFileRef.get();
-            // Create new event message for new FileReference
-            FileReferenceEvent event = new FileReferenceEvent(newFileRef.getMetaInfo().getChecksum(),
-                    FileReferenceEventState.STORED,
-                    String.format("File %s successfully referenced at %s", newFileRef.getMetaInfo().getFileName(),
-                                  newFileRef.getLocation().toString()));
-            // hell yeah this is not the usual publish method, but i know what i'm doing so trust me!
-            publishWithTenant(event);
+    public void storageSucceed(FileReferenceRequest fileRefRequest, String storedUrl, Long fileSize) {
+
+        if (storedUrl == null) {
+            this.storageFailed(fileRefRequest, String
+                    .format("File {} has been successully stored, nevertheless plugin <%> does not provide the new file location",
+                            fileRefRequest.getDestination().getStorage(), fileRefRequest.getMetaInfo().getFileName()));
         } else {
-            // The file is not really referenced so handle reference error by modifying request to be retry later
-            fileRefRequest.setOrigin(fileRefRequest.getDestination());
-            fileRefRequest.setStatus(FileReferenceRequestStatus.STORE_ERROR);
-            fileRefRequest.setErrorCause(String.format("Unable to save new file reference for file %s",
-                                                       fileRefRequest.getDestination().toString()));
-            fileRefRequestService.updateFileReferenceRequest(fileRefRequest);
+            FileLocation newLocation = new FileLocation(fileRefRequest.getDestination().getStorage(), storedUrl);
+            LOG.info("[STORAGE SUCCESS] - Store success for file {} (id={})in {} (checksum: {}).",
+                     fileRefRequest.getMetaInfo().getFileName(), fileRefRequest.getId(), newLocation,
+                     fileRefRequest.getMetaInfo().getChecksum());
+            job.advanceCompletion();
+            // Create FileReference resulting of the success of FileReferenceRequest
+            Optional<FileReference> oFileRef = fileReferenceService
+                    .addFileReference(fileRefRequest.getOwners(), fileRefRequest.getMetaInfo(), newLocation,
+                                      fileRefRequest.getDestination());
+            if (oFileRef.isPresent()) {
+                // Delete the FileRefRequest as it has been handled
+                fileRefRequestService.deleteFileReferenceRequest(fileRefRequest);
+                FileReference newFileRef = oFileRef.get();
+                // Create new event message for new FileReference
+                FileReferenceEvent event = new FileReferenceEvent(newFileRef.getMetaInfo().getChecksum(),
+                        FileReferenceEventState.STORED,
+                        String.format("File %s successfully referenced at %s", newFileRef.getMetaInfo().getFileName(),
+                                      newFileRef.getLocation().toString()));
+                // hell yeah this is not the usual publish method, but i know what i'm doing so trust me!
+                publishWithTenant(event);
+            } else {
+                // The file is not really referenced so handle reference error by modifying request to be retry later
+                fileRefRequest.setOrigin(fileRefRequest.getDestination());
+                fileRefRequest.setStatus(FileRequestStatus.ERROR);
+                fileRefRequest.setErrorCause(String.format("Unable to save new file reference for file %s",
+                                                           fileRefRequest.getDestination().toString()));
+                fileRefRequestService.updateFileReferenceRequest(fileRefRequest);
+            }
         }
     }
 
@@ -109,58 +116,11 @@ public class FileReferenceJobProgressManager implements IProgressManager {
                   fileRefRequest.getDestination().toString(), fileRefRequest.getMetaInfo().getChecksum(), cause);
         job.advanceCompletion();
         fileRefRequest.setOrigin(fileRefRequest.getDestination());
-        fileRefRequest.setStatus(FileReferenceRequestStatus.STORE_ERROR);
+        fileRefRequest.setStatus(FileRequestStatus.ERROR);
         fileRefRequest.setErrorCause(cause);
         fileRefRequestService.updateFileReferenceRequest(fileRefRequest);
         FileReferenceEvent event = new FileReferenceEvent(fileRefRequest.getMetaInfo().getChecksum(),
                 FileReferenceEventState.STORE_ERROR, cause, fileRefRequest.getDestination());
-        publishWithTenant(event);
-    }
-
-    @Override
-    public void deletionFailed(FileReference fileRef, String cause) {
-        LOG.error("[DELETION ERROR] - Deletion error for file {} from {} (checksum: {}). Cause : {}",
-                  fileRef.getMetaInfo().getFileName(), fileRef.getLocation().toString(),
-                  fileRef.getMetaInfo().getChecksum(), cause);
-        job.advanceCompletion();
-        FileReferenceEvent event = new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
-                FileReferenceEventState.DELETION_ERROR, cause, fileRef.getLocation());
-        publishWithTenant(event);
-    }
-
-    @Override
-    public void deletionSucceed(FileReference fileRef) {
-        String successMessage = String.format("File %s successfully deteled from %s (checksum: %s)",
-                                              fileRef.getMetaInfo().getFileName(), fileRef.getLocation().toString(),
-                                              fileRef.getMetaInfo().getChecksum());
-        LOG.info("[DELETION SUCCESS] - {}", successMessage);
-        job.advanceCompletion();
-        FileReferenceEvent event = new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
-                FileReferenceEventState.DELETED, successMessage, fileRef.getLocation());
-        publishWithTenant(event);
-    }
-
-    @Override
-    public void restoreSucceed(FileReference fileRef, Path restoredFilePath) {
-        String successMessage = String.format("File %s successfully restored from %s to %s (checksum : %s).",
-                                              fileRef.getMetaInfo().getFileName(), fileRef.getLocation().toString(),
-                                              restoredFilePath.toString(), fileRef.getMetaInfo().getChecksum());
-        LOG.debug("[RESTORATION SUCCESS] - {}", successMessage);
-        job.advanceCompletion();
-        FileReferenceEvent event = new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
-                FileReferenceEventState.RESTORED, successMessage,
-                new FileLocation(null, "file:///" + restoredFilePath.toString()));
-        publishWithTenant(event);
-    }
-
-    @Override
-    public void restoreFailed(FileReference fileRef, String cause) {
-        LOG.error("[RESTORATION ERROR] - Restoration error for file {} from {} (checksum: {}). Cause : {}",
-                  fileRef.getMetaInfo().getFileName(), fileRef.getLocation().toString(),
-                  fileRef.getMetaInfo().getChecksum(), cause);
-        job.advanceCompletion();
-        FileReferenceEvent event = new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
-                FileReferenceEventState.RESTORATION_ERROR, cause);
         publishWithTenant(event);
     }
 

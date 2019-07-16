@@ -26,14 +26,14 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
  * @author Sylvain VISSIERE-GUERINET
  */
 @PluginInterface(description = "Contract to respect by any NEARLINE data storage plugin")
-public interface INearlineDataStorage<T extends IWorkingSubset> extends IDataStorage<T> {
+public interface INearlineDataStorage extends IDataStorage {
 
     /**
      * Do the retrieve action for the given working subset.
      * @param workingSubset Subset of files to store.
      * @param destinationPath {@link Path} where to put retrieved files.
-     * @param progressManager {@link IProgressManager} object to inform global store process after each transfer succeed or fail.
+     * @param progressManager {@link IStorageProgressManager} object to inform global store process after each transfer succeed or fail.
      */
-    void retrieve(T workingSubset, IProgressManager progressManager);
+    void retrieve(FileReferenceWorkingSubset workingSubset, IStorageProgressManager progressManager);
 
 }

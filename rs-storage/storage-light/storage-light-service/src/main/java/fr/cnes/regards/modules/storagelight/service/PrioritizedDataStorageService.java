@@ -149,7 +149,7 @@ public class PrioritizedDataStorageService {
 
             // Ask plugin if the update is allowed
             try {
-                IDataStorage<?> plugin = pluginService.getPlugin(oldOne.getDataStorageConfiguration().getId());
+                IDataStorage plugin = pluginService.getPlugin(oldOne.getDataStorageConfiguration().getId());
                 updatable = plugin.allowConfigurationUpdate(updated.getDataStorageConfiguration(),
                                                             oldOne.getDataStorageConfiguration(),
                                                             nbfilesAlreadyStored > 0);

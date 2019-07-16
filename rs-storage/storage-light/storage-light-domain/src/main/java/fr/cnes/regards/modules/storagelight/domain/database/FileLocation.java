@@ -29,16 +29,20 @@ import javax.persistence.Embeddable;
 @Embeddable
 public class FileLocation {
 
+    public static final int STORAGE_MAX_LENGTH = 128;
+
+    public static final int URL_MAX_LENGTH = 2048;
+
     /**
      * Storage where current file reference is stored.
      */
-    @Column(length = 128, name = "storage")
+    @Column(length = STORAGE_MAX_LENGTH, name = "storage")
     private String storage;
 
     /**
      * URL to access file reference through defined storage
      */
-    @Column(length = 2048)
+    @Column(length = URL_MAX_LENGTH)
     private String url;
 
     public FileLocation() {

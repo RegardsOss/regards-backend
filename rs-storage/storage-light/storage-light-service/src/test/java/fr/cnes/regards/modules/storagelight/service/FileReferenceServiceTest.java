@@ -58,7 +58,7 @@ import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storagelight.dao.FileReferenceSpecification;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRequestRepository;
-import fr.cnes.regards.modules.storagelight.domain.FileReferenceRequestStatus;
+import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
@@ -83,6 +83,9 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
 
     @Autowired
     private FileReferenceRequestService fileRefRequestService;
+
+    @Autowired
+    private StoragePluginConfigurationHandler storageHandler;
 
     @Autowired
     private IFileReferenceRepository fileRefRepo;
@@ -113,7 +116,7 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
         });
         initDataStoragePluginConfiguration(ONLINE_CONF_LABEL);
         int limit = 0;
-        while (!fileRefRequestService.getExistingStorage().contains(ONLINE_CONF_LABEL) && (limit < 20)) {
+        while (!storageHandler.getConfiguredStorages().contains(ONLINE_CONF_LABEL) && (limit < 20)) {
             Thread.sleep(100);
             limit++;
         }
@@ -130,7 +133,7 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
                 MediaType.APPLICATION_OCTET_STREAM);
         FileLocation origin = new FileLocation("anywhere", "anywhere://in/this/directory/file.test");
         FileLocation destination = new FileLocation("elsewhere", "elsewhere://in/this/directory/file.test");
-        fileRefService.createFileReference(owners, fileMetaInfo, origin, destination);
+        fileRefService.addFileReference(owners, fileMetaInfo, origin, destination);
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
         Optional<FileReferenceRequest> oFileRefReq = fileRefRequestService.search(destination.getStorage(),
                                                                                   fileMetaInfo.getChecksum());
@@ -138,7 +141,7 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
                            oFileRef.isPresent());
         Assert.assertTrue("File reference request should exists", oFileRefReq.isPresent());
         Assert.assertTrue("File reference request should be in STORE_ERROR status",
-                          oFileRefReq.get().getStatus().equals(FileReferenceRequestStatus.STORE_ERROR));
+                          oFileRefReq.get().getStatus().equals(FileRequestStatus.ERROR));
     }
 
     @Test
@@ -239,18 +242,17 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
         FileLocation origin = new FileLocation("anywhere", "anywhere://in/this/directory/file.test");
         FileLocation destination = new FileLocation(ONLINE_CONF_LABEL, "/in/this/directory");
         // Run file reference creation.
-        fileRefService.createFileReference(owners, fileMetaInfo, origin, destination);
+        fileRefService.addFileReference(owners, fileMetaInfo, origin, destination);
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
         Optional<FileReferenceRequest> oFileRefReq = fileRefRequestService.search(destination.getStorage(),
                                                                                   fileMetaInfo.getChecksum());
         Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
         Assert.assertTrue("File reference request should exists", oFileRefReq.isPresent());
-        Assert.assertEquals("File reference request should be in TO_STORE status", FileReferenceRequestStatus.TO_STORE,
+        Assert.assertEquals("File reference request should be in TO_STORE status", FileRequestStatus.TODO,
                             oFileRefReq.get().getStatus());
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
-        Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileReferenceRequestStatus.TO_STORE, null,
-                                                                           null);
+        Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileRequestStatus.TODO, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
         String tenant = runtimeTenantResolver.getTenant();
@@ -275,8 +277,7 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
         // Update plugin conf to now accept error files
         this.updatePluginConfForError("unknown.*");
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
-        Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileReferenceRequestStatus.STORE_ERROR, null,
-                                                                           null);
+        Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileRequestStatus.ERROR, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
         String tenant = runtimeTenantResolver.getTenant();
@@ -300,8 +301,7 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
         // Update plugin conf to now accept error files
         this.updatePluginConfForError("unknown.*");
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
-        Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileReferenceRequestStatus.STORE_ERROR, null,
-                                                                           null);
+        Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileRequestStatus.ERROR, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
         String tenant = runtimeTenantResolver.getTenant();
@@ -328,8 +328,7 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
         this.updatePluginConfForError("unknown.*");
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
         Set<String> owners = Sets.newLinkedHashSet("someone-else");
-        Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileReferenceRequestStatus.STORE_ERROR, null,
-                                                                           owners);
+        Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileRequestStatus.ERROR, null, owners);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
         String tenant = runtimeTenantResolver.getTenant();
@@ -361,8 +360,7 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
         this.updatePluginConfForError("unknown.*");
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
         Set<String> storages = Sets.newLinkedHashSet(ONLINE_CONF_LABEL);
-        Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileReferenceRequestStatus.STORE_ERROR,
-                                                                           storages, null);
+        Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileRequestStatus.ERROR, storages, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
         String tenant = runtimeTenantResolver.getTenant();
@@ -416,7 +414,7 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
                 132L, MediaType.APPLICATION_OCTET_STREAM);
         fileMetaInfo.setTypes(types);
         FileLocation origin = new FileLocation(storage, "anywhere://in/this/directory/file.test");
-        fileRefService.createFileReference(owners, fileMetaInfo, origin, origin);
+        fileRefService.addFileReference(owners, fileMetaInfo, origin, origin);
         Optional<FileReference> oFileRef = fileRefService.search(origin.getStorage(), fileMetaInfo.getChecksum());
         Optional<FileReferenceRequest> oFileRefReq = fileRefRequestService.search(origin.getStorage(),
                                                                                   fileMetaInfo.getChecksum());
@@ -435,7 +433,7 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
         FileLocation origin = new FileLocation("anywhere", "anywhere://in/this/directory/error.file.test");
         FileLocation destination = new FileLocation(storageDestination, "/in/this/directory");
         // Run file reference creation.
-        fileRefService.createFileReference(owners, fileMetaInfo, origin, destination);
+        fileRefService.addFileReference(owners, fileMetaInfo, origin, destination);
         // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
         Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
         Optional<FileReferenceRequest> oFileRefReq = fileRefRequestService.search(destination.getStorage(),
@@ -443,10 +441,10 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
         Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
         Assert.assertTrue("File reference request should exists", oFileRefReq.isPresent());
         if (storageDestination.equals(ONLINE_CONF_LABEL)) {
-            Assert.assertEquals("File reference request should be in TO_STORE status",
-                                FileReferenceRequestStatus.TO_STORE, oFileRefReq.get().getStatus());
+            Assert.assertEquals("File reference request should be in TO_STORE status", FileRequestStatus.TODO,
+                                oFileRefReq.get().getStatus());
             // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
-            Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileReferenceRequestStatus.TO_STORE,
+            Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileRequestStatus.TODO,
                                                                                Sets.newHashSet(), Sets.newHashSet());
             Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
             // Run Job and wait for end
@@ -458,11 +456,11 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
             oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
             Assert.assertFalse("File reference should have been created.", oFileRef.isPresent());
             Assert.assertTrue("File reference request should exists", oFileRefReq.isPresent());
-            Assert.assertEquals("File reference request should be STORE_ERROR status",
-                                FileReferenceRequestStatus.STORE_ERROR, oFileRefReq.get().getStatus());
+            Assert.assertEquals("File reference request should be STORE_ERROR status", FileRequestStatus.ERROR,
+                                oFileRefReq.get().getStatus());
         } else {
-            Assert.assertEquals("File reference request should be in STORE_ERROR status",
-                                FileReferenceRequestStatus.STORE_ERROR, oFileRefReq.get().getStatus());
+            Assert.assertEquals("File reference request should be in STORE_ERROR status", FileRequestStatus.ERROR,
+                                oFileRefReq.get().getStatus());
         }
 
         return oFileRefReq.get();

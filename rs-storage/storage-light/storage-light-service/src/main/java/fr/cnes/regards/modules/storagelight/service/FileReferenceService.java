@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
@@ -79,7 +80,7 @@ public class FileReferenceService {
      * @param fileRefRequest file to reference
      * @return FileReference if already exists or does not need a new storage job
      */
-    public Optional<FileReference> createFileReference(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
+    public Optional<FileReference> addFileReference(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
             FileLocation origin, FileLocation destination) {
 
         Assert.notNull(owners, "File must have a owner to be referenced");
@@ -115,6 +116,44 @@ public class FileReferenceService {
         return oFileRef;
     }
 
+    public void deleteFileReference(FileReference fileRef) {
+        Assert.notNull(fileRef, "File reference to delete cannot be null");
+        Assert.notNull(fileRef.getId(), "File reference identifier to delete cannot be null");
+        fileRefRepo.deleteById(fileRef.getId());
+    }
+
+    public void deleteFileReference(String checksum, String storage, String owner) throws EntityNotFoundException {
+
+        Assert.notNull(checksum, "Checksum is mandatory to delete a file reference");
+        Assert.notNull(storage, "Storage is mandatory to delete a file reference");
+        Assert.notNull(owner, "Owner is mandatory to delete a file reference");
+
+        Optional<FileReference> oFileRef = fileRefRepo.findByMetaInfoChecksumAndLocationStorage(checksum, storage);
+        if (oFileRef.isPresent()) {
+            FileReference fileReference = oFileRef.get();
+            if (!fileReference.getOwners().contains(owner)) {
+                LOGGER.info("File <{} (checksum: {})> at {} does not to belongs to %s",
+                            fileReference.getMetaInfo().getFileName(), fileReference.getMetaInfo().getChecksum(),
+                            fileReference.getLocation().toString(), owner);
+                return;
+            } else {
+                fileReference.getOwners().remove(owner);
+                LOGGER.info("File reference <{} (checksum: {})> at {} does not belongs to {} anymore",
+                            fileReference.getMetaInfo().getFileName(), fileReference.getMetaInfo().getChecksum(),
+                            fileReference.getLocation().toString(), owner);
+                fileRefRepo.save(fileReference);
+            }
+
+            if (fileReference.getOwners().isEmpty()) {
+                // Request for file deletion
+
+            }
+        } else {
+            throw new EntityNotFoundException(String
+                    .format("File reference with ckesum: <%s> and storage: <%s> doest not exists", checksum, storage));
+        }
+    }
+
     private FileReference createNewFileReference(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
             FileLocation location) {
         FileReference fileRef = new FileReference(owners, fileMetaInfo, location);
@@ -135,6 +174,11 @@ public class FileReferenceService {
     private FileReference handleFileReferenceAlreadyExists(FileReference fileReference,
             FileReferenceMetaInfo newMetaInfo, Collection<String> owners) {
         boolean newOwners = false;
+
+        // Does file reference is associated to a deletion request not handled yet ?
+        // If it does, remove deletion request
+        // TODO !!
+
         for (String owner : owners) {
             if (!fileReference.getOwners().contains(owner)) {
                 newOwners = true;

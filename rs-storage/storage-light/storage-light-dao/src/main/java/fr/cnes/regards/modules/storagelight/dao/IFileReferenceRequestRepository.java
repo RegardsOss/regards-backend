@@ -12,7 +12,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import fr.cnes.regards.modules.storagelight.domain.FileReferenceRequestStatus;
+import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
 
@@ -29,7 +29,7 @@ public interface IFileReferenceRequestRepository
     Optional<FileReferenceRequest> findByMetaInfoChecksumAndDestinationStorage(String checksum, String storage);
 
     @Query("select destination.storage from FileReferenceRequest where status = :status")
-    Set<String> findDestinationStoragesByStatus(@Param("status") FileReferenceRequestStatus status);
+    Set<String> findDestinationStoragesByStatus(@Param("status") FileRequestStatus status);
 
     Page<FileReferenceRequest> findAllByDestinationStorage(String storage, Pageable page);
 
@@ -38,6 +38,6 @@ public interface IFileReferenceRequestRepository
 
     @Modifying
     @Query("update FileReferenceRequest frr set frr.status = :status where frr.id = :id")
-    int updateStatus(@Param("status") FileReferenceRequestStatus status, @Param("id") Long id);
+    int updateStatus(@Param("status") FileRequestStatus status, @Param("id") Long id);
 
 }

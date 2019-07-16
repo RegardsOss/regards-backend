@@ -32,7 +32,7 @@ import com.google.common.collect.Sets;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
-import fr.cnes.regards.modules.storagelight.domain.FileReferenceRequestStatus;
+import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageLocation;
 
@@ -66,6 +66,9 @@ public class Scheduler {
     private FileReferenceRequestService fileRefRequestService;
 
     @Autowired
+    private FileDeletionRequestService fileDeletionRequestService;
+
+    @Autowired
     private StorageLocationService storageLocationService;
 
     @Autowired
@@ -82,8 +85,19 @@ public class Scheduler {
         for (String tenant : tenantResolver.getAllActiveTenants()) {
             try {
                 runtimeTenantResolver.forceTenant(tenant);
-                fileRefRequestService.scheduleStoreJobs(FileReferenceRequestStatus.TO_STORE, Sets.newHashSet(),
-                                                        Sets.newHashSet());
+                fileRefRequestService.scheduleStoreJobs(FileRequestStatus.TODO, Sets.newHashSet(), Sets.newHashSet());
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
+        }
+    }
+
+    @Scheduled(fixedDelayString = "${regards.storage.store.delay:5000}", initialDelay = 10000)
+    public void handleFileDeletionRequests() throws ModuleException {
+        for (String tenant : tenantResolver.getAllActiveTenants()) {
+            try {
+                runtimeTenantResolver.forceTenant(tenant);
+                fileDeletionRequestService.scheduleDeletionJobs(FileRequestStatus.TODO, Sets.newHashSet());
             } finally {
                 runtimeTenantResolver.clearTenant();
             }

@@ -43,7 +43,7 @@ import org.springframework.util.Assert;
 
 import com.google.common.collect.Lists;
 
-import fr.cnes.regards.modules.storagelight.domain.FileReferenceRequestStatus;
+import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 
 /**
  * @author Sébastien Binda
@@ -84,9 +84,9 @@ public class FileReferenceRequest {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private FileReferenceRequestStatus status = FileReferenceRequestStatus.TO_STORE;
+    private FileRequestStatus status = FileRequestStatus.TODO;
 
-    @Column(length = 512)
+    @Column(name = "error_cause", length = 512)
     private String errorCause;
 
     public FileReferenceRequest() {
@@ -190,14 +190,14 @@ public class FileReferenceRequest {
     /**
      * @return the state
      */
-    public FileReferenceRequestStatus getStatus() {
+    public FileRequestStatus getStatus() {
         return status;
     }
 
     /**
      * @param state the state to set
      */
-    public void setStatus(FileReferenceRequestStatus status) {
+    public void setStatus(FileRequestStatus status) {
         this.status = status;
     }
 

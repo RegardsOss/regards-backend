@@ -37,14 +37,15 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInit;
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginParameter;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.storagelight.domain.database.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
-import fr.cnes.regards.modules.storagelight.domain.plugin.DefaultWorkingSubset;
+import fr.cnes.regards.modules.storagelight.domain.plugin.FileDeletionWorkingSubset;
+import fr.cnes.regards.modules.storagelight.domain.plugin.FileReferenceWorkingSubset;
+import fr.cnes.regards.modules.storagelight.domain.plugin.IDeletionProgressManager;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IOnlineDataStorage;
-import fr.cnes.regards.modules.storagelight.domain.plugin.IProgressManager;
-import fr.cnes.regards.modules.storagelight.domain.plugin.IWorkingSubset;
+import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageProgressManager;
 import fr.cnes.regards.modules.storagelight.domain.plugin.PluginConfUpdatable;
-import fr.cnes.regards.modules.storagelight.domain.plugin.StorageAccessModeEnum;
 
 /**
  * @author Binda sébastien
@@ -53,7 +54,7 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.StorageAccessModeEnum;
 @Plugin(author = "REGARDS Team", description = "Plugin handling the storage on local file system",
         id = "SimpleOnlineTest", version = "1.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
-public class SimpleOnlineDataStorage implements IOnlineDataStorage<DefaultWorkingSubset> {
+public class SimpleOnlineDataStorage implements IOnlineDataStorage {
 
     /**
      * Plugin parameter name of the storage base location as a string
@@ -91,15 +92,15 @@ public class SimpleOnlineDataStorage implements IOnlineDataStorage<DefaultWorkin
     }
 
     @Override
-    public Collection<IWorkingSubset> prepare(Collection<FileReferenceRequest> FileReferenceRequest,
-            StorageAccessModeEnum mode) {
-        Collection<IWorkingSubset> workingSubSets = Lists.newArrayList();
-        workingSubSets.add(new DefaultWorkingSubset(Sets.newHashSet(FileReferenceRequest)));
+    public Collection<FileReferenceWorkingSubset> prepareForStorage(
+            Collection<FileReferenceRequest> FileReferenceRequest) {
+        Collection<FileReferenceWorkingSubset> workingSubSets = Lists.newArrayList();
+        workingSubSets.add(new FileReferenceWorkingSubset(Sets.newHashSet(FileReferenceRequest)));
         return workingSubSets;
     }
 
     @Override
-    public void store(DefaultWorkingSubset workingSubset, IProgressManager progressManager) {
+    public void store(FileReferenceWorkingSubset workingSubset, IStorageProgressManager progressManager) {
         // because we use a parallel stream, we need to get the tenant now and force it before each doStore call
         String tenant = runtimeTenantResolver.getTenant();
         workingSubset.getFileReferenceRequests().stream().forEach(data -> {
@@ -108,22 +109,29 @@ public class SimpleOnlineDataStorage implements IOnlineDataStorage<DefaultWorkin
         });
     }
 
-    private void doStore(IProgressManager progressManager, FileReferenceRequest fileRefRequest) {
+    private void doStore(IStorageProgressManager progressManager, FileReferenceRequest fileRefRequest) {
         String fileName = fileRefRequest.getMetaInfo().getFileName();
         if (Pattern.matches(errorFilePattern, fileName)) {
             progressManager.storageFailed(fileRefRequest, "Specific error generated for tests");
         } else {
-            fileRefRequest
-                    .getDestination().setUrl(String.format("%s%s", baseStorageLocation.toString(),
-                                                           Paths.get("/", fileRefRequest.getDestination().getUrl(),
-                                                                     fileRefRequest.getMetaInfo().getChecksum())
-                                                                   .toString()));
-            progressManager.storageSucceed(fileRefRequest, fileRefRequest.getMetaInfo().getFileSize());
+            String storedUrl = String.format("%s%s", baseStorageLocation.toString(), Paths
+                    .get("/", fileRefRequest.getDestination().getUrl(), fileRefRequest.getMetaInfo().getChecksum())
+                    .toString());
+            progressManager.storageSucceed(fileRefRequest, storedUrl, fileRefRequest.getMetaInfo().getFileSize());
         }
     }
 
     @Override
-    public void delete(DefaultWorkingSubset workingSubset, IProgressManager progressManager) {
+    public Collection<FileDeletionWorkingSubset> prepareForDeletion(
+            Collection<FileDeletionRequest> fileDeletionRequests) {
+        Collection<FileDeletionWorkingSubset> workingSubSets = Lists.newArrayList();
+        workingSubSets.add(new FileDeletionWorkingSubset(Sets.newHashSet(fileDeletionRequests)));
+        return workingSubSets;
+    }
+
+    @Override
+    public void delete(FileDeletionWorkingSubset workingSubset, IDeletionProgressManager progressManager) {
+        workingSubset.getFileDeletionRequests().forEach(progressManager::deletionSucceed);
     }
 
     @Override
@@ -145,4 +153,5 @@ public class SimpleOnlineDataStorage implements IOnlineDataStorage<DefaultWorkin
             return PluginConfUpdatable.allowUpdate();
         }
     }
+
 }

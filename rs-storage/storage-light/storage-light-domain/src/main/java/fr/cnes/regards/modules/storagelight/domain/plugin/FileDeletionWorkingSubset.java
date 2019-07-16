@@ -18,26 +18,33 @@
  */
 package fr.cnes.regards.modules.storagelight.domain.plugin;
 
+import java.util.Collection;
+import java.util.Set;
+
+import com.google.common.collect.Sets;
+
+import fr.cnes.regards.modules.storagelight.domain.database.FileDeletionRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
+
 /**
- * Access mode to a IDataStorage plugin
+ * Default implementation for simple file workingsubsets.
  *
  * @author Sébastien Binda
  */
-public enum StorageAccessModeEnum {
+public class FileDeletionWorkingSubset {
 
     /**
-     * Data storage access to store new files.
+     * Raw {@link FileReferenceRequest}s associate
      */
-    STORE_MODE,
+    private final Set<FileDeletionRequest> fileDeletionRequests = Sets.newHashSet();
 
-    /**
-     * Data storage access to retrieve files.
-     */
-    RETRIEVE_MODE,
+    public FileDeletionWorkingSubset(Collection<FileDeletionRequest> dataFiles) {
+        super();
+        this.fileDeletionRequests.addAll(dataFiles);
+    }
 
-    /**
-     * Data storage access to delete files
-     */
-    DELETION_MODE
+    public Set<FileDeletionRequest> getFileDeletionRequests() {
+        return fileDeletionRequests;
+    }
 
 }

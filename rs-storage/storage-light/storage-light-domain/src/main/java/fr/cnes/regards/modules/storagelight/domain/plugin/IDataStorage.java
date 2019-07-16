@@ -22,6 +22,7 @@ import java.util.Collection;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.modules.storagelight.domain.database.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
 
 /**
@@ -30,14 +31,15 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest
  * @author Sébastien Binda
  */
 @PluginInterface(description = "Contract to respect by any data storage plugin")
-public interface IDataStorage<T extends IWorkingSubset> {
+public interface IDataStorage {
 
-    Collection<IWorkingSubset> prepare(Collection<FileReferenceRequest> fileReferenceRequest,
-            StorageAccessModeEnum mode);
+    Collection<FileReferenceWorkingSubset> prepareForStorage(Collection<FileReferenceRequest> fileReferenceRequests);
 
-    void delete(T workingSet, IProgressManager progressManager);
+    Collection<FileDeletionWorkingSubset> prepareForDeletion(Collection<FileDeletionRequest> fileDeletionRequests);
 
-    void store(T workingSet, IProgressManager progressManager);
+    void delete(FileDeletionWorkingSubset workingSet, IDeletionProgressManager progressManager);
+
+    void store(FileReferenceWorkingSubset workingSet, IStorageProgressManager progressManager);
 
     /**
      * Method called before each configuration update of this plugin to know if the modification is allowed or not.

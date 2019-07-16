@@ -30,19 +30,18 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest
  *
  * @author Sébastien Binda
  */
-public class DefaultWorkingSubset implements IWorkingSubset {
+public class FileReferenceWorkingSubset {
 
     /**
      * Raw {@link FileReferenceRequest}s associate
      */
     private final Set<FileReferenceRequest> fileRefenreceRequests = Sets.newHashSet();
 
-    public DefaultWorkingSubset(Collection<FileReferenceRequest> dataFiles) {
+    public FileReferenceWorkingSubset(Collection<FileReferenceRequest> dataFiles) {
         super();
         this.fileRefenreceRequests.addAll(dataFiles);
     }
 
-    @Override
     public Set<FileReferenceRequest> getFileReferenceRequests() {
         return fileRefenreceRequests;
     }
