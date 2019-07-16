@@ -44,7 +44,12 @@ public enum ProductState {
     /**
      * Too many mandatory or optional have been acquired
      */
-    INVALID;
+    INVALID,
+    /**
+     * Product was already finished or completed when we acquired a new file.
+     * This state is temporary and used to avoid generating multiple version of the same SIP
+     */
+    UPDATED;
 
     @Override
     public String toString() {
