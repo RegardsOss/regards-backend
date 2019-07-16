@@ -39,7 +39,6 @@ import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.modules.dam.client.models.IAttributeModelClient;
 import fr.cnes.regards.modules.emails.client.IEmailClient;
-import fr.cnes.regards.modules.notification.client.INotificationClient;
 import fr.cnes.regards.modules.project.client.rest.IProjectsClient;
 import fr.cnes.regards.modules.search.client.IComplexSearchClient;
 import fr.cnes.regards.modules.search.client.ILegacySearchEngineClient;
@@ -95,8 +94,18 @@ public class ServiceConfiguration {
             }
             return null;
         };
-        return (IAipClient) Proxy.newProxyInstance(IAipClient.class.getClassLoader(),
-                                                   new Class<?>[] { IAipClient.class }, handler);
+        return (IAipClient) Proxy
+                .newProxyInstance(IAipClient.class.getClassLoader(), new Class<?>[] { IAipClient.class }, handler);
+    }
+
+    @Bean
+    public IAuthenticationResolver mockAuthResolver() {
+        return Mockito.mock(IAuthenticationResolver.class);
+    }
+
+    @Bean
+    public IEmailClient mockEmailClient() {
+        return Mockito.mock(IEmailClient.class);
     }
 
     private class AipClientProxy {
@@ -116,8 +125,9 @@ public class ServiceConfiguration {
                     publisher.publish(new DataFileEvent(DataFileEventState.ERROR, checksum));
                 }
             }
-            return ResponseEntity.ok(new AvailabilityResponse(Collections.emptySet(), Collections.emptySet(),
-                    Collections.emptySet()));
+            return ResponseEntity.ok(new AvailabilityResponse(Collections.emptySet(),
+                                                              Collections.emptySet(),
+                                                              Collections.emptySet()));
         }
 
         @SuppressWarnings("unused")
@@ -134,18 +144,4 @@ public class ServiceConfiguration {
 
     }
 
-    @Bean
-    public IAuthenticationResolver mockAuthResolver() {
-        return Mockito.mock(IAuthenticationResolver.class);
-    }
-
-    @Bean
-    public IEmailClient mockEmailClient() {
-        return Mockito.mock(IEmailClient.class);
-    }
-
-    @Bean
-    public INotificationClient notificationClient() {
-        return Mockito.mock(INotificationClient.class);
-    }
 }
