@@ -5,7 +5,7 @@
 
 	<groupId>fr.cnes.regards.microservices</groupId>
 	<artifactId>microservice-archetype</artifactId>
-	<version>0.4.0</version>
+	<version>0.4.1</version>
 	<packaging>maven-archetype</packaging>
 
 	<name>microservice-archetype</name>
@@ -13,7 +13,7 @@
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-parent</artifactId>
-        <version>0.4.0</version>
+        <version>0.4.1</version>
         <relativePath/>
     </parent>
 

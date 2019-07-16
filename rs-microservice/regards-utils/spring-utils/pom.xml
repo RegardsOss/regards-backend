@@ -5,14 +5,14 @@
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-parent</artifactId>
-        <version>0.4.0</version>
+        <version>0.4.1</version>
         <relativePath/>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fr.cnes.regards.framework.utils</groupId>
     <artifactId>spring-utils</artifactId>
-    <version>0.4.0</version>
+    <version>0.4.1</version>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
     <inceptionYear>2016</inceptionYear>

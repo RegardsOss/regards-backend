@@ -19,7 +19,7 @@
     <parent>
         <groupId>fr.cnes.regards</groupId>
         <artifactId>regards-parent</artifactId>
-        <version>0.4.0</version>
+        <version>0.4.1</version>
         <relativePath/>
     </parent>
 
@@ -111,5 +111,5 @@
         </pluginManagement>
     </build>
     <groupId>fr.cnes.regards.microservices</groupId>
-    <version>0.4.0</version>
+    <version>0.4.1</version>
 </project>

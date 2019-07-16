@@ -13,13 +13,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>oais-docs</artifactId>
-    <version>0.4.0</version>
+    <version>0.4.1</version>
     <description>OAIS docs</description>
 
     <parent>
         <groupId>fr.cnes.regards.framework</groupId>
         <artifactId>regards-starters</artifactId>
-        <version>0.4.0</version>
+        <version>0.4.1</version>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>

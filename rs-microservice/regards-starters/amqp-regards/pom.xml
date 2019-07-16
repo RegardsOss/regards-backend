@@ -18,7 +18,7 @@
     <parent>
         <groupId>fr.cnes.regards.framework</groupId>
         <artifactId>regards-starters</artifactId>
-        <version>0.4.0</version>
+        <version>0.4.1</version>
     </parent>
 
     <url>https://github.com/RegardsOss/RegardsOss.github.io</url>
@@ -84,7 +84,7 @@
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
             <artifactId>notification-regards</artifactId>
-            <version>0.4.0</version> <!-- FIXME -->
+            <version>0.4.1</version> <!-- FIXME -->
         </dependency>
         <dependency>
             <groupId>fr.cnes.regards.framework</groupId>
