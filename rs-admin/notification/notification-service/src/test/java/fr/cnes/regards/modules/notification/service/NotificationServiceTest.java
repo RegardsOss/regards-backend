@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import fr.cnes.regards.modules.notification.domain.INotificationWithoutMessage;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -54,6 +55,7 @@ import fr.cnes.regards.modules.notification.dao.INotificationRepository;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationMode;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
+import org.springframework.util.MimeType;
 
 /**
  * Test class for {@link NotificationService}.
@@ -239,8 +241,53 @@ public class NotificationServiceTest {
     @Purpose("Check that the system allows to retrieve all notifications.")
     public void retrieveNotifications() throws EntityNotFoundException {
         // Define expected
-        List<Notification> expected = new ArrayList<>();
-        expected.add(new Notification());
+        List<INotificationWithoutMessage> expected = new ArrayList<>();
+        expected.add(new INotificationWithoutMessage() {
+            @Override
+            public OffsetDateTime getDate() {
+                return null;
+            }
+
+            @Override
+            public Long getId() {
+                return null;
+            }
+
+            @Override
+            public Set<String> getRoleRecipients() {
+                return null;
+            }
+
+            @Override
+            public Set<String> getProjectUserRecipients() {
+                return null;
+            }
+
+            @Override
+            public String getSender() {
+                return null;
+            }
+
+            @Override
+            public NotificationStatus getStatus() {
+                return null;
+            }
+
+            @Override
+            public NotificationLevel getLevel() {
+                return null;
+            }
+
+            @Override
+            public String getTitle() {
+                return null;
+            }
+
+            @Override
+            public MimeType getMimeType() {
+                return null;
+            }
+        });
 
         // Mock methods
         Mockito.when(authenticationResolver.getUser()).thenReturn(RECIPIENT_0);
@@ -250,7 +297,7 @@ public class NotificationServiceTest {
                 .thenReturn(new PageImpl<>(expected));
 
         // Call tested method
-        Page<Notification> actual = notificationService.retrieveNotifications(PageRequest.of(0, 100));
+        Page<INotificationWithoutMessage> actual = notificationService.retrieveNotifications(PageRequest.of(0, 100));
 
         // Check that expected is equal to actual
         Assert.assertThat(actual, CoreMatchers.is(CoreMatchers.equalTo(new PageImpl<>(expected))));

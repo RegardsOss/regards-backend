@@ -21,6 +21,7 @@ package fr.cnes.regards.modules.notification.service;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 
+import fr.cnes.regards.modules.notification.domain.INotificationWithoutMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,8 +99,8 @@ public class InstanceNotificationService implements IInstanceNotificationService
     }
 
     @Override
-    public Page<Notification> retrieveNotifications(Pageable page) {
-        return notificationRepository.findAll(page);
+    public Page<INotificationWithoutMessage> retrieveNotifications(Pageable page) {
+        return notificationRepository.findAllNotificationsWithoutMessage(page);
     }
 
     @Override
@@ -143,10 +144,10 @@ public class InstanceNotificationService implements IInstanceNotificationService
     }
 
     @Override
-    public Page<Notification> retrieveNotifications(Pageable page, NotificationStatus state)
+    public Page<INotificationWithoutMessage> retrieveNotifications(Pageable page, NotificationStatus state)
             throws EntityNotFoundException {
         if (state != null) {
-            return notificationRepository.findByStatus(state, page);
+            return notificationRepository.findAllNotificationsWithoutMessageByStatus(state, page);
         } else {
             return retrieveNotifications(page);
         }
