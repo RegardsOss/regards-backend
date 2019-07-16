@@ -1766,11 +1766,15 @@ public class AIPService implements IAIPService {
                                 .filter(pds -> pds.getDataStorageType().equals(DataStorageType.ONLINE) && pds
                                         .getDataStorageConfiguration().isActive()).sorted().findFirst();
                         if (onlinePrioritizedDataStorageOpt.isPresent()) {
-                            @SuppressWarnings("rawtypes") InputStream dataFileIS = ((IOnlineDataStorage) pluginService
+                            InputStream dataFileIS;
+                            try {
+                                dataFileIS = ((IOnlineDataStorage) pluginService
                                     .getPlugin(onlinePrioritizedDataStorageOpt.get().getId())).retrieve(dataFile);
-                            return new DownloadableFile(dataFileIS,
-                                                        dataFile.getFileSize(),
-                                                        dataFile.getName(),
+                            } catch (NotAvailablePluginConfigurationException e) {
+                                LOGGER.error(e.getMessage(), e);
+                                throw new EntityNotFoundException(e.getMessage());
+                            }
+                            return new DownloadableFile(dataFileIS, dataFile.getFileSize(), dataFile.getName(),
                                                         dataFile.getMimeType());
                         } else {
                             // the file is neither in cache nor ONLINE but it exists, lets return null

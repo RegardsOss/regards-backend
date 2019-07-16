@@ -21,7 +21,6 @@ import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
 
 import com.google.common.collect.Sets;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.microservice.manager.MaintenanceManager;
@@ -162,14 +161,15 @@ public class DataStorageService implements IDataStorageService {
         List<PluginConfiguration> dataStorageConfigurations = pluginService
                 .getPluginConfigurationsByType(IDataStorage.class);
         // lets take only the activated ones
-        Set<PluginConfiguration> activeDataStorageConfs = dataStorageConfigurations.stream().filter(pc -> pc.isActive())
-                .collect(Collectors.toSet());
+        Set<PluginConfiguration> activeDataStorageConfs = dataStorageConfigurations.stream()
+                .filter(PluginConfiguration::isActive).collect(Collectors.toSet());
         // for each active conf, lets get their DataStorageInfo
         // lets ask the data base to calculate the used space per data storage
         Collection<MonitoringAggregation> monitoringAggregations = dataFileDao.getMonitoringAggregation();
         // now lets transform it into Map<Long, Long>, it is easier to use
-        Map<Long, Long> monitoringAggregationMap = monitoringAggregations.stream().collect(Collectors
-                .toMap(MonitoringAggregation::getDataStorageUsedId, MonitoringAggregation::getUsedSize));
+        Map<Long, Long> monitoringAggregationMap = monitoringAggregations.stream().collect(Collectors.toMap(
+                MonitoringAggregation::getDataStorageUsedId,
+                MonitoringAggregation::getUsedSize));
         for (PluginConfiguration activeDataStorageConf : activeDataStorageConfs) {
             // lets initialize the monitoring information for this data storage configuration by getting plugin
             // informations
@@ -177,17 +177,19 @@ public class DataStorageService implements IDataStorageService {
             PluginMetaData activeDataStorageMeta = pluginService
                     .getPluginMetaDataById(activeDataStorageConf.getPluginId());
             PluginStorageInfo monitoringInfo = new PluginStorageInfo(activeDataStorageConfId,
-                    activeDataStorageMeta.getDescription(), activeDataStorageConf.getLabel());
+                                                                     activeDataStorageMeta.getDescription(),
+                                                                     activeDataStorageConf.getLabel());
             // now lets get the data storage monitoring information from the plugin
-            @SuppressWarnings("rawtypes")
-            Long dataStorageTotalSpace = ((IDataStorage) pluginService.getPlugin(activeDataStorageConfId))
-                    .getTotalSpace();
-            DataStorageInfo dataStorageInfo;
-            if (monitoringAggregationMap.containsKey(activeDataStorageConfId)) {
-                dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(), dataStorageTotalSpace,
-                        monitoringAggregationMap.get(activeDataStorageConfId));
-            } else {
-                dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(), dataStorageTotalSpace, 0);
+            try {
+                @SuppressWarnings("rawtypes") Long dataStorageTotalSpace = ((IDataStorage) pluginService
+                        .getPlugin(activeDataStorageConfId)).getTotalSpace();
+                DataStorageInfo dataStorageInfo;
+                if (monitoringAggregationMap.containsKey(activeDataStorageConfId)) {
+                    dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(),
+                                                          dataStorageTotalSpace,
+                                                          monitoringAggregationMap.get(activeDataStorageConfId));
+                } else {
+                    dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(), dataStorageTotalSpace, 0);
 
                 }
                 monitoringInfo.setTotalSize(dataStorageInfo.getTotalSize());
@@ -216,8 +218,9 @@ public class DataStorageService implements IDataStorageService {
         Collection<MonitoringAggregation> monitoringAggregations = dataFileDao.getMonitoringAggregation();
         if (!monitoringAggregations.isEmpty()) {
             // now lets transform it into Map<Long, Long>, it is easier to use
-            Map<Long, Long> monitoringAggregationMap = monitoringAggregations.stream().collect(Collectors
-                    .toMap(MonitoringAggregation::getDataStorageUsedId, MonitoringAggregation::getUsedSize));
+            Map<Long, Long> monitoringAggregationMap = monitoringAggregations.stream().collect(Collectors.toMap(
+                    MonitoringAggregation::getDataStorageUsedId,
+                    MonitoringAggregation::getUsedSize));
             // lets instantiate those data storage and get their total space
             for (PluginConfiguration activeDataStorageConf : activeDataStorageConfs) {
                 // lets initialize the monitoring information for this data storage configuration by getting plugin
@@ -229,29 +232,39 @@ public class DataStorageService implements IDataStorageService {
                     Long dataStorageTotalSpace = activeDataStorage.getTotalSpace();
                     if (monitoringAggregationMap.containsKey(activeDataStorageConfId)) {
                         DataStorageInfo dataStorageInfo = new DataStorageInfo(activeDataStorageConfId.toString(),
-                                dataStorageTotalSpace, monitoringAggregationMap.get(activeDataStorageConfId));
+                                                                              dataStorageTotalSpace,
+                                                                              monitoringAggregationMap
+                                                                                      .get(activeDataStorageConfId));
                         Double ratio = dataStorageInfo.getRatio();
                         if (ratio >= criticalThreshold) {
                             String message = String
                                     .format("Data storage(configuration id: %s, configuration label: %s) has reach its "
-                                            + "disk usage critical threshold. %nActual occupation: %.2f%%, critical threshold: %s%%",
-                                            activeDataStorageConf.getId().toString(), activeDataStorageConf.getLabel(),
-                                            ratio, criticalThreshold);
+                                                    + "disk usage critical threshold. %nActual occupation: %.2f%%, critical threshold: %s%%",
+                                            activeDataStorageConf.getId().toString(),
+                                            activeDataStorageConf.getLabel(),
+                                            ratio,
+                                            criticalThreshold);
                             LOGGER.error(message);
                             notifyAdmins("Data storage " + activeDataStorageConf.getLabel() + " is almost full",
-                                         message, NotificationLevel.ERROR, MimeTypeUtils.TEXT_PLAIN);
+                                         message,
+                                         NotificationLevel.ERROR,
+                                         MimeTypeUtils.TEXT_PLAIN);
                             MaintenanceManager.setMaintenance(runtimeTenantResolver.getTenant());
                             return;
                         }
                         if (ratio >= threshold) {
                             String message = String
                                     .format("Data storage(configuration id: %s, configuration label: %s) has reach its "
-                                            + "disk usage threshold. %nActual occupation: %.2f%%, threshold: %s%%",
-                                            activeDataStorageConf.getId().toString(), activeDataStorageConf.getLabel(),
-                                            ratio, threshold);
+                                                    + "disk usage threshold. %nActual occupation: %.2f%%, threshold: %s%%",
+                                            activeDataStorageConf.getId().toString(),
+                                            activeDataStorageConf.getLabel(),
+                                            ratio,
+                                            threshold);
                             LOGGER.warn(message);
                             notifyAdmins("Data storage " + activeDataStorageConf.getLabel() + " is almost full",
-                                         message, NotificationLevel.WARNING, MimeTypeUtils.TEXT_PLAIN);
+                                         message,
+                                         NotificationLevel.WARNING,
+                                         MimeTypeUtils.TEXT_PLAIN);
                         }
                     }
 
@@ -283,8 +296,11 @@ public class DataStorageService implements IDataStorageService {
                     // It seems that application listener can be executed in same thread.
                     // So to avoid issues with restoration success logic, we need to publish the event AFTER.
                     // That way, data can be updated and restoration is still a success
-                    springPublisher.publishEvent(new RestorationSuccessApplicationEvent(data, restorationPath,
-                            event.getStorageConfId(), runtimeTenantResolver.getTenant()));
+                    springPublisher.publishEvent(new RestorationSuccessApplicationEvent(data,
+                                                                                        restorationPath,
+                                                                                        event.getStorageConfId(),
+                                                                                        runtimeTenantResolver
+                                                                                                .getTenant()));
                     break;
                 case FAILED:
                     cachedFileService.handleRestorationFailure(oData.get());
@@ -319,15 +335,17 @@ public class DataStorageService implements IDataStorageService {
                     }
                     // IDataStorage plugin used to delete the file is not able to delete the file right now.
                     // Notify administrator and set data file to STORED, because it is its real state for now.
-                    String message = String.format(
-                                                   "Error deleting file (id: %s, checksum: %s).%n"
+                    String message = String.format("Error deleting file (id: %s, checksum: %s).%n"
                                                            + "Data Storage configuration: %s(%s)%n" + "Error:%s",
-                                                   event.getDataFileId(), event.getChecksum(), event.getStorageConfId(),
-                                                   storageConf == null ? null
-                                                           : storageConf.getDataStorageConfiguration().getLabel(),
+                                                   event.getDataFileId(),
+                                                   event.getChecksum(),
+                                                   event.getStorageConfId(),
+                                                   storageConf == null ?
+                                                           null :
+                                                           storageConf.getDataStorageConfiguration().getLabel(),
                                                    event.getFailureCause());
-                    long nbMetadataFileStored = dataFileDao.countByAipAndTypeAndState(data.getAip(), DataType.AIP,
-                                                                                      DataFileState.STORED);
+                    long nbMetadataFileStored = dataFileDao
+                            .countByAipAndTypeAndState(data.getAip(), DataType.AIP, DataFileState.STORED);
                     // In case we were on a partial deletion, lets reset data storage removed by IAIPService#deleteFilesFromDataStorage(Collection, Long)
                     if (data.getState() == DataFileState.PARTIAL_DELETION_PENDING) {
                         data.getPrioritizedDataStorages().add(storageConf);
@@ -354,8 +372,9 @@ public class DataStorageService implements IDataStorageService {
                     break;
             }
         } else {
-            LOGGER.error("[DATAFILE DELETION EVENT] Invalid StorageDataFile deletion event. StorageDataFile does not exists in db for id {}",
-                         event.getDataFileId());
+            LOGGER.error(
+                    "[DATAFILE DELETION EVENT] Invalid StorageDataFile deletion event. StorageDataFile does not exists in db for id {}",
+                    event.getDataFileId());
         }
     }
 
@@ -369,8 +388,8 @@ public class DataStorageService implements IDataStorageService {
             AIP associatedAIP = optionalAssociatedAIP.get();
             // 1. Remove deleted file location from AIP.
             removeDeletedUrlFromDataFile(dataFileDeleted, deletedUrl, associatedAIP, dataStorageConfId);
-            if (DataType.AIP.equals(dataFileDeleted.getDataType())
-                    && !associatedAIP.getState().equals(AIPState.DELETED)) {
+            if (DataType.AIP.equals(dataFileDeleted.getDataType()) && !associatedAIP.getState()
+                    .equals(AIPState.DELETED)) {
                 // Do not delete the dataFileDeleted from db. At this time in db the file is the new one that has
                 // been stored previously to replace the deleted one. This is a special case for AIP metadata file
                 // because, at any time we want to ensure that there is only one StorageDataFile of AIP type for a given AIP.
@@ -381,7 +400,9 @@ public class DataStorageService implements IDataStorageService {
             }
         } else {
             LOGGER.warn("Deleted file checksum {}, does not match StorageDataFile {} checksum {}",
-                        checksumOfDeletedFile, dataFileDeleted.getName(), dataFileDeleted.getChecksum());
+                        checksumOfDeletedFile,
+                        dataFileDeleted.getName(),
+                        dataFileDeleted.getChecksum());
         }
     }
 
@@ -399,7 +420,8 @@ public class DataStorageService implements IDataStorageService {
         // URL remove event.
         if ((urlToRemove != null) && dataFileDeleted.getUrls().contains(urlToRemove)) {
             LOGGER.info("Partial deletion of StorageDataFile {}. One of the location has been removed {}.",
-                        dataFileDeleted.getName(), urlToRemove);
+                        dataFileDeleted.getName(),
+                        urlToRemove);
             associatedAIP.getProperties().getContentInformations().stream()
                     .filter(ci -> !ci.getDataObject().isReference())
                     .filter(ci -> dataFileDeleted.getChecksum().equals(ci.getDataObject().getChecksum()))
@@ -416,10 +438,11 @@ public class DataStorageService implements IDataStorageService {
                 } catch (EntityOperationForbiddenException e) {
                     // in case it is deleted from 1 more data storage than expected it is not blocking as aip will be
                     // updated to take that into account.
-                    LOGGER.error(String
-                            .format("Data file %s has been successfuly deleted one more time than expected from IDataStorage"
-                                    + " plugin configuration (id: %s).", dataFileDeleted.getId(), dataStorageConfId),
-                                 e);
+                    LOGGER.error(String.format(
+                            "Data file %s has been successfuly deleted one more time than expected from IDataStorage"
+                                    + " plugin configuration (id: %s).",
+                            dataFileDeleted.getId(),
+                            dataStorageConfId), e);
                 }
                 // if there is no more partial deletion, lets set the state back to stored
                 if (dataFileDeleted.getNotYetDeletedBy() == 0) {
@@ -428,13 +451,14 @@ public class DataStorageService implements IDataStorageService {
                     // stored on other data storages reflects the partial deletion.
                     if (dataFileDao.countByAipAndByState(associatedAIP, DataFileState.PARTIAL_DELETION_PENDING) == 0) {
                         try {
-                            aipService.updateAip(associatedAIP.getId().toString(), associatedAIP,
+                            aipService.updateAip(associatedAIP.getId().toString(),
+                                                 associatedAIP,
                                                  "Deletion of files on specific data storages is done.");
                         } catch (EntityNotFoundException | EntityInconsistentIdentifierException e) {
                             Optional<String> oSipId = associatedAIP.getSipId();
                             String msg = String
                                     .format("AIP (ipId: %s, sipId: %s, providerId: %s, state: %s) could not be updated after "
-                                            + "partial deletion because it has been deleted somewhere else.",
+                                                    + "partial deletion because it has been deleted somewhere else.",
                                             associatedAIP.getId().toString(),
                                             oSipId.isPresent() ? oSipId.get() : "undefinied",
                                             associatedAIP.getProviderId());
@@ -446,7 +470,8 @@ public class DataStorageService implements IDataStorageService {
             }
             dataFileDao.save(dataFileDeleted);
         } else if (urlToRemove != null) {
-            LOGGER.warn("Removed URL {} is not associated to the StorageDataFile to delete {}", urlToRemove,
+            LOGGER.warn("Removed URL {} is not associated to the StorageDataFile to delete {}",
+                        urlToRemove,
                         dataFileDeleted.getName());
         }
 
@@ -481,8 +506,13 @@ public class DataStorageService implements IDataStorageService {
             StorageDataFile data = optionalData.get();
             switch (type) {
                 case SUCCESSFULL:
-                    handleStoreSuccess(data, event.getChecksum(), event.getHandledUrl(), event.getFileSize(),
-                                       event.getStorageConfId(), event.getWidth(), event.getHeight());
+                    handleStoreSuccess(data,
+                                       event.getChecksum(),
+                                       event.getHandledUrl(),
+                                       event.getFileSize(),
+                                       event.getStorageConfId(),
+                                       event.getWidth(),
+                                       event.getHeight());
                     break;
                 case FAILED:
                     handleStoreFailed(data, event.getFailureCause(), event.getStorageConfId());
@@ -504,8 +534,10 @@ public class DataStorageService implements IDataStorageService {
         try {
             prioritizedDataStorageUsed = prioritizedDataStorageService.retrieve(dataStoragePluginConfId);
         } catch (ModuleException e) {
-            LOGGER.error("You shouldn't have this issue here! This means the plugin used to storeAndCreate the dataFile "
-                    + "has just been removed from the application", e);
+            LOGGER.error(
+                    "You shouldn't have this issue here! This means the plugin used to storeAndCreate the dataFile "
+                            + "has just been removed from the application",
+                    e);
             return;
         }
 
@@ -515,32 +547,37 @@ public class DataStorageService implements IDataStorageService {
         try {
             storedDataFile.decreaseNotYetStoredBy();
         } catch (EntityOperationForbiddenException e) {
-            LOGGER.error(String
-                    .format("Data file %s has been successfuly stored one more time than expected into %s by IDataStorage plugin configuration %s.",
-                            storedDataFile.getId(), storedFileNewURL, dataStoragePluginConfId),
-                         e);
+            LOGGER.error(String.format(
+                    "Data file %s has been successfuly stored one more time than expected into %s by IDataStorage plugin configuration %s.",
+                    storedDataFile.getId(),
+                    storedFileNewURL,
+                    dataStoragePluginConfId), e);
         }
         storedDataFile.getUrls().add(storedFileNewURL);
         storedDataFile.setHeight(dataHeight);
         storedDataFile.setWidth(dataWidth);
-        LOGGER.debug("Datafile {} stored for pluginConfId:{} missing {} confs.", storedDataFile.getId(),
-                     dataStoragePluginConfId, storedDataFile.getNotYetStoredBy());
+        LOGGER.debug("Datafile {} stored for pluginConfId:{} missing {} confs.",
+                     storedDataFile.getId(),
+                     dataStoragePluginConfId,
+                     storedDataFile.getNotYetStoredBy());
         try {
             if (storedDataFile.getNotYetStoredBy().equals(0L)) {
-                LOGGER.debug("[STORE FILE SUCCESS] Datafile {} ({}) is fully stored.", storedDataFile.getName(),
+                LOGGER.debug("[STORE FILE SUCCESS] Datafile {} ({}) is fully stored.",
+                             storedDataFile.getName(),
                              storedDataFile.getChecksum());
                 storedDataFile.setState(DataFileState.STORED);
                 storedDataFile.emptyFailureCauses();
                 handleStorageDataFileFullyStored(storedDataFile);
             } else {
-                LOGGER.debug("[STORE FILE SUCCESS] Datafile {} ({}) is not fully stored. Missing {} locations to be stored.",
-                             storedDataFile.getName(), storedDataFile.getChecksum(),
-                             storedDataFile.getNotYetStoredBy());
+                LOGGER.debug(
+                        "[STORE FILE SUCCESS] Datafile {} ({}) is not fully stored. Missing {} locations to be stored.",
+                        storedDataFile.getName(),
+                        storedDataFile.getChecksum(),
+                        storedDataFile.getNotYetStoredBy());
             }
         } catch (EntityNotFoundException e) {
             LOGGER.warn(String.format("AIP %s does not exists anymore. Associated file {} stored will be deleted",
-                                      storedDataFile.getName()),
-                        e);
+                                      storedDataFile.getName()), e);
             storedDataFile.setState(DataFileState.TO_BE_DELETED);
         } finally {
             storedDataFile = dataFileDao.save(storedDataFile);
@@ -574,7 +611,8 @@ public class DataStorageService implements IDataStorageService {
                 dataFileDao.findByAipAndType(associatedAIP, DataType.AIP).forEach(df -> {
                     if (!df.getId().equals(storedDataFile.getId())) {
                         LOGGER.debug("[STORE FILE SUCCESS] Schedule old AIP metadata file {} to be deleted for AIP {}",
-                                     df.getName(), associatedAIP.getProviderId());
+                                     df.getName(),
+                                     associatedAIP.getProviderId());
                         df.setState(DataFileState.TO_BE_DELETED);
                         df.setForceDelete(true);
                         dataFileDao.save(df);
@@ -639,17 +677,19 @@ public class DataStorageService implements IDataStorageService {
                 storageConf = prioritizedDataStorageService.retrieve(storageConfId);
             } catch (fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException e) {
                 LOGGER.error(String.format("StorageDataFile %s could not be stored on non existing DataStorage %s",
-                                           storeFailFile.getId(), storageConfId),
-                             e);
+                                           storeFailFile.getId(),
+                                           storageConfId), e);
             }
-            String notifMsg = String.format(
-                                            "**FileName**: %s %n" + "**AIP provider id**: %s %n"
-                                                    + "**DataStorage label**: %s %n" + "**Error**: %s",
-                                            storeFailFile.getName(), storeFailFile.getAip().getProviderId(),
-                                            storageConf == null ? null
-                                                    : storageConf.getDataStorageConfiguration().getLabel(),
-                                            failureCause);
-            notifyAdmins("Storage of file " + storeFailFile.getName() + " failed", notifMsg, NotificationLevel.INFO,
+            String notifMsg = String
+                    .format("**FileName**: %s %n" + "**AIP provider id**: %s %n" + "**DataStorage label**: %s %n"
+                                    + "**Error**: %s",
+                            storeFailFile.getName(),
+                            storeFailFile.getAip().getProviderId(),
+                            storageConf == null ? null : storageConf.getDataStorageConfiguration().getLabel(),
+                            failureCause);
+            notifyAdmins("Storage of file " + storeFailFile.getName() + " failed",
+                         notifMsg,
+                         NotificationLevel.INFO,
                          MimeTypeUtils.TEXT_PLAIN);
             publisher.publish(new AIPEvent(associatedAIP));
         } else {
