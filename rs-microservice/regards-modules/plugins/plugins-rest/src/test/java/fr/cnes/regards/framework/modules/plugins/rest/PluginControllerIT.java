@@ -29,7 +29,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.jayway.jsonpath.JsonPath;
 
-import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.plugins.dao.IPluginConfigurationRepository;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
@@ -39,6 +38,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 
 /**
  * Test plugin controller
@@ -64,7 +64,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test
-    public void savePluginConfigurationTest() throws ModuleException {
+    public void savePluginConfigurationTest() throws ModuleException, NotAvailablePluginConfigurationException {
 
         // Bad version plugin creation attempt
         // Creation Inner plugin : must fail
@@ -159,7 +159,7 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
     }
 
     @Test(expected = CannotInstanciatePluginException.class)
-    public void instantiatePluginConfigurationTest() throws ModuleException {
+    public void instantiatePluginConfigurationTest() throws ModuleException, NotAvailablePluginConfigurationException {
         // Inner plugin creation with version 1.0.0
         ResultActions result = performDefaultPost(PluginController.PLUGINS_PLUGINID_CONFIGS,
                                                   readJsonContract("innerConf.json"),
@@ -195,11 +195,13 @@ public class PluginControllerIT extends AbstractRegardsTransactionalIT {
         Integer innerConfigId = JsonPath.read(resultAsString, "$.content.id");
 
         // Creation plugin with inner plugin as parameter
-        String json = readJsonContract("fakeConfInvalid.json").replace("\"id\":-1", "\"id\": " + innerConfigId.toString());
+        String json = readJsonContract("fakeConfInvalid.json").replace("\"id\":-1",
+                                                                       "\"id\": " + innerConfigId.toString());
         // Errors should be on each numerical value: pByte, pShort, pInteger, pLong
         // Error case on double and float is not tested because large float or double are interpreted as Infinity unless gson breaks.
-        performDefaultPost(PluginController.PLUGINS_PLUGINID_CONFIGS, json, customizer().expectStatus(
-                HttpStatus.UNPROCESSABLE_ENTITY).expectIsArray("$.messages").expectToHaveSize("$.messages", 4),
-                                    "Configuration should not be saved!", "ParamTestPlugin");
+        performDefaultPost(PluginController.PLUGINS_PLUGINID_CONFIGS, json,
+                           customizer().expectStatus(HttpStatus.UNPROCESSABLE_ENTITY).expectIsArray("$.messages")
+                                   .expectToHaveSize("$.messages", 4),
+                           "Configuration should not be saved!", "ParamTestPlugin");
     }
 }

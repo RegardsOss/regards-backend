@@ -34,6 +34,7 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.framework.utils.plugins.basic.PluginUtilsTestConstants;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 
 /**
  * @author Christophe Mertz
@@ -52,9 +53,10 @@ public final class PluginInterfaceBeanFactoryTest extends PluginUtilsTestConstan
 
     /**
      * Load a plugins
+     * @throws NotAvailablePluginConfigurationException
      */
     @Test
-    public void loadPlugin() {
+    public void loadPlugin() throws NotAvailablePluginConfigurationException {
         SampleBeanFactoryPlugin samplePlugin = null;
         Assert.assertNotNull(sampleBeanService);
 

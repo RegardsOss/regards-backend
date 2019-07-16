@@ -49,7 +49,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
-import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 
 /**
  * Unit testing of {@link PluginService}.
@@ -78,7 +78,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
         blowfishEncryptionService
                 .init(new CipherProperties(Paths.get("src", "test", "resources", "testKey"), "12345678"));
         pluginServiceMocked = new PluginService(pluginConfRepositoryMocked, Mockito.mock(IPublisher.class),
-                                                runtimeTenantResolver, blowfishEncryptionService);
+                runtimeTenantResolver, blowfishEncryptionService);
         PluginUtils.setup();
     }
 
@@ -178,7 +178,7 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     }
 
     @Test(expected = ModuleException.class)
-    public void getFirstPluginByTypeNullPluginConf() throws ModuleException {
+    public void getFirstPluginByTypeNullPluginConf() throws ModuleException, NotAvailablePluginConfigurationException {
         pluginServiceMocked.getFirstPluginByType(INotInterfacePlugin.class);
         Assert.fail();
     }
@@ -187,9 +187,11 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
      * Get the first plugin of a specific type with a dynamic parameter. Used the default value for the dynamic
      * parameter.
      * @throws ModuleException throw if an error occurs
+     * @throws NotAvailablePluginConfigurationException
      */
     @Test(expected = CannotInstanciatePluginException.class)
-    public void getAPluginWithBadVersionConfiguration() throws ModuleException {
+    public void getAPluginWithBadVersionConfiguration()
+            throws ModuleException, NotAvailablePluginConfigurationException {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
         aPluginConfiguration.setVersion(BLUE);
@@ -209,9 +211,11 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     /**
      * Error to get a plugin with a configuration that is not the most priority.
      * @throws ModuleException throw if an error occurs
+     * @throws NotAvailablePluginConfigurationException
      */
     @Test(expected = ModuleException.class)
-    public void getFirstPluginTheMostPrioritaryError() throws ModuleException {
+    public void getFirstPluginTheMostPrioritaryError()
+            throws ModuleException, NotAvailablePluginConfigurationException {
         final List<PluginConfiguration> pluginConfs = new ArrayList<>();
 
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithDynamicParameter();
@@ -238,11 +242,12 @@ public class PluginServiceFailedTest extends PluginServiceUtility {
     /**
      * Error to get a plugin with a configuration that is not active.
      * @throws ModuleException throw if an error occurs
+     * @throws NotAvailablePluginConfigurationException
      */
-    @Test(expected = PluginUtilsRuntimeException.class)
+    @Test(expected = NotAvailablePluginConfigurationException.class)
     @Requirement("REGARDS_DSL_CMP_PLG_100")
     @Purpose("Unable to load a plugin with a no active configuration")
-    public void getPluginNotActiveConfiguration() throws ModuleException {
+    public void getPluginNotActiveConfiguration() throws ModuleException, NotAvailablePluginConfigurationException {
 
         final PluginConfiguration aPluginConfiguration = getPluginConfigurationWithoutParameters();
         aPluginConfiguration.setIsActive(Boolean.FALSE);

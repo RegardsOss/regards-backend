@@ -31,6 +31,7 @@ import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 
 /**
  * Plugin management service.
@@ -67,8 +68,9 @@ public interface IPluginService {
 
     /**
      * @return whether the plugin configured by the given plugin configuration threw its id cna be instantiated or not
+     * @throws NotAvailablePluginConfigurationException
      */
-    boolean canInstantiate(Long pluginConfigurationId) throws ModuleException;
+    boolean canInstantiate(Long pluginConfigurationId) throws ModuleException, NotAvailablePluginConfigurationException;
 
     /**
      * Get a plugin instance for a given configuration. The pReturnInterfaceType attribute indicates the PluginInterface
@@ -78,9 +80,10 @@ public interface IPluginService {
      * @param dynamicPluginParameters list of dynamic {@link PluginParameter}
      * @return a plugin instance
      * @throws ModuleException thrown if we cannot find any PluginConfiguration corresponding to pId
+     * @throws NotAvailablePluginConfigurationException
      */
     <T> T getPlugin(Long pluginConfigurationId, final PluginParameter... dynamicPluginParameters)
-            throws ModuleException;
+            throws ModuleException, NotAvailablePluginConfigurationException;
 
     /**
      * Get a plugin instance for a {@link PluginConfiguration} and dynamic plugin parameters<br/>
@@ -92,11 +95,12 @@ public interface IPluginService {
      * @param dynamicPluginParameters list of dynamic {@link PluginParameter}
      * @return a plugin instance
      * @throws ModuleException thrown if we cannot find any PluginConfiguration corresponding to pId
+     * @throws NotAvailablePluginConfigurationException
      * @deprecated Use {@link IPluginService#getPlugin(Long, PluginParameter...)} instead.
      */
     @Deprecated
     default <T> T getPlugin(PluginConfiguration pluginConfiguration, final PluginParameter... dynamicPluginParameters)
-            throws ModuleException {
+            throws ModuleException, NotAvailablePluginConfigurationException {
         return getPlugin(pluginConfiguration.getId(), dynamicPluginParameters);
     }
 
@@ -108,9 +112,10 @@ public interface IPluginService {
      * @param pluginParameters an optional list of {@link PluginParameter}
      * @return a plugin instance
      * @throws ModuleException thrown if an error occurs
+     * @throws NotAvailablePluginConfigurationException
      */
     <T> T getFirstPluginByType(Class<?> interfacePluginType, final PluginParameter... pluginParameters)
-            throws ModuleException;
+            throws ModuleException, NotAvailablePluginConfigurationException;
 
     /**
      * Get a specific plugin implementation.

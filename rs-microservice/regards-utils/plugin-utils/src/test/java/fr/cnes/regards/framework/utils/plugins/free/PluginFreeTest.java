@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
 import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.framework.utils.plugins.generics.PluginWithBoolean;
 
 /**
@@ -42,7 +43,7 @@ public class PluginFreeTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginFreeTest.class);
 
     @Test
-    public void stringTest() {
+    public void stringTest() throws NotAvailablePluginConfigurationException {
 
         // Configure as dynamic parameter
         List<String> availableValues = Arrays.asList("string1", "string2");
@@ -54,8 +55,8 @@ public class PluginFreeTest {
         dynParametersFactory.addParameter(PluginWithBoolean.FIELD_NAME_STRING, "string1");
 
         PluginUtils.setup(this.getClass().getPackage().getName());
-        IFreePlugin plugin = PluginUtils
-                .getPlugin(parameters, FreePluginWithString.class, null, dynParametersFactory.asArray());
+        IFreePlugin plugin = PluginUtils.getPlugin(parameters, FreePluginWithString.class, null,
+                                                   dynParametersFactory.asArray());
         Assert.assertNotNull(plugin);
         plugin.doIt();
     }
