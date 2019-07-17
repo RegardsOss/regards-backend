@@ -100,7 +100,7 @@ public class FileDeletionRequestService {
                     this.handleStorageNotAvailable(deletionRequestPage.getContent());
                 }
                 page = deletionRequestPage.nextPageable();
-            } while (page != null);
+            } while (deletionRequestPage.hasNext());
         }
         return jobList;
     }

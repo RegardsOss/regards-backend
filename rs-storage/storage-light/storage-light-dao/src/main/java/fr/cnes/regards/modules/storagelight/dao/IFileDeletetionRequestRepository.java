@@ -41,7 +41,8 @@ public interface IFileDeletetionRequestRepository extends JpaRepository<FileDele
 
     Page<FileDeletionRequest> findByStorage(String storage, Pageable page);
 
-    Set<String> findStoragesByStatus(FileRequestStatus status);
+    @Query("select storage from FileDeletionRequest where status = :status")
+    Set<String> findStoragesByStatus(@Param("status") FileRequestStatus status);
 
     @Modifying
     @Query("update FileDeletionRequest fdr set fdr.status = :status where fdr.id = :id")

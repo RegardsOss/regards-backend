@@ -75,6 +75,9 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
     protected FileReferenceRequestService fileRefRequestService;
 
     @Autowired
+    protected FileDeletionRequestService fileDeletionRequestService;
+
+    @Autowired
     protected IJobService jobService;
 
     @Autowired
@@ -142,12 +145,13 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         return this.generateStoredFileReference(UUID.randomUUID().toString(), "someone");
     }
 
-    protected void generateStoredFileReferenceAlreadyReferenced(String checksum, String storage, String newOwner) {
+    protected Optional<FileReference> generateStoredFileReferenceAlreadyReferenced(String checksum, String storage,
+            String newOwner) {
         Optional<FileReference> oFilef = fileRefService.search(storage, checksum);
         Assert.assertTrue("File reference should already exists", oFilef.isPresent());
         FileLocation origin = new FileLocation("anywhere", "anywhere://in/this/directory/file.test");
-        fileRefService.addFileReference(Lists.newArrayList(newOwner), oFilef.get().getMetaInfo(), origin,
-                                        oFilef.get().getLocation());
+        return fileRefService.addFileReference(Lists.newArrayList(newOwner), oFilef.get().getMetaInfo(), origin,
+                                               oFilef.get().getLocation());
 
     }
 
