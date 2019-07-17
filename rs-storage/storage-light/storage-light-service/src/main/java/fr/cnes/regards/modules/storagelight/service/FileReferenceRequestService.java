@@ -120,7 +120,7 @@ public class FileReferenceRequestService {
                     this.handleStorageNotAvailable(filesPage.getContent());
                 }
                 page = filesPage.nextPageable();
-            } while (page != null);
+            } while (filesPage.hasNext());
         }
         return jobList;
     }

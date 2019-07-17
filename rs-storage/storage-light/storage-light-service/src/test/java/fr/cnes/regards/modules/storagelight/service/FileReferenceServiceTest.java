@@ -36,6 +36,8 @@ import org.assertj.core.util.Sets;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -71,10 +73,12 @@ import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStora
  * @author sbinda
  *
  */
-@ActiveProfiles("disableStorageTasks")
+@ActiveProfiles({ "disableStorageTasks" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
         "regards.storage.cache.path=target/cache", "regards.storage.cache.minimum.time.to.live.hours=12" })
 public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceServiceTest.class);
 
     private static final String ONLINE_CONF_LABEL = "target";
 
@@ -115,14 +119,7 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
             }
         });
         initDataStoragePluginConfiguration(ONLINE_CONF_LABEL);
-        int limit = 0;
-        while (!storageHandler.getConfiguredStorages().contains(ONLINE_CONF_LABEL) && (limit < 20)) {
-            Thread.sleep(100);
-            limit++;
-        }
-        if (limit == 20) {
-            Assert.fail("Plugin is still not referenced in service !");
-        }
+        storageHandler.refresh();
     }
 
     @Test

@@ -30,6 +30,7 @@ import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -52,7 +53,8 @@ import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 @Entity
 @Table(name = "t_file_reference_request",
         indexes = { @Index(name = "idx_file_reference_request", columnList = "destination_storage, checksum") },
-        uniqueConstraints = { @UniqueConstraint(columnNames = { "checksum", "destination_storage" }) })
+        uniqueConstraints = { @UniqueConstraint(name = "t_file_reference_request_checksum_storage",
+                columnNames = { "checksum", "destination_storage" }) })
 public class FileReferenceRequest {
 
     /**
@@ -66,7 +68,8 @@ public class FileReferenceRequest {
 
     @Column(name = "owner")
     @ElementCollection
-    @CollectionTable(name = "ta_file_ref_request_owners", joinColumns = @JoinColumn(name = "file_ref_id"))
+    @CollectionTable(name = "ta_file_ref_request_owners", joinColumns = @JoinColumn(name = "file_ref_id",
+            foreignKey = @ForeignKey(name = "fk_ta_file_ref_request_owners_t_file_reference_request")))
     private final List<String> owners = Lists.newArrayList();
 
     @Embedded

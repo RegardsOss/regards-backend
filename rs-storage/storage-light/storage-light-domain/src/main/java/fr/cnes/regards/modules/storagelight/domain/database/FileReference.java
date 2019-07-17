@@ -28,6 +28,7 @@ import javax.persistence.Convert;
 import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -49,7 +50,8 @@ import fr.cnes.regards.framework.jpa.converters.OffsetDateTimeAttributeConverter
  */
 @Entity
 @Table(name = "t_file_reference", indexes = { @Index(name = "idx_file_reference", columnList = "storage, checksum") },
-        uniqueConstraints = { @UniqueConstraint(columnNames = { "checksum", "storage" }) })
+        uniqueConstraints = { @UniqueConstraint(name = "uk_t_file_reference_checksum_storage",
+                columnNames = { "checksum", "storage" }) })
 public class FileReference {
 
     /**
@@ -72,7 +74,8 @@ public class FileReference {
      */
     @Column(name = "owner")
     @ElementCollection
-    @CollectionTable(name = "ta_file_ref_owners", joinColumns = @JoinColumn(name = "file_ref_id"))
+    @CollectionTable(name = "ta_file_ref_owners", joinColumns = @JoinColumn(name = "file_ref_id",
+            foreignKey = @ForeignKey(name = "fk_ta_file_ref_owners_t_file_reference")))
     private List<String> owners = Lists.newArrayList();
 
     /**

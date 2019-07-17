@@ -84,9 +84,9 @@ public class FileReferenceJobProgressManager implements IStorageProgressManager 
                      fileRefRequest.getMetaInfo().getChecksum());
             job.advanceCompletion();
             // Create FileReference resulting of the success of FileReferenceRequest
-            Optional<FileReference> oFileRef = fileReferenceService
-                    .addFileReference(fileRefRequest.getOwners(), fileRefRequest.getMetaInfo(), newLocation,
-                                      fileRefRequest.getDestination());
+            Optional<FileReference> oFileRef = fileReferenceService.addFileReference(fileRefRequest.getOwners(),
+                                                                                     fileRefRequest.getMetaInfo(),
+                                                                                     newLocation, newLocation);
             if (oFileRef.isPresent()) {
                 // Delete the FileRefRequest as it has been handled
                 fileRefRequestService.deleteFileReferenceRequest(fileRefRequest);

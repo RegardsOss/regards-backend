@@ -22,6 +22,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -44,7 +45,8 @@ import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 @Entity
 @Table(name = "t_file_deletion_request",
         indexes = { @Index(name = "idx_file_deletion_request", columnList = "storage") },
-        uniqueConstraints = { @UniqueConstraint(columnNames = { "file_reference" }) })
+        uniqueConstraints = { @UniqueConstraint(name = "uk_t_file_deletion_request_file_reference",
+                columnNames = { "file_reference" }) })
 public class FileDeletionRequest {
 
     @Id
@@ -59,7 +61,7 @@ public class FileDeletionRequest {
     @Column(nullable = false, length = FileLocation.STORAGE_MAX_LENGTH)
     private String storage;
 
-    @JoinColumn(name = "file_reference")
+    @JoinColumn(name = "file_reference", foreignKey = @ForeignKey(name = "fk_t_file_deletion_request_t_file_reference"))
     @OneToOne
     @MapsId
     private FileReference fileReference;

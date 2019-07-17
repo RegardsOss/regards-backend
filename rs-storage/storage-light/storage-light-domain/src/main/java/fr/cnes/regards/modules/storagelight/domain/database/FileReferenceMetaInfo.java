@@ -25,6 +25,7 @@ import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.ElementCollection;
 import javax.persistence.Embeddable;
+import javax.persistence.ForeignKey;
 import javax.persistence.JoinColumn;
 
 import org.springframework.util.MimeType;
@@ -89,7 +90,8 @@ public class FileReferenceMetaInfo {
      */
     @Column(name = "type")
     @ElementCollection
-    @CollectionTable(name = "ta_file_ref_types", joinColumns = @JoinColumn(name = "file_ref_id"))
+    @CollectionTable(name = "ta_file_ref_types", joinColumns = @JoinColumn(name = "file_ref_id",
+            foreignKey = @ForeignKey(name = "fk_ta_file_ref_types_t_file_reference")))
     private List<String> types;
 
     public FileReferenceMetaInfo() {

@@ -27,11 +27,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
+import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
@@ -52,6 +54,8 @@ import fr.cnes.regards.modules.storagelight.service.jobs.FileReferenceRequestJob
  * @author sbinda
  *
  */
+@Service
+@MultitenantTransactional
 public class FileDeletionRequestService {
 
     private static final int NB_REFERENCE_BY_PAGE = 1000;
