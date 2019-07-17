@@ -31,6 +31,11 @@ public enum FileRequestStatus {
 
     PENDING,
 
+    /**
+     * Request is delayed, waiting to be reactivated.
+     */
+    DELAYED,
+
     ERROR;
 
 }

@@ -76,7 +76,8 @@ public class FileDeletionRequest {
     public FileDeletionRequest(FileReference fileReference) {
         super();
 
-        Assert.notNull(fileReference, "File reference to deleted cannot be null");
+        Assert.notNull(fileReference, "File reference to delete cannot be null");
+        Assert.notNull(fileReference.getId(), "File reference to delete identifier cannot be null");
         Assert.notNull(fileReference.getLocation(), "Unable to delete a file with no location");
         Assert.notNull(fileReference.getLocation().getStorage(), "Unable to delete a file with no location storage.");
         this.fileReference = fileReference;

@@ -18,26 +18,18 @@
  */
 package fr.cnes.regards.modules.storagelight.service;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import org.assertj.core.util.Sets;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -47,27 +39,19 @@ import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
 
-import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
-import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
 import fr.cnes.regards.framework.modules.jobs.domain.JobInfo;
-import fr.cnes.regards.framework.modules.jobs.service.IJobService;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginMetaData;
-import fr.cnes.regards.framework.modules.plugins.domain.PluginParameter;
-import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
-import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storagelight.dao.FileReferenceSpecification;
-import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
-import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRequestRepository;
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
+import fr.cnes.regards.modules.storagelight.domain.database.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
-import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedDataStorage;
-import fr.cnes.regards.modules.storagelight.domain.plugin.DataStorageType;
-import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStorage;
+import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
+import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
 
 /**
  * @author sbinda
@@ -76,50 +60,14 @@ import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStora
 @ActiveProfiles({ "disableStorageTasks" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
         "regards.storage.cache.path=target/cache", "regards.storage.cache.minimum.time.to.live.hours=12" })
-public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceServiceTest.class);
-
-    private static final String ONLINE_CONF_LABEL = "target";
+public class FileReferenceServiceTest extends AbstractFileReferenceTest {
 
     @Autowired
-    private FileReferenceService fileRefService;
-
-    @Autowired
-    private FileReferenceRequestService fileRefRequestService;
-
-    @Autowired
-    private StoragePluginConfigurationHandler storageHandler;
-
-    @Autowired
-    private IFileReferenceRepository fileRefRepo;
-
-    @Autowired
-    private IFileReferenceRequestRepository fileRefRequestRepo;
-
-    @Autowired
-    private IJobInfoRepository jobInfoRepo;
-
-    @Autowired
-    private IJobService jobService;
-
-    @Autowired
-    private PrioritizedDataStorageService prioritizedDataStorageService;
+    private FileReferenceEventHandler fileRefHandler;
 
     @Before
-    public void init() throws ModuleException, InterruptedException {
-        fileRefRepo.deleteAll();
-        fileRefRequestRepo.deleteAll();
-        jobInfoRepo.deleteAll();
-        prioritizedDataStorageService.findAllByType(DataStorageType.ONLINE).forEach(c -> {
-            try {
-                prioritizedDataStorageService.delete(c.getId());
-            } catch (ModuleException e) {
-                Assert.fail(e.getMessage());
-            }
-        });
-        initDataStoragePluginConfiguration(ONLINE_CONF_LABEL);
-        storageHandler.refresh();
+    public void initialize() throws ModuleException {
+        super.init();
     }
 
     @Test
@@ -145,7 +93,12 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
     public void referenceFileWithoutStorage() {
         List<String> owners = Lists.newArrayList();
         owners.add("someone");
-        generateFileReference(owners, Lists.newArrayList(), "file.test", "anywhere");
+        Optional<FileReference> oFileRef = referenceRandomFile(owners, Lists.newArrayList(), "file.test", "anywhere");
+        Assert.assertTrue("File reference should have been created", oFileRef.isPresent());
+        Optional<FileReferenceRequest> oFileRefReq = fileRefRequestService
+                .search(oFileRef.get().getLocation().getStorage(), oFileRef.get().getMetaInfo().getChecksum());
+        Assert.assertTrue("File reference request should not exists anymore as file is well referenced",
+                          !oFileRefReq.isPresent());
     }
 
     @Test
@@ -154,18 +107,18 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
         List<String> owners = Lists.newArrayList("someone");
         List<String> types = Lists.newArrayList();
         OffsetDateTime beforeDate = OffsetDateTime.now().minusSeconds(1);
-        FileReference fileRef = generateFileReference(owners, types, "file1.test", "anywhere");
+        FileReference fileRef = referenceRandomFile(owners, types, "file1.test", "anywhere").get();
         OffsetDateTime afterFirstDate = OffsetDateTime.now();
         Thread.sleep(1);
         owners.add("someone-else");
         types.add("Type1");
-        generateFileReference(owners, types, "file2.test", "somewhere-else");
+        referenceRandomFile(owners, types, "file2.test", "somewhere-else");
         types.add("Type2");
         owners.add("someone-else-again");
-        generateFileReference(owners, types, "file3.test", "somewhere-else");
+        referenceRandomFile(owners, types, "file3.test", "somewhere-else");
         types.add("Test");
-        generateFileReference(owners, types, "data_4.nc", "somewhere-else");
-        generateFileReference(owners, types, "data_5.nc", "void");
+        referenceRandomFile(owners, types, "data_4.nc", "somewhere-else");
+        referenceRandomFile(owners, types, "data_5.nc", "void");
         OffsetDateTime afterEndDate = OffsetDateTime.now().plusSeconds(1);
 
         // Search all
@@ -231,35 +184,76 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
     }
 
     @Test
-    public void storeWithPlugin() throws InterruptedException, ExecutionException {
-        List<String> owners = Lists.newArrayList();
-        owners.add("someone");
-        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo("invalid_checksum", "MD5", "file.test", 132L,
-                MediaType.APPLICATION_OCTET_STREAM);
-        FileLocation origin = new FileLocation("anywhere", "anywhere://in/this/directory/file.test");
-        FileLocation destination = new FileLocation(ONLINE_CONF_LABEL, "/in/this/directory");
-        // Run file reference creation.
-        fileRefService.addFileReference(owners, fileMetaInfo, origin, destination);
-        // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
-        Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
-        Optional<FileReferenceRequest> oFileRefReq = fileRefRequestService.search(destination.getStorage(),
-                                                                                  fileMetaInfo.getChecksum());
-        Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
-        Assert.assertTrue("File reference request should exists", oFileRefReq.isPresent());
-        Assert.assertEquals("File reference request should be in TO_STORE status", FileRequestStatus.TODO,
-                            oFileRefReq.get().getStatus());
-        // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
-        Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileRequestStatus.TODO, null, null);
-        Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
-        // Run Job and wait for end
+    public void referenceFileDuringDeletion() throws InterruptedException, ExecutionException, EntityNotFoundException {
+
         String tenant = runtimeTenantResolver.getTenant();
-        jobService.runJob(jobs.iterator().next(), tenant).get();
+        // Reference & store a file
+        String fileRefChecksum = "file-ref-1";
+        String fileRefOwner = "first-owner";
+        FileReference fileRef = this.generateStoredFileReference(fileRefChecksum, fileRefOwner);
+        String fileRefStorage = fileRef.getLocation().getStorage();
+
+        // Remove all his owners
+        fileRefService.removeOwner(fileRefChecksum, fileRefStorage, fileRefOwner);
+
+        Optional<FileReference> oFileRef = fileRefService.search(fileRefStorage, fileRefChecksum);
+        Assert.assertTrue("File reference should no have any owners anymore", oFileRef.get().getOwners().isEmpty());
+
+        // Simulate FileDeletionRequest in PENDING state
+        FileDeletionRequest fdr = fileDeletionRequestRepo.findByFileReferenceId(fileRef.getId()).get();
+        fdr.setStatus(FileRequestStatus.PENDING);
+        fileDeletionRequestRepo.save(fdr);
+
+        // Reference the same file for a new owner
+        String fileRefNewOwner = "new-owner";
+        this.generateStoredFileReferenceAlreadyReferenced(fileRefChecksum, fileRefStorage, fileRefNewOwner);
+
+        // check that there is always a deletion request in pending state
+        Optional<FileDeletionRequest> ofdr = fileDeletionRequestRepo.findByFileReferenceId(fdr.getId());
+        oFileRef = fileRefService.search(fileRef.getLocation().getStorage(), fileRef.getMetaInfo().getChecksum());
+        Assert.assertTrue("File deletion request should elawys exists", ofdr.isPresent());
+        Assert.assertEquals("File deletion request should always be running", FileRequestStatus.PENDING,
+                            ofdr.get().getStatus());
+        // check that a new reference request is made to store again the file after deletion request is done
+        Optional<FileReferenceRequest> frr = fileRefRequestService.search(fileRefStorage, fileRefChecksum);
+        Assert.assertTrue("A new file reference request should exists", frr.isPresent());
+        Assert.assertEquals("A new file reference request should exists with DELAYED status", FileRequestStatus.DELAYED,
+                            frr.get().getStatus());
+
+        // Check that the file reference is still not referenced as owned by the new owner and the request is still existing
+        oFileRef = fileRefService.search(fileRefStorage, fileRefChecksum);
+        Assert.assertTrue("File reference should still exists", oFileRef.isPresent());
+        Assert.assertTrue("File reference should still have no owners", oFileRef.get().getOwners().isEmpty());
+
+        // Simulate deletion request ends
+        fileRefHandler.handle(
+                              new TenantWrapper<>(
+                                      new FileReferenceEvent(fileRefChecksum, FileReferenceEventState.DELETED,
+                                              "Deletion succeed", oFileRef.get().getLocation()),
+                                      runtimeTenantResolver.getTenant()));
+        // Has the handler clear the tenant we have to force it here for tests.
         runtimeTenantResolver.forceTenant(tenant);
-        // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
-        oFileRefReq = fileRefRequestService.search(destination.getStorage(), fileMetaInfo.getChecksum());
-        oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
-        Assert.assertTrue("File reference should have been created.", oFileRef.isPresent());
-        Assert.assertFalse("File reference request should not exists anymore", oFileRefReq.isPresent());
+        frr = fileRefRequestService.search(fileRefStorage, fileRefChecksum);
+        Assert.assertTrue("File reference request still exists", frr.isPresent());
+        Assert.assertEquals("File reference request still exists with TODO status", FileRequestStatus.TODO,
+                            frr.get().getStatus());
+
+        // Now the deletion job is ended, the file reference request is in todo state.
+        Collection<JobInfo> jobs = fileRefRequestService
+                .scheduleStoreJobs(FileRequestStatus.TODO, Lists.newArrayList(fileRefStorage), Lists.newArrayList());
+        runAndWaitJob(jobs);
+
+        frr = fileRefRequestService.search(fileRefStorage, fileRefChecksum);
+        oFileRef = fileRefService.search(fileRefStorage, fileRefChecksum);
+        Assert.assertFalse("File reference shuld not exists anymore", frr.isPresent());
+        Assert.assertTrue("File reference should still exists", oFileRef.isPresent());
+        Assert.assertTrue("File reference should should belongs to new owner",
+                          oFileRef.get().getOwners().contains(fileRefNewOwner));
+    }
+
+    @Test
+    public void storeWithPlugin() throws InterruptedException, ExecutionException {
+        this.generateRandomStoredFileReference();
     }
 
     @Test
@@ -277,9 +271,7 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
         Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileRequestStatus.ERROR, null, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
-        String tenant = runtimeTenantResolver.getTenant();
-        jobService.runJob(jobs.iterator().next(), tenant).get();
-        runtimeTenantResolver.forceTenant(tenant);
+        runAndWaitJob(jobs);
         // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
         Optional<FileReferenceRequest> oFileRefReq = fileRefRequestService
                 .search(fileRefReq.getDestination().getStorage(), fileRefReq.getMetaInfo().getChecksum());
@@ -372,94 +364,5 @@ public class FileReferenceServiceTest extends AbstractMultitenantServiceTest {
         Assert.assertTrue("File references request should still exists for other storage.", fileRefReqs.getContent()
                 .stream()
                 .anyMatch(frr -> frr.getMetaInfo().getChecksum().equals(fileRefReqOther.getMetaInfo().getChecksum())));
-    }
-
-    private PrioritizedDataStorage initDataStoragePluginConfiguration(String label) throws ModuleException {
-        try {
-            PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineDataStorage.class);
-            Files.createDirectories(Paths.get(getBaseStorageLocation().toURI()));
-            Set<PluginParameter> parameters = PluginParametersFactory.build()
-                    .addParameter(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                                  getBaseStorageLocation().toString())
-                    .addParameter(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*").getParameters();
-            PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, label, parameters, 0);
-            dataStorageConf.setIsActive(true);
-            return prioritizedDataStorageService.create(dataStorageConf);
-        } catch (IOException | URISyntaxException e) {
-            throw new ModuleException(e.getMessage(), e);
-        }
-    }
-
-    private void updatePluginConfForError(String newErrorPattern) throws MalformedURLException, ModuleException {
-        PrioritizedDataStorage conf = prioritizedDataStorageService.getFirstActiveByType(DataStorageType.ONLINE);
-        Set<PluginParameter> parameters = PluginParametersFactory.build()
-                .addParameter(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
-                              getBaseStorageLocation().toString())
-                .addParameter(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, newErrorPattern)
-                .getParameters();
-        conf.getDataStorageConfiguration().setParameters(parameters);
-        prioritizedDataStorageService.update(conf.getId(), conf);
-    }
-
-    private URL getBaseStorageLocation() throws MalformedURLException {
-        return new URL("file", "", Paths.get("target/simpleOnlineStorage").toFile().getAbsolutePath());
-    }
-
-    private FileReference generateFileReference(List<String> owners, List<String> types, String fileName,
-            String storage) {
-        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(UUID.randomUUID().toString(), "MD5", fileName,
-                132L, MediaType.APPLICATION_OCTET_STREAM);
-        fileMetaInfo.setTypes(types);
-        FileLocation origin = new FileLocation(storage, "anywhere://in/this/directory/file.test");
-        fileRefService.addFileReference(owners, fileMetaInfo, origin, origin);
-        Optional<FileReference> oFileRef = fileRefService.search(origin.getStorage(), fileMetaInfo.getChecksum());
-        Optional<FileReferenceRequest> oFileRefReq = fileRefRequestService.search(origin.getStorage(),
-                                                                                  fileMetaInfo.getChecksum());
-        Assert.assertTrue("File reference should have been created", oFileRef.isPresent());
-        Assert.assertTrue("File reference request should not exists anymore as file is well referenced",
-                          !oFileRefReq.isPresent());
-        return oFileRef.get();
-    }
-
-    private FileReferenceRequest generateStoreFileError(String owner, String storageDestination)
-            throws InterruptedException, ExecutionException {
-        List<String> owners = Lists.newArrayList();
-        owners.add(owner);
-        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(UUID.randomUUID().toString(), "MD5",
-                "error.file.test", 132L, MediaType.APPLICATION_OCTET_STREAM);
-        FileLocation origin = new FileLocation("anywhere", "anywhere://in/this/directory/error.file.test");
-        FileLocation destination = new FileLocation(storageDestination, "/in/this/directory");
-        // Run file reference creation.
-        fileRefService.addFileReference(owners, fileMetaInfo, origin, destination);
-        // The file reference should exist yet cause a storage job is needed. Nevertheless a FileReferenceRequest should be created.
-        Optional<FileReference> oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
-        Optional<FileReferenceRequest> oFileRefReq = fileRefRequestService.search(destination.getStorage(),
-                                                                                  fileMetaInfo.getChecksum());
-        Assert.assertFalse("File reference should not have been created yet.", oFileRef.isPresent());
-        Assert.assertTrue("File reference request should exists", oFileRefReq.isPresent());
-        if (storageDestination.equals(ONLINE_CONF_LABEL)) {
-            Assert.assertEquals("File reference request should be in TO_STORE status", FileRequestStatus.TODO,
-                                oFileRefReq.get().getStatus());
-            // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
-            Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileRequestStatus.TODO,
-                                                                               Sets.newHashSet(), Sets.newHashSet());
-            Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
-            // Run Job and wait for end
-            String tenant = runtimeTenantResolver.getTenant();
-            jobService.runJob(jobs.iterator().next(), tenant).get();
-            runtimeTenantResolver.forceTenant(tenant);
-            // After storage job is successfully done, the FileRefenrece should be created and the FileReferenceRequest should be removed.
-            oFileRefReq = fileRefRequestService.search(destination.getStorage(), fileMetaInfo.getChecksum());
-            oFileRef = fileRefService.search(destination.getStorage(), fileMetaInfo.getChecksum());
-            Assert.assertFalse("File reference should have been created.", oFileRef.isPresent());
-            Assert.assertTrue("File reference request should exists", oFileRefReq.isPresent());
-            Assert.assertEquals("File reference request should be STORE_ERROR status", FileRequestStatus.ERROR,
-                                oFileRefReq.get().getStatus());
-        } else {
-            Assert.assertEquals("File reference request should be in STORE_ERROR status", FileRequestStatus.ERROR,
-                                oFileRefReq.get().getStatus());
-        }
-
-        return oFileRefReq.get();
     }
 }

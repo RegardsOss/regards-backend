@@ -28,6 +28,7 @@ import javax.persistence.Convert;
 import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.ForeignKey;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -73,7 +74,7 @@ public class FileReference {
      * Owners of the current file reference
      */
     @Column(name = "owner")
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "ta_file_ref_owners", joinColumns = @JoinColumn(name = "file_ref_id",
             foreignKey = @ForeignKey(name = "fk_ta_file_ref_owners_t_file_reference")))
     private List<String> owners = Lists.newArrayList();

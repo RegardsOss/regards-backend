@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storagelight.service;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -142,22 +143,21 @@ public class FileDeletionRequestService {
                         fileDeletionRequest.getStorage()));
     }
 
-    /**
-     * @param fileDeletionRequest
-     */
     public void deleteFileDeletionRequest(FileDeletionRequest fileDeletionRequest) {
         Assert.notNull(fileDeletionRequest, "File deletion request to delete cannot be null");
         Assert.notNull(fileDeletionRequest.getId(), "File deletion request to delete identifier cannot be null");
         fileDeletionRequestRepo.deleteById(fileDeletionRequest.getId());
     }
 
-    /**
-     * @param fileDeletionRequest
-     */
     public void updateFileDeletionRequest(FileDeletionRequest fileDeletionRequest) {
         Assert.notNull(fileDeletionRequest, "File deletion request to update cannot be null");
         Assert.notNull(fileDeletionRequest.getId(), "File deletion request to update identifier cannot be null");
         fileDeletionRequestRepo.save(fileDeletionRequest);
+    }
+
+    public Optional<FileDeletionRequest> search(FileReference fileReference) {
+        return fileDeletionRequestRepo.findByFileReferenceId(fileReference.getId());
+
     }
 
 }

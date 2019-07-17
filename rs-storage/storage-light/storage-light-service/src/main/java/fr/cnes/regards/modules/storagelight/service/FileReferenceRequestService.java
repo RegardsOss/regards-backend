@@ -19,6 +19,7 @@
 package fr.cnes.regards.modules.storagelight.service;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -114,10 +115,12 @@ public class FileReferenceRequestService {
                 } else {
                     filesPage = fileRefRequestRepo.findAllByDestinationStorage(storage, page);
                 }
+                List<FileReferenceRequest> fileReferenceRequests = filesPage.getContent();
+
                 if (storageHandler.getConfiguredStorages().contains(storage)) {
-                    jobList = this.scheduleStoreJobsByStorage(storage, filesPage.getContent());
+                    jobList = this.scheduleStoreJobsByStorage(storage, fileReferenceRequests);
                 } else {
-                    this.handleStorageNotAvailable(filesPage.getContent());
+                    this.handleStorageNotAvailable(fileReferenceRequests);
                 }
                 page = filesPage.nextPageable();
             } while (filesPage.hasNext());
@@ -151,30 +154,48 @@ public class FileReferenceRequestService {
 
     public void createNewFileReferenceRequest(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
             FileLocation origin, FileLocation destination) {
-        FileReferenceRequest fileRefReq = new FileReferenceRequest(owners, fileMetaInfo, origin, destination);
-        if (!storageHandler.getConfiguredStorages().contains(destination.getStorage())) {
-            // The storage destination is unknown, we can already set the request in error status
-            String message = String
-                    .format("File <%s> cannot be handle for storage as destination storage <%s> is unknown. Known storages are",
-                            owners.toArray(), fileMetaInfo.getFileName(), destination.getStorage());
-            fileRefReq.setStatus(FileRequestStatus.ERROR);
-            fileRefReq.setErrorCause(message);
-            LOGGER.error(message);
+        this.createNewFileReferenceRequest(owners, fileMetaInfo, origin, destination, FileRequestStatus.TODO);
+    }
+
+    public void createNewFileReferenceRequest(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
+            FileLocation origin, FileLocation destination, FileRequestStatus status) {
+
+        // Check if file reference request already exists
+        Optional<FileReferenceRequest> oFileRefRequest = this.search(fileMetaInfo.getChecksum(),
+                                                                     destination.getStorage());
+        if (oFileRefRequest.isPresent()) {
+            this.handleFileReferenceRequestAlreadyExists(oFileRefRequest.get(), fileMetaInfo, owners);
         } else {
-            LOGGER.debug("New file reference request created for file <{}> to store to {} with status {}",
-                         fileRefReq.getMetaInfo().getFileName(), fileRefReq.getDestination().toString(),
-                         fileRefReq.getStatus());
+            FileReferenceRequest fileRefReq = new FileReferenceRequest(owners, fileMetaInfo, origin, destination);
+            fileRefReq.setStatus(status);
+            if (!storageHandler.getConfiguredStorages().contains(destination.getStorage())) {
+                // The storage destination is unknown, we can already set the request in error status
+                String message = String
+                        .format("File <%s> cannot be handle for storage as destination storage <%s> is unknown. Known storages are",
+                                owners.toArray(), fileMetaInfo.getFileName(), destination.getStorage());
+                fileRefReq.setStatus(FileRequestStatus.ERROR);
+                fileRefReq.setErrorCause(message);
+                LOGGER.error(message);
+            } else {
+                LOGGER.debug("New file reference request created for file <{}> to store to {} with status {}",
+                             fileRefReq.getMetaInfo().getFileName(), fileRefReq.getDestination().toString(),
+                             fileRefReq.getStatus());
+            }
+            fileRefRequestRepo.save(fileRefReq);
         }
-        fileRefRequestRepo.save(fileRefReq);
+
     }
 
     public void handleFileReferenceRequestAlreadyExists(FileReferenceRequest fileReferenceRequest,
-            Collection<String> owners) {
+            FileReferenceMetaInfo newMetaInfo, Collection<String> owners) {
         boolean newOwners = false;
         for (String owner : owners) {
             if (!fileReferenceRequest.getOwners().contains(owner)) {
                 fileReferenceRequest.getOwners().add(owner);
-                // TODO : Check if metadata information are the same. If not notify administrator.
+                if (newMetaInfo.equals(fileReferenceRequest.getMetaInfo())) {
+                    LOGGER.warn("Existing referenced file meta information differs "
+                            + "from new reference meta information. Previous ones are maintained");
+                }
             }
         }
         if (newOwners) {

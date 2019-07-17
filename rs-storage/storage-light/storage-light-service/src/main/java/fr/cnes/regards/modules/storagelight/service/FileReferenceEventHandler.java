@@ -1,0 +1,100 @@
+/*
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ *
+ * This file is part of REGARDS.
+ *
+ * REGARDS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * REGARDS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
+ */
+package fr.cnes.regards.modules.storagelight.service;
+
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import fr.cnes.regards.framework.amqp.domain.IHandler;
+import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
+import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
+import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
+import fr.cnes.regards.modules.storagelight.domain.database.FileDeletionRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
+import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
+import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
+
+/**
+ * This handler is used by the storage service to update file requests in DELAYED state after event on file references.
+ * For example a fileReferenceRequest DELAYED is restarted after a file deletion request ends.
+ *
+ * @author Sébastien Binda
+ */
+@Component
+public class FileReferenceEventHandler implements IHandler<FileReferenceEvent> {
+
+    @Autowired
+    private FileReferenceRequestService fileReferenceRequestService;
+
+    @Autowired
+    private FileDeletionRequestService fileDeletionRequestService;
+
+    @Autowired
+    private FileReferenceService fileReferenceService;
+
+    @Autowired
+    private IRuntimeTenantResolver runtimeTenantResolver;
+
+    @Override
+    public void handle(TenantWrapper<FileReferenceEvent> wrapper) {
+        String tenant = wrapper.getTenant();
+        runtimeTenantResolver.forceTenant(tenant);
+        try {
+            switch (wrapper.getContent().getState()) {
+                case DELETED:
+                case DELETION_ERROR:
+                    this.scheduleDelayedFileRefRequests(wrapper.getContent().getChecksum(),
+                                                        wrapper.getContent().getLocation().getStorage());
+                    break;
+                case RESTORATION_ERROR:
+                case RESTORED:
+                case STORED:
+                case STORE_ERROR:
+                default:
+                    break;
+            }
+        } finally {
+            runtimeTenantResolver.clearTenant();
+        }
+
+    }
+
+    /**
+     * After a deletion success, we can schedule the file reference request delayed. Those request was waiting for deletion ends.
+     */
+    private void scheduleDelayedFileRefRequests(String fileRefChecksum, String fileRefStorage) {
+        Optional<FileReferenceRequest> oRequest = fileReferenceRequestService.search(fileRefStorage, fileRefChecksum);
+        if (oRequest.isPresent() && (oRequest.get().getStatus() == FileRequestStatus.DELAYED)) {
+            // As a storage is scheduled, we can delete the deletion request
+            Optional<FileReference> oFileRef = fileReferenceService.search(fileRefStorage, fileRefChecksum);
+            if (oFileRef.isPresent()) {
+                Optional<FileDeletionRequest> oDeletionRequest = fileDeletionRequestService.search(oFileRef.get());
+                if (oDeletionRequest.isPresent()) {
+                    fileDeletionRequestService.deleteFileDeletionRequest(oDeletionRequest.get());
+                }
+            }
+            FileReferenceRequest request = oRequest.get();
+            request.setStatus(FileRequestStatus.TODO);
+            fileReferenceRequestService.updateFileReferenceRequest(request);
+        }
+    }
+
+}
