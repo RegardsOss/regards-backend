@@ -18,8 +18,6 @@
  */
 package fr.cnes.regards.modules.storage.service;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,6 +37,9 @@ import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +66,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
+
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -498,13 +500,9 @@ public class AIPService implements IAIPService {
     private void scheduleWriteMetadata(Set<AIP> metadataToStore) {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(WriteAIPMetadataJob.AIP_IDS_TO_WRITE_METADATA,
-                                        metadataToStore.stream().map(aip -> aip.getId().toString())
-                                                .collect(Collectors.toSet())));
-        jobInfoService.createAsQueued(new JobInfo(false,
-                                                  StorageJobsPriority.WRITING_METADATA_JOB,
-                                                  parameters,
-                                                  authResolver.getUser(),
-                                                  WriteAIPMetadataJob.class.getName()));
+                metadataToStore.stream().map(aip -> aip.getId().toString()).collect(Collectors.toSet())));
+        jobInfoService.createAsQueued(new JobInfo(false, StorageJobsPriority.WRITING_METADATA_JOB, parameters,
+                authResolver.getUser(), WriteAIPMetadataJob.class.getName()));
         for (AIP aip : metadataToStore) {
             aip.setState(AIPState.WRITING_METADATA);
             try {
@@ -527,11 +525,10 @@ public class AIPService implements IAIPService {
         IAllocationStrategy allocationStrategy = getAllocationStrategy();
         // Now lets ask to the strategy to dispatch dataFiles between possible DataStorages
         DispatchErrors dispatchErrors = new DispatchErrors();
-        Multimap<Long, StorageDataFile> storageWorkingSetMap = allocationStrategy
-                .dispatch(dataFilesToStore, dispatchErrors);
+        Multimap<Long, StorageDataFile> storageWorkingSetMap = allocationStrategy.dispatch(dataFilesToStore,
+                                                                                           dispatchErrors);
         LOGGER.debug("[STORE] {} data objects has been dispatched between {} data storage by allocation strategy",
-                     dataFilesToStore.size(),
-                     storageWorkingSetMap.keySet().size());
+                     dataFilesToStore.size(), storageWorkingSetMap.keySet().size());
         // as we are trusty people, we check that the dispatch gave us back all DataFiles into the WorkingSubSets
         LOGGER.trace("[STORE] Check missing files from dispatch results ...");
         checkDispatch(dataFilesToStore, storageWorkingSetMap, dispatchErrors);
@@ -577,8 +574,8 @@ public class AIPService implements IAIPService {
         // Same for accesses
         Set<String> checksumsWithoutAccess = Sets.newHashSet(requestedChecksums);
         Pageable page = PageRequest.of(0, 500, Sort.Direction.ASC, "id");
-        Page<StorageDataFile> dataFilePage = dataFileDao
-                .findPageByStateAndChecksumIn(DataFileState.STORED, requestedChecksums, page);
+        Page<StorageDataFile> dataFilePage = dataFileDao.findPageByStateAndChecksumIn(DataFileState.STORED,
+                                                                                      requestedChecksums, page);
         while (dataFilePage.hasContent()) {
 
             Set<StorageDataFile> dataFiles = Sets.newHashSet(dataFilePage.getContent());
@@ -587,8 +584,8 @@ public class AIPService implements IAIPService {
             if (dataFilePage.getTotalElements() != requestedChecksums.size()) {
                 Set<String> dataFilesChecksumsForThisPage = dataFiles.stream().map(StorageDataFile::getChecksum)
                         .collect(Collectors.toSet());
-                Set<String> checksumNotFoundForThisPage = Sets
-                        .difference(requestedChecksums, dataFilesChecksumsForThisPage);
+                Set<String> checksumNotFoundForThisPage = Sets.difference(requestedChecksums,
+                                                                          dataFilesChecksumsForThisPage);
                 checksumNotFound = Sets.intersection(checksumNotFound, checksumNotFoundForThisPage);
             }
 
@@ -622,8 +619,8 @@ public class AIPService implements IAIPService {
                 }
             }
             // now lets ask the cache service to handle nearline restoration and give us the already available ones
-            nearlineAvailableAndError = cachedFileService
-                    .restore(nearlineFiles, availabilityRequest.getExpirationDate());
+            nearlineAvailableAndError = cachedFileService.restore(nearlineFiles,
+                                                                  availabilityRequest.getExpirationDate());
             for (StorageDataFile inError : nearlineAvailableAndError.getErrors()) {
                 errors.add(inError.getChecksum());
             }
@@ -633,7 +630,7 @@ public class AIPService implements IAIPService {
             em.clear();
             // now that hibernate cache has been cleared, lets get the next page
             page = page.next();
-            dataFilePage = dataFileDao.findPageByChecksumIn(requestedChecksums, page);
+            dataFilePage = dataFileDao.findPageByStateAndChecksumIn(DataFileState.STORED, requestedChecksums, page);
 
         }
         // the if is needed here too because otherwise checksumNotFound initially being all requested checksums,
@@ -645,8 +642,8 @@ public class AIPService implements IAIPService {
                     .forEach(cs -> LOGGER.error("File to restore with checksum {} is not stored by REGARDS.", cs));
         }
         // same for accesses
-        checksumsWithoutAccess.forEach(cs -> LOGGER
-                .error("User {} does not have access to file with checksum {}.", authResolver.getUser(), cs));
+        checksumsWithoutAccess.forEach(cs -> LOGGER.error("User {} does not have access to file with checksum {}.",
+                                                          authResolver.getUser(), cs));
         errors.addAll(checksumsWithoutAccess);
         // lets construct the result
         return new AvailabilityResponse(errors, onlineFiles, nearlineAvailableAndError.getAvailables());
@@ -655,8 +652,7 @@ public class AIPService implements IAIPService {
     private Set<StorageDataFile> checkLoadFilesAccessRights(Set<StorageDataFile> dataFiles) throws ModuleException {
         // Creating a multimap of { aip -> files } to remove all files from not authorized AIPs
         Collector<StorageDataFile, HashMultimap<UniformResourceName, StorageDataFile>, HashMultimap<UniformResourceName, StorageDataFile>> multimapCollector = Collector
-                .of(HashMultimap::create,
-                    (hashMultimap, df) -> hashMultimap.put(df.getAip().getId(), df),
+                .of(HashMultimap::create, (hashMultimap, df) -> hashMultimap.put(df.getAip().getId(), df),
                     (hashMultimap, hashMultimap2) -> {
                         hashMultimap.putAll(hashMultimap2);
                         return hashMultimap;
@@ -689,15 +685,9 @@ public class AIPService implements IAIPService {
             LOGGER.error(e.getMessage(), e);
             throw new EntityOperationForbiddenException(e.getMessage());
         }
-        return aipDao.findAll(AIPQueryGenerator.searchAIPContainingAllTags(state,
-                                                                           from,
-                                                                           to,
-                                                                           tags,
-                                                                           session,
-                                                                           providerId,
-                                                                           null,
-                                                                           null,
-                                                                           storedOn), pageable);
+        return aipDao.findAll(AIPQueryGenerator.searchAIPContainingAllTags(state, from, to, tags, session, providerId,
+                                                                           null, null, storedOn),
+                              pageable);
     }
 
     @Override
@@ -713,23 +703,19 @@ public class AIPService implements IAIPService {
             LOGGER.error(e.getMessage(), e);
             throw new EntityOperationForbiddenException(e.getMessage());
         }
-        String aipQueryWithoutPage = AIPQueryGenerator.searchAIPIdContainingAllTags(filters.getState(),
-                                                                                    filters.getFrom(),
-                                                                                    filters.getTo(),
-                                                                                    filters.getTags(),
-                                                                                    filters.getSession(),
-                                                                                    filters.getProviderId(),
-                                                                                    filters.getAipIds(),
-                                                                                    filters.getAipIdsExcluded(),
-                                                                                    filters.getStoredOn());
+        String aipQueryWithoutPage = AIPQueryGenerator
+                .searchAIPIdContainingAllTags(filters.getState(), filters.getFrom(), filters.getTo(), filters.getTags(),
+                                              filters.getSession(), filters.getProviderId(), filters.getAipIds(),
+                                              filters.getAipIdsExcluded(), filters.getStoredOn());
         String aipQuery = aipQueryWithoutPage + " LIMIT " + pageable.getPageSize() + " OFFSET " + pageable.getOffset();
         // first lets get information for this page
 
         String sqlQuery = "select id from {h-schema}t_data_file sdf where sdf.aip_ip_id IN (" + aipQuery
                 + ") order by sdf.aip_ip_id";
         Query q = em.createNativeQuery(sqlQuery);
-        @SuppressWarnings("unchecked") List<Long> dataFileIds = q.getResultList().stream()
-                .mapToLong(r -> ((BigInteger) r).longValue()).boxed().collect(Collectors.toList());
+        @SuppressWarnings("unchecked")
+        List<Long> dataFileIds = q.getResultList().stream().mapToLong(r -> ((BigInteger) r).longValue()).boxed()
+                .collect(Collectors.toList());
         List<StorageDataFile> dataFiles = dataFileDao.findAllById(dataFileIds);
         // lets sort everything by aip, maps with object as key does not work as espected, lets use 2 map with same key to achieve our goal
         Map<String, AIP> aipIdAipMap = new HashMap<>();
@@ -746,20 +732,16 @@ public class AIPService implements IAIPService {
             content.add(new AIPWithDataStorageIds(aipIdAipMap.get(aipId), aipIdDataStorageIdsMap.get(aipId)));
         }
         // now lets get information for metadata
-        String pdsIdQuery =
-                "SELECT distinct data_storage_conf_id FROM {h-schema}ta_data_file_plugin_conf WHERE data_file_id IN "
-                        + "(SELECT id FROM {h-schema}t_data_file WHERE aip_ip_id IN (" + aipQueryWithoutPage + "))";
+        String pdsIdQuery = "SELECT distinct data_storage_conf_id FROM {h-schema}ta_data_file_plugin_conf WHERE data_file_id IN "
+                + "(SELECT id FROM {h-schema}t_data_file WHERE aip_ip_id IN (" + aipQueryWithoutPage + "))";
         q = em.createNativeQuery(pdsIdQuery);
         @SuppressWarnings("unchecked")
         Set<Long> dataStorageIds = q.getResultList().stream().mapToLong(r -> ((BigInteger) r).longValue()).boxed()
                 .collect(Collectors.toSet());
         Set<PrioritizedDataStorage> dataStorages = prioritizedDataStorageRepo.findAllByIdIn(dataStorageIds);
 
-        return new AIPPageWithDataStorages(dataStorages,
-                                           content,
-                                           new PagedResources.PageMetadata(content.size(),
-                                                                           pageable.getPageNumber(),
-                                                                           aipDao.countByQuery(aipQueryWithoutPage)));
+        return new AIPPageWithDataStorages(dataStorages, content, new PagedResources.PageMetadata(content.size(),
+                pageable.getPageNumber(), aipDao.countByQuery(aipQueryWithoutPage)));
     }
 
     @Override
@@ -772,26 +754,17 @@ public class AIPService implements IAIPService {
             if ((tags == null) || tags.isEmpty()) {
                 aips = aipDao.findAllByState(state, pageable);
             } else {
-                aips = aipDao.findAll(AIPQueryGenerator.searchAIPContainingAtLeastOneTag(state,
-                                                                                         null,
-                                                                                         null,
-                                                                                         new ArrayList<>(tags),
-                                                                                         null,
-                                                                                         null,
-                                                                                         null,
-                                                                                         null,
-                                                                                         null), pageable);
+                aips = aipDao.findAll(
+                                      AIPQueryGenerator.searchAIPContainingAtLeastOneTag(state, null, null,
+                                                                                         new ArrayList<>(tags), null,
+                                                                                         null, null, null, null),
+                                      pageable);
             }
         } else {
-            aips = aipDao.findAll(AIPQueryGenerator.searchAIPContainingAtLeastOneTag(state,
-                                                                                     fromLastUpdateDate,
-                                                                                     null,
-                                                                                     new ArrayList<>(tags),
-                                                                                     null,
-                                                                                     null,
-                                                                                     null,
-                                                                                     null,
-                                                                                     null), pageable);
+            aips = aipDao.findAll(AIPQueryGenerator.searchAIPContainingAtLeastOneTag(state, fromLastUpdateDate, null,
+                                                                                     new ArrayList<>(tags), null, null,
+                                                                                     null, null, null),
+                                  pageable);
         }
         // Associate data files with their AIP (=> multimap)
         List<AipDataFiles> aipDataFiles = new ArrayList<>();
@@ -888,14 +861,12 @@ public class AIPService implements IAIPService {
             // lets use the template service to get our message
             String message;
             try {
-                message = templateService
-                        .render(StorageTemplateConfiguration.NOT_DISPATCHED_DATA_FILES_TEMPLATE_NAME, dataMap);
+                message = templateService.render(StorageTemplateConfiguration.NOT_DISPATCHED_DATA_FILES_TEMPLATE_NAME,
+                                                 dataMap);
             } catch (TemplateException e) {
                 throw new MaintenanceException(e.getMessage(), e);
             }
-            notifyAdmins("Some file were not associated to a data storage",
-                         message,
-                         NotificationLevel.ERROR,
+            notifyAdmins("Some file were not associated to a data storage", message, NotificationLevel.ERROR,
                          MimeTypeUtils.TEXT_HTML);
         }
     }
@@ -920,8 +891,7 @@ public class AIPService implements IAIPService {
         for (Long dataStorageConfId : storageWorkingSetMap.keySet()) {
             try {
                 scheduledFiles.addAll(scheduleStorageForPluginConf(storageWorkingSetMap.get(dataStorageConfId),
-                                                                   dataStorageConfId,
-                                                                   storingData));
+                                                                   dataStorageConfId, storingData));
             } catch (InvalidDatastoragePluginConfException e) {
                 LOGGER.error(e.getMessage(), e);
                 notifyAdmins("Storage schedule", e.getMessage(), NotificationLevel.ERROR, MimeTypeUtils.TEXT_PLAIN);
@@ -948,8 +918,7 @@ public class AIPService implements IAIPService {
     private Set<StorageDataFile> scheduleStorageForPluginConf(Collection<StorageDataFile> dataFiles,
             Long dataStorageConfId, boolean storingData) throws InvalidDatastoragePluginConfException {
         Set<StorageDataFile> scheduledFiles = Sets.newHashSet();
-        Set<IWorkingSubset> workingSubSets = getWorkingSubsets(dataFiles,
-                                                               dataStorageConfId,
+        Set<IWorkingSubset> workingSubSets = getWorkingSubsets(dataFiles, dataStorageConfId,
                                                                DataStorageAccessModeEnum.STORE_MODE);
         LOGGER.trace("Preparing a job for each working subsets");
         // lets instantiate every job for every DataStorage to use
@@ -962,17 +931,11 @@ public class AIPService implements IAIPService {
             parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConfId));
             parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
             if (storingData) {
-                jobInfoService.createAsQueued(new JobInfo(false,
-                                                          StorageJobsPriority.STORE_DATA_JOB,
-                                                          parameters,
-                                                          authResolver.getUser(),
-                                                          StoreDataFilesJob.class.getName())).getId();
+                jobInfoService.createAsQueued(new JobInfo(false, StorageJobsPriority.STORE_DATA_JOB, parameters,
+                        authResolver.getUser(), StoreDataFilesJob.class.getName())).getId();
             } else {
-                jobInfoService.createAsQueued(new JobInfo(false,
-                                                          StorageJobsPriority.STORE_METADATA_JOB,
-                                                          parameters,
-                                                          authResolver.getUser(),
-                                                          StoreMetadataFilesJob.class.getName())).getId();
+                jobInfoService.createAsQueued(new JobInfo(false, StorageJobsPriority.STORE_METADATA_JOB, parameters,
+                        authResolver.getUser(), StoreMetadataFilesJob.class.getName())).getId();
             }
             // FIXME : If Jobs are interrupted, AIP is in PENDING state, DataFiles are in PENDING state
             // It is a non recoverable state.
@@ -1002,10 +965,9 @@ public class AIPService implements IAIPService {
 
         LOGGER.debug("Getting working subsets for data storage of id {}", dataStorageConfId);
         WorkingSubsetWrapper<?> workingSubsetWrapper = storage.prepare(dataFilesToSubSet, accessMode);
-        @SuppressWarnings("unchecked") Set<IWorkingSubset> workingSubSets = (Set<IWorkingSubset>) workingSubsetWrapper
-                .getWorkingSubSets();
-        LOGGER.debug("{} data objects were dispatched into {} working subsets",
-                     dataFilesToSubSet.size(),
+        @SuppressWarnings("unchecked")
+        Set<IWorkingSubset> workingSubSets = (Set<IWorkingSubset>) workingSubsetWrapper.getWorkingSubSets();
+        LOGGER.debug("{} data objects were dispatched into {} working subsets", dataFilesToSubSet.size(),
                      workingSubSets.size());
         // as we are trusty people, we check that the prepare gave us back all DataFiles into the WorkingSubSets
         Set<StorageDataFile> subSetDataFiles = workingSubSets.stream().flatMap(wss -> wss.getDataFiles().stream())
@@ -1041,14 +1003,12 @@ public class AIPService implements IAIPService {
             // lets use the template service to get our message
             String message;
             try {
-                message = templateService
-                        .render(StorageTemplateConfiguration.NOT_SUBSETTED_DATA_FILES_TEMPLATE_NAME, dataMap);
+                message = templateService.render(StorageTemplateConfiguration.NOT_SUBSETTED_DATA_FILES_TEMPLATE_NAME,
+                                                 dataMap);
             } catch (TemplateException e) {
                 throw new MaintenanceException(e.getMessage(), e);
             }
-            notifyAdmins("Some file were not handled by a data storage",
-                         message,
-                         NotificationLevel.ERROR,
+            notifyAdmins("Some file were not handled by a data storage", message, NotificationLevel.ERROR,
                          MimeTypeUtils.TEXT_HTML);
         }
         return workingSubSets;
@@ -1056,12 +1016,11 @@ public class AIPService implements IAIPService {
 
     private Set<IWorkingSubset> getDeletionWorkingSubsets(Collection<StorageDataFile> dataFilesToSubSet,
             IDataStorage<IWorkingSubset> storage) {
-        WorkingSubsetWrapper<?> workingSubsetWrapper = storage
-                .prepare(dataFilesToSubSet, DataStorageAccessModeEnum.DELETION_MODE);
-        @SuppressWarnings("unchecked") Set<IWorkingSubset> workingSubSets = (Set<IWorkingSubset>) workingSubsetWrapper
-                .getWorkingSubSets();
-        LOGGER.debug("{} data objects were dispatched into {} working subsets",
-                     dataFilesToSubSet.size(),
+        WorkingSubsetWrapper<?> workingSubsetWrapper = storage.prepare(dataFilesToSubSet,
+                                                                       DataStorageAccessModeEnum.DELETION_MODE);
+        @SuppressWarnings("unchecked")
+        Set<IWorkingSubset> workingSubSets = (Set<IWorkingSubset>) workingSubsetWrapper.getWorkingSubSets();
+        LOGGER.debug("{} data objects were dispatched into {} working subsets", dataFilesToSubSet.size(),
                      workingSubSets.size());
         // as we are trusty people, we check that the prepare gave us back all DataFiles into the WorkingSubSets
         Set<StorageDataFile> subSetDataFiles = workingSubSets.stream().flatMap(wss -> wss.getDataFiles().stream())
@@ -1101,9 +1060,7 @@ public class AIPService implements IAIPService {
             return pluginService.getPlugin(activeAllocationStrategy.getId());
         } catch (PluginUtilsRuntimeException | NotAvailablePluginConfigurationException e) {
             LOGGER.error(e.getMessage(), e);
-            notifyAdmins("Allocation Strategy miss configured",
-                         e.getMessage(),
-                         NotificationLevel.ERROR,
+            notifyAdmins("Allocation Strategy miss configured", e.getMessage(), NotificationLevel.ERROR,
                          MimeTypeUtils.TEXT_PLAIN);
             throw new ModuleException(e);
         }
@@ -1118,11 +1075,9 @@ public class AIPService implements IAIPService {
         // System can only handle one active configuration of IAllocationStrategy
         if (activeAllocationStrategies.size() != 1) {
             IllegalStateException e = new IllegalStateException(
-                    "The application needs one and only one active configuration of " + IAllocationStrategy.class
-                            .getName());
-            notifyAdmins("No active Allocation Strategy",
-                         e.getMessage(),
-                         NotificationLevel.ERROR,
+                    "The application needs one and only one active configuration of "
+                            + IAllocationStrategy.class.getName());
+            notifyAdmins("No active Allocation Strategy", e.getMessage(), NotificationLevel.ERROR,
                          MimeTypeUtils.TEXT_PLAIN);
             LOGGER.error(e.getMessage(), e);
             throw e;
@@ -1140,8 +1095,8 @@ public class AIPService implements IAIPService {
         // System can only handle one active configuration of IAllocationStrategy
         if (activeSecurityDelegations.size() != 1) {
             IllegalStateException e = new IllegalStateException(
-                    "The application needs one and only one active configuration of " + ISecurityDelegation.class
-                            .getName());
+                    "The application needs one and only one active configuration of "
+                            + ISecurityDelegation.class.getName());
             LOGGER.error(e.getMessage(), e);
             throw e;
         }
@@ -1168,8 +1123,7 @@ public class AIPService implements IAIPService {
             LOGGER.error(e.getMessage(), e);
             notifyAdmins("Could not schedule metadata storage",
                          "Metadata storage could not be realized because an error occured. Please check the logs",
-                         NotificationLevel.ERROR,
-                         MimeTypeUtils.TEXT_PLAIN);
+                         NotificationLevel.ERROR, MimeTypeUtils.TEXT_PLAIN);
         }
     }
 
@@ -1178,8 +1132,8 @@ public class AIPService implements IAIPService {
      * @return data files to store
      */
     private Set<AIP> getMetadataFilesToStore() {
-        Page<AIP> page = aipDao
-                .findAllByState(AIPState.DATAFILES_STORED, PageRequest.of(0, aipIterationLimit, Direction.ASC, "id"));
+        Page<AIP> page = aipDao.findAllByState(AIPState.DATAFILES_STORED,
+                                               PageRequest.of(0, aipIterationLimit, Direction.ASC, "id"));
         Set<AIP> aips = new HashSet<>(page.getContent());
         LOGGER.trace("[METADATA STORE] Number of AIP metadata {} to schedule for storage.", aips.size());
         return aips;
@@ -1244,8 +1198,7 @@ public class AIPService implements IAIPService {
                 if (oAIP.isPresent()) {
                     if (oAIP.get().getState() == AIPState.STORED) {
                         // If associated AIP is in STORED state, run the update request
-                        Optional<AIP> oAipUpdated = updateAip(request.getAipId(),
-                                                              request.getAip(),
+                        Optional<AIP> oAipUpdated = updateAip(request.getAipId(), request.getAip(),
                                                               request.getUpdateMessage());
                         // If request is well handled, delete the update request.
                         oAipUpdated.ifPresent(aip -> aipUpdateRequestRepo.delete(request));
@@ -1313,8 +1266,7 @@ public class AIPService implements IAIPService {
         // first tags
         // remove all existing tags
         newAIPBuilder.getPDIBuilder().removeTags(newAIPBuilder.getPDIBuilder().build().getTags()
-                                                         .toArray(new String[newAIPBuilder.getPDIBuilder().build()
-                                                                 .getTags().size()]));
+                .toArray(new String[newAIPBuilder.getPDIBuilder().build().getTags().size()]));
         // add the new tags
         if (!newAip.getTags().isEmpty()) {
             newAIPBuilder.getPDIBuilder().addTags(newAip.getTags().toArray(new String[newAip.getTags().size()]));
@@ -1347,11 +1299,10 @@ public class AIPService implements IAIPService {
         }
         // Access Right information
         if (!Strings.isNullOrEmpty(newAipPdi.getAccessRightInformation().getDataRights())) {
-            newAIPBuilder.getPDIBuilder().setAccessRightInformation(newAipPdi.getAccessRightInformation().getLicence(),
-                                                                    newAipPdi.getAccessRightInformation()
-                                                                            .getDataRights(),
-                                                                    newAipPdi.getAccessRightInformation()
-                                                                            .getPublicReleaseDate());
+            newAIPBuilder.getPDIBuilder()
+                    .setAccessRightInformation(newAipPdi.getAccessRightInformation().getLicence(),
+                                               newAipPdi.getAccessRightInformation().getDataRights(),
+                                               newAipPdi.getAccessRightInformation().getPublicReleaseDate());
         }
 
         // descriptive information
@@ -1418,9 +1369,7 @@ public class AIPService implements IAIPService {
         Set<StorageDataFile> dataFilesWithMetadata = dataFileDao.findAllByAip(toBeDeleted);
         long daoFindEnd = System.currentTimeMillis();
         String toBeDeletedIpId = toBeDeleted.getId().toString();
-        LOGGER.trace("Finding {} datafile for aip {} took {} ms",
-                     dataFilesWithMetadata.size(),
-                     toBeDeletedIpId,
+        LOGGER.trace("Finding {} datafile for aip {} took {} ms", dataFilesWithMetadata.size(), toBeDeletedIpId,
                      daoFindEnd - daoFindStart);
         Set<StorageDataFile> dataFilesWithoutMetadata = dataFilesWithMetadata.stream()
                 .filter(df -> !DataType.AIP.equals(df.getDataType())).collect(Collectors.toSet());
@@ -1434,9 +1383,10 @@ public class AIPService implements IAIPService {
         AIPBuilder toBeDeletedBuilder = new AIPBuilder(toBeDeleted);
         long endInitiateBuilder = System.currentTimeMillis();
         LOGGER.trace("Initiating AIPBuilder for {} took {} ms", toBeDeletedIpId, endInitiateBuilder - initiateBuilder);
-        toBeDeletedBuilder.addEvent(EventType.DELETION.name(),
-                                    "AIP deletion was requested, AIP is considered deleted until its removal from archives",
-                                    OffsetDateTime.now());
+        toBeDeletedBuilder
+                .addEvent(EventType.DELETION.name(),
+                          "AIP deletion was requested, AIP is considered deleted until its removal from archives",
+                          OffsetDateTime.now());
         long endAddEvent = System.currentTimeMillis();
         LOGGER.trace("Adding deletion event to AIP {} took {} ms", toBeDeletedIpId, endAddEvent - endInitiateBuilder);
         toBeDeleted = toBeDeletedBuilder.build();
@@ -1462,24 +1412,19 @@ public class AIPService implements IAIPService {
         boolean deletionReady = false;
         // we order deletion of a file if and only if no other AIP references the same file
         long daoFindOtherDataFileStart = System.currentTimeMillis();
-        long nbDataFilesWithSameFile = dataFileDao
-                .countByChecksumAndStorageDirectory(dataFile.getChecksum(), dataFile.getStorageDirectory());
+        long nbDataFilesWithSameFile = dataFileDao.countByChecksumAndStorageDirectory(dataFile.getChecksum(),
+                                                                                      dataFile.getStorageDirectory());
         long daoFindOtherDataFileEnd = System.currentTimeMillis();
-        LOGGER.trace("Counting {} other datafile with checksum {} took {} ms",
-                     nbDataFilesWithSameFile,
-                     dataFile.getChecksum(),
-                     daoFindOtherDataFileEnd - daoFindOtherDataFileStart);
+        LOGGER.trace("Counting {} other datafile with checksum {} took {} ms", nbDataFilesWithSameFile,
+                     dataFile.getChecksum(), daoFindOtherDataFileEnd - daoFindOtherDataFileStart);
         if (nbDataFilesWithSameFile == 1) {
             // The AIP to delete is the only one who own the data file. So we can delete it.
             // If dataFile is in error state and no storage succeeded. So no URLs are associated to the dataFile.
             if (dataFile.getState().equals(DataFileState.ERROR) && dataFile.getUrls().isEmpty()) {
                 // we do not do remove immediately because the AIP metadata has to be updated first
                 // and the logic is already implemented into DataStorageEventHandler
-                publisher.publish(new DataStorageEvent(dataFile,
-                                                       StorageAction.DELETION,
-                                                       StorageEventType.SUCCESSFULL,
-                                                       null,
-                                                       null));
+                publisher.publish(new DataStorageEvent(dataFile, StorageAction.DELETION, StorageEventType.SUCCESSFULL,
+                        null, null));
                 deletionReady = true;
             } else {
                 if (!dataFile.getState().equals(DataFileState.PENDING)) {
@@ -1493,11 +1438,8 @@ public class AIPService implements IAIPService {
             // if other data files are referencing a file, we just remove the file from the
             // database. We do not do remove it immediately because the AIP metadata has to be updated first
             // and the logic is already implemented into DataStorageEventHandler
-            publisher.publish(new DataStorageEvent(dataFile,
-                                                   StorageAction.DELETION,
-                                                   StorageEventType.SUCCESSFULL,
-                                                   null,
-                                                   null));
+            publisher.publish(new DataStorageEvent(dataFile, StorageAction.DELETION, StorageEventType.SUCCESSFULL, null,
+                    null));
             deletionReady = true;
         }
         return deletionReady;
@@ -1552,8 +1494,8 @@ public class AIPService implements IAIPService {
                     report.addFileToDelete();
                 }
             } catch (InvalidDatastoragePluginConfException e) {
-                String errorCause = String
-                        .format("Deletion job could not be created for the following reason: %s.", e.getMessage());
+                String errorCause = String.format("Deletion job could not be created for the following reason: %s.",
+                                                  e.getMessage());
                 report.setDeletionScheduled(false);
                 report.addDeletionErrorCause(errorCause);
                 LOGGER.error(errorCause, e);
@@ -1578,11 +1520,8 @@ public class AIPService implements IAIPService {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(DeleteFilesFromDataStorageJob.FILTER_PARAMETER_NAME, filters));
         parameters.add(new JobParameter(DeleteFilesFromDataStorageJob.DATA_STORAGE_ID_PARAMETER_NAME, dataStorageId));
-        JobInfo jobInfo = new JobInfo(false,
-                                      StorageJobsPriority.METADATA_DELETION_JOB,
-                                      parameters,
-                                      authResolver.getUser(),
-                                      DeleteFilesFromDataStorageJob.class.getName());
+        JobInfo jobInfo = new JobInfo(false, StorageJobsPriority.METADATA_DELETION_JOB, parameters,
+                authResolver.getUser(), DeleteFilesFromDataStorageJob.class.getName());
         jobInfoService.createAsQueued(jobInfo);
         LOGGER.debug("New DeleteFilesFromDataStorageJob job scheduled uuid={}", jobInfo.getId().toString());
     }
@@ -1673,9 +1612,7 @@ public class AIPService implements IAIPService {
                 scheduleDeletionJob(dataStorageDataFileMultimap, dataStorageConfId, forceDeletion);
             } catch (InvalidDatastoragePluginConfException e) {
                 LOGGER.error(e.getMessage(), e);
-                notificationClient.notify(e.getMessage(),
-                                          "Storage - Schedule deletion error",
-                                          NotificationLevel.ERROR,
+                notificationClient.notify(e.getMessage(), "Storage - Schedule deletion error", NotificationLevel.ERROR,
                                           DefaultRole.ADMIN);
             }
         }
@@ -1706,17 +1643,11 @@ public class AIPService implements IAIPService {
             parameters.add(new JobParameter(AbstractStoreFilesJob.PLUGIN_TO_USE_PARAMETER_NAME, dataStorageConfId));
             parameters.add(new JobParameter(AbstractStoreFilesJob.WORKING_SUB_SET_PARAMETER_NAME, workingSubset));
             if (forceDeletion) {
-                jobIds.add(jobInfoService.createAsQueued(new JobInfo(false,
-                                                                     StorageJobsPriority.DELETION_JOB,
-                                                                     parameters,
-                                                                     authResolver.getUser(),
-                                                                     ForceDeleteDataFilesJob.class.getName())).getId());
+                jobIds.add(jobInfoService.createAsQueued(new JobInfo(false, StorageJobsPriority.DELETION_JOB,
+                        parameters, authResolver.getUser(), ForceDeleteDataFilesJob.class.getName())).getId());
             } else {
-                jobIds.add(jobInfoService.createAsQueued(new JobInfo(false,
-                                                                     StorageJobsPriority.DELETION_JOB,
-                                                                     parameters,
-                                                                     authResolver.getUser(),
-                                                                     DeleteDataFilesJob.class.getName())).getId());
+                jobIds.add(jobInfoService.createAsQueued(new JobInfo(false, StorageJobsPriority.DELETION_JOB,
+                        parameters, authResolver.getUser(), DeleteDataFilesJob.class.getName())).getId());
             }
         }
         return jobIds;
@@ -1742,16 +1673,11 @@ public class AIPService implements IAIPService {
                 Long realFileSizeInCache = Paths.get(ocf.get().getLocation().getPath()).toFile().length();
                 CachedFile cf = ocf.get();
                 if (!cf.getFileSize().equals(realFileSizeInCache)) {
-                    LOGGER.warn(
-                            "File {} size in database ({}octets) is different from real file size in cache ({}octets).",
-                            cf.getFileName(),
-                            cf.getFileSize(),
-                            realFileSizeInCache);
+                    LOGGER.warn("File {} size in database ({}octets) is different from real file size in cache ({}octets).",
+                                cf.getFileName(), cf.getFileSize(), realFileSizeInCache);
                 }
-                return new DownloadableFile(new FileInputStream(cf.getLocation().getPath()),
-                                            realFileSizeInCache,
-                                            cf.getFileName(),
-                                            cf.getMimeType());
+                return new DownloadableFile(new FileInputStream(cf.getLocation().getPath()), realFileSizeInCache,
+                        cf.getFileName(), cf.getMimeType());
             } else {
                 // if it is not in cache, lets see if it is ONLINE
                 Set<StorageDataFile> aipDataFiles = dataFileDao.findAllByAip(aip);
@@ -1763,19 +1689,20 @@ public class AIPService implements IAIPService {
                         // first let see if this file is stored on an online data storage and lets get the most prioritized
                         Optional<PrioritizedDataStorage> onlinePrioritizedDataStorageOpt = dataFile
                                 .getPrioritizedDataStorages().stream()
-                                .filter(pds -> pds.getDataStorageType().equals(DataStorageType.ONLINE) && pds
-                                        .getDataStorageConfiguration().isActive()).sorted().findFirst();
+                                .filter(pds -> pds.getDataStorageType().equals(DataStorageType.ONLINE)
+                                        && pds.getDataStorageConfiguration().isActive())
+                                .sorted().findFirst();
                         if (onlinePrioritizedDataStorageOpt.isPresent()) {
                             InputStream dataFileIS;
                             try {
                                 dataFileIS = ((IOnlineDataStorage) pluginService
-                                    .getPlugin(onlinePrioritizedDataStorageOpt.get().getId())).retrieve(dataFile);
+                                        .getPlugin(onlinePrioritizedDataStorageOpt.get().getId())).retrieve(dataFile);
                             } catch (NotAvailablePluginConfigurationException e) {
                                 LOGGER.error(e.getMessage(), e);
                                 throw new EntityNotFoundException(e.getMessage());
                             }
                             return new DownloadableFile(dataFileIS, dataFile.getFileSize(), dataFile.getName(),
-                                                        dataFile.getMimeType());
+                                    dataFile.getMimeType());
                         } else {
                             // the file is neither in cache nor ONLINE but it exists, lets return null
                             return null;
@@ -1794,8 +1721,8 @@ public class AIPService implements IAIPService {
 
     @Override
     public int removeDeletedAIPMetadatas() {
-        Page<AIP> aips = aipDao
-                .findAllByStateService(AIPState.DELETED, PageRequest.of(0, aipIterationLimit, Direction.ASC, "id"));
+        Page<AIP> aips = aipDao.findAllByStateService(AIPState.DELETED,
+                                                      PageRequest.of(0, aipIterationLimit, Direction.ASC, "id"));
         for (AIP aip : aips) {
             Set<StorageDataFile> files = dataFileDao.findAllByAip(aip);
             if (files.isEmpty()) {
@@ -1845,11 +1772,8 @@ public class AIPService implements IAIPService {
         }
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(new JobParameter(DeleteAIPsJob.FILTER_PARAMETER_NAME, filters));
-        JobInfo jobInfo = new JobInfo(false,
-                                      StorageJobsPriority.METADATA_DELETION_JOB,
-                                      parameters,
-                                      authResolver.getUser(),
-                                      DeleteAIPsJob.class.getName());
+        JobInfo jobInfo = new JobInfo(false, StorageJobsPriority.METADATA_DELETION_JOB, parameters,
+                authResolver.getUser(), DeleteAIPsJob.class.getName());
         jobInfoService.createAsQueued(jobInfo);
         LOGGER.debug("New DeleteAIPsJob job scheduled uuid={}", jobInfo.getId().toString());
     }
@@ -1862,9 +1786,7 @@ public class AIPService implements IAIPService {
         long daofindPageStart = System.currentTimeMillis();
         Page<AIP> aipPage = aipDao.findPageBySipIdIn(sipIds, page);
         long daofindPageEnd = System.currentTimeMillis();
-        LOGGER.trace("Finding {} aip from {} sip ids took {} ms",
-                     aipPage.getNumberOfElements(),
-                     sipIds.size(),
+        LOGGER.trace("Finding {} aip from {} sip ids took {} ms", aipPage.getNumberOfElements(), sipIds.size(),
                      daofindPageEnd - daofindPageStart);
         while (aipPage.hasContent()) {
             // while there is aip to delete, lets delete them and get the new page at the end
@@ -1881,8 +1803,8 @@ public class AIPService implements IAIPService {
                 LOGGER.trace("deleting sip {} took {} ms", sipId, timeEnd - timeStart);
                 if (!notSuppressible.isEmpty()) {
                     StringJoiner sj = new StringJoiner(", ",
-                                                       "This sip could not be deleted because at least one of its aip file has not be handle by the storage process: ",
-                                                       ".");
+                            "This sip could not be deleted because at least one of its aip file has not be handle by the storage process: ",
+                            ".");
                     notSuppressible.stream().map(StorageDataFile::getAipEntity)
                             .forEach(aipEntity -> sj.add(aipEntity.getAipId()));
                     notHandledSips.add(new RejectedSip(sipId, sj.toString()));
@@ -1896,9 +1818,7 @@ public class AIPService implements IAIPService {
             daofindPageStart = System.currentTimeMillis();
             aipPage = aipDao.findPageBySipIdIn(sipIds, page);
             daofindPageEnd = System.currentTimeMillis();
-            LOGGER.trace("Finding {} aip from {} sip ids took {} ms",
-                         aipPage.getNumberOfElements(),
-                         sipIds.size(),
+            LOGGER.trace("Finding {} aip from {} sip ids took {} ms", aipPage.getNumberOfElements(), sipIds.size(),
                          daofindPageEnd - daofindPageStart);
         }
         return notHandledSips;
@@ -1906,8 +1826,8 @@ public class AIPService implements IAIPService {
 
     @Override
     public boolean removeTagsByQuery(RemoveAIPTagsFilters filters) {
-        Long jobsScheduled = jobInfoService
-                .retrieveJobsCount(UpdateAIPsTagJob.class.getName(), JobStatus.QUEUED, JobStatus.RUNNING);
+        Long jobsScheduled = jobInfoService.retrieveJobsCount(UpdateAIPsTagJob.class.getName(), JobStatus.QUEUED,
+                                                              JobStatus.RUNNING);
         if (jobsScheduled > 0) {
             LOGGER.debug("Cannot remove tags on AIPs : {} similar job(s) is(are) already running on this tenant",
                          jobsScheduled);
@@ -1925,8 +1845,8 @@ public class AIPService implements IAIPService {
 
     @Override
     public boolean addTagsByQuery(AddAIPTagsFilters filters) {
-        Long jobsScheduled = jobInfoService
-                .retrieveJobsCount(UpdateAIPsTagJob.class.getName(), JobStatus.QUEUED, JobStatus.RUNNING);
+        Long jobsScheduled = jobInfoService.retrieveJobsCount(UpdateAIPsTagJob.class.getName(), JobStatus.QUEUED,
+                                                              JobStatus.RUNNING);
         if (jobsScheduled > 0) {
             LOGGER.debug("Cannot add tags on AIPs : {} similar job(s) is(are) already running on this tenant",
                          jobsScheduled);
@@ -1951,26 +1871,18 @@ public class AIPService implements IAIPService {
         Set<JobParameter> parameters = Sets.newHashSet();
         parameters.add(filterParameter);
         parameters.add(new JobParameter(UpdateAIPsTagJob.UPDATE_TYPE_PARAMETER_NAME, updateType));
-        JobInfo jobInfo = new JobInfo(false,
-                                      StorageJobsPriority.UPDATE_TAGS_JOB,
-                                      parameters,
-                                      authResolver.getUser(),
-                                      UpdateAIPsTagJob.class.getName());
+        JobInfo jobInfo = new JobInfo(false, StorageJobsPriority.UPDATE_TAGS_JOB, parameters, authResolver.getUser(),
+                UpdateAIPsTagJob.class.getName());
         jobInfoService.createAsQueued(jobInfo);
         LOGGER.debug("New job scheduled uuid={}", jobInfo.getId().toString());
     }
 
     @Override
     public List<String> retrieveAIPTagsByQuery(AIPQueryFilters request) {
-        return aipDao.findAllByCustomQuery(AIPQueryGenerator.searchAipTagsUsingSQL(request.getState(),
-                                                                                   request.getFrom(),
-                                                                                   request.getTo(),
-                                                                                   request.getTags(),
-                                                                                   request.getSession(),
-                                                                                   request.getProviderId(),
-                                                                                   request.getAipIds(),
-                                                                                   request.getAipIdsExcluded(),
-                                                                                   request.getStoredOn()));
+        return aipDao.findAllByCustomQuery(AIPQueryGenerator
+                .searchAipTagsUsingSQL(request.getState(), request.getFrom(), request.getTo(), request.getTags(),
+                                       request.getSession(), request.getProviderId(), request.getAipIds(),
+                                       request.getAipIdsExcluded(), request.getStoredOn()));
     }
 
     @Override
@@ -1999,8 +1911,8 @@ public class AIPService implements IAIPService {
 
     @Override
     public Page<AIPSession> searchSessions(String id, OffsetDateTime from, OffsetDateTime to, Pageable pageable) {
-        Page<AIPSession> pagedSessions = aipSessionRepository
-                .findAll(AIPSessionSpecifications.search(id, from, to), pageable);
+        Page<AIPSession> pagedSessions = aipSessionRepository.findAll(AIPSessionSpecifications.search(id, from, to),
+                                                                      pageable);
         List<AIPSession> sessions = new ArrayList<>();
         pagedSessions.forEach(s -> sessions.add(this.addAipSessionInformations(s)));
         return new PageImpl<>(sessions, pageable, pagedSessions.getTotalElements());
@@ -2008,14 +1920,12 @@ public class AIPService implements IAIPService {
 
     private AIPSession addAipSessionInformations(AIPSession session) {
         long aipsCount = aipDao.countBySessionId(session.getId());
-        long queuedAipsCount = aipDao.countBySessionIdAndStateIn(session.getId(),
-                                                                 Sets.newHashSet(AIPState.VALID,
-                                                                                 AIPState.PENDING,
-                                                                                 AIPState.STORING_METADATA));
+        long queuedAipsCount = aipDao.countBySessionIdAndStateIn(session.getId(), Sets
+                .newHashSet(AIPState.VALID, AIPState.PENDING, AIPState.STORING_METADATA));
         long storedAipsCount = aipDao.countBySessionIdAndStateIn(session.getId(), Sets.newHashSet(AIPState.STORED));
         long deletedAipsCount = aipDao.countBySessionIdAndStateIn(session.getId(), Sets.newHashSet(AIPState.DELETED));
-        long errorAipsCount = aipDao
-                .countBySessionIdAndStateIn(session.getId(), Sets.newHashSet(AIPState.STORAGE_ERROR));
+        long errorAipsCount = aipDao.countBySessionIdAndStateIn(session.getId(),
+                                                                Sets.newHashSet(AIPState.STORAGE_ERROR));
         long nbFilesStored = dataFileDao.findAllByStateAndAipSession(DataFileState.STORED, session.getId());
         long nbFiles = dataFileDao.findAllByAipSession(session.getId());
 
@@ -2054,17 +1964,12 @@ public class AIPService implements IAIPService {
                 toDelete.remove(newFile);
             } else {
                 newfilesToStore = true;
-                LOGGER.debug("[UPDATE AIP] Add new datastore file {} for AIP {}.",
-                             newFile.getName(),
+                LOGGER.debug("[UPDATE AIP] Add new datastore file {} for AIP {}.", newFile.getName(),
                              newAip.getProviderId());
-                newAIPBuilder.getContentInformationBuilder().setDataObject(newFile.getDataType(),
-                                                                           newFile.getName(),
-                                                                           newFile.getAlgorithm(),
-                                                                           newFile.getChecksum(),
-                                                                           newFile.getFileSize(),
-                                                                           newFile.getUrls()
-                                                                                   .toArray(new URL[newFile.getUrls()
-                                                                                           .size()]));
+                newAIPBuilder.getContentInformationBuilder()
+                        .setDataObject(newFile.getDataType(), newFile.getName(), newFile.getAlgorithm(),
+                                       newFile.getChecksum(), newFile.getFileSize(),
+                                       newFile.getUrls().toArray(new URL[newFile.getUrls().size()]));
                 newAIPBuilder.getContentInformationBuilder().setSyntax(newFile.getMimeType());
                 newFile.setState(DataFileState.PENDING);
                 newFile.setOriginUrls(newFile.getUrls());
@@ -2078,8 +1983,7 @@ public class AIPService implements IAIPService {
         // the new metadata file will be stored.
         toDelete.stream().filter(df -> !df.getDataType().equals(DataType.AIP)).forEach(fileToDelete -> {
             LOGGER.debug("[UPDATE AIP] Update datastore file {} for AIP {} to TO_BE_DELETED state.",
-                         fileToDelete.getName(),
-                         newAip.getProviderId());
+                         fileToDelete.getName(), newAip.getProviderId());
             fileToDelete.setState(DataFileState.TO_BE_DELETED);
             dataFileDao.save(fileToDelete);
             em.flush();
