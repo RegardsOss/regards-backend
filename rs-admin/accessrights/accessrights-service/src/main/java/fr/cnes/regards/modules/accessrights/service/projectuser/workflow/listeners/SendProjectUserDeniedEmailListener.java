@@ -29,6 +29,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import feign.FeignException;
+import fr.cnes.regards.framework.feign.security.FeignSecurityManager;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.instance.client.IAccountsClient;
 import fr.cnes.regards.modules.accessrights.instance.domain.Account;
@@ -68,6 +69,7 @@ public class SendProjectUserDeniedEmailListener implements ApplicationListener<O
         Map<String, String> data = new HashMap<>();
         // lets retrive the account
         try {
+            FeignSecurityManager.asSystem();
             ResponseEntity<Resource<Account>> accountResponse = accountsClient
                     .retrieveAccounByEmail(projectUser.getEmail());
             if (accountResponse.getStatusCode().is2xxSuccessful()) {
@@ -79,15 +81,16 @@ public class SendProjectUserDeniedEmailListener implements ApplicationListener<O
         } catch (FeignException e) {
             LOGGER.error("Could not find the associated Account for templating the email content.", e);
             data.put("name", "");
+        } finally {
+            FeignSecurityManager.reset();
         }
 
         String message;
         try {
             message = templateService.render(AccessRightTemplateConf.USER_DENIED_TEMPLATE_NAME, data);
         } catch (final TemplateException e) {
-            LOGGER.error(
-                    "Could not find the template to generate the email notifying the account refusal. Falling back to default.",
-                    e);
+            LOGGER.error("Could not find the template to generate the email notifying the account refusal. Falling back to default.",
+                         e);
             message = "Your access request was refused by admin.";
         }
         emailService.sendEmail(message, "[REGARDS] User access denied", null, projectUser.getEmail());
