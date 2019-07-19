@@ -33,12 +33,14 @@ import java.util.zip.ZipOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import com.google.common.io.ByteStreams;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -51,6 +53,7 @@ import fr.cnes.regards.modules.emails.domain.Email;
  * @author Xavier-Alexandre Brochard
  * @author Christophe Mertz
  */
+@Profile("!nomail")
 @Service
 @MultitenantTransactional
 public class EmailService extends AbstractEmailService {
@@ -178,7 +181,7 @@ public class EmailService extends AbstractEmailService {
         final Email email = new Email();
         email.setBcc(message.getBcc());
         email.setCc(message.getCc());
-        email.setFrom(message.getFrom() == null? defaultSender: message.getFrom());
+        email.setFrom(message.getFrom() == null ? defaultSender : message.getFrom());
         email.setReplyTo(message.getReplyTo());
         if (message.getSentDate() != null) {
             email.setSentDate(LocalDateTime.ofInstant(message.getSentDate().toInstant(), ZoneId.systemDefault()));

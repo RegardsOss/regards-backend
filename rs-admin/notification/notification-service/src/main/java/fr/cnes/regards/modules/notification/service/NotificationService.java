@@ -25,7 +25,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import fr.cnes.regards.modules.notification.domain.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,6 +46,11 @@ import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.projectuser.IProjectUserService;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
+import fr.cnes.regards.modules.notification.domain.INotificationWithoutMessage;
+import fr.cnes.regards.modules.notification.domain.Notification;
+import fr.cnes.regards.modules.notification.domain.NotificationMode;
+import fr.cnes.regards.modules.notification.domain.NotificationStatus;
+import fr.cnes.regards.modules.notification.domain.NotificationToSendEvent;
 
 /**
  * {@link INotificationService} implementation
@@ -259,5 +263,23 @@ public class NotificationService implements INotificationService {
         } else {
             return notificationRepository.countByStatus(NotificationStatus.READ);
         }
+    }
+
+    /* (non-Javadoc)
+     * @see fr.cnes.regards.modules.notification.service.INotificationService#deleteReadNotifications()
+     */
+    @Override
+    public void deleteReadNotifications() {
+        Pageable page = PageRequest.of(0, 1000);
+        Page<INotificationWithoutMessage> results;
+        do {
+            results = this.retrieveNotifications(page, NotificationStatus.READ);
+            if ((results != null)) {
+                if (results.hasContent()) {
+                    results.getContent().forEach(n -> notificationRepository.deleteById(n.getId()));
+                }
+                page = results.nextPageable();
+            }
+        } while ((results != null) && results.hasNext());
     }
 }

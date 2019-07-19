@@ -21,12 +21,12 @@ package fr.cnes.regards.modules.notification.service;
 import java.util.List;
 import java.util.Set;
 
-import fr.cnes.regards.modules.notification.domain.INotificationWithoutMessage;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.notification.NotificationDTO;
+import fr.cnes.regards.modules.notification.domain.INotificationWithoutMessage;
 import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
 
@@ -118,14 +118,19 @@ public interface INotificationService {
     Set<String> findRecipients(Notification pNotification);
 
     /**
-     * Counter number of unread notifications for current used
+     * Counter number of unread notifications for current user
      * @return long
      */
     Long countUnreadNotifications();
 
     /**
-     * Counter number of read notifications for current used
+     * Counter number of read notifications for current user
      * @return long
      */
     Long countReadNotifications();
+
+    /**
+     * Delete read notifications for current user
+     */
+    void deleteReadNotifications();
 }
