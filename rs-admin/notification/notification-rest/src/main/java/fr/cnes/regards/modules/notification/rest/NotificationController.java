@@ -236,7 +236,7 @@ public class NotificationController implements IResourceController<Notification>
      * @throws EntityNotFoundException Thrown when no notification with passed <code>id</code> could be found
      */
     @RequestMapping(value = NOTIFICATION_ID_PATH, method = RequestMethod.DELETE)
-    @ResourceAccess(description = "Define the endpoint for deleting a notification")
+    @ResourceAccess(description = "Define the endpoint for deleting a notification", role = DefaultRole.PUBLIC)
     public ResponseEntity<Void> deleteNotification(@PathVariable("notification_id") Long id)
             throws EntityNotFoundException {
         notificationService.deleteNotification(id);
@@ -250,7 +250,7 @@ public class NotificationController implements IResourceController<Notification>
      * @throws EntityNotFoundException Thrown when no notification with passed <code>id</code> could be found
      */
     @RequestMapping(value = NOTIFICATION_DELETE_PATH, method = RequestMethod.DELETE)
-    @ResourceAccess(description = "Define the endpoint for deleting a notification")
+    @ResourceAccess(description = "Define the endpoint for deleting a notification", role = DefaultRole.PUBLIC)
     public ResponseEntity<Void> deleteNotification() throws EntityNotFoundException {
         notificationService.deleteReadNotifications();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

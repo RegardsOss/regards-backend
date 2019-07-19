@@ -133,4 +133,6 @@ public interface INotificationService {
      * Delete read notifications for current user
      */
     void deleteReadNotifications();
+
+    void deleteReadNotificationsPage(Page<INotificationWithoutMessage> toDelete);
 }

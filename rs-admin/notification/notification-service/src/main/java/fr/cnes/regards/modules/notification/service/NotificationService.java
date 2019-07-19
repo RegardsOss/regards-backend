@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -85,6 +86,9 @@ public class NotificationService implements INotificationService {
     private final NotificationMode notificationMode;
 
     private final IAuthenticationResolver authenticationResolver;
+
+    @Autowired
+    private final INotificationService self = null;
 
     /**
      * Creates a {@link NotificationService} wired to the given {@link INotificationRepository}.
@@ -270,16 +274,22 @@ public class NotificationService implements INotificationService {
      */
     @Override
     public void deleteReadNotifications() {
-        Pageable page = PageRequest.of(0, 1000);
+        Pageable page = PageRequest.of(0, 500);
         Page<INotificationWithoutMessage> results;
         do {
             results = this.retrieveNotifications(page, NotificationStatus.READ);
             if ((results != null)) {
                 if (results.hasContent()) {
-                    results.getContent().forEach(n -> notificationRepository.deleteById(n.getId()));
+                    // Do delete in one unique transaction, to do so use the self element
+                    self.deleteReadNotificationsPage(results);
                 }
                 page = results.nextPageable();
             }
         } while ((results != null) && results.hasNext());
+    }
+
+    @Override
+    public void deleteReadNotificationsPage(Page<INotificationWithoutMessage> toDelete) {
+        toDelete.getContent().forEach(n -> notificationRepository.deleteById(n.getId()));
     }
 }
