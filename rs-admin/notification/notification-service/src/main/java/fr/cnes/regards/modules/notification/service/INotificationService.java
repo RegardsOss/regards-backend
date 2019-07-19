@@ -134,5 +134,5 @@ public interface INotificationService {
      */
     void deleteReadNotifications();
 
-    void deleteReadNotificationsPage(Page<INotificationWithoutMessage> toDelete);
+    Page<INotificationWithoutMessage> deleteReadNotificationsPage(Pageable page);
 }
