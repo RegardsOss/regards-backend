@@ -119,8 +119,10 @@ public interface INotificationRepository
             + " ?3 member of n.roleRecipients) GROUP BY id ORDER BY id DESC")
     Long countByStatus(NotificationStatus status, String projectUser, String role);
 
-    void deleteByStatusAndRoleRecipientsInAndProjectUserRecipientsIn(NotificationStatus status,
-            Collection<String> roles, Collection<String> users);
+    void deleteByStatusAndRoleRecipientsInAndProjectUserRecipientsIsNull(NotificationStatus status,
+            Collection<String> roles);
+
+    void deleteByStatusAndProjectUserRecipientsIn(NotificationStatus status, Collection<String> users);
 
     /**
      * Find all notifications with passed <code>status</code>
