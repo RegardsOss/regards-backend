@@ -34,6 +34,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
@@ -269,27 +271,24 @@ public class NotificationService implements INotificationService {
         }
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.notification.service.INotificationService#deleteReadNotifications()
-     */
     @Override
     public void deleteReadNotifications() {
         Pageable page = PageRequest.of(0, 1000);
         Page<INotificationWithoutMessage> results;
         do {
-            results = this.retrieveNotifications(page, NotificationStatus.READ);
-            if ((results != null)) {
-                if (results.hasContent()) {
-                    // Do delete in one unique transaction, to do so use the self element
-                    self.deleteReadNotificationsPage(results);
-                }
-                page = results.nextPageable();
-            }
-        } while ((results != null) && results.hasNext());
+            // Do delete in one unique transaction, to do so use the self element
+            results = self.deleteReadNotificationsPage(page);
+            page = results.nextPageable();
+        } while (results.hasNext());
     }
 
     @Override
-    public void deleteReadNotificationsPage(Page<INotificationWithoutMessage> toDelete) {
-        toDelete.getContent().forEach(n -> notificationRepository.deleteById(n.getId()));
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Page<INotificationWithoutMessage> deleteReadNotificationsPage(Pageable page) {
+        Page<INotificationWithoutMessage> results = this.retrieveNotifications(page, NotificationStatus.READ);
+        Set<Long> idsToDelete = results.getContent().stream().map(INotificationWithoutMessage::getId)
+                .collect(Collectors.toSet());
+        notificationRepository.deleteByIdIn(idsToDelete);
+        return results;
     }
 }

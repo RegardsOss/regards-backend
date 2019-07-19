@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.notification.dao;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -165,4 +166,6 @@ public interface INotificationRepository
             + "recipient WHERE t_notification.id = recipient.notification_id AND recipient.projectuser_email = ?2",
             nativeQuery = true)
     void updateAllNotificationStatusByUser(String status, String projectUser);
+
+    void deleteByIdIn(Collection<Long> idsToDelete);
 }
