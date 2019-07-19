@@ -27,15 +27,16 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
-
-import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
@@ -87,6 +88,9 @@ public class NotificationService implements INotificationService {
     private final NotificationMode notificationMode;
 
     private final IAuthenticationResolver authenticationResolver;
+
+    @Autowired
+    private INotificationService self;
 
     /**
      * Creates a {@link NotificationService} wired to the given {@link INotificationRepository}.
@@ -267,17 +271,24 @@ public class NotificationService implements INotificationService {
         }
     }
 
-    /* (non-Javadoc)
-     * @see fr.cnes.regards.modules.notification.service.INotificationService#deleteReadNotifications()
-     */
     @Override
     public void deleteReadNotifications() {
-        notificationRepository
-                .deleteByStatusAndProjectUserRecipientsIn(NotificationStatus.READ,
-                                                          Lists.newArrayList(authenticationResolver.getUser()));
-        notificationRepository
-                .deleteByStatusAndRoleRecipientsInAndProjectUserRecipientsIsNull(NotificationStatus.READ, Lists
-                        .newArrayList(authenticationResolver.getRole()));
+        Pageable page = PageRequest.of(0, 1000);
+        Page<INotificationWithoutMessage> results;
+        do {
+            // Do delete in one unique transaction, to do so use the self element
+            results = self.deleteReadNotificationsPage(page);
+            page = results.nextPageable();
+        } while (results.hasNext());
+    }
 
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Page<INotificationWithoutMessage> deleteReadNotificationsPage(Pageable page) {
+        Page<INotificationWithoutMessage> results = this.retrieveNotifications(page, NotificationStatus.READ);
+        Set<Long> idsToDelete = results.getContent().stream().map(INotificationWithoutMessage::getId)
+                .collect(Collectors.toSet());
+        notificationRepository.deleteByIdIn(idsToDelete);
+        return results;
     }
 }
