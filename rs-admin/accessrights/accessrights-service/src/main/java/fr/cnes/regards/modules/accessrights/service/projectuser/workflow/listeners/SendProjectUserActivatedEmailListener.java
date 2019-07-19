@@ -24,6 +24,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.Profile;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -43,6 +44,7 @@ import freemarker.template.TemplateException;
  *
  * @author Xavier-Alexandre Brochard
  */
+@Profile("!nomail")
 @Component
 public class SendProjectUserActivatedEmailListener implements ApplicationListener<OnActiveEvent> {
 

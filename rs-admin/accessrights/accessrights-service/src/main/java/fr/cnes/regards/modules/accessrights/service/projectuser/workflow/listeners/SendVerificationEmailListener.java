@@ -25,6 +25,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.Profile;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -47,6 +48,7 @@ import freemarker.template.TemplateException;
  * Listen to {@link OnGrantAccessEvent} in order to warn the user its account request was refused.
  * @author Xavier-Alexandre Brochard
  */
+@Profile("!nomail")
 @Component
 public class SendVerificationEmailListener implements ApplicationListener<OnGrantAccessEvent> {
 
