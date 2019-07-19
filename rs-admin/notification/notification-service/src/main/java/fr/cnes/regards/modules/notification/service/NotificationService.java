@@ -278,7 +278,6 @@ public class NotificationService implements INotificationService {
         do {
             // Do delete in one unique transaction, to do so use the self element
             results = self.deleteReadNotificationsPage(page);
-            page = results.nextPageable();
         } while (results.hasNext());
     }
 
