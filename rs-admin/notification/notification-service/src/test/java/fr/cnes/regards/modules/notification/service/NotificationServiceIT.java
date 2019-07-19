@@ -89,15 +89,19 @@ public class NotificationServiceIT extends AbstractMultitenantServiceTest {
                 .toRolesAndUsers(Sets.newHashSet(authResolver.getRole()), Sets.newHashSet(authResolver.getUser()));
         notificationService.createNotification(notification);
 
-        notification = new NotificationDtoBuilder("message3", "title3", NotificationLevel.INFO, "moi")
-                .toRoles(Sets.newHashSet(authResolver.getRole()));
-        notificationService.createNotification(notification);
-        Assert.assertTrue("notif should exists", repo.findAll().size() == 3);
+        for (int i = 0; i <= 6000; i++) {
+            notification = new NotificationDtoBuilder("message3", "title3", NotificationLevel.INFO, "moi")
+                    .toRoles(Sets.newHashSet(authResolver.getRole()));
+            notificationService.createNotification(notification);
+        }
+
+        System.out.println("DONE !!!!!!!!!!!!!!!!!!!!!!");
+        Assert.assertEquals("notif should exists", 6003, repo.findAll().size());
 
         notificationService.deleteReadNotifications();
 
         List<Notification> notifs = repo.findAll();
-        Assert.assertTrue("notif should still exists as no one is in READ status", notifs.size() == 3);
+        Assert.assertTrue("notif should still exists as no one is in READ status", notifs.size() == 6003);
 
         notificationService.markAllNotificationAs(NotificationStatus.READ);
 
