@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -35,6 +34,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+
+import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.utils.RegardsTransactional;
@@ -86,9 +87,6 @@ public class NotificationService implements INotificationService {
     private final NotificationMode notificationMode;
 
     private final IAuthenticationResolver authenticationResolver;
-
-    @Autowired
-    private final INotificationService self = null;
 
     /**
      * Creates a {@link NotificationService} wired to the given {@link INotificationRepository}.
@@ -274,22 +272,11 @@ public class NotificationService implements INotificationService {
      */
     @Override
     public void deleteReadNotifications() {
-        Pageable page = PageRequest.of(0, 500);
-        Page<INotificationWithoutMessage> results;
-        do {
-            results = this.retrieveNotifications(page, NotificationStatus.READ);
-            if ((results != null)) {
-                if (results.hasContent()) {
-                    // Do delete in one unique transaction, to do so use the self element
-                    self.deleteReadNotificationsPage(results);
-                }
-                page = results.nextPageable();
-            }
-        } while ((results != null) && results.hasNext());
-    }
-
-    @Override
-    public void deleteReadNotificationsPage(Page<INotificationWithoutMessage> toDelete) {
-        toDelete.getContent().forEach(n -> notificationRepository.deleteById(n.getId()));
+        notificationRepository
+                .deleteByStatusAndRoleRecipientsInAndProjectUserRecipientsIn(NotificationStatus.READ,
+                                                                             Lists.newArrayList(authenticationResolver
+                                                                                     .getRole()),
+                                                                             Lists.newArrayList(authenticationResolver
+                                                                                     .getUser()));
     }
 }
