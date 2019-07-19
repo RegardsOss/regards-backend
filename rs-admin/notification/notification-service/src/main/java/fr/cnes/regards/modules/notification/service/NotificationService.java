@@ -273,7 +273,7 @@ public class NotificationService implements INotificationService {
 
     @Override
     public void deleteReadNotifications() {
-        Pageable page = PageRequest.of(0, 1000);
+        Pageable page = PageRequest.of(0, 100);
         Page<INotificationWithoutMessage> results;
         do {
             // Do delete in one unique transaction, to do so use the self element
