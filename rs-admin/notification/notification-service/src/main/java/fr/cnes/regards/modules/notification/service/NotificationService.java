@@ -273,10 +273,11 @@ public class NotificationService implements INotificationService {
     @Override
     public void deleteReadNotifications() {
         notificationRepository
-                .deleteByStatusAndRoleRecipientsInAndProjectUserRecipientsIn(NotificationStatus.READ,
-                                                                             Lists.newArrayList(authenticationResolver
-                                                                                     .getRole()),
-                                                                             Lists.newArrayList(authenticationResolver
-                                                                                     .getUser()));
+                .deleteByStatusAndProjectUserRecipientsIn(NotificationStatus.READ,
+                                                          Lists.newArrayList(authenticationResolver.getUser()));
+        notificationRepository
+                .deleteByStatusAndRoleRecipientsInAndProjectUserRecipientsIsNull(NotificationStatus.READ, Lists
+                        .newArrayList(authenticationResolver.getRole()));
+
     }
 }
