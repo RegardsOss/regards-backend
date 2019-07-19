@@ -18,7 +18,6 @@
  */
 package fr.cnes.regards.modules.notification.dao;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -119,10 +118,15 @@ public interface INotificationRepository
             + " ?3 member of n.roleRecipients) GROUP BY id ORDER BY id DESC")
     Long countByStatus(NotificationStatus status, String projectUser, String role);
 
-    void deleteByStatusAndRoleRecipientsInAndProjectUserRecipientsIsNull(NotificationStatus status,
-            Collection<String> roles);
+    @Modifying
+    @Query("delete from Notification n where (:role member of n.roleRecipients)  AND n.status = :status")
+    void deleteByStatusAndRoleRecipientsInAndProjectUserRecipientsIsNull(@Param("status") NotificationStatus status,
+            @Param("role") String role);
 
-    void deleteByStatusAndProjectUserRecipientsIn(NotificationStatus status, Collection<String> users);
+    @Modifying
+    @Query("delete from Notification n where (:user member of n.projectUserRecipients)  AND n.status = :status")
+    void deleteByStatusAndProjectUserRecipientsIn(@Param("status") NotificationStatus status,
+            @Param("user") String user);
 
     /**
      * Find all notifications with passed <code>status</code>
@@ -150,18 +154,6 @@ public interface INotificationRepository
     Page<Long> findPageIdByStatus(@Param("status") NotificationStatus status, Pageable pageable);
 
     Long countByStatus(NotificationStatus pStatus);
-
-    /**
-     * Find all notifications which recipients contains the given user, represented by its email
-     * @return all notifications which recipients contains the given user, represented by its email
-     */
-    Page<Notification> findAllByProjectUserRecipientsContaining(String email, Pageable page);
-
-    /**
-     * Find all notifications which recipients contains the given role, represented by its name
-     * @return all notifications which recipients contains the given role, represented by its name
-     */
-    Page<Notification> findAllByRoleRecipientsContaining(String role, Pageable page);
 
     @Modifying
     @Query(value = "UPDATE {h-schema}t_notification set status = ?1 FROM {h-schema}ta_notification_role_name recipient "
