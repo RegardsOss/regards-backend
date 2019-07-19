@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.notification.service;
 
 import java.util.Date;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Component;
 
@@ -32,6 +33,7 @@ import fr.cnes.regards.modules.notification.domain.Notification;
  *
  * @author Xavier-Alexandre Brochard
  */
+@Profile("!nomail")
 @Component
 public class EmailSendingStrategy implements ISendingStrategy {
 
