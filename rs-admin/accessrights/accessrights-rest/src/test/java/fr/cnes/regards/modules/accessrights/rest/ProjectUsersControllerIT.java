@@ -19,7 +19,9 @@
 package fr.cnes.regards.modules.accessrights.rest;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,7 +35,6 @@ import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransa
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
-import fr.cnes.regards.framework.test.integration.RequestBuilderCustomizer;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
 import fr.cnes.regards.modules.accessrights.dao.projects.IMetaDataRepository;
@@ -62,7 +63,9 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
      */
     private static final String EMAIL = "email@test.com";
 
-    private String errorMessage;
+    private static final String ROLE_TEST = "TEST_ROLE";
+
+    private static final String ERROR_MESSAGE = "Cannot reach model attributes";
 
     @Autowired
     private IProjectUserRepository projectUserRepository;
@@ -87,18 +90,45 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
 
     private Role publicRole;
 
+    private Role roleTest;
+
     @Before
     public void setUp() {
-        errorMessage = "Cannot reach model attributes";
         publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
         projectUser = projectUserRepository
                 .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));
 
         // Insert some authorizations
         setAuthorities(RegistrationController.REQUEST_MAPPING_ROOT + RegistrationController.ACCEPT_ACCESS_RELATIVE_PATH,
-                       RequestMethod.PUT, DEFAULT_ROLE);
+                       RequestMethod.PUT,
+                       DEFAULT_ROLE);
         setAuthorities(RegistrationController.REQUEST_MAPPING_ROOT + RegistrationController.DENY_ACCESS_RELATIVE_PATH,
-                       RequestMethod.PUT, DEFAULT_ROLE);
+                       RequestMethod.PUT,
+                       DEFAULT_ROLE);
+
+        roleRepository.findOneByName(ROLE_TEST).ifPresent(role -> roleRepository.delete(role));
+        Role aNewRole = roleRepository.save(new Role(ROLE_TEST, publicRole));
+
+        Set<ResourcesAccess> resourcesAccess = new HashSet<>();
+        ResourcesAccess aResourcesAccess = new ResourcesAccess("",
+                                                               "aMicroservice",
+                                                               "the resource",
+                                                               "Controller",
+                                                               RequestMethod.GET,
+                                                               DefaultRole.ADMIN);
+        aResourcesAccess = resourcesAccessRepository.save(aResourcesAccess);
+        ResourcesAccess bResourcesAccess = new ResourcesAccess("",
+                                                               "aMicroservice",
+                                                               "the resource",
+                                                               "Controller",
+                                                               RequestMethod.DELETE,
+                                                               DefaultRole.ADMIN);
+        bResourcesAccess = resourcesAccessRepository.save(bResourcesAccess);
+
+        resourcesAccess.add(aResourcesAccess);
+        resourcesAccess.add(bResourcesAccess);
+        aNewRole.setPermissions(resourcesAccess);
+        roleTest = roleRepository.save(aNewRole);
     }
 
     @Override
@@ -110,7 +140,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Purpose("Check that the system allows to retrieve all user on a project.")
     public void getAllUsers() {
-        performDefaultGet(ProjectUsersController.TYPE_MAPPING, customizer().expectStatusOk(), errorMessage);
+        performDefaultGet(ProjectUsersController.TYPE_MAPPING, customizer().expectStatusOk(), ERROR_MESSAGE);
     }
 
     @Test
@@ -119,17 +149,9 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     public void getUser() {
         String apiUserEmail = ProjectUsersController.TYPE_MAPPING + "/email/{user_email}";
 
-        performDefaultGet(apiUserEmail, customizer().expectStatusOk(), errorMessage, EMAIL);
+        performDefaultGet(apiUserEmail, customizer().expectStatusNotFound(), ERROR_MESSAGE, "user@invalid.fr");
 
-        performDefaultGet(apiUserEmail, customizer().expectStatusNotFound(), errorMessage, "user@invalid.fr");
-    }
-
-    @Test
-    @Requirement("REGARDS_DSL_ADM_ADM_330")
-    @Purpose("Check that the system allows to retrieve a user's metadata.")
-    public void getUserMetaData() {
-        performDefaultGet(ProjectUserMetadataController.REQUEST_MAPPING_ROOT, customizer().expectStatusOk(),
-                          errorMessage, projectUser.getId());
+        performDefaultGet(apiUserEmail, customizer().expectStatusOk(), ERROR_MESSAGE, EMAIL);
     }
 
     /**
@@ -154,8 +176,10 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
 
         // Borrowing a hierarchically inferior role
         Assert.assertTrue(roleService.isHierarchicallyInferior(borrowedRole, roleAdmin));
-        performDefaultGet(apiUserPermissionsBorrowedRole + borrowedRoleName, customizer().expectStatusOk(),
-                          errorMessage, projectUser.getEmail());
+        performDefaultGet(apiUserPermissionsBorrowedRole + borrowedRoleName,
+                          customizer().expectStatusOk(),
+                          ERROR_MESSAGE,
+                          projectUser.getEmail());
     }
 
     /**
@@ -181,49 +205,18 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         // Borrowing a hierarchically superior role
         Assert.assertTrue(!roleService.isHierarchicallyInferior(borrowedRole, roleAdmin));
         performDefaultGet(apiUserPermissionsBorrowedRole + borrowedRoleName,
-                          customizer().expect(MockMvcResultMatchers.status().isForbidden()), errorMessage,
+                          customizer().expect(MockMvcResultMatchers.status().isForbidden()),
+                          ERROR_MESSAGE,
                           projectUser.getEmail());
-    }
-
-    @Test
-    @Requirement("REGARDS_DSL_ADM_ADM_330")
-    @Purpose("Check that the system allows to update a user's metadata.")
-    public void updateUserMetaData() {
-        final List<MetaData> newPermissionList = new ArrayList<>();
-        newPermissionList.add(metaDataRepository.save(new MetaData()));
-        newPermissionList.add(metaDataRepository.save(new MetaData()));
-
-        performDefaultPut(ProjectUserMetadataController.REQUEST_MAPPING_ROOT, newPermissionList,
-                          customizer().expectStatusOk(), errorMessage, projectUser.getId());
-    }
-
-    @Test
-    @Requirement("REGARDS_DSL_ADM_ADM_230")
-    @Purpose("Check that the system allows to update a user's permissions.")
-    public void updateUserPermissions() {
-        final List<ResourcesAccess> newPermissionList = new ArrayList<>();
-        newPermissionList.add(resourcesAccessRepository
-                .save(new ResourcesAccess("desc0", "ms0", "res0", "Controller", RequestMethod.GET, DefaultRole.ADMIN)));
-        newPermissionList.add(resourcesAccessRepository.save(new ResourcesAccess("desc1", "ms1", "res1", "Controller",
-                RequestMethod.DELETE, DefaultRole.ADMIN)));
-
-        performDefaultPut(UserResourceController.TYPE_MAPPING, newPermissionList, customizer().expectStatusOk(),
-                          errorMessage, EMAIL);
-    }
-
-    @Test
-    @Requirement("REGARDS_DSL_ADM_ADM_330")
-    @Purpose("Check that the system allows to delete a user's metadata.")
-    public void deleteUserMetaData() {
-        performDefaultDelete(ProjectUserMetadataController.REQUEST_MAPPING_ROOT, customizer().expectStatusOk(),
-                             errorMessage, projectUser.getId());
     }
 
     @Test
     @Requirement("REGARDS_DSL_ADM_ADM_230")
     @Purpose("Check that the system allows to delete a user's permissions.")
     public void deleteUserPermissions() {
-        performDefaultDelete(UserResourceController.TYPE_MAPPING, customizer().expectStatusOk(), errorMessage,
+        performDefaultDelete(UserResourceController.TYPE_MAPPING,
+                             customizer().expectStatusOk(),
+                             ERROR_MESSAGE,
                              projectUser.getEmail());
     }
 
@@ -236,10 +229,10 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
         projectUser.setEmail("new@email.com");
 
         // Same id
-        performDefaultPut(apiUserId, projectUser, customizer().expectStatusOk(), errorMessage, projectUser.getId());
+        performDefaultPut(apiUserId, projectUser, customizer().expectStatusOk(), ERROR_MESSAGE, projectUser.getId());
 
         // Wrong id (99L)
-        performDefaultPut(apiUserId, projectUser, customizer().expectStatusBadRequest(), errorMessage, 99L);
+        performDefaultPut(apiUserId, projectUser, customizer().expectStatusBadRequest(), ERROR_MESSAGE, 99L);
     }
 
     @Test
@@ -248,7 +241,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     public void deleteUser() {
         String apiUserId = ProjectUsersController.TYPE_MAPPING + "/{user_id}";
 
-        performDefaultDelete(apiUserId, customizer().expectStatusOk(), errorMessage, projectUser.getId());
+        performDefaultDelete(apiUserId, customizer().expectStatusOk(), ERROR_MESSAGE, projectUser.getId());
     }
 
     @Test
@@ -260,8 +253,10 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
 
         String apiUserId = ProjectUsersController.TYPE_MAPPING + ProjectUsersController.USER_ID_RELATIVE_PATH;
 
-        performDefaultGet(apiUserId, customizer().expectStatusOk().expectValue("$.links.[4].rel", "accept"),
-                          errorMessage, projectUser.getId());
+        performDefaultGet(apiUserId,
+                          customizer().expectStatusOk().expectValue("$.links.[4].rel", "accept"),
+                          ERROR_MESSAGE,
+                          projectUser.getId());
     }
 
     @Test
@@ -273,8 +268,56 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
 
         String apiUserId = ProjectUsersController.TYPE_MAPPING + ProjectUsersController.USER_ID_RELATIVE_PATH;
 
-        performDefaultGet(apiUserId, customizer().expectStatusOk().expectValue("$.links.[5].rel", "deny"), errorMessage,
+        performDefaultGet(apiUserId,
+                          customizer().expectStatusOk().expectValue("$.links.[5].rel", "deny"),
+                          ERROR_MESSAGE,
                           projectUser.getId());
+    }
+
+    @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_210")
+    @Purpose("Check that the system allows to retrieve all users of a role.")
+    public void retrieveRoleProjectUserList() {
+        performDefaultGet(ProjectUsersController.ROLES_ROLE_ID,
+                          customizer().expectStatusOk(),
+                          "TODO Error message",
+                          roleTest.getId());
+    }
+
+    @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_230")
+    @Purpose("Check that the system allows to update a user's permissions.")
+    public void updateUserPermissions() {
+        final List<ResourcesAccess> newPermissionList = new ArrayList<>();
+        newPermissionList.add(resourcesAccessRepository.save(new ResourcesAccess("desc0",
+                                                                                 "ms0",
+                                                                                 "res0",
+                                                                                 "Controller",
+                                                                                 RequestMethod.GET,
+                                                                                 DefaultRole.ADMIN)));
+        newPermissionList.add(resourcesAccessRepository.save(new ResourcesAccess("desc1",
+                                                                                 "ms1",
+                                                                                 "res1",
+                                                                                 "Controller",
+                                                                                 RequestMethod.DELETE,
+                                                                                 DefaultRole.ADMIN)));
+
+        performDefaultPut(UserResourceController.TYPE_MAPPING,
+                          newPermissionList,
+                          customizer().expectStatusOk(),
+                          ERROR_MESSAGE,
+                          EMAIL);
+    }
+
+
+    /**
+     * Check that the system allows to retrieve all access requests for a project.
+     */
+    @Test
+    @Requirement("REGARDS_DSL_ADM_ADM_310")
+    @Purpose("Check that the system allows to retrieve all access requests for a project.")
+    public void getAllAccesses() {
+        performDefaultGet(ProjectUsersController.TYPE_MAPPING + ProjectUsersController.PENDINGACCESSES, customizer().expectStatusOk(), ERROR_MESSAGE);
     }
 
 }

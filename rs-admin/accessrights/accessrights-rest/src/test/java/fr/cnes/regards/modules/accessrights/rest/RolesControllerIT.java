@@ -54,8 +54,6 @@ import fr.cnes.regards.modules.accessrights.service.role.RoleService;
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
 public class RolesControllerIT extends AbstractRegardsTransactionalIT {
 
-    private String apiRolesUsers;
-
     @Autowired
     private RoleService roleService;
 
@@ -87,8 +85,6 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
 
     @Before
     public void init() {
-
-        apiRolesUsers = ProjectUsersController.TYPE_MAPPING + "/roles/{role_id}";
 
         // Init roles
         publicRole = roleRepository.findOneByName(DefaultRole.PUBLIC.toString()).get();
@@ -230,13 +226,6 @@ public class RolesControllerIT extends AbstractRegardsTransactionalIT {
     public void retrieveRoleResourcesAccessList() {
         performDefaultGet(RoleResourceController.TYPE_MAPPING, customizer().expectStatusOk(), "TODO Error message",
                           roleTest.getName());
-    }
-
-    @Test
-    @Requirement("REGARDS_DSL_ADM_ADM_210")
-    @Purpose("Check that the system allows to retrieve all users of a role.")
-    public void retrieveRoleProjectUserList() {
-        performDefaultGet(apiRolesUsers, customizer().expectStatusOk(), "TODO Error message", roleTest.getId());
     }
 
     /**
