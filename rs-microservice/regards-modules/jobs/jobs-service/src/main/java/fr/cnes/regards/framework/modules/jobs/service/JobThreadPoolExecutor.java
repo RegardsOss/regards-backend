@@ -4,6 +4,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RunnableFuture;
@@ -78,6 +80,8 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
 
     private final IPublisher publisher;
 
+    private final Executor singleThreadExecutor = Executors.newSingleThreadExecutor();
+
     public JobThreadPoolExecutor(int poolSize, IJobInfoService jobInfoService,
             BiMap<JobInfo, RunnableFuture<Void>> jobsMap, IRuntimeTenantResolver runtimeTenantResolver,
             IPublisher publisher) {
@@ -118,26 +122,24 @@ public class JobThreadPoolExecutor extends ThreadPoolExecutor {
                 // to avoid issues with interruption at the wrong moment,
                 // we need to create a new thread to update the db
                 t = ce;
-                Thread thread = new Thread(() -> {
+                singleThreadExecutor.execute(() -> {
                     runtimeTenantResolver.forceTenant(jobInfo.getTenant());
                     jobInfo.updateStatus(JobStatus.ABORTED);
                     jobInfoService.save(jobInfo);
                     publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.ABORTED));
                 });
-                thread.start();
             } catch (ExecutionException ee) {
                 t = ee.getCause();
                 LOGGER.error("Job failed", t);
                 StringWriter sw = new StringWriter();
                 t.printStackTrace(new PrintWriter(sw));
-                Thread thread = new Thread(() -> {
+                singleThreadExecutor.execute(() -> {
                     runtimeTenantResolver.forceTenant(jobInfo.getTenant());
                     jobInfo.updateStatus(JobStatus.FAILED);
                     jobInfo.getStatus().setStackTrace(sw.toString());
                     jobInfoService.save(jobInfo);
                     publisher.publish(new JobEvent(jobInfo.getId(), JobEventType.FAILED));
                 });
-                thread.start();
             } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt(); // ignore/reset
             }
