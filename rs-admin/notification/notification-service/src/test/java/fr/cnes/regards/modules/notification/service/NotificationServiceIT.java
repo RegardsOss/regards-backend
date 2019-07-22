@@ -18,6 +18,8 @@
  */
 package fr.cnes.regards.modules.notification.service;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,10 +37,10 @@ import fr.cnes.regards.framework.notification.NotificationDTO;
 import fr.cnes.regards.framework.notification.NotificationDtoBuilder;
 import fr.cnes.regards.framework.notification.NotificationLevel;
 import fr.cnes.regards.framework.security.role.DefaultRole;
-import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
 import fr.cnes.regards.modules.accessrights.service.role.IRoleService;
 import fr.cnes.regards.modules.notification.dao.INotificationRepository;
+import fr.cnes.regards.modules.notification.domain.Notification;
 import fr.cnes.regards.modules.notification.domain.NotificationStatus;
 
 /**
@@ -54,13 +56,7 @@ public class NotificationServiceIT extends AbstractMultitenantServiceTest {
     private NotificationService notificationService;
 
     @Autowired
-    private NotificationEventHandler notifHandler;
-
-    @Autowired
     private IRoleService roleService;
-
-    @Autowired
-    private IRoleRepository roleRepo;
 
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
@@ -92,19 +88,25 @@ public class NotificationServiceIT extends AbstractMultitenantServiceTest {
         notification = new NotificationDtoBuilder("message2", "title2", NotificationLevel.INFO, "moi")
                 .toRolesAndUsers(Sets.newHashSet(authResolver.getRole()), Sets.newHashSet(authResolver.getUser()));
         notificationService.createNotification(notification);
-        Assert.assertTrue("notif should exists", repo.findAll().size() == 2);
+
+        notification = new NotificationDtoBuilder("message3", "title3", NotificationLevel.INFO, "moi")
+                .toRoles(Sets.newHashSet(authResolver.getRole()));
+        notificationService.createNotification(notification);
+        Assert.assertTrue("notif should exists", repo.findAll().size() == 3);
 
         notificationService.deleteReadNotifications();
 
-        Assert.assertTrue("notif should exists", repo.findAll().size() == 2);
+        List<Notification> notifs = repo.findAll();
+        Assert.assertTrue("notif should still exists as no one is in READ status", notifs.size() == 3);
 
         notificationService.markAllNotificationAs(NotificationStatus.READ);
-        Assert.assertEquals("there should be one notif read for current user", 1L,
-                            notificationService.countReadNotifications().longValue());
 
         notificationService.deleteReadNotifications();
 
-        Assert.assertEquals("notif should exists", 1, repo.findAll().size());
+        notifs = repo.findAll();
+        Assert.assertEquals("One notif should remains for ADMIN role", 1, notifs.size());
+        Assert.assertTrue("One notif should remains for ADMIN role as UNREAD",
+                          notifs.get(0).getStatus() == NotificationStatus.UNREAD);
 
     }
 

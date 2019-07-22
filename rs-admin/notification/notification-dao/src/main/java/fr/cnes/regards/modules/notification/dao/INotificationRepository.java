@@ -119,8 +119,15 @@ public interface INotificationRepository
             + " ?3 member of n.roleRecipients) GROUP BY id ORDER BY id DESC")
     Long countByStatus(NotificationStatus status, String projectUser, String role);
 
-    void deleteByStatusAndRoleRecipientsInAndProjectUserRecipientsIn(NotificationStatus status,
-            Collection<String> roles, Collection<String> users);
+    @Modifying
+    @Query("delete from Notification n where (:role member of n.roleRecipients)  AND n.status = :status")
+    void deleteByStatusAndRoleRecipientsInAndProjectUserRecipientsIsNull(@Param("status") NotificationStatus status,
+            @Param("role") String role);
+
+    @Modifying
+    @Query("delete from Notification n where (:user member of n.projectUserRecipients)  AND n.status = :status")
+    void deleteByStatusAndProjectUserRecipientsIn(@Param("status") NotificationStatus status,
+            @Param("user") String user);
 
     /**
      * Find all notifications with passed <code>status</code>
@@ -149,18 +156,6 @@ public interface INotificationRepository
 
     Long countByStatus(NotificationStatus pStatus);
 
-    /**
-     * Find all notifications which recipients contains the given user, represented by its email
-     * @return all notifications which recipients contains the given user, represented by its email
-     */
-    Page<Notification> findAllByProjectUserRecipientsContaining(String email, Pageable page);
-
-    /**
-     * Find all notifications which recipients contains the given role, represented by its name
-     * @return all notifications which recipients contains the given role, represented by its name
-     */
-    Page<Notification> findAllByRoleRecipientsContaining(String role, Pageable page);
-
     @Modifying
     @Query(value = "UPDATE {h-schema}t_notification set status = ?1 FROM {h-schema}ta_notification_role_name recipient "
             + "WHERE t_notification.id = recipient.notification_id AND recipient.role_name = ?2", nativeQuery = true)
@@ -171,4 +166,6 @@ public interface INotificationRepository
             + "recipient WHERE t_notification.id = recipient.notification_id AND recipient.projectuser_email = ?2",
             nativeQuery = true)
     void updateAllNotificationStatusByUser(String status, String projectUser);
+
+    void deleteByIdIn(Collection<Long> idsToDelete);
 }
