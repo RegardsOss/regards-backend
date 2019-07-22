@@ -75,11 +75,15 @@ public class MicroserviceResourceControllerIT extends AbstractRegardsTransaction
 
         JWTService service = new JWTService();
         service.setSecret("123456789");
-        instanceToken = service.generateToken(getDefaultTenant(), getDefaultUserEmail(),
-                                              DefaultRole.INSTANCE_ADMIN.toString());
+        instanceToken = service
+                .generateToken(getDefaultTenant(), getDefaultUserEmail(), DefaultRole.INSTANCE_ADMIN.toString());
 
-        ResourcesAccess resource = new ResourcesAccess("description", DEFAULT_MICROSERVICE, CONFIGURED_ENDPOINT_URL,
-                DEFAULT_CONTROLLER, RequestMethod.GET, DefaultRole.ADMIN);
+        ResourcesAccess resource = new ResourcesAccess("description",
+                                                       DEFAULT_MICROSERVICE,
+                                                       CONFIGURED_ENDPOINT_URL,
+                                                       DEFAULT_CONTROLLER,
+                                                       RequestMethod.GET,
+                                                       DefaultRole.ADMIN);
         resource = resourcesAccessRepository.save(resource);
     }
 
@@ -91,15 +95,27 @@ public class MicroserviceResourceControllerIT extends AbstractRegardsTransaction
     public void registerMicroserviceEndpointsTest() {
         List<ResourceMapping> mapping = new ArrayList<>();
         mapping.add(new ResourceMapping(ResourceAccessAdapter.createResourceAccess("test", DefaultRole.PUBLIC),
-                "/endpoint/test", DEFAULT_CONTROLLER, RequestMethod.GET));
+                                        "/endpoint/test",
+                                        DEFAULT_CONTROLLER,
+                                        RequestMethod.GET));
         mapping.add(new ResourceMapping(ResourceAccessAdapter.createResourceAccess("test", DefaultRole.REGISTERED_USER),
-                "/endpoint/test2", DEFAULT_CONTROLLER, RequestMethod.GET));
+                                        "/endpoint/test2",
+                                        DEFAULT_CONTROLLER,
+                                        RequestMethod.GET));
         mapping.add(new ResourceMapping(ResourceAccessAdapter.createResourceAccess("test", DefaultRole.INSTANCE_ADMIN),
-                "/endpoint/test3", DEFAULT_CONTROLLER, RequestMethod.GET));
+                                        "/endpoint/test3",
+                                        DEFAULT_CONTROLLER,
+                                        RequestMethod.GET));
         mapping.add(new ResourceMapping(ResourceAccessAdapter.createResourceAccess("test", DefaultRole.PUBLIC),
-                CONFIGURED_ENDPOINT_URL, DEFAULT_CONTROLLER, RequestMethod.GET));
-        performPost(MicroserviceResourceController.TYPE_MAPPING, instanceToken, mapping, customizer().expectStatusOk(),
-                    "Error during registring endpoints", DEFAULT_MICROSERVICE);
+                                        CONFIGURED_ENDPOINT_URL,
+                                        DEFAULT_CONTROLLER,
+                                        RequestMethod.GET));
+        performPost(MicroserviceResourceController.TYPE_MAPPING,
+                    instanceToken,
+                    mapping,
+                    customizer().expectStatusOk(),
+                    "Error during registring endpoints",
+                    DEFAULT_MICROSERVICE);
 
     }
 
@@ -115,21 +131,31 @@ public class MicroserviceResourceControllerIT extends AbstractRegardsTransaction
         performGet(MicroserviceResourceController.TYPE_MAPPING + MicroserviceResourceController.CONTROLLER_MAPPING,
                    instanceToken,
                    customizer().expectStatusOk().expectIsArray(JSON_PATH_ROOT).expectIsNotEmpty(JSON_PATH_ROOT),
-                   "Error retrieving endpoints for microservice and controller", DEFAULT_MICROSERVICE,
+                   "Error retrieving endpoints for microservice and controller",
+                   DEFAULT_MICROSERVICE,
                    DEFAULT_CONTROLLER);
+    }
 
+    @Test
+    public void retrieveNothingForUnknownController() {
         // Check that no endpoint is returned for an unknown controller name
         performGet(MicroserviceResourceController.TYPE_MAPPING + MicroserviceResourceController.CONTROLLER_MAPPING,
                    instanceToken,
                    customizer().expectStatusOk().expectIsArray(JSON_PATH_ROOT).expectIsEmpty(JSON_PATH_ROOT),
-                   "Error retrieving endpoints for microservice and controller", DEFAULT_MICROSERVICE,
+                   "Error retrieving endpoints for microservice and controller",
+                   DEFAULT_MICROSERVICE,
                    "unknown-controller");
 
+    }
+
+    @Test
+    public void retrieveNothingForUnknownMicroservice() {
         // Check that no endpoint is returned for an unknown microservice name
         performGet(MicroserviceResourceController.TYPE_MAPPING + MicroserviceResourceController.CONTROLLER_MAPPING,
                    instanceToken,
                    customizer().expectStatusOk().expectIsArray(JSON_PATH_ROOT).expectIsEmpty(JSON_PATH_ROOT),
-                   "Error retrieving endpoints for microservice and controller", "unkonwon-microservice",
+                   "Error retrieving endpoints for microservice and controller",
+                   "unknown-microservice",
                    DEFAULT_CONTROLLER);
     }
 
@@ -145,13 +171,15 @@ public class MicroserviceResourceControllerIT extends AbstractRegardsTransaction
         performGet(MicroserviceResourceController.TYPE_MAPPING + MicroserviceResourceController.CONTROLLERS_MAPPING,
                    instanceToken,
                    customizer().expectStatusOk().expectIsArray(JSON_PATH_ROOT).expectIsNotEmpty(JSON_PATH_ROOT),
-                   "Error retrieving endpoints controllers names for microservice", DEFAULT_MICROSERVICE);
+                   "Error retrieving endpoints controllers names for microservice",
+                   DEFAULT_MICROSERVICE);
 
         // Check that no controllers are returned for an unknown controller name
         performGet(MicroserviceResourceController.TYPE_MAPPING + MicroserviceResourceController.CONTROLLERS_MAPPING,
                    instanceToken,
                    customizer().expectStatusOk().expectIsArray(JSON_PATH_ROOT).expectIsEmpty(JSON_PATH_ROOT),
-                   "Error retrieving endpoints controllers names for microservice", "unkonwon-microservice");
+                   "Error retrieving endpoints controllers names for microservice",
+                   "unkonwon-microservice");
     }
 
 }

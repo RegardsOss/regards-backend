@@ -81,6 +81,10 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      */
     public static final String USER_ID_RELATIVE_PATH = "/{user_id}";
 
+    public static final String ROLES_ROLE_ID = "/roles/{role_id}";
+
+    public static final String PENDINGACCESSES = "/pendingaccesses";
+
     /**
      * Service handling project users
      */
@@ -139,7 +143,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      * @return The {@link List} of all {@link ProjectUser}s with status {@link UserStatus#WAITING_ACCESS}
      */
     @ResponseBody
-    @RequestMapping(value = "/pendingaccesses", method = RequestMethod.GET)
+    @RequestMapping(value = PENDINGACCESSES, method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieves the list of access request", role = DefaultRole.PROJECT_ADMIN)
     public ResponseEntity<PagedResources<Resource<ProjectUser>>> retrieveAccessRequestList(
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
@@ -307,7 +311,7 @@ public class ProjectUsersController implements IResourceController<ProjectUser> 
      * @throws EntityNotFoundException Thrown when no {@link Role} with passed <code>id</code> could be found
      */
     @ResponseBody
-    @RequestMapping(value = "/roles/{role_id}", method = RequestMethod.GET)
+    @RequestMapping(value = ROLES_ROLE_ID, method = RequestMethod.GET)
     @ResourceAccess(
             description = "Retrieve the list of project users (crawls through parents' hierarchy) of the role with role_id",
             role = DefaultRole.PROJECT_ADMIN)
