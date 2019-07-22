@@ -39,6 +39,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import com.google.common.io.ByteStreams;
+
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
@@ -70,7 +71,7 @@ public class EmailService extends AbstractEmailService {
      */
     private final JavaMailSender mailSender;
 
-    @Value("${spring.mail.sender.no.reply:regards@noreply.fr}")
+    @Value("${regards.mails.noreply.address:regards@noreply.fr}")
     private String defaultSender;
 
     /**
@@ -178,7 +179,7 @@ public class EmailService extends AbstractEmailService {
         final Email email = new Email();
         email.setBcc(message.getBcc());
         email.setCc(message.getCc());
-        email.setFrom(message.getFrom() == null? defaultSender: message.getFrom());
+        email.setFrom(message.getFrom() == null ? defaultSender : message.getFrom());
         email.setReplyTo(message.getReplyTo());
         if (message.getSentDate() != null) {
             email.setSentDate(LocalDateTime.ofInstant(message.getSentDate().toInstant(), ZoneId.systemDefault()));
