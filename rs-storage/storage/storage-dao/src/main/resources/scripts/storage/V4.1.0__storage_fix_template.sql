@@ -1,0 +1,1 @@
+delete from t_template where code = 'PARTIAL_DELETION_REPORT_TEMPLATE';
