@@ -73,7 +73,7 @@ public class EmailService extends AbstractEmailService {
      */
     private final JavaMailSender mailSender;
 
-    @Value("${spring.mail.sender.no.reply:regards@noreply.fr}")
+    @Value("${regards.mails.noreply.address:regards@noreply.fr}")
     private String defaultSender;
 
     /**
