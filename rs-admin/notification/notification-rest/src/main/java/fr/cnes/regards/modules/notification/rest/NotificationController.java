@@ -284,11 +284,6 @@ public class NotificationController implements IResourceController<Notification>
         return new ResponseEntity<>(settings, HttpStatus.OK);
     }
 
-    /**
-     * Define the endpoint for updating the {@link Notification#status}
-     * @return The updated {@link NotificationSettings} wrapped in a {@link ResponseEntity}
-     * @throws EntityNotFoundException Thrown when no notification settings with passed <code>id</code> could be found
-     */
     @RequestMapping(value = SUMMARY, method = RequestMethod.GET)
     @ResourceAccess(description = "Retrieve summary infos about notifications", role = DefaultRole.REGISTERED_USER)
     public ResponseEntity<NotificationSummary> summary() throws EntityNotFoundException {
