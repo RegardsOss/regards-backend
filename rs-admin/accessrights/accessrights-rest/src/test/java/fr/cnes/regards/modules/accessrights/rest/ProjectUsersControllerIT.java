@@ -37,12 +37,10 @@ import fr.cnes.regards.framework.security.role.DefaultRole;
 import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.framework.test.report.annotation.Requirement;
-import fr.cnes.regards.modules.accessrights.dao.projects.IMetaDataRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IProjectUserRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IResourcesAccessRepository;
 import fr.cnes.regards.modules.accessrights.dao.projects.IRoleRepository;
 import fr.cnes.regards.modules.accessrights.domain.UserStatus;
-import fr.cnes.regards.modules.accessrights.domain.projects.MetaData;
 import fr.cnes.regards.modules.accessrights.domain.projects.ProjectUser;
 import fr.cnes.regards.modules.accessrights.domain.projects.ResourcesAccess;
 import fr.cnes.regards.modules.accessrights.domain.projects.Role;
@@ -78,9 +76,6 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
 
     @Autowired
     private IResourcesAccessRepository resourcesAccessRepository;
-
-    @Autowired
-    private IMetaDataRepository metaDataRepository;
 
     /**
      * A project user.<br>
@@ -278,7 +273,7 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_210")
     @Purpose("Check that the system allows to retrieve all users of a role.")
     public void retrieveRoleProjectUserList() {
-        performDefaultGet(ProjectUsersController.ROLES_ROLE_ID,
+        performDefaultGet(ProjectUsersController.TYPE_MAPPING + ProjectUsersController.ROLES_ROLE_ID,
                           customizer().expectStatusOk(),
                           "TODO Error message",
                           roleTest.getId());
@@ -309,7 +304,6 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
                           EMAIL);
     }
 
-
     /**
      * Check that the system allows to retrieve all access requests for a project.
      */
@@ -317,7 +311,9 @@ public class ProjectUsersControllerIT extends AbstractRegardsTransactionalIT {
     @Requirement("REGARDS_DSL_ADM_ADM_310")
     @Purpose("Check that the system allows to retrieve all access requests for a project.")
     public void getAllAccesses() {
-        performDefaultGet(ProjectUsersController.TYPE_MAPPING + ProjectUsersController.PENDINGACCESSES, customizer().expectStatusOk(), ERROR_MESSAGE);
+        performDefaultGet(ProjectUsersController.TYPE_MAPPING + ProjectUsersController.PENDINGACCESSES,
+                          customizer().expectStatusOk(),
+                          ERROR_MESSAGE);
     }
 
 }

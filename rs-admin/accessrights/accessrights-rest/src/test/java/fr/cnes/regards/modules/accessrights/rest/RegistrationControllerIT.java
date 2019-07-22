@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
@@ -234,6 +235,12 @@ public class RegistrationControllerIT extends AbstractRegardsTransactionalIT {
                 .save(new ProjectUser(EMAIL, publicRole, new ArrayList<>(), new ArrayList<>()));
         projectUser.setStatus(UserStatus.WAITING_ACCESS);
         projectUserRepository.save(projectUser);
+
+        //lets mock the feign clients
+        Account account = new Account(EMAIL, FIRST_NAME, LAST_NAME, PASSWORD);
+
+        Mockito.when(accountsClient.retrieveAccounByEmail(account.getEmail()))
+                .thenReturn(new ResponseEntity<>(new Resource<>(account), HttpStatus.OK));
 
         performDefaultPut(apiAccessDeny, null, customizer().expectStatusOk(), ERROR_MESSAGE, projectUser.getId());
     }

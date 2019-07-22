@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
-import fr.cnes.regards.framework.test.integration.AbstractRegardsIT;
+import fr.cnes.regards.framework.test.integration.AbstractRegardsTransactionalIT;
 import fr.cnes.regards.framework.test.report.annotation.Purpose;
 import fr.cnes.regards.modules.accessrights.dao.projects.IAccessSettingsRepository;
 import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
@@ -15,7 +15,7 @@ import fr.cnes.regards.modules.accessrights.domain.projects.AccessSettings;
  */
 @MultitenantTransactional
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=account" })
-public class AccessSettingsControllerIT extends AbstractRegardsIT{
+public class AccessSettingsControllerIT extends AbstractRegardsTransactionalIT {
 
     private static final String ERROR_MESSAGE = "Cannot reach model attributes";
 
@@ -37,20 +37,21 @@ public class AccessSettingsControllerIT extends AbstractRegardsIT{
     /**
      * Check that the system fails when trying to update a non existing access settings.
      */
-    @MultitenantTransactional
     @Test
     @Purpose("Check that the system fails when trying to update a non existing access settings.")
     public void updateAccessSettingsEntityNotFound() {
         final AccessSettings settings = new AccessSettings();
         settings.setId(999L);
 
-        performDefaultPut(AccessSettingsController.REQUEST_MAPPING_ROOT, settings, customizer().expectStatusNotFound(), "TODO Error message");
+        performDefaultPut(AccessSettingsController.REQUEST_MAPPING_ROOT,
+                          settings,
+                          customizer().expectStatusNotFound(),
+                          "TODO Error message");
     }
 
     /**
      * Check that the system allows to update access settings in regular case.
      */
-    @MultitenantTransactional
     @Test
     @Purpose("Check that the system allows to update access settings in regular case.")
     public void updateAccessSettings() {
@@ -62,7 +63,10 @@ public class AccessSettingsControllerIT extends AbstractRegardsIT{
         // Then update them
         settings.setMode("manual");
 
-        performDefaultPut(AccessSettingsController.REQUEST_MAPPING_ROOT, settings, customizer().expectStatusOk(), "TODO Error message");
+        performDefaultPut(AccessSettingsController.REQUEST_MAPPING_ROOT,
+                          settings,
+                          customizer().expectStatusOk(),
+                          "TODO Error message");
     }
 
 }
