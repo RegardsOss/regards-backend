@@ -135,14 +135,6 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
                 "test", NotificationLevel.INFO, "microservice").toRoles(new HashSet<>(Arrays.asList(roleName)));
         notificationService.createNotification(notif);
         String token = jwtService.generateToken(getDefaultTenant(), "project.admin@test.fr", roleName);
-        //        performGet(NotificationController.NOTIFICATION_PATH, token,
-        //                   customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 0)
-        //                           .addParameter("state", NotificationStatus.READ.toString()),
-        //                   "Could not retrieve notifications");
-        //
-        //        performGet(NotificationController.NOTIFICATION_PATH, token,
-        //                   customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 4),
-        //                   "Could not retrieve notifications");
 
         performGet(NotificationController.NOTIFICATION_PATH, token,
                    customizer().expectStatusOk().expectToHaveSize(JSON_PATH_CONTENT, 4).expect(MockMvcResultMatchers.jsonPath("$.content[0].content.message").doesNotExist())
@@ -154,7 +146,11 @@ public class NotificationControllerIT extends AbstractRegardsTransactionalIT {
                            .addParameter("state", NotificationStatus.UNREAD.toString()).addParameter("page", "0")
                            .addParameter("size", "2"),
                    "Could not retrieve notifications");
+    }
 
+    @Test
+    public void testNotifSummary() {
+        String token = jwtService.generateToken(getDefaultTenant(), "project.admin@test.fr", DefaultRole.PROJECT_ADMIN.toString());
         performGet(NotificationController.NOTIFICATION_PATH + NotificationController.SUMMARY, token,
                    customizer().expectStatusOk(), "Could not retrieve notification summary");
     }
