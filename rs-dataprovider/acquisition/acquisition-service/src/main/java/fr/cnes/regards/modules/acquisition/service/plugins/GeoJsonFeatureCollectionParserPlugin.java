@@ -161,6 +161,13 @@ public class GeoJsonFeatureCollectionParserPlugin implements IScanPlugin {
                                                                          checksum, thumbnailFile.toFile().length());
                     builder.getContentInformationBuilder().setSyntax(MediaType.IMAGE_PNG);
                     builder.addContentInformation();
+
+                    builder.getContentInformationBuilder().setDataObject(DataType.QUICKLOOK_SD,
+                                                                         thumbnailFile.toAbsolutePath(),
+                                                                         thumbnailFile.getFileName().toString(), "MD5",
+                                                                         checksum, thumbnailFile.toFile().length());
+                    builder.getContentInformationBuilder().setSyntax(MediaType.IMAGE_PNG);
+                    builder.addContentInformation();
                 }
                 if (Files.exists(descFile)) {
                     String checksum = ChecksumUtils.computeHexChecksum(new FileInputStream(descFile.toFile()), "MD5");
