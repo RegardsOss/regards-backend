@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.service.jobs;
+package fr.cnes.regards.modules.storagelight.service.file.reference.job;
 
 import java.nio.file.Path;
 
@@ -69,7 +69,7 @@ public class FileRestorationJobProgressManager implements IRestorationProgressMa
         LOG.debug("[RESTORATION SUCCESS] - {}", successMessage);
         job.advanceCompletion();
         FileReferenceEvent event = new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
-                FileReferenceEventState.RESTORED, successMessage,
+                FileReferenceEventState.AVAILABLE, fileRef.getOwners(), successMessage,
                 new FileLocation(null, "file:///" + restoredFilePath.toString()));
         publishWithTenant(event);
     }
@@ -81,7 +81,7 @@ public class FileRestorationJobProgressManager implements IRestorationProgressMa
                   fileRef.getMetaInfo().getChecksum(), cause);
         job.advanceCompletion();
         FileReferenceEvent event = new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
-                FileReferenceEventState.RESTORATION_ERROR, cause);
+                FileReferenceEventState.RESTORATION_ERROR, fileRef.getOwners(), cause);
         publishWithTenant(event);
     }
 

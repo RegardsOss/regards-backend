@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.service.jobs;
+package fr.cnes.regards.modules.storagelight.service.file.reference.job;
 
 import java.awt.Dimension;
 import java.io.IOException;
@@ -47,8 +47,8 @@ import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfi
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileReferenceWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IDataStorage;
-import fr.cnes.regards.modules.storagelight.service.FileReferenceRequestService;
-import fr.cnes.regards.modules.storagelight.service.FileReferenceService;
+import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 
 /**
  * @author Sébastien Binda

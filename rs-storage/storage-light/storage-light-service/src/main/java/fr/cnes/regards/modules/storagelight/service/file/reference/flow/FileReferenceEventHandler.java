@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.service;
+package fr.cnes.regards.modules.storagelight.service.file.reference.flow;
 
 import java.util.Optional;
 
@@ -31,6 +31,9 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
+import fr.cnes.regards.modules.storagelight.service.file.reference.FileDeletionRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 
 /**
  * This handler is used by the storage service to update file requests in DELAYED state after event on file references.
@@ -61,11 +64,14 @@ public class FileReferenceEventHandler implements IHandler<FileReferenceEvent> {
             switch (wrapper.getContent().getState()) {
                 case DELETED:
                 case DELETION_ERROR:
+                    // When a file reference deletion is over, schedule the delayed reference requests if any
+                    // Indeed, when a file reference deletion process is running, every file reference request is delayed until
+                    // the deletion process is over.
                     this.scheduleDelayedFileRefRequests(wrapper.getContent().getChecksum(),
                                                         wrapper.getContent().getLocation().getStorage());
                     break;
                 case RESTORATION_ERROR:
-                case RESTORED:
+                case AVAILABLE:
                 case STORED:
                 case STORE_ERROR:
                 default:

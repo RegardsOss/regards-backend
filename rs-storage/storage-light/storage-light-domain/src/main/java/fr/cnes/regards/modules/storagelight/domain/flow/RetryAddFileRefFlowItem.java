@@ -16,24 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.service;
+package fr.cnes.regards.modules.storagelight.domain.flow;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import fr.cnes.regards.framework.amqp.event.Event;
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
+import fr.cnes.regards.framework.amqp.event.Target;
 
 /**
  * @author sbinda
  *
  */
-public class TestStream extends ObjectOutputStream {
-
-    /**
-     * @throws IOException
-     * @throws SecurityException
-     */
-    protected TestStream() throws IOException, SecurityException {
-        super();
-        // TODO Auto-generated constructor stub
-    }
+@Event(target = Target.ONE_PER_MICROSERVICE_TYPE)
+public class RetryAddFileRefFlowItem implements ISubscribable {
+    
+    
 
 }

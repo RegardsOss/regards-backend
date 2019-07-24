@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.service;
+package fr.cnes.regards.modules.storagelight.service.storage;
 
 import java.time.OffsetDateTime;
 import java.util.Collection;
@@ -41,6 +41,7 @@ import fr.cnes.regards.modules.storagelight.dao.IStorageMonitoringRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoring;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoringAggregation;
+import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 
 /**
  * @author Sébastien Binda

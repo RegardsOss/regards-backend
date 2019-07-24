@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.service;
+package fr.cnes.regards.modules.storagelight.service.file.reference;
 
 import java.net.MalformedURLException;
 import java.time.OffsetDateTime;
@@ -52,12 +52,13 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInf
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
+import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileReferenceEventHandler;
 
 /**
  * @author sbinda
  *
  */
-@ActiveProfiles({ "disableStorageTasks" })
+@ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
         "regards.storage.cache.path=target/cache", "regards.storage.cache.minimum.time.to.live.hours=12" })
 public class FileReferenceServiceTest extends AbstractFileReferenceTest {
@@ -194,7 +195,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         String fileRefStorage = fileRef.getLocation().getStorage();
 
         // Remove all his owners
-        fileRefService.removeOwner(fileRefChecksum, fileRefStorage, fileRefOwner);
+        fileRefService.removeFileReferenceForOwner(fileRefChecksum, fileRefStorage, fileRefOwner);
 
         Optional<FileReference> oFileRef = fileRefService.search(fileRefStorage, fileRefChecksum);
         Assert.assertTrue("File reference should no have any owners anymore", oFileRef.get().getOwners().isEmpty());
@@ -228,7 +229,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         // Simulate deletion request ends
         fileRefHandler.handle(
                               new TenantWrapper<>(
-                                      new FileReferenceEvent(fileRefChecksum, FileReferenceEventState.DELETED,
+                                      new FileReferenceEvent(fileRefChecksum, FileReferenceEventState.DELETED, null,
                                               "Deletion succeed", oFileRef.get().getLocation()),
                                       runtimeTenantResolver.getTenant()));
         // Has the handler clear the tenant we have to force it here for tests.

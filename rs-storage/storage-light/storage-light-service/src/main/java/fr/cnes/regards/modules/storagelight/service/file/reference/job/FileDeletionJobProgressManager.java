@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.service.jobs;
+package fr.cnes.regards.modules.storagelight.service.file.reference.job;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,8 +30,8 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IDeletionProgressManager;
-import fr.cnes.regards.modules.storagelight.service.FileDeletionRequestService;
-import fr.cnes.regards.modules.storagelight.service.FileReferenceService;
+import fr.cnes.regards.modules.storagelight.service.file.reference.FileDeletionRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 
 /**
  * @author sbinda
@@ -76,7 +76,7 @@ public class FileDeletionJobProgressManager implements IDeletionProgressManager 
         fileDeletionRequest.setErrorCause(cause);
         fileDeletionRequestService.updateFileDeletionRequest(fileDeletionRequest);
         FileReferenceEvent event = new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
-                FileReferenceEventState.DELETION_ERROR, cause, fileRef.getLocation());
+                FileReferenceEventState.DELETION_ERROR, null, cause, fileRef.getLocation());
         publishWithTenant(event);
     }
 
@@ -92,7 +92,7 @@ public class FileDeletionJobProgressManager implements IDeletionProgressManager 
         fileDeletionRequestService.deleteFileDeletionRequest(fileDeletionRequest);
         fileReferenceService.deleteFileReference(fileRef);
         FileReferenceEvent event = new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
-                FileReferenceEventState.DELETED, successMessage, fileRef.getLocation());
+                FileReferenceEventState.DELETED, null, successMessage, fileRef.getLocation());
         publishWithTenant(event);
     }
 

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.service;
+package fr.cnes.regards.modules.storagelight.service.storage;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -48,13 +48,14 @@ import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRequestRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storagelight.domain.plugin.DataStorageType;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStorage;
+import fr.cnes.regards.modules.storagelight.service.storage.PrioritizedDataStorageService;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
         "regards.storage.cache.path=target/cache", "regards.storage.cache.minimum.time.to.live.hours=12" })
-@ActiveProfiles({ "disableStorageTasks", "noschdule" })
+@ActiveProfiles({ "noscheduler" })
 public class PrioritizedDataStorageServiceTest extends AbstractMultitenantServiceTest {
 
     private static final String PDS_LABEL = "PrioritizedDataStorageServiceIT";

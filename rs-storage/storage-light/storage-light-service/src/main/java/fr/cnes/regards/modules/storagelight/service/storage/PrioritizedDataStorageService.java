@@ -1,4 +1,4 @@
-package fr.cnes.regards.modules.storagelight.service;
+package fr.cnes.regards.modules.storagelight.service.storage;
 
 import java.util.List;
 import java.util.Optional;

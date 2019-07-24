@@ -16,11 +16,12 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.service;
+package fr.cnes.regards.modules.storagelight.service.file.reference;
 
 import java.util.Collection;
 import java.util.Optional;
 
+import org.apache.commons.compress.utils.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
@@ -39,6 +41,9 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoringAggregation;
+import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
+import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
+import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginConfigurationHandler;
 
 /**
  * @author Sébastien Binda
@@ -60,6 +65,9 @@ public class FileReferenceService {
 
     @Autowired
     private StoragePluginConfigurationHandler storageHandler;
+
+    @Autowired
+    private IPublisher publisher;
 
     public Page<FileReference> search(String storage, Pageable pageable) {
         return fileRefRepo.findByLocationStorage(storage, pageable);
@@ -97,6 +105,7 @@ public class FileReferenceService {
         Assert.notNull(fileMetaInfo.getAlgorithm(), "File checksum algorithm is mandatory");
         Assert.notNull(fileMetaInfo.getFileName(), "File name is mandatory");
         Assert.notNull(fileMetaInfo.getMimeType(), "File mime type is mandatory");
+        Assert.notNull(fileMetaInfo.getFileSize(), "File size is mandatory");
         Assert.notNull(origin, "File must have an origin location to be referenced");
         Assert.notNull(destination, "File must have an origin location to be referenced");
 
@@ -120,10 +129,14 @@ public class FileReferenceService {
         Assert.notNull(fileRef, "File reference to delete cannot be null");
         Assert.notNull(fileRef.getId(), "File reference identifier to delete cannot be null");
         fileRefRepo.deleteById(fileRef.getId());
-        // TODO : Notify owners of the file
+        String message = String.format("File reference %s (checksum: %s) as been completly deleted for all owners.",
+                                       fileRef.getMetaInfo().getFileName(), fileRef.getMetaInfo().getChecksum());
+        publisher.publish(new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(), FileReferenceEventState.DELETED,
+                null, message, fileRef.getLocation()));
     }
 
-    public void removeOwner(String checksum, String storage, String owner) throws EntityNotFoundException {
+    public void removeFileReferenceForOwner(String checksum, String storage, String owner)
+            throws EntityNotFoundException {
 
         Assert.notNull(checksum, "Checksum is mandatory to delete a file reference");
         Assert.notNull(storage, "Storage is mandatory to delete a file reference");
@@ -139,17 +152,26 @@ public class FileReferenceService {
     }
 
     private void removeOwner(FileReference fileReference, String owner) {
+        String message;
         if (!fileReference.getOwners().contains(owner)) {
-            LOGGER.info("File <{} (checksum: {})> at {} does not to belongs to %s",
-                        fileReference.getMetaInfo().getFileName(), fileReference.getMetaInfo().getChecksum(),
-                        fileReference.getLocation().toString(), owner);
+            message = String.format("File <%s (checksum: %s)> at %s does not to belongs to %s",
+                                    fileReference.getMetaInfo().getFileName(),
+                                    fileReference.getMetaInfo().getChecksum(), fileReference.getLocation().toString(),
+                                    owner);
+
         } else {
             fileReference.getOwners().remove(owner);
-            LOGGER.info("File reference <{} (checksum: {})> at {} does not belongs to {} anymore",
-                        fileReference.getMetaInfo().getFileName(), fileReference.getMetaInfo().getChecksum(),
-                        fileReference.getLocation().toString(), owner);
+            message = String.format("File reference <%s (checksum: %s)> at %s does not belongs to %s anymore",
+                                    fileReference.getMetaInfo().getFileName(),
+                                    fileReference.getMetaInfo().getChecksum(), fileReference.getLocation().toString(),
+                                    owner);
             fileRefRepo.save(fileReference);
         }
+
+        LOGGER.info(message);
+        // Inform owners that the file reference is considered has delete for him.
+        publisher.publish(new FileReferenceEvent(fileReference.getMetaInfo().getChecksum(),
+                FileReferenceEventState.DELETED, Sets.newHashSet(owner), message, fileReference.getLocation()));
 
         // If file reference does not belongs to anyone anymore, delete file reference
         if (fileReference.getOwners().isEmpty()) {
@@ -161,16 +183,19 @@ public class FileReferenceService {
                 this.deleteFileReference(fileReference);
             }
         }
-
-        // TODO : Notify
     }
 
     private FileReference createNewFileReference(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
             FileLocation location) {
         FileReference fileRef = new FileReference(owners, fileMetaInfo, location);
         fileRef = fileRefRepo.save(fileRef);
-        LOGGER.info("New file <{}> referenced at <{}> (checksum: {})", fileRef.getMetaInfo().getFileName(),
-                    fileRef.getLocation().toString(), fileRef.getMetaInfo().getChecksum());
+        String message = String.format("New file <%s> referenced at <%s> (checksum: %s)",
+                                       fileRef.getMetaInfo().getFileName(), fileRef.getLocation().toString(),
+                                       fileRef.getMetaInfo().getChecksum());
+        LOGGER.info(message);
+        // Send fileReferenceEvent
+        publisher.publish(new FileReferenceEvent(fileMetaInfo.getChecksum(), FileReferenceEventState.STORED, owners,
+                message, location));
         return fileRef;
     }
 

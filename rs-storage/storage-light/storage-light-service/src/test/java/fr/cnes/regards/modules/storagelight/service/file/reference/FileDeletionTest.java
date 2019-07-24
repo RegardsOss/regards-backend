@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.service;
+package fr.cnes.regards.modules.storagelight.service.file.reference;
 
 import java.util.Collection;
 import java.util.List;
@@ -43,7 +43,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest
  * @author sbinda
  *
  */
-@ActiveProfiles({ "disableStorageTasks" })
+@ActiveProfiles({ "noscheduler" })
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_deletion_tests",
         "regards.storage.cache.path=target/cache", "regards.storage.cache.minimum.time.to.live.hours=12" })
 public class FileDeletionTest extends AbstractFileReferenceTest {
@@ -68,7 +68,7 @@ public class FileDeletionTest extends AbstractFileReferenceTest {
         FileReference fileRef = oFileRef.get();
 
         // Delete file reference for one owner
-        fileRefService.removeOwner(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
+        fileRefService.removeFileReferenceForOwner(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
                                    owners.get(0));
 
         // File reference should still exists for the remaining owner
@@ -81,7 +81,7 @@ public class FileDeletionTest extends AbstractFileReferenceTest {
                           afterDeletion.get().getOwners().contains(owners.get(1)));
 
         // Delete file reference for the remaining owner
-        fileRefService.removeOwner(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
+        fileRefService.removeFileReferenceForOwner(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
                                    owners.get(1));
 
         // File reference should be deleted
@@ -110,7 +110,7 @@ public class FileDeletionTest extends AbstractFileReferenceTest {
         fileRef = oFileRef.get();
 
         // Delete file reference for one owner
-        fileRefService.removeOwner(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(), firstOwner);
+        fileRefService.removeFileReferenceForOwner(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(), firstOwner);
 
         // File reference should still exists for the remaining owner
         Optional<FileReference> afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(),
@@ -122,7 +122,7 @@ public class FileDeletionTest extends AbstractFileReferenceTest {
                           afterDeletion.get().getOwners().contains(secondOwner));
 
         // Delete file reference for the remaining owner
-        fileRefService.removeOwner(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
+        fileRefService.removeFileReferenceForOwner(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
                                    secondOwner);
 
         // File reference should still exists with no owners

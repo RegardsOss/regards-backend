@@ -1,6 +1,6 @@
 package fr.cnes.regards.modules.storagelight.domain.event;
 
-import java.util.Set;
+import java.util.Collection;
 
 import javax.validation.constraints.NotNull;
 
@@ -12,9 +12,8 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 
 /**
- * Events mainly for rs-order, gives information on StorageDataFile granularity, not AIP.
  *
- * @author Sylvain VISSIERE-GUERINET
+ * @author Sébastien Binda
  */
 @Event(target = Target.ALL)
 public class FileReferenceEvent implements ISubscribable {
@@ -27,24 +26,27 @@ public class FileReferenceEvent implements ISubscribable {
 
     private String message;
 
-    private final Set<String> owners = Sets.newHashSet();
+    private Collection<String> owners = Sets.newHashSet();
 
     private FileLocation location;
 
-    public FileReferenceEvent(@NotNull String checksum, @NotNull FileReferenceEventState state, String message,
-            FileLocation location) {
+    public FileReferenceEvent(@NotNull String checksum, @NotNull FileReferenceEventState state,
+            Collection<String> owners, String message, FileLocation location) {
         super();
         this.checksum = checksum;
         this.state = state;
         this.message = message;
         this.location = location;
+        this.owners = owners;
     }
 
-    public FileReferenceEvent(@NotNull String checksum, @NotNull FileReferenceEventState state, String message) {
+    public FileReferenceEvent(@NotNull String checksum, @NotNull FileReferenceEventState state,
+            Collection<String> owners, String message) {
         super();
         this.checksum = checksum;
         this.state = state;
         this.message = message;
+        this.owners = owners;
     }
 
     /**
@@ -106,7 +108,7 @@ public class FileReferenceEvent implements ISubscribable {
     /**
      * @return the owners
      */
-    public Set<String> getOwners() {
+    public Collection<String> getOwners() {
         return owners;
     }
 

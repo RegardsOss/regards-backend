@@ -16,10 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.service;
+package fr.cnes.regards.modules.storagelight.service.file.reference;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
@@ -33,28 +31,17 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
-import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
-import fr.cnes.regards.modules.storagelight.domain.database.StorageLocation;
 
 /**
- * Enable storage task schedulers.
- * This component run multiple scheduled and periodically executed methods :
- * <ul>
- * <li> Handle file reference request {@link FileReferenceRequest} </li>
- * <li> Monitor storage locations {@link StorageLocation} </li>
- * <li> Cache purge: {@link #cleanCache()}</li>
- * </ul>
- * @author Marc Sordi
- * @author Sylvain Vissiere-Guerinet
- * @author Binda Sébastien
+ * Enable file reference scheduler.
+ *
+ * @author Sébastien Binda
  *
  */
 @Component
-@Profile("!disableStorageTasks")
+@Profile("!noscheduler")
 @EnableScheduling
-public class Scheduler {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(Scheduler.class);
+public class FileReferenceScheduler {
 
     @Autowired
     private ITenantResolver tenantResolver;
@@ -67,12 +54,6 @@ public class Scheduler {
 
     @Autowired
     private FileDeletionRequestService fileDeletionRequestService;
-
-    @Autowired
-    private StorageLocationService storageLocationService;
-
-    @Autowired
-    private CachedFileService cachedFileService;
 
     /**
      * Number of created AIPs processed on each iteration by project
@@ -101,33 +82,6 @@ public class Scheduler {
             } finally {
                 runtimeTenantResolver.clearTenant();
             }
-        }
-    }
-
-    /**
-     * Periodically check the cache total size and delete expired files or/and older files if needed.
-     * Default : scheduled to be run every 5minutes.
-     */
-    @Scheduled(fixedRateString = "${regards.cache.cleanup.rate.ms:300000}")
-    public void cleanCache() {
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
-            runtimeTenantResolver.forceTenant(tenant);
-            long startTime = System.currentTimeMillis();
-            int nbPurged = cachedFileService.purge();
-            LOGGER.trace("Cache clean done in {}ms for {} files", System.currentTimeMillis() - startTime, nbPurged);
-            runtimeTenantResolver.clearTenant();
-        }
-    }
-
-    @Scheduled(fixedRateString = "${regards.storage.check.data.storage.disk.usage.rate:3600000}",
-            initialDelay = 60 * 1000)
-    public void monitorDataStorages() {
-        for (String tenant : tenantResolver.getAllActiveTenants()) {
-            runtimeTenantResolver.forceTenant(tenant);
-            long startTime = System.currentTimeMillis();
-            storageLocationService.monitorDataStorages();
-            LOGGER.trace("Data storages monitoring done in {}ms", System.currentTimeMillis() - startTime);
-            runtimeTenantResolver.clearTenant();
         }
     }
 }

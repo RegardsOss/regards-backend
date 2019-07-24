@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with REGARDS. If not, see <http://www.gnu.org/licenses/>.
  */
-package fr.cnes.regards.modules.storagelight.service.jobs;
+package fr.cnes.regards.modules.storagelight.service.file.reference.job;
 
 import java.util.Optional;
 
@@ -34,8 +34,8 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageProgressManager;
-import fr.cnes.regards.modules.storagelight.service.FileReferenceRequestService;
-import fr.cnes.regards.modules.storagelight.service.FileReferenceService;
+import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceRequestService;
+import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 
 /**
  * Implementation of {@link IStorageProgressManager} used by {@link IDataStorage} plugins.<br/>
@@ -93,7 +93,7 @@ public class FileReferenceJobProgressManager implements IStorageProgressManager 
                 FileReference newFileRef = oFileRef.get();
                 // Create new event message for new FileReference
                 FileReferenceEvent event = new FileReferenceEvent(newFileRef.getMetaInfo().getChecksum(),
-                        FileReferenceEventState.STORED,
+                        FileReferenceEventState.STORED, newFileRef.getOwners(),
                         String.format("File %s successfully referenced at %s", newFileRef.getMetaInfo().getFileName(),
                                       newFileRef.getLocation().toString()));
                 // hell yeah this is not the usual publish method, but i know what i'm doing so trust me!
@@ -120,7 +120,8 @@ public class FileReferenceJobProgressManager implements IStorageProgressManager 
         fileRefRequest.setErrorCause(cause);
         fileRefRequestService.updateFileReferenceRequest(fileRefRequest);
         FileReferenceEvent event = new FileReferenceEvent(fileRefRequest.getMetaInfo().getChecksum(),
-                FileReferenceEventState.STORE_ERROR, cause, fileRefRequest.getDestination());
+                FileReferenceEventState.STORE_ERROR, fileRefRequest.getOwners(), cause,
+                fileRefRequest.getDestination());
         publishWithTenant(event);
     }
 
