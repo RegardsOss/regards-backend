@@ -1,23 +1,8 @@
-# Compilation de tous les projets
+# REGARDS access
 
-`mvn clean package`
+This is the backend for frontend repository.
 
-# Compilation backend
+REGARDS is still under development. **This version is a beta version**.
 
-`cd backend/backend-mock/ && mvn clean package`
-
-# Start backend
-
-`java -jar -Xms100m -Xmx100m backend/backend-mock/target/backend-mock-1.0-SNAPSHOT.jar`
-
-# Start frontend
-
-``` bash
-cd frontend/frontend-webapp/src/main/webapp
-npm install
-npm start
-```
-
-or
-
-`java -jar frontend/frontend-boot/target/frontend-boot-0.0.1-SNAPSHOT.war`
+## Build
+The [README](https://github.com/RegardsOss/regards-deployment/blob/master/README.md) of the project [rs-deployment](https://github.com/RegardsOss/regards-deployment) describes how to generate all the REGARDS repositories.
