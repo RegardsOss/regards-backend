@@ -136,11 +136,11 @@ public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements
             results = serviceHelper.getDataObjects(pOpenSearchQuery, 0, 10000);
             return apply(results.getContent(), response);
         } catch (OpenSearchParseException e) {
-            String message = String.format("Error applying service. OpenSearchQuery is not a valid query : %s",
-                                           pOpenSearchQuery);
+            String message = String
+                    .format("Error applying service. OpenSearchQuery is not a valid query : %s", pOpenSearchQuery);
             LOGGER.error(message, e);
-            return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
-                                                                      message);
+            return CatalogPluginResponseFactory
+                    .createSuccessResponse(response, CatalogPluginResponseType.JSON, message);
         }
 
     }
@@ -162,10 +162,10 @@ public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements
         // If files number exceed maximum configured, return a JSON message with the error.
         LOGGER.debug(String.format("Number of files to download : %d", nbFiles));
         if (nbFiles > maxFilesToDownload) {
-            return CatalogPluginResponseFactory
-                    .createSuccessResponse(response, CatalogPluginResponseType.JSON,
-                                           String.format("Number of files to download %d exceed maximum allowed of %d",
-                                                         nbFiles, maxFilesToDownload));
+            return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
+                                                                      String.format(
+                                                                              "Number of files to download %d exceed maximum allowed of %d",
+                                                                              nbFiles, maxFilesToDownload));
         }
 
         // Check for maximum file size limit
@@ -181,15 +181,14 @@ public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements
 
         // If tere is no file downloadable, return a JSON message.
         if (nbFiles == 0) {
-            return CatalogPluginResponseFactory
-                    .createSuccessResponse(response, CatalogPluginResponseType.JSON,
-                                           "None of the selected files are available for download");
+            return CatalogPluginResponseFactory.createSuccessResponse(response, CatalogPluginResponseType.JSON,
+                                                                      "None of the selected files are available for download");
         }
 
         // Create and stream the ZIP archive containg all downloadable files
-        return CatalogPluginResponseFactory.createStreamSuccessResponse(response, getFilesAsZip(toDownloadFilesMap),
-                                                                        getArchiveName(),
-                                                                        MediaType.APPLICATION_OCTET_STREAM);
+        return CatalogPluginResponseFactory
+                .createStreamSuccessResponse(response, getFilesAsZip(toDownloadFilesMap), getArchiveName(),
+                                             MediaType.APPLICATION_OCTET_STREAM);
     }
 
     /**
@@ -280,8 +279,9 @@ public class MultiDownloadPlugin extends AbstractCatalogServicePlugin implements
      * @return String fileName
      */
     private String getDataObjectFileNameForDownload(DataObject dataobject, DataFile datafile) {
-        String fileName = datafile.getFilename() != null ? datafile.getFilename()
-                : FilenameUtils.getName(datafile.asUri().getPath());
+        String fileName = datafile.getFilename() != null ?
+                datafile.getFilename() :
+                FilenameUtils.getName(datafile.asUri().getPath());
         String dataObjectName = dataobject.getLabel() != null ? dataobject.getLabel().replaceAll(" ", "") : "files";
         return String.format("%s/%s", dataObjectName, fileName);
     }
