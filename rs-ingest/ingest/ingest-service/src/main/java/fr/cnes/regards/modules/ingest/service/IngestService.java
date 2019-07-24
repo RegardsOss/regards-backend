@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.ingest.service;
 
+import javax.persistence.EntityManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -28,8 +29,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Optional;
-
-import javax.persistence.EntityManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +42,6 @@ import org.springframework.validation.Validator;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
-
 import fr.cnes.regards.framework.amqp.IPublisher;
 import fr.cnes.regards.framework.authentication.IAuthenticationResolver;
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
@@ -182,20 +180,24 @@ public class IngestService implements IIngestService {
                 case AIP_SUBMITTED:
                 case STORE_ERROR:
                 case STORED:
-                    throw new EntityOperationForbiddenException(sipId.toString(), SIPEntity.class,
-                            "SIP ingest process is already successully done");
+                    throw new EntityOperationForbiddenException(sipId.toString(),
+                                                                SIPEntity.class,
+                                                                "SIP ingest process is already successully done");
                 case REJECTED:
-                    throw new EntityOperationForbiddenException(sipId.toString(), SIPEntity.class,
-                            "SIP format is not valid");
+                    throw new EntityOperationForbiddenException(sipId.toString(),
+                                                                SIPEntity.class,
+                                                                "SIP format is not valid");
                 case VALID:
                 case QUEUED:
                 case CREATED:
                 case AIP_CREATED:
-                    throw new EntityOperationForbiddenException(sipId.toString(), SIPEntity.class,
-                            "SIP ingest is already running");
+                    throw new EntityOperationForbiddenException(sipId.toString(),
+                                                                SIPEntity.class,
+                                                                "SIP ingest is already running");
                 default:
-                    throw new EntityOperationForbiddenException(sipId.toString(), SIPEntity.class,
-                            "SIP is in undefined state for ingest retry");
+                    throw new EntityOperationForbiddenException(sipId.toString(),
+                                                                SIPEntity.class,
+                                                                "SIP is in undefined state for ingest retry");
             }
             return sip.toDto();
         } else {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
+ * Copyright 2017-2019 CNES - CENTRE NATIONAL d'ETUDES SPATIALES
  *
  * This file is part of REGARDS.
  *
@@ -434,7 +434,7 @@ public class SIPServiceIT extends AbstractSipIT {
             AIP aipToDelete = oAip.get();
             aipToDelete.setState(AIPState.DELETED);
             publisher.publish(new AIPEvent(aipToDelete));
-            Thread.sleep(3000);
+            Thread.sleep(5000);
         }
     }
 
