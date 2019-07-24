@@ -114,7 +114,7 @@ public class Oauth2AuthenticationManager implements AuthenticationManager, BeanF
         String name = authentication.getName();
         String password = (String) authentication.getCredentials();
 
-        if ((name == null) || (password == null)) {
+        if (name == null || password == null) {
             throw new BadCredentialsException("User login / password cannot be empty");
         }
 
