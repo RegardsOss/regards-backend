@@ -31,15 +31,14 @@ import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
-import fr.cnes.regards.modules.storagelight.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageProgressManager;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
 
 /**
- * Implementation of {@link IStorageProgressManager} used by {@link IDataStorage} plugins.<br/>
- * This implementation notify the system thanks to the AMQP publisher.
+ * Progress manager class to handle {@link FileReferenceRequestJob} advancement.
+ * This progress manager should be used by all storage plugin to inform a storage success or a storage error.
  *
  * @author Sébastien Binda
  */

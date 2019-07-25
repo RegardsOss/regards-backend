@@ -48,6 +48,7 @@ import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfi
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRequestRepository;
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
+import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileReferenceWorkingSubset;
@@ -57,6 +58,9 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileRefer
 import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginConfigurationHandler;
 
 /**
+ * Service to handle {@link FileReferenceRequest}s.
+ * Those requests are created when a file reference need to be stored physically thanks to an existing {@link IDataStorage} plugin.
+ *
  * @author Sébastien Binda
  */
 @Service
@@ -85,26 +89,57 @@ public class FileReferenceRequestService {
     @Autowired
     private StoragePluginConfigurationHandler storageHandler;
 
+    /**
+     * Search for {@link FileReferenceRequest}s matching the given destination storage and checksum
+     * @param destinationStorage
+     * @param checksum
+     * @return {@link FileReferenceRequest}
+     */
     public Optional<FileReferenceRequest> search(String destinationStorage, String checksum) {
         return fileRefRequestRepo.findByMetaInfoChecksumAndDestinationStorage(checksum, destinationStorage);
     }
 
+    /**
+     * Search for all {@link FileReferenceRequest}s
+     * @param pageable
+     * @return {@link FileReferenceRequest}s by page
+     */
     public Page<FileReferenceRequest> search(Pageable pageable) {
         return fileRefRequestRepo.findAll(pageable);
     }
 
+    /**
+     * Search for {@link FileReferenceRequest}s associated to the given destination storage location.
+     * @param pageable
+     * @return {@link FileReferenceRequest}s by page
+     */
     public Page<FileReferenceRequest> search(String destinationStorage, Pageable pageable) {
         return fileRefRequestRepo.findByDestinationStorage(destinationStorage, pageable);
     }
 
+    /**
+     * Delete a {@link FileReferenceRequest}
+     * @param fileRefRequest to delete
+     */
     public void deleteFileReferenceRequest(FileReferenceRequest fileRefRequest) {
         fileRefRequestRepo.deleteById(fileRefRequest.getId());
     }
 
+    /**
+     * Update a {@link FileReferenceRequest}
+     * @param fileRefRequest to delete
+     */
     public void updateFileReferenceRequest(FileReferenceRequest fileRefRequest) {
         fileRefRequestRepo.save(fileRefRequest);
     }
 
+    /**
+     * Schedule {@link FileReferenceRequestJob}s for all {@link FileReferenceRequest}s matching the given parameters
+     * @param status of the request to handle
+     * @param storages of the request to handle
+     * @param owners of the request to handle
+     * @return {@link JobInfo}s scheduled
+     */
     public Collection<JobInfo> scheduleStoreJobs(FileRequestStatus status, Collection<String> storages,
             Collection<String> owners) {
         Collection<JobInfo> jobList = Lists.newArrayList();
@@ -134,6 +169,12 @@ public class FileReferenceRequestService {
         return jobList;
     }
 
+    /**
+     * Schedule {@link FileReferenceRequestJob}s for all given {@link FileReferenceRequest}s and a given storage location.
+     * @param storage
+     * @param fileRefRequests
+     * @return {@link JobInfo}s scheduled
+     */
     private Collection<JobInfo> scheduleStoreJobsByStorage(String storage,
             Collection<FileReferenceRequest> fileRefRequests) {
         Collection<JobInfo> jobInfoList = Sets.newHashSet();
@@ -158,11 +199,26 @@ public class FileReferenceRequestService {
         return jobInfoList;
     }
 
+    /**
+     * Create a new {@link FileReferenceRequest}
+     * @param owners owners of the file to reference
+     * @param fileMetaInfo meta information of the file to reference
+     * @param origin file origin location
+     * @param destination file destination location (where the file will be stored).
+     */
     public void createNewFileReferenceRequest(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
             FileLocation origin, FileLocation destination) {
         this.createNewFileReferenceRequest(owners, fileMetaInfo, origin, destination, FileRequestStatus.TODO);
     }
 
+    /**
+     * Create a new {@link FileReferenceRequest}
+     * @param owners owners of the file to reference
+     * @param fileMetaInfo meta information of the file to reference
+     * @param origin file origin location
+     * @param destination file destination location (where the file will be stored).
+     * @param status status of the file request to create.
+     */
     public void createNewFileReferenceRequest(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
             FileLocation origin, FileLocation destination, FileRequestStatus status) {
 
@@ -196,6 +252,14 @@ public class FileReferenceRequestService {
 
     }
 
+    /**
+     * Method to update a {@link FileReferenceRequest} when a new request is sent for the same associated {@link FileReference}.<br/>
+     * If the existing file request is in error state, update the state to todo to allow store request retry.<br/>
+     * The existing request is also updated to add new owners of the future stored and referenced {@link FileReference}.
+     * @param fileReferenceRequest
+     * @param newMetaInfo
+     * @param owners
+     */
     public void handleFileReferenceRequestAlreadyExists(FileReferenceRequest fileReferenceRequest,
             FileReferenceMetaInfo newMetaInfo, Collection<String> owners) {
         for (String owner : owners) {
@@ -223,10 +287,26 @@ public class FileReferenceRequestService {
         fileRefRequestRepo.save(fileReferenceRequest);
     }
 
+    /**
+     * Update a list of {@link FileReferenceRequest}s when the storage destination cannot be handled.
+     * A storage destination cannot be handled if <ul>
+     * <li> No plugin configuration of {@link IDataStorage} exists for the storage</li>
+     * <li> the plugin configuration is disabled </li>
+     * </ul>
+     * @param fileRefRequests
+     */
     private void handleStorageNotAvailable(Collection<FileReferenceRequest> fileRefRequests) {
         fileRefRequests.forEach(this::handleStorageNotAvailable);
     }
 
+    /**
+     * Update a {@link FileReferenceRequest} when the storage destination cannot be handled.
+     * A storage destination cannot be handled if <ul>
+     * <li> No plugin configuration of {@link IDataStorage} exists for the storage</li>
+     * <li> the plugin configuration is disabled </li>
+     * </ul>
+     * @param fileRefRequest
+     */
     private void handleStorageNotAvailable(FileReferenceRequest fileRefReq) {
         // The storage destination is unknown, we can already set the request in error status
         fileRefReq.setStatus(FileRequestStatus.ERROR);

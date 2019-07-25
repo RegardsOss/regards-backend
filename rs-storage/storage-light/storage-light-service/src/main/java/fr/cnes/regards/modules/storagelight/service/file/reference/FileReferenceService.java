@@ -47,10 +47,36 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoringAggregation;
 import fr.cnes.regards.modules.storagelight.domain.flow.AddFileRefFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
+import fr.cnes.regards.modules.storagelight.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
 import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginConfigurationHandler;
 
 /**
+ * Service to handle File references.<br/>
+ *
+ * <b>File reference definition : </b><ul>
+ *  <li> Mandatory checksum in {@link FileReferenceMetaInfo} </li>
+ *  <li> Mandatory storage location in {@link FileLocation}</li>
+ *  <li> Optional list of owners</li>
+ * </ul>
+ *
+ * <b> File reference physical location : </b><br/>
+ * A file can be referenced through this system by : <ul>
+ * <li> Storing file on a storage location thanks to {@link IDataStorage} plugins </li>
+ * <li> Only reference file assuming the file location is handled externally </li>
+ * </ul>
+ * A file reference storage/deletion is handled by the service if the storage location is known as a {@link IDataStorage} plugin configuration.<br/>
+ *
+ * <b>File reference owners : </b><br/>
+ * When a file reference does not have any owner, then it is scheduled for deletion.<br/>
+ *
+ * <b> Entry points : </b><br/>
+ * File references can be created using AMQP messages {@link AddFileRefFlowItem}.<br/>
+ * File references can be deleted using AMQP messages {@link DeleteFileRefFlowItem}.<br/>
+ * File references can be copied in cache system using AMQP messages TODO<br/>
+ * File references can be download using TODO<br/>
+ *
  * @author Sébastien Binda
  */
 @Service
@@ -88,6 +114,13 @@ public class FileReferenceService {
 
     public Page<FileReference> search(Specification<FileReference> spec, Pageable page) {
         return fileRefRepo.findAll(spec, page);
+    }
+
+    public Optional<FileReference> addFileReference(AddFileRefFlowItem item) {
+        FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(item.getChecksum(), item.getAlgorithm(),
+                item.getFileName(), item.getFileSize(), MediaType.valueOf(item.getMimeType()));
+        return this.addFileReference(Lists.newArrayList(item.getOwner()), metaInfo, item.getOrigine(),
+                                     item.getDestination());
     }
 
     /**

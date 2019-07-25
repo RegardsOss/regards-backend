@@ -53,8 +53,9 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileRefer
 import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginConfigurationHandler;
 
 /**
- * @author sbinda
+ * Service to handle request to physically delete files thanks to {@link FileDeletionRequest}s.
  *
+ * @author Sébastien Binda
  */
 @Service
 @MultitenantTransactional
@@ -78,8 +79,8 @@ public class FileDeletionRequestService {
     private StoragePluginConfigurationHandler storageHandler;
 
     /**
-     *
-     * @param fileReferenceToDelete
+     * Create a new {@link FileDeletionRequest}.
+     * @param fileReferenceToDelete {@link FileReference} to delete
      * @param forceDelete allows to delete fileReference even if the deletion is in error.
      */
     public void createNewFileDeletionRequest(FileReference fileReferenceToDelete, boolean forceDelete) {
@@ -88,6 +89,12 @@ public class FileDeletionRequestService {
         }
     }
 
+    /**
+     * Schedule {@link FileDeletionRequestJob}s for all {@link FileDeletionRequest}s matching the given parameters.
+     * @param status status of the {@link FileDeletionRequest}s to handle
+     * @param storages of the {@link FileDeletionRequest}s to handle
+     * @return {@link JobInfo}s scheduled
+     */
     public Collection<JobInfo> scheduleDeletionJobs(FileRequestStatus status, Collection<String> storages) {
 
         Collection<JobInfo> jobList = Lists.newArrayList();
@@ -111,6 +118,12 @@ public class FileDeletionRequestService {
         return jobList;
     }
 
+    /**
+     * Schedule {@link FileDeletionRequestJob}s for given {@link FileDeletionRequest}s and given storage location.
+     * @param storage of the {@link FileDeletionRequest}s to handle
+     * @param fileDeletionRequests {@link FileDeletionRequest}s to schedule
+     * @return {@link JobInfo}s scheduled
+     */
     private Collection<JobInfo> scheduleDeletionJobsByStorage(String storage,
             Collection<FileDeletionRequest> fileDeletionRequests) {
         Collection<JobInfo> jobInfoList = Sets.newHashSet();
@@ -136,10 +149,26 @@ public class FileDeletionRequestService {
         return jobInfoList;
     }
 
+    /**
+     * Update a list of {@link FileDeletionRequest}s when the storage destination cannot be handled.
+     * A storage destination cannot be handled if <ul>
+     * <li> No plugin configuration of {@link IDataStorage} exists for the storage</li>
+     * <li> the plugin configuration is disabled </li>
+     * </ul>
+     * @param fileDeletionRequests
+     */
     private void handleStorageNotAvailable(Collection<FileDeletionRequest> fileDeletionRequests) {
         fileDeletionRequests.forEach(this::handleStorageNotAvailable);
     }
 
+    /**
+     * Update a {@link FileDeletionRequest} when the storage destination cannot be handled.
+     * A storage destination cannot be handled if <ul>
+     * <li> No plugin configuration of {@link IDataStorage} exists for the storage</li>
+     * <li> the plugin configuration is disabled </li>
+     * </ul>
+     * @param fileDeletionRequest
+     */
     private void handleStorageNotAvailable(FileDeletionRequest fileDeletionRequest) {
         // The storage destination is unknown, we can already set the request in error status
         fileDeletionRequest.setStatus(FileRequestStatus.ERROR);
@@ -149,18 +178,31 @@ public class FileDeletionRequestService {
                         fileDeletionRequest.getStorage()));
     }
 
+    /**
+     * Delete a {@link FileDeletionRequest}
+     * @param fileDeletionRequest
+     */
     public void deleteFileDeletionRequest(FileDeletionRequest fileDeletionRequest) {
         Assert.notNull(fileDeletionRequest, "File deletion request to delete cannot be null");
         Assert.notNull(fileDeletionRequest.getId(), "File deletion request to delete identifier cannot be null");
         fileDeletionRequestRepo.deleteById(fileDeletionRequest.getId());
     }
 
+    /**
+     * Update a {@link FileDeletionRequest}
+     * @param fileDeletionRequest
+     */
     public void updateFileDeletionRequest(FileDeletionRequest fileDeletionRequest) {
         Assert.notNull(fileDeletionRequest, "File deletion request to update cannot be null");
         Assert.notNull(fileDeletionRequest.getId(), "File deletion request to update identifier cannot be null");
         fileDeletionRequestRepo.save(fileDeletionRequest);
     }
 
+    /**
+     * Search for a specific {@link FileDeletionRequest}
+     * @param fileReference to search for
+     * @return {@link FileDeletionRequest} if exists
+     */
     public Optional<FileDeletionRequest> search(FileReference fileReference) {
         return fileDeletionRequestRepo.findByFileReferenceId(fileReference.getId());
 

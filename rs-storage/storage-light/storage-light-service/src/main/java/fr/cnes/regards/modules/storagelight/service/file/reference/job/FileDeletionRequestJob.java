@@ -37,13 +37,23 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.FileReference
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
 
 /**
+ * Deletion of file references job. This jobs his scheduled to delete a bundle of file reference,
+ * thanks to {@link FileDeletionRequest}s.<br/>
+ * The deletion jobs are used to delete files on a specific storage location.
+ *
  * @author Sébastien Binda
  *
  */
 public class FileDeletionRequestJob extends AbstractJob<Void> {
 
+    /**
+     * JOB Parameter key for the storage plugin configuration identifier to use for the deletion.
+     */
     public static final String DATA_STORAGE_CONF_ID = "dscId";
 
+    /**
+     * JOB Parameter key for the Working subset of {@link FileDeletionRequest} to handle for deletion.
+     */
     public static final String WORKING_SUB_SET = "wss";
 
     @Autowired

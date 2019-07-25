@@ -33,8 +33,9 @@ import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
 
 /**
- * @author sbinda
+ * Publisher to send AMQP message notification when there is any change on a File Reference.
  *
+ * @author Sébastien Binda
  */
 @Component
 public class FileRefEventPublisher {
@@ -44,30 +45,58 @@ public class FileRefEventPublisher {
     @Autowired
     private IPublisher publisher;
 
+    /**
+     * Notify listeners for a {@link FileReference} deleted successfully for all owners.
+     * @param fileRef {@link FileReference} deleted
+     * @param message Optional message
+     */
     public void publishFileRefDeleted(FileReference fileRef, String message) {
         LOGGER.debug("Publish FileReferenceEvent Deleted. {}", message);
         publisher.publish(new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
                 FileReferenceEventState.FULLY_DELETED, null, message, fileRef.getLocation()));
     }
 
+    /**
+     * Notify listeners for a {@link FileReference} deletion error.
+     * @param fileRef {@link FileReference} not deleted
+     * @param message Optional error cause message
+     */
     public void publishFileRefDeletionError(FileReference fileRef, String message) {
         LOGGER.debug("Publish FileReferenceEvent Delete error. {}", message);
         publisher.publish(new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
                 FileReferenceEventState.DELETION_ERROR, null, message, fileRef.getLocation()));
     }
 
+    /**
+     * Notify listeners for a {@link FileReference} deleted successfully for one owner.
+     * @param fileRef {@link FileReference} deleted for the given owner
+     * @param owner
+     * @param message Optional message
+     */
     public void publishFileRefDeletedForOwner(FileReference fileRef, String owner, String message) {
         LOGGER.debug("Publish FileReferenceEvent Deleted for owner. {}", message);
         publisher.publish(new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
                 FileReferenceEventState.DELETED_FOR_OWNER, Sets.newHashSet(owner), message, fileRef.getLocation()));
     }
 
+    /**
+     * Notify listeners for a {@link FileReference} successfully referenced.
+     * @param fileRef {@link FileReference} deleted for the given owner
+     * @param message Optional message
+     */
     public void publishFileRefStored(FileReference fileRef, String message) {
         LOGGER.debug("Publish FileReferenceEvent stored. {}", message);
         publisher.publish(new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(), FileReferenceEventState.STORED,
                 fileRef.getOwners(), message, fileRef.getLocation()));
     }
 
+    /**
+     * Notify listeners for an error during a {@link FileReference} referencing.
+     * @param checksum of the file in error
+     * @param owners owners of the file in error
+     * @param destinationLocation
+     * @param message Optional message
+     */
     public void publishFileRefStoreError(String checksum, Collection<String> owners, FileLocation destinationLocation,
             String message) {
         LOGGER.debug("Publish FileReferenceEvent store error. {}", message);

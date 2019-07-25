@@ -32,8 +32,10 @@ import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 
 /**
- * @author sbinda
+ * Handler to handle {@link DeleteFileRefFlowItem} AMQP messages.<br/>
+ * Those messages are sent to delete a file reference for one owner.
  *
+ * @author Sébastien Binda
  */
 @Component
 public class DeleteFileReferenceFlowHandler

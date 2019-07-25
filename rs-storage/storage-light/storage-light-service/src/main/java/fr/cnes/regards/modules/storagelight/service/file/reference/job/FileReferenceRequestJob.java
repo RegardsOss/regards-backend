@@ -33,7 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
-import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
@@ -49,16 +48,25 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.FileReference
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
 
 /**
- * {@link IJob} to handle a bundle of {@link FileReferenceRequest}s (workingsubset).
+ * Storage of file references job. This jobs is scheduled to store a bundle of file reference,
+ * thanks to {@link FileReferenceRequest}s.<br/>
+ * The storage jobs are used to storage files on a specific storage location.
  *
  * @author Sébastien Binda
+ *
  */
 public class FileReferenceRequestJob extends AbstractJob<Void> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceRequestJob.class);
 
+    /**
+     * JOB Parameter key for the storage plugin configuration identifier to use for the storage.
+     */
     public static final String DATA_STORAGE_CONF_ID = "dscId";
 
+    /**
+     * JOB Parameter key for the Working subset of {@link FileReferenceRequest} to handle for storage.
+     */
     public static final String WORKING_SUB_SET = "wss";
 
     @Autowired

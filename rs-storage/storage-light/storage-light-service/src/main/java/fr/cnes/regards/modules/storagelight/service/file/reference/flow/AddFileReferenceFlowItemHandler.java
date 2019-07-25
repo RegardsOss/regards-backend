@@ -29,23 +29,21 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
-import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.amqp.ISubscriber;
 import fr.cnes.regards.framework.amqp.domain.IHandler;
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.domain.flow.AddFileRefFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 
 /**
- * @author sbinda
+ * Handler to handle {@link AddFileRefFlowItem} AMQP messages.<br/>
+ * Those messages are sent to create new file reference.
  *
+ * @author Sébastien Binda
  */
 @Component
 public class AddFileReferenceFlowItemHandler
@@ -53,6 +51,9 @@ public class AddFileReferenceFlowItemHandler
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AddFileReferenceFlowItemHandler.class);
 
+    /**
+     * Bulk size limit to handle messages
+     */
     private static final int BULK_SIZE = 500;
 
     @Autowired
@@ -71,6 +72,10 @@ public class AddFileReferenceFlowItemHandler
         subscriber.subscribeTo(AddFileRefFlowItem.class, this);
     }
 
+    /**
+     * Only add the message in the list of messages handled by bulk in the scheduled method
+     * @param wrapper containing {@link AddFileRefFlowItem} to handle
+     */
     @Override
     public void handle(TenantWrapper<AddFileRefFlowItem> wrapper) {
         String tenant = wrapper.getTenant();
@@ -81,15 +86,16 @@ public class AddFileReferenceFlowItemHandler
         items.get(tenant).add(item);
     }
 
+    /**
+     * Method for tests to handle synchronously one message
+     * @param wrapper containing {@link AddFileRefFlowItem} to handle
+     */
     public void handleSync(TenantWrapper<AddFileRefFlowItem> wrapper) {
         String tenant = wrapper.getTenant();
         AddFileRefFlowItem item = wrapper.getContent();
         runtimeTenantResolver.forceTenant(tenant);
         try {
-            FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(item.getChecksum(), item.getAlgorithm(),
-                    item.getFileName(), item.getFileSize(), MediaType.valueOf(item.getMimeType()));
-            fileRefService.addFileReference(Lists.newArrayList(item.getOwner()), metaInfo, item.getOrigine(),
-                                            item.getDestination());
+            fileRefService.addFileReference(item);
         } finally {
             runtimeTenantResolver.clearTenant();
         }

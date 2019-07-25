@@ -31,10 +31,15 @@ import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.multitenant.ITenantResolver;
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
+import fr.cnes.regards.modules.storagelight.domain.database.FileDeletionRequest;
+import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
 
 /**
- * Enable file reference scheduler.
- *
+ * Scheduler to periodically handle bulk requests for storage and deletion on storage locations.<br />
+ * Those requests are <ul>
+ * <li> {@link FileReferenceRequest} for storage</li>
+ * <li> {@link FileDeletionRequest} for deletion</li>
+ * </ul>
  * @author Sébastien Binda
  *
  */

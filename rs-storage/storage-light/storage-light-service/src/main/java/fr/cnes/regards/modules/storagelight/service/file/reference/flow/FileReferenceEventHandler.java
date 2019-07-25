@@ -36,8 +36,8 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.FileReference
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 
 /**
- * This handler is used by the storage service to update file requests in DELAYED state after event on file references.
- * For example a fileReferenceRequest DELAYED is restarted after a file deletion request ends.
+ * This handler is used internally by the storage service to update file requests in DELAYED state after event on file references.
+ * A fileReferenceRequest DELAYED is restarted after a file deletion request ends.
  *
  * @author Sébastien Binda
  */
@@ -65,7 +65,7 @@ public class FileReferenceEventHandler implements IHandler<FileReferenceEvent> {
                 case FULLY_DELETED:
                 case DELETION_ERROR:
                     // When a file reference deletion is over, schedule the delayed reference requests if any
-                    // Indeed, when a file reference deletion process is running, every file reference request is delayed until
+                    // Indeed, when a file reference deletion process is running, every file reference request are delayed until
                     // the deletion process is over.
                     this.scheduleDelayedFileRefRequests(wrapper.getContent().getChecksum(),
                                                         wrapper.getContent().getLocation().getStorage());
