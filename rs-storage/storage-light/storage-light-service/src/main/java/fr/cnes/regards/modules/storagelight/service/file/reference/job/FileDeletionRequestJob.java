@@ -22,8 +22,6 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
@@ -31,12 +29,12 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissi
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeException;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
-import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
+import fr.cnes.regards.modules.storagelight.domain.database.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileDeletionWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileDeletionRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
+import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
 
 /**
  * @author Sébastien Binda
@@ -58,7 +56,7 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
     private IPluginService pluginService;
 
     @Autowired
-    protected IPublisher publisher;
+    protected FileRefEventPublisher publisher;
 
     @Autowired
     protected IRuntimeTenantResolver runtimeTenantResolver;
@@ -78,14 +76,23 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
     public void run() {
         // Initiate the job progress manager
         FileDeletionJobProgressManager progressManager = new FileDeletionJobProgressManager(fileReferenceService,
-                fileDeletionRequestService, publisher, this, runtimeTenantResolver);
+                fileDeletionRequestService, publisher, this);
         // lets instantiate the plugin to use
         Long confIdToUse = parameters.get(DATA_STORAGE_CONF_ID).getValue();
         FileDeletionWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET).getValue();
         try {
             IDataStorage storagePlugin = pluginService.getPlugin(confIdToUse);
             storagePlugin.delete(workingSubset, progressManager);
-        } catch (ModuleException | PluginUtilsRuntimeException | NotAvailablePluginConfigurationException e) {
+        } catch (Exception e) {
+            // Publish event for all not handled files
+            for (FileDeletionRequest req : workingSubset.getFileDeletionRequests()) {
+                if (!progressManager.isHandled(req)) {
+                    progressManager.deletionFailed(req, String
+                            .format("File %s (checksum: %s) not handled by deletion job. Deletion job failed cause : %s",
+                                    req.getFileReference().getMetaInfo().getFileName(),
+                                    req.getFileReference().getMetaInfo().getChecksum(), e.getMessage()));
+                }
+            }
             // throwing new runtime allows us to make the job fail.
             throw new JobRuntimeException(e);
         }

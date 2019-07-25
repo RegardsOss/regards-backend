@@ -18,66 +18,73 @@
  */
 package fr.cnes.regards.modules.storagelight.service.file.reference.job;
 
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
-import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IDeletionProgressManager;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileDeletionRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
+import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
 
 /**
- * @author sbinda
  *
+ * @author sbinda
  */
 public class FileDeletionJobProgressManager implements IDeletionProgressManager {
 
-    private static final Logger LOG = LoggerFactory.getLogger(FileDeletionJobProgressManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileDeletionJobProgressManager.class);
 
-    private final IPublisher publisher;
+    private final FileRefEventPublisher publisher;
 
     private final IJob<?> job;
-
-    private final IRuntimeTenantResolver runtimeTenantResolver;
 
     private final FileReferenceService fileReferenceService;
 
     private final FileDeletionRequestService fileDeletionRequestService;
 
-    private final String tenant;
+    private final Set<FileDeletionRequest> handled = Sets.newHashSet();
 
     public FileDeletionJobProgressManager(FileReferenceService fileReferenceService,
-            FileDeletionRequestService fileDeletionRequestService, IPublisher publisher, IJob<?> job,
-            IRuntimeTenantResolver runtimeTenantResolver) {
+            FileDeletionRequestService fileDeletionRequestService, FileRefEventPublisher publisher, IJob<?> job) {
         super();
         this.publisher = publisher;
         this.job = job;
-        this.runtimeTenantResolver = runtimeTenantResolver;
         this.fileReferenceService = fileReferenceService;
         this.fileDeletionRequestService = fileDeletionRequestService;
-        this.tenant = runtimeTenantResolver.getTenant();
     }
 
     @Override
     public void deletionFailed(FileDeletionRequest fileDeletionRequest, String cause) {
         FileReference fileRef = fileDeletionRequest.getFileReference();
-        LOG.error("[DELETION ERROR] - Deletion error for file {} from {} (checksum: {}). Cause : {}",
-                  fileRef.getMetaInfo().getFileName(), fileRef.getLocation().toString(),
-                  fileRef.getMetaInfo().getChecksum(), cause);
+        LOGGER.error("[DELETION ERROR] - Deletion error for file {} from {} (checksum: {}). Cause : {}",
+                     fileRef.getMetaInfo().getFileName(), fileRef.getLocation().toString(),
+                     fileRef.getMetaInfo().getChecksum(), cause);
         job.advanceCompletion();
-        fileDeletionRequest.setStatus(FileRequestStatus.ERROR);
-        fileDeletionRequest.setErrorCause(cause);
-        fileDeletionRequestService.updateFileDeletionRequest(fileDeletionRequest);
-        FileReferenceEvent event = new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
-                FileReferenceEventState.DELETION_ERROR, null, cause, fileRef.getLocation());
-        publishWithTenant(event);
+        if (!fileDeletionRequest.isForceDelete()) {
+            fileDeletionRequest.setStatus(FileRequestStatus.ERROR);
+            fileDeletionRequest.setErrorCause(cause);
+            fileDeletionRequestService.updateFileDeletionRequest(fileDeletionRequest);
+            publisher.publishFileRefDeletionError(fileRef, cause);
+        } else {
+            // Delete file deletion request
+            fileDeletionRequestService.deleteFileDeletionRequest(fileDeletionRequest);
+            // Delete file reference
+            fileReferenceService.deleteFileReference(fileRef);
+            // NOTE : The file reference event is published by the fileReferenceService
+            LOGGER.warn(String
+                    .format("File %s from %s (checksum: %s) has been removed by force from referenced files. (File may still exists on storage).",
+                            fileRef.getMetaInfo().getFileName(), fileRef.getLocation().toString(),
+                            fileRef.getMetaInfo().getChecksum()));
+        }
+        handled.add(fileDeletionRequest);
     }
 
     @Override
@@ -86,19 +93,17 @@ public class FileDeletionJobProgressManager implements IDeletionProgressManager 
         String successMessage = String.format("File %s successfully deteled from %s (checksum: %s)",
                                               fileRef.getMetaInfo().getFileName(), fileRef.getLocation().toString(),
                                               fileRef.getMetaInfo().getChecksum());
-        LOG.info("[DELETION SUCCESS] - {}", successMessage);
+        LOGGER.info("[DELETION SUCCESS] - {}", successMessage);
         job.advanceCompletion();
         // Delete file deletion request
         fileDeletionRequestService.deleteFileDeletionRequest(fileDeletionRequest);
         fileReferenceService.deleteFileReference(fileRef);
-        FileReferenceEvent event = new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
-                FileReferenceEventState.DELETED, null, successMessage, fileRef.getLocation());
-        publishWithTenant(event);
+        // NOTE : the FileReferenceEvent is published by the fileReferenceService when the file is completely deleted
+        handled.add(fileDeletionRequest);
     }
 
-    private void publishWithTenant(FileReferenceEvent event) {
-        runtimeTenantResolver.forceTenant(tenant);
-        publisher.publish(event);
+    public boolean isHandled(FileDeletionRequest req) {
+        return this.handled.contains(req);
     }
 
 }

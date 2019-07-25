@@ -24,16 +24,39 @@ package fr.cnes.regards.modules.storagelight.domain.event;
  */
 public enum FileReferenceEventState {
 
+    /**
+     * File has been successfully stored
+     */
     STORED,
 
+    /**
+     * Error occurs during file reference storage
+     */
     STORE_ERROR,
 
-    DELETED,
+    /**
+     * File reference does not belongs to owner
+     */
+    DELETED_FOR_OWNER,
 
+    /**
+     * File reference has been fully deleted
+     */
+    FULLY_DELETED,
+
+    /**
+     * Error occurs during file deletion on storage
+     */
     DELETION_ERROR,
 
+    /**
+     * File reference is available for download
+     */
     AVAILABLE,
 
-    RESTORATION_ERROR;
+    /**
+     * Error occurs during file reference retrieve
+     */
+    AVAILABILITY_ERROR;
 
 }

@@ -66,6 +66,9 @@ public class FileDeletionRequest {
     @MapsId
     private FileReference fileReference;
 
+    @Column(name = "force_delete")
+    private boolean forceDelete = false;
+
     @Column(name = "error_cause", length = 512)
     private String errorCause;
 
@@ -84,74 +87,87 @@ public class FileDeletionRequest {
         this.storage = fileReference.getLocation().getStorage();
     }
 
-    /**
-     * @return the id
-     */
+    public FileDeletionRequest(FileReference fileReference, boolean forceDelete) {
+        this(fileReference);
+        this.forceDelete = forceDelete;
+    }
+
     public Long getId() {
         return id;
     }
 
-    /**
-     * @param id the id to set
-     */
     public void setId(Long id) {
         this.id = id;
     }
 
-    /**
-     * @return the fileReference
-     */
     public FileReference getFileReference() {
         return fileReference;
     }
 
-    /**
-     * @param fileReference the fileReference to set
-     */
     public void setFileReference(FileReference fileReference) {
         this.fileReference = fileReference;
     }
 
-    /**
-     * @return the status
-     */
     public FileRequestStatus getStatus() {
         return status;
     }
 
-    /**
-     * @return the storage
-     */
     public String getStorage() {
         return storage;
     }
 
-    /**
-     * @param storage the storage to set
-     */
     public void setStorage(String storage) {
         this.storage = storage;
     }
 
-    /**
-     * @return the errorCause
-     */
     public String getErrorCause() {
         return errorCause;
     }
 
-    /**
-     * @param errorCause the errorCause to set
-     */
     public void setErrorCause(String errorCause) {
         this.errorCause = errorCause;
     }
 
-    /**
-     * @param status the status to set
-     */
     public void setStatus(FileRequestStatus status) {
         this.status = status;
+    }
+
+    public boolean isForceDelete() {
+        return forceDelete;
+    }
+
+    public void setForceDelete(boolean forceDelete) {
+        this.forceDelete = forceDelete;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = (prime * result) + ((id == null) ? 0 : id.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        FileDeletionRequest other = (FileDeletionRequest) obj;
+        if (id == null) {
+            if (other.id != null) {
+                return false;
+            }
+        } else if (!id.equals(other.id)) {
+            return false;
+        }
+        return true;
     }
 
 }

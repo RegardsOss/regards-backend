@@ -32,9 +32,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
-import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.domain.AbstractJob;
+import fr.cnes.regards.framework.modules.jobs.domain.IJob;
 import fr.cnes.regards.framework.modules.jobs.domain.JobParameter;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterInvalidException;
 import fr.cnes.regards.framework.modules.jobs.domain.exception.JobParameterMissingException;
@@ -42,17 +41,17 @@ import fr.cnes.regards.framework.modules.jobs.domain.exception.JobRuntimeExcepti
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.file.CommonFileUtils;
-import fr.cnes.regards.framework.utils.plugins.PluginUtilsRuntimeException;
-import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileReferenceWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
+import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
 
 /**
- * @author Sébastien Binda
+ * {@link IJob} to handle a bundle of {@link FileReferenceRequest}s (workingsubset).
  *
+ * @author Sébastien Binda
  */
 public class FileReferenceRequestJob extends AbstractJob<Void> {
 
@@ -72,7 +71,7 @@ public class FileReferenceRequestJob extends AbstractJob<Void> {
     private IPluginService pluginService;
 
     @Autowired
-    protected IPublisher publisher;
+    private FileRefEventPublisher publisher;
 
     @Autowired
     protected IRuntimeTenantResolver runtimeTenantResolver;
@@ -92,15 +91,24 @@ public class FileReferenceRequestJob extends AbstractJob<Void> {
     public void run() {
         // Initiate the job progress manager
         FileReferenceJobProgressManager progressManager = new FileReferenceJobProgressManager(fileReferenceService,
-                fileRefRequestService, publisher, this, runtimeTenantResolver);
+                fileRefRequestService, publisher, this);
         // lets instantiate the plugin to use
         Long confIdToUse = parameters.get(DATA_STORAGE_CONF_ID).getValue();
         FileReferenceWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET).getValue();
         workingSubset.getFileReferenceRequests().forEach(this::calculateImageDimension);
+        IDataStorage storagePlugin;
         try {
-            IDataStorage storagePlugin = pluginService.getPlugin(confIdToUse);
+            storagePlugin = pluginService.getPlugin(confIdToUse);
             storagePlugin.store(workingSubset, progressManager);
-        } catch (ModuleException | PluginUtilsRuntimeException | NotAvailablePluginConfigurationException e) {
+        } catch (Exception e) {
+            // Publish event for all not handled files
+            for (FileReferenceRequest req : workingSubset.getFileReferenceRequests()) {
+                if (!progressManager.isHandled(req)) {
+                    progressManager.storageFailed(req, String
+                            .format("File %s (checksum: %s) not handled by storage job. Storage job failed cause : %s",
+                                    req.getMetaInfo().getFileName(), req.getMetaInfo().getChecksum(), e.getMessage()));
+                }
+            }
             // throwing new runtime allows us to make the job fail.
             throw new JobRuntimeException(e);
         }

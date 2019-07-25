@@ -18,6 +18,7 @@
  */
 package fr.cnes.regards.modules.storagelight.service.file.reference;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -51,6 +52,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInf
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileReferenceWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IDataStorage;
+import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
 import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileReferenceRequestJob;
 import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginConfigurationHandler;
 
@@ -76,6 +78,9 @@ public class FileReferenceRequestService {
 
     @Autowired
     private IAuthenticationResolver authResolver;
+
+    @Autowired
+    private FileRefEventPublisher fileRefEventPublisher;
 
     @Autowired
     private StoragePluginConfigurationHandler storageHandler;
@@ -172,11 +177,15 @@ public class FileReferenceRequestService {
             if (!storageHandler.getConfiguredStorages().contains(destination.getStorage())) {
                 // The storage destination is unknown, we can already set the request in error status
                 String message = String
-                        .format("File <%s> cannot be handle for storage as destination storage <%s> is unknown. Known storages are",
-                                owners.toArray(), fileMetaInfo.getFileName(), destination.getStorage());
+                        .format("File <%s> cannot be handle for storage as destination storage <%s> is unknown. Known storages are %s",
+                                fileMetaInfo.getFileName(), destination.getStorage(),
+                                Arrays.toString(storageHandler.getConfiguredStorages().toArray()));
                 fileRefReq.setStatus(FileRequestStatus.ERROR);
                 fileRefReq.setErrorCause(message);
                 LOGGER.error(message);
+                fileRefEventPublisher.publishFileRefStoreError(fileMetaInfo.getChecksum(), owners, destination,
+                                                               message);
+
             } else {
                 LOGGER.debug("New file reference request created for file <{}> to store to {} with status {}",
                              fileRefReq.getMetaInfo().getFileName(), fileRefReq.getDestination().toString(),

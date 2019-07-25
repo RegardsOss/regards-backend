@@ -77,9 +77,14 @@ public class FileDeletionRequestService {
     @Autowired
     private StoragePluginConfigurationHandler storageHandler;
 
-    public void createNewFileDeletionRequest(FileReference fileReferenceToDelete) {
+    /**
+     *
+     * @param fileReferenceToDelete
+     * @param forceDelete allows to delete fileReference even if the deletion is in error.
+     */
+    public void createNewFileDeletionRequest(FileReference fileReferenceToDelete, boolean forceDelete) {
         if (!fileDeletionRequestRepo.findByFileReferenceId(fileReferenceToDelete.getId()).isPresent()) {
-            fileDeletionRequestRepo.save(new FileDeletionRequest(fileReferenceToDelete));
+            fileDeletionRequestRepo.save(new FileDeletionRequest(fileReferenceToDelete, forceDelete));
         }
     }
 

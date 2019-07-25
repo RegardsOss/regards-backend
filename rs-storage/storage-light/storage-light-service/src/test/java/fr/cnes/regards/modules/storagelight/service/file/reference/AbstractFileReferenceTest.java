@@ -38,6 +38,7 @@ import org.springframework.http.MediaType;
 
 import com.google.common.collect.Lists;
 
+import fr.cnes.regards.framework.amqp.event.ISubscribable;
 import fr.cnes.regards.framework.jpa.multitenant.test.AbstractMultitenantServiceTest;
 import fr.cnes.regards.framework.module.rest.exception.ModuleException;
 import fr.cnes.regards.framework.modules.jobs.dao.IJobInfoRepository;
@@ -57,10 +58,8 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedDataStorage;
+import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.plugin.DataStorageType;
-import fr.cnes.regards.modules.storagelight.service.file.reference.FileDeletionRequestService;
-import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceRequestService;
-import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStorage;
 import fr.cnes.regards.modules.storagelight.service.storage.PrioritizedDataStorageService;
 import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginConfigurationHandler;
@@ -126,7 +125,8 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
             Set<PluginParameter> parameters = PluginParametersFactory.build()
                     .addParameter(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
                                   getBaseStorageLocation().toString())
-                    .addParameter(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*").getParameters();
+                    .addParameter(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*")
+                    .addParameter(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*").getParameters();
             PluginConfiguration dataStorageConf = new PluginConfiguration(dataStoMeta, label, parameters, 0);
             dataStorageConf.setIsActive(true);
             return prioritizedDataStorageService.create(dataStorageConf);
@@ -141,13 +141,13 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
                 .addParameter(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
                               getBaseStorageLocation().toString())
                 .addParameter(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, newErrorPattern)
-                .getParameters();
+                .addParameter(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*").getParameters();
         conf.getDataStorageConfiguration().setParameters(parameters);
         prioritizedDataStorageService.update(conf.getId(), conf);
     }
 
     protected FileReference generateRandomStoredFileReference() throws InterruptedException, ExecutionException {
-        return this.generateStoredFileReference(UUID.randomUUID().toString(), "someone");
+        return this.generateStoredFileReference(UUID.randomUUID().toString(), "someone", "file.test");
     }
 
     protected Optional<FileReference> generateStoredFileReferenceAlreadyReferenced(String checksum, String storage,
@@ -160,13 +160,13 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
 
     }
 
-    protected FileReference generateStoredFileReference(String checksum, String owner)
+    protected FileReference generateStoredFileReference(String checksum, String owner, String fileName)
             throws InterruptedException, ExecutionException {
         List<String> owners = Lists.newArrayList();
         owners.add(owner);
-        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", "file.test", 132L,
+        FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", fileName, 132L,
                 MediaType.APPLICATION_OCTET_STREAM);
-        FileLocation origin = new FileLocation("anywhere", "anywhere://in/this/directory/file.test");
+        FileLocation origin = new FileLocation("anywhere", "anywhere://in/this/directory/" + fileName);
         FileLocation destination = new FileLocation(ONLINE_CONF_LABEL, "/in/this/directory");
         // Run file reference creation.
         fileRefService.addFileReference(owners, fileMetaInfo, origin, destination);
@@ -190,7 +190,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         return oFileRef.get();
     }
 
-    protected Optional<FileReference> referenceFile(String checksum, List<String> owners, List<String> types,
+    protected Optional<FileReference> referenceFile(String checksum, Collection<String> owners, List<String> types,
             String fileName, String storage) {
         FileReferenceMetaInfo fileMetaInfo = new FileReferenceMetaInfo(checksum, "MD5", fileName, 132L,
                 MediaType.APPLICATION_OCTET_STREAM);
@@ -259,6 +259,28 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         } finally {
             runtimeTenantResolver.forceTenant(tenant);
         }
+    }
+
+    protected FileReferenceEvent getFileReferenceEvent(Collection<ISubscribable> events) {
+        FileReferenceEvent event = null;
+        for (ISubscribable c : events) {
+            if (c instanceof FileReferenceEvent) {
+                event = (FileReferenceEvent) c;
+            }
+        }
+        Assert.assertNotNull("No file reference event checked", event);
+        return event;
+    }
+
+    protected Collection<FileReferenceEvent> getFileReferenceEvents(Collection<ISubscribable> events) {
+        Set<FileReferenceEvent> evts = Sets.newHashSet();
+        for (ISubscribable c : events) {
+            if (c instanceof FileReferenceEvent) {
+                evts.add((FileReferenceEvent) c);
+            }
+        }
+        Assert.assertFalse("No file reference event checked", events.isEmpty());
+        return evts;
     }
 
 }

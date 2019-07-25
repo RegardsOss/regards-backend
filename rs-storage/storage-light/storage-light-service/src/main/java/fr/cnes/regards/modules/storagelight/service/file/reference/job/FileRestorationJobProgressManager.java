@@ -81,7 +81,7 @@ public class FileRestorationJobProgressManager implements IRestorationProgressMa
                   fileRef.getMetaInfo().getChecksum(), cause);
         job.advanceCompletion();
         FileReferenceEvent event = new FileReferenceEvent(fileRef.getMetaInfo().getChecksum(),
-                FileReferenceEventState.RESTORATION_ERROR, fileRef.getOwners(), cause);
+                FileReferenceEventState.AVAILABILITY_ERROR, fileRef.getOwners(), cause);
         publishWithTenant(event);
     }
 

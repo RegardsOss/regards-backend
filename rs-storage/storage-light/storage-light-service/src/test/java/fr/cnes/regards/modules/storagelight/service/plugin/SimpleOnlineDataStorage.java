@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.regex.Pattern;
 
 import org.apache.commons.compress.utils.Lists;
+import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Sets;
@@ -63,6 +64,8 @@ public class SimpleOnlineDataStorage implements IOnlineDataStorage {
 
     public static final String HANDLE_STORAGE_ERROR_FILE_PATTERN = "error_file_pattern";
 
+    public static final String HANDLE_DELETE_ERROR_FILE_PATTERN = "delete_error_file_pattern";
+
     /**
      * {@link IRuntimeTenantResolver} instance
      */
@@ -79,6 +82,10 @@ public class SimpleOnlineDataStorage implements IOnlineDataStorage {
     @PluginParameter(name = HANDLE_STORAGE_ERROR_FILE_PATTERN, description = "Error file pattern",
             label = "Error file pattern")
     private String errorFilePattern;
+
+    @PluginParameter(name = HANDLE_DELETE_ERROR_FILE_PATTERN, description = "Delete Error file pattern",
+            label = "Delete Error file pattern")
+    private String deleteErrorFilePattern;
 
     private URL baseStorageLocation;
 
@@ -110,13 +117,29 @@ public class SimpleOnlineDataStorage implements IOnlineDataStorage {
     }
 
     private void doStore(IStorageProgressManager progressManager, FileReferenceRequest fileRefRequest) {
+
+        Assert.assertNotNull("File reference request cannot be null", fileRefRequest);
+        Assert.assertNotNull("File reference request meta info cannot be null", fileRefRequest.getMetaInfo());
+        Assert.assertNotNull("File reference request file name cannot be null",
+                             fileRefRequest.getMetaInfo().getFileName());
+        Assert.assertNotNull("File reference request checksum cannot be null",
+                             fileRefRequest.getMetaInfo().getChecksum());
+        Assert.assertNotNull("File reference request destination location cannot be null",
+                             fileRefRequest.getDestination());
+        Assert.assertNotNull("File reference request origin location cannot be null", fileRefRequest.getOrigin());
         String fileName = fileRefRequest.getMetaInfo().getFileName();
         if (Pattern.matches(errorFilePattern, fileName)) {
             progressManager.storageFailed(fileRefRequest, "Specific error generated for tests");
         } else {
-            String storedUrl = String.format("%s%s", baseStorageLocation.toString(), Paths
-                    .get("/", fileRefRequest.getDestination().getUrl(), fileRefRequest.getMetaInfo().getChecksum())
-                    .toString());
+            String directory;
+            if (fileRefRequest.getDestination().getUrl() == null) {
+                directory = fileRefRequest.getMetaInfo().getChecksum().substring(0, 5);
+            } else {
+                directory = fileRefRequest.getDestination().getUrl();
+            }
+            String storedUrl = String
+                    .format("%s%s", baseStorageLocation.toString(),
+                            Paths.get("/", directory, fileRefRequest.getMetaInfo().getChecksum()).toString());
             progressManager.storageSucceed(fileRefRequest, storedUrl, fileRefRequest.getMetaInfo().getFileSize());
         }
     }
@@ -131,7 +154,14 @@ public class SimpleOnlineDataStorage implements IOnlineDataStorage {
 
     @Override
     public void delete(FileDeletionWorkingSubset workingSubset, IDeletionProgressManager progressManager) {
-        workingSubset.getFileDeletionRequests().forEach(progressManager::deletionSucceed);
+        workingSubset.getFileDeletionRequests().forEach(request -> {
+            String fileName = request.getFileReference().getMetaInfo().getFileName();
+            if (Pattern.matches(deleteErrorFilePattern, fileName)) {
+                progressManager.deletionFailed(request, "Test deletion failure");
+            } else {
+                progressManager.deletionSucceed(request);
+            }
+        });
     }
 
     @Override

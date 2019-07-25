@@ -62,7 +62,7 @@ public class FileReferenceEventHandler implements IHandler<FileReferenceEvent> {
         runtimeTenantResolver.forceTenant(tenant);
         try {
             switch (wrapper.getContent().getState()) {
-                case DELETED:
+                case FULLY_DELETED:
                 case DELETION_ERROR:
                     // When a file reference deletion is over, schedule the delayed reference requests if any
                     // Indeed, when a file reference deletion process is running, every file reference request is delayed until
@@ -70,7 +70,8 @@ public class FileReferenceEventHandler implements IHandler<FileReferenceEvent> {
                     this.scheduleDelayedFileRefRequests(wrapper.getContent().getChecksum(),
                                                         wrapper.getContent().getLocation().getStorage());
                     break;
-                case RESTORATION_ERROR:
+                case DELETED_FOR_OWNER:
+                case AVAILABILITY_ERROR:
                 case AVAILABLE:
                 case STORED:
                 case STORE_ERROR:

@@ -191,11 +191,11 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         // Reference & store a file
         String fileRefChecksum = "file-ref-1";
         String fileRefOwner = "first-owner";
-        FileReference fileRef = this.generateStoredFileReference(fileRefChecksum, fileRefOwner);
+        FileReference fileRef = this.generateStoredFileReference(fileRefChecksum, fileRefOwner, "file.test");
         String fileRefStorage = fileRef.getLocation().getStorage();
 
         // Remove all his owners
-        fileRefService.removeFileReferenceForOwner(fileRefChecksum, fileRefStorage, fileRefOwner);
+        fileRefService.removeFileReferenceForOwner(fileRefChecksum, fileRefStorage, fileRefOwner, false);
 
         Optional<FileReference> oFileRef = fileRefService.search(fileRefStorage, fileRefChecksum);
         Assert.assertTrue("File reference should no have any owners anymore", oFileRef.get().getOwners().isEmpty());
@@ -229,8 +229,8 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         // Simulate deletion request ends
         fileRefHandler.handle(
                               new TenantWrapper<>(
-                                      new FileReferenceEvent(fileRefChecksum, FileReferenceEventState.DELETED, null,
-                                              "Deletion succeed", oFileRef.get().getLocation()),
+                                      new FileReferenceEvent(fileRefChecksum, FileReferenceEventState.FULLY_DELETED,
+                                              null, "Deletion succeed", oFileRef.get().getLocation()),
                                       runtimeTenantResolver.getTenant()));
         // Has the handler clear the tenant we have to force it here for tests.
         runtimeTenantResolver.forceTenant(tenant);

@@ -48,7 +48,6 @@ import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRequestRepository;
 import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedDataStorage;
 import fr.cnes.regards.modules.storagelight.domain.plugin.DataStorageType;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStorage;
-import fr.cnes.regards.modules.storagelight.service.storage.PrioritizedDataStorageService;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
@@ -137,7 +136,8 @@ public class PrioritizedDataStorageServiceTest extends AbstractMultitenantServic
         Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
                               baseStorageLocation.toString())
-                .addParameter(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*").getParameters();
+                .addParameter(SimpleOnlineDataStorage.HANDLE_STORAGE_ERROR_FILE_PATTERN, "error.*")
+                .addParameter(SimpleOnlineDataStorage.HANDLE_DELETE_ERROR_FILE_PATTERN, "delErr.*").getParameters();
         return new PluginConfiguration(dataStoMeta, label, parameters, 0);
     }
 

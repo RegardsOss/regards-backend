@@ -68,8 +68,8 @@ public class FileDeletionTest extends AbstractFileReferenceTest {
         FileReference fileRef = oFileRef.get();
 
         // Delete file reference for one owner
-        fileRefService.removeFileReferenceForOwner(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
-                                   owners.get(0));
+        fileRefService.removeFileReferenceForOwner(fileRef.getMetaInfo().getChecksum(),
+                                                   fileRef.getLocation().getStorage(), owners.get(0), false);
 
         // File reference should still exists for the remaining owner
         Optional<FileReference> afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(),
@@ -81,8 +81,8 @@ public class FileDeletionTest extends AbstractFileReferenceTest {
                           afterDeletion.get().getOwners().contains(owners.get(1)));
 
         // Delete file reference for the remaining owner
-        fileRefService.removeFileReferenceForOwner(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
-                                   owners.get(1));
+        fileRefService.removeFileReferenceForOwner(fileRef.getMetaInfo().getChecksum(),
+                                                   fileRef.getLocation().getStorage(), owners.get(1), false);
 
         // File reference should be deleted
         afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(), fileRef.getMetaInfo().getChecksum());
@@ -91,11 +91,46 @@ public class FileDeletionTest extends AbstractFileReferenceTest {
     }
 
     @Test
+    public void deleteFileReferenceError() throws EntityNotFoundException, InterruptedException, ExecutionException {
+
+        String fileChecksum = "file-1";
+        String firstOwner = "first-owner";
+        FileReference fileRef = generateStoredFileReference(fileChecksum, firstOwner, "delErr.file1.test");
+        Assert.assertNotNull("File reference should have been created", fileRef);
+        Assert.assertTrue("File reference should belongs to first owner", fileRef.getOwners().contains(firstOwner));
+
+        // Delete file reference
+        fileRefService.removeFileReferenceForOwner(fileRef.getMetaInfo().getChecksum(),
+                                                   fileRef.getLocation().getStorage(), firstOwner, false);
+
+        // File reference should still exists with no owners
+        Optional<FileReference> afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(),
+                                                                      fileRef.getMetaInfo().getChecksum());
+        Assert.assertTrue("File reference should still exists", afterDeletion.isPresent());
+        Assert.assertTrue("File reference should not belongs to anyone", afterDeletion.get().getOwners().isEmpty());
+        Optional<FileDeletionRequest> oDeletionRequest = fileDeletionRequestService.search(fileRef);
+        Assert.assertTrue("File deletion request should be created", oDeletionRequest.isPresent());
+
+        // Now schedule deletion jobs
+        Collection<JobInfo> jobs = fileDeletionRequestService.scheduleDeletionJobs(FileRequestStatus.TODO,
+                                                                                   Lists.newArrayList());
+        runAndWaitJob(jobs);
+
+        // File reference & request deletion should be deleted
+        afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(), fileRef.getMetaInfo().getChecksum());
+        Assert.assertTrue("File reference should be deleted", afterDeletion.isPresent());
+        oDeletionRequest = fileDeletionRequestService.search(fileRef);
+        Assert.assertTrue("File reference request should be still present", oDeletionRequest.isPresent());
+        Assert.assertEquals("File reference request should be in ERROR state", FileRequestStatus.ERROR,
+                            oDeletionRequest.get().getStatus());
+    }
+
+    @Test
     public void deleteStoredFileReference() throws InterruptedException, ExecutionException, EntityNotFoundException {
         String fileChecksum = "file-1";
         String firstOwner = "first-owner";
         String secondOwner = "second-owner";
-        FileReference fileRef = generateStoredFileReference(fileChecksum, firstOwner);
+        FileReference fileRef = generateStoredFileReference(fileChecksum, firstOwner, "file.test");
         Assert.assertNotNull("File reference should have been created", fileRef);
         Assert.assertTrue("File reference should belongs to first owner", fileRef.getOwners().contains(firstOwner));
         Optional<FileReference> oFileRef = generateStoredFileReferenceAlreadyReferenced(fileChecksum,
@@ -110,7 +145,8 @@ public class FileDeletionTest extends AbstractFileReferenceTest {
         fileRef = oFileRef.get();
 
         // Delete file reference for one owner
-        fileRefService.removeFileReferenceForOwner(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(), firstOwner);
+        fileRefService.removeFileReferenceForOwner(fileRef.getMetaInfo().getChecksum(),
+                                                   fileRef.getLocation().getStorage(), firstOwner, false);
 
         // File reference should still exists for the remaining owner
         Optional<FileReference> afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(),
@@ -122,8 +158,8 @@ public class FileDeletionTest extends AbstractFileReferenceTest {
                           afterDeletion.get().getOwners().contains(secondOwner));
 
         // Delete file reference for the remaining owner
-        fileRefService.removeFileReferenceForOwner(fileRef.getMetaInfo().getChecksum(), fileRef.getLocation().getStorage(),
-                                   secondOwner);
+        fileRefService.removeFileReferenceForOwner(fileRef.getMetaInfo().getChecksum(),
+                                                   fileRef.getLocation().getStorage(), secondOwner, false);
 
         // File reference should still exists with no owners
         afterDeletion = fileRefService.search(fileRef.getLocation().getStorage(), fileRef.getMetaInfo().getChecksum());

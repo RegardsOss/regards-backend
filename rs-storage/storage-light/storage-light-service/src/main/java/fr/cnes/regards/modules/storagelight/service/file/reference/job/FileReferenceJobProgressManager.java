@@ -19,23 +19,23 @@
 package fr.cnes.regards.modules.storagelight.service.file.reference.job;
 
 import java.util.Optional;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import fr.cnes.regards.framework.amqp.IPublisher;
+import com.google.common.collect.Sets;
+
 import fr.cnes.regards.framework.modules.jobs.domain.IJob;
-import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
-import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IDataStorage;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageProgressManager;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
+import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
 
 /**
  * Implementation of {@link IStorageProgressManager} used by {@link IDataStorage} plugins.<br/>
@@ -47,25 +47,20 @@ public class FileReferenceJobProgressManager implements IStorageProgressManager 
 
     private static final Logger LOG = LoggerFactory.getLogger(FileReferenceJobProgressManager.class);
 
-    private final IPublisher publisher;
+    private final FileRefEventPublisher publisher;
 
     private final IJob<?> job;
-
-    private final IRuntimeTenantResolver runtimeTenantResolver;
 
     private final FileReferenceService fileReferenceService;
 
     private final FileReferenceRequestService fileRefRequestService;
 
-    private final String tenant;
+    private final Set<FileReferenceRequest> handledRequest = Sets.newHashSet();
 
     public FileReferenceJobProgressManager(FileReferenceService fileReferenceService,
-            FileReferenceRequestService fileRefRequestService, IPublisher publisher, IJob<?> job,
-            IRuntimeTenantResolver runtimeTenantResolver) {
+            FileReferenceRequestService fileRefRequestService, FileRefEventPublisher publisher, IJob<?> job) {
         this.publisher = publisher;
         this.job = job;
-        this.tenant = runtimeTenantResolver.getTenant();
-        this.runtimeTenantResolver = runtimeTenantResolver;
         this.fileReferenceService = fileReferenceService;
         this.fileRefRequestService = fileRefRequestService;
     }
@@ -90,22 +85,19 @@ public class FileReferenceJobProgressManager implements IStorageProgressManager 
             if (oFileRef.isPresent()) {
                 // Delete the FileRefRequest as it has been handled
                 fileRefRequestService.deleteFileReferenceRequest(fileRefRequest);
-                FileReference newFileRef = oFileRef.get();
-                // Create new event message for new FileReference
-                FileReferenceEvent event = new FileReferenceEvent(newFileRef.getMetaInfo().getChecksum(),
-                        FileReferenceEventState.STORED, newFileRef.getOwners(),
-                        String.format("File %s successfully referenced at %s", newFileRef.getMetaInfo().getFileName(),
-                                      newFileRef.getLocation().toString()));
-                // hell yeah this is not the usual publish method, but i know what i'm doing so trust me!
-                publishWithTenant(event);
             } else {
+                String errorCause = String.format("Unable to save new file reference for file %s",
+                                                  fileRefRequest.getDestination().toString());
                 // The file is not really referenced so handle reference error by modifying request to be retry later
                 fileRefRequest.setOrigin(fileRefRequest.getDestination());
                 fileRefRequest.setStatus(FileRequestStatus.ERROR);
-                fileRefRequest.setErrorCause(String.format("Unable to save new file reference for file %s",
-                                                           fileRefRequest.getDestination().toString()));
+                fileRefRequest.setErrorCause(errorCause);
                 fileRefRequestService.updateFileReferenceRequest(fileRefRequest);
+                publisher.publishFileRefStoreError(fileRefRequest.getMetaInfo().getChecksum(),
+                                                   fileRefRequest.getOwners(), fileRefRequest.getDestination(),
+                                                   errorCause);
             }
+            handledRequest.add(fileRefRequest);
         }
     }
 
@@ -119,14 +111,12 @@ public class FileReferenceJobProgressManager implements IStorageProgressManager 
         fileRefRequest.setStatus(FileRequestStatus.ERROR);
         fileRefRequest.setErrorCause(cause);
         fileRefRequestService.updateFileReferenceRequest(fileRefRequest);
-        FileReferenceEvent event = new FileReferenceEvent(fileRefRequest.getMetaInfo().getChecksum(),
-                FileReferenceEventState.STORE_ERROR, fileRefRequest.getOwners(), cause,
-                fileRefRequest.getDestination());
-        publishWithTenant(event);
+        publisher.publishFileRefStoreError(fileRefRequest.getMetaInfo().getChecksum(), fileRefRequest.getOwners(),
+                                           fileRefRequest.getDestination(), cause);
+        handledRequest.add(fileRefRequest);
     }
 
-    private void publishWithTenant(FileReferenceEvent event) {
-        runtimeTenantResolver.forceTenant(tenant);
-        publisher.publish(event);
+    public boolean isHandled(FileReferenceRequest req) {
+        return this.handledRequest.contains(req);
     }
 }
