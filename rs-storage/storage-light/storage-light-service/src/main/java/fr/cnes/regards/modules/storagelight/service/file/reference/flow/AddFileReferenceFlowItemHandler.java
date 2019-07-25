@@ -18,10 +18,19 @@
  */
 package fr.cnes.regards.modules.storagelight.service.file.reference.flow;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Lists;
@@ -42,6 +51,10 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.FileReference
 public class AddFileReferenceFlowItemHandler
         implements ApplicationListener<ApplicationReadyEvent>, IHandler<AddFileRefFlowItem> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AddFileReferenceFlowItemHandler.class);
+
+    private static final int BULK_SIZE = 500;
+
     @Autowired
     private IRuntimeTenantResolver runtimeTenantResolver;
 
@@ -51,6 +64,8 @@ public class AddFileReferenceFlowItemHandler
     @Autowired
     private FileReferenceService fileRefService;
 
+    private final Map<String, ConcurrentLinkedQueue<AddFileRefFlowItem>> items = new ConcurrentHashMap<>();
+
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         subscriber.subscribeTo(AddFileRefFlowItem.class, this);
@@ -59,9 +74,18 @@ public class AddFileReferenceFlowItemHandler
     @Override
     public void handle(TenantWrapper<AddFileRefFlowItem> wrapper) {
         String tenant = wrapper.getTenant();
+        AddFileRefFlowItem item = wrapper.getContent();
+        if (!items.containsKey(tenant)) {
+            items.put(tenant, new ConcurrentLinkedQueue<>());
+        }
+        items.get(tenant).add(item);
+    }
+
+    public void handleSync(TenantWrapper<AddFileRefFlowItem> wrapper) {
+        String tenant = wrapper.getTenant();
+        AddFileRefFlowItem item = wrapper.getContent();
         runtimeTenantResolver.forceTenant(tenant);
         try {
-            AddFileRefFlowItem item = wrapper.getContent();
             FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(item.getChecksum(), item.getAlgorithm(),
                     item.getFileName(), item.getFileSize(), MediaType.valueOf(item.getMimeType()));
             fileRefService.addFileReference(Lists.newArrayList(item.getOwner()), metaInfo, item.getOrigine(),
@@ -71,4 +95,41 @@ public class AddFileReferenceFlowItemHandler
         }
     }
 
+    /**
+     * Bulk save queued items every second.
+     */
+    @Scheduled(fixedDelay = 1_000)
+    public void handleQueue() {
+        for (Map.Entry<String, ConcurrentLinkedQueue<AddFileRefFlowItem>> entry : items.entrySet()) {
+            try {
+                runtimeTenantResolver.forceTenant(entry.getKey());
+                ConcurrentLinkedQueue<AddFileRefFlowItem> tenantItems = entry.getValue();
+                List<AddFileRefFlowItem> list = new ArrayList<>();
+                do {
+                    // Build a 10_000 (at most) documents bulk request
+                    for (int i = 0; i < BULK_SIZE; i++) {
+                        AddFileRefFlowItem doc = tenantItems.poll();
+                        if (doc == null) {
+                            if (list.isEmpty()) {
+                                // nothing to do
+                                return;
+                            }
+                            // Less than BULK_SIZE documents, bulk save what we have already
+                            break;
+                        } else { // enqueue document
+                            list.add(doc);
+                        }
+                    }
+                    LOGGER.info("Bulk saving {} AddFileRefFlowItem...", list.size());
+                    long start = System.currentTimeMillis();
+                    fileRefService.addFileReferences(list);
+                    LOGGER.info("...{} AddFileRefFlowItem handled in {} ms", list.size(),
+                                System.currentTimeMillis() - start);
+                    list.clear();
+                } while (tenantItems.size() >= BULK_SIZE); // redo while more than BULK_SIZE items are to be saved
+            } finally {
+                runtimeTenantResolver.clearTenant();
+            }
+        }
+    }
 }

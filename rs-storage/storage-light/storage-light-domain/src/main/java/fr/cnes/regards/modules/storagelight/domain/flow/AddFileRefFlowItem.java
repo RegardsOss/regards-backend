@@ -24,7 +24,7 @@ import fr.cnes.regards.framework.amqp.event.Target;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 
 /**
- * @author sbinda
+ * @author Sébastien Binda
  *
  */
 @Event(target = Target.ONE_PER_MICROSERVICE_TYPE)

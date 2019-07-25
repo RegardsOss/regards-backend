@@ -51,7 +51,7 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.FileReference
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 
 /**
- * @author sbinda
+ * @author Sébastien Binda
  *
  */
 @ActiveProfiles({ "noscheduler" })
@@ -83,7 +83,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
      *  - No change on files. (no fileReference event)
      */
     @Test
-    public void deleteflowItemNotExists() {
+    public void deleteFlowItemNotExists() {
         DeleteFileRefFlowItem item = new DeleteFileRefFlowItem(UUID.randomUUID().toString(), "some-stprage", "owner");
         TenantWrapper<DeleteFileRefFlowItem> wrapper = new TenantWrapper<>(item, getDefaultTenant());
         // Publish request
@@ -99,7 +99,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
      *  - File should not be fully deleted as it is owned by other owners.
      */
     @Test
-    public void deleteflowItemForOneOwner() {
+    public void deleteFlowItemOnlyOneOwner() {
         String checksum = UUID.randomUUID().toString();
         String storage = "some-storage";
         String owner = "owner";
@@ -114,7 +114,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
         Mockito.verify(publisher, Mockito.times(2)).publish(Mockito.any(FileReferenceEvent.class));
         Mockito.verify(publisher, Mockito.atLeastOnce()).publish(argumentCaptor.capture());
         Collection<FileReferenceEvent> events = getFileReferenceEvents(argumentCaptor.getAllValues());
-        Assert.assertEquals("huhu",
+        Assert.assertEquals("There should be two events. One DELETED_FOR_WONER and one FULLY_DELETED",
                             Sets.newHashSet(FileReferenceEventState.DELETED_FOR_OWNER,
                                             FileReferenceEventState.FULLY_DELETED),
                             events.stream().map(r -> r.getState()).collect(Collectors.toSet()));
@@ -127,7 +127,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
      *  - File should be fully deleted
      */
     @Test
-    public void deleteflowItem() {
+    public void deleteFlowItemMultipleOwners() {
         String checksum = UUID.randomUUID().toString();
         String storage = "some-storage";
         String owner = "owner";
@@ -153,7 +153,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
      *  - File should be fully deleted
      */
     @Test
-    public void deleteflowItemStored() throws InterruptedException, ExecutionException {
+    public void deleteFlowItemStored() throws InterruptedException, ExecutionException {
         String checksum = UUID.randomUUID().toString();
         String owner = "owner";
         FileReference fileRef = this.generateStoredFileReference(checksum, owner, "file.test");
@@ -197,7 +197,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
      *  - Error is sent for the file deletion on storage
      */
     @Test
-    public void deleteflowItemStoredError() throws InterruptedException, ExecutionException {
+    public void deleteFlowItemStoredError() throws InterruptedException, ExecutionException {
         String checksum = UUID.randomUUID().toString();
         String owner = "owner";
         FileReference fileRef = this.generateStoredFileReference(checksum, owner, "delErr.file.test");
@@ -242,7 +242,7 @@ public class DeleteFileReferenceFlowItemTest extends AbstractFileReferenceTest {
      *  - File should be fully deleted
      */
     @Test
-    public void deleteflowItemStoredErrorWithForce() throws InterruptedException, ExecutionException {
+    public void deleteFlowItemStoredErrorWithForce() throws InterruptedException, ExecutionException {
         String checksum = UUID.randomUUID().toString();
         String owner = "owner";
         FileReference fileRef = this.generateStoredFileReference(checksum, owner, "delErr.file.test");

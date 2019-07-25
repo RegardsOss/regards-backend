@@ -20,6 +20,7 @@ package fr.cnes.regards.modules.storagelight.service.file.reference;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -30,8 +31,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+
+import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -42,6 +46,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoringAggregation;
+import fr.cnes.regards.modules.storagelight.domain.flow.AddFileRefFlowItem;
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
 import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginConfigurationHandler;
 
@@ -181,7 +186,7 @@ public class FileReferenceService {
             fileRefRepo.save(fileReference);
         }
 
-        LOGGER.info(message);
+        LOGGER.debug(message);
         // Inform owners that the file reference is considered has delete for him.
         fileRefPublisher.publishFileRefDeletedForOwner(fileReference, owner, message);
 
@@ -204,7 +209,7 @@ public class FileReferenceService {
         String message = String.format("New file <%s> referenced at <%s> (checksum: %s)",
                                        fileRef.getMetaInfo().getFileName(), fileRef.getLocation().toString(),
                                        fileRef.getMetaInfo().getChecksum());
-        LOGGER.info(message);
+        LOGGER.debug(message);
         fileRefPublisher.publishFileRefStored(fileRef, message);
         return fileRef;
     }
@@ -239,7 +244,7 @@ public class FileReferenceService {
                             .format("New owner <%s> added to existing referenced file <%s> at <%s> (checksum: %s) ",
                                     owner, fileReference.getMetaInfo().getFileName(),
                                     fileReference.getLocation().toString(), fileReference.getMetaInfo().getChecksum());
-                    LOGGER.info(message);
+                    LOGGER.debug(message);
                     if (!fileReference.getMetaInfo().equals(newMetaInfo)) {
                         LOGGER.warn("Existing referenced file meta information differs "
                                 + "from new reference meta information. Previous ones are maintained");
@@ -262,6 +267,15 @@ public class FileReferenceService {
                                         Arrays.toString(fileReference.getOwners().toArray()));
             }
             fileRefPublisher.publishFileRefStored(fileReference, message);
+        }
+    }
+
+    public void addFileReferences(List<AddFileRefFlowItem> items) {
+        for (AddFileRefFlowItem item : items) {
+            FileReferenceMetaInfo metaInfo = new FileReferenceMetaInfo(item.getChecksum(), item.getAlgorithm(),
+                    item.getFileName(), item.getFileSize(), MediaType.valueOf(item.getMimeType()));
+            this.addFileReference(Lists.newArrayList(item.getOwner()), metaInfo, item.getOrigine(),
+                                  item.getDestination());
         }
     }
 

@@ -167,8 +167,8 @@ public class FileReferenceRequestService {
             FileLocation origin, FileLocation destination, FileRequestStatus status) {
 
         // Check if file reference request already exists
-        Optional<FileReferenceRequest> oFileRefRequest = this.search(fileMetaInfo.getChecksum(),
-                                                                     destination.getStorage());
+        Optional<FileReferenceRequest> oFileRefRequest = this.search(destination.getStorage(),
+                                                                     fileMetaInfo.getChecksum());
         if (oFileRefRequest.isPresent()) {
             this.handleFileReferenceRequestAlreadyExists(oFileRefRequest.get(), fileMetaInfo, owners);
         } else {
@@ -198,7 +198,6 @@ public class FileReferenceRequestService {
 
     public void handleFileReferenceRequestAlreadyExists(FileReferenceRequest fileReferenceRequest,
             FileReferenceMetaInfo newMetaInfo, Collection<String> owners) {
-        boolean newOwners = false;
         for (String owner : owners) {
             if (!fileReferenceRequest.getOwners().contains(owner)) {
                 fileReferenceRequest.getOwners().add(owner);
@@ -208,9 +207,20 @@ public class FileReferenceRequestService {
                 }
             }
         }
-        if (newOwners) {
-            fileRefRequestRepo.save(fileReferenceRequest);
+        switch (fileReferenceRequest.getStatus()) {
+            case ERROR:
+                // Allows storage retry.
+                fileReferenceRequest.setStatus(FileRequestStatus.TODO);
+                break;
+            case PENDING:
+                // A storage is already in progress for this request.
+            case DELAYED:
+            case TODO:
+            default:
+                // Request has not been handled yet, we can update it.
+                break;
         }
+        fileRefRequestRepo.save(fileReferenceRequest);
     }
 
     private void handleStorageNotAvailable(Collection<FileReferenceRequest> fileRefRequests) {
