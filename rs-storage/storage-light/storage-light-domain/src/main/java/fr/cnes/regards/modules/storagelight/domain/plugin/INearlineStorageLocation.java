@@ -18,22 +18,22 @@
  */
 package fr.cnes.regards.modules.storagelight.domain.plugin;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.nio.file.Path;
 
 import fr.cnes.regards.framework.modules.plugins.annotations.PluginInterface;
-import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 
 /**
  * @author Sylvain VISSIERE-GUERINET
  */
-@PluginInterface(description = "Contract to respect by any ONLINE data storage plugin")
-public interface IOnlineDataStorage extends IDataStorage {
+@PluginInterface(description = "Contract to respect by any NEARLINE data storage plugin")
+public interface INearlineStorageLocation extends IStorageLocation {
 
     /**
-     * Do the retreive action for the given {@link StorageDataFile}
-     * @param data StorageDataFile to retrieve
+     * Do the retrieve action for the given working subset.
+     * @param workingSubset Subset of files to store.
+     * @param destinationPath {@link Path} where to put retrieved files.
+     * @param progressManager {@link IStorageProgressManager} object to inform global store process after each transfer succeed or fail.
      */
-    InputStream retrieve(FileReference fileReference) throws IOException;
+    void retrieve(FileReferenceWorkingSubset workingSubset, IStorageProgressManager progressManager);
 
 }

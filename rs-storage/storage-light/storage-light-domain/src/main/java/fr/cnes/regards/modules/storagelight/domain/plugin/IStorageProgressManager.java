@@ -21,7 +21,7 @@ package fr.cnes.regards.modules.storagelight.domain.plugin;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
 
 /**
- * The ProgressManager is used by {@link IDataStorage} plugins to notidy the upper service of storage action results :
+ * The ProgressManager is used by {@link IStorageLocation} plugins to notidy the upper service of storage action results :
  * <ul>
  * <li>Storage succeed {@link #storageSucceed}</li>
  * <li>Storage failed {@link #storageFailed}</li>

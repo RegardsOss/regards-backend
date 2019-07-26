@@ -45,8 +45,8 @@ import fr.cnes.regards.framework.utils.plugins.PluginParametersFactory;
 import fr.cnes.regards.framework.utils.plugins.PluginUtils;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRequestRepository;
-import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedDataStorage;
-import fr.cnes.regards.modules.storagelight.domain.plugin.DataStorageType;
+import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
+import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStorage;
 
 /**
@@ -62,7 +62,7 @@ public class PrioritizedDataStorageServiceTest extends AbstractMultitenantServic
     private final String targetPath = "target/PrioritizedDataStorageServiceIT";
 
     @Autowired
-    private PrioritizedDataStorageService prioritizedDataStorageService;
+    private PrioritizedStorageService prioritizedDataStorageService;
 
     @Autowired
     private IPluginService pluginService;
@@ -81,7 +81,7 @@ public class PrioritizedDataStorageServiceTest extends AbstractMultitenantServic
         fileRefRepo.deleteAll();
         fileRefRequestRepo.deleteAll();
         jobInfoRepo.deleteAll();
-        prioritizedDataStorageService.findAllByType(DataStorageType.ONLINE).forEach(c -> {
+        prioritizedDataStorageService.search(StorageType.ONLINE).forEach(c -> {
             try {
                 prioritizedDataStorageService.delete(c.getId());
             } catch (ModuleException e) {
@@ -92,7 +92,7 @@ public class PrioritizedDataStorageServiceTest extends AbstractMultitenantServic
 
     @Test
     public void testDelete() throws ModuleException, IOException, URISyntaxException {
-        PrioritizedDataStorage pds = createPrioritizedDataStorage(PDS_LABEL);
+        PrioritizedStorage pds = createPrioritizedDataStorage(PDS_LABEL);
         prioritizedDataStorageService.delete(pds.getId());
         // lets check that the plugin configuration has been deleted too
         Optional<PluginConfiguration> optConf = pluginService.findPluginConfigurationByLabel(PDS_LABEL);
@@ -103,10 +103,10 @@ public class PrioritizedDataStorageServiceTest extends AbstractMultitenantServic
     @Test
     public void testUpdate() throws ModuleException, IOException, URISyntaxException {
         String label = "updateConf label";
-        PrioritizedDataStorage pds = createPrioritizedDataStorage(label);
+        PrioritizedStorage pds = createPrioritizedDataStorage(label);
         PluginConfiguration updatedConf = getPluginConf(label);
         updatedConf.setId(pds.getDataStorageConfiguration().getId());
-        PrioritizedDataStorage upds = new PrioritizedDataStorage(updatedConf, 0L, DataStorageType.ONLINE);
+        PrioritizedStorage upds = new PrioritizedStorage(updatedConf, 0L, StorageType.ONLINE);
         upds.setId(pds.getId());
         prioritizedDataStorageService.update(upds.getId(), upds);
     }
@@ -118,12 +118,12 @@ public class PrioritizedDataStorageServiceTest extends AbstractMultitenantServic
         URL newbaseStorageLocation = new URL("file", "",
                 Paths.get(targetPath, "/update/conf").toFile().getAbsolutePath());
 
-        PrioritizedDataStorage pds = createPrioritizedDataStorage(label);
+        PrioritizedStorage pds = createPrioritizedDataStorage(label);
         PluginConfiguration updatedConf = getPluginConf(label);
         updatedConf.getParameter(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME)
                 .setValue(newbaseStorageLocation.toString());
         updatedConf.setId(pds.getDataStorageConfiguration().getId());
-        PrioritizedDataStorage upds = new PrioritizedDataStorage(updatedConf, 0L, DataStorageType.ONLINE);
+        PrioritizedStorage upds = new PrioritizedStorage(updatedConf, 0L, StorageType.ONLINE);
         upds.setId(pds.getId());
         prioritizedDataStorageService.update(upds.getId(), upds);
     }
@@ -141,7 +141,7 @@ public class PrioritizedDataStorageServiceTest extends AbstractMultitenantServic
         return new PluginConfiguration(dataStoMeta, label, parameters, 0);
     }
 
-    private PrioritizedDataStorage createPrioritizedDataStorage(String label)
+    private PrioritizedStorage createPrioritizedDataStorage(String label)
             throws IOException, URISyntaxException, ModuleException {
         PluginConfiguration dataStorageConf = getPluginConf(label);
         return prioritizedDataStorageService.create(dataStorageConf);

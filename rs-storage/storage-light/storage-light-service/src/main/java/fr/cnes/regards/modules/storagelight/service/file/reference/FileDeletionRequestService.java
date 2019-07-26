@@ -47,7 +47,7 @@ import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileDeletionWorkingSubset;
-import fr.cnes.regards.modules.storagelight.domain.plugin.IDataStorage;
+import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileDeletionRequestJob;
 import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileReferenceRequestJob;
 import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginConfigurationHandler;
@@ -130,7 +130,7 @@ public class FileDeletionRequestService {
         try {
 
             PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage);
-            IDataStorage storagePlugin = pluginService.getPlugin(conf.getId());
+            IStorageLocation storagePlugin = pluginService.getPlugin(conf.getId());
 
             Collection<FileDeletionWorkingSubset> workingSubSets = storagePlugin
                     .prepareForDeletion(fileDeletionRequests);
@@ -152,7 +152,7 @@ public class FileDeletionRequestService {
     /**
      * Update a list of {@link FileDeletionRequest}s when the storage destination cannot be handled.
      * A storage destination cannot be handled if <ul>
-     * <li> No plugin configuration of {@link IDataStorage} exists for the storage</li>
+     * <li> No plugin configuration of {@link IStorageLocation} exists for the storage</li>
      * <li> the plugin configuration is disabled </li>
      * </ul>
      * @param fileDeletionRequests
@@ -164,7 +164,7 @@ public class FileDeletionRequestService {
     /**
      * Update a {@link FileDeletionRequest} when the storage destination cannot be handled.
      * A storage destination cannot be handled if <ul>
-     * <li> No plugin configuration of {@link IDataStorage} exists for the storage</li>
+     * <li> No plugin configuration of {@link IStorageLocation} exists for the storage</li>
      * <li> the plugin configuration is disabled </li>
      * </ul>
      * @param fileDeletionRequest

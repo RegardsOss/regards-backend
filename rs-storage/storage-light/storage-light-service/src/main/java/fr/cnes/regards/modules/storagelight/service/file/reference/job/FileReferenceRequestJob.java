@@ -42,7 +42,7 @@ import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.framework.utils.file.CommonFileUtils;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileReferenceWorkingSubset;
-import fr.cnes.regards.modules.storagelight.domain.plugin.IDataStorage;
+import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
@@ -104,7 +104,7 @@ public class FileReferenceRequestJob extends AbstractJob<Void> {
         Long confIdToUse = parameters.get(DATA_STORAGE_CONF_ID).getValue();
         FileReferenceWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET).getValue();
         workingSubset.getFileReferenceRequests().forEach(this::calculateImageDimension);
-        IDataStorage storagePlugin;
+        IStorageLocation storagePlugin;
         try {
             storagePlugin = pluginService.getPlugin(confIdToUse);
             storagePlugin.store(workingSubset, progressManager);

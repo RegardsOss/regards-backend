@@ -24,12 +24,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
-import org.assertj.core.util.Sets;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -38,6 +40,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import fr.cnes.regards.framework.amqp.domain.TenantWrapper;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
@@ -62,6 +65,8 @@ import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefe
 @TestPropertySource(properties = { "spring.jpa.properties.hibernate.default_schema=storage_tests",
         "regards.storage.cache.path=target/cache", "regards.storage.cache.minimum.time.to.live.hours=12" })
 public class FileReferenceServiceTest extends AbstractFileReferenceTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceServiceTest.class);
 
     @Autowired
     private FileReferenceEventHandler fileRefHandler;
@@ -146,17 +151,16 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
                                     .getTotalElements());
         // Search by storage
         Assert.assertEquals("There should be 5 file references in given storages", 5,
-                            fileRefService.search(
-                                                  FileReferenceSpecification
-                                                          .search(null, null, null,
-                                                                  Sets.newLinkedHashSet("anywhere", "somewhere-else",
-                                                                                        "void"),
-                                                                  null, null, null),
-                                                  PageRequest.of(0, 100))
+                            fileRefService
+                                    .search(FileReferenceSpecification.search(null, null, null,
+                                                                              Sets.newHashSet("anywhere",
+                                                                                              "somewhere-else", "void"),
+                                                                              null, null, null),
+                                            PageRequest.of(0, 100))
                                     .getTotalElements());
         Assert.assertEquals("There should be 3 file references in given storages", 3, fileRefService
-                .search(FileReferenceSpecification.search(null, null, null, Sets.newLinkedHashSet("somewhere-else"),
-                                                          null, null, null),
+                .search(FileReferenceSpecification.search(null, null, null, Sets.newHashSet("somewhere-else"), null,
+                                                          null, null),
                         PageRequest.of(0, 100))
                 .getTotalElements());
         // Search by type
@@ -165,11 +169,10 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
                                     .search(null, null, Lists.newArrayList("Type0"), null, null, null, null),
                                                   PageRequest.of(0, 100))
                                     .getTotalElements());
-        Assert.assertEquals("There should be 3 file references for given type", 3,
-                            fileRefService.search(FileReferenceSpecification
-                                    .search(null, null, Sets.newLinkedHashSet("Type2"), null, null, null, null),
-                                                  PageRequest.of(0, 100))
-                                    .getTotalElements());
+        Assert.assertEquals("There should be 3 file references for given type", 3, fileRefService
+                .search(FileReferenceSpecification.search(null, null, Sets.newHashSet("Type2"), null, null, null, null),
+                        PageRequest.of(0, 100))
+                .getTotalElements());
         // Search by date
         Assert.assertEquals("There should be 5 file references for given from date", 5,
                             fileRefService
@@ -317,7 +320,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         // Update plugin conf to now accept error files
         this.updatePluginConfForError("unknown.*");
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
-        Set<String> owners = Sets.newLinkedHashSet("someone-else");
+        Set<String> owners = Sets.newHashSet("someone-else");
         Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileRequestStatus.ERROR, null, owners);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
@@ -349,7 +352,7 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         // Update plugin conf to now accept error files
         this.updatePluginConfForError("unknown.*");
         // Run Job schedule to initiate the storage job associated to the FileReferenceRequest created before
-        Set<String> storages = Sets.newLinkedHashSet(ONLINE_CONF_LABEL);
+        Set<String> storages = Sets.newHashSet(ONLINE_CONF_LABEL);
         Collection<JobInfo> jobs = fileRefRequestService.scheduleStoreJobs(FileRequestStatus.ERROR, storages, null);
         Assert.assertEquals("One storage job should scheduled", 1, jobs.size());
         // Run Job and wait for end
@@ -365,5 +368,23 @@ public class FileReferenceServiceTest extends AbstractFileReferenceTest {
         Assert.assertTrue("File references request should still exists for other storage.", fileRefReqs.getContent()
                 .stream()
                 .anyMatch(frr -> frr.getMetaInfo().getChecksum().equals(fileRefReqOther.getMetaInfo().getChecksum())));
+    }
+
+    @Test
+    public void downloadFileReference() throws ModuleException, InterruptedException, ExecutionException {
+        fileRefService.downloadFileReference(this.generateRandomStoredFileReference().getMetaInfo().getChecksum());
+    }
+
+    @Test
+    public void downloadFileReferenceOffLine() throws ModuleException, InterruptedException, ExecutionException {
+        FileReference fileRef = this.referenceFile(UUID.randomUUID().toString(), Sets.newHashSet("owner"),
+                                                   Lists.newArrayList(), "file.test", "somewhere")
+                .get();
+        try {
+            fileRefService.downloadFileReference(fileRef.getMetaInfo().getChecksum());
+            Assert.fail("File should not be available for download as it is not handled by a known storage location plugin");
+        } catch (ModuleException e) {
+            LOGGER.error(e.getMessage());
+        }
     }
 }

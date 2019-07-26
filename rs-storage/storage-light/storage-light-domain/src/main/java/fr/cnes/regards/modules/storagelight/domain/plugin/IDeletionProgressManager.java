@@ -22,7 +22,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 
 /**
- * The ProgressManager is used by {@link IDataStorage} plugins to notify the upper service of storage action results :
+ * The ProgressManager is used by {@link IStorageLocation} plugins to notify the upper service of storage action results :
  * <ul>
  * <li>Deletion succeed {@link #deletionSucceed}</li>
  * <li>Deletion failed {@link #deletionFailed}</li>

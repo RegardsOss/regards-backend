@@ -18,11 +18,14 @@
  */
 package fr.cnes.regards.modules.storagelight.service.file.reference;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.compress.utils.Sets;
 import org.slf4j.Logger;
@@ -39,17 +42,27 @@ import com.google.common.collect.Lists;
 
 import fr.cnes.regards.framework.jpa.multitenant.transactional.MultitenantTransactional;
 import fr.cnes.regards.framework.module.rest.exception.EntityNotFoundException;
+import fr.cnes.regards.framework.module.rest.exception.ModuleException;
+import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
+import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
+import fr.cnes.regards.framework.utils.plugins.exception.NotAvailablePluginConfigurationException;
 import fr.cnes.regards.modules.storagelight.dao.IFileReferenceRepository;
+import fr.cnes.regards.modules.storagelight.domain.DownloadableFile;
 import fr.cnes.regards.modules.storagelight.domain.FileRequestStatus;
 import fr.cnes.regards.modules.storagelight.domain.database.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
+import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
 import fr.cnes.regards.modules.storagelight.domain.database.StorageMonitoringAggregation;
+import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.flow.AddFileRefFlowItem;
 import fr.cnes.regards.modules.storagelight.domain.flow.DeleteFileRefFlowItem;
-import fr.cnes.regards.modules.storagelight.domain.plugin.IDataStorage;
+import fr.cnes.regards.modules.storagelight.domain.plugin.IOnlineStorageLocation;
+import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
+import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
+import fr.cnes.regards.modules.storagelight.service.storage.PrioritizedStorageService;
 import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginConfigurationHandler;
 
 /**
@@ -63,10 +76,10 @@ import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginCo
  *
  * <b> File reference physical location : </b><br/>
  * A file can be referenced through this system by : <ul>
- * <li> Storing file on a storage location thanks to {@link IDataStorage} plugins </li>
+ * <li> Storing file on a storage location thanks to {@link IStorageLocation} plugins </li>
  * <li> Only reference file assuming the file location is handled externally </li>
  * </ul>
- * A file reference storage/deletion is handled by the service if the storage location is known as a {@link IDataStorage} plugin configuration.<br/>
+ * A file reference storage/deletion is handled by the service if the storage location is known as a {@link IStorageLocation} plugin configuration.<br/>
  *
  * <b>File reference owners : </b><br/>
  * When a file reference does not have any owner, then it is scheduled for deletion.<br/>
@@ -98,6 +111,12 @@ public class FileReferenceService {
     private StoragePluginConfigurationHandler storageHandler;
 
     @Autowired
+    private PrioritizedStorageService prioritizedStorageService;
+
+    @Autowired
+    private IPluginService pluginService;
+
+    @Autowired
     private FileRefEventPublisher fileRefPublisher;
 
     public Page<FileReference> search(String storage, Pageable pageable) {
@@ -106,6 +125,10 @@ public class FileReferenceService {
 
     public Optional<FileReference> search(String storage, String checksum) {
         return fileRefRepo.findByMetaInfoChecksumAndLocationStorage(checksum, storage);
+    }
+
+    public Set<FileReference> search(String checksum) {
+        return fileRefRepo.findByMetaInfoChecksum(checksum);
     }
 
     public Page<FileReference> search(Pageable pageable) {
@@ -135,7 +158,6 @@ public class FileReferenceService {
      */
     public Optional<FileReference> addFileReference(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
             FileLocation origin, FileLocation destination) {
-
         Assert.notNull(owners, "File must have a owner to be referenced");
         Assert.isTrue(!owners.isEmpty(), "File must have a owner to be referenced");
         Assert.notNull(fileMetaInfo, "File must have an origin location to be referenced");
@@ -146,7 +168,6 @@ public class FileReferenceService {
         Assert.notNull(fileMetaInfo.getFileSize(), "File size is mandatory");
         Assert.notNull(origin, "File must have an origin location to be referenced");
         Assert.notNull(destination, "File must have an origin location to be referenced");
-
         // Does file is already referenced for the destination location ?
         Optional<FileReference> oFileRef = fileRefRepo
                 .findByMetaInfoChecksumAndLocationStorage(fileMetaInfo.getChecksum(), destination.getStorage());
@@ -163,6 +184,12 @@ public class FileReferenceService {
         return oFileRef;
     }
 
+    /**
+     * Delete the given {@link FileReference} in database and send a AMQP {@link FileReferenceEvent} as FULLY_DELETED.
+     * This method does not delete file physically.
+     *
+     * @param fileRef {@link FileReference} to delete.
+     */
     public void deleteFileReference(FileReference fileRef) {
         Assert.notNull(fileRef, "File reference to delete cannot be null");
         Assert.notNull(fileRef.getId(), "File reference identifier to delete cannot be null");
@@ -173,20 +200,64 @@ public class FileReferenceService {
     }
 
     /**
+     * Download a file reference thanks to his checksum. If the file is stored in multiple storage location,
+     * this method decide which one to retrieve by : <ul>
+     *  <li>Only Files on an {@link IOnlineStorageLocation} location can be download</li>
+     *  <li>Use the {@link PrioritizedStorage} configuration with the highest priority</li>
+     * </ul>
      *
-     * @param checksum
-     * @param storage
-     * @param owner
+     * @param checksum Checksum of the file to download
+     * @return
+     */
+    public DownloadableFile downloadFileReference(String checksum) throws ModuleException {
+        // 1. Retrieve all the FileReference matching the given checksum
+        Set<FileReference> fileRefs = this.search(checksum);
+        Map<String, FileReference> storages = fileRefs.stream()
+                .collect(Collectors.toMap(f -> f.getLocation().getStorage(), f -> f));
+        // 2. get the storage location with the higher priority
+        Optional<PrioritizedStorage> storageLocation = prioritizedStorageService
+                .searchActiveHigherPriority(storages.keySet(), StorageType.ONLINE);
+        if (storageLocation.isPresent()) {
+            PluginConfiguration conf = storageLocation.get().getDataStorageConfiguration();
+            FileReference fileToDownload = storages.get(conf.getLabel());
+            try {
+                IOnlineStorageLocation plugin = pluginService.getPlugin(conf.getId());
+                return new DownloadableFile(plugin.retrieve(fileToDownload), fileToDownload.getMetaInfo().getFileSize(),
+                        fileToDownload.getMetaInfo().getFileName(), fileToDownload.getMetaInfo().getMimeType());
+            } catch (ModuleException e) {
+                LOGGER.warn(String
+                        .format("Internal error storage location plugin instanciation %s. Download is not possible for the file %s). Cause %s.",
+                                conf.getLabel(), checksum, e.getMessage()),
+                            e);
+                throw e;
+            } catch (NotAvailablePluginConfigurationException e) {
+                throw new ModuleException(
+                        String.format("Storage %s is disabled. Download is not possible for the file %s).",
+                                      conf.getLabel(), checksum),
+                        e);
+            } catch (IOException e) {
+                throw new ModuleException(String.format("Error during download of file %s from %s. Cause : %s.",
+                                                        checksum, conf.getLabel(), e.getMessage()),
+                        e);
+            }
+        } else {
+            throw new ModuleException(String
+                    .format("No storage location configured for the given file reference (checksum %s). The file can not be download from %s.",
+                            checksum, Arrays.toString(storages.keySet().toArray())));
+        }
+    }
+
+    /**
+     * Remove the given owner of the to the {@link FileReference} matching the given checksum and storage location.
+     * If the owner is the last one this method tries to delete file physically if the storage location is a configured {@link IStorageLocation}.
      * @param forceDelete allows to delete fileReference even if the deletion is in error.
      * @throws EntityNotFoundException
      */
     public void removeFileReferenceForOwner(String checksum, String storage, String owner, boolean forceDelete)
             throws EntityNotFoundException {
-
         Assert.notNull(checksum, "Checksum is mandatory to delete a file reference");
         Assert.notNull(storage, "Storage is mandatory to delete a file reference");
         Assert.notNull(owner, "Owner is mandatory to delete a file reference");
-
         Optional<FileReference> oFileRef = fileRefRepo.findByMetaInfoChecksumAndLocationStorage(checksum, storage);
         if (oFileRef.isPresent()) {
             this.removeOwner(oFileRef.get(), owner, forceDelete);
@@ -197,9 +268,8 @@ public class FileReferenceService {
     }
 
     /**
-     *
-     * @param fileReference
-     * @param owner
+     * Remove the given owner of the to the given {@link FileReference}.
+     * If the owner is the last one this method tries to delete file physically if the storage location is a configured {@link IStorageLocation}.
      * @param forceDelete allows to delete fileReference even if the deletion is in error.
      */
     private void removeOwner(FileReference fileReference, String owner, boolean forceDelete) {
@@ -209,7 +279,6 @@ public class FileReferenceService {
                                     fileReference.getMetaInfo().getFileName(),
                                     fileReference.getMetaInfo().getChecksum(), fileReference.getLocation().toString(),
                                     owner);
-
         } else {
             fileReference.getOwners().remove(owner);
             message = String.format("File reference <%s (checksum: %s)> at %s does not belongs to %s anymore",
@@ -218,11 +287,9 @@ public class FileReferenceService {
                                     owner);
             fileRefRepo.save(fileReference);
         }
-
         LOGGER.debug(message);
         // Inform owners that the file reference is considered has delete for him.
         fileRefPublisher.publishFileRefDeletedForOwner(fileReference, owner, message);
-
         // If file reference does not belongs to anyone anymore, delete file reference
         if (fileReference.getOwners().isEmpty()) {
             if (storageHandler.getConfiguredStorages().contains(fileReference.getLocation().getStorage())) {
@@ -235,6 +302,12 @@ public class FileReferenceService {
         }
     }
 
+    /**
+     * Creates a new {@link FileReference} with given parameters. this method does not handle physical files.
+     * After success, an AMQP message {@link FileReferenceEvent} is sent with STORED state.
+     *
+     * @return {@link FileReference} created.
+     */
     private FileReference createNewFileReference(Collection<String> owners, FileReferenceMetaInfo fileMetaInfo,
             FileLocation location) {
         FileReference fileRef = new FileReference(owners, fileMetaInfo, location);
@@ -247,6 +320,11 @@ public class FileReferenceService {
         return fileRef;
     }
 
+    /**
+     * Calculate the total file size by adding fileSize of each {@link FileReference} with an id over the given id.
+     * @param lastReferencedFileId
+     * @return
+     */
     public Collection<StorageMonitoringAggregation> calculateTotalFileSizeAggregation(Long lastReferencedFileId) {
         if (lastReferencedFileId != null) {
             return fileRefRepo.getTotalFileSizeAggregation(lastReferencedFileId);
@@ -255,6 +333,17 @@ public class FileReferenceService {
         }
     }
 
+    /**
+     * Handle the creation of a new {@link FileReference} when the file already exists.
+     *
+     * <ul>
+     * <li>1. If a deletion request exists on the file reference, tries to remove the deletion request</li>
+     * <li>2. If a deletion request exists and is pending on the file reference, create a new DELAYED file reference request.
+     *  In order to retry storage after deletion is done</li>
+     * <li>3. Add the new owners of the existing file reference</li>
+     * <li>4. Send a {@link FileReferenceEvent} as STORED with the new owners</li>
+     * </ul>
+     */
     private void handleFileReferenceAlreadyExists(FileReference fileReference, FileReferenceMetaInfo newMetaInfo,
             FileLocation origin, FileLocation destination, Collection<String> owners) {
         Set<String> newOwners = Sets.newHashSet();
@@ -291,7 +380,6 @@ public class FileReferenceService {
                         .format("New owners <%s> added to existing referenced file <%s> at <%s> (checksum: %s) ",
                                 Arrays.toString(newOwners.toArray()), fileReference.getMetaInfo().getFileName(),
                                 fileReference.getLocation().toString(), fileReference.getMetaInfo().getChecksum());
-
             } else {
                 message = String.format("File <%s> already referenced at <%s> (checksum: %s) for owners <%>",
                                         fileReference.getMetaInfo().getFileName(),

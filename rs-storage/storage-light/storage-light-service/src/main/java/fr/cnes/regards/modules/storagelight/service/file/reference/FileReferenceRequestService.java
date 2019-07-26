@@ -52,14 +52,14 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileReferenceWorkingSubset;
-import fr.cnes.regards.modules.storagelight.domain.plugin.IDataStorage;
+import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
 import fr.cnes.regards.modules.storagelight.service.file.reference.job.FileReferenceRequestJob;
 import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginConfigurationHandler;
 
 /**
  * Service to handle {@link FileReferenceRequest}s.
- * Those requests are created when a file reference need to be stored physically thanks to an existing {@link IDataStorage} plugin.
+ * Those requests are created when a file reference need to be stored physically thanks to an existing {@link IStorageLocation} plugin.
  *
  * @author Sébastien Binda
  */
@@ -181,7 +181,7 @@ public class FileReferenceRequestService {
         try {
 
             PluginConfiguration conf = pluginService.getPluginConfigurationByLabel(storage);
-            IDataStorage storagePlugin = pluginService.getPlugin(conf.getId());
+            IStorageLocation storagePlugin = pluginService.getPlugin(conf.getId());
 
             Collection<FileReferenceWorkingSubset> workingSubSets = storagePlugin.prepareForStorage(fileRefRequests);
             workingSubSets.forEach(ws -> {
@@ -290,7 +290,7 @@ public class FileReferenceRequestService {
     /**
      * Update a list of {@link FileReferenceRequest}s when the storage destination cannot be handled.
      * A storage destination cannot be handled if <ul>
-     * <li> No plugin configuration of {@link IDataStorage} exists for the storage</li>
+     * <li> No plugin configuration of {@link IStorageLocation} exists for the storage</li>
      * <li> the plugin configuration is disabled </li>
      * </ul>
      * @param fileRefRequests
@@ -302,7 +302,7 @@ public class FileReferenceRequestService {
     /**
      * Update a {@link FileReferenceRequest} when the storage destination cannot be handled.
      * A storage destination cannot be handled if <ul>
-     * <li> No plugin configuration of {@link IDataStorage} exists for the storage</li>
+     * <li> No plugin configuration of {@link IStorageLocation} exists for the storage</li>
      * <li> the plugin configuration is disabled </li>
      * </ul>
      * @param fileRefRequest

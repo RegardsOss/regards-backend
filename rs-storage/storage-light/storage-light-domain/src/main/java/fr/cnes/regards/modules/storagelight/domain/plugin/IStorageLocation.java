@@ -31,7 +31,7 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest
  * @author Sébastien Binda
  */
 @PluginInterface(description = "Contract to respect by any data storage plugin")
-public interface IDataStorage {
+public interface IStorageLocation {
 
     Collection<FileReferenceWorkingSubset> prepareForStorage(Collection<FileReferenceRequest> fileReferenceRequests);
 

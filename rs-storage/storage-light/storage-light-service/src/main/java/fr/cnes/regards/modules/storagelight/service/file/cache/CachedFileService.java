@@ -61,10 +61,10 @@ import fr.cnes.regards.modules.storagelight.domain.database.CachedFile;
 import fr.cnes.regards.modules.storagelight.domain.database.CachedFileState;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.exception.StorageException;
-import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineDataStorage;
+import fr.cnes.regards.modules.storagelight.domain.plugin.INearlineStorageLocation;
 
 /**
- * Service to manage temporary accessibility of {@link FileReference} stored with a {@link INearlineDataStorage}
+ * Service to manage temporary accessibility of {@link FileReference} stored with a {@link INearlineStorageLocation}
  * plugin.<br/>
  * When a file is requested by {@link #restore} method this service retrieve the file from the
  * nearline datastorage plugin and copy it into his internal cache (Local disk)<br/>

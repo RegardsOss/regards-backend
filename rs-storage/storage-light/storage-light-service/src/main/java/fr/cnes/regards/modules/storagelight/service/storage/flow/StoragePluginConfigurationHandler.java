@@ -39,18 +39,23 @@ import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
 import fr.cnes.regards.framework.modules.plugins.domain.event.PluginConfEvent;
 import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
-import fr.cnes.regards.modules.storagelight.domain.plugin.IDataStorage;
+import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
+import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
+import fr.cnes.regards.modules.storagelight.domain.plugin.IOnlineStorageLocation;
 
 /**
- * @author sbinda
+ * This component handle the pool of {@link IStorageLocation} plugins configuration as known as {@link PrioritizedStorage}.
  *
+ * @author Sébastien Binda
  */
 @Component
 public class StoragePluginConfigurationHandler implements IHandler<PluginConfEvent> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StoragePluginConfigurationHandler.class);
 
-    private final SetMultimap<String, String> existingStorages = LinkedHashMultimap.create();
+    private final SetMultimap<String, String> storages = LinkedHashMultimap.create();
+
+    private final SetMultimap<String, String> onlineStorages = LinkedHashMultimap.create();
 
     @Autowired
     private IPluginService pluginService;
@@ -63,26 +68,29 @@ public class StoragePluginConfigurationHandler implements IHandler<PluginConfEve
 
     @PostConstruct
     public void init() {
-        // Listen for plugins modifications
         subscriber.subscribeTo(PluginConfEvent.class, this);
     }
 
+    /**
+     * When a {@link PluginConfiguration} is created, updated or deleted handle the event to update the list of plugin configurations.
+     */
     @Override
     public void handle(TenantWrapper<PluginConfEvent> wrapper) {
         String tenant = wrapper.getTenant();
-        if ((wrapper.getContent().getPluginTypes().contains(IDataStorage.class.getName()))) {
+        if ((wrapper.getContent().getPluginTypes().contains(IStorageLocation.class.getName()))) {
             runtimeTenantResolver.forceTenant(tenant);
-            LOGGER.info("New data storage plugin conf {} for tenant {}", wrapper.getContent().getPluginConfId(),
-                        wrapper.getTenant());
             try {
+                PluginConfiguration conf = pluginService.getPluginConfiguration(wrapper.getContent().getPluginConfId());
                 switch (wrapper.getContent().getAction()) {
                     case CREATE:
-                        this.existingStorages.put(tenant, pluginService
-                                .getPluginConfiguration(wrapper.getContent().getPluginConfId()).getLabel());
+                        this.storages.put(tenant, conf.getLabel());
+                        if (conf.getInterfaceNames().contains(IOnlineStorageLocation.class.getName())) {
+                            this.onlineStorages.put(tenant, conf.getLabel());
+                        }
                         break;
                     case DELETE:
-                        this.existingStorages.remove(tenant, pluginService
-                                .getPluginConfiguration(wrapper.getContent().getPluginConfId()).getLabel());
+                        this.storages.remove(tenant, conf.getLabel());
+                        this.onlineStorages.remove(tenant, conf.getLabel());
                         break;
                     case ACTIVATE:
                     case DISABLE:
@@ -91,7 +99,7 @@ public class StoragePluginConfigurationHandler implements IHandler<PluginConfEve
                         break;
                 }
             } catch (EntityNotFoundException e) {
-                // Nothing to do, message is not valid.
+                // Nothing to do, the storage does not match an existing plugin configuration. Only log error.
                 LOGGER.error(e.getMessage(), e);
             } finally {
                 runtimeTenantResolver.clearTenant();
@@ -99,20 +107,41 @@ public class StoragePluginConfigurationHandler implements IHandler<PluginConfEve
         }
     }
 
+    /**
+     * Return all the configured {@link PluginConfiguration} labels.
+     */
     public Set<String> getConfiguredStorages() {
-        if (this.existingStorages.get(runtimeTenantResolver.getTenant()) == null) {
+        if (this.storages.get(runtimeTenantResolver.getTenant()) == null) {
             this.refresh(runtimeTenantResolver.getTenant());
         }
-        return this.existingStorages.get(runtimeTenantResolver.getTenant());
+        return this.storages.get(runtimeTenantResolver.getTenant());
     }
 
+    /**
+     * Return all the online storage location configured {@link PluginConfiguration} labels.
+     */
+    public Set<String> getConfiguredOnlineStorages() {
+        if (this.onlineStorages.get(runtimeTenantResolver.getTenant()) == null) {
+            this.refresh(runtimeTenantResolver.getTenant());
+        }
+        return this.onlineStorages.get(runtimeTenantResolver.getTenant());
+    }
+
+    /**
+     * Refresh the list of configured storage locations for the current user tenant.
+     */
     public void refresh() {
         this.refresh(runtimeTenantResolver.getTenant());
     }
 
+    /**
+     * Refresh the list of configured storage locations for the given tenant.
+     */
     private void refresh(String tenant) {
-        List<PluginConfiguration> confs = pluginService.getPluginConfigurationsByType(IDataStorage.class);
-        confs.forEach(c -> this.existingStorages.put(tenant, c.getLabel()));
+        List<PluginConfiguration> confs = pluginService.getPluginConfigurationsByType(IStorageLocation.class);
+        List<PluginConfiguration> onlineConfs = pluginService.getPluginConfigurationsByType(IOnlineStorageLocation.class);
+        confs.forEach(c -> this.storages.put(tenant, c.getLabel()));
+        onlineConfs.forEach(c -> this.onlineStorages.put(tenant, c.getLabel()));
     }
 
 }

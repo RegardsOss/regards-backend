@@ -16,22 +16,21 @@ import javax.validation.constraints.Min;
 
 import fr.cnes.regards.framework.module.manager.ConfigIgnore;
 import fr.cnes.regards.framework.modules.plugins.domain.PluginConfiguration;
-import fr.cnes.regards.modules.storagelight.domain.plugin.DataStorageType;
+import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 
 /**
- * Wrapper used to prioritize {@link fr.cnes.regards.modules.storage.domain.plugin.IDataStorage} configurations.
+ * Wrapper used to prioritize {@link fr.cnes.regards.modules.IStorageLocation.domain.plugin.IDataStorage} configurations.
  * As a wrapper, its database identifier is the same than the wrapped {@link PluginConfiguration}.
  * This wrapper is strictly ordered on priority.
  *
  * @author Sylvain VISSIERE-GUERINET
  */
 @Entity
-@Table(name = "t_prioritized_data_storage",
-        uniqueConstraints = { @UniqueConstraint(name = "uk_priotitized_data_storage", columnNames = {
-                PrioritizedDataStorage.DATA_STORAGE_TYPE_COLUMN_NAME, PrioritizedDataStorage.PRIORITY_COLUMN_NAME }) })
-public class PrioritizedDataStorage implements Comparable<PrioritizedDataStorage> {
+@Table(name = "t_prioritized_storage", uniqueConstraints = { @UniqueConstraint(name = "uk_priotitized_storage",
+        columnNames = { PrioritizedStorage.STORAGE_TYPE_COLUMN_NAME, PrioritizedStorage.PRIORITY_COLUMN_NAME }) })
+public class PrioritizedStorage implements Comparable<PrioritizedStorage> {
 
-    public static final String DATA_STORAGE_TYPE_COLUMN_NAME = "data_storage_type";
+    public static final String STORAGE_TYPE_COLUMN_NAME = "storage_type";
 
     public static final String PRIORITY_COLUMN_NAME = "priority";
 
@@ -44,13 +43,12 @@ public class PrioritizedDataStorage implements Comparable<PrioritizedDataStorage
     @Valid
     @OneToOne
     @MapsId
-    @JoinColumn(name = "data_storage_conf_id",
-            foreignKey = @ForeignKey(name = "fk_prioritized_data_storage_plugin_conf"))
-    private PluginConfiguration dataStorageConfiguration;
+    @JoinColumn(name = "storage_conf_id", foreignKey = @ForeignKey(name = "fk_prioritized_storage_plugin_conf"))
+    private PluginConfiguration storageConfiguration;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = DATA_STORAGE_TYPE_COLUMN_NAME)
-    private DataStorageType dataStorageType;
+    @Column(name = STORAGE_TYPE_COLUMN_NAME)
+    private StorageType storageType;
 
     /**
      * Priority of this data storage.
@@ -63,22 +61,22 @@ public class PrioritizedDataStorage implements Comparable<PrioritizedDataStorage
      * Default constructor to be used only by serialization process or JPA
      */
     @SuppressWarnings("unused")
-    private PrioritizedDataStorage() {
+    private PrioritizedStorage() {
     }
 
-    public PrioritizedDataStorage(PluginConfiguration dataStorageConfiguration, Long priority,
-            DataStorageType dataStorageType) {
-        this.dataStorageConfiguration = dataStorageConfiguration;
+    public PrioritizedStorage(PluginConfiguration dataStorageConfiguration, Long priority,
+            StorageType dataStorageType) {
+        this.storageConfiguration = dataStorageConfiguration;
         this.priority = priority;
-        this.dataStorageType = dataStorageType;
+        this.storageType = dataStorageType;
     }
 
     public PluginConfiguration getDataStorageConfiguration() {
-        return dataStorageConfiguration;
+        return storageConfiguration;
     }
 
     public void setDataStorageConfiguration(PluginConfiguration dataStorageConfiguration) {
-        this.dataStorageConfiguration = dataStorageConfiguration;
+        this.storageConfiguration = dataStorageConfiguration;
     }
 
     public Long getPriority() {
@@ -97,12 +95,12 @@ public class PrioritizedDataStorage implements Comparable<PrioritizedDataStorage
         this.id = id;
     }
 
-    public DataStorageType getDataStorageType() {
-        return dataStorageType;
+    public StorageType getStorageType() {
+        return storageType;
     }
 
-    public void setDataStorageType(DataStorageType dataStorageType) {
-        this.dataStorageType = dataStorageType;
+    public void setStorageType(StorageType storageType) {
+        this.storageType = storageType;
     }
 
     @Override
@@ -114,19 +112,19 @@ public class PrioritizedDataStorage implements Comparable<PrioritizedDataStorage
             return false;
         }
 
-        PrioritizedDataStorage that = (PrioritizedDataStorage) o;
+        PrioritizedStorage that = (PrioritizedStorage) o;
 
-        return dataStorageConfiguration != null ? dataStorageConfiguration.equals(that.dataStorageConfiguration)
-                : that.dataStorageConfiguration == null;
+        return storageConfiguration != null ? storageConfiguration.equals(that.storageConfiguration)
+                : that.storageConfiguration == null;
     }
 
     @Override
     public int hashCode() {
-        return dataStorageConfiguration != null ? dataStorageConfiguration.hashCode() : 0;
+        return storageConfiguration != null ? storageConfiguration.hashCode() : 0;
     }
 
     @Override
-    public int compareTo(PrioritizedDataStorage o) {
+    public int compareTo(PrioritizedStorage o) {
         // we implement a strict order on priorities so just to keep coherence with equals,
         // if we compare to ourselves compareTo returns 0
         if (this.equals(o)) {

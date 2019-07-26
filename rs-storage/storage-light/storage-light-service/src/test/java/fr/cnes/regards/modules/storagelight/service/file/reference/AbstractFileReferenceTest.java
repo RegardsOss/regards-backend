@@ -57,11 +57,11 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceMetaInfo;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest;
-import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedDataStorage;
+import fr.cnes.regards.modules.storagelight.domain.database.PrioritizedStorage;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
-import fr.cnes.regards.modules.storagelight.domain.plugin.DataStorageType;
+import fr.cnes.regards.modules.storagelight.domain.plugin.StorageType;
 import fr.cnes.regards.modules.storagelight.service.plugin.SimpleOnlineDataStorage;
-import fr.cnes.regards.modules.storagelight.service.storage.PrioritizedDataStorageService;
+import fr.cnes.regards.modules.storagelight.service.storage.PrioritizedStorageService;
 import fr.cnes.regards.modules.storagelight.service.storage.flow.StoragePluginConfigurationHandler;
 
 /**
@@ -100,14 +100,14 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
     protected IJobInfoRepository jobInfoRepo;
 
     @Autowired
-    protected PrioritizedDataStorageService prioritizedDataStorageService;
+    protected PrioritizedStorageService prioritizedDataStorageService;
 
     protected void init() throws ModuleException {
         fileDeletionRequestRepo.deleteAll();
         fileRefRequestRepo.deleteAll();
         fileRefRepo.deleteAll();
         jobInfoRepo.deleteAll();
-        prioritizedDataStorageService.findAllByType(DataStorageType.ONLINE).forEach(c -> {
+        prioritizedDataStorageService.search(StorageType.ONLINE).forEach(c -> {
             try {
                 prioritizedDataStorageService.delete(c.getId());
             } catch (ModuleException e) {
@@ -118,7 +118,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
         storageHandler.refresh();
     }
 
-    protected PrioritizedDataStorage initDataStoragePluginConfiguration(String label) throws ModuleException {
+    protected PrioritizedStorage initDataStoragePluginConfiguration(String label) throws ModuleException {
         try {
             PluginMetaData dataStoMeta = PluginUtils.createPluginMetaData(SimpleOnlineDataStorage.class);
             Files.createDirectories(Paths.get(getBaseStorageLocation().toURI()));
@@ -136,7 +136,7 @@ public abstract class AbstractFileReferenceTest extends AbstractMultitenantServi
     }
 
     protected void updatePluginConfForError(String newErrorPattern) throws MalformedURLException, ModuleException {
-        PrioritizedDataStorage conf = prioritizedDataStorageService.getFirstActiveByType(DataStorageType.ONLINE);
+        PrioritizedStorage conf = prioritizedDataStorageService.getFirstActive(StorageType.ONLINE);
         Set<PluginParameter> parameters = PluginParametersFactory.build()
                 .addParameter(SimpleOnlineDataStorage.BASE_STORAGE_LOCATION_PLUGIN_PARAM_NAME,
                               getBaseStorageLocation().toString())

@@ -31,7 +31,7 @@ import fr.cnes.regards.framework.modules.plugins.service.IPluginService;
 import fr.cnes.regards.framework.multitenant.IRuntimeTenantResolver;
 import fr.cnes.regards.modules.storagelight.domain.database.FileDeletionRequest;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileDeletionWorkingSubset;
-import fr.cnes.regards.modules.storagelight.domain.plugin.IDataStorage;
+import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileDeletionRequestService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 import fr.cnes.regards.modules.storagelight.service.file.reference.flow.FileRefEventPublisher;
@@ -91,7 +91,7 @@ public class FileDeletionRequestJob extends AbstractJob<Void> {
         Long confIdToUse = parameters.get(DATA_STORAGE_CONF_ID).getValue();
         FileDeletionWorkingSubset workingSubset = parameters.get(WORKING_SUB_SET).getValue();
         try {
-            IDataStorage storagePlugin = pluginService.getPlugin(confIdToUse);
+            IStorageLocation storagePlugin = pluginService.getPlugin(confIdToUse);
             storagePlugin.delete(workingSubset, progressManager);
         } catch (Exception e) {
             // Publish event for all not handled files

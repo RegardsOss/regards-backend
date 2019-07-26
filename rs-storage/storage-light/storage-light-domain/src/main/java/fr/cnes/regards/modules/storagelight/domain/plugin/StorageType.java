@@ -19,13 +19,13 @@
 package fr.cnes.regards.modules.storagelight.domain.plugin;
 
 /**
- * Type of data storage, nearline or online
+ * Type of storage, nearline or online
  *
  * @author Sylvain Vissiere-Guerinet
  *
  */
-public enum DataStorageType {
+public enum StorageType {
 
     NEARLINE,
-    ONLINE
+    ONLINE;
 }

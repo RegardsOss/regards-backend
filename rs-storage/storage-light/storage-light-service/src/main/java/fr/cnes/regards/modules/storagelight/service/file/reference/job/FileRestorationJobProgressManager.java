@@ -30,12 +30,12 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileLocation;
 import fr.cnes.regards.modules.storagelight.domain.database.FileReference;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEvent;
 import fr.cnes.regards.modules.storagelight.domain.event.FileReferenceEventState;
-import fr.cnes.regards.modules.storagelight.domain.plugin.IDataStorage;
+import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IRestorationProgressManager;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageProgressManager;
 
 /**
- * Implementation of {@link IStorageProgressManager} used by {@link IDataStorage} plugins.<br/>
+ * Implementation of {@link IStorageProgressManager} used by {@link IStorageLocation} plugins.<br/>
  * This implementation notify the system thanks to the AMQP publisher.
  *
  * @author Sébastien Binda

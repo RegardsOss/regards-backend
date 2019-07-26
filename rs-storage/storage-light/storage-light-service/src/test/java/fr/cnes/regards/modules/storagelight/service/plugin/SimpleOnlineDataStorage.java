@@ -20,7 +20,6 @@ package fr.cnes.regards.modules.storagelight.service.plugin;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -28,7 +27,10 @@ import java.util.Collection;
 import java.util.regex.Pattern;
 
 import org.apache.commons.compress.utils.Lists;
+import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Sets;
@@ -44,9 +46,10 @@ import fr.cnes.regards.modules.storagelight.domain.database.FileReferenceRequest
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileDeletionWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.FileReferenceWorkingSubset;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IDeletionProgressManager;
-import fr.cnes.regards.modules.storagelight.domain.plugin.IOnlineDataStorage;
+import fr.cnes.regards.modules.storagelight.domain.plugin.IOnlineStorageLocation;
 import fr.cnes.regards.modules.storagelight.domain.plugin.IStorageProgressManager;
 import fr.cnes.regards.modules.storagelight.domain.plugin.PluginConfUpdatable;
+import fr.cnes.regards.modules.storagelight.service.file.reference.FileReferenceService;
 
 /**
  * @author Binda sébastien
@@ -55,7 +58,9 @@ import fr.cnes.regards.modules.storagelight.domain.plugin.PluginConfUpdatable;
 @Plugin(author = "REGARDS Team", description = "Plugin handling the storage on local file system",
         id = "SimpleOnlineTest", version = "1.0", contact = "regards@c-s.fr", license = "GPLv3", owner = "CNES",
         url = "https://regardsoss.github.io/")
-public class SimpleOnlineDataStorage implements IOnlineDataStorage {
+public class SimpleOnlineDataStorage implements IOnlineStorageLocation {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileReferenceService.class);
 
     /**
      * Plugin parameter name of the storage base location as a string
@@ -91,11 +96,13 @@ public class SimpleOnlineDataStorage implements IOnlineDataStorage {
 
     /**
      * Plugin init method
-     * @throws MalformedURLException
+     * @throws IOException
      */
     @PluginInit
-    public void init() throws MalformedURLException {
-        baseStorageLocation = new URL(baseStorageLocationAsString);
+    public void init() throws IOException {
+        baseStorageLocation = new URL("file", "", Paths.get("target/storage").toFile().getAbsolutePath());
+        // Clear directory
+        FileUtils.deleteDirectory(Paths.get("target/storage").toFile());
     }
 
     @Override
@@ -138,9 +145,20 @@ public class SimpleOnlineDataStorage implements IOnlineDataStorage {
                 directory = fileRefRequest.getDestination().getUrl();
             }
             String storedUrl = String
-                    .format("%s%s", baseStorageLocation.toString(),
+                    .format("%s%s", "target/storage",
                             Paths.get("/", directory, fileRefRequest.getMetaInfo().getChecksum()).toString());
-            progressManager.storageSucceed(fileRefRequest, storedUrl, fileRefRequest.getMetaInfo().getFileSize());
+            try {
+                if (!Files.exists(Paths.get(storedUrl).getParent())) {
+                    Files.createDirectories(Paths.get(storedUrl).getParent());
+                }
+                if (!Files.exists(Paths.get(storedUrl))) {
+                    Files.createFile(Paths.get(storedUrl));
+                }
+                progressManager.storageSucceed(fileRefRequest, storedUrl, fileRefRequest.getMetaInfo().getFileSize());
+            } catch (IOException e) {
+                LOGGER.error(e.getMessage(), e);
+                progressManager.storageFailed(fileRefRequest, e.getMessage());
+            }
         }
     }
 
